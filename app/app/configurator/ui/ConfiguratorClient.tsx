@@ -1,0 +1,451 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import PropertySidebar from "./PropertySidebar";
+import SettingsTab from "./SettingsTab";
+import RoomsTab from "./RoomsTab";
+import RoomDetailsTab from "./RoomDetailsTab";
+import CleaningTab from "./CleaningTab";
+import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
+import { useHeader } from "@/app/app/_components/HeaderContext";
+
+type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null; };
+type Room = { id: string; name: string; capacity: number | null; property_id: string; sort_index: number; room_type_id: string | null };
+type CheckDef = { id: string; property_id: string; label: string; default_value: boolean; sort_index: number };
+type TextDef  = { id: string; property_id: string; label: string; placeholder: string | null; sort_index: number };
+type TaskDef  = { id: string; property_id: string; label: string; sort_index: number };
+type RoomType = { id: string; property_id: string; name: string };
+
+type Plan = "basic" | "standard" | "premium";
+
+export default function ConfiguratorClient({ initialProperties }: { initialProperties: Property[] }) {
+  const supabase = useMemo(() => createClient(), []);
+  const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
+
+  const [properties, setProperties] = useState<Property[]>(initialProperties);
+  const [selectedId, setSelectedId] = useState<string>(initialProperties[0]?.id ?? "");
+
+  const [rooms, setRooms]     = useState<Room[]>([]);
+  const [checks, setChecks]   = useState<CheckDef[]>([]);
+  const [texts, setTexts]     = useState<TextDef[]>([]);
+  const [tasks, setTasks]     = useState<TaskDef[]>([]);
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
+
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const selected = properties.find(p => p.id === selectedId) || null;
+
+  const { setTitle, setPill } = useHeader();
+  useEffect(() => { setTitle("Configurator"); }, [setTitle]);
+
+  // Header pill mirrors page status
+  useEffect(() => {
+    setPill(
+      status === "Saving…" ? "Saving…" :
+      status === "Synced"  ? "Synced"  :
+      status === "Error"   ? "Error"   : "Idle"
+    );
+  }, [status, setPill]);
+
+  // Load plan for current user (used for gating Cleaning)
+  useEffect(() => {
+    (async () => {
+      const { data: userRes } = await supabase.auth.getUser();
+      const uid = userRes?.user?.id;
+      if (!uid) { setPlan("basic"); return; }
+
+      const { data } = await supabase
+        .from("accounts")
+        .select("plan, valid_until")
+        .eq("id", uid)
+        .maybeSingle();
+
+      const active = !data?.valid_until || new Date(data.valid_until) > new Date();
+      const p = (data?.plan as Plan) ?? "basic";
+      setPlan(active ? p : "basic");
+    })();
+  }, [supabase]);
+
+  // Load data for selected property
+  useEffect(() => {
+    if (!selectedId) return;
+    (async () => {
+      setStatus("Idle");
+      const [r1, r2, r3, r4, r5] = await Promise.all([
+        supabase.from("rooms")
+          .select("id,name,capacity,property_id,sort_index,room_type_id,created_at")
+          .eq("property_id", selectedId)
+          .order("sort_index", { ascending: true })
+          .order("created_at", { ascending: true }),
+        supabase.from("room_detail_checks")
+          .select("id,property_id,label,default_value,sort_index")
+          .eq("property_id", selectedId)
+          .order("sort_index", { ascending: true })
+          .order("created_at", { ascending: true }),
+        supabase.from("room_detail_text_fields")
+          .select("id,property_id,label,placeholder,sort_index")
+          .eq("property_id", selectedId)
+          .order("sort_index", { ascending: true })
+          .order("created_at", { ascending: true }),
+        supabase.from("cleaning_task_defs")
+          .select("id,property_id,label,sort_index")
+          .eq("property_id", selectedId)
+          .order("sort_index", { ascending: true })
+          .order("created_at", { ascending: true }),
+        supabase.from("room_types")
+          .select("id,property_id,name,created_at")
+          .eq("property_id", selectedId)
+          .order("created_at", { ascending: true })
+      ]);
+
+      if (r1.error || r2.error || r3.error || r4.error || r5.error) {
+        setStatus("Error");
+        setRooms([]); setChecks([]); setTexts([]); setTasks([]); setRoomTypes([]);
+      } else {
+        setRooms((r1.data ?? []) as Room[]);
+        setChecks((r2.data ?? []) as CheckDef[]);
+        setTexts((r3.data ?? []) as TextDef[]);
+        setTasks((r4.data ?? []) as TaskDef[]);
+        setRoomTypes((r5.data ?? []) as RoomType[]);
+        setStatus("Idle");
+      }
+    })();
+  }, [selectedId, supabase]);
+
+  function startSaving(){ setStatus("Saving…"); }
+  function finishSaving(ok:boolean){ setStatus(ok ? "Synced" : "Error"); setTimeout(() => setStatus("Idle"), 800); }
+
+  // SETTINGS
+  async function saveTime(field: "check_in_time" | "check_out_time", value: string) {
+    if (!selected) return;
+    startSaving();
+    const { error } = await supabase.from("properties").update({ [field]: value }).eq("id", selected.id);
+    if (!error) setProperties(prev => prev.map(p => p.id === selected.id ? { ...p, [field]: value } as any : p));
+    finishSaving(!error);
+  }
+
+  // ROOMS
+  async function addRoom() {
+    if (!selected) return;
+    startSaving();
+    const nextIndex = rooms.length;
+    const { data, error } = await supabase
+      .from("rooms")
+      .insert({ name: `Room ${nextIndex + 1}`, property_id: selected.id, sort_index: nextIndex })
+      .select("id,name,capacity,property_id,sort_index,room_type_id")
+      .single();
+    if (!error && data) setRooms(prev => [...prev, data as Room]);
+    finishSaving(!error);
+  }
+  async function renameRoom(roomId: string, name: string) {
+    startSaving();
+    const { error } = await supabase.from("rooms").update({ name }).eq("id", roomId);
+    if (!error) setRooms(prev => prev.map(r => r.id === roomId ? { ...r, name } : r));
+    finishSaving(!error);
+  }
+  async function deleteRoom(roomId: string) {
+    startSaving();
+    const { error } = await supabase.from("rooms").delete().eq("id", roomId);
+    if (!error) {
+      const filtered = rooms.filter(r => r.id !== roomId).sort((a,b) => a.sort_index - b.sort_index);
+      const reindexed = filtered.map((r, i) => ({ ...r, sort_index: i }));
+      setRooms(reindexed);
+      for (const r of reindexed) await supabase.from("rooms").update({ sort_index: r.sort_index }).eq("id", r.id);
+    }
+    finishSaving(!error);
+  }
+  async function moveRoom(roomId: string, dir: "up" | "down") {
+    const idx = rooms.findIndex(r => r.id === roomId);
+    if (idx < 0) return;
+    const swapWith = dir === "up" ? idx - 1 : idx + 1;
+    if (swapWith < 0 || swapWith >= rooms.length) return;
+    startSaving();
+    const a = rooms[idx], b = rooms[swapWith];
+    const newA = { ...a, sort_index: b.sort_index }, newB = { ...b, sort_index: a.sort_index };
+    const clone = rooms.slice(); clone[idx] = newA; clone[swapWith] = newB; clone.sort((x,y) => x.sort_index - y.sort_index);
+    setRooms(clone);
+    const e1 = (await supabase.from("rooms").update({ sort_index: newA.sort_index }).eq("id", newA.id)).error;
+    const e2 = (await supabase.from("rooms").update({ sort_index: newB.sort_index }).eq("id", newB.id)).error;
+    finishSaving(!(e1 || e2));
+  }
+
+  // ROOM TYPES (create / rename / delete)
+  async function addRoomType(name: string) {
+    if (!selected) return;
+    startSaving();
+    const { data, error } = await supabase.from("room_types").insert({ property_id: selected.id, name }).select().single();
+    if (!error && data) setRoomTypes(prev => [...prev, data as RoomType]);
+    finishSaving(!error);
+  }
+  async function renameRoomType(id: string, name: string) {
+    startSaving();
+    const { error } = await supabase.from("room_types").update({ name }).eq("id", id);
+    if (!error) setRoomTypes(prev => prev.map(t => t.id === id ? { ...t, name } : t));
+    finishSaving(!error);
+  }
+  async function deleteRoomType(id: string) {
+    startSaving();
+    const { error } = await supabase.from("room_types").delete().eq("id", id);
+    if (!error) {
+      setRoomTypes(prev => prev.filter(t => t.id !== id));
+      setRooms(prev => prev.map(r => r.room_type_id === id ? { ...r, room_type_id: null } : r)); // reflect ON DELETE SET NULL
+    }
+    finishSaving(!error);
+  }
+
+  // ASSIGN type to room
+  async function setRoomType(roomId: string, typeId: string | null) {
+    startSaving();
+    const { error } = await supabase.from("rooms").update({ room_type_id: typeId }).eq("id", roomId);
+    if (!error) setRooms(prev => prev.map(r => r.id === roomId ? { ...r, room_type_id: typeId } : r));
+    finishSaving(!error);
+  }
+
+  const hasStandardOrBetter = plan === "standard" || plan === "premium";
+
+  return (
+    <div>
+      <PlanHeaderBadge title="Configurator" />
+      {/* restul UI-ului */}
+
+      <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 16 }}>
+        <PropertySidebar properties={properties} selectedId={selectedId} onSelect={setSelectedId} status={status} />
+        <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
+          {!selected ? (
+            <p>Selectează o proprietate din stânga.</p>
+          ) : (
+            <Tabs
+              settings={<SettingsTab property={selected} onChange={(k, v) => saveTime(k, v)} />}
+              rooms={
+                <RoomsTab
+                  rooms={rooms}
+                  roomTypes={roomTypes}
+                  onAddRoom={addRoom}
+                  onRenameRoom={renameRoom}
+                  onDeleteRoom={deleteRoom}
+                  onMoveRoom={moveRoom}
+                  onAddType={addRoomType}
+                  onRenameType={renameRoomType}
+                  onDeleteType={deleteRoomType}
+                  onAssignType={setRoomType}
+                />
+              }
+              roomDetails={
+                <RoomDetailsTab
+                  checks={checks}
+                  texts={texts}
+                  onAddCheck={async () => {
+                    if (!selected) return;
+                    startSaving();
+                    const next = checks.length;
+                    const { data, error } = await supabase
+                      .from("room_detail_checks")
+                      .insert({ property_id: selected.id, label: `Check ${next + 1}`, default_value: false, sort_index: next })
+                      .select("id,property_id,label,default_value,sort_index")
+                      .single();
+                    if (!error && data) setChecks(prev => [...prev, data as CheckDef]);
+                    finishSaving(!error);
+                  }}
+                  onRenameCheck={async (id, label) => {
+                    startSaving();
+                    const { error } = await supabase.from("room_detail_checks").update({ label }).eq("id", id);
+                    if (!error) setChecks(prev => prev.map(c => c.id === id ? { ...c, label } : c));
+                    finishSaving(!error);
+                  }}
+                  onToggleCheckDefault={async (id, v) => {
+                    startSaving();
+                    const { error } = await supabase.from("room_detail_checks").update({ default_value: v }).eq("id", id);
+                    if (!error) setChecks(prev => prev.map(c => c.id === id ? { ...c, default_value: v } : c));
+                    finishSaving(!error);
+                  }}
+                  onDeleteCheck={async (id) => {
+                    startSaving();
+                    const { error } = await supabase.from("room_detail_checks").delete().eq("id", id);
+                    if (!error) {
+                      const filtered = checks.filter(c => c.id !== id).sort((a,b)=>a.sort_index-b.sort_index);
+                      const reindexed = filtered.map((c,i)=>({ ...c, sort_index: i }));
+                      setChecks(reindexed);
+                      for (const c of reindexed) await supabase.from("room_detail_checks").update({ sort_index: c.sort_index }).eq("id", c.id);
+                    }
+                    finishSaving(!error);
+                  }}
+                  onMoveCheck={async (id, dir) => {
+                    const idx = checks.findIndex(c => c.id === id); if (idx < 0) return;
+                    const swap = dir === "up" ? idx - 1 : idx + 1; if (swap < 0 || swap >= checks.length) return;
+                    startSaving();
+                    const a = checks[idx], b = checks[swap];
+                    const newA = { ...a, sort_index: b.sort_index }, newB = { ...b, sort_index: a.sort_index };
+                    const clone = checks.slice(); clone[idx] = newA; clone[swap] = newB; clone.sort((x,y)=>x.sort_index-y.sort_index);
+                    setChecks(clone);
+                    const e1 = (await supabase.from("room_detail_checks").update({ sort_index: newA.sort_index }).eq("id", newA.id)).error;
+                    const e2 = (await supabase.from("room_detail_checks").update({ sort_index: newB.sort_index }).eq("id", newB.id)).error;
+                    finishSaving(!(e1||e2));
+                  }}
+                  onAddText={async () => {
+                    if (!selected) return;
+                    startSaving();
+                    const next = texts.length;
+                    const { data, error } = await supabase
+                      .from("room_detail_text_fields")
+                      .insert({ property_id: selected.id, label: `Field ${next + 1}`, placeholder: "", sort_index: next })
+                      .select("id,property_id,label,placeholder,sort_index")
+                      .single();
+                    if (!error && data) setTexts(prev => [...prev, data as TextDef]);
+                    finishSaving(!error);
+                  }}
+                  onRenameText={async (id, label) => {
+                    startSaving();
+                    const { error } = await supabase.from("room_detail_text_fields").update({ label }).eq("id", id);
+                    if (!error) setTexts(prev => prev.map(t => t.id === id ? { ...t, label } : t));
+                    finishSaving(!error);
+                  }}
+                  onPlaceholderText={async (id, placeholder) => {
+                    startSaving();
+                    const { error } = await supabase.from("room_detail_text_fields").update({ placeholder }).eq("id", id);
+                    if (!error) setTexts(prev => prev.map(t => t.id === id ? { ...t, placeholder } : t));
+                    finishSaving(!error);
+                  }}
+                  onDeleteText={async (id) => {
+                    startSaving();
+                    const { error } = await supabase.from("room_detail_text_fields").delete().eq("id", id);
+                    if (!error) {
+                      const filtered = texts.filter(t => t.id !== id).sort((a,b)=>a.sort_index-b.sort_index);
+                      const reindexed = filtered.map((t,i)=>({ ...t, sort_index: i }));
+                      setTexts(reindexed);
+                      for (const t of reindexed) await supabase.from("room_detail_text_fields").update({ sort_index: t.sort_index }).eq("id", t.id);
+                    }
+                    finishSaving(!error);
+                  }}
+                  onMoveText={async (id, dir) => {
+                    const idx = texts.findIndex(t => t.id === id); if (idx < 0) return;
+                    const swap = dir === "up" ? idx - 1 : idx + 1; if (swap < 0 || swap >= texts.length) return;
+                    startSaving();
+                    const a = texts[idx], b = texts[swap];
+                    const newA = { ...a, sort_index: b.sort_index }, newB = { ...b, sort_index: a.sort_index };
+                    const clone = texts.slice(); clone[idx] = newA; clone[swap] = newB; clone.sort((x,y)=>x.sort_index-y.sort_index);
+                    setTexts(clone);
+                    const e1 = (await supabase.from("room_detail_text_fields").update({ sort_index: newA.sort_index }).eq("id", newA.id)).error;
+                    const e2 = (await supabase.from("room_detail_text_fields").update({ sort_index: newB.sort_index }).eq("id", newB.id)).error;
+                    finishSaving(!(e1||e2));
+                  }}
+                />
+              }
+              cleaning={
+                plan === null ? (
+                  <div style={{ color: "var(--muted)" }}>Loading plan…</div>
+                ) : hasStandardOrBetter ? (
+                  <CleaningTab
+                    tasks={tasks.map(t => ({ id: t.id, label: t.label, sort_index: t.sort_index }))}
+                    onAdd={async () => {
+                      if (!selected) return;
+                      startSaving();
+                      const next = tasks.length;
+                      const { data, error } = await supabase
+                        .from("cleaning_task_defs")
+                        .insert({ property_id: selected.id, label: `Task ${next + 1}`, sort_index: next })
+                        .select("id,property_id,label,sort_index")
+                        .single();
+                      if (!error && data) setTasks(prev => [...prev, data as TaskDef]);
+                      finishSaving(!error);
+                    }}
+                    onRename={(id, label) => supabase.from("cleaning_task_defs").update({ label }).eq("id", id).then(({ error }) => {
+                      if (!error) setTasks(prev => prev.map(t => t.id === id ? { ...t, label } : t)); finishSaving(!error);
+                    })}
+                    onDelete={async (id) => {
+                      startSaving();
+                      const { error } = await supabase.from("cleaning_task_defs").delete().eq("id", id);
+                      if (!error) {
+                        const filtered = tasks.filter(t => t.id !== id).sort((a,b)=>a.sort_index-b.sort_index);
+                        const reindexed = filtered.map((t,i)=>({ ...t, sort_index: i }));
+                        setTasks(reindexed);
+                        for (const t of reindexed) await supabase.from("cleaning_task_defs").update({ sort_index: t.sort_index }).eq("id", t.id);
+                      }
+                      finishSaving(!error);
+                    }}
+                    onMove={async (id, dir) => {
+                      const idx = tasks.findIndex(t => t.id === id); if (idx < 0) return;
+                      const swap = dir === "up" ? idx - 1 : idx + 1; if (swap < 0 || swap >= tasks.length) return;
+                      startSaving();
+                      const a = tasks[idx], b = tasks[swap];
+                      const newA = { ...a, sort_index: b.sort_index }, newB = { ...b, sort_index: a.sort_index };
+                      const clone = tasks.slice(); clone[idx] = newA; clone[swap] = newB; clone.sort((x,y)=>x.sort_index-y.sort_index);
+                      setTasks(clone);
+                      const e1 = (await supabase.from("cleaning_task_defs").update({ sort_index: newA.sort_index }).eq("id", newA.id)).error;
+                      const e2 = (await supabase.from("cleaning_task_defs").update({ sort_index: newB.sort_index }).eq("id", newB.id)).error;
+                      finishSaving(!(e1||e2));
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      background: "var(--panel)",
+                      border: "1px dashed var(--border)",
+                      borderRadius: 12,
+                      padding: 16,
+                      display: "grid",
+                      gap: 8
+                    }}
+                  >
+                    <h3 style={{ margin: 0 }}>Cleaning tasks</h3>
+                    <p style={{ color: "var(--muted)", margin: 0 }}>
+                      Available on <strong>Standard</strong> and <strong>Premium</strong> plans.
+                    </p>
+                    <div>
+                      <a
+                        href="/app/billing"
+                        style={{
+                          padding: "8px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border)",
+                          background: "var(--primary)",
+                          color: "#0c111b",
+                          fontWeight: 800,
+                          textDecoration: "none"
+                        }}
+                      >
+                        Upgrade plan
+                      </a>
+                    </div>
+                  </div>
+                )
+              }
+            />
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function Tabs({ settings, rooms, roomDetails, cleaning }:{
+  settings: React.ReactNode; rooms: React.ReactNode; roomDetails: React.ReactNode; cleaning: React.ReactNode;
+}) {
+  const [tab, setTab] = useState<"settings" | "rooms" | "roomdetails" | "cleaning">("settings");
+  return (
+    <div style={{ display: "grid", gap: 12 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button onClick={() => setTab("settings")}    style={tabBtn(tab === "settings")}>Settings (check-in/out)</button>
+        <button onClick={() => setTab("rooms")}       style={tabBtn(tab === "rooms")}>Rooms</button>
+        <button onClick={() => setTab("roomdetails")} style={tabBtn(tab === "roomdetails")}>Room details</button>
+        <button onClick={() => setTab("cleaning")}    style={tabBtn(tab === "cleaning")}>Cleaning</button>
+      </div>
+      <div>
+        {tab === "settings"    && settings}
+        {tab === "rooms"       && rooms}
+        {tab === "roomdetails" && roomDetails}
+        {tab === "cleaning"    && cleaning}
+      </div>
+    </div>
+  );
+}
+function tabBtn(active: boolean): React.CSSProperties {
+  return {
+    padding: "8px 12px",
+    borderRadius: 8,
+    border: "1px solid var(--border)",
+    cursor: "pointer",
+    background: active ? "var(--primary)" : "var(--card)",
+    color: active ? "#0c111b" : "var(--text)",
+    fontWeight: 700
+  };
+}

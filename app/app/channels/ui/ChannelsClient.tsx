@@ -1,0 +1,701 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
+
+/** DB types */
+type Property = { id: string; name: string; timezone: string | null };
+type Room = { id: string; name: string; property_id: string; room_type_id: string | null };
+type RoomType = { id: string; name: string; property_id: string };
+type TypeIntegration = {
+  id: string;
+  property_id: string;
+  room_type_id: string;
+  provider: string | null;
+  url: string;
+  is_active: boolean | null;
+  last_sync: string | null;
+};
+
+/** Mic buton reutilizabil pentru copiere cu feedback */
+function CopyUrlButton({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false);
+  async function onCopy() {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {}
+  }
+  return (
+    <button style={ghostBtn} onClick={onCopy} aria-live="polite">
+      {copied ? "Copied!" : "Copy link"}
+    </button>
+  );
+}
+
+/** Utils */
+function fmtCountdown(total: number) {
+  const s = Math.max(0, Math.floor(total));
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rs = s % 60;
+  return `${m}m${rs ? ` ${rs}s` : ""}`;
+}
+
+type HintVariant = "muted" | "warning" | "danger" | "success" | "info";
+
+export default function ChannelsClient({ initialProperties }: { initialProperties: Property[] }) {
+  const supabase = useMemo(() => createClient(), []);
+  const [status, setStatus] = useState<"Idle" | "Loading" | "Saving…" | "Error">("Idle");
+
+  const [properties] = useState<Property[]>(initialProperties);
+  const [propertyId, setPropertyId] = useState<string>(initialProperties[0]?.id ?? "");
+  const [timezone, setTimezone] = useState<string>(initialProperties[0]?.timezone ?? "");
+
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [types, setTypes] = useState<RoomType[]>([]);
+  const [integrations, setIntegrations] = useState<TypeIntegration[]>([]);
+
+  const [origin, setOrigin] = useState<string>("");
+  useEffect(() => { setOrigin(window.location.origin); }, []);
+
+  // top-level modals (A/B/C)
+  const [showRoomsModal, setShowRoomsModal] = useState(false);
+  const [showTypesModal, setShowTypesModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+
+  // inner modals (detaliu element)
+  const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
+  const [activeTypeId, setActiveTypeId] = useState<string | null>(null);
+  const [manageTypeId, setManageTypeId] = useState<string | null>(null);
+
+  // PLAN gate (pentru Sync now)
+  const [isPremium, setIsPremium] = useState<boolean | null>(null);
+
+  // Status pill persistent sub buton
+  const [hintText, setHintText] = useState<string>("");
+  const [hintVariant, setHintVariant] = useState<HintVariant>("muted");
+  const [countdownSec, setCountdownSec] = useState<number | null>(null);
+
+  // Countdown tick
+  useEffect(() => {
+    if (countdownSec === null) return;
+    const t = setInterval(() => {
+      setCountdownSec((v) => {
+        if (v === null) return null;
+        if (v <= 1) return null;
+        return v - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [countdownSec]);
+
+  // Recalculăm textul când countdown-ul se schimbă
+  useEffect(() => {
+    if (countdownSec === null) return;
+    // păstrăm același variant; doar updatăm textul
+    // (textul inițial e setat în syncAllNow în funcție de motiv)
+    setHintText((old) => {
+      if (/Hourly limit/.test(old)) {
+        return `Hourly limit — next in ${fmtCountdown(countdownSec)}`;
+      }
+      if (/Wait /.test(old) || /Please wait/.test(old)) {
+        return `Wait ${fmtCountdown(countdownSec)}`;
+      }
+      // fallback generic
+      return `Wait ${fmtCountdown(countdownSec)}`;
+    });
+  }, [countdownSec]);
+
+  // Load plan (o singură dată la mount) + date property
+  useEffect(() => {
+    (async () => {
+      // plan
+      const plan = await supabase.rpc("account_current_plan");
+      const p = (plan.data as string | null)?.toLowerCase?.() ?? "basic";
+      setIsPremium(p === "premium");
+      if (p !== "premium") {
+        setHintText("Premium only");
+        setHintVariant("danger");
+      } else {
+        setHintText("Ready");
+        setHintVariant("success");
+      }
+    })();
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!propertyId) return;
+    setStatus("Loading");
+    (async () => {
+      const [rProp, rRooms, rTypes, rInteg] = await Promise.all([
+        supabase.from("properties").select("id,timezone").eq("id", propertyId).single(),
+        supabase.from("rooms")
+          .select("id,name,property_id,room_type_id")
+          .eq("property_id", propertyId)
+          .order("sort_index", { ascending: true })
+          .order("created_at", { ascending: true }),
+        supabase.from("room_types")
+          .select("id,name,property_id")
+          .eq("property_id", propertyId)
+          .order("name", { ascending: true }),
+        supabase.from("ical_type_integrations")
+          .select("id,property_id,room_type_id,provider,url,is_active,last_sync")
+          .eq("property_id", propertyId)
+          .order("created_at", { ascending: true }),
+      ]);
+      if (rProp.error || rRooms.error || rTypes.error || rInteg.error) { setStatus("Error"); return; }
+      setTimezone(rProp.data?.timezone || "");
+      setRooms((rRooms.data ?? []) as Room[]);
+      setTypes((rTypes.data ?? []) as RoomType[]);
+      setIntegrations((rInteg.data ?? []) as TypeIntegration[]);
+      setStatus("Idle");
+    })();
+  }, [propertyId, supabase]);
+
+  /* URLs & helpers */
+  function roomIcsUrl(id: string) { return `${origin}/api/ical/rooms/${id}.ics`; }
+  function typeIcsUrl(id: string) { return `${origin}/api/ical/types/${id}.ics`; }
+
+  /* Integrations CRUD (Import per TYPE) */
+  async function addIntegration(roomTypeId: string, provider: string, url: string) {
+    if (!propertyId || !roomTypeId || !url.trim()) return;
+    setStatus("Saving…");
+    const { data, error } = await supabase
+      .from("ical_type_integrations")
+      .insert({ property_id: propertyId, room_type_id: roomTypeId, provider: provider || null, url: url.trim(), is_active: true })
+      .select("id,property_id,room_type_id,provider,url,is_active,last_sync")
+      .single();
+    if (!error && data) setIntegrations(prev => [...prev, data as TypeIntegration]);
+    setStatus(error ? "Error" : "Idle");
+  }
+  async function deleteIntegration(id: string) {
+    setStatus("Saving…");
+    const { error } = await supabase.from("ical_type_integrations").delete().eq("id", id);
+    if (!error) setIntegrations(prev => prev.filter(x => x.id !== id));
+    setStatus(error ? "Error" : "Idle");
+  }
+  async function toggleActive(integration: TypeIntegration) {
+    setStatus("Saving…");
+    const next = !integration.is_active;
+    const { error, data } = await supabase
+      .from("ical_type_integrations")
+      .update({ is_active: next })
+      .eq("id", integration.id)
+      .select("id,property_id,room_type_id,provider,url,is_active,last_sync")
+      .single();
+    if (!error && data) setIntegrations(prev => prev.map(x => x.id === integration.id ? (data as TypeIntegration) : x));
+    setStatus(error ? "Error" : "Idle");
+  }
+
+  /* Global Sync Now — ALL */
+  async function syncAllNow() {
+    const active = integrations.filter(i => !!i.is_active);
+    if (!propertyId) return;
+
+    // Gate instant pentru non-Premium (fără să lovim API-ul)
+    if (isPremium === false) {
+      setHintText("Premium only");
+      setHintVariant("danger");
+      setCountdownSec(null);
+      return;
+    }
+
+    // dacă nu există feed-uri active
+    if (active.length === 0) {
+      setHintText("No active feeds");
+      setHintVariant("muted");
+      setCountdownSec(null);
+      return;
+    }
+
+    try {
+      setStatus("Saving…");
+      const res = await fetch("/api/ical/sync/all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ propertyId }),
+      });
+
+      if (res.status === 429) {
+        const j = await res.json().catch(() => ({} as any));
+        const reason = j?.reason as string | undefined;
+        const cool = (j?.cooldown_remaining_sec ?? 0) as number;
+        const retryAfter = (j?.retry_after_sec ?? 0) as number;
+
+        if (reason === "cooldown" && cool > 0) {
+          setHintText(`Wait ${fmtCountdown(cool)}`);
+          setHintVariant("warning");
+          setCountdownSec(cool);
+          setStatus("Idle");
+          return;
+        }
+        if (reason === "hourly_quota") {
+          const sec = Math.max(retryAfter, 0);
+          setHintText(`Hourly limit — next in ${fmtCountdown(sec)}`);
+          setHintVariant("warning");
+          setCountdownSec(sec || null);
+          setStatus("Idle");
+          return;
+        }
+
+        // alt 429 generic
+        setHintText("Rate limited");
+        setHintVariant("warning");
+        setCountdownSec(null);
+        setStatus("Idle");
+        return;
+      }
+
+      if (!res.ok) {
+        // 4xx/5xx generic
+        const j = await res.json().catch(() => ({} as any));
+        // dacă serverul a întors explicit premium-only (deși n-ar trebui să ajungem aici)
+        if (j?.error === "Premium only") {
+          setHintText("Premium only");
+          setHintVariant("danger");
+        } else {
+          setHintText("Try again");
+          setHintVariant("danger");
+        }
+        setCountdownSec(null);
+        setStatus("Error");
+        return;
+      }
+
+      // OK
+      const nowIso = new Date().toISOString();
+      setIntegrations(prev => prev.map(x => x.is_active ? { ...x, last_sync: nowIso } : x));
+      setHintText("Synced just now");
+      setHintVariant("success");
+      setCountdownSec(null);
+      setStatus("Idle");
+    } catch {
+      setHintText("Try again");
+      setHintVariant("danger");
+      setCountdownSec(null);
+      setStatus("Error");
+    }
+  }
+
+  /* UI */
+  const pillLabel =
+    status === "Error" ? "Error" :
+    status === "Loading" || status === "Saving…" ? "Syncing…" : "Idle";
+
+  const activeCount = integrations.filter(i => !!i.is_active).length;
+
+  return (
+    <div>
+      <PlanHeaderBadge title="Channels & iCal" />
+
+      {/* mic toolbar local: pill + property select */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+        <span style={miniPill}>{pillLabel}</span>
+        <span style={miniPill}>All times in {timezone || "—"}</span>
+        <div style={{ marginLeft: "auto" }}>
+          <select value={propertyId} onChange={(e) => setPropertyId(e.target.value)} style={select}>
+            {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {/* Card cu acțiuni */}
+      <section style={panel}>
+        <h3 style={{ marginTop: 0 }}>Channels & iCal</h3>
+        {!timezone && (
+          <p style={{ color: "var(--danger)", marginTop: 0 }}>
+            Set Country (timezone) in Dashboard to produce valid .ics files.
+          </p>
+        )}
+
+        <div style={{ display: "grid", gap: 8 }}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+            {/* GLOBAL: Sync Now — ALL */}
+            <button
+              style={{
+                ...primaryBtn,
+                border: "1px solid var(--success)",
+                opacity: isPremium === false || activeCount === 0 || status === "Saving…" ? 0.6 : 1,
+                cursor: isPremium === false || activeCount === 0 || status === "Saving…" ? "not-allowed" : "pointer",
+              }}
+              onClick={syncAllNow}
+              disabled={isPremium === false || activeCount === 0 || status === "Saving…"}
+              title={
+                isPremium === false
+                  ? "Premium only"
+                  : activeCount === 0
+                  ? "No active feeds found"
+                  : "Sync all active imports now"
+              }
+            >
+              Sync now
+            </button>
+
+            <button style={primaryBtn} onClick={() => setShowTypesModal(true)}>Export</button>
+            <button style={primaryBtn} onClick={() => setShowImportModal(true)}>Import</button>
+            <button style={primaryBtn} onClick={() => setShowRoomsModal(true)}>Export Room Only</button>
+          </div>
+
+          {/* PILLAȘ persistent sub buton */}
+          {hintText ? (
+            <div>
+              <span style={statusPill(hintVariant)}>{hintText}</span>
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      {/* ======= MODAL A: EXPORT per ROOM ======= */}
+      {showRoomsModal && (
+        <Modal title="Export Room Only" onClose={() => { setShowRoomsModal(false); setActiveRoomId(null); }}>
+          <div style={tileGrid}>
+            {rooms.length === 0 ? (
+              <p style={{ color: "var(--text)", gridColumn: "1 / -1" }}>No rooms in this property.</p>
+            ) : rooms.map(r => (
+              <button
+                key={r.id}
+                onClick={() => setActiveRoomId(r.id)}
+                style={tile}
+                title={r.name}
+              >
+                <span style={tileTitle}>{r.name}</span>
+                <span style={tileSub}>Get link</span>
+              </button>
+            ))}
+          </div>
+
+          {activeRoomId && (() => {
+            const room = rooms.find(x => x.id === activeRoomId)!;
+            const url = roomIcsUrl(activeRoomId);
+            return (
+              <InnerModal title={room.name} onClose={() => setActiveRoomId(null)}>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <CopyUrlButton url={url} />
+                  <a style={ghostBtn} href={url} target="_blank" rel="noreferrer">Open</a>
+                </div>
+                <p style={{ fontSize: 12, color: "var(--muted)", margin: "8px 0 0" }}>
+                  *Use this link if your OTA uses separate listings per room, or for your personal calendar (Google/Apple/Outlook).
+                </p>
+              </InnerModal>
+            );
+          })()}
+        </Modal>
+      )}
+
+      {/* ======= MODAL B: EXPORT per TYPE ======= */}
+      {showTypesModal && (
+        <Modal title="Export" onClose={() => { setShowTypesModal(false); setActiveTypeId(null); }}>
+          <div style={tileGrid}>
+            {types.length === 0 ? (
+              <p style={{ color: "var(--text)", gridColumn: "1 / -1" }}>No room types defined.</p>
+            ) : types.map(t => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTypeId(t.id)}
+                style={tile}
+                title={t.name}
+              >
+                <span style={tileTitle}>{t.name}</span>
+                <span style={tileSub}>Get link</span>
+              </button>
+            ))}
+          </div>
+
+          {activeTypeId && (() => {
+            const t = types.find(x => x.id === activeTypeId)!;
+            const url = typeIcsUrl(activeTypeId);
+            return (
+              <InnerModal title={t.name} onClose={() => setActiveTypeId(null)}>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <CopyUrlButton url={url} />
+                  <a style={ghostBtn} href={url} target="_blank" rel="noreferrer">Open</a>
+                </div>
+                <p style={{ fontSize: 12, color: "var(--muted)", margin: "8px 0 0" }}>
+                  *Add this URL to your OTA room-type listing.
+                </p>
+              </InnerModal>
+            );
+          })()}
+        </Modal>
+      )}
+
+      {/* ======= MODAL C: IMPORT (pe TYPE) ======= */}
+      {showImportModal && (
+        <Modal title="Import" onClose={() => { setShowImportModal(false); setManageTypeId(null); }}>
+          <div style={tileGrid}>
+            {types.length === 0 ? (
+              <p style={{ color: "var(--text)", gridColumn: "1 / -1" }}>No room types defined.</p>
+            ) : types.map(t => (
+              <button
+                key={t.id}
+                onClick={() => setManageTypeId(t.id)}
+                style={tile}
+                title={`Manage ${t.name}`}
+              >
+                <span style={tileTitle}>{t.name}</span>
+                <span style={tileSub}>Manage feeds</span>
+              </button>
+            ))}
+          </div>
+
+          {manageTypeId && (
+            <ManageTypeModal
+              timezone={timezone}
+              integrations={integrations.filter(i => i.room_type_id === manageTypeId)}
+              onClose={() => setManageTypeId(null)}
+              onAdd={(provider, url) => addIntegration(manageTypeId, provider, url)}
+              onDelete={(id) => deleteIntegration(id)}
+              onToggle={(ii) => toggleActive(ii)}
+            />
+          )}
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+/* ======= UI helpers & components ======= */
+
+function Modal({ title, children, onClose }:{
+  title: string; children: React.ReactNode; onClose: () => void;
+}) {
+  return (
+    <div
+      role="dialog" aria-modal="true" onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 40, display: "grid", placeItems: "center", padding: 12 }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, width: "min(980px, 96vw)" }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <h3 style={{ margin: 0 }}>{title}</h3>
+          <button style={ghostBtn} onClick={onClose}>Close</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function InnerModal({ title, children, onClose }:{
+  title: string; children: React.ReactNode; onClose: () => void;
+}) {
+  return (
+    <div
+      role="dialog" aria-modal="true" onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 50, display: "grid", placeItems: "center", padding: 12 }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, width: "min(720px, 94vw)" }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <h3 style={{ margin: 0 }}>{title}</h3>
+          <button style={ghostBtn} onClick={onClose}>Close</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ManageTypeModal({
+  timezone, integrations, onClose, onAdd, onDelete, onToggle
+}:{
+  timezone: string | null;
+  integrations: { id: string; provider: string | null; url: string; is_active: boolean | null; last_sync: string | null; }[];
+  onClose: () => void;
+  onAdd: (provider: string, url: string) => void;
+  onDelete: (id: string) => void;
+  onToggle: (ii: any) => void;
+}) {
+  const [provider, setProvider] = useState("Booking");
+  const [url, setUrl] = useState("");
+
+  return (
+    <InnerModal title="Manage imports for room type" onClose={onClose}>
+      <p style={{ color: "var(--muted)", marginTop: 0 }}>
+        Times interpreted in <strong>{timezone || "—"}</strong>.
+      </p>
+
+      <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, marginBottom: 12 }}>
+        <div style={{ display: "grid", gap: 8 }}>
+          <div style={{ display: "grid", gap: 6 }}>
+            <label style={label}>Provider</label>
+            <select style={select} value={provider} onChange={(e) => setProvider((e.target as HTMLSelectElement).value)}>
+              <option>Booking</option>
+              <option>Airbnb</option>
+              <option>Expedia</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <label style={label}>iCal URL</label>
+            <input style={input} value={url} onChange={(e) => setUrl((e.target as HTMLInputElement).value)} placeholder="https://..." />
+          </div>
+          <div>
+            <button style={primaryBtn} onClick={() => { if (url.trim()) { onAdd(provider, url); setUrl(""); } }}>
+              Add feed
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {integrations.length === 0 ? (
+        <p style={{ color: "var(--muted)" }}>No feeds added yet.</p>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
+          {integrations.map(ii => (
+            <li key={ii.id} style={row}>
+              <div style={{ display: "grid", gap: 4, minWidth: 260 }}>
+                <strong>{ii.provider || "Unknown"}</strong>
+                <small style={{ color: "var(--muted)", wordBreak: "break-all" }}>{ii.url}</small>
+                {ii.last_sync && <small style={{ color: "var(--muted)" }}>Last sync: {new Date(ii.last_sync).toLocaleString()}</small>}
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontSize: 12 }}>
+                  <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> active
+                </label>
+                {/* Per-feed Sync now a fost eliminat intenționat */}
+                <button style={dangerBtn} onClick={() => onDelete(ii.id)}>Delete</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </InnerModal>
+  );
+}
+
+/* ======= Styles ======= */
+const panel: React.CSSProperties = {
+  background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, marginTop: 16,
+};
+
+const tileGrid: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+  gap: 12,
+  alignItems: "stretch",
+};
+
+const tile: React.CSSProperties = {
+  display: "grid",
+  alignContent: "space-between",
+  gap: 6,
+  aspectRatio: "1 / 1",
+  minHeight: 140,
+  background: "var(--card)",
+  color: "var(--text)",
+  border: "1px solid var(--border)",
+  borderRadius: 12,
+  padding: 12,
+  textAlign: "left",
+  cursor: "pointer",
+  fontWeight: 700,
+};
+
+const tileTitle: React.CSSProperties = {
+  fontSize: 16,
+  lineHeight: 1.2,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+};
+
+const tileSub: React.CSSProperties = {
+  fontSize: 12,
+  opacity: 0.85,
+};
+
+const row: React.CSSProperties = {
+  display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+  background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, flexWrap: "wrap"
+};
+
+const label: React.CSSProperties = { fontSize: 12, color: "var(--muted)" };
+
+const input: React.CSSProperties = {
+  padding: "8px 10px",
+  background: "var(--bg)",
+  color: "var(--text)",
+  border: "1px solid var(--border)",
+  borderRadius: 8,
+};
+
+const select: React.CSSProperties = {
+  background: "var(--card)",
+  color: "var(--text)",
+  border: "1px solid var(--border)",
+  padding: "6px 10px",
+  borderRadius: 8,
+  minWidth: 220,
+};
+
+const primaryBtn: React.CSSProperties = {
+  padding: "8px 12px",
+  borderRadius: 8,
+  border: "1px solid var(--border)",
+  background: "var(--bg)",
+  color: "var(--text)",
+  fontWeight: 800,
+  cursor: "pointer",
+};
+
+const ghostBtn: React.CSSProperties = {
+  padding: "6px 10px",
+  borderRadius: 8,
+  border: "1px solid var(--border)",
+  background: "transparent",
+  color: "var(--text)",
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const dangerBtn: React.CSSProperties = {
+  padding: "6px 10px",
+  borderRadius: 8,
+  border: "1px solid var(--danger)",
+  background: "transparent",
+  color: "var(--text)",
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const miniPill: React.CSSProperties = {
+  padding: "2px 8px",
+  borderRadius: 999,
+  background: "var(--card)",
+  color: "var(--muted)",
+  border: "1px solid var(--border)",
+  fontSize: 12,
+  fontWeight: 700,
+};
+
+// Status pill fix sub buton (culoare după variant)
+function statusPill(variant: HintVariant): React.CSSProperties {
+  const base: React.CSSProperties = {
+    display: "inline-block",
+    padding: "4px 10px",
+    borderRadius: 999,
+    border: "1px solid var(--border)",
+    fontSize: 12,
+    fontWeight: 800,
+  };
+  switch (variant) {
+    case "danger":
+      return { ...base, background: "var(--danger)", color: "#0c111b", borderColor: "var(--danger)" };
+    case "warning":
+      return { ...base, background: "#f7d774", color: "#111", borderColor: "#e1c25c" };
+    case "success":
+      return { ...base, background: "#4ade80", color: "#0c111b", borderColor: "#22c55e" };
+    case "info":
+      return { ...base, background: "#60a5fa", color: "#0c111b", borderColor: "#3b82f6" };
+    default:
+      return { ...base, background: "var(--card)", color: "var(--muted)" };
+  }
+}
