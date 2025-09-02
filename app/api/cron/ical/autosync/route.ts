@@ -42,12 +42,9 @@ function fmtTime(d: Date, tz: string) {
   return f.format(d); // HH:MM
 }
 
-// tip auxiliar pentru selecturi care întorc doar id
-type RowId = { id: string };
-
 // Upsert 1 eveniment în ical_unassigned_events (service client)
 async function upsertUnassigned(
-  supabase: ReturnType<typeof createSb>,
+  supabase: any, // ← tip relaxat ca să evităm conflictele de generice
   params: {
     property_id: string;
     room_type_id: string;
@@ -84,12 +81,11 @@ async function upsertUnassigned(
       .eq("property_id", property_id)
       .eq("room_type_id", room_type_id)
       .eq("uid", ev.uid)
-      .limit(1)
-      .returns<RowId[]>();
+      .limit(1);
     if (selErr) throw selErr;
 
-    if (existing && existing.length > 0) {
-      const id = existing[0].id;
+    if (existing && (existing as any[]).length > 0) {
+      const id: string = (existing as any[])[0].id;
       const { error: updErr } = await supabase
         .from("ical_unassigned_events")
         .update({
@@ -99,7 +95,7 @@ async function upsertUnassigned(
           start_time: startTimeStr,
           end_time: endTimeStr,
         })
-        .eq("id", id);
+        .eq("id" as any, id as any); // forțăm tipul pentru a evita bugul de d.ts
       if (updErr) throw updErr;
       return { upserted: "updated", id };
     } else {
@@ -116,10 +112,9 @@ async function upsertUnassigned(
           end_time: endTimeStr,
         })
         .select("id")
-        .returns<RowId>()
         .single();
       if (insErr) throw insErr;
-      return { upserted: "inserted", id: ins?.id };
+      return { upserted: "inserted", id: (ins as any)?.id as string | undefined };
     }
   }
 
@@ -127,7 +122,7 @@ async function upsertUnassigned(
   const _key = digest(
     `${room_type_id}|${startDateStr}|${endDateStr}|${(ev.summary || "").trim().toLowerCase()}`
   );
-  const { data: existing, error: selErr2 } = await supabase
+  const { data: existing2, error: selErr2 } = await supabase
     .from("ical_unassigned_events")
     .select("id")
     .eq("property_id", property_id)
@@ -135,19 +130,18 @@ async function upsertUnassigned(
     .eq("start_date", startDateStr)
     .eq("end_date", endDateStr)
     .eq("summary", ev.summary ?? null)
-    .limit(1)
-    .returns<RowId[]>();
+    .limit(1);
   if (selErr2) throw selErr2;
 
-  if (existing && existing.length > 0) {
-    const id = existing[0].id;
+  if (existing2 && (existing2 as any[]).length > 0) {
+    const id: string = (existing2 as any[])[0].id;
     const { error: updErr } = await supabase
       .from("ical_unassigned_events")
       .update({
         start_time: startTimeStr,
         end_time: endTimeStr,
       })
-      .eq("id", id);
+      .eq("id" as any, id as any);
     if (updErr) throw updErr;
     return { upserted: "updated", id };
   } else {
@@ -164,10 +158,9 @@ async function upsertUnassigned(
         end_time: endTimeStr,
       })
       .select("id")
-      .returns<RowId>()
       .single();
     if (insErr) throw insErr;
-    return { upserted: "inserted", id: ins?.id };
+    return { upserted: "inserted", id: (ins as any)?.id as string | undefined };
   }
 }
 
@@ -176,7 +169,7 @@ export async function POST(req: Request) {
   try {
     // 1) securitate cron
     const headerKey = req.headers.get("x-cron-key") || "";
-    const expected = process.env.CRON_ICAL_KEY || ""; // setează în .env / dashboard
+    const expected = process.env.CRON_ICAL_KEY || ""; // setează în .env / Vercel
     if (!expected || headerKey !== expected) {
       return j(401, { error: "Unauthorized" });
     }
@@ -209,7 +202,7 @@ export async function POST(req: Request) {
       return j(400, { error: "Load feeds failed", details: fErr.message });
     }
 
-    if (!feeds || feeds.length === 0) {
+    if (!feeds || (feeds as any[]).length === 0) {
       return j(200, { ok: true, message: "No active feeds." });
     }
 
@@ -226,7 +219,7 @@ export async function POST(req: Request) {
 
     // group by account
     const byAccount = new Map<string, FeedRow[]>();
-    for (const f of (feeds as unknown as FeedRow[])) {
+    for (const f of (feeds as any[] as FeedRow[])) {
       const acc = f.properties.owner_id;
       if (!byAccount.has(acc)) byAccount.set(acc, []);
       byAccount.get(acc)!.push(f);
@@ -301,7 +294,7 @@ export async function POST(req: Request) {
           await supabase
             .from("ical_type_integrations")
             .update({ last_sync: new Date().toISOString() })
-            .eq("id", feed.id);
+            .eq("id" as any, feed.id as any);
 
           importedTotal += imported;
           processed++;
