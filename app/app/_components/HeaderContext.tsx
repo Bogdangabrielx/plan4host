@@ -1,42 +1,55 @@
+// app/app/_components/HeaderContext.tsx
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
-type Ctx = {
-  title: string;
-  pill: React.ReactNode | null;
-  right: React.ReactNode | null;
-  setTitle: (t: string) => void;
-  setPill: (p: React.ReactNode | null) => void;
-  setRight: (r: React.ReactNode | null) => void;
+type HeaderCtx = {
+  /** Main title area in the header (text or JSX) */
+  title: ReactNode;
+  setTitle: (v: ReactNode) => void;
+
+  /** Small status pill next to the title (text or JSX) */
+  pill: ReactNode;
+  setPill: (v: ReactNode) => void;
+
+  /** Right-side header content (filters, selects, buttons, etc.) */
+  right: ReactNode;
+  setRight: (v: ReactNode) => void;
 };
 
-const HeaderCtx = createContext<Ctx | null>(null);
+const Ctx = createContext<HeaderCtx | null>(null);
 
 export function HeaderProvider({
+  initialTitle,
+  initialPill,
+  initialRight,
   children,
-  initialTitle = "",
-  initialPill = null,
-  initialRight = null,
 }: {
-  children: React.ReactNode;
-  initialTitle?: string;
-  initialPill?: React.ReactNode | null;
-  initialRight?: React.ReactNode | null;
+  initialTitle?: ReactNode;
+  initialPill?: ReactNode;
+  initialRight?: ReactNode;
+  children: ReactNode;
 }) {
-  const [title, setTitle] = useState(initialTitle);
-  const [pill, setPill] = useState<React.ReactNode | null>(initialPill);
-  const [right, setRight] = useState<React.ReactNode | null>(initialRight);
+  const [title, setTitle] = useState<ReactNode>(initialTitle ?? "");
+  const [pill, setPill] = useState<ReactNode>(initialPill ?? null);
+  const [right, setRight] = useState<ReactNode>(initialRight ?? null);
 
-  return (
-    <HeaderCtx.Provider value={{ title, pill, right, setTitle, setPill, setRight }}>
-      {children}
-    </HeaderCtx.Provider>
+  const value = useMemo(
+    () => ({ title, setTitle, pill, setPill, right, setRight }),
+    [title, pill, right]
   );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-export function useHeader() {
-  const ctx = useContext(HeaderCtx);
-  if (!ctx) throw new Error("useHeader must be used inside <HeaderProvider>");
+export function useHeader(): HeaderCtx {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error("useHeader must be used within a HeaderProvider");
   return ctx;
 }

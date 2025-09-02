@@ -1,3 +1,4 @@
+// app/app/cleaning/page.tsx
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -21,7 +22,7 @@ export default async function CleaningPage() {
   }));
 
   return (
-    <AppShell currentPath="/app/cleaning" initialTitle="Cleaning Board">
+    <AppShell currentPath="/app/cleaning" title="Cleaning Board">
       <CleaningClient initialProperties={properties} />
     </AppShell>
   );

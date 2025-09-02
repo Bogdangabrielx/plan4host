@@ -1,3 +1,4 @@
+// app/app/cleaning/ui/CleaningClient.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -7,9 +8,9 @@ import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import CleanTaskModal from "./CleanTaskModal";
 
 /* ─── Types ─────────────────────────────────────────────────────────── */
-type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null; };
-type Room = { id: string; name: string; property_id: string; };
-type Booking = {
+type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null };
+type Room     = { id: string; name: string; property_id: string };
+type Booking  = {
   id: string;
   room_id: string | null;
   property_id: string;
@@ -31,10 +32,20 @@ type RoomItem = {
 
 type Plan = "basic" | "standard" | "premium" | null;
 
+/* ─── Utils ─────────────────────────────────────────────────────────── */
+function dstr(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function addDaysStr(s: string, n: number) {
+  const d = new Date(s + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return dstr(d);
+}
+
 /* ─── Component ─────────────────────────────────────────────────────── */
 export default function CleaningClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
-  const { setTitle, setPill, setRight } = useHeader();
+  const { setTitle, setPill } = useHeader();
 
   const [status, setStatus] = useState<"Idle" | "Loading" | "Error">("Idle");
 
@@ -46,9 +57,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   const hasCleaningBoard = plan === "standard" || plan === "premium";
   const hasPriority      = plan === "premium";
 
-  const today = new Date();
-  const dstr = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-  const [dateStr, setDateStr] = useState<string>(dstr(today));
+  const [dateStr, setDateStr] = useState<string>(dstr(new Date()));
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [tasks, setTasks] = useState<TaskDef[]>([]);
@@ -57,43 +66,11 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
 
   const [openItem, setOpenItem] = useState<RoomItem | null>(null);
 
-  function addDaysStr(s: string, n: number) {
-    const d = new Date(s + "T00:00:00");
-    d.setDate(d.getDate() + n);
-    return dstr(d);
-  }
-
-  /* Header title: doar string */
+  /* Header title + pill */
   useEffect(() => { setTitle("Cleaning Board"); }, [setTitle]);
-
-  /* Pill + right controls */
   useEffect(() => {
-    const pillTxt = status === "Loading" ? "Syncing…" : status === "Error" ? "Error" : "Idle";
-    setPill(pillTxt);
-
-    const right = (
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <select
-          value={propertyId}
-          onChange={(e) => setPropertyId(e.target.value)}
-          style={{ background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", padding: "6px 10px", borderRadius: 8 }}
-        >
-          {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </select>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <label style={{ fontSize: 12, color: "var(--muted)" }}>Date</label>
-          <input
-            type="date"
-            value={dateStr}
-            onChange={(e) => setDateStr(e.currentTarget.value)}
-            style={{ padding: 6, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8 }}
-          />
-        </div>
-      </div>
-    );
-    setRight(right);
-  }, [status, propertyId, properties, dateStr, setPill, setRight]);
+    setPill(status === "Loading" ? "Syncing…" : status === "Error" ? "Error" : "Idle");
+  }, [status, setPill]);
 
   /* Load plan (accounts) */
   useEffect(() => {
@@ -133,7 +110,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         .eq("property_id", propertyId)
         .order("sort_index", { ascending: true });
 
-      const roomIds = (rRooms.data ?? []).map(r => r.id);
+      const roomIds = (rRooms.data ?? []).map((r) => r.id);
 
       const rBookingsBefore = await supabase
         .from("bookings")
@@ -193,7 +170,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
       setCleaningMap(progMap);
 
       // CI/CO din property (fallback)
-      const prop = initialProperties.find(p => p.id === propertyId);
+      const prop = initialProperties.find((p) => p.id === propertyId);
       const CI = prop?.check_in_time || "14:00";
       const CO = prop?.check_out_time || "11:00";
 
@@ -252,7 +229,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         }
 
         if (hasCarry) {
-          const already = list.find(it => it.room.id === r.id && it.cleanDate === dateStr);
+          const already = list.find((it) => it.room.id === r.id && it.cleanDate === dateStr);
           if (!already) {
             list.push({
               room: r,
@@ -285,20 +262,22 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
     })();
   }, [propertyId, dateStr, supabase, initialProperties, hasPriority]);
 
-  function sortedTasks(): TaskDef[] { return [...tasks].sort((a,b)=>a.sort_index - b.sort_index); }
+  function sortedTasks(): TaskDef[] { return [...tasks].sort((a, b) => a.sort_index - b.sort_index); }
 
   function onLocalProgress(roomId: string, cleanDate: string, taskId: string, value: boolean) {
     const key = `${roomId}|${cleanDate}`;
-    setCleaningMap(prev => ({ ...prev, [key]: { ...(prev[key] || {}), [taskId]: value } }));
+    setCleaningMap((prev) => ({ ...prev, [key]: { ...(prev[key] || {}), [taskId]: value } }));
   }
 
   function onComplete(roomId: string, cleanDate: string) {
-    setItems(prev => prev.filter(it => {
-      if (it.room.id !== roomId) return true;
-      if (it.mode === "checkout") return !(it.cleanDate === dateStr);
-      if (it.mode === "carry")   return !(it.cleanDate === cleanDate);
-      return true;
-    }));
+    setItems((prev) =>
+      prev.filter((it) => {
+        if (it.room.id !== roomId) return true;
+        if (it.mode === "checkout") return !(it.cleanDate === dateStr);
+        if (it.mode === "carry") return !(it.cleanDate === cleanDate);
+        return true;
+      })
+    );
     setOpenItem(null);
   }
 
@@ -309,7 +288,6 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
     return (
       <div style={{ display: "grid", gap: 12 }}>
         <PlanHeaderBadge title="Cleaning Board" />
-
         <div
           style={{
             background: "var(--panel)",
@@ -323,26 +301,32 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             This feature is available on <strong>Standard</strong> and <strong>Premium</strong> plans.
           </p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <a href="/app/billing" style={{
-              padding: "10px 14px",
-              borderRadius: 10,
-              border: "1px solid var(--border)",
-              background: "var(--primary)",
-              color: "#0c111b",
-              fontWeight: 800,
-              textDecoration: "none"
-            }}>
+            <a
+              href="/app/billing"
+              style={{
+                padding: "10px 14px",
+                borderRadius: 10,
+                border: "1px solid var(--border)",
+                background: "var(--primary)",
+                color: "#0c111b",
+                fontWeight: 800,
+                textDecoration: "none"
+              }}
+            >
               Upgrade plan
             </a>
-            <a href="/app" style={{
-              padding: "10px 14px",
-              borderRadius: 10,
-              border: "1px solid var(--border)",
-              background: "transparent",
-              color: "var(--text)",
-              fontWeight: 800,
-              textDecoration: "none"
-            }}>
+            <a
+              href="/app"
+              style={{
+                padding: "10px 14px",
+                borderRadius: 10,
+                border: "1px solid var(--border)",
+                background: "transparent",
+                color: "var(--text)",
+                fontWeight: 800,
+                textDecoration: "none"
+              }}
+            >
               Back to dashboard
             </a>
           </div>
@@ -353,12 +337,36 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
 
   /* ─── UI principal ─────────────────────────────────────────────────── */
   return (
-    <div>
+    <div style={{ display: "grid", gap: 12 }}>
       <PlanHeaderBadge title="Cleaning Board" />
+
+      {/* Toolbar local (mutat din header-right) */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <select
+          value={propertyId}
+          onChange={(e) => setPropertyId(e.target.value)}
+          style={{ background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", padding: "6px 10px", borderRadius: 8 }}
+        >
+          {properties.map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <label style={{ fontSize: 12, color: "var(--muted)" }}>Date</label>
+          <input
+            type="date"
+            value={dateStr}
+            onChange={(e) => setDateStr(e.currentTarget.value)}
+            style={{ padding: 6, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8 }}
+          />
+        </div>
+      </div>
 
       {tdefs.length === 0 ? (
         <div style={{ color: "var(--muted)" }}>
-          No cleaning checklist defined. Configure tasks in <a href="/app/configurator" style={{ color: "var(--primary)" }}>Configurator → Cleaning</a>.
+          No cleaning checklist defined. Configure tasks in{" "}
+          <a href="/app/configurator" style={{ color: "var(--primary)" }}>Configurator → Cleaning</a>.
         </div>
       ) : items.length === 0 ? (
         <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
@@ -375,7 +383,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
           {items.map((it) => {
             const key = `${it.room.id}|${it.cleanDate}`;
             const prog = cleaningMap[key] || {};
-            const doneCount = tdefs.filter(t => !!prog[t.id]).length;
+            const doneCount = tdefs.filter((t) => !!prog[t.id]).length;
             const total = tdefs.length;
 
             return (
@@ -458,5 +466,23 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   );
 }
 
+/* Styles */
+const primaryBtn: React.CSSProperties = {
+  padding: "8px 12px",
+  borderRadius: 10,
+  border: "1px solid var(--border)",
+  background: "var(--primary)",
+  color: "#0c111b",
+  fontWeight: 800,
+  cursor: "pointer",
+};
 
-
+const dangerBtn: React.CSSProperties = {
+  padding: "8px 12px",
+  borderRadius: 10,
+  border: "1px solid var(--danger)",
+  background: "transparent",
+  color: "var(--text)",
+  fontWeight: 800,
+  cursor: "pointer",
+};

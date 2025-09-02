@@ -10,16 +10,18 @@ export default async function InboxPage() {
 
   const { data: props = [] } = await supabase
     .from("properties")
-    .select("id,name")
+    .select("id,name,check_in_time,check_out_time")
     .order("created_at", { ascending: true });
 
   const properties = (props ?? []).map((p: any) => ({
     id: p.id as string,
     name: p.name as string,
+    check_in_time: (p.check_in_time ?? null) as string | null,
+    check_out_time: (p.check_out_time ?? null) as string | null,
   }));
 
   return (
-    <AppShell currentPath="/app/inbox" initialTitle="Inbox">
+    <AppShell currentPath="/app/inbox" title="Inbox">
       <InboxClient initialProperties={properties} />
     </AppShell>
   );

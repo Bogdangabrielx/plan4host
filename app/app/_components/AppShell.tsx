@@ -1,22 +1,18 @@
 // /app/app/_components/AppShell.tsx
+"use client";
 import React from "react";
 import AppHeader from "../ui/AppHeader";
 import { HeaderProvider } from "./HeaderContext";
 
 type Props = {
-  /** Nou: titlul inițial preferat */
-  initialTitle?: string;
-  /** Compatibilitate veche: alias pentru initialTitle */
-  title?: string;
+  title?: React.ReactNode;
   currentPath?: string;
   children: React.ReactNode;
 };
 
-export default function AppShell({ initialTitle, title, currentPath, children }: Props) {
-  const initTitle = (typeof initialTitle === "string" ? initialTitle : title) ?? "";
-
+export default function AppShell({ title, currentPath, children }: Props) {
   return (
-    <HeaderProvider initialTitle={initTitle}>
+    <HeaderProvider initialTitle={title ?? ""}>
       <div
         style={{
           minHeight: "100dvh",

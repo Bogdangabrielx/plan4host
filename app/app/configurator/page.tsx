@@ -1,3 +1,4 @@
+// app/app/configurator/page.tsx
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -21,7 +22,7 @@ export default async function ConfiguratorPage() {
   }));
 
   return (
-    <AppShell currentPath="/app/configurator" initialTitle="Configurator">
+    <AppShell currentPath="/app/configurator" title="Configurator">
       <ConfiguratorClient initialProperties={properties} />
     </AppShell>
   );

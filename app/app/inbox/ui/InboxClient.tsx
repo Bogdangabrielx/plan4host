@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 
-type Property  = { id: string; name: string; check_in_time: string | null; check_out_time: string | null; };
+/** Types */
+type Property  = { id: string; name: string; check_in_time: string | null; check_out_time: string | null };
 type RoomType  = { id: string; name: string; property_id: string };
 type Room      = { id: string; name: string; property_id: string; room_type_id: string | null };
 type Unassigned = {
@@ -19,12 +20,34 @@ type Unassigned = {
   start_time: string | null;
   end_time: string | null;
 };
+type Booking = {
+  id: string;
+  room_id: string;
+  start_date: string;
+  end_date: string;
+  start_time: string | null;
+  end_time: string | null;
+  status: string;
+};
+
+/** Overlap helper */
+function overlaps(
+  aS: string, aSt: string | null, aE: string, aEt: string | null,
+  bS: string, bSt: string | null, bE: string, bEt: string | null,
+  ci: string, co: string
+) {
+  const as = new Date(`${aS}T${(aSt ?? ci)}:00Z`).getTime();
+  const ae = new Date(`${aE}T${(aEt ?? co)}:00Z`).getTime();
+  const bs = new Date(`${bS}T${(bSt ?? ci)}:00Z`).getTime();
+  const be = new Date(`${bE}T${(bEt ?? co)}:00Z`).getTime();
+  return as < be && bs < ae;
+}
 
 export default function InboxClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
   const { setTitle, setPill } = useHeader();
 
-  const [status, setStatus] = useState<"Idle"|"Loading"|"Error">("Idle");
+  const [status, setStatus] = useState<"Idle" | "Loading" | "Error">("Idle");
 
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = useState<string>(initialProperties[0]?.id ?? "");
@@ -34,7 +57,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
   const [items, setItems] = useState<Unassigned[]>([]);
   const [assignSel, setAssignSel] = useState<Record<string, string>>({}); // eventId -> roomId
 
-  // Header: title + small badge with count
+  // Header: title + badge
   useEffect(() => {
     const count = items.length;
     setTitle(
@@ -54,7 +77,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
     setPill(status === "Loading" ? "Syncing…" : status === "Error" ? "Error" : "Idle");
   }, [status, setPill]);
 
-  // Load data for selected property
+  // Load data
   useEffect(() => {
     if (!propertyId) return;
     setStatus("Loading");
@@ -71,7 +94,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
         supabase.from("ical_unassigned_events")
           .select("id,property_id,room_type_id,uid,summary,start_date,end_date,start_time,end_time")
           .eq("property_id", propertyId)
-          .order("start_date", { ascending: true })
+          .order("start_date", { ascending: true }),
       ]);
 
       if (rTypes.error || rRooms.error || rInbox.error) { setStatus("Error"); return; }
@@ -82,7 +105,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
     })();
   }, [propertyId, supabase]);
 
-  // Emit + persist unassigned count (for sidebar dot)
+  // Emit + persist count badge (sidebar)
   useEffect(() => {
     const count = items.length;
     try {
@@ -99,19 +122,21 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
   }, [items.length]);
 
   const typeName = (tid: string | null) =>
-    types.find(t => t.id === tid)?.name || (tid ? "Unknown type" : "—");
+    types.find((t) => t.id === tid)?.name || (tid ? "Unknown type" : "—");
 
   async function doAssign(ev: Unassigned) {
     const roomId = assignSel[ev.id];
     if (!roomId) return;
+
     setStatus("Loading");
     const res = await fetch("/api/inbox/assign", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventId: ev.id, roomId })
+      body: JSON.stringify({ eventId: ev.id, roomId }),
     });
+
     if (res.ok) {
-      setItems(prev => prev.filter(x => x.id !== ev.id));
+      setItems((prev) => prev.filter((x) => x.id !== ev.id));
       setStatus("Idle");
     } else {
       const j = await res.json().catch(() => ({}));
@@ -122,14 +147,16 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
 
   async function doDelete(ev: Unassigned) {
     if (!confirm("Delete this unassigned event?")) return;
+
     setStatus("Loading");
     const res = await fetch("/api/inbox/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventId: ev.id })
+      body: JSON.stringify({ eventId: ev.id }),
     });
+
     if (res.ok) {
-      setItems(prev => prev.filter(x => x.id !== ev.id));
+      setItems((prev) => prev.filter((x) => x.id !== ev.id));
       setStatus("Idle");
     } else {
       const j = await res.json().catch(() => ({}));
@@ -140,17 +167,25 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
-      {/* Badge sub titlu (plan) */}
       <PlanHeaderBadge title="Inbox" />
 
-      {/* Toolbar */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <select
           value={propertyId}
           onChange={(e) => setPropertyId(e.target.value)}
-          style={{ background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", padding: "6px 10px", borderRadius: 8 }}
+          style={{
+            background: "var(--card)",
+            color: "var(--text)",
+            border: "1px solid var(--border)",
+            padding: "6px 10px",
+            borderRadius: 8,
+          }}
         >
-          {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          {properties.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
         </select>
 
         <span style={{ color: "var(--muted)", fontSize: 12 }}>
@@ -158,21 +193,43 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
         </span>
       </div>
 
-      {/* Grid de evenimente */}
       {items.length === 0 ? (
         <div style={{ color: "var(--muted)" }}>No unassigned events. You’re all set.</div>
       ) : (
-        <ul style={{
-          listStyle: "none", padding: 0,
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: 12
-        }}>
-          {items.map(ev => {
-            const roomsOfType = rooms.filter(r => r.room_type_id && r.room_type_id === ev.room_type_id);
+        <ul
+          style={{
+            listStyle: "none",
+            padding: 0,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+            gap: 12,
+          }}
+        >
+          {items.map((ev) => {
+            const roomsOfType = rooms.filter(
+              (r) => r.room_type_id && r.room_type_id === ev.room_type_id
+            );
+
             return (
-              <li key={ev.id} style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: 8 }}>
+              <li
+                key={ev.id}
+                style={{
+                  background: "var(--panel)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  padding: 12,
+                  display: "grid",
+                  gap: 8,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "start",
+                    gap: 8,
+                  }}
+                >
                   <div style={{ display: "grid", gap: 2 }}>
                     <strong>{ev.summary || "Reservation"}</strong>
                     <small style={{ color: "var(--muted)" }}>
@@ -182,7 +239,12 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
                       Type: {typeName(ev.room_type_id)} • UID: {ev.uid || "—"}
                     </small>
                   </div>
-                  <a href="/app/calendar" style={{ color: "var(--primary)", textDecoration: "none" }}>Open calendar</a>
+                  <a
+                    href="/app/calendar"
+                    style={{ color: "var(--primary)", textDecoration: "none" }}
+                  >
+                    Open calendar
+                  </a>
                 </div>
 
                 <div style={{ display: "grid", gap: 8, marginTop: 4 }}>
@@ -190,11 +252,23 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
                     <label style={{ fontSize: 12, color: "var(--muted)" }}>Assign to room</label>
                     <select
                       value={assignSel[ev.id] || ""}
-                      onChange={(e) => setAssignSel(prev => ({ ...prev, [ev.id]: e.target.value }))}
-                      style={{ background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", padding: "6px 10px", borderRadius: 8 }}
+                      onChange={(e) =>
+                        setAssignSel((prev) => ({ ...prev, [ev.id]: e.target.value }))
+                      }
+                      style={{
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        border: "1px solid var(--border)",
+                        padding: "6px 10px",
+                        borderRadius: 8,
+                      }}
                     >
                       <option value="">— select room —</option>
-                      {roomsOfType.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                      {roomsOfType.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -206,7 +280,9 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
                     >
                       Assign
                     </button>
-                    <button onClick={() => doDelete(ev)} style={dangerBtn}>Delete</button>
+                    <button onClick={() => doDelete(ev)} style={dangerBtn}>
+                      Delete
+                    </button>
                   </div>
                 </div>
               </li>
@@ -219,7 +295,6 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
 }
 
 /* Styles */
-
 const countBadgeStyle: React.CSSProperties = {
   marginTop: 4,
   padding: "2px 8px",

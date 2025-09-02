@@ -1,3 +1,4 @@
+// app/app/ui/AppHeader.tsx
 "use client";
 
 import Link from "next/link";
@@ -5,26 +6,28 @@ import { useEffect, useState } from "react";
 import { useHeader } from "../_components/HeaderContext";
 
 const NAV = [
-  { href: "/app", label: "Dashboard", emoji: "🏠" },
-  { href: "/app/calendar", label: "Calendar", emoji: "📅" },
-  { href: "/app/configurator", label: "Configurator", emoji: "⚙️" },
-  { href: "/app/cleaning", label: "Cleaning Board", emoji: "🧹" },
-  { href: "/app/channels", label: "Channels & iCal", emoji: "🔗" },
-  { href: "/app/inbox", label: "Inbox", emoji: "📥" },
-  { href: "/auth/logout", label: "Logout", emoji: "🚪" },
+  { href: "/app",            label: "Dashboard",       emoji: "🏠" },
+  { href: "/app/calendar",   label: "Calendar",        emoji: "📅" },
+  { href: "/app/configurator", label: "Configurator",  emoji: "⚙️" },
+  { href: "/app/cleaning",   label: "Cleaning Board",  emoji: "🧹" },
+  { href: "/app/channels",   label: "Channels & iCal", emoji: "🔗" },
+  { href: "/app/inbox",      label: "Inbox",           emoji: "📥" },
+  { href: "/auth/logout",    label: "Logout",          emoji: "🚪" },
 ];
 
 export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const { title, pill, right } = useHeader();
   const [open, setOpen] = useState(false);
 
-  // Inbox count (dot in menu)
+  // Inbox count badge in the menu
   const [inboxCount, setInboxCount] = useState<number>(() => {
     try {
-      const raw = localStorage.getItem("p4h:inboxCount");
+      const raw = typeof window !== "undefined" ? localStorage.getItem("p4h:inboxCount") : null;
       const parsed = raw ? JSON.parse(raw) : null;
       return parsed?.count ?? 0;
-    } catch { return 0; }
+    } catch {
+      return 0;
+    }
   });
 
   useEffect(() => {
@@ -75,7 +78,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             ≡
           </button>
 
-          {/* Title container accepts JSX now */}
+          {/* Title can be a ReactNode */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <div style={{ margin: 0, fontSize: 18, lineHeight: 1 }}>{title}</div>
             {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
@@ -109,7 +112,16 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               gridTemplateRows: "auto 1fr",
             }}
           >
-            <div style={{ fontSize: 21, padding: 16, borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div
+              style={{
+                fontSize: 21,
+                padding: 16,
+                borderBottom: "1px solid var(--border)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <strong>Plan4Host</strong>
               <button
                 onClick={() => setOpen(false)}
@@ -121,7 +133,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   background: "transparent",
                   color: "var(--text)",
                   fontWeight: 800,
-                  cursor: "pointer"
+                  cursor: "pointer",
                 }}
               >
                 ✕
@@ -131,7 +143,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             <nav style={{ padding: 12, overflowY: "auto" }}>
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
                 {NAV.map((it) => {
-                  const active = currentPath ? currentPath === it.href || currentPath.startsWith(it.href + "/") : false;
+                  const active = currentPath
+                    ? currentPath === it.href || currentPath.startsWith(it.href + "/")
+                    : false;
                   const isInbox = it.href === "/app/inbox";
                   return (
                     <li key={it.href}>
@@ -156,9 +170,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           {it.label}
                           {isInbox && inboxCount > 0 && (
-                            <span style={inboxDotStyle}>
-                              {inboxCount > 99 ? "99+" : inboxCount}
-                            </span>
+                            <span style={inboxDotStyle}>{inboxCount > 99 ? "99+" : inboxCount}</span>
                           )}
                         </span>
                       </Link>
