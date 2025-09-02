@@ -42,6 +42,9 @@ function fmtTime(d: Date, tz: string) {
   return f.format(d); // HH:MM
 }
 
+// tip auxiliar pentru selecturi care întorc doar id
+type RowId = { id: string };
+
 // Upsert 1 eveniment în ical_unassigned_events (service client)
 async function upsertUnassigned(
   supabase: ReturnType<typeof createSb>,
@@ -81,7 +84,8 @@ async function upsertUnassigned(
       .eq("property_id", property_id)
       .eq("room_type_id", room_type_id)
       .eq("uid", ev.uid)
-      .limit(1);
+      .limit(1)
+      .returns<RowId[]>();
     if (selErr) throw selErr;
 
     if (existing && existing.length > 0) {
@@ -112,6 +116,7 @@ async function upsertUnassigned(
           end_time: endTimeStr,
         })
         .select("id")
+        .returns<RowId>()
         .single();
       if (insErr) throw insErr;
       return { upserted: "inserted", id: ins?.id };
@@ -130,7 +135,8 @@ async function upsertUnassigned(
     .eq("start_date", startDateStr)
     .eq("end_date", endDateStr)
     .eq("summary", ev.summary ?? null)
-    .limit(1);
+    .limit(1)
+    .returns<RowId[]>();
   if (selErr2) throw selErr2;
 
   if (existing && existing.length > 0) {
@@ -158,6 +164,7 @@ async function upsertUnassigned(
         end_time: endTimeStr,
       })
       .select("id")
+      .returns<RowId>()
       .single();
     if (insErr) throw insErr;
     return { upserted: "inserted", id: ins?.id };
@@ -180,7 +187,6 @@ export async function POST(req: Request) {
     const supabase = createSb(url, serviceKey, { auth: { persistSession: false } });
 
     // 3) ia toate feed-urile active + property(owner_id, timezone)
-    // IMPORTANT: owner_id vine din properties (nu din logs).
     const { data: feeds, error: fErr } = await supabase
       .from("ical_type_integrations")
       .select(`
@@ -207,8 +213,6 @@ export async function POST(req: Request) {
       return j(200, { ok: true, message: "No active feeds." });
     }
 
-    // 4) procesăm pe conturi: verificăm policy (autosync) per account
-    //    -> dacă allowed, importăm TOATE feed-urile acelui cont (indiferent de proprietate)
     type FeedRow = {
       id: string;
       property_id: string;
@@ -222,7 +226,7 @@ export async function POST(req: Request) {
 
     // group by account
     const byAccount = new Map<string, FeedRow[]>();
-    for (const f of feeds as unknown as FeedRow[]) {
+    for (const f of (feeds as unknown as FeedRow[])) {
       const acc = f.properties.owner_id;
       if (!byAccount.has(acc)) byAccount.set(acc, []);
       byAccount.get(acc)!.push(f);
