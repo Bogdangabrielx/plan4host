@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
+import { useHeader } from "@/app/app/_components/HeaderContext";
 
 /** DB types */
 type Property = { id: string; name: string; timezone: string | null };
@@ -48,6 +49,7 @@ type HintVariant = "muted" | "warning" | "danger" | "success" | "info";
 
 export default function ChannelsClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
+  const { setPill } = useHeader();
   const [status, setStatus] = useState<"Idle" | "Loading" | "Saving…" | "Error">("Idle");
 
   const [properties] = useState<Property[]>(initialProperties);
@@ -78,6 +80,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [hintText, setHintText] = useState<string>("");
   const [hintVariant, setHintVariant] = useState<HintVariant>("muted");
   const [countdownSec, setCountdownSec] = useState<number | null>(null);
+  const [syncBtnText, setSyncBtnText] = useState<string>("Sync now");
 
   // Countdown tick
   useEffect(() => {
@@ -197,6 +200,10 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
     // Gate instant pentru non-Premium (fără să lovim API-ul)
     if (isPremium === false) {
+      // show feedback directly on button
+      setSyncBtnText("Premium only");
+      setTimeout(() => setSyncBtnText("Sync now"), 1400);
+      // optional: keep subtle hint as well
       setHintText("Premium only");
       setHintVariant("danger");
       setCountdownSec(null);
@@ -297,6 +304,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
   const activeCount = integrations.filter(i => !!i.is_active).length;
 
+  // Header status pill next to title
+  useEffect(() => {
+    setPill(pillLabel);
+  }, [pillLabel, setPill]);
+
   return (
     <div>
       <PlanHeaderBadge title="Channels & iCal" />
@@ -328,11 +340,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               style={{
                 ...primaryBtn,
                 border: "1px solid var(--success)",
-                opacity: isPremium === false || activeCount === 0 || status === "Saving…" ? 0.6 : 1,
-                cursor: isPremium === false || activeCount === 0 || status === "Saving…" ? "not-allowed" : "pointer",
+                opacity: (isPremium === false ? 0.9 : 1) * (activeCount === 0 || status === "Saving…" ? 0.6 : 1),
+                cursor: activeCount === 0 || status === "Saving…" ? "not-allowed" : "pointer",
               }}
               onClick={syncAllNow}
-              disabled={isPremium === false || activeCount === 0 || status === "Saving…"}
+              disabled={activeCount === 0 || status === "Saving…"}
               title={
                 isPremium === false
                   ? "Premium only"
@@ -341,7 +353,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   : "Sync all active imports now"
               }
             >
-              Sync now
+              {syncBtnText}
             </button>
 
             <button style={primaryBtn} onClick={() => setShowTypesModal(true)}>Export</button>

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
+import { useHeader } from "@/app/app/_components/HeaderContext";
 
 // Robust dynamic import: works whether DayModal is a default or a named export.
 const DayModal: any = dynamic(
@@ -41,6 +42,7 @@ function sameYMD(a: string, b: string) { return a === b; }
 
 export default function CalendarClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
+  const { setPill } = useHeader();
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = useState<string>(initialProperties[0]?.id ?? "");
 
@@ -98,6 +100,12 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
     })();
   }, [propertyId, view, year, month, supabase]);
 
+  // Header status pill next to title
+  useEffect(() => {
+    const label = loading === "Loading" ? "Syncing…" : loading === "Error" ? "Error" : "Idle";
+    setPill(label);
+  }, [loading, setPill]);
+
   // Occupancy map: dateStr -> set(room_id)
   const occupancyMap = useMemo(() => {
     const map = new Map<string, Set<string>>();
@@ -135,7 +143,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
     <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
       <PlanHeaderBadge title="Calendar" />
 
-      {/* Top toolbar: LEFT = property + pill + Month section; RIGHT = ◀ Year ▶ Today */}
+      {/* Top toolbar: LEFT = property + Month section; RIGHT = ◀ Year ▶ Today */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         {/* LEFT */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 320 }}>
@@ -149,18 +157,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
             ))}
           </select>
 
-          <span
-            style={{
-              fontSize: 12,
-              padding: "4px 8px",
-              borderRadius: 999,
-              background: loading === "Loading" ? "var(--primary)" : loading === "Error" ? "var(--danger)" : "#2a2f3a",
-              color: loading === "Loading" ? "#0c111b" : "#fff",
-              fontWeight: 700
-            }}
-          >
-            {loading === "Loading" ? "Syncing…" : loading === "Error" ? "Error" : "Idle"}
-          </span>
+          {/* Status pill is now shown in AppHeader via HeaderContext */}
 
           {/* Month section (only in month view) */}
           {view === "month" && (
@@ -473,5 +470,4 @@ const select: React.CSSProperties = {
   padding: "6px 10px",
   borderRadius: 8,
 };
-
 
