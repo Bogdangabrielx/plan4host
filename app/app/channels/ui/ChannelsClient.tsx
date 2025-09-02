@@ -337,7 +337,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             <button
               style={{
                 ...primaryBtn,
-                border: "1px solid var(--success)",
+                border: `1px solid ${syncBtnText === "Premium only" ? "var(--danger)" : "var(--success)"}`,
                 opacity: (isPremium === false ? 0.9 : 1) * (activeCount === 0 || status === "Saving…" ? 0.6 : 1),
                 cursor: activeCount === 0 || status === "Saving…" ? "not-allowed" : "pointer",
               }}
