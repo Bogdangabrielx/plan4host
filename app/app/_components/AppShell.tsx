@@ -4,14 +4,19 @@ import AppHeader from "../ui/AppHeader";
 import { HeaderProvider } from "./HeaderContext";
 
 type Props = {
+  /** Nou: titlul inițial preferat */
+  initialTitle?: string;
+  /** Compatibilitate veche: alias pentru initialTitle */
   title?: string;
   currentPath?: string;
   children: React.ReactNode;
 };
 
-export default function AppShell({ title, currentPath, children }: Props) {
+export default function AppShell({ initialTitle, title, currentPath, children }: Props) {
+  const initTitle = (typeof initialTitle === "string" ? initialTitle : title) ?? "";
+
   return (
-    <HeaderProvider initialTitle={title ?? ""}>
+    <HeaderProvider initialTitle={initTitle}>
       <div
         style={{
           minHeight: "100dvh",
