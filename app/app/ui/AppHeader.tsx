@@ -1,18 +1,16 @@
-// app/app/ui/AppHeader.tsx
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useHeader } from "../_components/HeaderContext";
 
 const NAV = [
-  { href: "/app",              label: "Dashboard",       emoji: "🏠" },
-  { href: "/app/calendar",     label: "Calendar",        emoji: "📅" },
-  { href: "/app/configurator", label: "Configurator",    emoji: "⚙️" },
-  { href: "/app/cleaning",     label: "Cleaning Board",  emoji: "🧹" },
-  { href: "/app/channels",     label: "Channels & iCal", emoji: "🔗" },
-  { href: "/app/inbox",        label: "Inbox",           emoji: "📥" },
-  { href: "/auth/logout",      label: "Logout",          emoji: "🚪" },
+  { href: "/app",            label: "Dashboard",       emoji: "🏠" },
+  { href: "/app/calendar",   label: "Calendar",        emoji: "📅" },
+  { href: "/app/configurator", label: "Configurator",  emoji: "⚙️" },
+  { href: "/app/cleaning",   label: "Cleaning Board",  emoji: "🧹" },
+  { href: "/app/channels",   label: "Channels & iCal", emoji: "🔗" },
+  { href: "/app/inbox",      label: "Inbox",           emoji: "📥" },
+  { href: "/auth/logout",    label: "Logout",          emoji: "🚪" },
 ];
 
 export default function AppHeader({ currentPath }: { currentPath?: string }) {
@@ -78,7 +76,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             ≡
           </button>
 
-        {/* Title can be a ReactNode */}
+          {/* Title can be a ReactNode */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <div style={{ margin: 0, fontSize: 18, lineHeight: 1 }}>{title}</div>
             {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
@@ -149,8 +147,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   const isInbox = it.href === "/app/inbox";
                   return (
                     <li key={it.href}>
-                      <Link
-                        prefetch={false}           // ⬅️ important: disable prefetch to avoid cached redirects
+                      <a
                         href={it.href}
                         onClick={() => setOpen(false)}
                         style={{
@@ -174,7 +171,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                             <span style={inboxDotStyle}>{inboxCount > 99 ? "99+" : inboxCount}</span>
                           )}
                         </span>
-                      </Link>
+                      </a>
                     </li>
                   );
                 })}
