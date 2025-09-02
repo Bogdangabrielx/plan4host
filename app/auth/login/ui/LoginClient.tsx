@@ -13,7 +13,6 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   const [status, setStatus] = useState<"Idle"|"Loading"|"Error">("Idle");
   const [err, setErr] = useState<string>("");
 
-  // Tema locală doar pentru UI (shadow, icon Google)
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [mounted, setMounted] = useState(false);
 
@@ -38,7 +37,6 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     return () => window.removeEventListener("themechange" as any, onThemeChange);
   }, [initialTheme]);
 
-  // erori din query (ex. OAuth callback)
   useEffect(() => {
     const u = new URL(window.location.href);
     const e = u.searchParams.get("error");
@@ -65,11 +63,13 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     }
   }
 
-  // Trimitem către ruta server care pornește Google OAuth (+prompt=select_account în ruta server)
+  // ✅ Folosește domeniul tău, nu relativ
   function signInWithGoogle() {
-    window.location.href = "/auth/oauth/google";
-    // dacă vrei varianta cu consimțământ mereu:
-    // window.location.href = "/auth/oauth/google?consent=1";
+    const APP_URL =
+      (typeof process !== "undefined" && process.env.NEXT_PUBLIC_APP_URL) ||
+      (typeof window !== "undefined" ? window.location.origin : "https://plan4host.com");
+    const next = "/app";
+    window.location.href = `${APP_URL}/auth/oauth/google?next=${encodeURIComponent(next)}`;
   }
 
   const pill =
@@ -79,7 +79,6 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
 
   return (
     <div style={wrap(mounted ? theme : "dark")}>
-      {/* Header card */}
       <div style={headRow}>
         <h1 style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? "Sign in" : "Create account"}</h1>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -88,7 +87,6 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
         </div>
       </div>
 
-      {/* Body */}
       <div style={{ display: "grid", gap: 10 }}>
         <button onClick={signInWithGoogle} style={oauthBtn}>
           <img
@@ -178,8 +176,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   );
 }
 
-/* ——— styles ——— */
-
+/* styles identice cu ce ai deja */
 function wrap(theme: Theme): React.CSSProperties {
   return {
     width: 380,
@@ -190,56 +187,13 @@ function wrap(theme: Theme): React.CSSProperties {
     boxShadow: theme === "light" ? "0 2px 40px rgba(2, 6, 23, 0.23)" : "0 2px 20px rgba(113, 120, 152, 0.25)",
   };
 }
-
-const headRow: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 10,
-  marginBottom: 10,
-};
-
-const input: React.CSSProperties = {
-  padding: "10px 12px",
-  background: "var(--bg)",
-  color: "var(--text)",
-  border: "1px solid var(--border)",
-  borderRadius: 8
-};
+const headRow: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 };
+const input: React.CSSProperties = { padding: "10px 12px", background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8 };
 const lbl: React.CSSProperties = { fontSize: 12, color: "var(--muted)" };
-
-const primaryBtn: React.CSSProperties = {
-  padding: "10px 14px",
-  borderRadius: 10,
-  border: "1px solid var(--border)",
-  background: "var(--primary)",
-  color: "#0c111b",
-  fontWeight: 800,
-  cursor: "pointer"
-};
-
-const oauthBtn: React.CSSProperties = {
-  padding: "10px 14px",
-  borderRadius: 10,
-  border: "1px solid var(--border)",
-  background: "var(--card)",
-  color: "var(--text)",
-  fontWeight: 800,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 10
-};
-
-const dividerRow: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr auto 1fr",
-  alignItems: "center",
-  gap: 8
-};
+const primaryBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--primary)", color: "#0c111b", fontWeight: 800, cursor: "pointer" };
+const oauthBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 };
+const dividerRow: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8 };
 const dividerLine: React.CSSProperties = { height: 1, background: "var(--border)", display: "block" };
-
 function pillStyle(pill: string): React.CSSProperties {
   const isError = /error/i.test(pill);
   const isBusy = /(sign|load|creat)/i.test(pill);

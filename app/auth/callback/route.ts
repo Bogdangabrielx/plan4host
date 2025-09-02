@@ -8,14 +8,13 @@ export async function GET(req: Request) {
   const next = url.searchParams.get("next") || "/app";
 
   if (!code) {
-    return NextResponse.redirect(new URL(`/auth/login?error=missing_code`, req.url));
+    return NextResponse.redirect(new URL(`/auth/login?error=missing_code`, url.origin));
   }
 
-  // Setează cookie-ul de sesiune
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     const msg = encodeURIComponent(error.message);
-    return NextResponse.redirect(new URL(`/auth/login?error=${msg}`, req.url));
+    return NextResponse.redirect(new URL(`/auth/login?error=${msg}`, url.origin));
   }
 
   return NextResponse.redirect(new URL(next, url.origin));

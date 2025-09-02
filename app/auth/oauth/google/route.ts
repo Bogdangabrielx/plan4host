@@ -5,27 +5,24 @@ export async function GET(req: Request) {
   const supabase = createClient();
   const url = new URL(req.url);
 
-  // Poți trece next=/app/calendar etc.
   const next = url.searchParams.get("next") || "/app";
-
-  // Dacă vrei să forțezi și consimțământul, apelează ruta cu ?consent=1
   const wantConsent = url.searchParams.get("consent") === "1";
   const prompt = wantConsent ? "consent select_account" : "select_account";
 
-  const origin = url.origin;
-  const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://plan4host.com";
+  const redirectTo = `${APP_URL}/auth/callback?next=${encodeURIComponent(next)}`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
       redirectTo,
-      queryParams: { prompt }, // 👈 AICI: select_account (sau consent + select_account)
+      queryParams: { prompt },
     },
   });
 
   if (error || !data?.url) {
     const msg = encodeURIComponent(error?.message ?? "OAuth start failed");
-    return NextResponse.redirect(new URL(`/auth/login?error=${msg}`, req.url));
+    return NextResponse.redirect(new URL(`/auth/login?error=${msg}`, APP_URL));
   }
 
   return NextResponse.redirect(data.url);
