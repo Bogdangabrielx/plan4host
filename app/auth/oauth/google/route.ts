@@ -1,3 +1,4 @@
+// app/auth/oauth/google/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -5,10 +6,14 @@ export async function GET(req: Request) {
   const supabase = createClient();
   const url = new URL(req.url);
 
+  // Optional: redirect after login (e.g., /app/calendar)
   const next = url.searchParams.get("next") || "/app";
+
+  // Force consent screen if "?consent=1"
   const wantConsent = url.searchParams.get("consent") === "1";
   const prompt = wantConsent ? "consent select_account" : "select_account";
 
+  // Use your canonical site URL (set this in Vercel env)
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://plan4host.com";
   const redirectTo = `${APP_URL}/auth/callback?next=${encodeURIComponent(next)}`;
 
