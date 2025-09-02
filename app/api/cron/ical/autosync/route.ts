@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 import { createClient as createSb } from "@supabase/supabase-js";
 import { parseIcsToEvents, toLocalDateTime, type ParsedEvent } from "@/lib/ical/parse";
 
+// Ensure Node runtime and no caching for cron
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // ---------- helpers ----------
 function j(status: number, body: any) {
   return new NextResponse(JSON.stringify(body), {
@@ -119,9 +124,8 @@ async function upsertUnassigned(
   }
 
   // 2) fallback fără UID
-  const _key = digest(
-    `${room_type_id}|${startDateStr}|${endDateStr}|${(ev.summary || "").trim().toLowerCase()}`
-  );
+  // optional fallback key (kept for potential future use)
+  digest(`${room_type_id}|${startDateStr}|${endDateStr}|${(ev.summary || "").trim().toLowerCase()}`);
   const { data: existing2, error: selErr2 } = await supabase
     .from("ical_unassigned_events")
     .select("id")
@@ -165,7 +169,7 @@ async function upsertUnassigned(
 }
 
 // ---------- handler ----------
-export async function POST(req: Request) {
+async function runAutosync(req: Request) {
   try {
     // 1) securitate cron
     const headerKey = req.headers.get("x-cron-key") || "";
@@ -334,4 +338,21 @@ export async function POST(req: Request) {
   } catch (e: any) {
     return j(500, { error: "Server error", details: e?.message ?? String(e) });
   }
+}
+
+export async function POST(req: Request) {
+  return runAutosync(req);
+}
+
+// Allow triggering via GET (e.g., Vercel Cron)
+export async function GET(req: Request) {
+  return runAutosync(req);
+}
+
+// Lightweight health check (no work) — still enforces key for safety
+export async function HEAD(req: Request) {
+  const headerKey = req.headers.get("x-cron-key") || "";
+  const expected = process.env.CRON_ICAL_KEY || "";
+  if (!expected || headerKey !== expected) return new NextResponse(null, { status: 401 });
+  return new NextResponse(null, { status: 200 });
 }
