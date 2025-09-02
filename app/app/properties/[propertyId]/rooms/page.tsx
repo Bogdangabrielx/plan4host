@@ -11,6 +11,8 @@ type Room = {
   room_type_id: string | null;
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export default async function RoomsPage({ params }: { params: { propertyId: string } }) {
   const supabase = createClient();
 

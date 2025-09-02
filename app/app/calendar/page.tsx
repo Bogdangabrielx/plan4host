@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CalendarClient from "./ui/CalendarClient";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export default async function CalendarPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();

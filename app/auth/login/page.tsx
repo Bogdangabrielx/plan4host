@@ -2,6 +2,8 @@
 import { cookies } from "next/headers";
 import LoginClient from "./ui/LoginClient";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export default function LoginPage() {
   const cookieStore = cookies();
   const theme = (cookieStore.get("app_theme")?.value as "light" | "dark") ?? "light";

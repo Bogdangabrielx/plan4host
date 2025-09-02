@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import ChannelsClient from "./ui/ChannelsClient";
 import TitleSetter from "./ui/TitleSetter";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export default async function ChannelsPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
