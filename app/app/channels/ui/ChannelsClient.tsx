@@ -315,7 +315,6 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
       {/* mic toolbar local: pill + property select */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
-        <span style={miniPill}>{pillLabel}</span>
         <span style={miniPill}>All times in {timezone || "—"}</span>
         <div style={{ marginLeft: "auto" }}>
           <select value={propertyId} onChange={(e) => setPropertyId(e.target.value)} style={select}>
