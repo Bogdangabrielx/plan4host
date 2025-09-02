@@ -6,8 +6,7 @@ export default function HomePage() {
       <p>Simplify your small-hotel operations: calendar, cleaning, channels & iCal.</p>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <a href="/auth/login" style={linkPrimary}>Log in</a>
-        <a href="/auth/signup" style={linkGhost}>Create account</a>
+        <a href="/auth/login" style={linkPrimary}>Log in/Create account</a>
         <a href="/pricing" style={linkGhost}>Pricing</a>
       </div>
     </main>

@@ -1,3 +1,4 @@
+// app/app/ui/AppHeader.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -16,6 +17,11 @@ const NAV = [
 export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const { title, pill, right } = useHeader();
   const [open, setOpen] = useState(false);
+
+  // IMPORTANT: domeniul tău (injectat la build)
+  const BASE =
+    (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
+    (typeof window !== "undefined" ? window.location.origin : "");
 
   // Inbox count badge in the menu
   const [inboxCount, setInboxCount] = useState<number>(() => {
@@ -42,6 +48,18 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     window.addEventListener("p4h:inboxCount", onInbox as EventListener);
     return () => window.removeEventListener("p4h:inboxCount", onInbox as EventListener);
   }, []);
+
+  function hardNavigate(href: string) {
+    try {
+      setOpen(false);
+      // navigare FULL reload, URL absolut pe domeniul tău
+      const u = href.startsWith("http") ? href : `${BASE}${href}`;
+      window.location.assign(u);
+    } catch {
+      // fallback – tot hard reload
+      window.location.href = href;
+    }
+  }
 
   return (
     <>
@@ -76,7 +94,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             ≡
           </button>
 
-          {/* Title can be a ReactNode */}
+          {/* Title poate fi ReactNode */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <div style={{ margin: 0, fontSize: 18, lineHeight: 1 }}>{title}</div>
             {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
@@ -147,21 +165,23 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   const isInbox = it.href === "/app/inbox";
                   return (
                     <li key={it.href}>
-                      <a
-                        href={it.href}
-                        onClick={() => setOpen(false)}
+                      {/* Buton care face hard navigate pe domeniul tău */}
+                      <button
+                        onClick={() => hardNavigate(it.href)}
                         style={{
+                          width: "100%",
+                          textAlign: "left",
                           display: "flex",
                           alignItems: "center",
                           gap: 10,
                           padding: "10px 12px",
                           borderRadius: 10,
-                          textDecoration: "none",
                           border: "1px solid var(--border)",
                           background: active ? "var(--primary)" : "var(--card)",
                           color: active ? "#0c111b" : "var(--text)",
                           fontWeight: 800,
                           position: "relative",
+                          cursor: "pointer",
                         }}
                       >
                         <span aria-hidden>{it.emoji}</span>
@@ -171,7 +191,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                             <span style={inboxDotStyle}>{inboxCount > 99 ? "99+" : inboxCount}</span>
                           )}
                         </span>
-                      </a>
+                      </button>
                     </li>
                   );
                 })}
