@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
     // 3) Policy check (rate limits & gating)
     const { data: decision, error: eCheck } = await supabase
-      .rpc("account_can_sync_now", {
+      .rpc("account_can_sync_now_v2", {
         p_account_id: accountId,
         p_event_type: "sync_now",
       })
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     }
 
     // 4) Register usage in the window
-    await supabase.rpc("account_register_sync_usage", {
+    await supabase.rpc("account_register_sync_usage_v2", {
       p_account_id: accountId,
       p_event_type: "sync_now",
     });

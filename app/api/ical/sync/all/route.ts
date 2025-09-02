@@ -188,7 +188,7 @@ export async function POST(req: Request) {
     const propTZ: string = (prop as any).timezone || "UTC";
 
     // 2) Rate-limit check (sync_now)
-    const can = await supabase.rpc("account_can_sync_now", {
+    const can = await supabase.rpc("account_can_sync_now_v2", {
       p_account_id: accountId,
       p_event_type: "sync_now",
     });
@@ -223,7 +223,7 @@ export async function POST(req: Request) {
 
     if (!feeds || (feeds as any[]).length === 0) {
       // tot înregistrăm un usage ca să nu se poată apăsa în buclă
-      await supabase.rpc("account_register_sync_usage", {
+      await supabase.rpc("account_register_sync_usage_v2", {
         p_account_id: accountId,
         p_event_type: "sync_now",
       });
@@ -284,7 +284,7 @@ export async function POST(req: Request) {
     }
 
     // 5) Register usage
-    await supabase.rpc("account_register_sync_usage", {
+    await supabase.rpc("account_register_sync_usage_v2", {
       p_account_id: accountId,
       p_event_type: "sync_now",
     });

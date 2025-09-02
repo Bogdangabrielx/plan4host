@@ -171,10 +171,18 @@ async function upsertUnassigned(
 // ---------- handler ----------
 async function runAutosync(req: Request) {
   try {
-    // 1) securitate cron
+    // 1) securitate cron (acceptă header sau ?key= pentru Vercel Cron)
     const headerKey = req.headers.get("x-cron-key") || "";
+    const queryKey = (() => {
+      try {
+        const u = new URL(req.url);
+        return u.searchParams.get("key") || "";
+      } catch {
+        return "";
+      }
+    })();
     const expected = process.env.CRON_ICAL_KEY || ""; // setează în .env / Vercel
-    if (!expected || headerKey !== expected) {
+    if (!expected || (headerKey || queryKey) !== expected) {
       return j(401, { error: "Unauthorized" });
     }
 
@@ -232,7 +240,7 @@ async function runAutosync(req: Request) {
     const summary: any[] = [];
     for (const [accountId, rows] of byAccount.entries()) {
       // policy: autosync
-      const can = await supabase.rpc("account_can_sync_now", {
+      const can = await supabase.rpc("account_can_sync_now_v2", {
         p_account_id: accountId,
         p_event_type: "autosync",
       });
@@ -321,7 +329,7 @@ async function runAutosync(req: Request) {
       }
 
       // înregistrează 1 usage per account pentru acest run (autosync)
-      await supabase.rpc("account_register_sync_usage", {
+      await supabase.rpc("account_register_sync_usage_v2", {
         p_account_id: accountId,
         p_event_type: "autosync",
       });

@@ -225,10 +225,20 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         const cool = (j?.cooldown_remaining_sec ?? 0) as number;
         const retryAfter = (j?.retry_after_sec ?? 0) as number;
 
+        // Premium-only gating coming from server
+        if (reason === "sync_now_only_on_premium") {
+          setHintText("Premium only");
+          setHintVariant("danger");
+          setCountdownSec(null);
+          setStatus("Idle");
+          return;
+        }
+
         if (reason === "cooldown" && cool > 0) {
-          setHintText(`Wait ${fmtCountdown(cool)}`);
+          const sec = Math.max(retryAfter || cool, 0);
+          setHintText(`Wait ${fmtCountdown(sec)}`);
           setHintVariant("warning");
-          setCountdownSec(cool);
+          setCountdownSec(sec || null);
           setStatus("Idle");
           return;
         }
@@ -252,8 +262,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       if (!res.ok) {
         // 4xx/5xx generic
         const j = await res.json().catch(() => ({} as any));
-        // dacă serverul a întors explicit premium-only (deși n-ar trebui să ajungem aici)
-        if (j?.error === "Premium only") {
+        // premium-only, indiferent dacă vine ca error sau reason
+        if (j?.error === "Premium only" || j?.reason === "sync_now_only_on_premium") {
           setHintText("Premium only");
           setHintVariant("danger");
         } else {
