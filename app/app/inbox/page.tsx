@@ -6,11 +6,10 @@ import InboxClient from "./ui/InboxClient";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
 export default async function InboxPage() {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
   const { data: props = [] } = await supabase

@@ -1,11 +1,12 @@
+// app/app/channels/page.tsx
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ChannelsClient from "./ui/ChannelsClient";
-import TitleSetter from "./ui/TitleSetter";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
 export default async function ChannelsPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -23,12 +24,8 @@ export default async function ChannelsPage() {
   }));
 
   return (
-    <AppShell currentPath="/app/channels">
-      {/* Setează titlul în header */}
-      <TitleSetter />
+    <AppShell currentPath="/app/channels" title="Channels & iCal">
       <ChannelsClient initialProperties={properties} />
     </AppShell>
   );
 }
-
-

@@ -1,8 +1,11 @@
+// app/app/page.tsx  (Dashboard)
 import AppShell from "./_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DashboardClient from "./ui/DashboardClient";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -15,7 +18,7 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: true });
 
   return (
-    <AppShell title="Dashboard">
+    <AppShell currentPath="/app" title="Dashboard">
       <DashboardClient initialProperties={properties as any[]} />
     </AppShell>
   );
