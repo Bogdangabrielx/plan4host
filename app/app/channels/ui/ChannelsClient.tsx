@@ -119,12 +119,13 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       const plan = await supabase.rpc("account_current_plan");
       const p = (plan.data as string | null)?.toLowerCase?.() ?? "basic";
       setIsPremium(p === "premium");
-      if (p !== "premium") {
-        setHintText("Premium only");
-        setHintVariant("danger");
-      } else {
+      if (p === "premium") {
         setHintText("Ready");
         setHintVariant("success");
+      } else {
+        // Non‑premium: nu afișăm status pill sub buton
+        setHintText("");
+        setHintVariant("muted");
       }
     })();
   }, [supabase]);
@@ -203,9 +204,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       // show feedback directly on button
       setSyncBtnText("Premium only");
       setTimeout(() => setSyncBtnText("Sync now"), 1400);
-      // optional: keep subtle hint as well
-      setHintText("Premium only");
-      setHintVariant("danger");
+      // nu arătăm status pill sub buton pentru non‑premium
       setCountdownSec(null);
       return;
     }
