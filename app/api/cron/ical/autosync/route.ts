@@ -47,6 +47,58 @@ function fmtTime(d: Date, tz: string) {
   return f.format(d); // HH:MM
 }
 
+// Network helper: fetch with timeout, retry, and UA
+async function fetchWithRetry(url: string, opts?: { timeoutMs?: number; retries?: number }) {
+  const timeoutMs = opts?.timeoutMs ?? 15000;
+  const retries = opts?.retries ?? 1;
+  let attempt = 0;
+  let lastErr: any = null;
+  while (attempt <= retries) {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, {
+        method: "GET",
+        headers: { "User-Agent": "plan4host-ical-fetch/1.0" },
+        signal: ac.signal,
+      } as RequestInit);
+      clearTimeout(t);
+      return res;
+    } catch (e) {
+      clearTimeout(t);
+      lastErr = e;
+      // small backoff then retry
+      if (attempt < retries) await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+    }
+    attempt++;
+  }
+  throw lastErr || new Error("fetch failed");
+}
+
+async function logSync(
+  supabase: any,
+  params: { integration_id: string; status: string; imported?: number; error_message?: string; started_at?: string; finished_at?: string }
+) {
+  const { integration_id, status } = params;
+  const started_at = params.started_at ?? new Date().toISOString();
+  const finished_at = params.finished_at ?? new Date().toISOString();
+  const imported = params.imported ?? 0;
+  const error_message = params.error_message ?? null;
+  try {
+    await supabase.from("ical_type_sync_logs").insert({
+      id: (globalThis as any).crypto?.randomUUID?.() ?? undefined,
+      integration_id,
+      started_at,
+      finished_at,
+      status,
+      added_count: imported,
+      updated_count: 0,
+      conflicts: 0,
+      error_message,
+    });
+  } catch {}
+}
+
 // Upsert 1 eveniment în ical_unassigned_events (service client)
 async function upsertUnassigned(
   supabase: any, // ← tip relaxat ca să evităm conflictele de generice
@@ -267,6 +319,10 @@ async function runAutosync(req: Request) {
           processedFeeds: 0,
           importedEvents: 0,
         });
+        // best-effort: log cooldown for each feed
+        for (const f of rows) {
+          await logSync(supabase, { integration_id: f.id, status: "cooldown" });
+        }
         continue;
       }
 
@@ -276,8 +332,9 @@ async function runAutosync(req: Request) {
 
       for (const feed of rows) {
         try {
+          const startedAt = new Date();
           const propTZ = feed.properties.timezone || "UTC";
-          const res = await fetch(feed.url, { method: "GET" });
+          const res = await fetchWithRetry(feed.url, { timeoutMs: 15000, retries: 1 });
           if (!res.ok) {
             summary.push({
               accountId,
@@ -285,6 +342,13 @@ async function runAutosync(req: Request) {
               ok: false,
               reason: "fetch_failed",
               status: res.status,
+            });
+            await logSync(supabase, {
+              integration_id: feed.id,
+              status: "error",
+              error_message: `http_${res.status}`,
+              started_at: startedAt.toISOString(),
+              finished_at: new Date().toISOString(),
             });
             processed++;
             continue;
@@ -310,6 +374,14 @@ async function runAutosync(req: Request) {
             .update({ last_sync: new Date().toISOString() })
             .eq("id" as any, feed.id as any);
 
+          await logSync(supabase, {
+            integration_id: feed.id,
+            status: "ok",
+            imported,
+            started_at: startedAt.toISOString(),
+            finished_at: new Date().toISOString(),
+          });
+
           importedTotal += imported;
           processed++;
           summary.push({
@@ -326,6 +398,11 @@ async function runAutosync(req: Request) {
             ok: false,
             reason: "exception",
             error: e?.message ?? String(e),
+          });
+          await logSync(supabase, {
+            integration_id: feed.id,
+            status: "error",
+            error_message: e?.message ?? String(e),
           });
         }
       }
