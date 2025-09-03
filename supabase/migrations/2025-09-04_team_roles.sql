@@ -56,7 +56,7 @@ begin
     if not exists (
       select 1 from pg_policies where schemaname='public' and tablename='cleaning_task_defs' and policyname='p_cleaning_task_defs_access'
     ) then
-      execute $$
+      execute $POLICY$
         create policy p_cleaning_task_defs_access on public.cleaning_task_defs
         using (
           exists (
@@ -74,7 +74,7 @@ begin
             where p.id = cleaning_task_defs.property_id and au.disabled = false and (au.role in ('owner','manager') or 'cleaning' = any(au.scopes))
           )
         )
-      $$;
+      $POLICY$;
     end if;
   end if;
 
@@ -85,7 +85,7 @@ begin
     if not exists (
       select 1 from pg_policies where schemaname='public' and tablename='bookings' and policyname='p_bookings_reservations_access'
     ) then
-      execute $$
+      execute $POLICY2$
         create policy p_bookings_reservations_access on public.bookings
         using (
           exists (
@@ -103,8 +103,7 @@ begin
             where p.id = bookings.property_id and au.disabled = false and (au.role in ('owner','manager') or 'reservations' = any(au.scopes))
           )
         )
-      $$;
+      $POLICY2$;
     end if;
   end if;
 end $$;
-
