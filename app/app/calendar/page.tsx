@@ -23,10 +23,8 @@ export default async function CalendarPage() {
   }));
 
   return (
-    <div style={{ fontFamily: '"Times New Roman", Times, serif' }}>
-      <AppShell currentPath="/app/calendar" title="Calendar">
-        <CalendarClient initialProperties={properties} />
-      </AppShell>
-    </div>
+    <AppShell currentPath="/app/calendar" title="Calendar">
+      <CalendarClient initialProperties={properties} />
+    </AppShell>
   );
 }

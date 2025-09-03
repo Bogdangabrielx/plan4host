@@ -156,52 +156,55 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
     <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
       <PlanHeaderBadge title="Calendar" />
 
-      {/* Top toolbar: LEFT = property + Month section; RIGHT = ◀ Year ▶ Today */}
-      <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
-        {/* LEFT */}
-        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, minWidth: isSmall ? 0 : 320, flexWrap: "wrap" }}>
-          <select
-            value={propertyId}
-            onChange={(e) => { setPropertyId(e.currentTarget.value); }}
-            style={{ ...select, minWidth: 200 }}
+      {/* Supabase‑style toolbar */}
+      <div className="sb-toolbar" style={{ gap: isSmall ? 8 : 12 }}>
+        {/* Property select */}
+        <select
+          className="sb-select"
+          value={propertyId}
+          onChange={(e) => { setPropertyId(e.currentTarget.value); }}
+          style={{ minWidth: 220 }}
+        >
+          {properties.map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+
+        {/* View segmented control (forces Month on very small screens) */}
+        <div className="sb-seg">
+          <button
+            type="button"
+            data-active={view === "year" && !isSmall}
+            onClick={() => { if (!isSmall) setView("year"); }}
           >
-            {properties.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-
-          {/* Status pill is now shown in AppHeader via HeaderContext */}
-
-          {/* Month section (only in month view) */}
-          {view === "month" && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <button onClick={backToYear} style={linkBtn}>Back to Year</button>
-              <strong style={{ color: "var(--text)" }}>{monthNames[month]}</strong>
-            </div>
-          )}
+            Year
+          </button>
+          <button
+            type="button"
+            data-active={view === "month"}
+            onClick={() => setView("month")}
+          >
+            Month
+          </button>
         </div>
 
+        {/* Month context */}
+        {view === "month" && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={backToYear}>Back to Year</button>
+            <strong>{monthNames[month]}</strong>
+          </div>
+        )}
+
+        {/* Spacer */}
         <div style={{ flex: 1, minWidth: isSmall ? "100%" : 0 }} />
 
-        {/* RIGHT — ◀ Year ▶ always together + Today */}
+        {/* Year navigation + today */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", width: isSmall ? "100%" : "auto", justifyContent: isSmall ? "flex-start" : "flex-end" }}>
-          <button
-            onClick={() => setYear(y => y - 1)}
-            style={btn}
-          >
-            ◀
-          </button>
-
-          <strong style={{ minWidth: 90, textAlign: "center", color: "var(--text)" }}>{year}</strong>
-
-          <button
-            onClick={() => setYear(y => y + 1)}
-            style={btn}
-          >
-            ▶
-          </button>
-
-          <button onClick={goToday} style={btn}>Today</button>
+          <button type="button" className="sb-btn sb-btn--icon" onClick={() => setYear(y => y - 1)} aria-label="Previous year">◀</button>
+          <strong style={{ minWidth: 90, textAlign: "center" }}>{year}</strong>
+          <button type="button" className="sb-btn sb-btn--icon" onClick={() => setYear(y => y + 1)} aria-label="Next year">▶</button>
+          <button type="button" className="sb-btn sb-btn--primary" onClick={goToday}>Today</button>
         </div>
       </div>
 
@@ -258,9 +261,9 @@ function YearView({
   return (
     <div style={{ display: "grid", gridTemplateColumns: isSmall ? "repeat(1, 1fr)" : "repeat(3, 1fr)", gap: 12 }}>
       {Array.from({ length: 12 }).map((_, m) => (
-        <div key={m} style={panel}>
+        <div key={m} className="sb-card" style={{ padding: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <button onClick={() => onMonthTitleClick(m)} style={linkBtn}>
+            <button onClick={() => onMonthTitleClick(m)} className="sb-btn sb-btn--ghost sb-btn--small" style={{ borderStyle: "dashed" as const }}>
               {monthNames[m]}
             </button>
             <small style={{color: "var(--muted)" }}>{year}</small>
@@ -384,7 +387,7 @@ function MonthView({
   while (days.length < total) days.push({});
 
   return (
-    <div style={{ boxShadow: "0 3px 20px #2e6dc656", background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 12 }}>
+    <div className="sb-card" style={{ boxShadow: "0 3px 20px #2e6dc656", padding: 12 }}>
       {/* week day headers */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
         {weekdayShort.map((w) => (
@@ -471,35 +474,4 @@ function MonthView({
   );
 }
 
-/* ============ UI styles (high-contrast on dark) ============ */
-const panel: React.CSSProperties = {
-  background: "var(--panel)",
-  border: "1px solid var(--border)",
-  borderRadius: 12,
-  padding: 12,
-};
-
-const btn: React.CSSProperties = {
-  padding: "6px 10px",
-  background: "var(--card)",
-  color: "var(--text)",
-  border: "1px solid var(--border)",
-  borderRadius: 8,
-  cursor: "pointer",
-};
-
-const linkBtn: React.CSSProperties = {
-  ...btn,
-  background: "transparent",
-  border: "1px dashed var(--border)",
-  fontWeight: 800,
-  color: "var(--text)",
-};
-
-const select: React.CSSProperties = {
-  background: "var(--card)",
-  color: "var(--text)",
-  border: "1px solid var(--border)",
-  padding: "6px 10px",
-  borderRadius: 8,
-};
+/* Legacy local styles (kept only for inline elements in the grid) */
