@@ -27,7 +27,7 @@ export function YearGrid({
   return (
     <section style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "repeat(3, 1fr)", gap: 16 }}>
       {Array.from({ length: 12 }).map((_, m) => (
-        <div key={m} style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 12 }}>
+        <div key={m} style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, boxShadow: "0 6px 18px rgba(0,0,0,0.25)" }}>
           <button
             onClick={() => onMonthClick(m)}
             style={{
@@ -35,7 +35,8 @@ export function YearGrid({
               color: "var(--text)",
               border: "none",
               cursor: "pointer",
-              fontWeight: 700,
+              fontWeight: 800,
+              letterSpacing: 0.2,
               fontSize: isSmall ? 18 : 16,
               marginBottom: 8,
               textDecoration: "underline",
@@ -44,9 +45,9 @@ export function YearGrid({
           >
             {new Date(year, m, 1).toLocaleString(undefined, { month: "long" })}
           </button>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
             {["Mo","Tu","We","Th","Fr","Sa","Su"].map(d => (
-              <div key={d} style={{ fontSize: isSmall ? 11 : 10, color: "var(--muted)", textAlign: "center" }}>{d}</div>
+              <div key={d} style={{ fontSize: isSmall ? 11 : 10, color: "var(--muted)", textAlign: "center", fontWeight: 700 }}>{d}</div>
             ))}
             {monthDays(year, m).map((d, idx) => {
               if (!d) return <div key={`e${idx}`} />;
@@ -56,7 +57,7 @@ export function YearGrid({
                   key={formatISODate(d)}
                   title={`${pct}% occupied`}
                   style={{
-                    height: isSmall ? 30 : 26,
+                    height: isSmall ? 32 : 28,
                     position: "relative",
                     borderRadius: 6,
                     background: "var(--card)",
@@ -72,10 +73,11 @@ export function YearGrid({
                       right: 0,
                       height: `${pct}%`,
                       background: "var(--primary)",
+                      opacity: isSmall ? 0.25 : 0.35
                     
                     }}
                   />
-                  <span style={{ position: "absolute", top: 3, right: 4, fontSize: isSmall ? 12 : 10, color: "var(--muted)", fontWeight: 800, textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}>
+                  <span style={{ position: "absolute", top: 3, right: 4, fontSize: isSmall ? 12 : 10, color: "var(--muted)", fontWeight: 900, textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}>
                     {d.getDate()}
                   </span>
                 </div>
