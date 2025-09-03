@@ -26,7 +26,10 @@ export async function POST(req: Request) {
     if (!target) return bad(404, { error: "Member not found" });
     if (target.role === 'owner') return bad(403, { error: "Cannot remove owner" });
 
-    const del = await supa.from("account_users").delete().eq("account_id", accountId).eq("user_id", userId);
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const admin = (await import("@supabase/supabase-js")).createClient(url, serviceKey, { auth: { persistSession: false } });
+    const del = await admin.from("account_users").delete().eq("account_id", accountId).eq("user_id", userId);
     if (del.error) return bad(400, { error: del.error.message });
     return NextResponse.json({ ok: true });
   } catch (e: any) {

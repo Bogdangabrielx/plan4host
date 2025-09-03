@@ -39,7 +39,10 @@ export async function PATCH(req: Request) {
     if (typeof disabled === 'boolean') patch.disabled = disabled;
     if (Object.keys(patch).length === 0) return NextResponse.json({ ok: true });
 
-    const upd = await supa.from("account_users").update(patch).eq("account_id", accountId).eq("user_id", userId);
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const admin = (await import("@supabase/supabase-js")).createClient(url, serviceKey, { auth: { persistSession: false } });
+    const upd = await admin.from("account_users").update(patch).eq("account_id", accountId).eq("user_id", userId);
     if (upd.error) return bad(400, { error: upd.error.message });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
