@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 type Room = { id: string; name: string; sort_index: number; room_type_id: string | null };
 type RoomType = { id: string; name: string };
@@ -29,15 +29,6 @@ export default function RoomsTab({
   onAssignType: (roomId: string, typeId: string | null) => void | Promise<void>;
 }) {
   const [newType, setNewType] = useState("");
-  const [isSmall, setIsSmall] = useState(false);
-
-  // XS detection for stacking room rows
-  useEffect(() => {
-    const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
-    detect();
-    window.addEventListener("resize", detect);
-    return () => window.removeEventListener("resize", detect);
-  }, []);
 
   const roomsSorted = useMemo(() => {
     return [...rooms].sort((a, b) => a.sort_index - b.sort_index);
@@ -101,14 +92,11 @@ export default function RoomsTab({
                   border: "1px solid var(--border)",
                   borderRadius: 12,
                   padding: 12,
-                  display: "grid",
                   gap: 10,
                   overflow: "hidden",
-                  /* Grid fix: ordinea e stabilă */
-                  gridTemplateColumns: isSmall ? "1fr" : "1fr auto",
-                  gridTemplateAreas: isSmall ? `"name" "type" "actions"` : `"name name" "type actions"`,
                   alignItems: "center",
                 }}
+                className="room-row"
               >
                 {/* Row 1: NAME (full width) */}
                 <div style={{ gridArea: "name", minWidth: 0 }}>

@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useState } from "react";
 
 type CheckDef = { id: string; label: string; default_value: boolean; sort_index: number };
 type TextDef  = { id: string; label: string; placeholder: string | null; sort_index: number };
@@ -22,13 +21,6 @@ export default function RoomDetailsTab({
   onDeleteText: (id: string) => void;
   onMoveText: (id: string, dir: "up" | "down") => void;
 }) {
-  const [isSmall, setIsSmall] = useState(false);
-  useEffect(() => {
-    const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
-    detect();
-    window.addEventListener("resize", detect);
-    return () => window.removeEventListener("resize", detect);
-  }, []);
   return (
     <div style={{ display: "grid", gap: 16 }}>
       {/* Checks */}
@@ -37,7 +29,7 @@ export default function RoomDetailsTab({
         {checks.length === 0 && <p style={{ color: "var(--muted)" }}>No checks defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...checks].sort((a,b) => a.sort_index - b.sort_index).map((c, idx) => (
-            <li key={c.id} style={{ ...row, gridTemplateColumns: isSmall ? "1fr" : (row.gridTemplateColumns as string) }}>
+            <li key={c.id} style={rowBase} className="rd-row">
               <input
                 defaultValue={c.label}
                 onBlur={(e) => {
@@ -67,7 +59,7 @@ export default function RoomDetailsTab({
         {texts.length === 0 && <p style={{ color: "var(--muted)" }}>No text fields defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...texts].sort((a,b) => a.sort_index - b.sort_index).map((t, idx) => (
-            <li key={t.id} style={{ ...row, gridTemplateColumns: isSmall ? "1fr" : (row.gridTemplateColumns as string) }}>
+            <li key={t.id} style={rowBase} className="rd-row">
               <input
                 defaultValue={t.label}
                 onBlur={(e) => {
@@ -101,7 +93,7 @@ export default function RoomDetailsTab({
 
 const card: React.CSSProperties = { background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 12 };
 const head: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 };
-const row: React.CSSProperties  = { display: "grid", gridTemplateColumns: "1fr 160px 90px 90px", gap: 8, alignItems: "center" };
+const rowBase: React.CSSProperties  = { background: "transparent", display: "grid", gap: 8, alignItems: "center" };
 const textInput: React.CSSProperties = { padding: 8, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8 };
 const primaryBtn: React.CSSProperties = { padding: "8px 12px", background: "var(--primary)", color: "#0c111b", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 700 };
 const ghostBtn: React.CSSProperties   = { padding: "6px 10px", background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, cursor: "pointer" };
