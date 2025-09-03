@@ -58,6 +58,16 @@ html, body { background: var(--bg); color: var(--text); }
 
 /* opțional: micro-tranziții plăcute */
 * { transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
+
+/* ---------- RESPONSIVE HELPERS (global) ---------- */
+.config-grid { display:grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start; }
+@media (max-width: 768px) { .config-grid { grid-template-columns: 1fr; } }
+
+.room-row { display: grid; gap: 10px; grid-template-columns: 1fr auto; grid-template-areas: "name name" "type actions"; align-items: center; }
+@media (max-width: 480px) { .room-row { grid-template-columns: 1fr; grid-template-areas: "name" "type" "actions"; } }
+
+.rd-row { display: grid; grid-template-columns: 1fr 160px 90px 90px; gap: 8px; align-items: center; }
+@media (max-width: 480px) { .rd-row { grid-template-columns: 1fr; } }
 `,
           }}
         />
