@@ -12,6 +12,32 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
+  // Redirect sub-users fără 'dashboard' către prima secțiune permisă
+  const { data: acc } = await supabase.from("accounts").select("id").eq("id", user.id).maybeSingle();
+  if (!acc) {
+    const { data: au } = await supabase
+      .from("account_users")
+      .select("role,scopes,disabled")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true });
+    const m = (au ?? [])[0] as any;
+    if (m && !m.disabled && !(m.role === 'owner' || m.role === 'manager')) {
+      const scopes: string[] = (m.scopes as string[] | null) ?? [];
+      if (!scopes.includes('dashboard')) {
+        const order = ['cleaning','inbox','calendar','channels','configurator'];
+        const first = order.find(s => scopes.includes(s));
+        if (first) {
+          const path = first === 'cleaning' ? '/app/cleaning'
+            : first === 'inbox' ? '/app/inbox'
+            : first === 'calendar' ? '/app/calendar'
+            : first === 'channels' ? '/app/channels'
+            : '/app/configurator';
+          redirect(path);
+        }
+      }
+    }
+  }
+
   const { data: properties = [] } = await supabase
     .from("properties")
     .select("id,name,country_code,timezone,check_in_time,check_out_time")
