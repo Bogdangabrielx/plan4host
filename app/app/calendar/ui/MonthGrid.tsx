@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { addDays, formatISODate, startOfMonthGrid } from "./calendar-utils";
 
 export function MonthGrid({
@@ -9,6 +10,13 @@ export function MonthGrid({
   getOccupancy: (d: Date) => number;
   onDayClick: (d: Date) => void;
 }) {
+  const [isSmall, setIsSmall] = useState(false);
+  useEffect(() => {
+    const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
+    detect();
+    window.addEventListener("resize", detect);
+    return () => window.removeEventListener("resize", detect);
+  }, []);
   const start = startOfMonthGrid(year, month); // Monday-start grid
   const days: Date[] = [];
   for (let i = 0; i < 42; i++) days.push(addDays(start, i));
@@ -24,7 +32,7 @@ export function MonthGrid({
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
         {["Mo","Tu","We","Th","Fr","Sa","Su"].map(d => (
-          <div key={d} style={{ fontSize: 12, color: "var(--muted)", textAlign: "center", paddingBottom: 4 }}>{d}</div>
+          <div key={d} style={{ fontSize: isSmall ? 11 : 12, color: "var(--muted)", textAlign: "center", paddingBottom: 4 }}>{d}</div>
         ))}
         {days.map((d) => {
           const pct = getOccupancy(d);
@@ -34,7 +42,7 @@ export function MonthGrid({
               onClick={() => onDayClick(d)}
               title={`${pct}% occupied`}
               style={{
-                height: 80,
+                height: isSmall ? 64 : 80,
                 position: "relative",
                 borderRadius: 8,
                 background: inMonth(d) ? "var(--card)" : "#0b0d12",
@@ -60,8 +68,10 @@ export function MonthGrid({
                   position: "absolute",
                   top: 6,
                   right: 8,
-                  fontSize: 12,
-                  color: inMonth(d) ? "var(--muted)" : "#3a4151"
+                  fontSize: isSmall ? 14 : 12,
+                  fontWeight: 900,
+                  color: inMonth(d) ? "var(--muted)" : "#3a4151",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.55)"
                 }}
               >
                 {d.getDate()}

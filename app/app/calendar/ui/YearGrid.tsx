@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { formatISODate, monthDays } from "./calendar-utils";
 
 export function YearGrid({
@@ -16,8 +17,15 @@ export function YearGrid({
   getOccupancy: (d: Date) => number;
   onMonthClick: (m: number) => void;
 }) {
+  const [isSmall, setIsSmall] = useState(false);
+  useEffect(() => {
+    const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
+    detect();
+    window.addEventListener("resize", detect);
+    return () => window.removeEventListener("resize", detect);
+  }, []);
   return (
-    <section style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+    <section style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "repeat(3, 1fr)", gap: 16 }}>
       {Array.from({ length: 12 }).map((_, m) => (
         <div key={m} style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 12 }}>
           <button
@@ -28,7 +36,7 @@ export function YearGrid({
               border: "none",
               cursor: "pointer",
               fontWeight: 700,
-              fontSize: 16,
+              fontSize: isSmall ? 18 : 16,
               marginBottom: 8,
               textDecoration: "underline",
               textTransform: "capitalize"
@@ -38,7 +46,7 @@ export function YearGrid({
           </button>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
             {["Mo","Tu","We","Th","Fr","Sa","Su"].map(d => (
-              <div key={d} style={{ fontSize: 10, color: "var(--muted)", textAlign: "center" }}>{d}</div>
+              <div key={d} style={{ fontSize: isSmall ? 11 : 10, color: "var(--muted)", textAlign: "center" }}>{d}</div>
             ))}
             {monthDays(year, m).map((d, idx) => {
               if (!d) return <div key={`e${idx}`} />;
@@ -48,7 +56,7 @@ export function YearGrid({
                   key={formatISODate(d)}
                   title={`${pct}% occupied`}
                   style={{
-                    height: 26,
+                    height: isSmall ? 30 : 26,
                     position: "relative",
                     borderRadius: 6,
                     background: "var(--card)",
@@ -67,7 +75,7 @@ export function YearGrid({
                     
                     }}
                   />
-                  <span style={{ position: "absolute", top: 3, right: 4, fontSize: 10, color: "var(--muted)" }}>
+                  <span style={{ position: "absolute", top: 3, right: 4, fontSize: isSmall ? 12 : 10, color: "var(--muted)", fontWeight: 800, textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}>
                     {d.getDate()}
                   </span>
                 </div>
