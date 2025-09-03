@@ -45,7 +45,29 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setStatus("Loading"); setErr("");
+    setErr("");
+
+    // Basic client-side validation (after click)
+    const emailTrim = email.trim();
+    const passTrim = pass;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailTrim) {
+      setErr("Please enter your email.");
+      setStatus("Error");
+      return;
+    }
+    if (!emailRegex.test(emailTrim)) {
+      setErr("Please enter a valid email address.");
+      setStatus("Error");
+      return;
+    }
+    if (!passTrim) {
+      setErr("Please enter your password.");
+      setStatus("Error");
+      return;
+    }
+
+    setStatus("Loading");
 
     const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/signup";
     const res = await fetch(endpoint, {
@@ -55,6 +77,15 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     });
 
     if (res.ok) {
+      // For signup, handle confirmation-required
+      const j = await res.json().catch(() => ({} as any));
+      if (mode === "signup" && j?.requiresConfirmation) {
+        setStatus("Idle");
+        setErr("");
+        alert("We sent a confirmation email from noreply@plan4host.com. Please confirm to continue.");
+        return;
+      }
+      // Login or auto-signed signup: go to app
       location.href = "/app";
     } else {
       const j = await res.json().catch(() => ({}));
@@ -137,7 +168,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
 
           <button
             type="submit"
-            disabled={!email || !pass || status==="Loading"}
+            disabled={status==="Loading"}
             style={primaryBtn}
           >
             {mode === "login" ? "Sign in" : "Create account"}

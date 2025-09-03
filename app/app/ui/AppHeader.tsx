@@ -17,6 +17,14 @@ const NAV = [
 export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const { title, pill, right } = useHeader();
   const [open, setOpen] = useState(false);
+  const [isSmall, setIsSmall] = useState(false);
+
+  useEffect(() => {
+    const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
+    detect();
+    window.addEventListener("resize", detect);
+    return () => window.removeEventListener("resize", detect);
+  }, []);
 
   // IMPORTANT: domeniul tău (injectat la build)
   const BASE =
@@ -71,18 +79,19 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 12,
-          padding: "12px 16px",
+          gap: isSmall ? 8 : 12,
+          padding: isSmall ? "8px 10px" : "12px 16px",
+          flexWrap: "wrap",
           background: "var(--panel)",
           borderBottom: "1px solid var(--border)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
           <button
             onClick={() => setOpen(true)}
             aria-label="Open menu"
             style={{
-              padding: 8,
+              padding: isSmall ? 6 : 8,
               borderRadius: 10,
               border: "1px solid var(--border)",
               background: "var(--card)",
@@ -95,13 +104,25 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           </button>
 
           {/* Title poate fi ReactNode */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <div style={{ margin: 0, fontSize: 18, lineHeight: 1 }}>{title}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
+            <div style={{ margin: 0, fontSize: isSmall ? 16 : 18, lineHeight: 1 }}>{title}</div>
             {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>{right}</div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: isSmall ? 8 : 12,
+            flexWrap: "wrap",
+            width: isSmall ? "100%" : "auto",
+            justifyContent: isSmall ? "flex-start" : "flex-end",
+            marginTop: isSmall ? 6 : 0,
+          }}
+        >
+          {right}
+        </div>
       </header>
 
       {open && (
