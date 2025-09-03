@@ -40,7 +40,7 @@ html, body {
 
 /* Responsive helpers */
 .config-grid { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start; }
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .config-grid { grid-template-columns: 1fr; }
 }
 
