@@ -171,8 +171,9 @@ async function upsertUnassigned(
 // ---------- handler ----------
 async function runAutosync(req: Request) {
   try {
-    // 1) securitate cron (acceptă header sau ?key= pentru Vercel Cron)
+    // 1) securitate cron (acceptă header x-cron-key, ?key= sau x-vercel-cron)
     const headerKey = req.headers.get("x-cron-key") || "";
+    const isVercelCron = !!req.headers.get("x-vercel-cron");
     const queryKey = (() => {
       try {
         const u = new URL(req.url);
@@ -182,7 +183,8 @@ async function runAutosync(req: Request) {
       }
     })();
     const expected = process.env.CRON_ICAL_KEY || ""; // setează în .env / Vercel
-    if (!expected || (headerKey || queryKey) !== expected) {
+    const keyOk = expected && (headerKey || queryKey) === expected;
+    if (!isVercelCron && !keyOk) {
       return j(401, { error: "Unauthorized" });
     }
 
