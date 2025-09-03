@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
@@ -61,6 +61,8 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
   // Day modal (ONLY in Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [showYear, setShowYear] = useState<boolean>(false);
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
 
   // Detect very small screens and prefer Month view there
   useEffect(() => {
@@ -149,6 +151,32 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
   }
   function backToYear() { setShowYear(true); }
 
+  function openDatePicker() {
+    const v = `${year}-${pad(month + 1)}-01`;
+    const el = dateInputRef.current;
+    if (!el) return setShowDatePicker(true);
+    try {
+      el.value = v;
+      // @ts-ignore: showPicker is experimental
+      if (typeof el.showPicker === "function") {
+        // @ts-ignore
+        el.showPicker();
+        return;
+      }
+    } catch {}
+    setShowDatePicker(true);
+  }
+
+  function onPickedDate(value: string) {
+    if (!value) return;
+    const d = new Date(value + "T00:00:00");
+    if (!isNaN(d.getTime())) {
+      setYear(d.getFullYear());
+      setMonth(d.getMonth());
+    }
+    setShowDatePicker(false);
+  }
+
   // Keyboard shortcuts: Left/Right = prev/next month, T = today, Y = year overlay
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -163,7 +191,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
       } else if (e.key.toLowerCase() === "t") {
         goToday();
       } else if (e.key.toLowerCase() === "y") {
-        setShowYear(v => !v);
+        openDatePicker();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -199,9 +227,9 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
           <button
             type="button"
             className="sb-btn sb-btn--ghost"
-            onClick={() => setShowYear(true)}
+            onClick={openDatePicker}
             style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18 }}
-            aria-label="Open year overview"
+            aria-label="Pick date"
           >
             {monthNames[month]} {year}
           </button>
@@ -235,22 +263,26 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
         />
       )}
 
-      {/* Year overlay (minimal, toggled by clicking Month Year) */}
-      {showYear && (
-        <div role="dialog" aria-modal="true" onClick={() => setShowYear(false)}
-          style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(0,0,0,0.6)", display: "grid", placeItems: "center" }}>
-          <div onClick={(e) => e.stopPropagation()} className="sb-card" style={{ width: "min(1024px, 95vw)", maxHeight: "86vh", overflow: "auto", padding: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <strong style={{ fontSize: 16 }}>Pick a month — {year}</strong>
-              <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowYear(false)}>Close</button>
-            </div>
-            <YearView
-              year={year}
-              roomsCount={rooms.length}
-              occupancyMap={occupancyMap}
-              isSmall={false}
-              onMonthTitleClick={(m) => { setMonth(m); setShowYear(false); }}
-              onDayClick={(dateStr) => { goToMonthFor(dateStr); setShowYear(false); }}
+      {/* Hidden native input for date picking + minimal fallback popover */}
+      <input
+        ref={dateInputRef}
+        type="date"
+        defaultValue={`${year}-${pad(month + 1)}-01`}
+        onChange={(e) => onPickedDate(e.currentTarget.value)}
+        style={{ position: "fixed", opacity: 0, pointerEvents: "none", width: 0, height: 0, inset: 0 }}
+        aria-hidden
+        tabIndex={-1}
+      />
+      {showDatePicker && (
+        <div role="dialog" aria-modal="true" onClick={() => setShowDatePicker(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 230, background: "rgba(0,0,0,0.5)", display: "grid", placeItems: "center" }}>
+          <div onClick={(e) => e.stopPropagation()} className="sb-popover">
+            <input
+              type="date"
+              defaultValue={`${year}-${pad(month + 1)}-01`}
+              onChange={(e) => onPickedDate(e.currentTarget.value)}
+              className="sb-select"
+              style={{ padding: 10 }}
             />
           </div>
         </div>
@@ -426,25 +458,25 @@ function MonthView({
                 position: "relative",
                 height: isSmall ? 66 : 88,
                 borderRadius: 10,
-                border: c.isToday ? "2px solid var(--primary)" : "1px solid var(--border)",
+                border: "1px solid color-mix(in srgb, var(--border) 55%, transparent)",
                 background: "var(--card)",
                 cursor: clickable ? "pointer" : "default",
                 overflow: "hidden",
-                boxShadow: c.isToday ? "0 0 0 3px rgba(96,165,250,0.25)" : "none",
+                boxShadow: c.isToday ? "0 0 0 2px rgba(96,165,250,0.15)" : "none",
                 transition: "border-color .15s ease, box-shadow .15s ease, transform .05s ease",
               }}
               onMouseDown={(e)=>{ (e.currentTarget as HTMLDivElement).style.transform='scale(0.99)'; }}
               onMouseUp={(e)=>{ (e.currentTarget as HTMLDivElement).style.transform='scale(1)'; }}
             >
               {weekend && (
-                <div style={{ position: "absolute", inset: 0, background: "rgba(96,165,250,0.06)" }} />
+                <div style={{ position: "absolute", inset: 0, background: "rgba(96,165,250,0.04)" }} />
               )}
               {/* day number */}
               {c.dateStr && (
                 <div style={{
                   position: "absolute", top: 8, left: 8,
                   fontSize: isSmall ? 15 : 13,
-                  color: "var(--text)", fontWeight: 900,
+                  color: "var(--text)", fontWeight: 800,
                   textShadow: "0 1px 2px rgba(0,0,0,0.55)"
                 }}>
                   {parseInt(c.dateStr.slice(-2), 10)}
@@ -465,9 +497,13 @@ function MonthView({
                     left: 0, right: 0, bottom: 0,
                     height: `${Math.round((c.occPct ?? 0) * 100)}%`,
                     background: "var(--primary)",
-                    opacity: isSmall ? 0.25 : 0.35,
+                    opacity: isSmall ? 0.18 : 0.22,
                   }}
                 />
+              )}
+              {/* tiny today dot */}
+              {c.isToday && (
+                <span aria-hidden style={{ position: "absolute", top: 8, right: 8, width: 6, height: 6, borderRadius: 999, background: "var(--primary)" }} />
               )}
             </div>
           );
