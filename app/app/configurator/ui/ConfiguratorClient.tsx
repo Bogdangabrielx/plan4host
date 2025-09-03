@@ -22,6 +22,7 @@ type Plan = "basic" | "standard" | "premium";
 export default function ConfiguratorClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
+  const [isSmall, setIsSmall] = useState(false);
 
   const [properties, setProperties] = useState<Property[]>(initialProperties);
   const [selectedId, setSelectedId] = useState<string>(initialProperties[0]?.id ?? "");
@@ -37,6 +38,17 @@ export default function ConfiguratorClient({ initialProperties }: { initialPrope
 
   const { setTitle, setPill } = useHeader();
   useEffect(() => { setTitle("Configurator"); }, [setTitle]);
+
+  // Detect small screens (fallback override if CSS not applied yet on device)
+  useEffect(() => {
+    const detect = () => {
+      if (typeof window === "undefined") return;
+      try { setIsSmall(window.matchMedia("(max-width: 768px)").matches); } catch { setIsSmall(window.innerWidth < 768); }
+    };
+    detect();
+    window.addEventListener("resize", detect);
+    return () => window.removeEventListener("resize", detect);
+  }, []);
 
 
   // Header pill mirrors page status
@@ -209,7 +221,7 @@ export default function ConfiguratorClient({ initialProperties }: { initialPrope
       <PlanHeaderBadge title="Configurator" />
       {/* restul UI-ului */}
 
-      <div className="config-grid">
+      <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>
         <PropertySidebar properties={properties} selectedId={selectedId} onSelect={setSelectedId} status={status} />
         <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
           {!selected ? (
