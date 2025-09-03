@@ -45,6 +45,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
   const { setPill } = useHeader();
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = useState<string>(initialProperties[0]?.id ?? "");
+  const [isSmall, setIsSmall] = useState(false);
 
   // View state
   const today = new Date();
@@ -60,6 +61,18 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
 
   // Day modal (ONLY in Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
+
+  // Detect very small screens and prefer Month view there
+  useEffect(() => {
+    const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
+    detect();
+    window.addEventListener("resize", detect);
+    return () => window.removeEventListener("resize", detect);
+  }, []);
+
+  useEffect(() => {
+    if (isSmall && view !== "month") setView("month");
+  }, [isSmall]);
 
   // Load rooms + bookings for current window
   useEffect(() => {
@@ -144,13 +157,13 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
       <PlanHeaderBadge title="Calendar" />
 
       {/* Top toolbar: LEFT = property + Month section; RIGHT = ◀ Year ▶ Today */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
         {/* LEFT */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 320 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, minWidth: isSmall ? 0 : 320, flexWrap: "wrap" }}>
           <select
             value={propertyId}
             onChange={(e) => { setPropertyId(e.currentTarget.value); }}
-            style={select}
+            style={{ ...select, minWidth: 200 }}
           >
             {properties.map(p => (
               <option key={p.id} value={p.id}>{p.name}</option>
@@ -161,17 +174,17 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
 
           {/* Month section (only in month view) */}
           {view === "month" && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <button onClick={backToYear} style={linkBtn}>Back to Year</button>
               <strong style={{ color: "var(--text)" }}>{monthNames[month]}</strong>
             </div>
           )}
         </div>
 
-        <div style={{ flex: 1 }} />
+        <div style={{ flex: 1, minWidth: isSmall ? "100%" : 0 }} />
 
         {/* RIGHT — ◀ Year ▶ always together + Today */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", width: isSmall ? "100%" : "auto", justifyContent: isSmall ? "flex-start" : "flex-end" }}>
           <button
             onClick={() => setYear(y => y - 1)}
             style={btn}
@@ -197,6 +210,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
           year={year}
           roomsCount={rooms.length}
           occupancyMap={occupancyMap}
+          isSmall={isSmall}
           onMonthTitleClick={(m) => { setMonth(m); setHighlightDate(null); setView("month"); }}
           onDayClick={(dateStr) => goToMonthFor(dateStr)} // orice zi -> Month view
         />
@@ -207,6 +221,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
           roomsCount={rooms.length}
           occupancyMap={occupancyMap}
           highlightDate={highlightDate}
+          isSmall={isSmall}
           onDayClick={(dateStr) => setOpenDate(dateStr)} // în Month view: deschide DayModal
         />
       )}
@@ -229,17 +244,19 @@ function YearView({
   year,
   roomsCount,
   occupancyMap,
+  isSmall,
   onMonthTitleClick,
   onDayClick
 }: {
   year: number;
   roomsCount: number;
   occupancyMap: Map<string, Set<string>>;
+  isSmall: boolean;
   onMonthTitleClick: (monthIndex: number) => void;
   onDayClick: (dateStr: string) => void;
 }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+    <div style={{ display: "grid", gridTemplateColumns: isSmall ? "repeat(1, 1fr)" : "repeat(3, 1fr)", gap: 12 }}>
       {Array.from({ length: 12 }).map((_, m) => (
         <div key={m} style={panel}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -341,11 +358,12 @@ function tooltipFor(dateStr: string, roomsCount: number, map: Map<string, Set<st
 /* ================== MONTH VIEW ================== */
 
 function MonthView({
-  year, month, roomsCount, occupancyMap, highlightDate, onDayClick
+  year, month, roomsCount, occupancyMap, highlightDate, isSmall, onDayClick
 }: {
   year: number; month: number; roomsCount: number;
   occupancyMap: Map<string, Set<string>>;
   highlightDate: string | null;
+  isSmall: boolean;
   onDayClick: (dateStr: string) => void;
 }) {
   const dim = daysInMonth(year, month);
@@ -370,7 +388,7 @@ function MonthView({
       {/* week day headers */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
         {weekdayShort.map((w) => (
-          <div key={w} style={{ textAlign: "center", color: "var(--muted)", fontSize: 12 }}>{w}</div>
+          <div key={w} style={{ textAlign: "center", color: "var(--muted)", fontSize: isSmall ? 11 : 12 }}>{w}</div>
         ))}
       </div>
 
@@ -384,7 +402,7 @@ function MonthView({
               title={c.dateStr ? tooltipFor(c.dateStr, roomsCount, occupancyMap) : undefined}
               style={{
                 position: "relative",
-                height: 84,
+                height: isSmall ? 64 : 84,
                 borderRadius: 10,
                 border: "1px solid var(--border)",
                 background: "var(--card)",
@@ -470,4 +488,3 @@ const select: React.CSSProperties = {
   padding: "6px 10px",
   borderRadius: 8,
 };
-
