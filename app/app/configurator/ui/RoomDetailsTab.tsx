@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 
 type CheckDef = { id: string; label: string; default_value: boolean; sort_index: number };
 type TextDef  = { id: string; label: string; placeholder: string | null; sort_index: number };
@@ -21,6 +22,13 @@ export default function RoomDetailsTab({
   onDeleteText: (id: string) => void;
   onMoveText: (id: string, dir: "up" | "down") => void;
 }) {
+  const [isSmall, setIsSmall] = useState(false);
+  useEffect(() => {
+    const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
+    detect();
+    window.addEventListener("resize", detect);
+    return () => window.removeEventListener("resize", detect);
+  }, []);
   return (
     <div style={{ display: "grid", gap: 16 }}>
       {/* Checks */}
@@ -29,7 +37,7 @@ export default function RoomDetailsTab({
         {checks.length === 0 && <p style={{ color: "var(--muted)" }}>No checks defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...checks].sort((a,b) => a.sort_index - b.sort_index).map((c, idx) => (
-            <li key={c.id} style={row}>
+            <li key={c.id} style={{ ...row, gridTemplateColumns: isSmall ? "1fr" : (row.gridTemplateColumns as string) }}>
               <input
                 defaultValue={c.label}
                 onBlur={(e) => {
@@ -59,7 +67,7 @@ export default function RoomDetailsTab({
         {texts.length === 0 && <p style={{ color: "var(--muted)" }}>No text fields defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...texts].sort((a,b) => a.sort_index - b.sort_index).map((t, idx) => (
-            <li key={t.id} style={row}>
+            <li key={t.id} style={{ ...row, gridTemplateColumns: isSmall ? "1fr" : (row.gridTemplateColumns as string) }}>
               <input
                 defaultValue={t.label}
                 onBlur={(e) => {
