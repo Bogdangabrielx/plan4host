@@ -19,6 +19,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const { title, pill, right } = useHeader();
   const [open, setOpen] = useState(false);
   const [nav, setNav] = useState(NAV_BASE);
+  const [me, setMe] = useState<{ role: string; scopes: string[]; disabled: boolean } | null>(null);
   const [isSmall, setIsSmall] = useState(false);
 
   useEffect(() => {
