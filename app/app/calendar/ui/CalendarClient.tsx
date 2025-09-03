@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
-import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 
 // Robust dynamic import: works whether DayModal is a default or a named export.
@@ -49,7 +48,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
 
   // View state
   const today = new Date();
-  const [view, setView]   = useState<"year" | "month">("year");
+  const [view, setView]   = useState<"year" | "month">("month");
   const [year, setYear]   = useState<number>(today.getFullYear());
   const [month, setMonth] = useState<number>(today.getMonth()); // 0..11
   const [highlightDate, setHighlightDate] = useState<string | null>(null); // highlight în Month view
@@ -61,6 +60,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
 
   // Day modal (ONLY in Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
+  const [showYear, setShowYear] = useState<boolean>(false);
 
   // Detect very small screens and prefer Month view there
   useEffect(() => {
@@ -140,25 +140,40 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
     const d = new Date(dateStr + "T00:00:00");
     setYear(d.getFullYear());
     setMonth(d.getMonth());
-    setHighlightDate(dateStr);
+    setHighlightDate(null);
     setView("month");
   }
   function goToday() {
     const ds = ymd(today);
-    goToMonthFor(ds); // highlight today's date în Month view
+    goToMonthFor(ds);
   }
-  function backToYear() {
-    setHighlightDate(null);
-    setView("year");
-  }
+  function backToYear() { setShowYear(true); }
+
+  // Keyboard shortcuts: Left/Right = prev/next month, T = today, Y = year overlay
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") {
+        setMonth(m => {
+          const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm;
+        });
+      } else if (e.key === "ArrowRight") {
+        setMonth(m => {
+          const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm;
+        });
+      } else if (e.key.toLowerCase() === "t") {
+        goToday();
+      } else if (e.key.toLowerCase() === "y") {
+        setShowYear(v => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
-      <PlanHeaderBadge title="Calendar" />
-
-      {/* Supabase‑style toolbar */}
+      {/* Minimal toolbar */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 8 : 12 }}>
-        {/* Property select */}
         <select
           className="sb-select"
           value={propertyId}
@@ -170,64 +185,46 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
           ))}
         </select>
 
-        {/* View segmented control (forces Month on very small screens) */}
-        <div className="sb-seg">
+        <div style={{ flex: 1 }} />
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button
             type="button"
-            data-active={view === "year" && !isSmall}
-            onClick={() => { if (!isSmall) setView("year"); }}
+            className="sb-btn sb-btn--icon"
+            aria-label="Previous month"
+            onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}
           >
-            Year
+            ◀
           </button>
           <button
             type="button"
-            data-active={view === "month"}
-            onClick={() => setView("month")}
+            className="sb-btn sb-btn--ghost"
+            onClick={() => setShowYear(true)}
+            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18 }}
+            aria-label="Open year overview"
           >
-            Month
+            {monthNames[month]} {year}
           </button>
-        </div>
-
-        {/* Month context */}
-        {view === "month" && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={backToYear}>Back to Year</button>
-            <strong>{monthNames[month]}</strong>
-          </div>
-        )}
-
-        {/* Spacer */}
-        <div style={{ flex: 1, minWidth: isSmall ? "100%" : 0 }} />
-
-        {/* Year navigation + today */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", width: isSmall ? "100%" : "auto", justifyContent: isSmall ? "flex-start" : "flex-end" }}>
-          <button type="button" className="sb-btn sb-btn--icon" onClick={() => setYear(y => y - 1)} aria-label="Previous year">◀</button>
-          <strong style={{ minWidth: 90, textAlign: "center" }}>{year}</strong>
-          <button type="button" className="sb-btn sb-btn--icon" onClick={() => setYear(y => y + 1)} aria-label="Next year">▶</button>
-          <button type="button" className="sb-btn sb-btn--primary" onClick={goToday}>Today</button>
+          <button
+            type="button"
+            className="sb-btn sb-btn--icon"
+            aria-label="Next month"
+            onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}
+          >
+            ▶
+          </button>
         </div>
       </div>
 
-      {view === "year" ? (
-        <YearView
-          year={year}
-          roomsCount={rooms.length}
-          occupancyMap={occupancyMap}
-          isSmall={isSmall}
-          onMonthTitleClick={(m) => { setMonth(m); setHighlightDate(null); setView("month"); }}
-          onDayClick={(dateStr) => goToMonthFor(dateStr)} // orice zi -> Month view
-        />
-      ) : (
-        <MonthView
-          year={year}
-          month={month}
-          roomsCount={rooms.length}
-          occupancyMap={occupancyMap}
-          highlightDate={highlightDate}
-          isSmall={isSmall}
-          onDayClick={(dateStr) => setOpenDate(dateStr)} // în Month view: deschide DayModal
-        />
-      )}
+      <MonthView
+        year={year}
+        month={month}
+        roomsCount={rooms.length}
+        occupancyMap={occupancyMap}
+        highlightDate={null}
+        isSmall={isSmall}
+        onDayClick={(dateStr) => setOpenDate(dateStr)}
+      />
 
       {/* DayModal — only in Month view */}
       {openDate && (
@@ -236,6 +233,27 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
           propertyId={propertyId}
           onClose={() => setOpenDate(null)}
         />
+      )}
+
+      {/* Year overlay (minimal, toggled by clicking Month Year) */}
+      {showYear && (
+        <div role="dialog" aria-modal="true" onClick={() => setShowYear(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(0,0,0,0.6)", display: "grid", placeItems: "center" }}>
+          <div onClick={(e) => e.stopPropagation()} className="sb-card" style={{ width: "min(1024px, 95vw)", maxHeight: "86vh", overflow: "auto", padding: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <strong style={{ fontSize: 16 }}>Pick a month — {year}</strong>
+              <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowYear(false)}>Close</button>
+            </div>
+            <YearView
+              year={year}
+              roomsCount={rooms.length}
+              occupancyMap={occupancyMap}
+              isSmall={false}
+              onMonthTitleClick={(m) => { setMonth(m); setShowYear(false); }}
+              onDayClick={(dateStr) => { goToMonthFor(dateStr); setShowYear(false); }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
