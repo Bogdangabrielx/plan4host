@@ -395,6 +395,7 @@ function MonthView({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
         {days.map((c, i) => {
           const clickable = !!c.dateStr;
+          const weekend = c.dateStr ? (()=>{ const d=new Date(c.dateStr+"T00:00:00"); const w=d.getDay(); return w===0||w===6; })() : false;
           return (
             <div
               key={i}
@@ -402,36 +403,33 @@ function MonthView({
               title={c.dateStr ? tooltipFor(c.dateStr, roomsCount, occupancyMap) : undefined}
               style={{
                 position: "relative",
-                height: isSmall ? 64 : 84,
+                height: isSmall ? 66 : 88,
                 borderRadius: 10,
-                border: "1px solid var(--border)",
+                border: c.isToday ? "2px solid var(--primary)" : "1px solid var(--border)",
                 background: "var(--card)",
                 cursor: clickable ? "pointer" : "default",
                 overflow: "hidden",
+                boxShadow: c.isToday ? "0 0 0 3px rgba(96,165,250,0.25)" : "none",
+                transition: "border-color .15s ease, box-shadow .15s ease, transform .05s ease",
               }}
+              onMouseDown={(e)=>{ (e.currentTarget as HTMLDivElement).style.transform='scale(0.99)'; }}
+              onMouseUp={(e)=>{ (e.currentTarget as HTMLDivElement).style.transform='scale(1)'; }}
             >
+              {weekend && (
+                <div style={{ position: "absolute", inset: 0, background: "rgba(96,165,250,0.06)" }} />
+              )}
               {/* day number */}
               {c.dateStr && (
                 <div style={{
-                  position: "absolute", top: 6, left: 6,
-                  fontSize: isSmall ? 14 : 12,
+                  position: "absolute", top: 8, left: 8,
+                  fontSize: isSmall ? 15 : 13,
                   color: "var(--text)", fontWeight: 900,
                   textShadow: "0 1px 2px rgba(0,0,0,0.55)"
                 }}>
                   {parseInt(c.dateStr.slice(-2), 10)}
                 </div>
               )}
-
-              {/* today badge */}
-              {c.isToday && (
-                <div style={{
-                  position: "absolute", top: 4, right: 4, fontSize: 10,
-                  padding: "2px 6px", borderRadius: 999, background: "var(--primary)", color: "#0c111b", fontWeight: 800
-                }}>
-                  Today
-                </div>
-              )}
-              {/* highlight for selected day from Year view / Today */}
+              {/* highlight for selected day from Year view */}
               {c.isHL && (
                 <div style={{
                   position: "absolute", inset: 0, border: "2px solid var(--primary)", borderRadius: 10, pointerEvents: "none"
@@ -446,13 +444,28 @@ function MonthView({
                     left: 0, right: 0, bottom: 0,
                     height: `${Math.round((c.occPct ?? 0) * 100)}%`,
                     background: "var(--primary)",
-                    opacity: isSmall ? 0.22 : 0.35,
+                    opacity: isSmall ? 0.25 : 0.35,
                   }}
                 />
               )}
             </div>
           );
         })}
+      </div>
+      {/* Legend */}
+      <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 10, color: "var(--muted)", fontSize: 12, flexWrap: "wrap" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 14, height: 6, background: "var(--primary)", borderRadius: 4, display: "inline-block", opacity: .35 }} />
+          Occupancy
+        </span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 14, height: 14, background: "rgba(96,165,250,0.12)", border: "1px solid rgba(96,165,250,0.25)", borderRadius: 4, display: "inline-block" }} />
+          Weekend
+        </span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 14, height: 14, border: "2px solid var(--primary)", borderRadius: 6, display: "inline-block", boxShadow: "0 0 0 3px rgba(96,165,250,0.25)" }} />
+          Today
+        </span>
       </div>
     </div>
   );
