@@ -60,9 +60,9 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
 
   // Day modal (ONLY in Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
-  const [showYear, setShowYear] = useState<boolean>(false);
+  const [showYear, setShowYear] = useState<boolean>(false); // legacy; no longer used for UI
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
-  const dateInputRef = useRef<HTMLInputElement | null>(null);
+  const dateOverlayInputRef = useRef<HTMLInputElement | null>(null);
 
   // Detect very small screens and prefer Month view there
   useEffect(() => {
@@ -151,21 +151,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
   }
   function backToYear() { setShowYear(true); }
 
-  function openDatePicker() {
-    const v = `${year}-${pad(month + 1)}-01`;
-    const el = dateInputRef.current;
-    if (!el) return setShowDatePicker(true);
-    try {
-      el.value = v;
-      // @ts-ignore: showPicker is experimental
-      if (typeof el.showPicker === "function") {
-        // @ts-ignore
-        el.showPicker();
-        return;
-      }
-    } catch {}
-    setShowDatePicker(true);
-  }
+  function openDatePicker() { setShowDatePicker(true); }
 
   function onPickedDate(value: string) {
     if (!value) return;
@@ -176,6 +162,18 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
     }
     setShowDatePicker(false);
   }
+
+  // Auto focus the visible input when popover opens (and try showPicker if available)
+  useEffect(() => {
+    if (!showDatePicker) return;
+    const el = dateOverlayInputRef.current;
+    if (!el) return;
+    try {
+      el.focus();
+      // @ts-ignore
+      if (typeof el.showPicker === "function") el.showPicker();
+    } catch {}
+  }, [showDatePicker]);
 
   // Keyboard shortcuts: Left/Right = prev/next month, T = today, Y = year overlay
   useEffect(() => {
@@ -263,21 +261,13 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
         />
       )}
 
-      {/* Hidden native input for date picking + minimal fallback popover */}
-      <input
-        ref={dateInputRef}
-        type="date"
-        defaultValue={`${year}-${pad(month + 1)}-01`}
-        onChange={(e) => onPickedDate(e.currentTarget.value)}
-        style={{ position: "fixed", opacity: 0, pointerEvents: "none", width: 0, height: 0, inset: 0 }}
-        aria-hidden
-        tabIndex={-1}
-      />
+      {/* Visible popover date picker */}
       {showDatePicker && (
         <div role="dialog" aria-modal="true" onClick={() => setShowDatePicker(false)}
           style={{ position: "fixed", inset: 0, zIndex: 230, background: "rgba(0,0,0,0.5)", display: "grid", placeItems: "center" }}>
           <div onClick={(e) => e.stopPropagation()} className="sb-popover">
             <input
+              ref={dateOverlayInputRef}
               type="date"
               defaultValue={`${year}-${pad(month + 1)}-01`}
               onChange={(e) => onPickedDate(e.currentTarget.value)}
@@ -458,18 +448,18 @@ function MonthView({
                 position: "relative",
                 height: isSmall ? 66 : 88,
                 borderRadius: 10,
-                border: "1px solid color-mix(in srgb, var(--border) 55%, transparent)",
+                border: "1px solid var(--cal-brd)",
                 background: "var(--card)",
                 cursor: clickable ? "pointer" : "default",
                 overflow: "hidden",
-                boxShadow: c.isToday ? "0 0 0 2px rgba(96,165,250,0.15)" : "none",
+                boxShadow: c.isToday ? "0 0 0 2px var(--cal-today-ring)" : "none",
                 transition: "border-color .15s ease, box-shadow .15s ease, transform .05s ease",
               }}
               onMouseDown={(e)=>{ (e.currentTarget as HTMLDivElement).style.transform='scale(0.99)'; }}
               onMouseUp={(e)=>{ (e.currentTarget as HTMLDivElement).style.transform='scale(1)'; }}
             >
               {weekend && (
-                <div style={{ position: "absolute", inset: 0, background: "rgba(96,165,250,0.04)" }} />
+                <div style={{ position: "absolute", inset: 0, background: "var(--cal-wkend)" }} />
               )}
               {/* day number */}
               {c.dateStr && (
@@ -509,18 +499,18 @@ function MonthView({
           );
         })}
       </div>
-      {/* Legend */}
+      {/* Legend (aligned with visuals) */}
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 10, color: "var(--muted)", fontSize: 12, flexWrap: "wrap" }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 14, height: 6, background: "var(--primary)", borderRadius: 4, display: "inline-block", opacity: .35 }} />
+          <span style={{ width: 14, height: 6, background: "var(--primary)", borderRadius: 4, display: "inline-block", opacity: .22 }} />
           Occupancy
         </span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 14, height: 14, background: "rgba(96,165,250,0.12)", border: "1px solid rgba(96,165,250,0.25)", borderRadius: 4, display: "inline-block" }} />
+          <span style={{ width: 14, height: 10, background: "var(--cal-wkend)", borderRadius: 3, display: "inline-block" }} />
           Weekend
         </span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 14, height: 14, border: "2px solid var(--primary)", borderRadius: 6, display: "inline-block", boxShadow: "0 0 0 3px rgba(96,165,250,0.25)" }} />
+          <span style={{ width: 6, height: 6, background: "var(--primary)", borderRadius: 999, display: "inline-block" }} />
           Today
         </span>
       </div>

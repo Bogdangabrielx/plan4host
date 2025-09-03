@@ -16,6 +16,10 @@
   --danger: #ef4444;
   --success: #22c55e;
   --confComun: #79dc608d;
+  /* calendar theme helpers */
+  --cal-brd: rgba(255,255,255,0.06);
+  --cal-wkend: rgba(96,165,250,0.04);
+  --cal-today-ring: rgba(96,165,250,0.15);
 }
 
 /* LIGHT */
@@ -30,6 +34,10 @@
   --danger: #dc2626;
   --success: #16a34a;
   --confComun: #9244ec;
+  /* calendar theme helpers */
+  --cal-brd: rgba(0,0,0,0.08);
+  --cal-wkend: rgba(37,99,235,0.06);
+  --cal-today-ring: rgba(37,99,235,0.18);
 }
 
 /* Folosește doar variabile, nu culori hardcodate */
