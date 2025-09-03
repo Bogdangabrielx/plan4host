@@ -225,7 +225,7 @@ export default function ConfiguratorClient({ initialProperties }: { initialPrope
         <PropertySidebar properties={properties} selectedId={selectedId} onSelect={setSelectedId} status={status} />
         <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
           {!selected ? (
-            <p>Selectează o proprietate din stânga.</p>
+            <p>Please select a property on the left.</p>
           ) : (
             <Tabs
               settings={<SettingsTab property={selected} onChange={(k, v) => saveTime(k, v)} />}
