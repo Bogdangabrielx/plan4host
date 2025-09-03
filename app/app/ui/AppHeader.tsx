@@ -4,19 +4,21 @@
 import { useEffect, useState } from "react";
 import { useHeader } from "../_components/HeaderContext";
 
-const NAV = [
-  { href: "/app",            label: "Dashboard",       emoji: "🏠" },
-  { href: "/app/calendar",   label: "Calendar",        emoji: "📅" },
-  { href: "/app/configurator", label: "Configurator",  emoji: "⚙️" },
-  { href: "/app/cleaning",   label: "Cleaning Board",  emoji: "🧹" },
-  { href: "/app/channels",   label: "Channels & iCal", emoji: "🔗" },
-  { href: "/app/inbox",      label: "Inbox",           emoji: "📥" },
-  { href: "/auth/logout",    label: "Logout",          emoji: "🚪" },
+const NAV_BASE = [
+  { href: "/app", label: "Dashboard", emoji: "🏠", scope: "dashboard" },
+  { href: "/app/calendar", label: "Calendar", emoji: "📅", scope: "calendar" },
+  { href: "/app/configurator", label: "Configurator", emoji: "⚙️", scope: "configurator" },
+  { href: "/app/cleaning", label: "Cleaning Board", emoji: "🧹", scope: "cleaning" },
+  { href: "/app/channels", label: "Channels & iCal", emoji: "🔗", scope: "channels" },
+  { href: "/app/inbox", label: "Inbox", emoji: "📥", scope: "inbox" },
+  { href: "/app/team", label: "Team", emoji: "👥", scope: "team" },
+  { href: "/auth/logout", label: "Logout", emoji: "🚪", scope: "logout" },
 ];
 
 export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const { title, pill, right } = useHeader();
   const [open, setOpen] = useState(false);
+  const [nav, setNav] = useState(NAV_BASE);
   const [isSmall, setIsSmall] = useState(false);
 
   useEffect(() => {
@@ -179,7 +181,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
             <nav style={{ padding: 12, overflowY: "auto" }}>
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
-                {NAV.map((it) => {
+                {nav.map((it) => {
                   const active = currentPath
                     ? currentPath === it.href || currentPath.startsWith(it.href + "/")
                     : false;

@@ -1,0 +1,30 @@
+// app/app/team/page.tsx
+import AppShell from "@/app/app/_components/AppShell";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import TeamClient from "./ui/TeamClient";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export default async function TeamPage() {
+  const supa = createClient();
+  const { data: { user } } = await supa.auth.getUser();
+  if (!user) redirect("/auth/login");
+
+  // Owner or manager required; otherwise redirect to app
+  const { data: au } = await supa
+    .from("account_users")
+    .select("role, disabled")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: true });
+  const m = (au ?? [])[0] as any;
+  const role = m?.role || (user ? "owner" : "member");
+  if (m?.disabled || (role !== "owner" && role !== "manager")) redirect("/app");
+
+  return (
+    <AppShell currentPath="/app/team" title="Team">
+      <TeamClient />
+    </AppShell>
+  );
+}
