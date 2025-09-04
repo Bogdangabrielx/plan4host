@@ -250,6 +250,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
         highlightDate={null}
         isSmall={isSmall}
         onDayClick={(dateStr) => setOpenDate(dateStr)}
+        onBackgroundClick={() => setShowYear(true)}
       />
 
       {/* DayModal — only in Month view */}
@@ -435,13 +436,14 @@ function tooltipFor(dateStr: string, roomsCount: number, map: Map<string, Set<st
 /* ================== MONTH VIEW ================== */
 
 function MonthView({
-  year, month, roomsCount, occupancyMap, highlightDate, isSmall, onDayClick
+  year, month, roomsCount, occupancyMap, highlightDate, isSmall, onDayClick, onBackgroundClick
 }: {
   year: number; month: number; roomsCount: number;
   occupancyMap: Map<string, Set<string>>;
   highlightDate: string | null;
   isSmall: boolean;
   onDayClick: (dateStr: string) => void;
+  onBackgroundClick: () => void;
 }) {
   const dim = daysInMonth(year, month);
   const fw  = firstWeekday(year, month);
@@ -468,7 +470,7 @@ function MonthView({
         // open year overlay when clicking background (not a day cell)
         const target = e.target as HTMLElement;
         if (target.closest('[data-cal-cell="1"]')) return; // clicked a cell -> ignore
-        setShowYear(true);
+        onBackgroundClick();
       }}
     >
       {/* week day headers */}
