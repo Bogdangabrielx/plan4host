@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
+// import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 
 /** DB types */
@@ -310,20 +310,16 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
   return (
     <div>
-      <PlanHeaderBadge title="Channels & iCal" />
-
-      {/* mic toolbar local: pill + property select */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
-        <span style={miniPill}>All times in {timezone || "—"}</span>
-        <div style={{ marginLeft: "auto", minWidth: 200 }}>
-          <select value={propertyId} onChange={(e) => setPropertyId(e.target.value)} style={select}>
-            {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
-        </div>
+      {/* Toolbar minimalistă */}
+      <div className="sb-toolbar" style={{ gap: 12, marginBottom: 8 }}>
+        <select className="sb-select" value={propertyId} onChange={(e) => setPropertyId(e.target.value)} style={{ minWidth: 220 }}>
+          {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+        <span className="sb-badge">Timezone: {timezone || "—"}</span>
       </div>
 
       {/* Card cu acțiuni */}
-      <section style={panel}>
+      <section className="sb-card" style={{ padding: 16, marginTop: 8 }}>
         <h3 style={{ marginTop: 0 }}>Channels & iCal</h3>
         {!timezone && (
           <p style={{ color: "var(--danger)", marginTop: 0 }}>
@@ -332,15 +328,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         )}
 
         <div style={{ display: "grid", gap: 8 }}>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             {/* GLOBAL: Sync Now — ALL */}
             <button
-              style={{
-                ...primaryBtn,
-                border: `1px solid ${syncBtnText === "Premium only" ? "var(--danger)" : "var(--success)"}`,
-                opacity: (isPremium === false ? 0.9 : 1) * (activeCount === 0 || status === "Saving…" ? 0.6 : 1),
-                cursor: activeCount === 0 || status === "Saving…" ? "not-allowed" : "pointer",
-              }}
+              className="sb-btn sb-btn--primary"
+              style={{ opacity: (isPremium === false ? 0.95 : 1) * (activeCount === 0 || status === "Saving…" ? 0.6 : 1) }}
               onClick={syncAllNow}
               disabled={activeCount === 0 || status === "Saving…"}
               title={
@@ -354,15 +346,15 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               {syncBtnText}
             </button>
 
-            <button style={primaryBtn} onClick={() => setShowTypesModal(true)}>Export</button>
-            <button style={primaryBtn} onClick={() => setShowImportModal(true)}>Import</button>
-            <button style={primaryBtn} onClick={() => setShowRoomsModal(true)}>Export Room Only</button>
+            <button className="sb-btn" onClick={() => setShowTypesModal(true)}>Export</button>
+            <button className="sb-btn" onClick={() => setShowImportModal(true)}>Import</button>
+            <button className="sb-btn" onClick={() => setShowRoomsModal(true)}>Export Room Only</button>
           </div>
 
           {/* PILLAȘ persistent sub buton */}
           {hintText ? (
             <div>
-              <span style={statusPill(hintVariant)}>{hintText}</span>
+              <span className="sb-badge">{hintText}</span>
             </div>
           ) : null}
         </div>
@@ -378,7 +370,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <button
                 key={r.id}
                 onClick={() => setActiveRoomId(r.id)}
-                style={tile}
+                className="sb-card"
+                style={{ ...tile, border: 0, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
                 title={r.name}
               >
                 <span style={tileTitle}>{r.name}</span>
@@ -415,7 +408,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <button
                 key={t.id}
                 onClick={() => setActiveTypeId(t.id)}
-                style={tile}
+                className="sb-card"
+                style={{ ...tile, border: 0, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
                 title={t.name}
               >
                 <span style={tileTitle}>{t.name}</span>
@@ -452,7 +446,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <button
                 key={t.id}
                 onClick={() => setManageTypeId(t.id)}
-                style={tile}
+                className="sb-card"
+                style={{ ...tile, border: 0, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
                 title={`Manage ${t.name}`}
               >
                 <span style={tileTitle}>{t.name}</span>
@@ -570,7 +565,7 @@ function ManageTypeModal({
       ) : (
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {integrations.map(ii => (
-            <li key={ii.id} style={row}>
+            <li key={ii.id} className="sb-card" style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               <div style={{ display: "grid", gap: 4, minWidth: 260 }}>
                 <strong>{ii.provider || "Unknown"}</strong>
                 <small style={{ color: "var(--muted)", wordBreak: "break-all" }}>{ii.url}</small>
@@ -581,7 +576,7 @@ function ManageTypeModal({
                   <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> active
                 </label>
                 {/* Per-feed Sync now a fost eliminat intenționat */}
-                <button style={dangerBtn} onClick={() => onDelete(ii.id)}>Delete</button>
+                <button className="sb-btn" onClick={() => onDelete(ii.id)}>Delete</button>
               </div>
             </li>
           ))}
@@ -592,9 +587,7 @@ function ManageTypeModal({
 }
 
 /* ======= Styles ======= */
-const panel: React.CSSProperties = {
-  background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, marginTop: 16,
-};
+// panel replaced by sb-card
 
 const tileGrid: React.CSSProperties = {
   display: "grid",
@@ -609,9 +602,8 @@ const tile: React.CSSProperties = {
   gap: 6,
   aspectRatio: "1 / 1",
   minHeight: 140,
-  background: "var(--card)",
+  background: "transparent",
   color: "var(--text)",
-  border: "1px solid var(--border)",
   borderRadius: 12,
   padding: 12,
   textAlign: "left",
@@ -632,10 +624,7 @@ const tileSub: React.CSSProperties = {
   opacity: 0.85,
 };
 
-const row: React.CSSProperties = {
-  display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
-  background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, flexWrap: "wrap"
-};
+// row replaced by sb-card wherever used
 
 const label: React.CSSProperties = { fontSize: 12, color: "var(--muted)" };
 
@@ -647,54 +636,11 @@ const input: React.CSSProperties = {
   borderRadius: 8,
 };
 
-const select: React.CSSProperties = {
-  background: "var(--card)",
-  color: "var(--text)",
-  border: "1px solid var(--border)",
-  padding: "6px 10px",
-  borderRadius: 8,
-  minWidth: 220,
-};
+// select now uses sb-select
 
-const primaryBtn: React.CSSProperties = {
-  padding: "8px 12px",
-  borderRadius: 8,
-  border: "1px solid var(--border)",
-  background: "var(--bg)",
-  color: "var(--text)",
-  fontWeight: 800,
-  cursor: "pointer",
-};
+// buttons now use sb-btn classes
 
-const ghostBtn: React.CSSProperties = {
-  padding: "6px 10px",
-  borderRadius: 8,
-  border: "1px solid var(--border)",
-  background: "transparent",
-  color: "var(--text)",
-  fontWeight: 700,
-  cursor: "pointer",
-};
-
-const dangerBtn: React.CSSProperties = {
-  padding: "6px 10px",
-  borderRadius: 8,
-  border: "1px solid var(--danger)",
-  background: "transparent",
-  color: "var(--text)",
-  fontWeight: 700,
-  cursor: "pointer",
-};
-
-const miniPill: React.CSSProperties = {
-  padding: "2px 8px",
-  borderRadius: 999,
-  background: "var(--card)",
-  color: "var(--muted)",
-  border: "1px solid var(--border)",
-  fontSize: 12,
-  fontWeight: 700,
-};
+// mini pill replaced by sb-badge
 
 // Status pill fix sub buton (culoare după variant)
 function statusPill(variant: HintVariant): React.CSSProperties {
