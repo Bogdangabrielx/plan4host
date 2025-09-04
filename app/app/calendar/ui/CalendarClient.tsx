@@ -200,19 +200,19 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
   return (
     <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
       {/* Minimal toolbar */}
-      <div className="sb-toolbar" style={{ gap: isSmall ? 10 : 14 }}>
+      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20 }}>
         <select
           className="sb-select"
           value={propertyId}
           onChange={(e) => { setPropertyId(e.currentTarget.value); }}
-          style={{ minWidth: 220 }}
+          style={{ minWidth: 240, paddingInline: 14, height: 40 }}
         >
           {properties.map(p => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
 
-        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 12 : 18, marginLeft: isSmall ? 0 : 12 }}>
           <button
             type="button"
             className="sb-btn sb-btn--icon"
@@ -225,7 +225,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
             type="button"
             className="sb-btn sb-btn--ghost"
             onClick={openDatePicker}
-            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18 }}
+            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 20, paddingInline: 18, height: 40 }}
             aria-label="Pick date"
           >
             {monthNames[month]} {year}
