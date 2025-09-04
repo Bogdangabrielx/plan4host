@@ -3,17 +3,22 @@ import { createClient } from "@/lib/supabase/server";
 
 type Me = { role: string; scopes: string[]; disabled?: boolean };
 
-export async function ensureScope(scope: string) {
-  const supa = createClient();
-  const { data: auth } = await supa.auth.getUser();
-  const user = auth.user;
-  if (!user) redirect("/auth/login");
+// Safer guard: reuse existing Supabase client + user id when provided, to avoid double getUser()
+export async function ensureScope(scope: string, supa?: any, actorId?: string) {
+  const client = supa ?? createClient();
+  let uid = actorId;
+  if (!uid) {
+    const { data: auth } = await client.auth.getUser();
+    const user = auth.user;
+    if (!user) redirect("/auth/login");
+    uid = user!.id as string;
+  }
 
-  // resolve membership first
-  const { data: au } = await supa
+  // resolve membership first for this user id
+  const { data: au } = await client
     .from("account_users")
     .select("account_id, role, scopes, disabled")
-    .eq("user_id", user.id)
+    .eq("user_id", uid)
     .order("created_at", { ascending: true });
   const m = (au ?? [])[0] as Me | undefined;
 
@@ -38,4 +43,3 @@ export async function ensureScope(scope: string) {
   }
   redirect("/app");
 }
-

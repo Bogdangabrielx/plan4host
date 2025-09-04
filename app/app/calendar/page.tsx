@@ -10,7 +10,7 @@ export default async function CalendarPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
-  await ensureScope("calendar");
+  await ensureScope("calendar", supabase, user.id);
 
   const { data: props = [] } = await supabase
     .from("properties")

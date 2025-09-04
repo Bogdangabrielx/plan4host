@@ -12,7 +12,7 @@ export default async function ChannelsPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
-  await ensureScope("channels");
+  await ensureScope("channels", supabase, user.id);
   await ensureScope("channels");
 
   const { data: props = [] } = await supabase

@@ -12,7 +12,7 @@ export default async function InboxPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
-  await ensureScope("inbox");
+  await ensureScope("inbox", supabase, user.id);
 
   const { data: props = [] } = await supabase
     .from("properties")

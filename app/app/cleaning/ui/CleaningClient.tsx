@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
+import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import CleanTaskModal from "./CleanTaskModal";
 
 /* ─── Types ─────────────────────────────────────────────────────────── */
@@ -336,6 +337,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   /* ─── UI principal ─────────────────────────────────────────────────── */
   return (
     <div style={{ display: "grid", gap: 12 }}>
+      <PlanHeaderBadge title="Cleaning Board" />
       {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: 12 }}>
         <select

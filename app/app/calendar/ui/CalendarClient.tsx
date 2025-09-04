@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
+import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 
 // Robust dynamic import: works whether DayModal is a default or a named export.
 const DayModal: any = dynamic(
@@ -199,6 +200,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
 
   return (
     <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
+      <PlanHeaderBadge title="Calendar" />
       {/* Minimal toolbar */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20 }}>
         <select

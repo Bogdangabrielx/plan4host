@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-// import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
+import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 
 /** DB types */
@@ -310,6 +310,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
   return (
     <div>
+      <PlanHeaderBadge title="Channels & iCal" />
       {/* Toolbar minimalistă */}
       <div className="sb-toolbar" style={{ gap: 12, marginBottom: 8 }}>
         <select className="sb-select" value={propertyId} onChange={(e) => setPropertyId(e.target.value)} style={{ minWidth: 220 }}>

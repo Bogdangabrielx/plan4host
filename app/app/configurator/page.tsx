@@ -12,7 +12,7 @@ export default async function ConfiguratorPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
-  await ensureScope("configurator");
+  await ensureScope("configurator", supabase, user.id);
 
   const { data: props = [] } = await supabase
     .from("properties")
