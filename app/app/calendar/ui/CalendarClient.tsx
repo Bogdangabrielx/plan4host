@@ -261,6 +261,27 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
         />
       )}
 
+      {/* Year overlay (grid 3x4 on desktop, stacked on phone) */}
+      {showYear && (
+        <div role="dialog" aria-modal="true" onClick={() => setShowYear(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 225, background: "rgba(0,0,0,0.55)", display: "grid", placeItems: "center" }}>
+          <div onClick={(e) => e.stopPropagation()} className="sb-card" style={{ width: "min(1024px, 95vw)", maxHeight: "86vh", overflow: "auto", padding: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <strong style={{ fontSize: 16 }}>Pick a month — {year}</strong>
+              <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowYear(false)}>Close</button>
+            </div>
+            <YearView
+              year={year}
+              roomsCount={rooms.length}
+              occupancyMap={occupancyMap}
+              isSmall={isSmall}
+              onMonthTitleClick={(m) => { setMonth(m); setShowYear(false); }}
+              onDayClick={(dateStr) => { goToMonthFor(dateStr); setShowYear(false); }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Visible popover date picker */}
       {showDatePicker && (
         <div role="dialog" aria-modal="true" onClick={() => setShowDatePicker(false)}
@@ -268,9 +289,9 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
           <div onClick={(e) => e.stopPropagation()} className="sb-popover">
             <input
               ref={dateOverlayInputRef}
-              type="date"
-              defaultValue={`${year}-${pad(month + 1)}-01`}
-              onChange={(e) => onPickedDate(e.currentTarget.value)}
+              type="month"
+              defaultValue={`${year}-${pad(month + 1)}`}
+              onChange={(e) => onPickedDate(e.currentTarget.value + "-01")}
               className="sb-select"
               style={{ padding: 10 }}
             />
@@ -303,7 +324,20 @@ function YearView({
       {Array.from({ length: 12 }).map((_, m) => (
         <div key={m} className="sb-card" style={{ padding: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <button onClick={() => onMonthTitleClick(m)} className="sb-btn sb-btn--ghost sb-btn--small" style={{ borderStyle: "dashed" as const }}>
+            <button
+              onClick={() => onMonthTitleClick(m)}
+              style={{
+                appearance: 'none',
+                border: 0,
+                background: 'transparent',
+                color: 'var(--text)',
+                fontWeight: 900,
+                fontSize: 14,
+                cursor: 'pointer',
+                padding: '4px 6px',
+                borderRadius: 8,
+              }}
+            >
               {monthNames[m]}
             </button>
             <small style={{color: "var(--muted)" }}>{year}</small>
@@ -427,7 +461,16 @@ function MonthView({
   while (days.length < total) days.push({});
 
   return (
-    <div className="sb-card" style={{ boxShadow: "0 3px 20px #2e6dc656", padding: 12 }}>
+    <div
+      className="sb-card"
+      style={{ boxShadow: "0 3px 20px #2e6dc656", padding: 12 }}
+      onClick={(e) => {
+        // open year overlay when clicking background (not a day cell)
+        const target = e.target as HTMLElement;
+        if (target.closest('[data-cal-cell="1"]')) return; // clicked a cell -> ignore
+        setShowYear(true);
+      }}
+    >
       {/* week day headers */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
         {weekdayShort.map((w) => (
@@ -442,6 +485,7 @@ function MonthView({
           return (
             <div
               key={i}
+              data-cal-cell="1"
               onClick={clickable ? () => onDayClick(c.dateStr!) : undefined}
               title={c.dateStr ? tooltipFor(c.dateStr, roomsCount, occupancyMap) : undefined}
               style={{

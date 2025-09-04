@@ -93,7 +93,7 @@ html, body {
   justify-content: center;
   gap: 8px;
   padding: 8px 12px;
-  border-radius: 10px;
+  border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
   background: var(--card);
   color: var(--text);
@@ -114,6 +114,7 @@ html, body {
   width: 36px;
   height: 36px;
   padding: 0;
+  border-radius: 999px;
 }
 .sb-btn--small { padding: 6px 10px; border-radius: 8px; }
 
@@ -123,7 +124,7 @@ html, body {
   background: var(--card);
   color: var(--text);
   border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
-  border-radius: 10px;
+  border-radius: 999px;
   padding: 8px 12px;
   font-weight: 700;
 }
