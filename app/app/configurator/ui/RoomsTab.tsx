@@ -37,7 +37,7 @@ export default function RoomsTab({
   return (
     <div style={{ display: "grid", gap: 16 }}>
       {/* Section 1: Room Types */}
-      <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 12 }}>
+      <section className="sb-card" style={{ padding: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
           <strong>Room types</strong>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -55,7 +55,7 @@ export default function RoomsTab({
                   setNewType("");
                 }
               }}
-              style={primaryBtn}
+              className="sb-btn sb-btn--primary"
             >
               Add
             </button>
@@ -66,18 +66,18 @@ export default function RoomsTab({
           <p style={{ color: "var(--muted)" }}>No room types yet.</p>
         ) : (
           <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
-            {roomTypes.map((t) => (
-              <TypeRow key={t.id} type={t} onRename={onRenameType} onDelete={onDeleteType} />
-            ))}
+          {roomTypes.map((t) => (
+            <TypeRow key={t.id} type={t} onRename={onRenameType} onDelete={onDeleteType} />
+          ))}
           </ul>
         )}
       </section>
 
       {/* Section 2: Rooms + type assignment */}
-      <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 12 }}>
+      <section className="sb-card" style={{ padding: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
           <strong>Rooms</strong>
-          <button onClick={onAddRoom} style={primaryBtn}>Add room</button>
+          <button onClick={onAddRoom} className="sb-btn sb-btn--primary">Add room</button>
         </div>
 
         {roomsSorted.length === 0 ? (
@@ -89,7 +89,6 @@ export default function RoomsTab({
                 key={r.id}
                 style={{
                   background: "var(--card)",
-                  border: "1px solid var(--border)",
                   borderRadius: 12,
                   padding: 12,
                   gap: 10,
@@ -113,7 +112,7 @@ export default function RoomsTab({
                   <select
                     value={r.room_type_id ?? ""}
                     onChange={(e) => onAssignType(r.id, e.currentTarget.value || null)}
-                    style={select}
+                    className="sb-select"
                   >
                     <option value="">— None —</option>
                     {roomTypes.map((t) => (
@@ -126,9 +125,9 @@ export default function RoomsTab({
 
                 {/* Row 2 (right): ACTIONS */}
                 <div style={actionsArea}>
-                  <button onClick={() => onMoveRoom(r.id, "up")} disabled={idx === 0} style={ghostBtn}>↑</button>
-                  <button onClick={() => onMoveRoom(r.id, "down")} disabled={idx === roomsSorted.length - 1} style={ghostBtn}>↓</button>
-                  <button onClick={() => onDeleteRoom(r.id)} style={dangerBtn}>Delete</button>
+                  <button onClick={() => onMoveRoom(r.id, "up")} disabled={idx === 0} className="sb-btn">↑</button>
+                  <button onClick={() => onMoveRoom(r.id, "down")} disabled={idx === roomsSorted.length - 1} className="sb-btn">↓</button>
+                  <button onClick={() => onDeleteRoom(r.id)} className="sb-btn">Delete</button>
                 </div>
               </li>
             ))}
@@ -152,7 +151,7 @@ function TypeRow({
   const [name, setName] = useState(type.name);
 
   return (
-    <li style={{ display: "grid", gap: 8, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 12 }}>
+    <li className="sb-card" style={{ display: "grid", gap: 8, padding: 12 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
           {editing ? (
@@ -171,7 +170,7 @@ function TypeRow({
                   if (v && v !== type.name) onRename(type.id, v);
                   setEditing(false);
                 }}
-                style={primaryBtn}
+                className="sb-btn sb-btn--primary"
               >
                 Save
               </button>
@@ -180,17 +179,17 @@ function TypeRow({
                   setName(type.name);
                   setEditing(false);
                 }}
-                style={ghostBtn}
+                className="sb-btn"
               >
                 Cancel
               </button>
             </>
           ) : (
-            <button onClick={() => setEditing(true)} style={ghostBtn}>
+            <button onClick={() => setEditing(true)} className="sb-btn">
               Rename
             </button>
           )}
-          <button onClick={() => onDelete(type.id)} style={dangerBtn}>
+          <button onClick={() => onDelete(type.id)} className="sb-btn">
             Delete
           </button>
         </div>

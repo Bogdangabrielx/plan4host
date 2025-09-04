@@ -13,10 +13,10 @@ export default function CleaningTab({
   onMove: (id: string, dir: "up" | "down") => void;
 }) {
   return (
-    <section style={{ display: "grid", gap: 12 }}>
+    <section className="sb-card" style={{ display: "grid", gap: 12, padding: 12 }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h3 style={{ margin: 0 }}>Cleaning tasks</h3>
-        <button onClick={onAdd} style={primaryBtn}>+ Add task</button>
+        <button onClick={onAdd} className="sb-btn sb-btn--primary">+ Add task</button>
       </header>
 
       {tasks.length === 0 && (
@@ -36,10 +36,10 @@ export default function CleaningTab({
               style={textInput}
             />
             <div style={{ display: "flex", gap: 6 }}>
-              <button onClick={() => onMove(t.id, "up")}   disabled={idx === 0}                   style={ghostBtn} title="Move up">↑</button>
-              <button onClick={() => onMove(t.id, "down")} disabled={idx === tasks.length - 1}    style={ghostBtn} title="Move down">↓</button>
+              <button onClick={() => onMove(t.id, "up")}   disabled={idx === 0}                   className="sb-btn" title="Move up">↑</button>
+              <button onClick={() => onMove(t.id, "down")} disabled={idx === tasks.length - 1}    className="sb-btn" title="Move down">↓</button>
             </div>
-            <button onClick={() => onDelete(t.id)} style={dangerBtn}>Delete</button>
+            <button onClick={() => onDelete(t.id)} className="sb-btn">Delete</button>
           </li>
         ))}
       </ul>
