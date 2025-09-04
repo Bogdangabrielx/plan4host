@@ -85,8 +85,7 @@ export function MonthGrid({
                   right: 10,
                   fontSize: isSmall ? 15 : 13,
                   fontWeight: 900,
-                  color: inMonth(d) ? "var(--muted)" : "#3a4151",
-                  textShadow: "0 1px 2px rgba(0,0,0,0.55)"
+                  color: inMonth(d) ? "var(--muted)" : "#3a4151"
                 }}
               >
                 {d.getDate()}

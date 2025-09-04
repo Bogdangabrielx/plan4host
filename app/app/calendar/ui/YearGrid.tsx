@@ -77,7 +77,7 @@ export function YearGrid({
                     
                     }}
                   />
-                  <span style={{ position: "absolute", top: 3, right: 4, fontSize: isSmall ? 12 : 10, color: "var(--muted)", fontWeight: 900, textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}>
+                  <span style={{ position: "absolute", top: 3, right: 4, fontSize: isSmall ? 12 : 10, color: "var(--muted)", fontWeight: 900 }}>
                     {d.getDate()}
                   </span>
                 </div>
