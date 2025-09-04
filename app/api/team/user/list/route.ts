@@ -10,27 +10,38 @@ export async function GET() {
     const { data: auth } = await supa.auth.getUser();
     const actor = auth.user; if (!actor) return bad(401, { error: "Not authenticated" });
 
-    // Determine account id
-    let accountId = actor.id as string;
-    const { data: maybeAcc } = await supa.from("accounts").select("id").eq("id", actor.id).maybeSingle();
-    if (!maybeAcc) {
-      const { data: au } = await supa.from("account_users").select("account_id, role, disabled").eq("user_id", actor.id).order("created_at", { ascending: true });
-      const row = (au ?? [])[0] as any;
-      if (!row || row.disabled || !(row.role === 'owner' || row.role === 'manager')) return bad(403, { error: "Forbidden" });
-      accountId = row.account_id as string;
+    // Determine account id (robust): prefer membership, fallback to owner-style accounts(id=user.id)
+    let accountId: string | null = null;
+    const { data: auRows } = await supa
+      .from("account_users")
+      .select("account_id, role, disabled")
+      .eq("user_id", actor.id)
+      .order("created_at", { ascending: true })
+      .limit(1);
+    if (auRows && auRows.length > 0) {
+      const row = auRows[0] as any;
+      if (!row.disabled) accountId = row.account_id as string;
     }
+    if (!accountId) {
+      const { data: maybeAcc } = await supa.from("accounts").select("id").eq("id", actor.id).maybeSingle();
+      if (maybeAcc?.id) accountId = maybeAcc.id as string;
+    }
+    if (!accountId) return NextResponse.json({ ok: true, members: [] });
 
-    const { data, error } = await supa
+    // Use service client for listing to avoid RLS edge cases
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    if (!url || !serviceKey) return bad(500, { error: "Missing service credentials" });
+    const admin = createAdmin(url, serviceKey, { auth: { persistSession: false } });
+
+    const { data, error } = await admin
       .from("account_users")
       .select("user_id, role, scopes, disabled, created_at")
       .eq("account_id", accountId)
       .order("created_at", { ascending: true });
     if (error) return bad(400, { error: error.message });
 
-    // Enrich with email via admin API
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    const admin = createAdmin(url, serviceKey, { auth: { persistSession: false } });
+    // Enrich with email via admin auth
     const members = await Promise.all((data ?? []).map(async (m: any) => {
       try {
         const u = await admin.auth.admin.getUserById(m.user_id);

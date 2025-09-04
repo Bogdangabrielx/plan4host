@@ -205,12 +205,14 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
           className="sb-select"
           value={propertyId}
           onChange={(e) => { setPropertyId(e.currentTarget.value); }}
-          style={{ minWidth: 220, paddingInline: 12, height: 36, flexBasis: "100%", marginBottom: 8 }}
+          style={{ minWidth: 220, maxWidth: 380, paddingInline: 12, height: 36, width: "auto" }}
         >
           {properties.map(p => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
+        {/* line break to push nav to next row */}
+        <div style={{ flexBasis: "100%", height: 8 }} />
 
         <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 12 : 18, marginLeft: 0 }}>
           <button
@@ -344,7 +346,7 @@ function YearView({
                 background: 'transparent',
                 color: 'var(--text)',
                 fontWeight: 900,
-                fontSize: 14,
+                fontSize: 10,
                 cursor: 'pointer',
                 padding: '4px 6px',
                 borderRadius: 8,

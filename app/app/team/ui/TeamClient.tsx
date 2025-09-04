@@ -33,9 +33,21 @@ export default function TeamClient() {
       body: JSON.stringify({ email, password, role, scopes })
     });
     const j = await res.json().catch(() => ({}));
-    if (!res.ok) alert(j?.error || "Failed");
+    if (!res.ok) {
+      alert(j?.error || "Failed");
+      setLoading(false);
+      return;
+    }
+    // Optimistic add
+    if (j?.userId) {
+      setMembers((prev) => [
+        { user_id: j.userId, email, role, scopes, disabled: false },
+        ...prev,
+      ]);
+    }
     setEmail(""); setPassword(""); setRole("member"); setScopes([]);
-    await load();
+    // Reconcile from server in background (without flipping UI back to Loading)
+    load();
   }
 
   async function updateUser(u: any, patch: any) {
