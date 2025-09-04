@@ -4,7 +4,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
-import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import CleanTaskModal from "./CleanTaskModal";
 
 /* ─── Types ─────────────────────────────────────────────────────────── */
@@ -287,7 +286,6 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   if (plan && !hasCleaningBoard) {
     return (
       <div style={{ display: "grid", gap: 12 }}>
-        <PlanHeaderBadge title="Cleaning Board" />
         <div
           style={{
             background: "var(--panel)",
@@ -338,14 +336,13 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   /* ─── UI principal ─────────────────────────────────────────────────── */
   return (
     <div style={{ display: "grid", gap: 12 }}>
-      <PlanHeaderBadge title="Cleaning Board" />
-
-      {/* Toolbar local (mutat din header-right) */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+      {/* Toolbar */}
+      <div className="sb-toolbar" style={{ gap: 12 }}>
         <select
+          className="sb-select"
           value={propertyId}
-          onChange={(e) => setPropertyId(e.target.value)}
-          style={{ background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", padding: "6px 10px", borderRadius: 8 }}
+          onChange={(e) => setPropertyId(e.currentTarget.value)}
+          style={{ minWidth: 220 }}
         >
           {properties.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>
@@ -353,13 +350,15 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         </select>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <label style={{ fontSize: 12, color: "var(--muted)" }}>Date</label>
+          <button type="button" className="sb-btn sb-btn--icon" aria-label="Previous day" onClick={() => setDateStr(addDaysStr(dateStr, -1))}>◀</button>
           <input
             type="date"
             value={dateStr}
             onChange={(e) => setDateStr(e.currentTarget.value)}
-            style={{ padding: 6, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8 }}
+            className="sb-select"
+            style={{ padding: "8px 12px" }}
           />
+          <button type="button" className="sb-btn sb-btn--icon" aria-label="Next day" onClick={() => setDateStr(addDaysStr(dateStr, 1))}>▶</button>
         </div>
       </div>
 
@@ -371,15 +370,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
       ) : items.length === 0 ? (
         <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
       ) : (
-        <ul
-          style={{
-            listStyle: "none",
-            padding: 0,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-            gap: 12
-          }}
-        >
+        <ul style={{ listStyle: "none", padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }}>
           {items.map((it) => {
             const key = `${it.room.id}|${it.cleanDate}`;
             const prog = cleaningMap[key] || {};
@@ -390,17 +381,8 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               <li
                 key={it.room.id + "|" + it.cleanDate}
                 onClick={() => setOpenItem(it)}
-                style={{
-                  aspectRatio: " 1.5 / 1",
-                  background: "var(--card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 12,
-                  padding: 12,
-                  cursor: "pointer",
-                  display: "grid",
-                  gridTemplateRows: "auto 1fr auto",
-                  gap: 8
-                }}
+                className="sb-card"
+                style={{ aspectRatio: "1.5 / 1", padding: 12, cursor: "pointer", display: "grid", gridTemplateRows: "auto 1fr auto", gap: 8 }}
                 title="Open cleaning tasks"
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
@@ -412,7 +394,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                       padding: "3px 8px",
                       borderRadius: 999,
                       background: it.mode === "carry" ? "transparent" : "var(--primary)",
-                      border: it.mode === "carry" ? "1px solid var(--danger)" : "var(--primary)",
+                      border: it.mode === "carry" ? "1px solid var(--danger)" : "transparent",
                       color: it.mode === "carry" ? "var(--danger)" : "#0c111b",
                       fontWeight: 800,
                       fontSize: 11,
@@ -431,17 +413,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                   <span style={{ fontSize: 12, color: "var(--muted)" }}>
                     {it.mode === "checkout" ? dateStr : it.cleanDate}
                   </span>
-                  <span
-                    style={{
-                      padding: "3px 8px",
-                      borderRadius: 999,
-                      border: "1px solid var(--border)",
-                      background: "var(--panel)",
-                      color: "var(--text)",
-                      fontWeight: 800,
-                      fontSize: 12
-                    }}
-                  >
+                  <span className="sb-badge">
                     {doneCount}/{total}
                   </span>
                 </div>

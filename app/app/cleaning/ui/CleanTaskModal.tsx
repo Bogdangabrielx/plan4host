@@ -87,35 +87,10 @@ export default function CleanTaskModal({
   return (
     <>
       {/* Backdrop */}
-      <div
-        onClick={onClose}
-        style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(0,0,0,0.55)",
-          zIndex: 50
-        }}
-      />
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 50 }} />
 
       {/* Modal */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        style={{
-          position: "fixed",
-          top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "min(640px, 92vw)",
-          background: "var(--panel)",
-          color: "var(--text)",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
-          zIndex: 51,
-          display: "grid",
-          gridTemplateRows: "auto 1fr auto",
-          
-        }}
-      >
+      <div role="dialog" aria-modal="true" className="sb-card" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(640px, 92vw)", zIndex: 51, display: "grid", gridTemplateRows: "auto 1fr auto", padding: 0 }}>
         {/* HEADER – centered room name */}
 <div style={{ padding: 14, borderBottom: "1px solid var(--border)" }}>
   <div
@@ -141,50 +116,25 @@ export default function CleanTaskModal({
     </div>
 
     {/* dreapta: buton închidere */}
-    <button
-      onClick={onClose}
-      aria-label="Close"
-      style={{
-        justifySelf: "end",
-        padding: "6px 10px",
-        borderRadius: 8,
-        border: "1px solid var(--border)",
-        background: "transparent",
-        color: "var(--text)",
-        fontWeight: 800,
-        cursor: "pointer",
-        
-      }}
-    >
-      ✕
-    </button>
+    <button onClick={onClose} aria-label="Close" className="sb-btn sb-btn--ghost sb-btn--small" style={{ justifySelf: "end" }}>✕</button>
   </div>
 </div>
 
 
         {/* Body */}
-        <div style={{ padding: 14, display: "grid", gap: 12 }}>
+        <div style={{ padding: 14, display: "grid", gap: 10 }}>
           {tasks.length === 0 ? (
             <p style={{ color: "var(--muted)",}}>No cleaning checklist defined for this property.</p>
           ) : (
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 10 }}>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
               {[...tasks].sort((a,b)=>a.sort_index-b.sort_index).map(t => {
                 const checked = !!local[t.id];
                 return (
-                  <li key={t.id} style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    background: "var(--panel)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 10,
-                    padding: 10
-              
-                  }}>
-                    <span>{t.label}</span>
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={(e) => toggle(t.id, (e.target as HTMLInputElement).checked)}
-                    />
+                  <li key={t.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--card)", borderRadius: 10, padding: 10 }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                      <input type="checkbox" checked={checked} onChange={(e) => toggle(t.id, (e.target as HTMLInputElement).checked)} />
+                      <span>{t.label}</span>
+                    </label>
                   </li>
                 );
               })}
@@ -200,20 +150,7 @@ export default function CleanTaskModal({
         }}>
           <small style={{ color: "var(--muted)" }}>{saving ? "Saving…" : "Synced"}</small>
           <div style={{ display: "flex", gap: 8 }}>
-            <button
-              onClick={markAllDone}
-              style={{
-                padding: "8px 12px",
-                borderRadius: 10,
-                border: "1px solid var(--border)",
-                background: "var(--primary)",
-                color: "#0c111b",
-                fontWeight: 800,
-                cursor: "pointer"
-              }}
-            >
-              Mark as cleaned
-            </button>
+            <button onClick={markAllDone} className="sb-btn sb-btn--primary">Mark as cleaned</button>
           </div>
         </div>
       </div>
