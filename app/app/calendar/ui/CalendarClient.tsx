@@ -200,7 +200,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
 
   return (
     <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
-      <PlanHeaderBadge title="Calendar" />
+      <PlanHeaderBadge title="Calendar" slot="header-right" />
       {/* Minimal toolbar */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20 }}>
         <select

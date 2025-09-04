@@ -310,7 +310,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
   return (
     <div>
-      <PlanHeaderBadge title="Channels & iCal" />
+      <PlanHeaderBadge title="Channels & iCal" slot="header-right" />
       {/* Toolbar minimalistă */}
       <div className="sb-toolbar" style={{ gap: 12, marginBottom: 8 }}>
         <select className="sb-select" value={propertyId} onChange={(e) => setPropertyId(e.target.value)} style={{ minWidth: 220 }}>

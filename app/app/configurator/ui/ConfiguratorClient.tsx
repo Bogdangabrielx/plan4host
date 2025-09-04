@@ -218,12 +218,12 @@ export default function ConfiguratorClient({ initialProperties }: { initialPrope
 
   return (
     <div>
-      <PlanHeaderBadge title="Configurator" />
-      {/* restul UI-ului */}
+      <PlanHeaderBadge title="Configurator" slot="header-right" />
 
+      {/* minimalist layout */}
       <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>
         <PropertySidebar properties={properties} selectedId={selectedId} onSelect={setSelectedId} status={status} />
-        <section style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
+        <section className="sb-card" style={{ padding: 16 }}>
           {!selected ? (
             <p>Please select a property on the left.</p>
           ) : (

@@ -337,7 +337,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   /* ─── UI principal ─────────────────────────────────────────────────── */
   return (
     <div style={{ display: "grid", gap: 12 }}>
-      <PlanHeaderBadge title="Cleaning Board" />
+      <PlanHeaderBadge title="Cleaning Board" slot="header-right" />
       {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: 12 }}>
         <select
