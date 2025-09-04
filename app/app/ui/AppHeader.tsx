@@ -72,6 +72,30 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     }
   }
 
+  // Load role/scopes and filter nav client-side
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/me', { cache: 'no-store' });
+        if (!res.ok) return;
+        const j = await res.json();
+        if (!j?.me) return;
+        const info = j.me as { role: string; scopes: string[]; disabled: boolean };
+        setMe(info);
+        const allowAll = info.role === 'owner' || info.role === 'manager';
+        const sc = new Set((info.scopes || []) as string[]);
+        const filtered = NAV_BASE.filter(it => {
+          if (it.scope === 'logout') return true;
+          if (allowAll) return true;
+          // hide Team unless owner/manager
+          if (it.href === '/app/team') return false;
+          return sc.has(it.scope);
+        });
+        setNav(filtered);
+      } catch {}
+    })();
+  }, []);
+
   return (
     <>
       <header

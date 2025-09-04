@@ -2,6 +2,7 @@ import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CalendarClient from "./ui/CalendarClient";
+import { ensureScope } from "@/lib/auth/scopes";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -9,6 +10,7 @@ export default async function CalendarPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
+  await ensureScope("calendar");
 
   const { data: props = [] } = await supabase
     .from("properties")

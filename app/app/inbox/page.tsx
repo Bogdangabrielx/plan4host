@@ -2,6 +2,7 @@
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ensureScope } from "@/lib/auth/scopes";
 import InboxClient from "./ui/InboxClient";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,7 @@ export default async function InboxPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
+  await ensureScope("inbox");
 
   const { data: props = [] } = await supabase
     .from("properties")
