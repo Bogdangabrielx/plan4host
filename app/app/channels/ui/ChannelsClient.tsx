@@ -30,7 +30,7 @@ function CopyUrlButton({ url }: { url: string }) {
     } catch {}
   }
   return (
-    <button style={ghostBtn} onClick={onCopy} aria-live="polite">
+    <button className="sb-btn" onClick={onCopy} aria-live="polite">
       {copied ? "Copied!" : "Copy link"}
     </button>
   );
@@ -387,7 +387,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <InnerModal title={room.name} onClose={() => setActiveRoomId(null)}>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <CopyUrlButton url={url} />
-                  <a style={ghostBtn} href={url} target="_blank" rel="noreferrer">Open</a>
+                  <a className="sb-btn" href={url} target="_blank" rel="noreferrer">Open</a>
                 </div>
                 <p style={{ fontSize: 12, color: "var(--muted)", margin: "8px 0 0" }}>
                   *Use this link if your OTA uses separate listings per room, or for your personal calendar (Google/Apple/Outlook).
@@ -425,7 +425,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <InnerModal title={t.name} onClose={() => setActiveTypeId(null)}>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <CopyUrlButton url={url} />
-                  <a style={ghostBtn} href={url} target="_blank" rel="noreferrer">Open</a>
+                  <a className="sb-btn" href={url} target="_blank" rel="noreferrer">Open</a>
                 </div>
                 <p style={{ fontSize: 12, color: "var(--muted)", margin: "8px 0 0" }}>
                   *Add this URL to your OTA room-type listing.
@@ -488,7 +488,7 @@ function Modal({ title, children, onClose }:{
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
           <h3 style={{ margin: 0 }}>{title}</h3>
-          <button style={ghostBtn} onClick={onClose}>Close</button>
+          <button className="sb-btn" onClick={onClose}>Close</button>
         </div>
         {children}
       </div>
@@ -510,7 +510,7 @@ function InnerModal({ title, children, onClose }:{
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
           <h3 style={{ margin: 0 }}>{title}</h3>
-          <button style={ghostBtn} onClick={onClose}>Close</button>
+          <button className="sb-btn" onClick={onClose}>Close</button>
         </div>
         {children}
       </div>
@@ -541,7 +541,7 @@ function ManageTypeModal({
         <div style={{ display: "grid", gap: 8 }}>
           <div style={{ display: "grid", gap: 6 }}>
             <label style={label}>Provider</label>
-            <select style={select} value={provider} onChange={(e) => setProvider((e.target as HTMLSelectElement).value)}>
+            <select className="sb-select" value={provider} onChange={(e) => setProvider((e.target as HTMLSelectElement).value)}>
               <option>Booking</option>
               <option>Airbnb</option>
               <option>Expedia</option>
@@ -553,7 +553,7 @@ function ManageTypeModal({
             <input style={input} value={url} onChange={(e) => setUrl((e.target as HTMLInputElement).value)} placeholder="https://..." />
           </div>
           <div>
-            <button style={primaryBtn} onClick={() => { if (url.trim()) { onAdd(provider, url); setUrl(""); } }}>
+            <button className="sb-btn sb-btn--primary" onClick={() => { if (url.trim()) { onAdd(provider, url); setUrl(""); } }}>
               Add feed
             </button>
           </div>
