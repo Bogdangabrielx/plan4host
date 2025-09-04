@@ -200,7 +200,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
   return (
     <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
       {/* Minimal toolbar */}
-      <div className="sb-toolbar" style={{ gap: isSmall ? 8 : 12 }}>
+      <div className="sb-toolbar" style={{ gap: isSmall ? 10 : 14 }}>
         <select
           className="sb-select"
           value={propertyId}
@@ -212,9 +212,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
           ))}
         </select>
 
-        <div style={{ flex: 1 }} />
-
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12 }}>
           <button
             type="button"
             className="sb-btn sb-btn--icon"
@@ -249,6 +247,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
             ▶
           </button>
         </div>
+        <div style={{ flex: 1 }} />
       </div>
 
       <MonthView
@@ -273,7 +272,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
       {/* Year overlay (opened via dedicated button) */}
       {showYear && (
         <div role="dialog" aria-modal="true" onClick={() => setShowYear(false)}
-          style={{ position: "fixed", inset: 0, zIndex: 225, background: "rgba(0,0,0,0.55)", display: "grid", placeItems: "center" }}>
+          style={{ position: "fixed", inset: 0, zIndex: 225, background: "var(--bg)", display: "grid", placeItems: "center" }}>
           <div onClick={(e) => e.stopPropagation()} className="sb-card" style={{ width: "min(1024px, 95vw)", maxHeight: "86vh", overflow: "auto", padding: 16 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <strong style={{ fontSize: 16 }}>Pick a month — {year}</strong>

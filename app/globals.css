@@ -88,6 +88,8 @@ html, body {
 
 /* Buttons */
 .sb-btn {
+  -webkit-appearance: none;
+  appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -120,6 +122,7 @@ html, body {
 
 /* Select */
 .sb-select {
+  -webkit-appearance: none;
   appearance: none;
   background: var(--card);
   color: var(--text);
