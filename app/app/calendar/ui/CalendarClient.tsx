@@ -205,14 +205,14 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
           className="sb-select"
           value={propertyId}
           onChange={(e) => { setPropertyId(e.currentTarget.value); }}
-          style={{ minWidth: 240, paddingInline: 14, height: 40 }}
+          style={{ minWidth: 220, paddingInline: 12, height: 36, flexBasis: "100%", marginBottom: 8 }}
         >
           {properties.map(p => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
 
-        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 12 : 18, marginLeft: isSmall ? 0 : 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 12 : 18, marginLeft: 0 }}>
           <button
             type="button"
             className="sb-btn sb-btn--icon"
@@ -225,18 +225,10 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
             type="button"
             className="sb-btn sb-btn--ghost"
             onClick={openDatePicker}
-            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 20, paddingInline: 18, height: 40 }}
+            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 36 }}
             aria-label="Pick date"
           >
             {monthNames[month]} {year}
-          </button>
-          <button
-            type="button"
-            className="sb-btn sb-btn--ghost sb-btn--small"
-            onClick={() => setShowYear(true)}
-            aria-label="Open year overview"
-          >
-            Year
           </button>
           <button
             type="button"
@@ -245,6 +237,14 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
             onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}
           >
             ▶
+          </button>
+          <button
+            type="button"
+            className="sb-btn sb-btn--ghost sb-btn--small"
+            onClick={() => setShowYear(true)}
+            aria-label="Open year overview"
+          >
+            Year
           </button>
         </div>
         <div style={{ flex: 1 }} />
