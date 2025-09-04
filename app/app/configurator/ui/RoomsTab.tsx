@@ -16,6 +16,7 @@ export default function RoomsTab({
   onRenameType,
   onDeleteType,
   onAssignType,
+  plan,
 }: {
   rooms: Room[];
   roomTypes: RoomType[];
@@ -27,12 +28,15 @@ export default function RoomsTab({
   onRenameType: (typeId: string, name: string) => void | Promise<void>;
   onDeleteType: (typeId: string) => void | Promise<void>;
   onAssignType: (roomId: string, typeId: string | null) => void | Promise<void>;
+  plan?: 'basic' | 'standard' | 'premium' | null;
 }) {
   const [newType, setNewType] = useState("");
 
   const roomsSorted = useMemo(() => {
     return [...rooms].sort((a, b) => a.sort_index - b.sort_index);
   }, [rooms]);
+
+  const roomLimitReached = (plan === 'standard') && rooms.length >= 10;
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
@@ -77,7 +81,7 @@ export default function RoomsTab({
       <section className="sb-card" style={{ padding: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
           <strong>Rooms</strong>
-          <button onClick={onAddRoom} className="sb-btn sb-btn--primary">Add room</button>
+          <button onClick={onAddRoom} className="sb-btn sb-btn--primary" disabled={roomLimitReached} title={roomLimitReached ? 'Standard plan: max 10 rooms/property' : ''}>Add room</button>
         </div>
 
         {roomsSorted.length === 0 ? (

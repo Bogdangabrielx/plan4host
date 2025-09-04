@@ -241,6 +241,7 @@ export default function ConfiguratorClient({ initialProperties }: { initialPrope
                   onRenameType={renameRoomType}
                   onDeleteType={deleteRoomType}
                   onAssignType={setRoomType}
+                  plan={plan}
                 />
               }
               roomDetails={

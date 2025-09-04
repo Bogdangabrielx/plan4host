@@ -60,6 +60,7 @@ export default function DashboardClient({
   const [list, setList] = useState<Property[]>(initialProperties);
 
   const [toDelete, setToDelete] = useState<Property | null>(null);
+  const [plan, setPlan] = useState<"basic"|"standard"|"premium"|null>(null);
 
   useEffect(() => { setTitle("Dashboard"); }, [setTitle]);
 
@@ -79,6 +80,21 @@ export default function DashboardClient({
         .select("id,name,country_code,timezone,check_in_time,check_out_time")
         .order("created_at", { ascending: true });
       if (!error && data) setList(data as Property[]);
+    })();
+  }, [supabase]);
+
+  // Load plan for button gating
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("accounts")
+        .select("plan, valid_until")
+        .order("created_at", { ascending: true });
+      if (data && data.length) {
+        const a = (data as any[])[0];
+        const active = !a.valid_until || new Date(a.valid_until) > new Date();
+        setPlan((active ? (a.plan as any) : 'basic') as any);
+      }
     })();
   }, [supabase]);
 
@@ -190,6 +206,7 @@ export default function DashboardClient({
           <div>
             <button
               onClick={addProperty}
+              disabled={plan === 'standard' && list.length >= 3}
               style={{
                 padding: "10px 14px",
                 borderRadius: 10,
@@ -202,6 +219,9 @@ export default function DashboardClient({
             >
               Save property
             </button>
+            {plan === 'standard' && list.length >= 3 && (
+              <div style={{ color: 'var(--muted)', fontSize: 12, marginTop: 6 }}>Standard plan: max 3 properties.</div>
+            )}
           </div>
           <small style={{ fontSize: 12, color: "var(--muted)" }}>
             Check-in/out default to 14:00 / 11:00. <br />
@@ -350,4 +370,3 @@ export default function DashboardClient({
     </div>
   );
 }
-
