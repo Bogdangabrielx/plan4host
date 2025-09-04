@@ -512,8 +512,7 @@ function MonthView({
                 <div style={{
                   position: "absolute", top: 8, left: 8,
                   fontSize: isSmall ? 15 : 13,
-                  color: "var(--text)", fontWeight: 800,
-                  textShadow: "0 1px 2px rgba(0,0,0,0.55)"
+                  color: "var(--text)", fontWeight: 800
                 }}>
                   {parseInt(c.dateStr.slice(-2), 10)}
                 </div>
