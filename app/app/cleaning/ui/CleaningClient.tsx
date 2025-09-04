@@ -370,52 +370,30 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
       ) : items.length === 0 ? (
         <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }}>
+        <ul style={{ listStyle: "none", padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
           {items.map((it) => {
             const key = `${it.room.id}|${it.cleanDate}`;
             const prog = cleaningMap[key] || {};
             const doneCount = tdefs.filter((t) => !!prog[t.id]).length;
             const total = tdefs.length;
+            const cleaned = total > 0 && doneCount === total;
 
             return (
               <li
                 key={it.room.id + "|" + it.cleanDate}
-                onClick={() => setOpenItem(it)}
+                onClick={cleaned ? undefined : () => setOpenItem(it)}
                 className="sb-card"
-                style={{ aspectRatio: "1.5 / 1", padding: 12, cursor: "pointer", display: "grid", gridTemplateRows: "auto 1fr auto", gap: 8 }}
-                title="Open cleaning tasks"
+                style={{ aspectRatio: "1.2 / 1", padding: 10, cursor: cleaned ? "default" : "pointer", display: "grid", placeItems: "center", gap: 6, opacity: cleaned ? .66 : 1 }}
+                title={cleaned ? "Cleaned" : "Open cleaning tasks"}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                  <strong style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {it.room.name}
-                  </strong>
-                  <span
-                    style={{
-                      padding: "3px 8px",
-                      borderRadius: 999,
-                      background: it.mode === "carry" ? "transparent" : "var(--primary)",
-                      border: it.mode === "carry" ? "1px solid var(--danger)" : "transparent",
-                      color: it.mode === "carry" ? "var(--danger)" : "#0c111b",
-                      fontWeight: 800,
-                      fontSize: 11,
-                      flexShrink: 0
-                    }}
-                  >
-                    {it.mode === "carry" ? "carry-over" : "today"}
-                  </span>
-                </div>
-
-                <div style={{ color: "var(--muted)", fontSize: 12 }}>
-                  {it.statusLine}
-                </div>
-
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 12, color: "var(--muted)" }}>
-                    {it.mode === "checkout" ? dateStr : it.cleanDate}
-                  </span>
-                  <span className="sb-badge">
-                    {doneCount}/{total}
-                  </span>
+                <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
+                  <strong style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.room.name}</strong>
+                  <small style={{ color: "var(--muted)" }}>{it.mode === "carry" ? `carry-over • ${it.cleanDate}` : it.statusLine}</small>
+                  {cleaned ? (
+                    <span className="sb-badge">Cleaned</span>
+                  ) : (
+                    <span className="sb-badge">{doneCount}/{total}</span>
+                  )}
                 </div>
               </li>
             );

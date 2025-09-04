@@ -36,12 +36,14 @@ export default function CleanTaskModal({
   const supabase = useMemo(() => createClient(), []);
   const [saving, setSaving] = useState(false);
   const [local, setLocal] = useState<Record<string, boolean>>({});
+  const locked = useMemo(() => tasks.length > 0 && tasks.every(t => !!progress?.[t.id]), [tasks, progress]);
 
   useEffect(() => {
     setLocal(progress); // sync când deschidem
   }, [progress]);
 
   async function toggle(taskId: string, value: boolean) {
+    if (locked) return; // immutable once cleaned
     setLocal(prev => ({ ...prev, [taskId]: value }));
     onLocalProgress(item.room.id, item.cleanDate, taskId, value);
 
@@ -63,6 +65,7 @@ export default function CleanTaskModal({
   }
 
   async function markAllDone() {
+    if (locked) return;
     setSaving(true);
     // upsert pentru toate taskurile
     for (const t of tasks) {
@@ -131,8 +134,8 @@ export default function CleanTaskModal({
                 const checked = !!local[t.id];
                 return (
                   <li key={t.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--card)", borderRadius: 10, padding: 10 }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                      <input type="checkbox" checked={checked} onChange={(e) => toggle(t.id, (e.target as HTMLInputElement).checked)} />
+                    <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: locked ? "default" : "pointer", opacity: locked ? .7 : 1 }}>
+                      <input type="checkbox" checked={checked} disabled={locked} onChange={(e) => toggle(t.id, (e.target as HTMLInputElement).checked)} />
                       <span>{t.label}</span>
                     </label>
                   </li>
@@ -148,9 +151,11 @@ export default function CleanTaskModal({
           borderTop: "1px solid var(--border)",
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10
         }}>
-          <small style={{ color: "var(--muted)" }}>{saving ? "Saving…" : "Synced"}</small>
+          <small style={{ color: "var(--muted)" }}>{saving ? "Saving…" : locked ? "Cleaned" : "Synced"}</small>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={markAllDone} className="sb-btn sb-btn--primary">Mark as cleaned</button>
+            {!locked && (
+              <button onClick={markAllDone} className="sb-btn sb-btn--primary">Mark as cleaned</button>
+            )}
           </div>
         </div>
       </div>
