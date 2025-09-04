@@ -60,7 +60,8 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
 
   // Day modal (ONLY in Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
-  // Year overlay removed; use month picker instead
+  // Year overlay (opened from a dedicated button) + month picker
+  const [showYear, setShowYear] = useState<boolean>(false);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const dateOverlayInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -233,6 +234,14 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
           </button>
           <button
             type="button"
+            className="sb-btn sb-btn--ghost sb-btn--small"
+            onClick={() => setShowYear(true)}
+            aria-label="Open year overview"
+          >
+            Year
+          </button>
+          <button
+            type="button"
             className="sb-btn sb-btn--icon"
             aria-label="Next month"
             onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}
@@ -261,7 +270,30 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
         />
       )}
 
-      {/* Year overlay removed; Month picker handles navigation */}
+      {/* Year overlay (opened via dedicated button) */}
+      {showYear && (
+        <div role="dialog" aria-modal="true" onClick={() => setShowYear(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 225, background: "rgba(0,0,0,0.55)", display: "grid", placeItems: "center" }}>
+          <div onClick={(e) => e.stopPropagation()} className="sb-card" style={{ width: "min(1024px, 95vw)", maxHeight: "86vh", overflow: "auto", padding: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <strong style={{ fontSize: 16 }}>Pick a month — {year}</strong>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button type="button" className="sb-btn sb-btn--icon" aria-label="Previous year" onClick={() => setYear(y => y - 1)}>◀</button>
+                <button type="button" className="sb-btn sb-btn--icon" aria-label="Next year" onClick={() => setYear(y => y + 1)}>▶</button>
+                <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowYear(false)}>Close</button>
+              </div>
+            </div>
+            <YearView
+              year={year}
+              roomsCount={rooms.length}
+              occupancyMap={occupancyMap}
+              isSmall={isSmall}
+              onMonthTitleClick={(m) => { setMonth(m); setShowYear(false); }}
+              onDayClick={(dateStr) => { goToMonthFor(dateStr); setShowYear(false); }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Visible popover date picker */}
       {showDatePicker && (
