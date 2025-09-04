@@ -21,14 +21,18 @@ export async function POST(req: Request) {
       accountId = row.account_id as string;
     }
 
-    // Ensure target membership in this account (and do not allow removing the owner)
-    const { data: target } = await supa.from("account_users").select("account_id, role").eq("account_id", accountId).eq("user_id", userId).maybeSingle();
-    if (!target) return bad(404, { error: "Member not found" });
-    if (target.role === 'owner') return bad(403, { error: "Cannot remove owner" });
-
+    // Use admin client for membership checks to avoid RLS issues
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
     const admin = (await import("@supabase/supabase-js")).createClient(url, serviceKey, { auth: { persistSession: false } });
+    const { data: target } = await admin
+      .from("account_users")
+      .select("account_id, role")
+      .eq("account_id", accountId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!target) return bad(404, { error: "Member not found" });
+    if (target.role === 'owner') return bad(403, { error: "Cannot remove owner" });
     const del = await admin.from("account_users").delete().eq("account_id", accountId).eq("user_id", userId);
     if (del.error) return bad(400, { error: del.error.message });
     return NextResponse.json({ ok: true });
