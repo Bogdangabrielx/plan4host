@@ -60,7 +60,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
 
   // Day modal (ONLY in Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
-  const [showYear, setShowYear] = useState<boolean>(false); // legacy; no longer used for UI
+  // Year overlay removed; use month picker instead
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const dateOverlayInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -149,7 +149,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
     const ds = ymd(today);
     goToMonthFor(ds);
   }
-  function backToYear() { setShowYear(true); }
+  // backToYear removed (legacy)
 
   function openDatePicker() { setShowDatePicker(true); }
 
@@ -250,7 +250,6 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
         highlightDate={null}
         isSmall={isSmall}
         onDayClick={(dateStr) => setOpenDate(dateStr)}
-        onBackgroundClick={() => setShowYear(true)}
       />
 
       {/* DayModal — only in Month view */}
@@ -262,26 +261,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
         />
       )}
 
-      {/* Year overlay (grid 3x4 on desktop, stacked on phone) */}
-      {showYear && (
-        <div role="dialog" aria-modal="true" onClick={() => setShowYear(false)}
-          style={{ position: "fixed", inset: 0, zIndex: 225, background: "rgba(0,0,0,0.55)", display: "grid", placeItems: "center" }}>
-          <div onClick={(e) => e.stopPropagation()} className="sb-card" style={{ width: "min(1024px, 95vw)", maxHeight: "86vh", overflow: "auto", padding: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <strong style={{ fontSize: 16 }}>Pick a month — {year}</strong>
-              <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowYear(false)}>Close</button>
-            </div>
-            <YearView
-              year={year}
-              roomsCount={rooms.length}
-              occupancyMap={occupancyMap}
-              isSmall={isSmall}
-              onMonthTitleClick={(m) => { setMonth(m); setShowYear(false); }}
-              onDayClick={(dateStr) => { goToMonthFor(dateStr); setShowYear(false); }}
-            />
-          </div>
-        </div>
-      )}
+      {/* Year overlay removed; Month picker handles navigation */}
 
       {/* Visible popover date picker */}
       {showDatePicker && (
@@ -436,14 +416,13 @@ function tooltipFor(dateStr: string, roomsCount: number, map: Map<string, Set<st
 /* ================== MONTH VIEW ================== */
 
 function MonthView({
-  year, month, roomsCount, occupancyMap, highlightDate, isSmall, onDayClick, onBackgroundClick
+  year, month, roomsCount, occupancyMap, highlightDate, isSmall, onDayClick
 }: {
   year: number; month: number; roomsCount: number;
   occupancyMap: Map<string, Set<string>>;
   highlightDate: string | null;
   isSmall: boolean;
   onDayClick: (dateStr: string) => void;
-  onBackgroundClick: () => void;
 }) {
   const dim = daysInMonth(year, month);
   const fw  = firstWeekday(year, month);
@@ -463,16 +442,7 @@ function MonthView({
   while (days.length < total) days.push({});
 
   return (
-    <div
-      className="sb-card"
-      style={{ boxShadow: "0 3px 20px #2e6dc656", padding: 12 }}
-      onClick={(e) => {
-        // open year overlay when clicking background (not a day cell)
-        const target = e.target as HTMLElement;
-        if (target.closest('[data-cal-cell="1"]')) return; // clicked a cell -> ignore
-        onBackgroundClick();
-      }}
-    >
+    <div className="sb-card" style={{ boxShadow: "0 3px 20px #2e6dc656", padding: 12 }}>
       {/* week day headers */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
         {weekdayShort.map((w) => (
@@ -487,7 +457,6 @@ function MonthView({
           return (
             <div
               key={i}
-              data-cal-cell="1"
               onClick={clickable ? () => onDayClick(c.dateStr!) : undefined}
               title={c.dateStr ? tooltipFor(c.dateStr, roomsCount, occupancyMap) : undefined}
               style={{
