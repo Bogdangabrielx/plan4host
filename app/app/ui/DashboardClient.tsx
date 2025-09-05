@@ -148,7 +148,7 @@ export default function DashboardClient({
   async function confirmDelete() {
     if (!toDelete) return;
     setStatus("Saving…");
-    const { error } = await supabase.from("properties").delete().eq("id", toDelete.id);
+    const { error } = await supabase.rpc("account_delete_property_self", { p_property_id: toDelete.id });
     if (error) { setStatus("Error"); return; }
     setList(prev => prev.filter(p => p.id !== toDelete.id));
     setToDelete(null);

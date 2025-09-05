@@ -112,23 +112,28 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     });
   }, [countdownSec]);
 
-  // Load plan (o singură dată la mount) + date property
+  // Load plan for the CURRENT PROPERTY (so gating is accurate per property account)
   useEffect(() => {
     (async () => {
-      // plan
-      const plan = await supabase.rpc("account_current_plan");
+      if (!propertyId) { setIsPremium(null); return; }
+      // 1) owner/account of selected property
+      const rProp = await supabase.from("properties").select("owner_id").eq("id", propertyId).single();
+      const accId = (rProp.data as any)?.owner_id as string | undefined;
+      if (!accId) { setIsPremium(false); setHintText(""); setHintVariant("muted"); return; }
+      // 2) effective plan for that account
+      const plan = await supabase.rpc("account_effective_plan_slug", { p_account_id: accId });
       const p = (plan.data as string | null)?.toLowerCase?.() ?? "basic";
-      setIsPremium(p === "premium");
-      if (p === "premium") {
+      const premium = p === "premium";
+      setIsPremium(premium);
+      if (premium) {
         setHintText("Ready");
         setHintVariant("success");
       } else {
-        // Non‑premium: nu afișăm status pill sub buton
         setHintText("");
         setHintVariant("muted");
       }
     })();
-  }, [supabase]);
+  }, [supabase, propertyId]);
 
   useEffect(() => {
     if (!propertyId) return;
