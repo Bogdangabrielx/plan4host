@@ -48,6 +48,31 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     return () => window.removeEventListener("themechange" as any, onThemeChange);
   }, []);
 
+  // Themed icons mapping for certain routes
+  const THEME_ICONS: Record<string, { light: string; dark: string }> = {
+    "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
+    "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
+    "/app/configurator": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
+  };
+
+  function NavIcon({ href, emoji, size }: { href: string; emoji: string; size: number }) {
+    const themed = THEME_ICONS[href as keyof typeof THEME_ICONS];
+    const src = themed ? (theme === "light" ? themed.light : themed.dark) : null;
+    const [failed, setFailed] = useState(false);
+    if (!mounted || !src || failed) return <span aria-hidden>{emoji}</span>;
+    return (
+      <img
+        aria-hidden
+        src={src}
+        alt=""
+        width={size}
+        height={size}
+        style={{ display: "block" }}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
   // IMPORTANT: domeniul tău (injectat la build)
   const BASE =
     (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
@@ -230,24 +255,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                     ? currentPath === it.href || currentPath.startsWith(it.href + "/")
                     : false;
                   const isInbox = it.href === "/app/inbox";
-                  const isChannels = it.href === "/app/channels";
-                  const channelsIconSrc = theme === "light" ? "/ical_forlight.png" : "/ical_fordark.png";
-                  function renderIcon() {
-                    if (isChannels) {
-                      if (!mounted) return <span aria-hidden>{it.emoji}</span>;
-                      return (
-                        <img
-                          aria-hidden
-                          src={channelsIconSrc}
-                          alt=""
-                          width={18}
-                          height={18}
-                          style={{ display: "block" }}
-                        />
-                      );
-                    }
-                    return <span aria-hidden>{it.emoji}</span>;
-                  }
+                  const ICON_SIZE = 36; // dublu față de ~18px
                   return (
                     <li key={it.href}>
                       {/* Buton care face hard navigate pe domeniul tău */}
@@ -269,7 +277,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                           cursor: "pointer",
                         }}
                       >
-                        {renderIcon()}
+                        <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
                         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           {it.label}
                           {isInbox && inboxCount > 0 && (
