@@ -50,12 +50,14 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
   // Themed icons mapping for certain routes
   const THEME_ICONS: Record<string, { light: string; dark: string }> = {
+    "/app": { light: "/dashboard_forlight.png", dark: "/dashboard_fordark.png" },
     "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
     "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
     "/app/configurator": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
     "/app/inbox": { light: "/inbox_forlight.png", dark: "/inbox_fordark.png" },
     "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
     "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
+    "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
   };
 
   function NavIcon({ href, emoji, size }: { href: string; emoji: string; size: number }) {
@@ -258,7 +260,12 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                     ? currentPath === it.href || currentPath.startsWith(it.href + "/")
                     : false;
                   const isInbox = it.href === "/app/inbox";
-                  const ICON_SIZE = 36; // dublu față de ~18px
+                  const ICON_SIZE_DEFAULT = 36; // dublu față de ~18px
+                  const ICON_SIZE_PER_ROUTE: Record<string, number> = {
+                    "/app/calendar": 32,
+                    "/app/team": 32,
+                  };
+                  const ICON_SIZE = ICON_SIZE_PER_ROUTE[it.href] ?? ICON_SIZE_DEFAULT;
                   return (
                     <li key={it.href}>
                       {/* Buton care face hard navigate pe domeniul tău */}
