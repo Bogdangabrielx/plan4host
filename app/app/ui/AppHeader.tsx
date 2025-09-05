@@ -134,13 +134,23 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         setMe(info);
         const allowAll = info.role === 'owner' || info.role === 'manager';
         const sc = new Set((info.scopes || []) as string[]);
-        const filtered = NAV_BASE.filter(it => {
+        let filtered = NAV_BASE.filter(it => {
           if (it.scope === 'logout') return true;
           if (allowAll) return true;
           // hide Team unless owner/manager
           if (it.href === '/app/team') return false;
           return sc.has(it.scope);
         });
+        // Show Subscription for owners explicitly
+        if (info.role === 'owner') {
+          const exists = filtered.some(x => x.href === '/app/subscription');
+          if (!exists) {
+            filtered = [
+              { href: "/app/subscription", label: "Subscription", emoji: "💳", scope: "subscription" },
+              ...filtered,
+            ];
+          }
+        }
         setNav(filtered);
       } catch {}
     })();

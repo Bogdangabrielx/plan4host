@@ -12,6 +12,8 @@ export default async function CleaningPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
+  const mode = await supabase.rpc("account_access_mode");
+  if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
   await ensureScope("cleaning", supabase, user.id);
 
   const { data: props = [] } = await supabase

@@ -12,6 +12,12 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
+  // Billing-only guard: owner can access Subscription only
+  const mode = await supabase.rpc("account_access_mode");
+  if ((mode.data as string | null) === 'billing_only') {
+    redirect('/app/subscription');
+  }
+
   // Redirect sub-users fără 'dashboard' către prima secțiune permisă
   const { data: acc } = await supabase.from("accounts").select("id").eq("id", user.id).maybeSingle();
   if (!acc) {

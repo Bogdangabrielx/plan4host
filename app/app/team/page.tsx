@@ -11,6 +11,8 @@ export default async function TeamPage() {
   const supa = createClient();
   const { data: { user } } = await supa.auth.getUser();
   if (!user) redirect("/auth/login");
+  const mode = await supa.rpc("account_access_mode");
+  if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
 
   // Owner or manager required; otherwise redirect to app
   const { data: au } = await supa
