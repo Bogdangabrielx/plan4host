@@ -168,7 +168,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             onClick={() => setOpen(true)}
             aria-label="Open menu"
             style={{
-              padding: isSmall ? 6 : 8,
+              // Păstrăm dimensiunea totală a butonului (~36/44px înălțime)
+              // creștem iconul, deci micșorăm puțin padding-ul
+              padding: isSmall ? 4 : 6,
               borderRadius: 10,
               border: "1px solid var(--border)",
               background: "var(--card)",
@@ -181,8 +183,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <img
                 src={theme === "light" ? "/aboutme_forlight.png" : "/aboutme_fordark.png"}
                 alt=""
-                width={isSmall ? 24 : 28}
-                height={isSmall ? 24 : 28}
+                width={isSmall ? 28 : 32}
+                height={isSmall ? 28 : 32}
                 style={{ display: "block" }}
                 onError={() => setAboutFailed(true)}
               />
