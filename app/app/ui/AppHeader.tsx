@@ -21,12 +21,31 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const [nav, setNav] = useState(NAV_BASE);
   const [me, setMe] = useState<{ role: string; scopes: string[]; disabled: boolean } | null>(null);
   const [isSmall, setIsSmall] = useState(false);
+  // Theme (for switching icons like Channels & iCal)
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
     detect();
     window.addEventListener("resize", detect);
     return () => window.removeEventListener("resize", detect);
+  }, []);
+
+  // Detect and react to theme changes (so we can swap icons)
+  useEffect(() => {
+    setMounted(true);
+    try {
+      const fromHtml = (document.documentElement.getAttribute("data-theme") as "light" | "dark" | null);
+      const fromLS = (localStorage.getItem("theme_v1") as "light" | "dark" | null);
+      setTheme(fromHtml ?? fromLS ?? "dark");
+    } catch {}
+    function onThemeChange(e: Event) {
+      const detail = (e as CustomEvent).detail as { theme?: "light" | "dark" } | undefined;
+      if (detail?.theme) setTheme(detail.theme);
+    }
+    window.addEventListener("themechange" as any, onThemeChange);
+    return () => window.removeEventListener("themechange" as any, onThemeChange);
   }, []);
 
   // IMPORTANT: domeniul tău (injectat la build)
@@ -211,6 +230,24 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                     ? currentPath === it.href || currentPath.startsWith(it.href + "/")
                     : false;
                   const isInbox = it.href === "/app/inbox";
+                  const isChannels = it.href === "/app/channels";
+                  const channelsIconSrc = theme === "light" ? "/ical_forlight.png" : "/ical_fordark.png";
+                  function renderIcon() {
+                    if (isChannels) {
+                      if (!mounted) return <span aria-hidden>{it.emoji}</span>;
+                      return (
+                        <img
+                          aria-hidden
+                          src={channelsIconSrc}
+                          alt=""
+                          width={18}
+                          height={18}
+                          style={{ display: "block" }}
+                        />
+                      );
+                    }
+                    return <span aria-hidden>{it.emoji}</span>;
+                  }
                   return (
                     <li key={it.href}>
                       {/* Buton care face hard navigate pe domeniul tău */}
@@ -232,7 +269,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                           cursor: "pointer",
                         }}
                       >
-                        <span aria-hidden>{it.emoji}</span>
+                        {renderIcon()}
                         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           {it.label}
                           {isInbox && inboxCount > 0 && (

@@ -67,19 +67,22 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const { data, error } = await supabase
-        .from("accounts")
-        .select("plan, valid_until")
-        .order("created_at", { ascending: true });
-
-      let p: Plan = "basic";
-      if (!error && data && data.length > 0) {
-        const acc = data[0] as any;
+      try {
+        const { data: u } = await supabase.auth.getUser();
+        const uid = u?.user?.id;
+        if (!uid) { if (mounted) setPlan("basic"); return; }
+        const { data } = await supabase
+          .from("accounts")
+          .select("plan, valid_until")
+          .eq("id", uid)
+          .maybeSingle();
         const now = new Date();
-        const valid = acc.valid_until ? new Date(acc.valid_until) > now : true;
-        p = valid ? (acc.plan as Plan) : "basic";
+        const active = !data?.valid_until || new Date(data.valid_until) > now;
+        const p = (data?.plan as Plan) ?? "basic";
+        if (mounted) setPlan(active ? p : "basic");
+      } catch {
+        if (mounted) setPlan("basic");
       }
-      if (mounted) setPlan(p);
     })();
     return () => { mounted = false; };
   }, [supabase]);
