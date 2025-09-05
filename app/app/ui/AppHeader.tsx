@@ -24,6 +24,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   // Theme (for switching icons like Channels & iCal)
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
+  const [aboutFailed, setAboutFailed] = useState(false);
 
   useEffect(() => {
     const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
@@ -176,7 +177,18 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               cursor: "pointer",
             }}
           >
-            ≡
+            {mounted && !aboutFailed ? (
+              <img
+                src={theme === "light" ? "/aboutme_forlight.png" : "/aboutme_fordark.png"}
+                alt=""
+                width={isSmall ? 24 : 28}
+                height={isSmall ? 24 : 28}
+                style={{ display: "block" }}
+                onError={() => setAboutFailed(true)}
+              />
+            ) : (
+              <>≡</>
+            )}
           </button>
 
           {/* Title poate fi ReactNode */}
