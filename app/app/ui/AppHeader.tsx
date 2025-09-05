@@ -53,6 +53,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
     "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
     "/app/configurator": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
+    "/app/inbox": { light: "/inbox_forlight.png", dark: "/inbox_fordark.png" },
+    "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
+    "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
   };
 
   function NavIcon({ href, emoji, size }: { href: string; emoji: string; size: number }) {
