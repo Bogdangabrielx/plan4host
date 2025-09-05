@@ -41,8 +41,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
     if (!uid) { setSaving(null); return; }
 
     const validDays = slug === 'basic' ? null : 30;
-    const { error } = await supabase.rpc("account_set_plan", {
-      p_account_id: uid,
+    const { error } = await supabase.rpc("account_set_plan_self", {
       p_plan_slug: slug,
       p_valid_days: validDays,
       p_trial_days: null,
@@ -105,4 +104,3 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
     </div>
   );
 }
-
