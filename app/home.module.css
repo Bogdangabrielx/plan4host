@@ -1,0 +1,54 @@
+/* app/home.module.css — isolated styles for landing homepage */
+
+.landing { background: var(--bg); color: var(--text); }
+.landing * { box-sizing: border-box; }
+
+/* Top navigation */
+.nav { position: sticky; top: 0; z-index: 50; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; padding: 14px 20px; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
+.menu { display: flex; gap: 18px; justify-content: center; }
+.menuLink { color: var(--muted); text-decoration: none; font-weight: 700; }
+.menuLink:hover { color: var(--text); }
+.actions { display: flex; gap: 10px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 14px; border-radius: 999px; font-weight: 800; text-decoration: none; border: 1px solid var(--border); transition: transform .05s ease, box-shadow .15s ease; }
+.btn:active { transform: scale(0.99); }
+.btnPrimary { background: var(--primary); color: #0c111b; border-color: transparent; box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 35%, transparent); }
+.btnPrimary:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); }
+.btnGhost { background: transparent; color: var(--text); }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 32px; max-width: 1100px; margin: 48px auto; padding: 0 20px; align-items: center; }
+.heroText h1 { font-size: clamp(36px, 6vw, 64px); line-height: 1.05; margin: 0 0 12px; }
+.heroText p { color: var(--muted); margin: 0 0 20px; max-width: 58ch; }
+.accent { color: var(--primary); }
+.heroCta { display: flex; gap: 12px; }
+.heroVisual { background: linear-gradient(180deg, rgba(255,255,255,.04), transparent); border: 1px solid var(--border); border-radius: 18px; padding: 16px; min-height: 320px; display: grid; place-items: center; overflow: hidden; }
+.heroVisual img { width: 100%; height: auto; object-fit: contain; }
+
+/* Features */
+.features { max-width: 1100px; margin: 80px auto; padding: 0 20px; }
+.features h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 20px; }
+.featureGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.featureCard { background: var(--panel); border: 1px solid var(--border); border-radius: 22px; padding: 26px; min-height: 180px; }
+.featureCard h3 { margin: 0 0 8px; font-size: 20px; }
+.featureCard p { margin: 0; color: var(--muted); }
+
+/* Pricing */
+.pricing { max-width: 1100px; margin: 80px auto; padding: 0 20px; }
+.pricing h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 24px; }
+.pricingGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.priceCard { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: grid; gap: 16px; align-content: start; }
+.priceImg { width: 100%; height: auto; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+.priceList { list-style: none; padding: 0; margin: 0; color: var(--text); display: grid; gap: 8px; }
+.priceTier { margin-top: 10px; font-weight: 900; letter-spacing: .1em; opacity: .9; }
+
+/* Footer */
+.footer { max-width: 1100px; margin: 60px auto; padding: 0 20px 60px; color: var(--muted); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .featureGrid { grid-template-columns: 1fr; }
+  .pricingGrid { grid-template-columns: 1fr; }
+  .menu { display: none; }
+}
