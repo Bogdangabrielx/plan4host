@@ -59,6 +59,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
     "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
     "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
+    "/app/subscription": { light: "/subscription_forlight.png", dark: "/subscription_fordark.png" },
   };
 
   function NavIcon({ href, emoji, size }: { href: string; emoji: string; size: number }) {
