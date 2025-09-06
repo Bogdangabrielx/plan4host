@@ -18,6 +18,12 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
   const [saving, setSaving] = useState<string | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
+  function planLabel(s: string | null | undefined) {
+    const t = (s || '').toString().toLowerCase();
+    if (!t) return '—';
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+
   useEffect(() => {
     (async () => {
       // detect membership role for current user
@@ -62,6 +68,18 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
   function planCard(p: PlanRow) {
     const isCurrent = (account?.plan as string | null)?.toLowerCase?.() === p.slug;
     const expanded = !!open[p.slug];
+    const propsStr = p.max_properties == null ? 'Unlimited properties' : `Up to ${p.max_properties} properties`;
+    const roomsStr = p.max_rooms_per_property == null ? 'Unlimited rooms per property' : `Up to ${p.max_rooms_per_property} rooms per property`;
+    const autoStr  = `Automatic sync every ${p.sync_interval_minutes} minutes`;
+    const nowStr   = p.allow_sync_now ? 'Instant Sync (Sync now) included' : 'Instant Sync (Sync now) not included';
+    const featureLines: string[] = [];
+    try {
+      if (Array.isArray(p.features)) {
+        for (const f of p.features as any[]) {
+          if (typeof f === 'string' && f.trim()) featureLines.push(f.trim());
+        }
+      }
+    } catch {}
     return (
       <div
         key={p.slug}
@@ -78,13 +96,16 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
         </button>
 
         {expanded && (
-          <div style={{ color: "var(--muted)", display: 'grid', gap: 8 }}>
-            {p.description && <div>{p.description}</div>}
-            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-              <li>Properties: {p.max_properties ?? 'Unlimited'}</li>
-              <li>Rooms / property: {p.max_rooms_per_property ?? 'Unlimited'}</li>
-              <li>Autosync every {p.sync_interval_minutes} min</li>
-              <li>Sync now: {p.allow_sync_now ? 'Yes' : 'No'}</li>
+          <div style={{ color: "var(--muted)", display: 'grid', gap: 8, fontWeight: 600, lineHeight: 1.5 }}>
+            {p.description && <div style={{ fontWeight: 600 }}>{p.description}</div>}
+            <ul style={{ margin: 0, paddingLeft: 18, listStyle: 'disc' }}>
+              <li>{propsStr}</li>
+              <li>{roomsStr}</li>
+              <li>{autoStr}</li>
+              <li>{nowStr}</li>
+              {featureLines.map((f, i) => (
+                <li key={i}>{f}</li>
+              ))}
             </ul>
           </div>
         )}
@@ -116,7 +137,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
     <div style={{ display: 'grid', gap: 12 }}>
       {/* Minimal current plan header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span className="sb-badge">Current: {currentPlan}</span>
+        <span className="sb-badge">Current: {planLabel(currentPlan)}</span>
         <small style={{ color: 'var(--muted)' }}>until {validUntil || '—'}</small>
         {role !== 'owner' && (
           <small style={{ color: 'var(--muted)' }}>(read-only)</small>
