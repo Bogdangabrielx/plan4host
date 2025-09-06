@@ -7,7 +7,7 @@ export default function HomePage() {
       {/* Nav */}
       <header className={styles.nav}>
         <a href="/" className={styles.brand} aria-label="Plan4Host">
-          <img src="/Logo.png" alt="Plan4Host" height={28} />
+          <img src="/Logo.png" alt="Plan4Host" height={36} />
         </a>
         <nav className={styles.menu} aria-label="Primary">
           <a className={styles.menuLink} href="#features">Features</a>
@@ -49,19 +49,34 @@ export default function HomePage() {
         <h2 id="features-title">Discover Your Next Tools</h2>
         <div className={styles.featureGrid}>
           <article className={styles.featureCard}>
-            <h3>Easy-to-use Dashboard</h3>
+            <div className={styles.featureHead}>
+              <img src="/dashboard_fordark.png" className={styles.featureIcon} alt="" aria-hidden="true" />
+              <h3>Easy-to-use Dashboard</h3>
+            </div>
             <p>Bring all your properties into one simple dashboard and shape it your way, with flexibility to customize every detail.</p>
           </article>
+
           <article className={styles.featureCard}>
-            <h3>Property Setup</h3>
+            <div className={styles.featureHead}>
+              <img src="/ical_fordark.png" className={styles.featureIcon} alt="" aria-hidden="true" />
+              <h3>Property Setup</h3>
+            </div>
             <p>Quickly configure each property to match your needs—add rooms, adjust details, and personalize settings for a smooth workflow.</p>
           </article>
+
           <article className={styles.featureCard}>
-            <h3>Adaptive Calendar</h3>
+            <div className={styles.featureHead}>
+              <img src="/calendar_fordark.png" className={styles.featureIcon} alt="" aria-hidden="true" />
+              <h3>Adaptive Calendar</h3>
+            </div>
             <p>Your calendar, your way. Customize views, organize reservations, and keep everything visible at a glance.</p>
           </article>
+
           <article className={styles.featureCard}>
-            <h3>Automatic Sync</h3>
+            <div className={styles.featureHead}>
+              <img src="/ical_fordark.png" className={styles.featureIcon} alt="" aria-hidden="true" />
+              <h3>Automatic Sync</h3>
+            </div>
             <p>Enable automatic iCal synchronization according to your subscription plan—keeping calendars always up to date, effortlessly.</p>
           </article>
         </div>
