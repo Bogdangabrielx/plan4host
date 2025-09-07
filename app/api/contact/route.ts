@@ -14,6 +14,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
+    // Try to log the message to Supabase (best-effort, non-blocking)
+    try {
+      const supabase = createClient();
+      await supabase.from("contact_messages").insert({
+        name,
+        email,
+        message,
+        user_agent: req.headers.get("user-agent"),
+        ip: (req.headers.get("x-forwarded-for") || "").split(",")[0] || null,
+      });
+    } catch (e) {
+      console.warn("[contact] Could not persist message to DB", e);
+    }
+
     const TO = process.env.CONTACT_TO || "office@plan4host.com";
     const CC = process.env.CONTACT_CC || ""; // only used if set in env
     const FROM = process.env.CONTACT_FROM || process.env.SMTP_FROM || "Plan4Host <office@plan4host.com>";
@@ -88,18 +102,4 @@ export async function POST(req: Request) {
     console.error("[contact] Unexpected error", e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-    // Try to log the message to Supabase (best-effort)
-    try {
-      const supabase = createClient();
-      await supabase.from("contact_messages").insert({
-        name,
-        email,
-        message,
-        user_agent: req.headers.get("user-agent"),
-        ip: (req.headers.get("x-forwarded-for") || "").split(",")[0] || null,
-      });
-    } catch (e) {
-      console.warn("[contact] Could not persist message to DB", e);
-    }
-
 }
