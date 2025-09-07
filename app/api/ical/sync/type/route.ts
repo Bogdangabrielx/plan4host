@@ -294,7 +294,7 @@ export async function POST(req: Request) {
     const envStart = pad(minLocal, -7);
     const envEnd = pad(maxLocal, 7);
 
-    let bookedByRoom = new Map<string, Array<{ s: string; e: string }>>();
+    let bookedByRoom = new Map<string, Array<{ s: string; st: string | null; e: string; et: string | null }>>();
     if (roomIds.length) {
       const { data: bookRows } = await supa
         .from("bookings")
