@@ -55,6 +55,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
   const [types, setTypes] = useState<RoomType[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [items, setItems] = useState<Unassigned[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [assignSel, setAssignSel] = useState<Record<string, string>>({}); // eventId -> roomId
 
   // Header: title + badge
@@ -101,6 +102,23 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
       setTypes((rTypes.data ?? []) as RoomType[]);
       setRooms((rRooms.data ?? []) as Room[]);
       setItems((rInbox.data ?? []) as Unassigned[]);
+
+      // compute envelope and fetch bookings for availability filtering
+      const list = (rInbox.data ?? []) as Unassigned[];
+      if (list.length) {
+        const minStart = list.map(i => i.start_date).reduce((a,b)=>a<b?a:b);
+        const maxEnd   = list.map(i => i.end_date).reduce((a,b)=>a>b?a:b);
+        const rB = await supabase
+          .from("bookings")
+          .select("id,room_id,start_date,end_date,start_time,end_time,status")
+          .eq("property_id", propertyId)
+          .neq("status", "cancelled")
+          .lt("start_date", maxEnd)
+          .gt("end_date", minStart);
+        if (!rB.error) setBookings((rB.data ?? []) as Booking[]); else setBookings([]);
+      } else {
+        setBookings([]);
+      }
       setStatus("Idle");
     })();
   }, [propertyId, supabase]);
@@ -124,6 +142,13 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
   const typeName = (tid: string | null) =>
     types.find((t) => t.id === tid)?.name || (tid ? "Unknown type" : "—");
 
+  // bookings by room for quick filtering
+  const bookingsByRoom = useMemo(() => {
+    const m: Record<string, Booking[]> = {};
+    for (const b of bookings) (m[b.room_id] = m[b.room_id] || []).push(b);
+    return m;
+  }, [bookings]);
+
   async function doAssign(ev: Unassigned) {
     const roomId = assignSel[ev.id];
     if (!roomId) return;
@@ -137,6 +162,16 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
 
     if (res.ok) {
       setItems((prev) => prev.filter((x) => x.id !== ev.id));
+      // update local bookings to reflect the new assignment
+      setBookings(prev => ([...prev, {
+        id: `manual-${ev.id}`,
+        room_id: roomId,
+        start_date: ev.start_date,
+        end_date: ev.end_date,
+        start_time: ev.start_time,
+        end_time: ev.end_time,
+        status: "confirmed",
+      }]));
       setStatus("Idle");
     } else {
       const j = await res.json().catch(() => ({}));
@@ -209,6 +244,16 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
             const roomsOfType = rooms.filter(
               (r) => r.room_type_id && r.room_type_id === ev.room_type_id
             );
+            const ci = (properties.find(p => p.id === propertyId)?.check_in_time) || "14:00";
+            const co = (properties.find(p => p.id === propertyId)?.check_out_time) || "11:00";
+            const freeRoomsOfType = roomsOfType.filter(r => {
+              const arr = bookingsByRoom[r.id] || [];
+              return !arr.some(b => overlaps(
+                ev.start_date, ev.start_time, ev.end_date, ev.end_time,
+                b.start_date, b.start_time, b.end_date, b.end_time,
+                ci, co
+              ));
+            });
 
             return (
               <li
@@ -264,7 +309,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
                       }}
                     >
                       <option value="">— select room —</option>
-                      {roomsOfType.map((r) => (
+                      {freeRoomsOfType.map((r) => (
                         <option key={r.id} value={r.id}>
                           {r.name}
                         </option>

@@ -18,6 +18,8 @@ type Integration = {
 type Property = {
   id: string;
   timezone: string | null;
+  check_in_time: string | null;
+  check_out_time: string | null;
 };
 
 type Room = { id: string; name: string; property_id: string; room_type_id: string | null };
@@ -189,6 +191,19 @@ function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: string): b
   return aStart < bEnd && aEnd > bStart;
 }
 
+// Time-aware overlap using property check-in/out defaults
+function overlapsWithTimes(
+  aS: string, aSt: string | null, aE: string, aEt: string | null,
+  bS: string, bSt: string | null, bE: string, bEt: string | null,
+  ci: string, co: string
+) {
+  const as = new Date(`${aS}T${(aSt ?? ci)}:00Z`).getTime();
+  const ae = new Date(`${aE}T${(aEt ?? co)}:00Z`).getTime();
+  const bs = new Date(`${bS}T${(bSt ?? ci)}:00Z`).getTime();
+  const be = new Date(`${bE}T${(bEt ?? co)}:00Z`).getTime();
+  return as < be && bs < ae;
+}
+
 /**
  * Route handler
  */
@@ -218,13 +233,15 @@ export async function POST(req: Request) {
 
     const { data: prop, error: eProp } = await supa
       .from("properties")
-      .select("id,timezone")
+      .select("id,timezone,check_in_time,check_out_time")
       .eq("id", I.property_id)
       .single();
     if (eProp || !prop) throw new Error("Property not found");
 
     const P = prop as Property;
     const tz = P.timezone || "UTC";
+    const ci = P.check_in_time || "14:00";
+    const co = P.check_out_time || "11:00";
 
     const { data: roomRows, error: eRooms } = await supa
       .from("rooms")
@@ -281,7 +298,7 @@ export async function POST(req: Request) {
     if (roomIds.length) {
       const { data: bookRows } = await supa
         .from("bookings")
-        .select("room_id,start_date,end_date,status")
+        .select("room_id,start_date,end_date,start_time,end_time,status")
         .eq("property_id", I.property_id)
         .in("room_id", roomIds)
         .neq("status", "cancelled")
@@ -289,8 +306,8 @@ export async function POST(req: Request) {
         .gt("end_date", envStart);
       bookedByRoom = new Map();
       for (const br of bookRows || []) {
-        const arr = bookedByRoom.get(br.room_id) || [];
-        arr.push({ s: br.start_date, e: br.end_date });
+        const arr = bookedByRoom.get(br.room_id) || [] as Array<{ s: string; st: string | null; e: string; et: string | null }>;
+        arr.push({ s: br.start_date, st: (br as any).start_time ?? null, e: br.end_date, et: (br as any).end_time ?? null });
         bookedByRoom.set(br.room_id, arr);
       }
     }
@@ -351,12 +368,16 @@ export async function POST(req: Request) {
       // New event: try to assign a free room
       let pickedRoomId: string | null = null;
       for (const r of rooms) {
-        const taken = (bookedByRoom.get(r.id) || []).some((b) => overlaps(start_date, end_date, b.s, b.e));
+        const taken = (bookedByRoom.get(r.id) || []).some((b: any) => overlapsWithTimes(
+          start_date, start_time, end_date, end_time,
+          b.s, b.st ?? null, b.e, b.et ?? null,
+          ci, co
+        ));
         if (!taken) {
           pickedRoomId = r.id;
           // reserve locally (to avoid double-assign in same run)
-          const arr = bookedByRoom.get(r.id) || [];
-          arr.push({ s: start_date, e: end_date });
+          const arr = (bookedByRoom.get(r.id) || []) as Array<{ s: string; st: string | null; e: string; et: string | null }>;
+          arr.push({ s: start_date, st: start_time, e: end_date, et: end_time });
           bookedByRoom.set(r.id, arr);
           break;
         }
