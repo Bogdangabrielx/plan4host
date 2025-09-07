@@ -10,7 +10,7 @@
 .menuLink { color: var(--muted); text-decoration: none; font-weight: 700; }
 .menuLink:hover { color: var(--text); }
 .actions { display: flex; gap: 10px; }
-.btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 14px; border-radius: 999px; font-weight: 800; text-decoration: none; color: var(--text); border: 1px solid var(--border); transition: transform .05s ease, box-shadow .15s ease; }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 20px; border-radius: 999px; font-weight: 800; text-decoration: none; color: var(--text); border: 1px solid var(--border); transition: transform .05s ease, box-shadow .15s ease; }
 .btn:active { transform: scale(0.99); }
 .btnPrimary { background: var(--card); color: #ffffff; border-color: var(--border); box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 35%, transparent); }
 .btnPrimary:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); }
@@ -39,8 +39,8 @@
 /* Pricing */
 .pricing { max-width: 1100px; margin: 80px auto; padding: 0 20px; }
 .pricing h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 24px; }
-.pricingGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.priceCard { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: grid; gap: 16px; align-content: start; transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease; }
+.pricingGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: stretch; }
+.priceCard { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: grid; gap: 16px; grid-template-rows: 1fr auto; align-content: stretch; transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease; }
 .priceCard:hover { transform: translateY(-3px); box-shadow: 0 16px 36px color-mix(in srgb, var(--primary) 35%, transparent); border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }
 .priceImg { width: 140px; height: auto; display: block; margin: 10px auto 0; object-fit: contain; border: 0; }
 .priceList { list-style: none; padding: 0; margin: 0; color: var(--text); display: grid; gap: 8px; }
