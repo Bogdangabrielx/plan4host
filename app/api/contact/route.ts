@@ -1,6 +1,7 @@
 // app/api/contact/route.ts
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   try {
@@ -14,6 +15,7 @@ export async function POST(req: Request) {
     }
 
     const TO = process.env.CONTACT_TO || "office@plan4host.com";
+    const CC = process.env.CONTACT_CC || "bogdangabriel94@gmail.com";
     const FROM = process.env.CONTACT_FROM || process.env.SMTP_FROM || "Plan4Host <office@plan4host.com>";
 
     // Prefer SMTP if configured (same ca la signup)
@@ -35,6 +37,7 @@ export async function POST(req: Request) {
       await transporter.sendMail({
         from: FROM,
         to: TO,
+        cc: CC || undefined,
         subject: `New contact from ${name}`,
         replyTo: email,
         text: `From: ${name} <${email}>\n\n${message}`,
@@ -64,7 +67,7 @@ export async function POST(req: Request) {
     const notify = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to: [TO], subject: `New contact from ${name}`, reply_to: email, text: `From: ${name} <${email}>\n\n${message}` }),
+      body: JSON.stringify({ from: FROM, to: [TO, CC].filter(Boolean), subject: `New contact from ${name}`, reply_to: email, text: `From: ${name} <${email}>\n\n${message}` }),
     });
     if (!notify.ok) {
       const txt = await notify.text();
@@ -84,4 +87,18 @@ export async function POST(req: Request) {
     console.error("[contact] Unexpected error", e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
+    // Try to log the message to Supabase (best-effort)
+    try {
+      const supabase = createClient();
+      await supabase.from("contact_messages").insert({
+        name,
+        email,
+        message,
+        user_agent: req.headers.get("user-agent"),
+        ip: (req.headers.get("x-forwarded-for") || "").split(",")[0] || null,
+      });
+    } catch (e) {
+      console.warn("[contact] Could not persist message to DB", e);
+    }
+
 }
