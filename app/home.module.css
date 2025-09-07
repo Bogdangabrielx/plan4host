@@ -54,8 +54,18 @@
 .about h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 16px; }
 .about p { color: var(--muted); margin: 0 0 12px; }
 
+/* Contact */
+.contact { max-width: 1100px; margin: 80px auto; padding: 0 20px; }
+.contact h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 16px; }
+.contactCard { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 16px; min-height: 320px; width: min(520px, 100%); display: grid; align-content: start; }
+.cfLabel { font-size: 12px; color: var(--muted); }
+.cfInput, .cfTextarea { padding: 10px 12px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 10px; }
+.cfTextarea { resize: vertical; }
+.cfSubmit { -webkit-appearance: none; appearance: none; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--primary); color: #0c111b; font-weight: 800; cursor: pointer; }
+.cfSubmit:disabled { opacity: .7; cursor: default; }
+
 /* Make anchored sections visible below sticky nav */
-.features, .pricing, .footer { scroll-margin-top: 90px; }
+.features, .pricing, .about, .contact, .footer { scroll-margin-top: 90px; }
 
 /* Responsive */
 @media (max-width: 900px) {
@@ -65,5 +75,5 @@
   .menu { display: none; }
 }
 
-/* Anchor offset for sticky header */
-.features, .pricing, .about, .footer { scroll-margin-top: 90px; }
+/* Anchor offset for sticky header (dup safety) */
+.features, .pricing, .about, .contact, .footer { scroll-margin-top: 90px; }

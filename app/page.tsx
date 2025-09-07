@@ -7,7 +7,7 @@ export default function HomePage() {
       {/* Nav */}
       <header className={styles.nav}>
         <a href="/" className={styles.brand} aria-label="Plan4Host">
-          <img src="/Logo.png" alt="Plan4Host" height={36} />
+          <img src="/Logo.png" alt="Plan4Host" height={47} />
         </a>
         <nav className={styles.menu} aria-label="Primary">
           <a className={styles.menuLink} href="#features">Features</a>
@@ -145,8 +145,16 @@ export default function HomePage() {
         </p>
       </section>
 
+      {/* Contact */}
+      <section id="contact" className={styles.contact} aria-labelledby="contact-title">
+        <h2 id="contact-title">Contact</h2>
+        <div className={styles.contactCard}>
+          <ContactClient />
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer id="contact" className={styles.footer}>
+      <footer id="footer" className={styles.footer}>
         <p>© {new Date().getFullYear()} Plan4Host</p>
       </footer>
     </main>
@@ -169,3 +177,6 @@ function PricingCard({
     </article>
   );
 }
+
+// Client contact form component
+import ContactClient from "./_components/ContactClient";
