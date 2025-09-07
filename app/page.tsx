@@ -149,7 +149,14 @@ export default function HomePage() {
       <section id="contact" className={styles.contact} aria-labelledby="contact-title">
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
-          <ContactClient />
+          <p style={{ margin: 0, color: "var(--muted)" }}>
+            Ne poți scrie oricând la
+            {" "}
+            <a href="mailto:office@plan4host.com" style={{ color: "var(--text)", fontWeight: 800 }}>
+              office@plan4host.com
+            </a>
+            .
+          </p>
         </div>
       </section>
 
@@ -178,5 +185,4 @@ function PricingCard({
   );
 }
 
-// Client contact form component
-import ContactClient from "./_components/ContactClient";
+// Contact form removed — showing email address only
