@@ -13,6 +13,8 @@ export default async function TeamPage() {
   if (!user) redirect("/auth/login");
   const mode = await supa.rpc("account_access_mode");
   if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
+  const mode = await supa.rpc("account_access_mode");
+  if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
 
   // Owner or manager required; otherwise redirect to app
   const { data: au } = await supa
@@ -23,6 +25,11 @@ export default async function TeamPage() {
   const m = (au ?? [])[0] as any;
   const role = m?.role || (user ? "owner" : "member");
   if (m?.disabled || (role !== "owner" && role !== "manager")) redirect("/app");
+
+  // Plan must be Premium
+  const accountId = m?.account_id || user.id;
+  const plan = await supa.rpc("account_effective_plan_slug", { p_account_id: accountId });
+  if ((plan.data as string | null)?.toLowerCase?.() !== 'premium') redirect('/app');
 
   return (
     <AppShell currentPath="/app/team" title="Team">

@@ -72,22 +72,12 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
     setPill(status === "Loading" ? "Syncing…" : status === "Error" ? "Error" : "Idle");
   }, [status, setPill]);
 
-  /* Load plan (accounts) */
+  /* Load plan (effective, for current account membership) */
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase
-        .from("accounts")
-        .select("plan, valid_until")
-        .order("created_at", { ascending: true });
-
-      if (!error && data && data.length > 0) {
-        const acc = data[0] as any;
-        const now = new Date();
-        const valid = acc.valid_until ? new Date(acc.valid_until) > now : true;
-        setPlan(valid ? (acc.plan as Plan) : "basic");
-      } else {
-        setPlan("basic");
-      }
+      const res = await supabase.rpc("account_current_plan");
+      const p = (res.data as string | null)?.toLowerCase?.() as Plan | null;
+      setPlan((p ?? 'basic') as Plan);
     })();
   }, [supabase]);
 

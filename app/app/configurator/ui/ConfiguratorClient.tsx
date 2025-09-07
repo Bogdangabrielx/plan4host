@@ -60,22 +60,12 @@ export default function ConfiguratorClient({ initialProperties }: { initialPrope
     );
   }, [status, setPill]);
 
-  // Load plan for current user (used for gating Cleaning)
+  // Load effective plan for current membership (used for gating Cleaning tab)
   useEffect(() => {
     (async () => {
-      const { data: userRes } = await supabase.auth.getUser();
-      const uid = userRes?.user?.id;
-      if (!uid) { setPlan("basic"); return; }
-
-      const { data } = await supabase
-        .from("accounts")
-        .select("plan, valid_until")
-        .eq("id", uid)
-        .maybeSingle();
-
-      const active = !data?.valid_until || new Date(data.valid_until) > new Date();
-      const p = (data?.plan as Plan) ?? "basic";
-      setPlan(active ? p : "basic");
+      const res = await supabase.rpc("account_current_plan");
+      const p = (res.data as string | null)?.toLowerCase?.() as Plan | null;
+      setPlan((p ?? 'basic') as Plan);
     })();
   }, [supabase]);
 

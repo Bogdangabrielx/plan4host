@@ -206,7 +206,6 @@ export default function DashboardClient({
           <div>
             <button
               onClick={addProperty}
-              disabled={plan === 'standard' && list.length >= 3}
               style={{
                 padding: "10px 14px",
                 borderRadius: 10,
@@ -219,9 +218,7 @@ export default function DashboardClient({
             >
               Save property
             </button>
-            {plan === 'standard' && list.length >= 3 && (
-              <div style={{ color: 'var(--muted)', fontSize: 12, marginTop: 6 }}>Standard plan: max 3 properties.</div>
-            )}
+            {/* Unlimited properties across all plans — no UI gating */}
           </div>
           <small style={{ fontSize: 12, color: "var(--muted)" }}>
             Check-in/out default to 14:00 / 11:00. <br />
