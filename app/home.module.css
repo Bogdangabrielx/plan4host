@@ -10,7 +10,7 @@
 .menuLink { color: var(--muted); text-decoration: none; font-weight: 700; }
 .menuLink:hover { color: var(--text); }
 .actions { display: flex; gap: 10px; }
-.btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 14px; border-radius: 999px; font-weight: 800; text-decoration: none; text: #f4f4f4; border: 1px solid var(--text); transition: transform .05s ease, box-shadow .15s ease; }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 14px; border-radius: 999px; font-weight: 800; text-decoration: none; color: #f4f4f4; border: 1px solid var(--text); transition: transform .05s ease, box-shadow .15s ease; }
 .btn:active { transform: scale(0.99); }
 .btnPrimary { background: var(--card); color: #0c111b; border-color: #b7b7b7; box-shadow: 0 8px 20px color-mix(in srgb, var(--card) 35%, transparent); }
 .btnPrimary:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); }
