@@ -103,7 +103,6 @@ export default function TeamClient() {
             <select value={role} onChange={(e)=>setRole((e.target as HTMLSelectElement).value)} style={select}>
               <option>member</option>
               <option>viewer</option>
-              <option>manager</option>
             </select>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>

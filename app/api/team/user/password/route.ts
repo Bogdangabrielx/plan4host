@@ -12,14 +12,14 @@ export async function PATCH(req: Request) {
     const { userId, newPassword } = await req.json().catch(() => ({}));
     if (!userId || !newPassword) return bad(400, { error: "userId and newPassword required" });
 
-    // Validate actor is owner/manager of the account that contains userId
+    // Validate actor is OWNER of the account that contains userId
     // Find account for actor
     let accountId = actor.id as string;
     const { data: maybeAcc } = await supa.from("accounts").select("id").eq("id", actor.id).maybeSingle();
     if (!maybeAcc) {
       const { data: au } = await supa.from("account_users").select("account_id, role, disabled").eq("user_id", actor.id).order("created_at", { ascending: true });
       const row = (au ?? [])[0] as any;
-      if (!row || row.disabled || !(row.role === 'owner' || row.role === 'manager')) return bad(403, { error: "Forbidden" });
+      if (!row || row.disabled || row.role !== 'owner') return bad(403, { error: "Forbidden" });
       accountId = row.account_id as string;
     }
     // Check that target user is member of same account
@@ -36,4 +36,3 @@ export async function PATCH(req: Request) {
     return bad(500, { error: String(e?.message ?? e) });
   }
 }
-

@@ -17,10 +17,9 @@ export async function POST(req: Request) {
     const role: string = (body?.role || "member").toLowerCase();
     const scopes: string[] = Array.isArray(body?.scopes) ? body.scopes : [];
     if (!email || !password) return bad(400, { error: "Email and password are required" });
-    if (!/^owner|manager|member|viewer$/.test(role)) return bad(400, { error: "Invalid role" });
+    if (!/^(member|viewer)$/.test(role)) return bad(400, { error: "Invalid role" });
 
     // Determine account id (owner id). If actor is owner, accountId = actor.id.
-    // If actor is manager, derive from membership.
     let accountId = actor.id as string;
     const { data: maybeAcc } = await supa.from("accounts").select("id").eq("id", actor.id).maybeSingle();
     if (!maybeAcc) {
@@ -28,18 +27,14 @@ export async function POST(req: Request) {
       const row = (au ?? [])[0] as any;
       if (!row) return bad(403, { error: "Not a member of any account" });
       accountId = row.account_id as string;
-      if (!(row.role === "owner" || row.role === "manager") || row.disabled) {
-        return bad(403, { error: "Only owner/manager can create users" });
-      }
+      if (row.role !== "owner" || row.disabled) return bad(403, { error: "Only owner can create users" });
     }
 
-    // Plan gating: only standard/premium can manage team
+    // Plan gating: Team is Premium only
     const { data: acc } = await supa.from("accounts").select("plan, valid_until").eq("id", accountId).maybeSingle();
     const active = !acc?.valid_until || new Date(acc.valid_until as any) > new Date();
     const plan = (acc?.plan as string | undefined)?.toLowerCase?.() ?? "basic";
-    if (!active || (plan !== "standard" && plan !== "premium")) {
-      return bad(403, { error: "Team is available on Standard and Premium plans" });
-    }
+    if (!active || plan !== "premium") return bad(403, { error: "Team is available on Premium plan only" });
 
     // Admin client
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -63,4 +58,3 @@ export async function POST(req: Request) {
     return bad(500, { error: String(e?.message ?? e) });
   }
 }
-

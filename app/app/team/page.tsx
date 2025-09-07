@@ -13,8 +13,6 @@ export default async function TeamPage() {
   if (!user) redirect("/auth/login");
   const mode = await supa.rpc("account_access_mode");
   if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
-  const mode = await supa.rpc("account_access_mode");
-  if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
 
   // Owner or manager required; otherwise redirect to app
   const { data: au } = await supa
@@ -24,7 +22,8 @@ export default async function TeamPage() {
     .order("created_at", { ascending: true });
   const m = (au ?? [])[0] as any;
   const role = m?.role || (user ? "owner" : "member");
-  if (m?.disabled || (role !== "owner" && role !== "manager")) redirect("/app");
+  // Only OWNER may manage Team (no managers)
+  if (m?.disabled || role !== "owner") redirect("/app");
 
   // Plan must be Premium
   const accountId = m?.account_id || user.id;

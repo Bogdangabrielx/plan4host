@@ -11,13 +11,13 @@ export async function POST(req: Request) {
     const { userId } = await req.json().catch(() => ({}));
     if (!userId) return bad(400, { error: "userId required" });
 
-    // Determine account and verify actor is owner/manager
+    // Determine account and verify actor is owner only
     let accountId = actor.id as string;
     const { data: maybeAcc } = await supa.from("accounts").select("id").eq("id", actor.id).maybeSingle();
     if (!maybeAcc) {
       const { data: au } = await supa.from("account_users").select("account_id, role, disabled").eq("user_id", actor.id).order("created_at", { ascending: true });
       const row = (au ?? [])[0] as any;
-      if (!row || row.disabled || !(row.role === 'owner' || row.role === 'manager')) return bad(403, { error: "Forbidden" });
+      if (!row || row.disabled || row.role !== 'owner') return bad(403, { error: "Forbidden" });
       accountId = row.account_id as string;
     }
 
