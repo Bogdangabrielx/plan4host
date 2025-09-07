@@ -1,6 +1,6 @@
 // app/api/contact/route.ts
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+export const runtime = "nodejs"; // ensure Node runtime (required for SMTP)
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
 
     const TO = process.env.CONTACT_TO || "office@plan4host.com";
-    const CC = process.env.CONTACT_CC || "bogdangabriel94@gmail.com";
+    const CC = process.env.CONTACT_CC || ""; // only used if set in env
     const FROM = process.env.CONTACT_FROM || process.env.SMTP_FROM || "Plan4Host <office@plan4host.com>";
 
     // Prefer SMTP if configured (same ca la signup)
@@ -26,6 +26,7 @@ export async function POST(req: Request) {
     const SMTP_SECURE = String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || SMTP_PORT === 465;
 
     if (SMTP_HOST) {
+      const { default: nodemailer } = await import("nodemailer");
       const transporter = nodemailer.createTransport({
         host: SMTP_HOST,
         port: SMTP_PORT,
