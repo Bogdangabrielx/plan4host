@@ -41,6 +41,12 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     const u = new URL(window.location.href);
     const e = u.searchParams.get("error");
     if (e) { setErr(decodeURIComponent(e)); setStatus("Error"); }
+
+    const raw = u.searchParams.get("mode") || u.searchParams.get("tab") || u.searchParams.get("view") || u.searchParams.get("signup") || u.searchParams.get("trial");
+    const val = (raw || "").toLowerCase();
+    if (["signup", "create", "register", "1", "true", "yes"].includes(val)) {
+      setMode("signup");
+    }
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
