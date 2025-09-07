@@ -17,7 +17,7 @@ export default function HomePage() {
         </nav>
         <div className={styles.actions}>
           <a href="/auth/login" className={`${styles.btn} ${styles.btnGhost}`}>Sign in</a>
-          <a href="#pricing" className={`${styles.btn} ${styles.btnCard}`}>GET FREE TRIAL</a>
+          <a href="#pricing" className={`${styles.btn} ${styles.btnPrimary}`}>GET FREE TRIAL</a>
         </div>
       </header>
 
