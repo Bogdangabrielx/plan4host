@@ -44,19 +44,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* About */}
-      <section id="about" className={styles.about} aria-labelledby="about-title">
-        <h2 id="about-title">About Plan4Host</h2>
-        <p>
-          Plan4Host helps small hotels and property managers run smoother operations with an
-          adaptive calendar, simple property setup, and powerful team workflows. Our goal is to
-          keep things fast, reliable, and easy to use.
-        </p>
-        <p>
-          Built with care for clarity and performance, Plan4Host focuses on the tools you actually
-          use every day: calendars, cleaning, and iCal synchronization that just works.
-        </p>
-      </section>
 
       {/* Features */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
@@ -72,7 +59,7 @@ export default function HomePage() {
 
           <article className={styles.featureCard}>
             <div className={styles.featureHead}>
-              <img src="/configurator_fordark.png" className={styles.featureIcon} alt="" aria-hidden="true" />
+              <img src="/ical_fordark.png" className={styles.featureIcon} alt="" aria-hidden="true" />
               <h3>Property Setup</h3>
             </div>
             <p>Quickly configure each property to match your needs—add rooms, adjust details, and personalize settings for a smooth workflow.</p>
@@ -144,6 +131,20 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* About */}
+      <section id="about" className={styles.about} aria-labelledby="about-title">
+        <h2 id="about-title">About Plan4Host</h2>
+        <p>
+          Plan4Host helps small hotels and property managers run smoother operations with an
+          adaptive calendar, simple property setup, and powerful team workflows. Our goal is to
+          keep things fast, reliable, and easy to use.
+        </p>
+        <p>
+          Built with care for clarity and performance, Plan4Host focuses on the tools you actually
+          use every day: calendars, cleaning, and iCal synchronization that just works.
+        </p>
+      </section>
+
       {/* Footer */}
       <footer id="contact" className={styles.footer}>
         <p>© {new Date().getFullYear()} Plan4Host</p>
@@ -159,13 +160,12 @@ function PricingCard({
 }: { img: string; tier: string; items: string[] }) {
   return (
     <article className={styles.priceCard}>
-      <img src={img} alt="" className={styles.priceImg} loading="lazy" decoding="async" />
       <ul className={styles.priceList}>
         {items.map((t, i) => (
           <li key={i}>{t}</li>
         ))}
       </ul>
-      <div className={styles.priceTier}>{tier}</div>
+      <img src={img} alt="" className={styles.priceImg} loading="lazy" decoding="async" />
     </article>
   );
 }
