@@ -17,7 +17,7 @@ export default function HomePage() {
         </nav>
         <div className={styles.actions}>
           <a href="/auth/login" className={`${styles.btn} ${styles.btnGhost}`}>Sign in</a>
-          <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary}`}>GET FREE TRIAL</a>
+          <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary}`}>Get Free Trial</a>
         </div>
       </header>
 
@@ -34,7 +34,7 @@ export default function HomePage() {
             more customizable way to manage every stay.
           </p>
           <div className={styles.heroCta}>
-            <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary}`}>GET FREE TRIAL</a>
+            <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary}`}>Get Free Trial</a>
             <a href="#features" className={`${styles.btn} ${styles.btnGhost}`}>Learn more</a>
           </div>
         </div>
