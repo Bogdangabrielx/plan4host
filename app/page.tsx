@@ -150,7 +150,7 @@ export default function HomePage() {
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
           <p style={{ margin: 0, color: "var(--muted)" }}>
-            Ne poți scrie oricând la
+            We’re just an email away: 
             {" "}
             <a href="mailto:office@plan4host.com" style={{ color: "var(--text)", fontWeight: 800 }}>
               office@plan4host.com
