@@ -116,7 +116,7 @@
    ===================================================================== */
 
 /* =====================================================================
-   4) TRIGGERS (ACTIVE)
+  4) TRIGGERS (ACTIVE)
    ---------------------------------------------------------------------
    Team — Premium only
    - public.trg_enforce_team_plan() BEFORE INSERT/UPDATE/DELETE ON public.account_users
@@ -131,6 +131,11 @@
    Trial auto-grant (owner account bootstrap)
    - public.trg_account_auto_trial AFTER INSERT ON public.accounts
      Calls public.account_grant_trial(NEW.id, 7) to start STANDARD 7-day trial.
+
+   Auth onboarding
+   - auth.users → public.handle_new_user() AFTER INSERT (trigger name: on_auth_user_created)
+     Creates the owner account + membership and grants STANDARD 7‑day trial.
+     The function is SECURITY DEFINER and defensive (never blocks user creation).
    ===================================================================== */
 
 /* =====================================================================
@@ -201,6 +206,156 @@
    ===================================================================== */
 
 /* =====================================================================
+   9) ONBOARDING IMPLEMENTATION (REFERENCE)
+   ---------------------------------------------------------------------
+   -- Trigger on auth.users
+   CREATE TRIGGER on_auth_user_created
+     AFTER INSERT ON auth.users
+     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+   -- Function: public.handle_new_user()
+   - SECURITY DEFINER; search_path = public
+   - Steps:
+     1) INSERT INTO public.accounts(id) VALUES (NEW.id) ON CONFLICT DO NOTHING
+     2) INSERT INTO public.account_users(account_id,user_id,role,scopes,disabled)
+        VALUES (NEW.id, NEW.id, 'owner', '{}'::text[], false)
+        ON CONFLICT(account_id,user_id) DO UPDATE SET role='owner', disabled=false
+     3) PERFORM public.account_grant_trial(NEW.id, 7)
+   - Defensive: wraps with set_config('app.bypass_property_write','on', true) and catches exceptions.
+   ===================================================================== */
+
+/* =====================================================================
+   10) BACKFILL (OWNER + TRIAL) FOR EXISTING AUTH USERS
+   ---------------------------------------------------------------------
+   -- Run once if you already have auth.users but no matching accounts/account_users rows
+   DO $$
+   DECLARE r RECORD;
+   BEGIN
+     PERFORM set_config('app.bypass_property_write','on', true);
+
+     INSERT INTO public.accounts(id)
+     SELECT u.id FROM auth.users u
+     LEFT JOIN public.accounts a ON a.id = u.id
+     WHERE a.id IS NULL;
+
+     INSERT INTO public.account_users(account_id, user_id, role, scopes, disabled)
+     SELECT u.id, u.id, 'owner', '{}'::text[], false
+     FROM auth.users u
+     LEFT JOIN public.account_users au ON au.account_id = u.id AND au.user_id = u.id
+     WHERE au.user_id IS NULL;
+
+     FOR r IN SELECT id FROM public.accounts LOOP
+       PERFORM public.account_grant_trial(r.id, 7);
+     END LOOP;
+
+     PERFORM set_config('app.bypass_property_write','off', true);
+   END
+   $$;
+   ===================================================================== */
+
+/* =====================================================================
+   11) CURRENT RLS OVERVIEW (SUMMARY)
+   ---------------------------------------------------------------------
+   Enabled tables (excerpt; adjust as needed):
+   - public.accounts: acc_insert/acc_update/acc_delete/acc_select (id = auth.uid()), tenant_select
+   - public.account_users: au_insert/au_update/au_delete/au_select (self), team operations additionally gated by trigger (Premium-only)
+   - public.account_sync_usage: insert/select by members of the account
+   - public.bookings: policies for owner/tenants; additional helper policies p_bookings_reservations_*
+   - public.cleaning_task_defs, public.cleaning_progress: member policies for "cleaning" scope; writes further gated by trigger (blocked on Basic)
+   - public.ical_type_integrations and public.ical_type_sync_logs: member/owner policies for the property's account
+   - public.calendar_settings, room detail tables: member/owner policies per property
+
+   Auth schema (managed by Supabase): auth.users and related tables have RLS enabled by default.
+   ===================================================================== */
+
+/* =====================================================================
+   12) TROUBLESHOOTING / SAFE OPERATIONS
+   ---------------------------------------------------------------------
+   - If onboarding fails but you must not break Auth signup, ensure handle_new_user() never raises:
+       it already catches exceptions and returns NEW.
+   - If legacy triggers remain, remove them (any *freeze*/reconcile triggers or functions).
+   - To inspect attachments:
+       SELECT event_object_table, trigger_name, action_timing, event_manipulation
+       FROM information_schema.triggers
+       WHERE trigger_schema='public';
+   - To verify plan gating for sync:
+       SELECT account_effective_plan_slug(a.id), account_can_sync_now_v2(a.id,'sync_now')
+       FROM accounts a;
+   ===================================================================== */
+
+/* =====================================================================
+   13) API MAP (UI ENDPOINTS)
+   ---------------------------------------------------------------------
+   Auth
+   - POST /api/auth/signup
+       Uses Supabase Auth to create user; Auth trigger on_auth_user_created → public.handle_new_user
+       creates owner account + membership and grants STANDARD 7‑day trial.
+   - POST /api/auth/login
+       Signs in (email/password). On success, session cookies set by Supabase SDK.
+   - GET  /auth/callback
+       Handles OAuth code exchange; redirects to /app.
+
+   Account / Subscription
+   - RPC account_current_plan() → text
+   - RPC account_effective_plan_slug(p_account_id uuid) → text
+   - RPC account_access_mode() → 'full'|'billing_only'|'blocked' (UI redirects owners to /app/subscription on 'billing_only')
+   - RPC account_set_plan_self(p_plan_slug text, p_valid_days int, p_trial_days int)
+       Owner-only setter used by Subscription page; delegates to account_set_plan.
+
+   Properties & Rooms
+   - POST /api/properties
+       Creates a property (RLS owner/members); no quotas with simplified plans.
+   - RPC account_delete_property_self(p_property_id uuid)
+       Owner-only; deletes property with dependencies and performs housekeeping.
+   - POST /api/rooms
+       Creates room for a property (RLS).
+   - GET  /api/rooms/[id].ics
+       Generates .ics for a room (busy events from bookings).
+
+   Bookings & Calendar details
+   - POST   /api/bookings
+       Creates a booking (overlap check, RLS).
+   - PATCH  /api/bookings/[id]
+       Extends booking end (no shorten) with overlap checks.
+   - DELETE /api/bookings/[id]
+       Deletes a booking.
+   - Client writes to:
+       booking_check_values / booking_text_values (RLS); used in RoomDetail modal.
+
+   iCal / Channels
+   - POST /api/ical/sync/all
+       “Sync Now” for a property — Premium-only via RPC account_can_sync_now_v2('sync_now').
+       Logs usage via account_register_sync_usage_v2('sync_now').
+   - POST /api/ical/sync/type
+       Sync a single integration (room type); same gating on server.
+   - GET/POST/HEAD /api/cron/ical/autosync
+       Service-role job (requires CRON_ICAL_KEY or x-vercel-cron). Groups by account and enforces
+       account_can_sync_now_v2('autosync'); logs one usage per run per account.
+   - Bridge endpoints (unassigned inbox for iCal):
+       GET  /api/bridge/ical/unassigned/list?propertyId=...
+       POST /api/bridge/ical/unassigned/assign  (creates booking from unassigned)
+       Auxiliary: /api/bridge/ical/type/list, /api/bridge/ical/type/add
+
+   Cleaning (Configurator & Board)
+   - Client reads/writes:
+       cleaning_task_defs, cleaning_progress (RLS member policies).
+     DB trigger trg_enforce_cleaning_plan blocks INSERT/UPDATE/DELETE on Basic
+     (Standard/Premium allowed).
+
+   Team (Premium-only)
+   - GET    /api/team/user/list           (client fetch)
+   - POST   /api/team/user/create         (Owner-only; roles: member/viewer; plan must be Premium)
+   - PATCH  /api/team/user/update         (Owner-only; toggle role member↔viewer, scopes, disabled)
+   - PATCH  /api/team/user/password       (Owner-only)
+   - POST   /api/team/user/remove         (Owner-only; cannot remove owner)
+     DB trigger trg_enforce_team_plan blocks any non-owner membership writes unless plan is Premium.
+
+   Identity / Context
+   - GET /api/me
+       Returns membership snapshot for current user: role, scopes, disabled, and resolved plan.
+   ===================================================================== */
+
+/* =====================================================================
    8) RUNBOOK — QUICK CHECKS
    ---------------------------------------------------------------------
    -- a) Verify plan → policy mapping
@@ -234,4 +389,3 @@
    ===================================================================== */
 
 -- End of technical reference
-

@@ -83,7 +83,8 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
   const id = params.id;
-  const { error } = await supabase.from("bookings").delete().eq("id", id);
+  // Use RPC guarded by membership (SECURITY DEFINER) to ensure consistent deletes
+  const { error } = await supabase.rpc("booking_delete_self", { p_booking_id: id });
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ ok: true });
 }
