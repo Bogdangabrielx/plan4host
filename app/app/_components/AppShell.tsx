@@ -1,4 +1,3 @@
-// /app/app/_components/AppShell.tsx
 "use client";
 import React from "react";
 import AppHeader from "../ui/AppHeader";

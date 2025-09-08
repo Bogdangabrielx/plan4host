@@ -1,19 +1,21 @@
-// app/app/inbox/page.tsx
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ensureScope } from "@/lib/auth/scopes";
-import InboxClient from "./ui/InboxClient";
+import GuestOverviewClient from "./ui/GuestOverviewClient";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function InboxPage() {
+export default async function GuestOverviewPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
+
   const mode = await supabase.rpc("account_access_mode");
-  if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
+  if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
+
+  // păstrăm același scope ca înainte
   await ensureScope("inbox", supabase, user.id);
 
   const { data: props = [] } = await supabase
@@ -29,8 +31,8 @@ export default async function InboxPage() {
   }));
 
   return (
-    <AppShell currentPath="/app/inbox" title="Inbox">
-      <InboxClient initialProperties={properties} />
+    <AppShell currentPath="/app/guest" title="Guest Overview">
+      <GuestOverviewClient initialProperties={properties} />
     </AppShell>
   );
 }

@@ -37,7 +37,7 @@ type Booking = {
   ota_reservation_id?: string | null;
   source?: string | null;
 
-  // Soft-hold (varianta A)
+  // Soft-hold (variant A)
   is_soft_hold?: boolean | null;
   hold_expires_at?: string | null;
   hold_status?: "active" | "expired" | "promoted" | "cancelled" | null;
@@ -83,11 +83,24 @@ function toLocalISO(dt: Date): string {
   const MM = String(dt.getMinutes()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}T${HH}:${MM}:00`;
 }
+
+// NEW: format dd.mm.yyyy (și opțional HH:mm)
+function fmtDate(ymd: string): string {
+  const [y, m, d] = ymd.split("-").map((n) => parseInt(n, 10));
+  const dd = String(d).padStart(2, "0");
+  const mm = String(m).padStart(2, "0");
+  return `${dd}.${mm}.${y}`;
+}
+function fmtDateTime(ymd: string, time: string | null): string {
+  const base = fmtDate(ymd);
+  return time ? `${base} ${time}` : base;
+}
 function formatRange(b: Booking): string {
-  const start = b.start_time ? `${b.start_date} ${b.start_time}` : b.start_date;
-  const end = b.end_time ? `${b.end_date} ${b.end_time}` : b.end_date;
+  const start = fmtDateTime(b.start_date, b.start_time);
+  const end = fmtDateTime(b.end_date, b.end_time);
   return `${start} → ${end}`;
 }
+
 function fullName(b: Booking): string {
   const f = (b.guest_first_name ?? "").trim();
   const l = (b.guest_last_name ?? "").trim();
@@ -181,7 +194,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  // ---- Build rows + noua logică de culoare
+  // ---- Build rows + noua logică de culoare (YELLOW 2h pentru Form-only, 3 zile pentru iCal-only)
   const rows: Row[] = useMemo(() => {
     const now = new Date();
 
@@ -257,7 +270,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const qs = new URLSearchParams();
     qs.set("booking", b.id);
-    if (activePropertyId) qs.set("property", activePropertyId); // ⬅️ important: include property
+    if (activePropertyId) qs.set("property", activePropertyId); // include property în link
     return `${origin}/checkin?${qs.toString()}`;
   }, [activePropertyId]);
 
@@ -301,7 +314,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
     };
     if (color === "GREEN") return { ...base, background: "var(--success)", borderColor: "var(--success)" };
     if (color === "RED") return { ...base, background: "var(--danger)", borderColor: "var(--danger)", color: "#fff" };
-    // YELLOW — fallback (add --warning in theme if vrei)
+    // YELLOW — fallback (add --warning in theme dacă vrei)
     return { ...base, background: "var(--warning, #fbbf24)", borderColor: "var(--warning, #f59e0b)" };
   }
 
@@ -384,9 +397,8 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
                     {r.subcopy}
                   </small>
 
-                  {/* Actions */}
                   <div style={{ display: "flex", gap: 8 }}>
-                    {/* iCal fără Form -> oferă Copy check-in link (ca să trimiți invitația) */}
+                    {/* iCal fără Form -> oferă Copy check-in link */}
                     {(isIcalNoForm || (r.color === "RED" && r.reason === "missing_form")) && (
                       <button
                         onClick={() => copyLinkFor(b)}

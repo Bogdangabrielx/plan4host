@@ -1,4 +1,3 @@
-// app/app/ui/AppHeader.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,7 +9,8 @@ const NAV_BASE = [
   { href: "/app/configurator", label: "Configurator", emoji: "⚙️", scope: "configurator" },
   { href: "/app/cleaning", label: "Cleaning Board", emoji: "🧹", scope: "cleaning" },
   { href: "/app/channels", label: "Channels & iCal", emoji: "🔗", scope: "channels" },
-  { href: "/app/inbox", label: "Inbox", emoji: "📥", scope: "inbox" },
+  // 🔁 Inbox -> Guest Overview (păstrăm scope: "inbox")
+  { href: "/app/guest", label: "Guest Overview", emoji: "📥", scope: "inbox" },
   { href: "/app/team", label: "Team", emoji: "👥", scope: "team" },
   { href: "/auth/logout", label: "Logout", emoji: "🚪", scope: "logout" },
 ];
@@ -55,11 +55,14 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
     "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
     "/app/configurator": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
-    "/app/inbox": { light: "/inbox_forlight.png", dark: "/inbox_fordark.png" },
     "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
     "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
     "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
     "/app/subscription": { light: "/subscription_forlight.png", dark: "/subscription_fordark.png" },
+    // Noua rută pentru Guest Overview reutilizează iconul de inbox până ai un asset dedicat
+    "/app/guest": { light: "/inbox_forlight.png", dark: "/inbox_fordark.png" },
+    // (opțional) legacy mapping dacă mai există rute vechi în circulație:
+    "/app/inbox": { light: "/inbox_forlight.png", dark: "/inbox_fordark.png" },
   };
 
   function NavIcon({ href, emoji, size }: { href: string; emoji: string; size: number }) {
@@ -85,7 +88,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
     (typeof window !== "undefined" ? window.location.origin : "");
 
-  // Inbox count badge in the menu
+  // Inbox (Guest Overview) count badge in the menu
   const [inboxCount, setInboxCount] = useState<number>(() => {
     try {
       const raw = typeof window !== "undefined" ? localStorage.getItem("p4h:inboxCount") : null;
@@ -180,8 +183,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             onClick={() => setOpen(true)}
             aria-label="Open menu"
             style={{
-              // Păstrăm dimensiunea totală a butonului (~36/44px înălțime)
-              // creștem iconul, deci micșorăm puțin padding-ul
               padding: isSmall ? 4 : 6,
               borderRadius: 10,
               border: "1px solid var(--border)",
@@ -285,8 +286,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   const active = currentPath
                     ? currentPath === it.href || currentPath.startsWith(it.href + "/")
                     : false;
-                  const isInbox = it.href === "/app/inbox";
-                  const ICON_SIZE_DEFAULT = 36; // dublu față de ~18px
+                  // Mutăm badge-ul pe Guest Overview
+                  const isInbox = it.href === "/app/guest";
+                  const ICON_SIZE_DEFAULT = 36;
                   const ICON_SIZE_PER_ROUTE: Record<string, number> = {
                     "/app/calendar": 32,
                     "/app/team": 32,
