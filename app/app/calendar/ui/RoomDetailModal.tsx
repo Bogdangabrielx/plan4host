@@ -1,3 +1,4 @@
+// app/app/calendar/ui/RoomDetailModal.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -13,9 +14,15 @@ type TextDef  = { id: string; label: string; placeholder: string | null; sort_in
 type Booking = BaseBooking & {
   guest_first_name?: string | null;
   guest_last_name?: string | null;
-  guest_email?: string | null;
-  guest_phone?: string | null;
-  guest_address?: string | null;
+  // NU mai folosim guest_email/phone/address pe bookings – contactul stă în booking_contacts
+};
+
+type BookingContact = {
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
 };
 
 function toDateTime(dateStr: string, timeStr: string | null | undefined, fallbackTime: string) {
@@ -57,13 +64,18 @@ export default function RoomDetailModal({
   const [endDate, setEndDate] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
 
-  // Guest fields
-  const [showGuest, setShowGuest] = useState<boolean>(false);
+  // Guest (name on bookings)
   const [guestFirst, setGuestFirst] = useState<string>("");
   const [guestLast, setGuestLast]   = useState<string>("");
-  const [guestEmail, setGuestEmail] = useState<string>("");
-  const [guestPhone, setGuestPhone] = useState<string>("");
-  const [guestAddr, setGuestAddr]   = useState<string>("");
+
+  // Contact (booking_contacts)
+  const [guestEmail, setGuestEmail]   = useState<string>("");
+  const [guestPhone, setGuestPhone]   = useState<string>("");
+  const [guestAddr, setGuestAddr]     = useState<string>("");
+  const [guestCity, setGuestCity]     = useState<string>("");
+  const [guestCountry, setGuestCountry] = useState<string>("");
+
+  const [showGuest, setShowGuest] = useState<boolean>(false);
 
   // Room detail custom fields (as-is)
   const [checkDefs, setCheckDefs] = useState<CheckDef[]>([]);
@@ -80,6 +92,28 @@ export default function RoomDetailModal({
   const CI = property?.check_in_time || "14:00";
   const CO = property?.check_out_time || "11:00";
 
+  // ——— Helpers API contact ———
+  async function fetchContact(bookingId: string): Promise<BookingContact | null> {
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}/contact`, { cache: "no-store" });
+      if (!res.ok) return null;
+      const j = await res.json();
+      return (j?.contact ?? null) as BookingContact | null;
+    } catch { return null; }
+  }
+  async function saveContact(bookingId: string, payload: Partial<BookingContact>) {
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
   useEffect(() => {
     (async () => {
       const [p1, p2, p3, p4] = await Promise.all([
@@ -90,7 +124,7 @@ export default function RoomDetailModal({
           .maybeSingle(),
         supabase
           .from("bookings")
-          .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address")
+          .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status,guest_first_name,guest_last_name")
           .eq("property_id", propertyId)
           .eq("room_id", room.id)
           .neq("status", "cancelled")
@@ -136,17 +170,24 @@ export default function RoomDetailModal({
       setEndDate(_eDate);
       setEndTime(_eTime || "");
 
-      // Prefill guest details from active booking if any
+      // Prefill names from active booking (bookings table)
       if (act) {
         setGuestFirst(act.guest_first_name ?? "");
         setGuestLast(act.guest_last_name ?? "");
-        setGuestEmail(act.guest_email ?? "");
-        setGuestPhone(act.guest_phone ?? "");
-        setGuestAddr(act.guest_address ?? "");
+        // Load contact (booking_contacts)
+        const contact = await fetchContact(act.id);
+        setGuestEmail(contact?.email ?? "");
+        setGuestPhone(contact?.phone ?? "");
+        setGuestAddr(contact?.address ?? "");
+        setGuestCity(contact?.city ?? "");
+        setGuestCountry(contact?.country ?? "");
+      } else {
+        // creating: reset contact
+        setGuestEmail(""); setGuestPhone(""); setGuestAddr(""); setGuestCity(""); setGuestCountry("");
       }
 
       // UX: dacă nu avem guest name sau suntem pe creare, deschidem panoul Guest
-      setShowGuest(!act || !((act.guest_first_name ?? "").trim() || (act.guest_last_name ?? "").trim()));
+      setShowGuest(!act || !((act?.guest_first_name ?? "").trim() || (act?.guest_last_name ?? "").trim()));
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyId, room.id, dateStr, forceNew]);
@@ -177,6 +218,7 @@ export default function RoomDetailModal({
       }
     }
 
+    // Creăm booking-ul (numai coloanele care sigur există în `bookings`)
     const ins = await supabase.from("bookings").insert({
       property_id: propertyId,
       room_id: room.id,
@@ -185,20 +227,30 @@ export default function RoomDetailModal({
       start_time: startTime || null,
       end_time: endTime || null,
       status: "confirmed",
-      // guest fields
       guest_first_name: guestFirst || null,
       guest_last_name:  guestLast  || null,
-      guest_email:      guestEmail || null,
-      guest_phone:      guestPhone || null,
-      guest_address:    guestAddr  || null,
-    }).select().maybeSingle();
+    }).select("id").maybeSingle();
 
-    if (ins.error || !ins.data) { setStatus("Error"); setStatusHint(ins.error?.message || "Failed to create."); setSaving(false); return; }
-    const newBooking = ins.data as Booking;
+    if (ins.error || !ins.data) {
+      setStatus("Error"); setStatusHint(ins.error?.message || "Failed to create.");
+      setSaving(false); return;
+    }
+    const newId = ins.data.id as string;
 
-    // Persist custom room detail fields if used
-    const checkRows = Object.entries(checkValues).map(([check_id, value]) => ({ booking_id: newBooking.id, check_id, value }));
-    const textRows  = Object.entries(textValues).map(([field_id, value]) => ({ booking_id: newBooking.id, field_id, value }));
+    // Salvează contactul (booking_contacts)
+    if (guestEmail || guestPhone || guestAddr || guestCity || guestCountry) {
+      await saveContact(newId, {
+        email: guestEmail || null,
+        phone: guestPhone || null,
+        address: guestAddr || null,
+        city: guestCity || null,
+        country: guestCountry || null,
+      });
+    }
+
+    // Persist custom room detail fields dacă există
+    const checkRows = Object.entries(checkValues).map(([check_id, value]) => ({ booking_id: newId, check_id, value }));
+    const textRows  = Object.entries(textValues).map(([field_id, value]) => ({ booking_id: newId, field_id, value }));
     if (checkRows.length) await supabase.from("booking_check_values").upsert(checkRows);
     if (textRows.length)  await supabase.from("booking_text_values").upsert(textRows);
 
@@ -210,17 +262,26 @@ export default function RoomDetailModal({
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
     setSaving("updating"); setStatus("Saving…"); setStatusHint("Updating details…");
 
-    // Guest fields
+    // 1) Actualizează NUMELE în `bookings`
     const upd = await supabase.from("bookings").update({
       guest_first_name: guestFirst || null,
       guest_last_name:  guestLast  || null,
-      guest_email:      guestEmail || null,
-      guest_phone:      guestPhone || null,
-      guest_address:    guestAddr  || null,
     }).eq("id", active.id);
-    if (upd.error) { setStatus("Error"); setStatusHint(upd.error.message || "Failed to update guest details."); setSaving(false); return; }
+    if (upd.error) {
+      setStatus("Error"); setStatusHint(upd.error.message || "Failed to update guest name.");
+      setSaving(false); return;
+    }
 
-    // Custom detail fields
+    // 2) Upsert contact în `booking_contacts` prin API
+    await saveContact(active.id, {
+      email: guestEmail || null,
+      phone: guestPhone || null,
+      address: guestAddr || null,
+      city: guestCity || null,
+      country: guestCountry || null,
+    });
+
+    // 3) Custom detail fields
     const checkRows = Object.entries(checkValues).map(([check_id, value]) => ({ booking_id: active.id, check_id, value }));
     const textRows  = Object.entries(textValues).map(([field_id, value]) => ({ booking_id: active.id, field_id, value }));
     if (checkRows.length) await supabase.from("booking_check_values").upsert(checkRows);
@@ -352,7 +413,7 @@ export default function RoomDetailModal({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(1000px, 94vw)", // 🔥 modal mai mare
+          width: "min(1000px, 94vw)",
           maxHeight: "88vh",
           overflow: "auto",
           background: "var(--panel)",
@@ -486,7 +547,7 @@ export default function RoomDetailModal({
             </div>
           </div>
 
-          {/* Guest details */}
+          {/* Guest details (name + contact) */}
           {showGuest && (
             <div
               style={{
@@ -501,6 +562,7 @@ export default function RoomDetailModal({
             >
               <strong style={{ letterSpacing: 0.3 }}>Guest details</strong>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                {/* Names */}
                 <div style={{ display: "grid", gap: 6 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>First name</label>
                   <input
@@ -539,6 +601,7 @@ export default function RoomDetailModal({
                   />
                 </div>
 
+                {/* Contact */}
                 <div style={{ display: "grid", gap: 6 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Email</label>
                   <input
@@ -577,13 +640,52 @@ export default function RoomDetailModal({
                   />
                 </div>
 
+                {/* Address */}
                 <div style={{ gridColumn: "1 / -1", display: "grid", gap: 6 }}>
-                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Address</label>
+                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Address (street & number)</label>
                   <input
                     type="text"
                     value={guestAddr}
                     onChange={(e) => setGuestAddr((e.target as HTMLInputElement).value)}
-                    placeholder="Street, City, Country"
+                    placeholder="Street, No."
+                    style={{
+                      padding: "12px 12px",
+                      background: "var(--card)",
+                      color: "var(--text)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 10,
+                      fontSize: 14,
+                      fontWeight: 600,
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: "grid", gap: 6 }}>
+                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>City</label>
+                  <input
+                    type="text"
+                    value={guestCity}
+                    onChange={(e) => setGuestCity((e.target as HTMLInputElement).value)}
+                    placeholder="City"
+                    style={{
+                      padding: "12px 12px",
+                      background: "var(--card)",
+                      color: "var(--text)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 10,
+                      fontSize: 14,
+                      fontWeight: 600,
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: "grid", gap: 6 }}>
+                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Country</label>
+                  <input
+                    type="text"
+                    value={guestCountry}
+                    onChange={(e) => setGuestCountry((e.target as HTMLInputElement).value)}
+                    placeholder="Country"
                     style={{
                       padding: "12px 12px",
                       background: "var(--card)",
@@ -596,8 +698,9 @@ export default function RoomDetailModal({
                   />
                 </div>
               </div>
+
               <small style={{ color: "var(--muted)" }}>
-                Guest details are optional. They will be saved on the booking.
+                Name is stored on the booking; contact (email/phone/address/city/country) is stored securely on this reservation’s contact profile.
               </small>
             </div>
           )}

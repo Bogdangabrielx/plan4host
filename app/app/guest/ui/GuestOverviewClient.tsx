@@ -1,3 +1,4 @@
+// app/app/inbox/ui/InboxClient.tsx
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -28,6 +29,8 @@ type Booking = {
   // Guest / form
   guest_first_name?: string | null;
   guest_last_name?: string | null;
+  guest_email?: string | null;
+  guest_phone?: string | null;
   form_submitted_at?: string | null; // optional (fallback: created_at)
   created_at?: string | null;
 
@@ -82,9 +85,9 @@ function todayLocalISODate(): string {
 function toLocalISO(dt: Date): string {
   const yyyy = dt.getFullYear();
   const mm = String(dt.getMonth() + 1).padStart(2, "0");
-  const dd = String(dt.getDate()).padStart(2, "0");
-  const HH = String(dt.getHours()).padStart(2, "0");
-  const MM = String(dt.getMinutes()).padStart(2, "0");
+  const dd = dt.getDate().toString().padStart(2, "0");
+  const HH = dt.getHours().toString().padStart(2, "0");
+  const MM = dt.getMinutes().toString().padStart(2, "0");
   return `${yyyy}-${mm}-${dd}T${HH}:${MM}:00`;
 }
 
@@ -197,7 +200,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
         .order("name", { ascending: true }),
       supabase
         .from("bookings")
-        .select("*") // luăm created_at, form_submitted_at, is_soft_hold, hold_expires_at, room_type_id etc.
+        .select("*")
         .eq("property_id", activePropertyId)
         .gte("end_date", today) // doar curente/viitoare
         .neq("status", "cancelled")
@@ -228,11 +231,10 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  // ---- Build rows + noua logică de culoare (YELLOW 2h pentru Form-only, 3 zile pentru iCal-only)
+  // ---- Build rows + „regula de aur”
   const rows: Row[] = useMemo(() => {
     const now = new Date();
 
-    // map-uri pentru lookup rapid
     const roomById = new Map<string, Room>();
     rooms.forEach((r) => roomById.set(String(r.id), r));
 
@@ -244,64 +246,62 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
 
       const _hasForm = hasForm(b);
       const _hasIcal = hasIcal(b);
+      const _hasName = !!fullName(b);
 
-      // Praguri:
-      const arrival0 = parseYMD(b.start_date);        // 00:00 în ziua sosirii
-      const cutoff3d = addDays(arrival0, -3);         // pentru „iCal fără Form”
-      const formTs = formSubmittedAt(b);              // când a apărut Form-ul
-      // nou: Form fără iCal → max 2 ore (sau respectă hold_expires_at, dacă există)
+      // Praguri
+      const arrival0 = parseYMD(b.start_date);
+      const cutoff3d = addDays(arrival0, -3);     // iCal-only window
+      const formTs   = formSubmittedAt(b);
       const fallback2h = formTs ? addHours(formTs, 2) : null;
       const holdExpires = b.hold_expires_at ? new Date(b.hold_expires_at) : null;
       const cutoff2h = holdExpires ?? fallback2h;
 
-      // Default
+      // Defaults
       let color: Row["color"] = "GREEN";
       let reason: Row["reason"] | undefined = undefined;
       let subcopy: Row["subcopy"] | null = null;
       let cutoffISO = toLocalISO(cutoff3d);
 
-      // 1) Exact match (ambele) -> GREEN
-      if (_hasForm && _hasIcal) {
+      // 🟢 Regula de aur: dacă avem NUME, e GREEN, nu mai așteptăm iCal.
+      if (_hasName) {
         color = "GREEN";
-      }
-      // 2) iCal dar fără Form → YELLOW până la Arrival−3 zile, apoi RED
-      else if (_hasIcal && !_hasForm) {
-        if (now < cutoff3d) {
-          color = "YELLOW";
-          subcopy = "Waiting for the guest to complete the check-in form (until 3 days before arrival).";
-          cutoffISO = toLocalISO(cutoff3d);
-          reason = undefined;
-        } else {
-          color = "RED";
-          reason = "missing_form";
-          subcopy = "No check-in form was received for this OTA reservation.";
-          cutoffISO = toLocalISO(cutoff3d);
+      } else {
+        // 1) iCal dar fără Form → YELLOW până la Arrival−3 zile, apoi RED
+        if (_hasIcal && !_hasForm) {
+          if (new Date() < cutoff3d) {
+            color = "YELLOW";
+            subcopy = "Waiting for the guest to complete the check-in form (until 3 days before arrival).";
+            cutoffISO = toLocalISO(cutoff3d);
+          } else {
+            color = "RED";
+            reason = "missing_form";
+            subcopy = "No check-in form was received for this OTA reservation.";
+            cutoffISO = toLocalISO(cutoff3d);
+          }
         }
-      }
-      // 3) Form dar fără iCal → YELLOW max 2 ore, apoi RED (no_ota_found)
-      else if (_hasForm && !_hasIcal) {
-        if (cutoff2h && now < cutoff2h) {
-          color = "YELLOW";
-          subcopy = "Waiting for a matching OTA iCal event (max 2 hours after form submission).";
-          cutoffISO = toLocalISO(cutoff2h);
-        } else {
+        // 2) Form dar fără iCal → YELLOW max 2h, apoi RED
+        else if (_hasForm && !_hasIcal) {
+          if (cutoff2h && new Date() < cutoff2h) {
+            color = "YELLOW";
+            subcopy = "Waiting for a matching OTA iCal event (max 2 hours after form submission).";
+            cutoffISO = toLocalISO(cutoff2h);
+          } else {
+            color = "RED";
+            reason = "no_ota_found";
+            subcopy = "Form dates do not match any OTA reservation.";
+            cutoffISO = cutoff2h ? toLocalISO(cutoff2h) : toLocalISO(new Date());
+          }
+        }
+        // 3) fallback (rar): nici form, nici iCal
+        else if (!_hasForm && !_hasIcal) {
           color = "RED";
           reason = "no_ota_found";
-          subcopy = "Form dates do not match any OTA reservation.";
-          cutoffISO = cutoff2h ? toLocalISO(cutoff2h) : toLocalISO(now);
+          subcopy = "No source data yet.";
+          cutoffISO = toLocalISO(new Date());
         }
       }
-      // 4) fallback (foarte rar): nici form, nici iCal
-      else {
-        color = "RED";
-        reason = "no_ota_found";
-        subcopy = "No source data yet.";
-        cutoffISO = toLocalISO(now);
-      }
 
-      // —— Derivă Type pentru afișare ——
-      // 1) dacă booking are room_type_id -> numele din room_types
-      // 2) altfel, dacă avem room și ea are room_type_id -> numele din room_types
+      // Derivă Type pentru afișare
       let typeName: string | null = null;
       if (b.room_type_id) {
         typeName = typeById.get(String(b.room_type_id))?.name ?? null;
@@ -314,7 +314,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
   }, [bookings, rooms, roomTypes]);
 
   // ---- Actions
-  // Acum copiem linkul pe PROPRIETATE (nu pe booking), ca să meargă perfect în incognito:
+  // Copiem linkul pe PROPRIETATE (merge în incognito etc.)
   const copyLinkFor = useCallback(async (b: Booking) => {
     const propId = b.property_id;
     const link = buildPropertyCheckinLink(propId);
@@ -324,7 +324,6 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       copyTimer.current = window.setTimeout(() => setCopiedBookingId(null), 2000);
     } catch {
-      // fallback simplu
       prompt("Copy this link:", link);
     }
   }, []);
@@ -357,7 +356,6 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
     };
     if (color === "GREEN") return { ...base, background: "var(--success)", borderColor: "var(--success)" };
     if (color === "RED") return { ...base, background: "var(--danger)", borderColor: "var(--danger)", color: "#fff" };
-    // YELLOW — fallback (add --warning in theme dacă vrei)
     return { ...base, background: "var(--warning, #fbbf24)", borderColor: "var(--warning, #f59e0b)" };
   }
 
@@ -423,6 +421,12 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
           const isIcalNoForm = hasIcal(b) && !hasForm(b);
           const isFormNoIcal = hasForm(b) && !hasIcal(b);
 
+          // Contact line (mic): email • phone
+          const contactBits: string[] = [];
+          if ((b.guest_email ?? "").trim()) contactBits.push((b.guest_email as string).trim());
+          if ((b.guest_phone ?? "").trim()) contactBits.push((b.guest_phone as string).trim());
+          const contactLine = contactBits.join(" • ");
+
           return (
             <div key={b.id} style={{ border: "1px solid var(--border)", background: "var(--panel)", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
               {/* Top line */}
@@ -432,6 +436,11 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
                 </strong>
                 <span style={badgeStyle(r.color)}>{r.color}</span>
               </div>
+
+              {/* Contact (mic) */}
+              {contactLine && (
+                <small style={{ color: "var(--muted)" }}>{contactLine}</small>
+              )}
 
               {/* Subtext + actions */}
               {(r.color === "YELLOW" || r.color === "RED") && (
