@@ -1,4 +1,4 @@
-// app/app/inbox/ui/InboxClient.tsx
+// app/app/guest/ui/GuestOverviewClient.tsx
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -61,6 +61,8 @@ type Row = {
   subcopy?: string | null;
   cutoffISO: string; // informational
 };
+
+type IcalSuppression = { property_id: string; ical_uid: string };
 
 // ---- Date helpers ----
 function parseYMD(ymd: string): Date {
@@ -179,7 +181,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
     return () => { if (copyTimer.current) window.clearTimeout(copyTimer.current); };
   }, []);
 
-  // ---- Refresh pentru proprietatea activă
+  // ---- Refresh pentru proprietatea aktivă + SUPRESII iCal
   const refresh = useCallback(async () => {
     if (!activePropertyId) return;
     setLoading("loading");
@@ -187,7 +189,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
 
     const today = todayLocalISODate();
 
-    const [rRooms, rTypes, rBookings] = await Promise.all([
+    const [rRooms, rTypes, rBookings, rSupp] = await Promise.all([
       supabase
         .from("rooms")
         .select("id,name,property_id,room_type_id")
@@ -202,21 +204,45 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
         .from("bookings")
         .select("*")
         .eq("property_id", activePropertyId)
-        .gte("end_date", today) // doar curente/viitoare
+        .gte("end_date", today)
         .neq("status", "cancelled")
         .order("start_date", { ascending: true })
         .order("start_time", { ascending: true, nullsFirst: true }),
+      // NEW: suprimări iCal pentru proprietate
+      supabase
+        .from("ical_suppressions")
+        .select("property_id, ical_uid")
+        .eq("property_id", activePropertyId),
     ]);
 
-    if (rRooms.error || rTypes.error || rBookings.error) {
+    if (rRooms.error || rTypes.error || rBookings.error || rSupp.error) {
       setLoading("error");
-      setHint(rRooms.error?.message || rTypes.error?.message || rBookings.error?.message || "Failed to load.");
+      setHint(
+        rRooms.error?.message ||
+        rTypes.error?.message ||
+        rBookings.error?.message ||
+        rSupp.error?.message ||
+        "Failed to load."
+      );
       return;
     }
 
+    // Set-uri pentru UID-uri suprimate
+    const suppressed = new Set<string>(
+      ((rSupp.data ?? []) as IcalSuppression[])
+        .map((s) => (s.ical_uid || "").trim())
+        .filter(Boolean)
+    );
+
+    // NEW: filtrăm rezervările care corespund unui ical_uid suprimat
+    const filteredBookings = ((rBookings.data ?? []) as Booking[]).filter((b) => {
+      const uid = (b.ical_uid ?? "").trim();
+      return !uid || !suppressed.has(uid);
+    });
+
     setRooms((rRooms.data ?? []) as Room[]);
     setRoomTypes((rTypes.data ?? []) as RoomType[]);
-    setBookings((rBookings.data ?? []) as Booking[]);
+    setBookings(filteredBookings);
     setLoading("idle");
     setHint("");
   }, [supabase, activePropertyId]);
@@ -268,7 +294,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
       } else {
         // 1) iCal dar fără Form → YELLOW până la Arrival−3 zile, apoi RED
         if (_hasIcal && !_hasForm) {
-          if (new Date() < cutoff3d) {
+          if (now < cutoff3d) {
             color = "YELLOW";
             subcopy = "Waiting for the guest to complete the check-in form (until 3 days before arrival).";
             cutoffISO = toLocalISO(cutoff3d);
@@ -281,7 +307,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
         }
         // 2) Form dar fără iCal → YELLOW max 2h, apoi RED
         else if (_hasForm && !_hasIcal) {
-          if (cutoff2h && new Date() < cutoff2h) {
+          if (cutoff2h && now < cutoff2h) {
             color = "YELLOW";
             subcopy = "Waiting for a matching OTA iCal event (max 2 hours after form submission).";
             cutoffISO = toLocalISO(cutoff2h);
@@ -289,7 +315,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
             color = "RED";
             reason = "no_ota_found";
             subcopy = "Form dates do not match any OTA reservation.";
-            cutoffISO = cutoff2h ? toLocalISO(cutoff2h) : toLocalISO(new Date());
+            cutoffISO = cutoff2h ? toLocalISO(cutoff2h) : toLocalISO(now);
           }
         }
         // 3) fallback (rar): nici form, nici iCal
@@ -297,7 +323,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
           color = "RED";
           reason = "no_ota_found";
           subcopy = "No source data yet.";
-          cutoffISO = toLocalISO(new Date());
+          cutoffISO = toLocalISO(now);
         }
       }
 
@@ -314,7 +340,6 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
   }, [bookings, rooms, roomTypes]);
 
   // ---- Actions
-  // Copiem linkul pe PROPRIETATE (merge în incognito etc.)
   const copyLinkFor = useCallback(async (b: Booking) => {
     const propId = b.property_id;
     const link = buildPropertyCheckinLink(propId);
