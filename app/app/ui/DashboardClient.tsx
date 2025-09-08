@@ -58,7 +58,7 @@ export default function DashboardClient({
   const [name, setName] = useState("");
   const [country, setCountry] = useState<string>("");
 
-  // seed din SSR
+  // seed din SSR (evită flicker)
   const [list, setList] = useState<Property[]>(initialProperties);
 
   const [toDelete, setToDelete] = useState<Property | null>(null);
@@ -67,7 +67,9 @@ export default function DashboardClient({
   // Copied! state
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const timerRef = useRef<number | null>(null);
-  useEffect(() => () => { if (timerRef.current) window.clearTimeout(timerRef.current); }, []);
+  useEffect(() => {
+    return () => { if (timerRef.current) window.clearTimeout(timerRef.current); };
+  }, []);
 
   useEffect(() => { setTitle("Dashboard"); }, [setTitle]);
 
@@ -79,7 +81,7 @@ export default function DashboardClient({
     );
   }, [status, setPill]);
 
-  // Refresh client-side: INCLUDE regulation_* (fix pentru PDF „dispare după refresh”)
+  // Refresh client-side: INCLUDE regulation_*
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase
@@ -136,7 +138,6 @@ export default function DashboardClient({
       return;
     }
 
-    // Re-fetch cu regulation_* (persistă după reload)
     const { data: refreshed } = await supabase
       .from("properties")
       .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
@@ -153,20 +154,24 @@ export default function DashboardClient({
     window.location.href = `/app/configurator?property=${id}`;
   }
 
-  // URL absolut, întotdeauna cu ?property=<ID>
-  function getAppBase(): string {
-    // Preferă URL-ul public din env (ex.: https://plan4host.com)
-    const env = (process.env.NEXT_PUBLIC_APP_URL || "").toString().trim();
-    if (env) return env.replace(/\/+$/, "");
-    // Fallback sigur în browser
+  // —— BASE URL pentru linkurile de check-in ——
+  // 1) NEXT_PUBLIC_CHECKIN_BASE (dacă vrei alt domeniu special pt. check-in)
+  // 2) NEXT_PUBLIC_APP_URL (fallback general)
+  // 3) window.location.origin (fallback local)
+  function getCheckinBase(): string {
+    const s1 = (process.env.NEXT_PUBLIC_CHECKIN_BASE || "").toString().trim();
+    if (s1) return s1.replace(/\/+$/, "");
+    const s2 = (process.env.NEXT_PUBLIC_APP_URL || "").toString().trim();
+    if (s2) return s2.replace(/\/+$/, "");
     if (typeof window !== "undefined" && window.location?.origin) {
       return window.location.origin.replace(/\/+$/, "");
     }
-    return ""; // teoretic nu ajungem aici în UI
+    return "";
   }
 
+  // URL absolut, cu ?property=<ID>
   function buildPropertyCheckinLink(p: Property): string {
-    const base = getAppBase();
+    const base = getCheckinBase();
     const id = encodeURIComponent(p.id);
     return `${base}/checkin?property=${id}`;
   }
@@ -179,7 +184,7 @@ export default function DashboardClient({
       if (timerRef.current) window.clearTimeout(timerRef.current);
       timerRef.current = window.setTimeout(() => setCopiedId(null), 2000);
     } catch {
-      // fallback simplu
+      // Fallback simplu dacă clipboard nu e permis
       prompt("Copy this link:", link);
     }
   }
@@ -202,7 +207,6 @@ export default function DashboardClient({
         setStatus("Error");
         return;
       }
-      // Re-fetch cu regulation_* (persistă în listă după refresh)
       const { data } = await supabase
         .from("properties")
         .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
@@ -227,7 +231,7 @@ export default function DashboardClient({
     setTimeout(() => setStatus("Idle"), 800);
   }
 
-  // UI helpers
+  // —— UI helpers ——
   const FIELD_WRAPPER: React.CSSProperties = { width: 340, maxWidth: "100%" };
   const FIELD_STYLE: React.CSSProperties = {
     width: "100%",
