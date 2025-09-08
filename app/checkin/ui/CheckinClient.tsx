@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 type PropertyInfo = {
   id: string;
@@ -33,16 +32,17 @@ function addDaysYMD(ymd: string, days: number): string {
   dt.setDate(dt.getDate() + days);
   const yy = dt.getFullYear();
   const mm = String(dt.getMonth() + 1).padStart(2, "0");
-  const dd = String(dt.getDate()).padStart(2, "0");
+  const dd = String(dt.getDate() + 0).padStart(2, "0");
   return `${yy}-${mm}-${dd}`;
 }
 
 export default function CheckinClient() {
-  const supabase = useMemo(() => createClient(), []);
+  // strict pe ?property=<id>
   const [propertyId, setPropertyId] = useState<string | null>(null);
+  const [bookingId, setBookingId]   = useState<string | null>(null); // opțional, dacă îl pui în link
 
-  // Property + catalog (STRICT pe propertyId din URL)
-  const [prop, setProp] = useState<PropertyInfo | null>(null);
+  // catalog încărcat prin endpoint public (bypass RLS)
+  const [prop, setProp]   = useState<PropertyInfo | null>(null);
   const [types, setTypes] = useState<RoomType[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -65,7 +65,10 @@ export default function CheckinClient() {
   const [endDate,   setEndDate]   = useState<string>(() => addDaysYMD(todayYMD(), 1));
   const [dateError, setDateError] = useState<string>("");
 
+  // house rules gate: bifa apare doar după ce a deschis PDF-ul (dacă există)
+  const [pdfViewed, setPdfViewed] = useState(false);
   const [agree, setAgree] = useState(false);
+
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -80,9 +83,14 @@ export default function CheckinClient() {
     overflow: "hidden",
   }), []);
   const INPUT: React.CSSProperties = useMemo(() => ({
-    width: "100%", boxSizing: "border-box", padding: "12px",
-    background: "var(--card)", color: "var(--text)",
-    border: "1px solid var(--border)", borderRadius: 10, fontSize: 14,
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "12px",
+    background: "var(--card)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    fontSize: 14,
   }), []);
   const SELECT: React.CSSProperties = INPUT;
   const LABEL: React.CSSProperties = useMemo(() => ({
@@ -103,12 +111,13 @@ export default function CheckinClient() {
     display: "grid", gap: 12, gridTemplateColumns: "1fr",
   }), []);
 
-  // 1) Citește strict ?property=<id> din URL
+  // 1) citește parametrii din URL
   useEffect(() => {
     setPropertyId(getQueryParam("property"));
+    setBookingId(getQueryParam("booking"));
   }, []);
 
-  // 2) Load live (fără niciun cache local) pe baza propertyId
+  // 2) fetch catalog via endpoint public (fără Supabase client, deci fără RLS)
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -119,61 +128,52 @@ export default function CheckinClient() {
       setPdfUrl(null);
       setSelectedTypeId("");
       setSelectedRoomId("");
+      setAgree(false);
+      setPdfViewed(false);
 
-      const pid = propertyId;
-      if (!pid) { setLoading(false); return; }
+      if (!propertyId) { setLoading(false); return; }
 
-      // Property + PDF
-      const { data: p, error: eP } = await supabase
-        .from("properties")
-        .select("id,name,regulation_pdf_url")
-        .eq("id", pid)
-        .maybeSingle();
-      if (alive && !eP && p) {
-        setProp(p as PropertyInfo);
-        setPdfUrl((p as any)?.regulation_pdf_url ?? null);
+      try {
+        const res = await fetch(`/api/public/property-catalog?property=${encodeURIComponent(propertyId)}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) {
+          const j = await res.json().catch(() => ({}));
+          throw new Error(j?.error || `Failed to load property catalog (${res.status})`);
+        }
+        const j = await res.json();
+        if (!alive) return;
+
+        const p = j.property as PropertyInfo;
+        const t = (j.room_types ?? []) as Array<{id:string; name:string}>;
+        const r = (j.rooms ?? []) as Array<{id:string; name:string; room_type_id?: string|null}>;
+
+        setProp(p);
+        setPdfUrl(p?.regulation_pdf_url ?? null);
+        setTypes(t.map(x => ({ id: String(x.id), name: String(x.name ?? "Type") })));
+        setRooms(r.map(x => ({ id: String(x.id), name: String(x.name ?? "Room"), room_type_id: x.room_type_id ?? null })));
+
+        // preselect
+        if (t.length > 0) setSelectedTypeId(String(t[0].id));
+        else if (r.length > 0) setSelectedRoomId(String(r[0].id));
+      } catch (e: any) {
+        setErrorMsg(e?.message || "Failed to load property data.");
+        setSubmitState("error");
+      } finally {
+        if (alive) setLoading(false);
       }
-
-      // Room Types
-      const { data: t, error: eT } = await supabase
-        .from("room_types")
-        .select("id,name")
-        .eq("property_id", pid)
-        .order("name", { ascending: true });
-      const tNorm: RoomType[] = (!eT && Array.isArray(t) ? t : []).map(x => ({ id: String(x.id), name: String(x.name ?? "Type") }));
-
-      // Rooms
-      const { data: r, error: eR } = await supabase
-        .from("rooms")
-        .select("id,name,room_type_id")
-        .eq("property_id", pid)
-        .order("name", { ascending: true });
-      const rNorm: Room[] = (!eR && Array.isArray(r) ? r : []).map(x => ({
-        id: String(x.id),
-        name: String(x.name ?? "Room"),
-        room_type_id: x.room_type_id ?? null,
-      }));
-
-      if (!alive) return;
-      setTypes(tNorm);
-      setRooms(rNorm);
-
-      // Preselectare clară (tip dacă există, altfel cameră)
-      if (tNorm.length > 0) setSelectedTypeId(tNorm[0].id);
-      else if (rNorm.length > 0) setSelectedRoomId(rNorm[0].id);
-
-      setLoading(false);
     })();
     return () => { alive = false; };
-  }, [propertyId, supabase]);
+  }, [propertyId]);
 
-  // 3) Validări de date
+  // 3) validare date
   useEffect(() => {
     if (!startDate || !endDate) { setDateError(""); return; }
     setDateError(endDate <= startDate ? "Check-out must be after check-in." : "");
   }, [startDate, endDate]);
 
   const hasTypes = types.length > 0;
+  const consentGatePassed = !pdfUrl || pdfViewed; // dacă nu ai PDF, nu condiționăm bifa
   const canSubmit =
     !!propertyId &&
     !!prop?.id &&
@@ -183,15 +183,21 @@ export default function CheckinClient() {
     phone.trim().length >= 5 &&
     (!dateError && !!startDate && !!endDate) &&
     (hasTypes ? !!selectedTypeId : !!selectedRoomId) &&
-    agree &&
+    consentGatePassed && agree &&
     submitState !== "submitting";
 
   function onOpenPdf() {
     if (!pdfUrl) return;
-    try { window.open(pdfUrl, "_blank", "noopener,noreferrer"); } catch {}
+    try {
+      window.open(pdfUrl, "_blank", "noopener,noreferrer");
+      setPdfViewed(true);
+    } catch {
+      // dacă popup blocker, tot marcăm vizualizarea la click
+      setPdfViewed(true);
+    }
   }
 
-  // 4) Submit — trimite EXACT același property_id primit din URL
+  // 4) submit – trimite property_id + selecția corectă (type sau room)
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
@@ -201,8 +207,8 @@ export default function CheckinClient() {
 
     try {
       const payload = {
-        property_id: propertyId!,          // <- ID-ul proprietății din URL
-        booking_id: null,                  // link property-level; dacă vei adăuga booking param, îl trimiți aici
+        property_id: propertyId!,
+        booking_id: bookingId, // poate fi null
         start_date: startDate,
         end_date: endDate,
         guest_first_name: firstName.trim(),
@@ -231,13 +237,13 @@ export default function CheckinClient() {
       }
 
       setSubmitState("success");
-    } catch (err) {
+    } catch {
       setErrorMsg("Unexpected error. Please try again.");
       setSubmitState("error");
     }
   }
 
-  // 5) Render
+  // 5) render
   if (!propertyId) {
     return (
       <div style={{ maxWidth: 720, margin: "24px auto", padding: 16 }}>
@@ -393,29 +399,36 @@ export default function CheckinClient() {
               </div>
             </div>
 
-            {/* Consent */}
-            <div
-              style={{
-                padding: 12,
-                borderRadius: 12,
-                border: "1px solid var(--border)",
-                background: "var(--card)",
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 10,
-              }}
-            >
-              <input
-                id="agree"
-                type="checkbox"
-                checked={agree}
-                onChange={(e) => setAgree(e.currentTarget.checked)}
-                style={{ marginTop: 3 }}
-              />
-              <label htmlFor="agree" style={{ color: "var(--muted)", cursor: "pointer" }}>
-                I confirm the information is correct and I agree to the house rules{pdfUrl ? " (PDF link in header)" : ""}.
-              </label>
-            </div>
+            {/* Consent — apare doar după ce a deschis PDF-ul, dacă există */}
+            {(!pdfUrl || pdfViewed) && (
+              <div
+                style={{
+                  padding: 12,
+                  borderRadius: 12,
+                  border: "1px solid var(--border)",
+                  background: "var(--card)",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 10,
+                }}
+              >
+                <input
+                  id="agree"
+                  type="checkbox"
+                  checked={agree}
+                  onChange={(e) => setAgree(e.currentTarget.checked)}
+                  style={{ marginTop: 3 }}
+                />
+                <label htmlFor="agree" style={{ color: "var(--muted)", cursor: "pointer" }}>
+                  I confirm the information is correct and I agree to the house rules{pdfUrl ? " (PDF opened)" : ""}.
+                </label>
+              </div>
+            )}
+            {pdfUrl && !pdfViewed && (
+              <div style={{ color: "var(--muted)", fontSize: 12 }}>
+                Please open the House rules (PDF) above to enable consent.
+              </div>
+            )}
 
             {/* Error */}
             {submitState === "error" && errorMsg && (
