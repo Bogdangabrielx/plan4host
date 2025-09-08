@@ -24,11 +24,10 @@ function clampTime(t: unknown, fallback: string): string {
   return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
 
-// Trimitem DOAR coloanele sigure din `bookings`
+// Trimitem DOAR coloanele sigure din `bookings` (fără room_type_id)
 const ALLOWED_BOOKING_KEYS = new Set<string>([
   "property_id",
   "room_id",
-  "room_type_id",
   "start_date",
   "end_date",
   "start_time",
@@ -44,9 +43,7 @@ const ALLOWED_BOOKING_KEYS = new Set<string>([
 function pickBookingPayload(obj: Record<string, any>) {
   const out: Record<string, any> = {};
   for (const k of Object.keys(obj)) {
-    if (ALLOWED_BOOKING_KEYS.has(k) && obj[k] !== undefined) {
-      out[k] = obj[k];
-    }
+    if (ALLOWED_BOOKING_KEYS.has(k) && obj[k] !== undefined) out[k] = obj[k];
   }
   return out;
 }
@@ -60,13 +57,13 @@ export async function POST(req: NextRequest) {
       start_date,
       end_date,
 
-      // guest (scriem doar numele în bookings)
+      // guest
       guest_first_name,
       guest_last_name,
 
-      // selecții din form
-      requested_room_type_id,
+      // selecții din form (type/room) — SALVĂM DOAR room_id, dacă e ales explicit
       requested_room_id,
+      // requested_room_type_id // ignorat (nu avem coloană în `bookings`)
 
       // opțional din client; dacă lipsesc, folosim orele din configurator
       start_time: start_time_client,
@@ -87,12 +84,8 @@ export async function POST(req: NextRequest) {
       .eq("id", property_id)
       .maybeSingle();
 
-    if (rProp.error) {
-      return NextResponse.json({ error: rProp.error.message }, { status: 500 });
-    }
-    if (!rProp.data) {
-      return NextResponse.json({ error: "Property not found" }, { status: 404 });
-    }
+    if (rProp.error) return NextResponse.json({ error: rProp.error.message }, { status: 500 });
+    if (!rProp.data) return NextResponse.json({ error: "Property not found" }, { status: 404 });
 
     const checkInDefault  = rProp.data.check_in_time  ?? "14:00";
     const checkOutDefault = rProp.data.check_out_time ?? "11:00";
@@ -107,8 +100,7 @@ export async function POST(req: NextRequest) {
 
     const rawPayload: Record<string, any> = {
       property_id,
-      room_id: requested_room_id ?? null,
-      room_type_id: requested_room_type_id ?? null,
+      room_id: requested_room_id ?? null, // salvăm doar room_id dacă e selectat explicit
       start_date,
       end_date,
       start_time,
@@ -119,15 +111,13 @@ export async function POST(req: NextRequest) {
       hold_expires_at: holdUntilISO,
       guest_first_name: guest_first_name ?? null,
       guest_last_name:  guest_last_name ?? null,
-      // ❌ NU trimitem: form_submitted_at, source, email/phone/address/city/country (pot lipsi din schema)
+      // ❌ nu trimitem room_type_id / source / form_submitted_at / email / phone / address / city / country
     };
 
     const payload = pickBookingPayload(rawPayload);
 
     const rIns = await admin.from("bookings").insert(payload).select("id").single();
-    if (rIns.error) {
-      return NextResponse.json({ error: rIns.error.message }, { status: 500 });
-    }
+    if (rIns.error) return NextResponse.json({ error: rIns.error.message }, { status: 500 });
 
     return NextResponse.json({
       ok: true,
