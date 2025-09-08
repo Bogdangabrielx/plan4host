@@ -426,30 +426,31 @@ export default function RoomDetailModal({
   }
 
   async function releaseBooking() {
-    if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
-    setSaving("releasing"); setStatus("Saving…"); setStatusHint("Releasing…");
+  if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
+  setSaving("releasing"); setStatus("Saving…"); setStatusHint("Releasing…");
 
-    // 1) încercăm direct din client (RLS permisiv)
-    const del = await supabase.from("bookings").delete().eq("id", active.id);
-    if (!del.error) {
-      setSaving(false); setStatus("Saved"); setStatusHint("Released.");
-      await onChanged(); onClose();
-      return;
-    }
-
-    // 2) fallback: API existent cu DELETE
-    try {
-      const res = await fetch(`/api/bookings/${active.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error(await res.text());
-      setSaving(false); setStatus("Saved"); setStatusHint("Released.");
-      await onChanged(); onClose();
-      return;
-    } catch (e: any) {
-      setStatus("Error");
-      setStatusHint(del.error?.message || e?.message || "Failed to release.");
-      setSaving(false);
-    }
+  // 1) încercare client → verificăm că s-a șters efectiv 1 rând
+  const del = await supabase.from("bookings").delete().eq("id", active.id).select("id").maybeSingle();
+  if (!del.error && del.data) {
+    setSaving(false); setStatus("Saved"); setStatusHint("Released.");
+    await onChanged(); onClose();
+    return;
   }
+
+  // 2) server-side, pe endpointul EXISTENT: DELETE /api/bookings/[id]
+  try {
+    const res = await fetch(`/api/bookings/${active.id}`, { method: "DELETE" });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || j?.error) throw new Error(j?.error || `HTTP ${res.status}`);
+    setSaving(false); setStatus("Saved"); setStatusHint("Released.");
+    await onChanged(); onClose();
+    return;
+  } catch (e: any) {
+    setStatus("Error");
+    setStatusHint(del.error?.message || e?.message || "Failed to release.");
+    setSaving(false);
+  }
+}
 
   // --- UI --------------------------------------------------------------------
 
