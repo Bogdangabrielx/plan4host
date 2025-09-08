@@ -63,7 +63,7 @@ export default function CheckinClient() {
   const [endDate,   setEndDate]   = useState<string>(() => addDaysYMD(todayYMD(), 1));
   const [dateError, setDateError] = useState<string>("");
 
-  // catalog (NEW)
+  // catalog
   const [types, setTypes] = useState<RoomType[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const hasTypes = types.length > 0;
@@ -127,7 +127,7 @@ export default function CheckinClient() {
     border: "1px solid var(--border)",
     background: "transparent",
     color: "var(--text)",
-    fontWeight: 800, 
+    fontWeight: 800,
     cursor: "pointer",
     whiteSpace: "nowrap",
   }), []);
@@ -164,7 +164,7 @@ export default function CheckinClient() {
           if (url && typeof url === "string") setPdfUrl(url);
         }
 
-        // Room catalog (robust to shape)
+        // Room catalog (robust)
         const resCat = await fetch(`/api/property/room-catalog?propertyId=${propertyId}`, { cache: "no-store" }).catch(() => null);
         if (resCat && resCat.ok) {
           const j = await resCat.json().catch(() => ({}));
@@ -174,6 +174,7 @@ export default function CheckinClient() {
           const rNorm: Room[]     = (Array.isArray(r) ? r : []).map((x) => ({ id: String(x.id), name: String(x.name ?? x.label ?? "Room"), room_type_id: x.room_type_id ?? x.type_id ?? null }));
           setTypes(tNorm);
           setRooms(rNorm);
+          // preselect first available (reduce friction)
           if ((tNorm?.length ?? 0) > 0) {
             setSelectedTypeId(tNorm[0].id);
           } else if ((rNorm?.length ?? 0) > 0) {
@@ -207,7 +208,6 @@ export default function CheckinClient() {
     /\S+@\S+\.\S+/.test(email) &&
     phone.trim().length >= 5 &&
     (!dateError && !!startDate && !!endDate) &&
-    // selector obligatoriu în funcție de configurator:
     (hasTypes ? !!selectedTypeId : !!selectedRoomId) &&
     agree &&
     submitState !== "submitting";
@@ -245,9 +245,8 @@ export default function CheckinClient() {
         address: address.trim(),
         city: city.trim(),
         country: country.trim(),
-        // NEW: preferință de alocare
         requested_room_type_id: hasTypes ? selectedTypeId || null : null,
-        requested_room_id: hasTypes ? null : (selectedRoomId || null),
+        requested_room_id:     hasTypes ? null : (selectedRoomId || null),
       };
 
       const res = await fetch("/api/checkin/submit", {
@@ -290,8 +289,9 @@ export default function CheckinClient() {
       <section style={CARD}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div>
+            {/* ➜ Titlu cu numele proprietății clar, nu doar ca subtext */}
             <h1 style={{ margin: 0, fontSize: 22, letterSpacing: 0.3 }}>
-              Guest Check-in {prop?.name ? <span style={{ color: "var(--muted)", fontSize: 18 }}>· {prop.name}</span> : null}
+              Guest Check-in — {prop?.name ?? "Property"}
             </h1>
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
               Please fill in the required details. It takes ~2 minutes.
@@ -372,7 +372,7 @@ export default function CheckinClient() {
               </div>
             )}
 
-            {/* RoomType OR Room — in funcție de configurator */}
+            {/* RoomType OR Room */}
             {hasTypes ? (
               <div style={ROW_1}>
                 <div>

@@ -1,92 +1,100 @@
 import { NextResponse } from "next/server";
-import { createClient as createAdmin } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 
-function bad(status: number, body: any) { return NextResponse.json(body, { status }); }
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-type Payload = {
-  propertyId?: string;
-  roomTypeId?: string | null;
-  roomId?: string | null;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string | null;
-  address?: string | null;
-  startDate?: string;
-  endDate?: string;
-  consentRegulation?: boolean;
-  consentGdpr?: boolean;
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+if (!url || !service) throw new Error("Missing Supabase env vars.");
+
+const admin = createClient(url, service, { auth: { persistSession: false } });
+
+type Body = {
+  property_id: string;
+  booking_id?: string | null;
+
+  start_date: string; // "YYYY-MM-DD"
+  end_date: string;   // "YYYY-MM-DD"
+
+  guest_first_name: string;
+  guest_last_name: string;
+  email: string;
+  phone: string;
+  address?: string;
+  city?: string;
+  country?: string;
+
+  // preferință de alocare (unul dintre ele, nu ambele)
+  requested_room_type_id?: string | null;
+  requested_room_id?: string | null;
 };
+
+function isYMD(s: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json().catch(() => ({}))) as Payload;
+    const body = (await req.json()) as Partial<Body>;
 
-    const {
-      propertyId,
-      roomTypeId,
-      roomId,
-      firstName,
-      lastName,
-      email,
-      phone,
-      address,
-      startDate,
-      endDate,
-      consentRegulation,
-      consentGdpr,
-    } = body;
-
-    if (!propertyId) return bad(400, { error: "propertyId required" });
-    if (!firstName || !lastName || !email) return bad(400, { error: "name and email are required" });
-    if (!startDate || !endDate) return bad(400, { error: "dates required" });
-    if (!consentRegulation || !consentGdpr) return bad(400, { error: "consents required" });
-
-    if (!roomTypeId && !roomId) return bad(400, { error: "roomTypeId or roomId required" });
-
-    const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    if (!SUPABASE_URL || !SERVICE_KEY) return bad(500, { error: "Missing service credentials" });
-    const admin = createAdmin(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
-
-    // Validate property exists
-    const prop = await admin.from("properties").select("id").eq("id", propertyId).maybeSingle();
-    if (prop.error || !prop.data) return bad(404, { error: "Property not found" });
-
-    // Optional: validate room/roomType belongs to property
-    if (roomTypeId) {
-      const rt = await admin.from("room_types").select("id,property_id").eq("id", roomTypeId).maybeSingle();
-      if (rt.error || !rt.data || rt.data.property_id !== propertyId) return bad(400, { error: "Invalid room type" });
+    // ——— validări rapide în edge ———
+    if (!body?.property_id) {
+      return NextResponse.json({ error: "Missing property_id" }, { status: 400 });
     }
-    if (roomId) {
-      const rr = await admin.from("rooms").select("id,property_id").eq("id", roomId).maybeSingle();
-      if (rr.error || !rr.data || rr.data.property_id !== propertyId) return bad(400, { error: "Invalid room" });
+    if (!body?.start_date || !body?.end_date || !isYMD(body.start_date) || !isYMD(body.end_date)) {
+      return NextResponse.json({ error: "Invalid dates" }, { status: 400 });
+    }
+    if (body.end_date <= body.start_date) {
+      return NextResponse.json({ error: "end_date must be after start_date" }, { status: 400 });
     }
 
-    const ins = await admin
-      .from("guest_checkin_forms")
-      .insert({
-        property_id: propertyId,
-        room_type_id: roomTypeId || null,
-        room_id: roomId || null,
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        phone: phone || null,
-        address: address || null,
-        start_date: startDate,
-        end_date: endDate,
-        consent_regulation: !!consentRegulation,
-        consent_gdpr: !!consentGdpr,
-        source: 'public_form',
-      })
-      .select("id,created_at")
-      .maybeSingle();
-    if (ins.error || !ins.data) return bad(500, { error: ins.error?.message || "Insert failed" });
+    const first = (body.guest_first_name || "").trim();
+    const last  = (body.guest_last_name  || "").trim();
+    const email = (body.email || "").trim();
+    const phone = (body.phone || "").trim();
 
-    return NextResponse.json({ ok: true, id: ins.data.id });
+    if (!first || !last)   return NextResponse.json({ error: "Missing guest name" }, { status: 400 });
+    if (!/\S+@\S+\.\S+/.test(email)) return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+    if (phone.length < 5)  return NextResponse.json({ error: "Invalid phone" }, { status: 400 });
+
+    // nu permitem simultan room_id și room_type_id (clientul deja evită, aici doar protecție)
+    const wantType = !!body.requested_room_type_id && !body.requested_room_id;
+    const wantRoom = !!body.requested_room_id && !body.requested_room_type_id;
+
+    // ——— apelăm RPC-ul care face toată treaba în DB ———
+    const { data, error } = await admin.rpc("checkin_submit_soft_hold", {
+      p_property_id: body.property_id,
+      p_booking_id: body.booking_id ?? null,
+
+      p_start_date: body.start_date,
+      p_end_date: body.end_date,
+
+      p_first_name: first,
+      p_last_name: last,
+      p_email: email,
+      p_phone: phone,
+      p_address: body.address ?? null,
+      p_city: body.city ?? null,
+      p_country: body.country ?? null,
+
+      // preferință de alocare
+      p_requested_room_type_id: wantType ? body.requested_room_type_id : null,
+      p_requested_room_id:     wantRoom ? body.requested_room_id : null,
+    });
+
+    if (error) {
+      // mesaj prietenos spre client
+      return NextResponse.json({ error: error.message || "Submit failed" }, { status: 500 });
+    }
+
+    // RPC returnează meta despre hold + form (vezi pasul următor pt. SQL)
+    return NextResponse.json({ ok: true, result: data ?? null });
   } catch (e: any) {
-    return bad(500, { error: String(e?.message ?? e) });
+    return NextResponse.json({ error: e?.message || "Submit failed" }, { status: 500 });
   }
 }
 
+export async function GET() {
+  return NextResponse.json({ error: "Use POST" }, { status: 405 });
+}
