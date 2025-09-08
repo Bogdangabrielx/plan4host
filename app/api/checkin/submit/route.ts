@@ -1,3 +1,4 @@
+// app/api/checkin/submit/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -23,7 +24,7 @@ function clampTime(t: unknown, fallback: string): string {
   return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
 
-// Păstrăm DOAR cheile cunoscute în bookings (evităm erori de tip „column not found”)
+// Trimitem DOAR coloanele care există în `bookings`
 const ALLOWED_BOOKING_KEYS = new Set<string>([
   "property_id",
   "room_id",
@@ -40,8 +41,6 @@ const ALLOWED_BOOKING_KEYS = new Set<string>([
   "form_submitted_at",
   "guest_first_name",
   "guest_last_name",
-  // dacă ai coloana asta în schema, o păstrăm; altfel o ignoră serverul fără să o trimitem
-  "ext_booking_id",
 ]);
 
 function pickBookingPayload(obj: Record<string, any>) {
@@ -60,7 +59,7 @@ export async function POST(req: NextRequest) {
 
     const {
       property_id,
-      booking_id, // opțional, îl mapăm la ext_booking_id dacă există col.
+      // booking_id // ignorat – nu există coloană pentru el în `bookings`
       start_date,
       end_date,
 
@@ -84,7 +83,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "end_date must be after start_date" }, { status: 400 });
     }
 
-    // 1) Luăm orele din configurator pentru proprietate
+    // 1) Orele din configurator
     const rProp = await admin
       .from("properties")
       .select("id,check_in_time,check_out_time,timezone")
@@ -101,11 +100,11 @@ export async function POST(req: NextRequest) {
     const checkInDefault  = rProp.data.check_in_time  ?? "14:00";
     const checkOutDefault = rProp.data.check_out_time ?? "11:00";
 
-    // 2) Normalizăm orele (din client sau fallback din configurator)
+    // 2) Normalize times (client → fallback configurator)
     const start_time = clampTime(start_time_client, checkInDefault);
     const end_time   = clampTime(end_time_client,   checkOutDefault);
 
-    // 3) Construim soft-hold (2h) + scriem numele din formular
+    // 3) Soft-hold 2h + nume oaspete
     const now = new Date();
     const holdUntilISO = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString();
 
@@ -125,9 +124,7 @@ export async function POST(req: NextRequest) {
       form_submitted_at: now.toISOString(),
       guest_first_name: guest_first_name ?? null,
       guest_last_name:  guest_last_name ?? null,
-      ext_booking_id: booking_id ?? null,
-      // ❌ NU trimitem address/email/phone/city/country aici ca să nu eșueze inserarea
-      // (dacă vrei să le păstrăm, facem tabel/coloană separată în pasul următor)
+      // ❌ nu trimitem email/phone/address/city/country aici (nu există coloane)
     };
 
     const payload = pickBookingPayload(rawPayload);
