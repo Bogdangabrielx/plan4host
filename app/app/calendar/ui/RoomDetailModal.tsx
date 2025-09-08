@@ -1,7 +1,6 @@
-// app/app/calendar/ui/RoomDetailModal.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Booking as BaseBooking } from "./DayModal";
 
@@ -14,7 +13,6 @@ type TextDef  = { id: string; label: string; placeholder: string | null; sort_in
 type Booking = BaseBooking & {
   guest_first_name?: string | null;
   guest_last_name?: string | null;
-  // NU mai folosim guest_email/phone/address pe bookings – contactul stă în booking_contacts
 };
 
 type BookingContact = {
@@ -30,6 +28,18 @@ function toDateTime(dateStr: string, timeStr: string | null | undefined, fallbac
   return new Date(`${dateStr}T${t}:00`);
 }
 function overlaps(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) { return aStart < bEnd && bStart < aEnd; }
+function addDaysYMD(ymd: string, days: number) {
+  const d = new Date(`${ymd}T00:00:00`);
+  d.setDate(d.getDate() + days);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
+}
+function normTime(t: string | null | undefined, fallback: string) {
+  const v = (t ?? "").trim();
+  return /^\d\d:\d\d$/.test(v) ? v : fallback;
+}
 
 export default function RoomDetailModal({
   dateStr,
@@ -57,34 +67,40 @@ export default function RoomDetailModal({
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [active, setActive] = useState<Booking | null>(null);
 
-  // Reservation fields
+  // Reservation toggle
   const [on, setOn] = useState<boolean>(true);
+
+  // Reservation fields
   const [startDate, setStartDate] = useState<string>("");
   const [startTime, setStartTime] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
 
-  // Guest (name on bookings)
+  // Guest name (bookings)
   const [guestFirst, setGuestFirst] = useState<string>("");
   const [guestLast, setGuestLast]   = useState<string>("");
 
   // Contact (booking_contacts)
-  const [guestEmail, setGuestEmail]   = useState<string>("");
-  const [guestPhone, setGuestPhone]   = useState<string>("");
-  const [guestAddr, setGuestAddr]     = useState<string>("");
-  const [guestCity, setGuestCity]     = useState<string>("");
+  const [guestEmail, setGuestEmail]     = useState<string>("");
+  const [guestPhone, setGuestPhone]     = useState<string>("");
+  const [guestAddr, setGuestAddr]       = useState<string>("");
+  const [guestCity, setGuestCity]       = useState<string>("");
   const [guestCountry, setGuestCountry] = useState<string>("");
 
   const [showGuest, setShowGuest] = useState<boolean>(false);
 
-  // Room detail custom fields (as-is)
+  // Custom room detail fields (as-is)
   const [checkDefs, setCheckDefs] = useState<CheckDef[]>([]);
   const [textDefs,  setTextDefs]  = useState<TextDef[]>([]);
   const [checkValues, setCheckValues] = useState<Record<string, boolean>>({});
   const [textValues,  setTextValues]  = useState<Record<string, string>>({});
-  const [detailsDirty, setDetailsDirty] = useState(false);
+  const [detailsDirty, setDetailsDirty] = useState(false); // only for custom fields
 
-  // UI status
+  // Dirty tracking (names + contacts + times)
+  const initialGuestRef   = useRef<{ first: string; last: string }>({ first: "", last: "" });
+  const initialContactRef = useRef<BookingContact>({ email: "", phone: "", address: "", city: "", country: "" });
+  const initialTimesRef   = useRef<{ sd: string; st: string; ed: string; et: string }>({ sd: "", st: "", ed: "", et: "" });
+
   const [saving, setSaving] = useState<false | "creating" | "updating" | "times" | "extending" | "releasing">(false);
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Saved" | "Error">("Idle");
   const [statusHint, setStatusHint] = useState<string>("");
@@ -92,7 +108,7 @@ export default function RoomDetailModal({
   const CI = property?.check_in_time || "14:00";
   const CO = property?.check_out_time || "11:00";
 
-  // ——— Helpers API contact ———
+  // ——— Booking contact API ———
   async function fetchContact(bookingId: string): Promise<BookingContact | null> {
     try {
       const res = await fetch(`/api/bookings/${bookingId}/contact`, { cache: "no-store" });
@@ -109,11 +125,10 @@ export default function RoomDetailModal({
         body: JSON.stringify(payload),
       });
       return res.ok;
-    } catch {
-      return false;
-    }
+    } catch { return false; }
   }
 
+  // Load everything
   useEffect(() => {
     (async () => {
       const [p1, p2, p3, p4] = await Promise.all([
@@ -147,7 +162,7 @@ export default function RoomDetailModal({
       const allBookings = (p2.error ? [] : (p2.data ?? [])) as Booking[];
       setBookings(allBookings);
 
-      // Determine active booking if not forceNew
+      // Active booking if not creating
       let act: Booking | null = null;
       if (!forceNew) {
         for (const b of allBookings) {
@@ -159,10 +174,13 @@ export default function RoomDetailModal({
       setCheckDefs(p3.error ? [] : ((p3.data ?? []) as CheckDef[]));
       setTextDefs(p4.error ? [] : ((p4.data ?? []) as TextDef[]));
 
-      // Initialize start/end fields
+      // Init start/end
+      const isCreate = !act;
       const _sDate = defaultStart?.date ?? (act ? act.start_date : dateStr);
       const _sTime = defaultStart?.time ?? (act ? (act.start_time || CI) : CI);
-      const _eDate = defaultEnd?.date   ?? (act ? act.end_date : dateStr);
+
+      // IMPORTANT: for create, default End = Start + 1 day
+      const _eDate = defaultEnd?.date   ?? (act ? act.end_date : addDaysYMD(_sDate, 1));
       const _eTime = defaultEnd?.time   ?? (act ? (act.end_time || CO) : CO);
 
       setStartDate(_sDate);
@@ -170,11 +188,10 @@ export default function RoomDetailModal({
       setEndDate(_eDate);
       setEndTime(_eTime || "");
 
-      // Prefill names from active booking (bookings table)
+      // Names + contact
       if (act) {
         setGuestFirst(act.guest_first_name ?? "");
         setGuestLast(act.guest_last_name ?? "");
-        // Load contact (booking_contacts)
         const contact = await fetchContact(act.id);
         setGuestEmail(contact?.email ?? "");
         setGuestPhone(contact?.phone ?? "");
@@ -182,12 +199,31 @@ export default function RoomDetailModal({
         setGuestCity(contact?.city ?? "");
         setGuestCountry(contact?.country ?? "");
       } else {
-        // creating: reset contact
+        setGuestFirst(""); setGuestLast("");
         setGuestEmail(""); setGuestPhone(""); setGuestAddr(""); setGuestCity(""); setGuestCountry("");
       }
 
-      // UX: dacă nu avem guest name sau suntem pe creare, deschidem panoul Guest
-      setShowGuest(!act || !((act?.guest_first_name ?? "").trim() || (act?.guest_last_name ?? "").trim()));
+      // Set initial refs for dirty tracking
+      initialGuestRef.current = { first: act?.guest_first_name ?? "", last: act?.guest_last_name ?? "" };
+      initialContactRef.current = {
+        email:   act ? (await fetchContact(act.id))?.email   ?? "" : "",
+        phone:   act ? (await fetchContact(act.id))?.phone   ?? "" : "",
+        address: act ? (await fetchContact(act.id))?.address ?? "" : "",
+        city:    act ? (await fetchContact(act.id))?.city    ?? "" : "",
+        country: act ? (await fetchContact(act.id))?.country ?? "" : "",
+      };
+      initialTimesRef.current = {
+        sd: act ? act.start_date : _sDate,
+        st: act ? (act.start_time || CI) : _sTime,
+        ed: act ? act.end_date : _eDate,
+        et: act ? (act.end_time || CO) : _eTime,
+      };
+
+      // Default ON; open guest panel if creating or no name
+      setOn(true);
+      setShowGuest(isCreate || !((act?.guest_first_name ?? "").trim() || (act?.guest_last_name ?? "").trim()));
+      setDetailsDirty(false);
+      setStatus("Idle"); setStatusHint("");
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyId, room.id, dateStr, forceNew]);
@@ -196,6 +232,40 @@ export default function RoomDetailModal({
     () => bookings.filter((b) => b.room_id === room.id),
     [bookings, room.id]
   );
+
+  // Derived dirty flags
+  const guestDirty =
+    guestFirst !== initialGuestRef.current.first ||
+    guestLast  !== initialGuestRef.current.last;
+
+  const contactDirty =
+    guestEmail   !== initialContactRef.current.email ||
+    guestPhone   !== initialContactRef.current.phone ||
+    guestAddr    !== initialContactRef.current.address ||
+    guestCity    !== initialContactRef.current.city ||
+    guestCountry !== initialContactRef.current.country;
+
+  const timesDirty = !!active && (
+    startDate !== initialTimesRef.current.sd ||
+    normTime(startTime, CI) !== normTime(initialTimesRef.current.st, CI) ||
+    endDate   !== initialTimesRef.current.ed ||
+    normTime(endTime, CO)   !== normTime(initialTimesRef.current.et, CO)
+  );
+
+  const endDirty = !!active && (
+    endDate !== initialTimesRef.current.ed ||
+    normTime(endTime, CO) !== normTime(initialTimesRef.current.et, CO)
+  );
+
+  // For "Extend until" we also make sure it's an extension (newEnd > oldEnd)
+  const canExtend = (() => {
+    if (!active || !endDirty) return false;
+    const oldEnd = toDateTime(initialTimesRef.current.ed, initialTimesRef.current.et, CO);
+    const newEnd = toDateTime(endDate, endTime || CO, CO);
+    return newEnd > oldEnd;
+  })();
+
+  const anyDetailsDirty = guestDirty || contactDirty || detailsDirty;
 
   // --- Save flows ------------------------------------------------------------
 
@@ -218,7 +288,6 @@ export default function RoomDetailModal({
       }
     }
 
-    // Creăm booking-ul (numai coloanele care sigur există în `bookings`)
     const ins = await supabase.from("bookings").insert({
       property_id: propertyId,
       room_id: room.id,
@@ -237,7 +306,6 @@ export default function RoomDetailModal({
     }
     const newId = ins.data.id as string;
 
-    // Salvează contactul (booking_contacts)
     if (guestEmail || guestPhone || guestAddr || guestCity || guestCountry) {
       await saveContact(newId, {
         email: guestEmail || null,
@@ -248,7 +316,7 @@ export default function RoomDetailModal({
       });
     }
 
-    // Persist custom room detail fields dacă există
+    // Custom fields (optional)
     const checkRows = Object.entries(checkValues).map(([check_id, value]) => ({ booking_id: newId, check_id, value }));
     const textRows  = Object.entries(textValues).map(([field_id, value]) => ({ booking_id: newId, field_id, value }));
     if (checkRows.length) await supabase.from("booking_check_values").upsert(checkRows);
@@ -258,45 +326,51 @@ export default function RoomDetailModal({
     await onChanged(); onClose();
   }
 
-  async function saveGuestAndDetails() {
+  async function saveDetails() {
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
+    if (!anyDetailsDirty) return;
     setSaving("updating"); setStatus("Saving…"); setStatusHint("Updating details…");
 
-    // 1) Actualizează NUMELE în `bookings`
-    const upd = await supabase.from("bookings").update({
-      guest_first_name: guestFirst || null,
-      guest_last_name:  guestLast  || null,
-    }).eq("id", active.id);
-    if (upd.error) {
-      setStatus("Error"); setStatusHint(upd.error.message || "Failed to update guest name.");
-      setSaving(false); return;
+    if (guestDirty) {
+      const upd = await supabase.from("bookings").update({
+        guest_first_name: guestFirst || null,
+        guest_last_name:  guestLast  || null,
+      }).eq("id", active.id);
+      if (upd.error) {
+        setStatus("Error"); setStatusHint(upd.error.message || "Failed to update guest name.");
+        setSaving(false); return;
+      }
     }
 
-    // 2) Upsert contact în `booking_contacts` prin API
-    await saveContact(active.id, {
-      email: guestEmail || null,
-      phone: guestPhone || null,
-      address: guestAddr || null,
-      city: guestCity || null,
-      country: guestCountry || null,
-    });
+    if (contactDirty) {
+      await saveContact(active.id, {
+        email: guestEmail || null,
+        phone: guestPhone || null,
+        address: guestAddr || null,
+        city: guestCity || null,
+        country: guestCountry || null,
+      });
+    }
 
-    // 3) Custom detail fields
-    const checkRows = Object.entries(checkValues).map(([check_id, value]) => ({ booking_id: active.id, check_id, value }));
-    const textRows  = Object.entries(textValues).map(([field_id, value]) => ({ booking_id: active.id, field_id, value }));
-    if (checkRows.length) await supabase.from("booking_check_values").upsert(checkRows);
-    if (textRows.length)  await supabase.from("booking_text_values").upsert(textRows);
+    if (detailsDirty) {
+      const checkRows = Object.entries(checkValues).map(([check_id, value]) => ({ booking_id: active.id, check_id, value }));
+      const textRows  = Object.entries(textValues).map(([field_id, value]) => ({ booking_id: active.id, field_id, value }));
+      if (checkRows.length) await supabase.from("booking_check_values").upsert(checkRows);
+      if (textRows.length)  await supabase.from("booking_text_values").upsert(textRows);
+      setDetailsDirty(false);
+    }
 
-    setDetailsDirty(false);
     setSaving(false); setStatus("Saved"); setStatusHint("Details updated.");
     await onChanged(); onClose();
   }
 
-  // NEW: Save times (can move earlier/later with full overlap check)
+  // Save dates & times (start OR end changed)
   async function saveTimes() {
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
     if (!on)     { setStatus("Error"); setStatusHint("Turn reservation ON to change times."); return; }
-    setSaving("times"); setStatus("Saving…"); setStatusHint("Saving times…");
+    if (!timesDirty) return;
+
+    setSaving("times"); setStatus("Saving…"); setStatusHint("Saving dates & times…");
 
     const s = toDateTime(startDate, startTime, CI);
     const e = toDateTime(endDate, endTime, CO);
@@ -323,27 +397,16 @@ export default function RoomDetailModal({
 
     if (upd.error) { setStatus("Error"); setStatusHint(upd.error.message || "Failed to save times."); setSaving(false); return; }
 
-    setSaving(false); setStatus("Saved"); setStatusHint("Times updated.");
+    setSaving(false); setStatus("Saved"); setStatusHint("Dates & times updated.");
     await onChanged(); onClose();
   }
 
   async function extendUntil() {
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
-    if (!on)     { setStatus("Error"); setStatusHint("Use 'Confirm release' to delete."); return; }
+    if (!on)     { setStatus("Error"); setStatusHint("Use 'Confirm release' when OFF."); return; }
+    if (!canExtend) return;
+
     setSaving("extending"); setStatus("Saving…"); setStatusHint("Extending…");
-
-    const oldEnd = toDateTime(active.end_date, active.end_time ?? CO, CO);
-    const newEnd = toDateTime(endDate, endTime || CO, CO);
-    if (!(newEnd > oldEnd)) { setStatus("Error"); setStatusHint("New end must be after current end."); setSaving(false); return; }
-
-    for (const ob of bookings) {
-      if (ob.id === active.id || ob.room_id !== room.id) continue;
-      const os = toDateTime(ob.start_date, ob.start_time, CI);
-      if (os > oldEnd && newEnd > os) {
-        setStatus("Error"); setStatusHint(`Overlaps next starting ${ob.start_date} ${ob.start_time ?? ""}`);
-        setSaving(false); return;
-      }
-    }
 
     const upd = await supabase.from("bookings").update({
       end_date: endDate, end_time: endTime || null,
@@ -358,11 +421,26 @@ export default function RoomDetailModal({
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
     setSaving("releasing"); setStatus("Saving…"); setStatusHint("Releasing…");
 
+    // 1) încercăm direct din client
     const del = await supabase.from("bookings").delete().eq("id", active.id);
-    if (del.error) { setStatus("Error"); setStatusHint("Failed to release."); setSaving(false); return; }
+    if (!del.error) {
+      setSaving(false); setStatus("Saved"); setStatusHint("Released.");
+      await onChanged(); onClose();
+      return;
+    }
 
-    setSaving(false); setStatus("Saved"); setStatusHint("Released.");
-    await onChanged(); onClose();
+    // 2) fallback: API server-side (Service Role), dacă RLS blochează
+    try {
+      const res = await fetch(`/api/bookings/${active.id}/delete`, { method: "POST" });
+      if (!res.ok) throw new Error(await res.text());
+      setSaving(false); setStatus("Saved"); setStatusHint("Released.");
+      await onChanged(); onClose();
+      return;
+    } catch (e: any) {
+      setStatus("Error");
+      setStatusHint(del.error?.message || e?.message || "Failed to release.");
+      setSaving(false);
+    }
   }
 
   // --- UI --------------------------------------------------------------------
@@ -700,12 +778,12 @@ export default function RoomDetailModal({
               </div>
 
               <small style={{ color: "var(--muted)" }}>
-                Name is stored on the booking; contact (email/phone/address/city/country) is stored securely on this reservation’s contact profile.
+                Name is stored on the booking; contact (email/phone/address/city/country) is stored on the reservation’s contact profile.
               </small>
             </div>
           )}
 
-          {/* Custom detail fields (existing feature) */}
+          {/* Custom detail fields */}
           {(checkDefs.length > 0 || textDefs.length > 0) && (
             <div style={{ display: "grid", gap: 10, marginTop: 6 }}>
               <strong style={{ letterSpacing: 0.3 }}>Room details</strong>
@@ -760,29 +838,46 @@ export default function RoomDetailModal({
             </div>
           )}
 
-          {/* Actions */}
+          {/* Actions (cu gating) */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 6 }}>
             {!active && (
               <button onClick={saveCreated} style={primaryBtn} disabled={saving !== false}>
                 Confirm reservation
               </button>
             )}
+
             {active && (
               <>
-                <button onClick={saveGuestAndDetails} style={baseBtn} disabled={saving !== false && saving !== "updating"}>
-                  Save details
-                </button>
-                <button onClick={saveTimes} style={baseBtn} disabled={saving !== false && saving !== "times"}>
-                  Save times
-                </button>
-                <button onClick={extendUntil} style={baseBtn} disabled={saving !== false && saving !== "extending"}>
-                  Extend until
-                </button>
-                <button onClick={releaseBooking} style={dangerBtn} disabled={saving !== false && saving !== "releasing"}>
-                  Confirm release
-                </button>
+                {/* Apare doar dacă există modificări în guest/contact/custom */}
+                {anyDetailsDirty && (
+                  <button onClick={saveDetails} style={baseBtn} disabled={saving !== false && saving !== "updating"}>
+                    Save details
+                  </button>
+                )}
+
+                {/* Apare doar dacă s-au modificat datele/orele (Start sau End) și Reservation este ON */}
+                {on && timesDirty && (
+                  <button onClick={saveTimes} style={baseBtn} disabled={saving !== false && saving !== "times"} title="Save updated dates & times">
+                    Save dates & times
+                  </button>
+                )}
+
+                {/* Apare doar dacă s-a modificat End-ul și este o reală extindere */}
+                {on && canExtend && (
+                  <button onClick={extendUntil} style={baseBtn} disabled={saving !== false && saving !== "extending"}>
+                    Extend until
+                  </button>
+                )}
+
+                {/* Apare doar când Reservation este OFF */}
+                {!on && (
+                  <button onClick={releaseBooking} style={dangerBtn} disabled={saving !== false && saving !== "releasing"}>
+                    Confirm release
+                  </button>
+                )}
               </>
             )}
+
             <button onClick={onClose} style={baseBtn}>Close</button>
           </div>
         </div>
