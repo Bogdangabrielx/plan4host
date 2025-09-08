@@ -12,6 +12,8 @@ type Property = {
   timezone: string | null;
   check_in_time: string | null;
   check_out_time: string | null;
+  regulation_pdf_url?: string | null;
+  regulation_pdf_uploaded_at?: string | null;
 };
 
 const card: React.CSSProperties = {
@@ -145,6 +147,37 @@ export default function DashboardClient({
     window.location.href = `/app/configurator?property=${id}`;
   }
 
+  async function uploadRegulationPdf(propertyId: string, file: File) {
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      alert("Only PDF files are allowed.");
+      return;
+    }
+    setStatus("Saving…");
+    try {
+      const fd = new FormData();
+      fd.append("propertyId", propertyId);
+      fd.append("file", file);
+      const res = await fetch("/api/property/regulation/upload", { method: "POST", body: fd });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(j?.error || "Upload failed.");
+        setStatus("Error");
+        return;
+      }
+      const { data } = await supabase
+        .from("properties")
+        .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
+        .order("created_at", { ascending: true });
+      if (data) setList(data as Property[]);
+      setStatus("Synced");
+      setTimeout(() => setStatus("Idle"), 800);
+    } catch (e) {
+      console.error(e);
+      setStatus("Error");
+    }
+  }
+
   async function confirmDelete() {
     if (!toDelete) return;
     setStatus("Saving…");
@@ -272,6 +305,29 @@ export default function DashboardClient({
                   >
                     Open Configurator
                   </button>
+                  <label
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border)",
+                      background: "var(--panel)",
+                      color: "var(--text)",
+                      fontWeight: 800,
+                      cursor: "pointer"
+                    }}
+                  >
+                    Upload Regulations (PDF)
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        const f = (e.target as HTMLInputElement).files?.[0];
+                        if (f) uploadRegulationPdf(p.id, f);
+                        (e.target as HTMLInputElement).value = "";
+                      }}
+                    />
+                  </label>
                   <button
                     onClick={() => setToDelete(p)}
                     style={{
@@ -286,6 +342,20 @@ export default function DashboardClient({
                   >
                     Delete
                   </button>
+                </div>
+                <div style={{ gridColumn: "1 / -1", color: "var(--muted)", fontSize: 12, marginTop: 6 }}>
+                  {p.regulation_pdf_url ? (
+                    <span>
+                      Regulations PDF uploaded
+                      {p.regulation_pdf_uploaded_at ? ` • ${new Date(p.regulation_pdf_uploaded_at).toLocaleString()}` : ""}
+                      {" • "}
+                      <a href={p.regulation_pdf_url} target="_blank" rel="noreferrer" style={{ color: "var(--primary)", textDecoration: "none" }}>
+                        Open
+                      </a>
+                    </span>
+                  ) : (
+                    <span>No Regulations PDF uploaded</span>
+                  )}
                 </div>
               </li>
             ))}

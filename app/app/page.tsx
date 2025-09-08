@@ -46,7 +46,7 @@ export default async function DashboardPage() {
 
   const { data: properties = [] } = await supabase
     .from("properties")
-    .select("id,name,country_code,timezone,check_in_time,check_out_time")
+    .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
     .order("created_at", { ascending: true });
 
   return (
