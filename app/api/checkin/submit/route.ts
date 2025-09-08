@@ -1,4 +1,3 @@
-// app/api/checkin/submit/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -14,7 +13,7 @@ function isYMD(s: unknown): s is string {
   return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
 }
 
-// normalizăm în HH:MM (fallback sigur dacă lipsesc valori)
+// HH:mm normalizer (fallback sigur)
 function clampTime(t: unknown, fallback: string): string {
   if (typeof t !== "string") return fallback;
   const m = t.match(/^(\d{1,2}):(\d{1,2})/);
@@ -24,31 +23,58 @@ function clampTime(t: unknown, fallback: string): string {
   return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
 
+// Păstrăm DOAR cheile cunoscute în bookings (evităm erori de tip „column not found”)
+const ALLOWED_BOOKING_KEYS = new Set<string>([
+  "property_id",
+  "room_id",
+  "room_type_id",
+  "start_date",
+  "end_date",
+  "start_time",
+  "end_time",
+  "status",
+  "is_soft_hold",
+  "hold_status",
+  "hold_expires_at",
+  "source",
+  "form_submitted_at",
+  "guest_first_name",
+  "guest_last_name",
+  // dacă ai coloana asta în schema, o păstrăm; altfel o ignoră serverul fără să o trimitem
+  "ext_booking_id",
+]);
+
+function pickBookingPayload(obj: Record<string, any>) {
+  const out: Record<string, any> = {};
+  for (const k of Object.keys(obj)) {
+    if (ALLOWED_BOOKING_KEYS.has(k) && obj[k] !== undefined) {
+      out[k] = obj[k];
+    }
+  }
+  return out;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
 
     const {
       property_id,
-      booking_id, // optional – dacă ai un id extern de legat
-      // datele obligatorii
+      booking_id, // opțional, îl mapăm la ext_booking_id dacă există col.
       start_date,
       end_date,
-      // oaspete
+
+      // guest (doar numele le scriem sigur în bookings)
       guest_first_name,
       guest_last_name,
-      email,
-      phone,
-      address,
-      city,
-      country,
-      // selecția din form
+
+      // selecții din form
       requested_room_type_id,
       requested_room_id,
-      // opțional: dacă le trimiți tu din client; altfel le calculăm din configurator
+
+      // opțional din client; dacă lipsesc, folosim orele din configurator
       start_time: start_time_client,
       end_time: end_time_client,
-      timezone: tz_client,
     } = body ?? {};
 
     if (!property_id || !isYMD(start_date) || !isYMD(end_date)) {
@@ -58,7 +84,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "end_date must be after start_date" }, { status: 400 });
     }
 
-    // 1) Luăm orele din configurator (și timezone) pentru proprietate
+    // 1) Luăm orele din configurator pentru proprietate
     const rProp = await admin
       .from("properties")
       .select("id,check_in_time,check_out_time,timezone")
@@ -74,7 +100,6 @@ export async function POST(req: NextRequest) {
 
     const checkInDefault  = rProp.data.check_in_time  ?? "14:00";
     const checkOutDefault = rProp.data.check_out_time ?? "11:00";
-    const tz              = tz_client ?? rProp.data.timezone ?? null;
 
     // 2) Normalizăm orele (din client sau fallback din configurator)
     const start_time = clampTime(start_time_client, checkInDefault);
@@ -84,7 +109,7 @@ export async function POST(req: NextRequest) {
     const now = new Date();
     const holdUntilISO = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString();
 
-    const payload: any = {
+    const rawPayload: Record<string, any> = {
       property_id,
       room_id: requested_room_id ?? null,
       room_type_id: requested_room_type_id ?? null,
@@ -92,24 +117,20 @@ export async function POST(req: NextRequest) {
       end_date,
       start_time,
       end_time,
-      timezone: tz,
       status: "hold",
       is_soft_hold: true,
       hold_status: "active",
       hold_expires_at: holdUntilISO,
       source: "form",
       form_submitted_at: now.toISOString(),
-      // guest
       guest_first_name: guest_first_name ?? null,
       guest_last_name:  guest_last_name ?? null,
-      email:    email   ?? null,
-      phone:    phone   ?? null,
-      address:  address ?? null,
-      city:     city    ?? null,
-      country:  country ?? null,
-      // pointer extern opțional
       ext_booking_id: booking_id ?? null,
+      // ❌ NU trimitem address/email/phone/city/country aici ca să nu eșueze inserarea
+      // (dacă vrei să le păstrăm, facem tabel/coloană separată în pasul următor)
     };
+
+    const payload = pickBookingPayload(rawPayload);
 
     const rIns = await admin.from("bookings").insert(payload).select("id").single();
     if (rIns.error) {
@@ -119,7 +140,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       id: rIns.data.id,
-      // eco pentru debug rapid în client
       start_date,
       end_date,
       start_time,
