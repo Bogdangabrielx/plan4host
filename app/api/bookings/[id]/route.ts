@@ -1,4 +1,4 @@
-// app/api/bookings/[id]/route.ts
+// app/api/bookings/[id]/route.ts (doar DELETE-ul)
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
@@ -10,47 +10,36 @@ const admin = createAdmin(url, service, { auth: { persistSession: false } });
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
   const id = params.id;
 
-  // 1) Încercăm cu clientul RLS (dacă userul are drepturi, e suficient)
-  try {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+  // 0) Luăm booking-ul ca să vedem dacă e iCal
+  const rGet = await admin
+    .from("bookings")
+    .select("id,property_id,source,ical_uid")
+    .eq("id", id)
+    .maybeSingle();
 
-    if (user) {
-      const del = await supabase
-        .from("bookings")
-        .delete()
-        .eq("id", id)
-        .select("id")
-        .maybeSingle();
+  if (rGet.error) return NextResponse.json({ error: rGet.error.message }, { status: 400 });
+  if (!rGet.data)  return NextResponse.json({ error: "Already deleted" }, { status: 404 });
 
-      if (!del.error && del.data) {
-        return NextResponse.json({ ok: true, via: "rls" });
-      }
-      // dacă e eroare RLS sau 0 rows -> cădem în fallback
-    }
-  } catch {
-    // ignorăm, mergem la fallback
+  const { property_id, source, ical_uid } = rGet.data as {
+    property_id: string; source: string | null; ical_uid: string | null;
+  };
+
+  // 1) Dacă e iCal: mutăm în "mute list" ca să nu mai fie re-importat
+  let via: "rls" | "admin" | "muted_ical" = "admin";
+  if (ical_uid || (source && source.toLowerCase() === "ical")) {
+    await admin
+      .from("ical_suppressions")
+      .upsert({ property_id, ical_uid }, { onConflict: "property_id,ical_uid" });
+    via = "muted_ical";
   }
 
-  // 2) Fallback cu service-role: ștergem dependențele și apoi booking-ul
-  try {
-    // Best-effort pe child tables (dacă există)
-    try { await admin.from("booking_contacts").delete().eq("booking_id", id); } catch {}
-    try { await admin.from("booking_check_values").delete().eq("booking_id", id); } catch {}
-    try { await admin.from("booking_text_values").delete().eq("booking_id", id); } catch {}
+  // 2) Ștergem child-urile best-effort, apoi booking-ul
+  try { await admin.from("booking_contacts").delete().eq("booking_id", id); } catch {}
+  try { await admin.from("booking_check_values").delete().eq("booking_id", id); } catch {}
+  try { await admin.from("booking_text_values").delete().eq("booking_id", id); } catch {}
 
-    const del2 = await admin
-      .from("bookings")
-      .delete()
-      .eq("id", id)
-      .select("id")
-      .maybeSingle();
+  const del = await admin.from("bookings").delete().eq("id", id).select("id").maybeSingle();
+  if (del.error) return NextResponse.json({ error: del.error.message }, { status: 400 });
 
-    if (del2.error) return NextResponse.json({ error: del2.error.message }, { status: 400 });
-    if (!del2.data) return NextResponse.json({ error: "Not found or already deleted" }, { status: 404 });
-
-    return NextResponse.json({ ok: true, via: "admin" });
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "Delete failed" }, { status: 400 });
-  }
+  return NextResponse.json({ ok: true, via });
 }
