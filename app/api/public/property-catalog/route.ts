@@ -1,3 +1,4 @@
+// app/api/public/property-catalog/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -17,10 +18,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Missing ?property" }, { status: 400 });
     }
 
-    // 1) Property (doar câmpurile necesare pentru form)
+    // 1) Property — acum includem și check_in_time / check_out_time (și păstrăm câmpurile vechi)
     const rProp = await admin
       .from("properties")
-      .select("id,name,regulation_pdf_url")
+      .select("id,name,regulation_pdf_url,check_in_time,check_out_time,timezone")
       .eq("id", propertyId)
       .maybeSingle();
 
@@ -53,8 +54,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: rRooms.error.message }, { status: 500 });
     }
 
+    // răspuns compatibil înapoi + noile câmpuri pentru „match perfect”
     return NextResponse.json({
-      property: rProp.data,
+      property: {
+        id: rProp.data.id,
+        name: rProp.data.name,
+        regulation_pdf_url: rProp.data.regulation_pdf_url ?? null,
+        check_in_time: rProp.data.check_in_time ?? null,
+        check_out_time: rProp.data.check_out_time ?? null,
+        timezone: rProp.data.timezone ?? null,
+      },
       room_types: rTypes.data ?? [],
       rooms: rRooms.data ?? [],
     });
