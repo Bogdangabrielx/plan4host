@@ -1,79 +1,116 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createClient as createAdmin } from "@supabase/supabase-js";
-
-function bad(status: number, body: any) { return NextResponse.json(body, { status }); }
+import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-export async function POST(req: Request) {
-  try {
-    const supa = createClient();
-    const { data: auth } = await supa.auth.getUser();
-    const actor = auth.user;
-    if (!actor) return bad(401, { error: "Not authenticated" });
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const BUCKET = "property-regulations";
 
-    const form = await req.formData();
-    const propertyId = (form.get("propertyId") as string | null) || undefined;
-    const file = form.get("file") as File | null;
-    if (!propertyId || !file) return bad(400, { error: "propertyId and file are required" });
+if (!SUPABASE_URL || !SERVICE_KEY) {
+  throw new Error("Missing SUPABASE env vars (NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).");
+}
 
-    const ct = file.type || "";
-    if (!/^application\/pdf$/i.test(ct)) return bad(400, { error: "Only PDF files are allowed" });
+const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
-    // Verify actor is owner/manager or has dashboard/configurator scope on the property's account
-    const prop = await supa.from("properties").select("id, owner_id").eq("id", propertyId).maybeSingle();
-    if (prop.error || !prop.data) return bad(404, { error: "Property not found" });
+function slugify(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
 
-    // Membership of actor on this account
-    const { data: au } = await supa
-      .from("account_users")
-      .select("account_id, role, scopes, disabled")
-      .eq("user_id", actor.id)
-      .eq("account_id", prop.data.owner_id)
-      .order("created_at", { ascending: true });
-    const m = (au ?? [])[0] as any;
-
-    let allowed = false;
-    if (actor.id === prop.data.owner_id) {
-      allowed = true; // owner of account
-    } else if (m && !m.disabled) {
-      const role = (m.role || "").toLowerCase();
-      const scopes: string[] = (m.scopes || []) as string[];
-      allowed = role === "owner" || role === "manager" || scopes.includes("dashboard") || scopes.includes("configurator");
-    }
-    if (!allowed) return bad(403, { error: "Not allowed" });
-
-    // Admin client for storage + DB update
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    if (!url || !serviceKey) return bad(500, { error: "Missing service credentials" });
-    const admin = createAdmin(url, serviceKey, { auth: { persistSession: false } });
-
-    const bucket = "property-docs";
-    const path = `${propertyId}/regulation.pdf`;
-    const arr = Buffer.from(await file.arrayBuffer());
-
-    // Upload with upsert
-    const up = await admin.storage.from(bucket).upload(path, arr, { contentType: "application/pdf", upsert: true });
-    if (up.error) return bad(400, { error: up.error.message });
-
-    // Public URL
-    const pub = admin.storage.from(bucket).getPublicUrl(path);
-    const publicUrl = (pub.data?.publicUrl as string | undefined) || null;
-
-    // Save on property for easy retrieval later (public URL)
-    const upd = await admin
-      .from("properties")
-      .update({ regulation_pdf_path: path, regulation_pdf_url: publicUrl, regulation_pdf_uploaded_at: new Date().toISOString() })
-      .eq("id", propertyId)
-      .select("regulation_pdf_url,regulation_pdf_uploaded_at")
-      .maybeSingle();
-    if (upd.error) return bad(400, { error: upd.error.message });
-
-    return NextResponse.json({ ok: true, url: publicUrl, uploaded_at: upd.data?.regulation_pdf_uploaded_at });
-  } catch (e: any) {
-    return bad(500, { error: String(e?.message ?? e) });
+async function ensureBucketPublic() {
+  // dacă lipsește -> îl creăm; dacă există dar nu e public -> îl facem public
+  const got = await admin.storage.getBucket(BUCKET);
+  if (got.error) {
+    const created = await admin.storage.createBucket(BUCKET, { public: true, fileSizeLimit: "30MB" });
+    if (created.error) throw new Error(`Failed to create bucket: ${created.error.message}`);
+    return;
+  }
+  if (got.data && got.data.public !== true) {
+    const upd = await admin.storage.updateBucket(BUCKET, { public: true });
+    if (upd.error) throw new Error(`Failed to update bucket: ${upd.error.message}`);
   }
 }
 
+export async function POST(req: Request) {
+  try {
+    const form = await req.formData();
+    const propertyId = String(form.get("propertyId") || "");
+    const file = form.get("file") as File | null;
+
+    if (!propertyId) {
+      return NextResponse.json({ error: "Missing propertyId" }, { status: 400 });
+    }
+    if (!file) {
+      return NextResponse.json({ error: "Missing file" }, { status: 400 });
+    }
+    if (file.type !== "application/pdf") {
+      return NextResponse.json({ error: "Only PDF files are allowed" }, { status: 415 });
+    }
+
+    // Verifică proprietatea (opțional, dar util pentru feedback)
+    const prop = await admin.from("properties").select("id,name").eq("id", propertyId).maybeSingle();
+    if (prop.error) {
+      return NextResponse.json({ error: prop.error.message }, { status: 500 });
+    }
+    if (!prop.data) {
+      return NextResponse.json({ error: "Property not found" }, { status: 404 });
+    }
+
+    // Sigurăm bucket-ul (creează dacă lipsește; face public dacă e privat)
+    await ensureBucketPublic();
+
+    // Upload
+    const fname = slugify(file.name || "regulations") || "regulations";
+    const key = `${propertyId}/${Date.now()}-${fname}.pdf`;
+
+    const upload = await admin.storage.from(BUCKET).upload(key, file, {
+      contentType: "application/pdf",
+      cacheControl: "3600",
+      upsert: true,
+    });
+    if (upload.error) {
+      // Dacă primim eroare de bucket (race), mai încercăm o dată după ensure
+      if (/bucket/i.test(upload.error.message)) {
+        await ensureBucketPublic();
+        const retry = await admin.storage.from(BUCKET).upload(key, file, {
+          contentType: "application/pdf",
+          cacheControl: "3600",
+          upsert: true,
+        });
+        if (retry.error) {
+          return NextResponse.json({ error: retry.error.message }, { status: 500 });
+        }
+      } else {
+        return NextResponse.json({ error: upload.error.message }, { status: 500 });
+      }
+    }
+
+    // URL public
+    const { data: pub } = admin.storage.from(BUCKET).getPublicUrl(key);
+    const publicUrl = pub?.publicUrl || "";
+
+    // Scriem în DB
+    const upd = await admin
+      .from("properties")
+      .update({ regulation_pdf_url: publicUrl, regulation_pdf_uploaded_at: new Date().toISOString() })
+      .eq("id", propertyId)
+      .select("id")
+      .maybeSingle();
+    if (upd.error) {
+      return NextResponse.json({ error: upd.error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ ok: true, url: publicUrl, key });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || "Upload failed" }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  return NextResponse.json({ error: "Use POST with multipart/form-data" }, { status: 405 });
+}
