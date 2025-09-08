@@ -2,230 +2,343 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-type Property = { id: string; name: string } | null;
-type RoomType = { id: string; name: string };
-type Room = { id: string; name: string };
+type PropertyInfo = {
+  id: string;
+  name: string;
+  timezone?: string | null;
+  country_code?: string | null;
+};
 
-export default function CheckinClient({ initialProperty }: { initialProperty: Property }) {
-  const [property, setProperty] = useState<Property>(initialProperty);
-  const [regUrl, setRegUrl] = useState<string | null>(null);
-  const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
-  const [rooms, setRooms] = useState<Room[]>([]);
+type SubmitState = "idle" | "submitting" | "success" | "error";
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [submitted, setSubmitted] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+function useQueryParam(key: string) {
+  const [val, setVal] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const u = new URL(window.location.href);
+    setVal(u.searchParams.get(key));
+  }, []);
+  return val;
+}
 
-  // Form fields
+export default function CheckinClient() {
+  const propertyId = useQueryParam("property");
+  const bookingId  = useQueryParam("booking"); // optional
+
+  const [prop, setProp] = useState<PropertyInfo | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // form fields
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [roomTypeId, setRoomTypeId] = useState<string>("");
-  const [roomId, setRoomId] = useState<string>("");
-  const [consentReg, setConsentReg] = useState(false);
-  const [consentGDPR, setConsentGDPR] = useState(false);
+  const [lastName,  setLastName]  = useState("");
+  const [email,     setEmail]     = useState("");
+  const [phone,     setPhone]     = useState("");
+  const [address,   setAddress]   = useState("");
+  const [city,      setCity]      = useState("");
+  const [country,   setCountry]   = useState("");
 
-  // Get property from query if not provided
-  useEffect(() => {
-    if (property) return;
-    try {
-      const pid = new URL(window.location.href).searchParams.get("property");
-      if (pid) setProperty({ id: pid, name: "" });
-    } catch {}
-  }, [property]);
+  const [agree,     setAgree]     = useState(false);
+  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [errorMsg, setErrorMsg] = useState<string>("");
 
-  // Load regulation URL + catalog
+  // Styling helpers
+  const CARD: React.CSSProperties = useMemo(() => ({
+    background: "var(--panel)",
+    border: "1px solid var(--border)",
+    borderRadius: 16,
+    padding: 16,
+    boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
+  }), []);
+
+  const INPUT: React.CSSProperties = useMemo(() => ({
+    width: "100%",
+    padding: "12px 12px",
+    background: "var(--card)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    fontSize: 14,
+    outline: "none",
+  }), []);
+
+  const LABEL: React.CSSProperties = useMemo(() => ({
+    fontSize: 12,
+    fontWeight: 800,
+    color: "var(--muted)",
+    marginBottom: 6,
+    display: "block",
+  }), []);
+
+  const BTN_PRIMARY: React.CSSProperties = useMemo(() => ({
+    padding: "12px 16px",
+    borderRadius: 12,
+    border: "1px solid var(--primary)",
+    background: "var(--primary)",
+    color: "#0c111b",
+    fontWeight: 900,
+    cursor: "pointer",
+  }), []);
+
+  const BTN_GHOST: React.CSSProperties = useMemo(() => ({
+    padding: "10px 14px",
+    borderRadius: 12,
+    border: "1px solid var(--border)",
+    background: "transparent",
+    color: "var(--text)",
+    fontWeight: 800,
+    cursor: "pointer",
+  }), []);
+
+  // load property + regulations (silence noisy errors like "Bucket not found")
   useEffect(() => {
-    if (!property?.id) return;
     (async () => {
+      if (!propertyId) { setLoading(false); return; }
+
       try {
-        const [r1, r2] = await Promise.all([
-          fetch(`/api/property/regulation?propertyId=${property.id}`).then(r => r.json()).catch(() => ({})),
-          fetch(`/api/property/room-catalog?propertyId=${property.id}`).then(r => r.json()).catch(() => ({})),
-        ]);
-        if (r1?.url) setRegUrl(r1.url as string);
-        if (r2?.property) setProperty({ id: property.id, name: r2.property.name as string });
-        const types: RoomType[] = Array.isArray(r2?.roomTypes) ? r2.roomTypes : [];
-        setRoomTypes(types);
-        // Only set rooms when there are no types
-        const rms: Room[] = types.length === 0 && Array.isArray(r2?.rooms) ? r2.rooms : [];
-        setRooms(rms);
-      } catch {}
+        // Property name (lightweight)
+        const resProp = await fetch(`/api/property/basic?id=${propertyId}`, { cache: "no-store" }).catch(() => null);
+        if (resProp && resProp.ok) {
+          const j = await resProp.json().catch(() => ({}));
+          if (j?.property) setProp(j.property as PropertyInfo);
+        }
+
+        // Regulations PDF — ignore errors completely, just treat as "no pdf"
+        const resPdf = await fetch(`/api/property/regulation?propertyId=${propertyId}`, { cache: "no-store" }).catch(() => null);
+        if (resPdf && resPdf.ok) {
+          const j = await resPdf.json().catch(() => ({}));
+          // accept either {url:"..."} or {data:{url:"..."}}
+          const url = j?.url ?? j?.data?.url ?? null;
+          if (url && typeof url === "string") setPdfUrl(url);
+        }
+      } finally {
+        setLoading(false);
+      }
     })();
-  }, [property?.id]);
+  }, [propertyId]);
 
-  function header() {
-    return (
-      <div style={{ display: "grid", gap: 6, marginBottom: 12 }}>
-        <h1 style={{ margin: 0, fontSize: 22 }}>Guest Check‑In</h1>
-        {property?.name && (
-          <div style={{ color: "var(--muted)", fontWeight: 700 }}>{property.name}</div>
-        )}
-      </div>
-    );
-  }
-
-  const hasTypes = roomTypes.length > 0;
-  const hasRooms = !hasTypes;
+  // validation
+  const canSubmit =
+    !!propertyId &&
+    firstName.trim().length >= 1 &&
+    lastName.trim().length  >= 1 &&
+    /\S+@\S+\.\S+/.test(email) &&
+    phone.trim().length >= 5 &&
+    agree &&
+    submitState !== "submitting";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
-    if (!property?.id) { setError("Missing property."); return; }
-    if (!firstName.trim() || !lastName.trim() || !email.trim()) { setError("Please fill name and email."); return; }
-    if (!startDate || !endDate) { setError("Please select arrival and departure."); return; }
-    if (!consentReg || !consentGDPR) { setError("Please confirm regulations and GDPR."); return; }
-    if (hasTypes) {
-      if (!roomTypeId) { setError("Please select room type."); return; }
-    } else {
-      if (!roomId) { setError("Please select a room."); return; }
-    }
+    if (!canSubmit) return;
 
-    setLoading(true);
+    setSubmitState("submitting");
+    setErrorMsg("");
+
     try {
+      const payload = {
+        property_id: propertyId,
+        booking_id: bookingId ?? null,
+        guest_first_name: firstName.trim(),
+        guest_last_name:  lastName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+        city: city.trim(),
+        country: country.trim(),
+      };
+
       const res = await fetch("/api/checkin/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          propertyId: property.id,
-          roomTypeId: hasTypes ? (roomTypeId || null) : null,
-          roomId: hasRooms ? (roomId || null) : null,
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          email: email.trim(),
-          phone: phone.trim() || null,
-          address: address.trim() || null,
-          startDate,
-          endDate,
-          consentRegulation: consentReg,
-          consentGdpr: consentGDPR,
-        })
+        body: JSON.stringify(payload),
       });
+
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j?.error || "Submit failed. Please try again.");
-        setLoading(false);
+        const msg = j?.error || j?.message || "Submission failed. Please try again.";
+        setErrorMsg(msg);
+        setSubmitState("error");
         return;
       }
-      setSubmitted(true);
-      setLoading(false);
-    } catch (e) {
-      setError("Network error. Please try again.");
-      setLoading(false);
+
+      setSubmitState("success");
+    } catch (err: any) {
+      setErrorMsg("Unexpected error. Please try again.");
+      setSubmitState("error");
     }
   }
 
-  if (!property?.id) {
+  // ——— RENDER ———
+  if (!propertyId) {
     return (
-      <div className="sb-card" style={{ padding: 16 }}>
-        {header()}
-        <p style={{ color: "var(--muted)" }}>Missing property. Please use the link provided by your host.</p>
-      </div>
-    );
-  }
-
-  if (submitted) {
-    return (
-      <div className="sb-card" style={{ padding: 16 }}>
-        {header()}
-        <p>Thank you! Your check‑in details were submitted.</p>
-        <p style={{ color: "var(--muted)" }}>You can close this page now.</p>
+      <div style={{ maxWidth: 720, margin: "24px auto", padding: 16 }}>
+        <div style={CARD}>
+          <h1 style={{ marginTop: 0, marginBottom: 8 }}>Check-in</h1>
+          <p style={{ color: "var(--muted)" }}>
+            Missing property. Please use the link provided by your host.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="sb-card" style={{ padding: 16, display: "grid", gap: 12 }}>
-      {header()}
-      {error && (
-        <div style={{
-          padding: "8px 12px",
-          borderRadius: 10,
-          background: "var(--danger)",
-          color: "#0c111b",
-          fontWeight: 800,
-        }}>
-          {error}
-        </div>
-      )}
-
-      <div style={{ display: "grid", gap: 8 }}>
-        <label>First name*</label>
-        <input value={firstName} onChange={(e) => setFirstName((e.target as HTMLInputElement).value)} className="sb-select" />
-      </div>
-      <div style={{ display: "grid", gap: 8 }}>
-        <label>Last name*</label>
-        <input value={lastName} onChange={(e) => setLastName((e.target as HTMLInputElement).value)} className="sb-select" />
-      </div>
-      <div style={{ display: "grid", gap: 8 }}>
-        <label>Email*</label>
-        <input type="email" value={email} onChange={(e) => setEmail((e.target as HTMLInputElement).value)} className="sb-select" />
-      </div>
-      <div style={{ display: "grid", gap: 8 }}>
-        <label>Phone</label>
-        <input value={phone} onChange={(e) => setPhone((e.target as HTMLInputElement).value)} className="sb-select" />
-      </div>
-      <div style={{ display: "grid", gap: 8 }}>
-        <label>Address</label>
-        <input value={address} onChange={(e) => setAddress((e.target as HTMLInputElement).value)} className="sb-select" />
-      </div>
-
-      <div style={{ display: "grid", gap: 8 }}>
-        <label>Arrival date*</label>
-        <input type="date" value={startDate} onChange={(e) => setStartDate((e.target as HTMLInputElement).value)} className="sb-select" />
-      </div>
-      <div style={{ display: "grid", gap: 8 }}>
-        <label>Departure date*</label>
-        <input type="date" value={endDate} onChange={(e) => setEndDate((e.target as HTMLInputElement).value)} className="sb-select" />
-      </div>
-
-      {hasTypes ? (
-        <div style={{ display: "grid", gap: 8 }}>
-          <label>Room Type (from listing)</label>
-          <select value={roomTypeId} onChange={(e) => { setRoomTypeId((e.target as HTMLSelectElement).value); setRoomId(""); }} className="sb-select">
-            <option value="">— select —</option>
-            {roomTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-          </select>
-        </div>
-      ) : (
-        <div style={{ display: "grid", gap: 8 }}>
-          <label>Room (name)</label>
-          <select value={roomId} onChange={(e) => { setRoomId((e.target as HTMLSelectElement).value); setRoomTypeId(""); }} className="sb-select">
-            <option value="">— select —</option>
-            {rooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-          </select>
-        </div>
-      )}
-
-      <div style={{ display: "grid", gap: 8 }}>
-        <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <input type="checkbox" checked={consentReg} onChange={(e) => setConsentReg((e.target as HTMLInputElement).checked)} />
-          I have read the internal regulations
-          {regUrl ? (
-            <a href={regUrl} target="_blank" rel="noreferrer" style={{ color: "var(--primary)", textDecoration: "none", marginLeft: 8 }}>
-              (Open PDF)
+    <div style={{ maxWidth: 860, margin: "24px auto", padding: 16, display: "grid", gap: 16 }}>
+      {/* Header card */}
+      <section style={CARD}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 22, letterSpacing: 0.3 }}>
+              Guest Check-in {prop?.name ? <span style={{ color: "var(--muted)", fontSize: 18 }}>· {prop.name}</span> : null}
+            </h1>
+            <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
+              Please fill in the required details. It takes ~2 minutes.
+            </p>
+          </div>
+          {pdfUrl && (
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                ...BTN_GHOST,
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                whiteSpace: "nowrap",
+              }}
+            >
+              📄 House rules (PDF)
             </a>
-          ) : (
-            <span style={{ color: "var(--muted)", marginLeft: 8 }}>(Regulations not available)</span>
           )}
-        </label>
-      </div>
-      <div style={{ display: "grid", gap: 8 }}>
-        <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <input type="checkbox" checked={consentGDPR} onChange={(e) => setConsentGDPR((e.target as HTMLInputElement).checked)} />
-          I agree to the processing of my personal data (GDPR)
-        </label>
-      </div>
+        </div>
+      </section>
 
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button type="submit" disabled={loading} className="sb-btn sb-btn--primary" aria-busy={loading}>
-          {loading ? "Submitting…" : "Submit"}
-        </button>
-      </div>
-    </form>
+      {/* Form card */}
+      <section style={CARD}>
+        {loading ? (
+          <div style={{ color: "var(--muted)" }}>Loading…</div>
+        ) : submitState === "success" ? (
+          <div>
+            <h2 style={{ marginTop: 0 }}>Thank you! ✅</h2>
+            <p style={{ color: "var(--muted)" }}>
+              Your check-in details were submitted successfully.
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }}>
+            {/* Name */}
+            <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+              <div>
+                <label style={LABEL}>First name*</label>
+                <input style={INPUT} value={firstName} onChange={e => setFirstName(e.currentTarget.value)} placeholder="John" />
+              </div>
+              <div>
+                <label style={LABEL}>Last name*</label>
+                <input style={INPUT} value={lastName} onChange={e => setLastName(e.currentTarget.value)} placeholder="Doe" />
+              </div>
+            </div>
+
+            {/* Contact */}
+            <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+              <div>
+                <label style={LABEL}>Email*</label>
+                <input style={INPUT} type="email" value={email} onChange={e => setEmail(e.currentTarget.value)} placeholder="john@doe.com" />
+              </div>
+              <div>
+                <label style={LABEL}>Phone*</label>
+                <input style={INPUT} value={phone} onChange={e => setPhone(e.currentTarget.value)} placeholder="+40 712 345 678" />
+              </div>
+            </div>
+
+            {/* Address */}
+            <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr" }}>
+              <div>
+                <label style={LABEL}>Address</label>
+                <input style={INPUT} value={address} onChange={e => setAddress(e.currentTarget.value)} placeholder="Street, number, apt." />
+              </div>
+              <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+                <div>
+                  <label style={LABEL}>City</label>
+                  <input style={INPUT} value={city} onChange={e => setCity(e.currentTarget.value)} placeholder="Bucharest" />
+                </div>
+                <div>
+                  <label style={LABEL}>Country</label>
+                  <input style={INPUT} value={country} onChange={e => setCountry(e.currentTarget.value)} placeholder="Romania" />
+                </div>
+              </div>
+            </div>
+
+            {/* Consent */}
+            <div
+              style={{
+                padding: 12,
+                borderRadius: 12,
+                border: "1px solid var(--border)",
+                background: "var(--card)",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+              }}
+            >
+              <input
+                id="agree"
+                type="checkbox"
+                checked={agree}
+                onChange={(e) => setAgree(e.currentTarget.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <label htmlFor="agree" style={{ color: "var(--muted)", cursor: "pointer" }}>
+                I confirm the information is correct and I agree to the house rules{pdfUrl ? " (see PDF link above)" : ""}.
+              </label>
+            </div>
+
+            {/* Error */}
+            {submitState === "error" && errorMsg && (
+              <div
+                role="alert"
+                style={{
+                  padding: 12,
+                  borderRadius: 12,
+                  background: "var(--danger)",
+                  color: "#0c111b",
+                  fontWeight: 800,
+                }}
+              >
+                {errorMsg}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = "/")}
+                style={BTN_GHOST}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                style={{
+                  ...BTN_PRIMARY,
+                  opacity: canSubmit ? 1 : 0.6,
+                  cursor: canSubmit ? "pointer" : "not-allowed",
+                }}
+              >
+                {submitState === "submitting" ? "Submitting…" : "Submit check-in"}
+              </button>
+            </div>
+          </form>
+        )}
+      </section>
+
+      {/* Footer hint */}
+      <p style={{ color: "var(--muted)", textAlign: "center", fontSize: 12 }}>
+        Powered by Plan4Host — secure check-in.
+      </p>
+    </div>
   );
 }
