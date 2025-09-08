@@ -9,7 +9,7 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const admin = createClient(url, service, { auth: { persistSession: false } });
 
-// yyyy-mm-dd
+// yyyy-mm-dd validator
 function isYMD(s: unknown): s is string {
   return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
 }
@@ -24,7 +24,7 @@ function clampTime(t: unknown, fallback: string): string {
   return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
 
-// Trimitem DOAR coloanele care există în `bookings`
+// Trimitem DOAR coloanele sigure din `bookings`
 const ALLOWED_BOOKING_KEYS = new Set<string>([
   "property_id",
   "room_id",
@@ -37,8 +37,6 @@ const ALLOWED_BOOKING_KEYS = new Set<string>([
   "is_soft_hold",
   "hold_status",
   "hold_expires_at",
-  "source",
-  "form_submitted_at",
   "guest_first_name",
   "guest_last_name",
 ]);
@@ -59,11 +57,10 @@ export async function POST(req: NextRequest) {
 
     const {
       property_id,
-      // booking_id // ignorat – nu există coloană pentru el în `bookings`
       start_date,
       end_date,
 
-      // guest (doar numele le scriem sigur în bookings)
+      // guest (scriem doar numele în bookings)
       guest_first_name,
       guest_last_name,
 
@@ -86,7 +83,7 @@ export async function POST(req: NextRequest) {
     // 1) Orele din configurator
     const rProp = await admin
       .from("properties")
-      .select("id,check_in_time,check_out_time,timezone")
+      .select("id,check_in_time,check_out_time")
       .eq("id", property_id)
       .maybeSingle();
 
@@ -120,11 +117,9 @@ export async function POST(req: NextRequest) {
       is_soft_hold: true,
       hold_status: "active",
       hold_expires_at: holdUntilISO,
-      source: "form",
-      form_submitted_at: now.toISOString(),
       guest_first_name: guest_first_name ?? null,
       guest_last_name:  guest_last_name ?? null,
-      // ❌ nu trimitem email/phone/address/city/country aici (nu există coloane)
+      // ❌ NU trimitem: form_submitted_at, source, email/phone/address/city/country (pot lipsi din schema)
     };
 
     const payload = pickBookingPayload(rawPayload);
