@@ -15,7 +15,7 @@ export type Booking = {
   end_time: string | null;   // "HH:mm" or null
   status: "pending" | "confirmed" | "cancelled" | string;
 
-  // guest fields
+  // Guest fields
   guest_first_name?: string | null;
   guest_last_name?: string | null;
   guest_email?: string | null;
@@ -24,6 +24,16 @@ export type Booking = {
 };
 
 type Room = { id: string; name: string; property_id: string };
+
+function nextDate(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map((n) => parseInt(n, 10));
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + 1);
+  const yyyy = dt.getFullYear();
+  const mm = String(dt.getMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 export default function DayModal({
   dateStr,
@@ -37,7 +47,8 @@ export default function DayModal({
   const supabase = createClient();
 
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookingsToday, setBookingsToday] = useState<Booking[]>([]);
+  const [futureBookings, setFutureBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
   const [statusHint, setStatusHint] = useState<string>("");
 
@@ -49,40 +60,43 @@ export default function DayModal({
     setLoading("loading");
     setStatusHint("Loading rooms and bookings…");
 
-    // 1) Load rooms alphabetically
-    const r1 = await supabase
-      .from("rooms")
-      .select("id,name,property_id")
-      .eq("property_id", propertyId)
-      .order("name", { ascending: true });
+    const [rRooms, rToday, rFuture] = await Promise.all([
+      supabase
+        .from("rooms")
+        .select("id,name,property_id")
+        .eq("property_id", propertyId)
+        .order("name", { ascending: true }),
+      supabase
+        .from("bookings")
+        .select(
+          "id,property_id,room_id,start_date,end_date,start_time,end_time,status,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address"
+        )
+        .eq("property_id", propertyId)
+        // overlap with the selected day
+        .lte("start_date", dateStr)
+        .gte("end_date", dateStr)
+        .neq("status", "cancelled")
+        .order("start_date", { ascending: true }),
+      // ✅ FIX: include end_date and end_time so it matches Booking type
+      supabase
+        .from("bookings")
+        .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status")
+        .eq("property_id", propertyId)
+        .gte("start_date", dateStr)
+        .neq("status", "cancelled")
+        .order("start_date", { ascending: true })
+        .order("start_time", { ascending: true, nullsFirst: true }),
+    ]);
 
-    if (r1.error) {
+    if (rRooms.error || rToday.error || rFuture.error) {
       setLoading("error");
-      setStatusHint(r1.error.message || "Failed to load rooms.");
+      setStatusHint(rRooms.error?.message || rToday.error?.message || rFuture.error?.message || "Failed to load data.");
       return;
     }
-    const roomList = r1.data ?? [];
-    setRooms(roomList);
 
-    // 2) Load bookings that are active today OR in viitor (end_date >= azi)
-    const r2 = await supabase
-      .from("bookings")
-      .select(
-        "id,property_id,room_id,start_date,end_date,start_time,end_time,status,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address"
-      )
-      .eq("property_id", propertyId)
-      .neq("status", "cancelled")
-      .gte("end_date", dateStr)
-      .order("start_date", { ascending: true })
-      .order("start_time", { ascending: true, nullsFirst: true });
-
-    if (r2.error) {
-      setLoading("error");
-      setStatusHint(r2.error.message || "Failed to load bookings.");
-      return;
-    }
-
-    setBookings(r2.data ?? []);
+    setRooms(rRooms.data ?? []);
+    setBookingsToday(rToday.data ?? []);
+    setFutureBookings(rFuture.data ?? []);
     setLoading("idle");
     setStatusHint("");
   }, [supabase, propertyId, dateStr]);
@@ -91,40 +105,48 @@ export default function DayModal({
     refresh();
   }, [refresh]);
 
-  // Active booking per room (dacă start_date <= azi <= end_date)
+  // map: room_id -> active booking (if any) for the selected day
   const activeByRoom = useMemo(() => {
     const map = new Map<string, Booking>();
-    for (const b of bookings) {
+    for (const b of bookingsToday) {
       if (b.start_date <= dateStr && dateStr <= b.end_date) {
         if (!map.has(b.room_id)) map.set(b.room_id, b);
       }
     }
     return map;
-  }, [bookings, dateStr]);
+  }, [bookingsToday, dateStr]);
 
-  // Următoarea rezervare (strict după azi) per room
-  const nextByRoom = useMemo(() => {
-    const map = new Map<string, Booking>();
-    // bookings este deja ordonat ascendent după start_date/time
-    for (const b of bookings) {
-      if (b.start_date > dateStr) {
-        if (!map.has(b.room_id)) {
-          map.set(b.room_id, b);
-        }
+  // map: room_id -> earliest future booking start (>= dateStr)
+  const nextStartByRoom = useMemo(() => {
+    const map = new Map<string, { start_date: string; start_time: string | null }>();
+    for (const b of futureBookings) {
+      if (!map.has(b.room_id)) {
+        map.set(b.room_id, { start_date: b.start_date, start_time: b.start_time ?? null });
       }
     }
     return map;
-  }, [bookings, dateStr]);
+  }, [futureBookings]);
+
+  // ✅ Numeric-aware alphabetical sort (e.g., "Room 2" before "Room 10")
+  const collator = useMemo(() => new Intl.Collator(undefined, { numeric: true, sensitivity: "base" }), []);
+  const roomsSorted = useMemo(
+    () => [...rooms].sort((a, b) => collator.compare(a.name, b.name)),
+    [rooms, collator]
+  );
 
   // ------------- UI helpers --------------
   function formatReservedUntil(b: Booking) {
     const dt = b.end_date + (b.end_time ? ` ${b.end_time}` : "");
     return `Reserved until ${dt.trim()}`;
   }
-  function formatAvailableUntil(nextB?: Booking | null) {
-    if (!nextB) return "Available (no upcoming bookings)";
-    return `Available until ${nextB.start_date}`;
+
+  function formatAvailableUntil(roomId: string) {
+    const nxt = nextStartByRoom.get(roomId);
+    if (!nxt) return "Available (no upcoming bookings)";
+    const dt = nxt.start_date + (nxt.start_time ? ` ${nxt.start_time}` : "");
+    return `Available until ${dt.trim()}`;
   }
+
   function guestFullName(b?: Booking | null) {
     if (!b) return "";
     const f = (b.guest_first_name ?? "").trim();
@@ -136,7 +158,7 @@ export default function DayModal({
   // Always refresh when the details modal closes (even if nothing saved)
   const handleRoomModalClose = useCallback(async () => {
     setOpenRoom(null);
-    await refresh(); // <— REFRESH AUTOMAT LA ÎNTOARCERE
+    await refresh(); // auto-refresh on return
   }, [refresh]);
 
   // Also refresh when RoomDetailModal explicitly signals changes
@@ -163,7 +185,7 @@ export default function DayModal({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(1000px, 96vw)",
+          width: "min(1100px, 96vw)",
           maxHeight: "86vh",
           overflow: "auto",
           background: "var(--panel)",
@@ -240,7 +262,7 @@ export default function DayModal({
           </div>
         </div>
 
-        {/* Grid rooms (rooms sunt deja sortate alfabetic din query) */}
+        {/* Grid rooms */}
         <div
           style={{
             display: "grid",
@@ -248,11 +270,14 @@ export default function DayModal({
             gap: 12,
           }}
         >
-          {rooms.map((room) => {
-            const bActive = activeByRoom.get(room.id) || null;
-            const bNext   = nextByRoom.get(room.id) || null;
-            const isReserved = !!bActive && bActive.status !== "cancelled";
-            const fullName = guestFullName(bActive);
+          {roomsSorted.map((room) => {
+            const b = activeByRoom.get(room.id) || null;
+            const isReserved = !!b && b.status !== "cancelled";
+            const fullName = guestFullName(b);
+
+            // For available rooms: preset default dates (start=today, end=tomorrow)
+            const defaultStart = { date: dateStr, time: null as string | null };
+            const defaultEnd = { date: nextDate(dateStr), time: null as string | null };
 
             return (
               <div
@@ -275,7 +300,7 @@ export default function DayModal({
                 }}
                 title="Open reservation"
               >
-                {/* Room name + status chip (ROȘU/VERDE) */}
+                {/* Room name + status badge */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <strong style={{ fontSize: 15 }}>{room.name}</strong>
                   <span
@@ -283,19 +308,17 @@ export default function DayModal({
                       padding: "2px 10px",
                       borderRadius: 999,
                       fontSize: 12,
-                      fontWeight: 900,
+                      fontWeight: 800,
                       background: isReserved ? "var(--danger)" : "var(--success)",
                       border: `1px solid ${isReserved ? "var(--danger)" : "var(--success)"}`,
                       color: "#fff",
-                      letterSpacing: 0.2,
-                      textTransform: "uppercase",
                     }}
                   >
                     {isReserved ? "Reserved" : "Available"}
                   </span>
                 </div>
 
-                {/* CENTER: Guest name (dacă e rezervată) */}
+                {/* CENTER: Guest name (if reserved) */}
                 <div
                   style={{
                     display: "grid",
@@ -327,27 +350,22 @@ export default function DayModal({
                       (Guest name not set)
                     </div>
                   )}
-
-                  {!isReserved && (
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        fontSize: 13,
-                        color: "var(--muted)",
-                      }}
-                    >
-                      {formatAvailableUntil(bNext)}
-                    </div>
-                  )}
                 </div>
 
-                {/* Footer: reserved until / hint */}
+                {/* Footer: until text */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <small style={{ color: "var(--muted)" }}>
-                    {isReserved ? formatReservedUntil(bActive!) : "Tap to create reservation"}
+                    {isReserved ? formatReservedUntil(b!) : formatAvailableUntil(room.id)}
                   </small>
                   <small style={{ color: "var(--muted)" }}>Open ▸</small>
                 </div>
+
+                {/* Hint: when creating, dates will be prefilled */}
+                {!isReserved && (
+                  <small style={{ position: "absolute", bottom: 8, left: 14, color: "var(--muted)" }}>
+                    (Start: {defaultStart.date} • End: {defaultEnd.date})
+                  </small>
+                )}
               </div>
             );
           })}
@@ -360,8 +378,15 @@ export default function DayModal({
           dateStr={dateStr}
           propertyId={propertyId}
           room={openRoom}
-          onClose={handleRoomModalClose}     // <— Refresh on return (always)
-          onChanged={handleRoomModalChanged} // <— Refresh on save
+          // If room has NO active booking, prefill start=today, end=tomorrow
+          defaultStart={
+            activeByRoom.has(openRoom.id) ? undefined : { date: dateStr, time: null }
+          }
+          defaultEnd={
+            activeByRoom.has(openRoom.id) ? undefined : { date: nextDate(dateStr), time: null }
+          }
+          onClose={handleRoomModalClose}     // auto refresh on return
+          onChanged={handleRoomModalChanged} // refresh on save
         />
       )}
     </div>

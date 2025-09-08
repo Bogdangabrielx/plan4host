@@ -18,9 +18,8 @@ type Booking = BaseBooking & {
   guest_address?: string | null;
 };
 
-function pad(n: number) { return String(n).padStart(2, "0"); }
-function toDateTime(dateStr: string, timeStr: string | null | undefined) {
-  const t = timeStr && /^\d\d:\d\d$/.test(timeStr) ? timeStr : "00:00";
+function toDateTime(dateStr: string, timeStr: string | null | undefined, fallbackTime: string) {
+  const t = timeStr && /^\d\d:\d\d$/.test(timeStr) ? timeStr : fallbackTime;
   return new Date(`${dateStr}T${t}:00`);
 }
 function overlaps(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) { return aStart < bEnd && bStart < aEnd; }
@@ -58,7 +57,7 @@ export default function RoomDetailModal({
   const [endDate, setEndDate] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
 
-  // Guest fields (NEW)
+  // Guest fields
   const [showGuest, setShowGuest] = useState<boolean>(false);
   const [guestFirst, setGuestFirst] = useState<string>("");
   const [guestLast, setGuestLast]   = useState<string>("");
@@ -66,7 +65,7 @@ export default function RoomDetailModal({
   const [guestPhone, setGuestPhone] = useState<string>("");
   const [guestAddr, setGuestAddr]   = useState<string>("");
 
-  // Room detail custom fields (keep existing feature)
+  // Room detail custom fields (as-is)
   const [checkDefs, setCheckDefs] = useState<CheckDef[]>([]);
   const [textDefs,  setTextDefs]  = useState<TextDef[]>([]);
   const [checkValues, setCheckValues] = useState<Record<string, boolean>>({});
@@ -74,7 +73,7 @@ export default function RoomDetailModal({
   const [detailsDirty, setDetailsDirty] = useState(false);
 
   // UI status
-  const [saving, setSaving] = useState<false | "creating" | "updating" | "extending" | "releasing">(false);
+  const [saving, setSaving] = useState<false | "creating" | "updating" | "times" | "extending" | "releasing">(false);
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Saved" | "Error">("Idle");
   const [statusHint, setStatusHint] = useState<string>("");
 
@@ -83,7 +82,6 @@ export default function RoomDetailModal({
 
   useEffect(() => {
     (async () => {
-      // Load property, bookings for this room, and detail field defs
       const [p1, p2, p3, p4] = await Promise.all([
         supabase
           .from("properties")
@@ -111,8 +109,6 @@ export default function RoomDetailModal({
 
       const prop = (p1.error ? null : (p1.data ?? null)) as Property | null;
       setProperty(prop);
-      const CI = prop?.check_in_time || "14:00";
-      const CO = prop?.check_out_time || "11:00";
 
       const allBookings = (p2.error ? [] : (p2.data ?? [])) as Booking[];
       setBookings(allBookings);
@@ -130,14 +126,10 @@ export default function RoomDetailModal({
       setTextDefs(p4.error ? [] : ((p4.data ?? []) as TextDef[]));
 
       // Initialize start/end fields
-      const _sDate = defaultStart?.date ?? dateStr;
-      const _sTime = defaultStart?.time ?? CI;
-      const _eDate =
-        defaultEnd?.date ??
-        (act ? act.end_date : dateStr);
-      const _eTime =
-        defaultEnd?.time ??
-        (act ? (act.end_time || CO) : CO);
+      const _sDate = defaultStart?.date ?? (act ? act.start_date : dateStr);
+      const _sTime = defaultStart?.time ?? (act ? (act.start_time || CI) : CI);
+      const _eDate = defaultEnd?.date   ?? (act ? act.end_date : dateStr);
+      const _eTime = defaultEnd?.time   ?? (act ? (act.end_time || CO) : CO);
 
       setStartDate(_sDate);
       setStartTime(_sTime || "");
@@ -152,6 +144,9 @@ export default function RoomDetailModal({
         setGuestPhone(act.guest_phone ?? "");
         setGuestAddr(act.guest_address ?? "");
       }
+
+      // UX: dacă nu avem guest name sau suntem pe creare, deschidem panoul Guest
+      setShowGuest(!act || !((act.guest_first_name ?? "").trim() || (act.guest_last_name ?? "").trim()));
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyId, room.id, dateStr, forceNew]);
@@ -167,13 +162,13 @@ export default function RoomDetailModal({
     if (!on) { setStatus("Error"); setStatusHint("Turn reservation ON first."); return; }
     setSaving("creating"); setStatus("Saving…"); setStatusHint("Creating…");
 
-    const s = toDateTime(startDate, startTime || CI);
-    const e = toDateTime(endDate, endTime || CO);
+    const s = toDateTime(startDate, startTime, CI);
+    const e = toDateTime(endDate, endTime, CO);
     if (!(s < e)) { setStatus("Error"); setStatusHint("End must be after Start."); setSaving(false); return; }
 
     for (const ob of others) {
-      const os = toDateTime(ob.start_date, ob.start_time);
-      const oe = toDateTime(ob.end_date, ob.end_time);
+      const os = toDateTime(ob.start_date, ob.start_time, CI);
+      const oe = toDateTime(ob.end_date, ob.end_time, CO);
       if (overlaps(s, e, os, oe)) {
         setStatus("Error");
         setStatusHint(`Overlaps ${ob.start_date} ${ob.start_time ?? ""} → ${ob.end_date} ${ob.end_time ?? ""}`);
@@ -190,7 +185,7 @@ export default function RoomDetailModal({
       start_time: startTime || null,
       end_time: endTime || null,
       status: "confirmed",
-      // NEW guest fields
+      // guest fields
       guest_first_name: guestFirst || null,
       guest_last_name:  guestLast  || null,
       guest_email:      guestEmail || null,
@@ -211,11 +206,11 @@ export default function RoomDetailModal({
     await onChanged(); onClose();
   }
 
-  async function saveDetails() {
+  async function saveGuestAndDetails() {
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
     setSaving("updating"); setStatus("Saving…"); setStatusHint("Updating details…");
 
-    // Guest fields update (NEW) + keep times untouched here
+    // Guest fields
     const upd = await supabase.from("bookings").update({
       guest_first_name: guestFirst || null,
       guest_last_name:  guestLast  || null,
@@ -236,19 +231,53 @@ export default function RoomDetailModal({
     await onChanged(); onClose();
   }
 
-  async function saveExtended() {
+  // NEW: Save times (can move earlier/later with full overlap check)
+  async function saveTimes() {
+    if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
+    if (!on)     { setStatus("Error"); setStatusHint("Turn reservation ON to change times."); return; }
+    setSaving("times"); setStatus("Saving…"); setStatusHint("Saving times…");
+
+    const s = toDateTime(startDate, startTime, CI);
+    const e = toDateTime(endDate, endTime, CO);
+    if (!(s < e)) { setStatus("Error"); setStatusHint("End must be after Start."); setSaving(false); return; }
+
+    for (const ob of others) {
+      if (ob.id === active.id) continue;
+      const os = toDateTime(ob.start_date, ob.start_time, CI);
+      const oe = toDateTime(ob.end_date, ob.end_time, CO);
+      if (overlaps(s, e, os, oe)) {
+        setStatus("Error");
+        setStatusHint(`Overlaps ${ob.start_date} ${ob.start_time ?? ""} → ${ob.end_date} ${ob.end_time ?? ""}`);
+        setSaving(false);
+        return;
+      }
+    }
+
+    const upd = await supabase.from("bookings").update({
+      start_date: startDate,
+      start_time: startTime || null,
+      end_date: endDate,
+      end_time: endTime || null,
+    }).eq("id", active.id);
+
+    if (upd.error) { setStatus("Error"); setStatusHint(upd.error.message || "Failed to save times."); setSaving(false); return; }
+
+    setSaving(false); setStatus("Saved"); setStatusHint("Times updated.");
+    await onChanged(); onClose();
+  }
+
+  async function extendUntil() {
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
     if (!on)     { setStatus("Error"); setStatusHint("Use 'Confirm release' to delete."); return; }
     setSaving("extending"); setStatus("Saving…"); setStatusHint("Extending…");
 
-    const oldEnd = toDateTime(active.end_date, active.end_time ?? CO);
-    const newEnd = toDateTime(endDate, endTime || CO);
+    const oldEnd = toDateTime(active.end_date, active.end_time ?? CO, CO);
+    const newEnd = toDateTime(endDate, endTime || CO, CO);
     if (!(newEnd > oldEnd)) { setStatus("Error"); setStatusHint("New end must be after current end."); setSaving(false); return; }
 
-    // prevent overlap with next bookings
     for (const ob of bookings) {
       if (ob.id === active.id || ob.room_id !== room.id) continue;
-      const os = toDateTime(ob.start_date, ob.start_time);
+      const os = toDateTime(ob.start_date, ob.start_time, CI);
       if (os > oldEnd && newEnd > os) {
         setStatus("Error"); setStatusHint(`Overlaps next starting ${ob.start_date} ${ob.start_time ?? ""}`);
         setSaving(false); return;
@@ -286,7 +315,6 @@ export default function RoomDetailModal({
     fontWeight: 900,
     cursor: "pointer",
   };
-
   const primaryBtn: React.CSSProperties = {
     padding: "10px 14px",
     borderRadius: 10,
@@ -296,7 +324,6 @@ export default function RoomDetailModal({
     fontWeight: 900,
     cursor: "pointer",
   };
-
   const dangerBtn: React.CSSProperties = {
     padding: "10px 14px",
     borderRadius: 10,
@@ -325,8 +352,8 @@ export default function RoomDetailModal({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(720px, 92vw)",
-          maxHeight: "86vh",
+          width: "min(1000px, 94vw)", // 🔥 modal mai mare
+          maxHeight: "88vh",
           overflow: "auto",
           background: "var(--panel)",
           color: "var(--text)",
@@ -358,9 +385,9 @@ export default function RoomDetailModal({
           </div>
         </div>
 
-        {/* Reservation toggle + Start/End */}
-        <div style={{ display: "grid", gap: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Reservation toggle + Dates */}
+        <div style={{ display: "grid", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <label style={{ fontWeight: 800, fontSize: 14, letterSpacing: 0.2 }}>Reservation</label>
             <button
               onClick={() => { setOn(v => !v); setStatus("Idle"); setStatusHint(""); }}
@@ -377,91 +404,89 @@ export default function RoomDetailModal({
               {on ? "ON" : "OFF"}
             </button>
 
-            {/* NEW: Guest details toggle */}
-            <button
-              onClick={() => setShowGuest(v => !v)}
-              style={{ ...baseBtn }}
-              title="Add guest details"
-            >
+            <button onClick={() => setShowGuest(v => !v)} style={baseBtn} title="Add guest details">
               {showGuest ? "Hide guest details" : "Guest details"}
             </button>
           </div>
 
-          {/* Start */}
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Start (date & time)</label>
-            <div style={{ display: "flex", gap: 10 }}>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate((e.target as HTMLInputElement).value)}
-                style={{
-                  padding: "10px 12px",
-                  background: "var(--card)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 10,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  flex: 1,
-                }}
-              />
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime((e.target as HTMLInputElement).value)}
-                style={{
-                  padding: "10px 12px",
-                  background: "var(--card)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 10,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  width: 140,
-                }}
-              />
+          {/* Dates row */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {/* Start */}
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Start (date & time)</label>
+              <div style={{ display: "flex", gap: 10 }}>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate((e.target as HTMLInputElement).value)}
+                  style={{
+                    padding: "12px 12px",
+                    background: "var(--card)",
+                    color: "var(--text)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 10,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    flex: 1,
+                  }}
+                />
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime((e.target as HTMLInputElement).value)}
+                  style={{
+                    padding: "12px 12px",
+                    background: "var(--card)",
+                    color: "var(--text)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 10,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    width: 160,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* End */}
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>End (date & time)</label>
+              <div style={{ display: "flex", gap: 10 }}>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate((e.target as HTMLInputElement).value)}
+                  style={{
+                    padding: "12px 12px",
+                    background: "var(--card)",
+                    color: "var(--text)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 10,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    flex: 1,
+                  }}
+                />
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime((e.target as HTMLInputElement).value)}
+                  style={{
+                    padding: "12px 12px",
+                    background: "var(--card)",
+                    color: "var(--text)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 10,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    width: 160,
+                  }}
+                />
+              </div>
             </div>
           </div>
 
-          {/* End */}
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>End (date & time)</label>
-            <div style={{ display: "flex", gap: 10 }}>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate((e.target as HTMLInputElement).value)}
-                style={{
-                  padding: "10px 12px",
-                  background: "var(--card)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 10,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  flex: 1,
-                }}
-              />
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime((e.target as HTMLInputElement).value)}
-                style={{
-                  padding: "10px 12px",
-                  background: "var(--card)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 10,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  width: 140,
-                }}
-              />
-            </div>
-          </div>
-
-          {/* NEW: Guest details panel */}
+          {/* Guest details */}
           {showGuest && (
             <div
               style={{
@@ -471,11 +496,11 @@ export default function RoomDetailModal({
                 borderRadius: 12,
                 background: "var(--card)",
                 display: "grid",
-                gap: 10,
+                gap: 12,
               }}
             >
               <strong style={{ letterSpacing: 0.3 }}>Guest details</strong>
-              <div style={{ display: "grid", gap: 8 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div style={{ display: "grid", gap: 6 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>First name</label>
                   <input
@@ -484,7 +509,7 @@ export default function RoomDetailModal({
                     onChange={(e) => setGuestFirst((e.target as HTMLInputElement).value)}
                     placeholder="John"
                     style={{
-                      padding: "10px 12px",
+                      padding: "12px 12px",
                       background: "var(--card)",
                       color: "var(--text)",
                       border: "1px solid var(--border)",
@@ -503,7 +528,7 @@ export default function RoomDetailModal({
                     onChange={(e) => setGuestLast((e.target as HTMLInputElement).value)}
                     placeholder="Doe"
                     style={{
-                      padding: "10px 12px",
+                      padding: "12px 12px",
                       background: "var(--card)",
                       color: "var(--text)",
                       border: "1px solid var(--border)",
@@ -522,7 +547,7 @@ export default function RoomDetailModal({
                     onChange={(e) => setGuestEmail((e.target as HTMLInputElement).value)}
                     placeholder="john.doe@example.com"
                     style={{
-                      padding: "10px 12px",
+                      padding: "12px 12px",
                       background: "var(--card)",
                       color: "var(--text)",
                       border: "1px solid var(--border)",
@@ -541,7 +566,7 @@ export default function RoomDetailModal({
                     onChange={(e) => setGuestPhone((e.target as HTMLInputElement).value)}
                     placeholder="+40 7xx xxx xxx"
                     style={{
-                      padding: "10px 12px",
+                      padding: "12px 12px",
                       background: "var(--card)",
                       color: "var(--text)",
                       border: "1px solid var(--border)",
@@ -552,7 +577,7 @@ export default function RoomDetailModal({
                   />
                 </div>
 
-                <div style={{ display: "grid", gap: 6 }}>
+                <div style={{ gridColumn: "1 / -1", display: "grid", gap: 6 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Address</label>
                   <input
                     type="text"
@@ -560,7 +585,7 @@ export default function RoomDetailModal({
                     onChange={(e) => setGuestAddr((e.target as HTMLInputElement).value)}
                     placeholder="Street, City, Country"
                     style={{
-                      padding: "10px 12px",
+                      padding: "12px 12px",
                       background: "var(--card)",
                       color: "var(--text)",
                       border: "1px solid var(--border)",
@@ -577,7 +602,7 @@ export default function RoomDetailModal({
             </div>
           )}
 
-          {/* Custom detail fields (existing feature stays) */}
+          {/* Custom detail fields (existing feature) */}
           {(checkDefs.length > 0 || textDefs.length > 0) && (
             <div style={{ display: "grid", gap: 10, marginTop: 6 }}>
               <strong style={{ letterSpacing: 0.3 }}>Room details</strong>
@@ -616,7 +641,7 @@ export default function RoomDetailModal({
                           setDetailsDirty(true);
                         }}
                         style={{
-                          padding: "10px 12px",
+                          padding: "12px 12px",
                           background: "var(--card)",
                           color: "var(--text)",
                           border: "1px solid var(--border)",
@@ -641,10 +666,13 @@ export default function RoomDetailModal({
             )}
             {active && (
               <>
-                <button onClick={saveDetails} style={baseBtn} disabled={saving !== false && saving !== "updating"}>
+                <button onClick={saveGuestAndDetails} style={baseBtn} disabled={saving !== false && saving !== "updating"}>
                   Save details
                 </button>
-                <button onClick={saveExtended} style={baseBtn} disabled={saving !== false && saving !== "extending"}>
+                <button onClick={saveTimes} style={baseBtn} disabled={saving !== false && saving !== "times"}>
+                  Save times
+                </button>
+                <button onClick={extendUntil} style={baseBtn} disabled={saving !== false && saving !== "extending"}>
                   Extend until
                 </button>
                 <button onClick={releaseBooking} style={dangerBtn} disabled={saving !== false && saving !== "releasing"}>
