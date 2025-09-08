@@ -10,18 +10,14 @@ type PropertyInfo = {
   regulation_pdf_url?: string | null;
 };
 
-type SubmitState = "idle" | "submitting" | "success" | "error";
 type RoomType = { id: string; name: string };
 type Room     = { id: string; name: string; room_type_id?: string | null };
+type SubmitState = "idle" | "submitting" | "success" | "error";
 
-function useQueryParam(key: string) {
-  const [val, setVal] = useState<string | null>(null);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const u = new URL(window.location.href);
-    setVal(u.searchParams.get(key));
-  }, []);
-  return val;
+function getQueryParam(k: string): string | null {
+  if (typeof window === "undefined") return null;
+  const u = new URL(window.location.href);
+  return u.searchParams.get(k);
 }
 
 function todayYMD(): string {
@@ -32,7 +28,7 @@ function todayYMD(): string {
   return `${y}-${m}-${dd}`;
 }
 function addDaysYMD(ymd: string, days: number): string {
-  const [y, m, d] = ymd.split("-").map((n) => parseInt(n, 10));
+  const [y, m, d] = ymd.split("-").map(Number);
   const dt = new Date(y, m - 1, d);
   dt.setDate(dt.getDate() + days);
   const yy = dt.getFullYear();
@@ -42,12 +38,10 @@ function addDaysYMD(ymd: string, days: number): string {
 }
 
 export default function CheckinClient() {
-  const qpProperty = useQueryParam("property");
-  const qpBooking  = useQueryParam("booking"); // fallback pentru linkuri vechi
-
   const supabase = useMemo(() => createClient(), []);
-  const [effectivePropertyId, setEffectivePropertyId] = useState<string | null>(null);
+  const [propertyId, setPropertyId] = useState<string | null>(null);
 
+  // Property + catalog (STRICT pe propertyId din URL)
   const [prop, setProp] = useState<PropertyInfo | null>(null);
   const [types, setTypes] = useState<RoomType[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -86,53 +80,35 @@ export default function CheckinClient() {
     overflow: "hidden",
   }), []);
   const INPUT: React.CSSProperties = useMemo(() => ({
-    width: "100%",
-    boxSizing: "border-box",
-    padding: "12px 12px",
-    background: "var(--card)",
-    color: "var(--text)",
-    border: "1px solid var(--border)",
-    borderRadius: 10,
-    fontSize: 14,
-    outline: "none",
+    width: "100%", boxSizing: "border-box", padding: "12px",
+    background: "var(--card)", color: "var(--text)",
+    border: "1px solid var(--border)", borderRadius: 10, fontSize: 14,
   }), []);
   const SELECT: React.CSSProperties = INPUT;
   const LABEL: React.CSSProperties = useMemo(() => ({
     fontSize: 12, fontWeight: 800, color: "var(--muted)", marginBottom: 6, display: "block",
   }), []);
   const BTN_PRIMARY: React.CSSProperties = useMemo(() => ({
-    padding: "12px 16px", borderRadius: 12, border: "1px solid var(--primary)", background: "var(--primary)",
-    color: "#0c111b", fontWeight: 900, cursor: "pointer", whiteSpace: "nowrap",
+    padding: "12px 16px", borderRadius: 12, border: "1px solid var(--primary)",
+    background: "var(--primary)", color: "#0c111b", fontWeight: 900, cursor: "pointer",
   }), []);
   const BTN_GHOST: React.CSSProperties = useMemo(() => ({
-    padding: "10px 14px", borderRadius: 12, border: "1px solid var(--border)", background: "transparent",
-    color: "var(--text)", fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap",
+    padding: "10px 14px", borderRadius: 12, border: "1px solid var(--border)",
+    background: "transparent", color: "var(--text)", fontWeight: 800, cursor: "pointer",
   }), []);
-  const ROW_2: React.CSSProperties = useMemo(() => ({ display: "grid", gap: 12, gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }), []);
-  const ROW_1: React.CSSProperties = useMemo(() => ({ display: "grid", gap: 12, gridTemplateColumns: "1fr" }), []);
+  const ROW_2: React.CSSProperties = useMemo(() => ({
+    display: "grid", gap: 12, gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  }), []);
+  const ROW_1: React.CSSProperties = useMemo(() => ({
+    display: "grid", gap: 12, gridTemplateColumns: "1fr",
+  }), []);
 
-  // 1) Rezolvăm property_id: preferăm ?property=..., altfel căutăm după ?booking=...
+  // 1) Citește strict ?property=<id> din URL
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      if (qpProperty) { setEffectivePropertyId(qpProperty); return; }
-      if (qpBooking) {
-        const { data, error } = await supabase
-          .from("bookings")
-          .select("id,property_id")
-          .eq("id", qpBooking)
-          .maybeSingle();
-        if (!error && data?.property_id && alive) {
-          setEffectivePropertyId(data.property_id as string);
-          return;
-        }
-      }
-      if (alive) setEffectivePropertyId(null);
-    })();
-    return () => { alive = false; };
-  }, [qpProperty, qpBooking, supabase]);
+    setPropertyId(getQueryParam("property"));
+  }, []);
 
-  // 2) Când avem property_id efectiv, încărcăm property + catalog (fără cache local)
+  // 2) Load live (fără niciun cache local) pe baza propertyId
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -144,54 +120,54 @@ export default function CheckinClient() {
       setSelectedTypeId("");
       setSelectedRoomId("");
 
-      const pid = effectivePropertyId;
+      const pid = propertyId;
       if (!pid) { setLoading(false); return; }
 
-      // Property (cu PDF)
-      const { data: p } = await supabase
+      // Property + PDF
+      const { data: p, error: eP } = await supabase
         .from("properties")
         .select("id,name,regulation_pdf_url")
         .eq("id", pid)
         .maybeSingle();
-      if (alive && p) {
+      if (alive && !eP && p) {
         setProp(p as PropertyInfo);
         setPdfUrl((p as any)?.regulation_pdf_url ?? null);
       }
 
       // Room Types
-      const { data: t } = await supabase
+      const { data: t, error: eT } = await supabase
         .from("room_types")
         .select("id,name")
         .eq("property_id", pid)
         .order("name", { ascending: true });
-      if (alive) {
-        const tNorm: RoomType[] = (t ?? []).map(x => ({ id: String(x.id), name: String(x.name ?? "Type") }));
-        setTypes(tNorm);
-      }
+      const tNorm: RoomType[] = (!eT && Array.isArray(t) ? t : []).map(x => ({ id: String(x.id), name: String(x.name ?? "Type") }));
 
       // Rooms
-      const { data: r } = await supabase
+      const { data: r, error: eR } = await supabase
         .from("rooms")
         .select("id,name,room_type_id")
         .eq("property_id", pid)
         .order("name", { ascending: true });
-      if (alive) {
-        const rNorm: Room[] = (r ?? []).map(x => ({ id: String(x.id), name: String(x.name ?? "Room"), room_type_id: x.room_type_id ?? null }));
-        setRooms(rNorm);
-      }
+      const rNorm: Room[] = (!eR && Array.isArray(r) ? r : []).map(x => ({
+        id: String(x.id),
+        name: String(x.name ?? "Room"),
+        room_type_id: x.room_type_id ?? null,
+      }));
 
-      // Preselect după ce avem catalogul
-      if (alive) {
-        if ((t ?? []).length > 0) setSelectedTypeId(String((t as any[])[0].id));
-        else if ((r ?? []).length > 0) setSelectedRoomId(String((r as any[])[0].id));
-      }
+      if (!alive) return;
+      setTypes(tNorm);
+      setRooms(rNorm);
 
-      if (alive) setLoading(false);
+      // Preselectare clară (tip dacă există, altfel cameră)
+      if (tNorm.length > 0) setSelectedTypeId(tNorm[0].id);
+      else if (rNorm.length > 0) setSelectedRoomId(rNorm[0].id);
+
+      setLoading(false);
     })();
     return () => { alive = false; };
-  }, [effectivePropertyId, supabase]);
+  }, [propertyId, supabase]);
 
-  // 3) Validări
+  // 3) Validări de date
   useEffect(() => {
     if (!startDate || !endDate) { setDateError(""); return; }
     setDateError(endDate <= startDate ? "Check-out must be after check-in." : "");
@@ -199,7 +175,7 @@ export default function CheckinClient() {
 
   const hasTypes = types.length > 0;
   const canSubmit =
-    !!effectivePropertyId &&
+    !!propertyId &&
     !!prop?.id &&
     firstName.trim().length >= 1 &&
     lastName.trim().length  >= 1 &&
@@ -215,7 +191,7 @@ export default function CheckinClient() {
     try { window.open(pdfUrl, "_blank", "noopener,noreferrer"); } catch {}
   }
 
-  // 4) Submit — folosește property_id rezolvat (nu local cache)
+  // 4) Submit — trimite EXACT același property_id primit din URL
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
@@ -224,9 +200,9 @@ export default function CheckinClient() {
     setErrorMsg("");
 
     try {
-      const payload: any = {
-        property_id: effectivePropertyId,             // <-- întotdeauna trimitem property-ul corect
-        booking_id: qpBooking ?? null,                // poate fi null
+      const payload = {
+        property_id: propertyId!,          // <- ID-ul proprietății din URL
+        booking_id: null,                  // link property-level; dacă vei adăuga booking param, îl trimiți aici
         start_date: startDate,
         end_date: endDate,
         guest_first_name: firstName.trim(),
@@ -236,8 +212,8 @@ export default function CheckinClient() {
         address: address.trim(),
         city: city.trim(),
         country: country.trim(),
-        requested_room_type_id: hasTypes ? (selectedTypeId || null) : null,
-        requested_room_id:     hasTypes ? null : (selectedRoomId || null),
+        requested_room_type_id: hasTypes ? selectedTypeId : null,
+        requested_room_id:     hasTypes ? null : selectedRoomId,
       };
 
       const res = await fetch("/api/checkin/submit", {
@@ -255,33 +231,20 @@ export default function CheckinClient() {
       }
 
       setSubmitState("success");
-    } catch {
+    } catch (err) {
       setErrorMsg("Unexpected error. Please try again.");
       setSubmitState("error");
     }
   }
 
   // 5) Render
-  if (!qpProperty && !qpBooking) {
+  if (!propertyId) {
     return (
       <div style={{ maxWidth: 720, margin: "24px auto", padding: 16 }}>
         <div style={CARD}>
           <h1 style={{ marginTop: 0, marginBottom: 8 }}>Check-in</h1>
           <p style={{ color: "var(--muted)" }}>
-            Missing parameters. Please use the link provided by your host.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!effectivePropertyId) {
-    return (
-      <div style={{ maxWidth: 720, margin: "24px auto", padding: 16 }}>
-        <div style={CARD}>
-          <h1 style={{ marginTop: 0, marginBottom: 8 }}>Check-in</h1>
-          <p style={{ color: "var(--muted)" }}>
-            We could not resolve the property from this link. Please contact your host.
+            Missing property. This link must include <code>?property=&lt;PROPERTY_ID&gt;</code>.
           </p>
         </div>
       </div>
@@ -301,14 +264,8 @@ export default function CheckinClient() {
               Please fill in the required details. It takes ~2 minutes.
             </p>
           </div>
-
           {pdfUrl && (
-            <button
-              type="button"
-              onClick={onOpenPdf}
-              style={BTN_GHOST}
-              title="Open house rules (PDF)"
-            >
+            <button type="button" onClick={onOpenPdf} style={BTN_GHOST} title="Open house rules (PDF)">
               📄 House rules (PDF)
             </button>
           )}
@@ -361,7 +318,7 @@ export default function CheckinClient() {
               </div>
             )}
 
-            {/* RoomType sau Room (în funcție de configurator) */}
+            {/* RoomType sau Room */}
             {types.length > 0 ? (
               <div style={ROW_1}>
                 <div>
@@ -456,7 +413,7 @@ export default function CheckinClient() {
                 style={{ marginTop: 3 }}
               />
               <label htmlFor="agree" style={{ color: "var(--muted)", cursor: "pointer" }}>
-                I confirm the information is correct and I agree to the house rules{pdfUrl ? " (PDF available in header)" : ""}.
+                I confirm the information is correct and I agree to the house rules{pdfUrl ? " (PDF link in header)" : ""}.
               </label>
             </div>
 
@@ -469,11 +426,7 @@ export default function CheckinClient() {
 
             {/* Actions */}
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
-              <button
-                type="button"
-                onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = "/")}
-                style={BTN_GHOST}
-              >
+              <button type="button" onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = "/")} style={BTN_GHOST}>
                 Cancel
               </button>
               <button
