@@ -1,4 +1,4 @@
-// app/app/guest/ui/GuestOverviewClient.tsx
+// app/app/guest/ui/Client.tsx
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -201,7 +201,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
         .eq("property_id", activePropertyId)
         .order("name", { ascending: true }),
       supabase
-        .from("bookings")
+        .from("bookings_visible")
         .select("*")
         .eq("property_id", activePropertyId)
         .gte("end_date", today)
