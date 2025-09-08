@@ -15,7 +15,7 @@ export type Booking = {
   end_time: string | null;   // "HH:mm" or null
   status: "pending" | "confirmed" | "cancelled" | string;
 
-  // NEW guest fields used in UI
+  // guest fields
   guest_first_name?: string | null;
   guest_last_name?: string | null;
   guest_email?: string | null;
@@ -49,32 +49,39 @@ export default function DayModal({
     setLoading("loading");
     setStatusHint("Loading rooms and bookings…");
 
-    const [r1, r2] = await Promise.all([
-      supabase
-        .from("rooms")
-        .select("id,name,property_id")
-        .eq("property_id", propertyId)
-        .order("name", { ascending: true }),
-      supabase
-        .from("bookings")
-        .select(
-          "id,property_id,room_id,start_date,end_date,start_time,end_time,status,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address"
-        )
-        .eq("property_id", propertyId)
-        // overlap: start_date <= dateStr <= end_date
-        .lte("start_date", dateStr)
-        .gte("end_date", dateStr)
-        .neq("status", "cancelled")
-        .order("start_date", { ascending: true }),
-    ]);
+    // 1) Load rooms alphabetically
+    const r1 = await supabase
+      .from("rooms")
+      .select("id,name,property_id")
+      .eq("property_id", propertyId)
+      .order("name", { ascending: true });
 
-    if (r1.error || r2.error) {
+    if (r1.error) {
       setLoading("error");
-      setStatusHint(r1.error?.message || r2.error?.message || "Failed to load data.");
+      setStatusHint(r1.error.message || "Failed to load rooms.");
+      return;
+    }
+    const roomList = r1.data ?? [];
+    setRooms(roomList);
+
+    // 2) Load bookings that are active today OR in viitor (end_date >= azi)
+    const r2 = await supabase
+      .from("bookings")
+      .select(
+        "id,property_id,room_id,start_date,end_date,start_time,end_time,status,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address"
+      )
+      .eq("property_id", propertyId)
+      .neq("status", "cancelled")
+      .gte("end_date", dateStr)
+      .order("start_date", { ascending: true })
+      .order("start_time", { ascending: true, nullsFirst: true });
+
+    if (r2.error) {
+      setLoading("error");
+      setStatusHint(r2.error.message || "Failed to load bookings.");
       return;
     }
 
-    setRooms(r1.data ?? []);
     setBookings(r2.data ?? []);
     setLoading("idle");
     setStatusHint("");
@@ -84,31 +91,46 @@ export default function DayModal({
     refresh();
   }, [refresh]);
 
-  // map for quick lookup: room_id -> active booking (if any)
-  const bookingByRoom = useMemo(() => {
+  // Active booking per room (dacă start_date <= azi <= end_date)
+  const activeByRoom = useMemo(() => {
     const map = new Map<string, Booking>();
     for (const b of bookings) {
-      // safety check; server filter already ensures overlap
       if (b.start_date <= dateStr && dateStr <= b.end_date) {
         if (!map.has(b.room_id)) map.set(b.room_id, b);
-        // if multiple, keep earliest start (already sorted)
+      }
+    }
+    return map;
+  }, [bookings, dateStr]);
+
+  // Următoarea rezervare (strict după azi) per room
+  const nextByRoom = useMemo(() => {
+    const map = new Map<string, Booking>();
+    // bookings este deja ordonat ascendent după start_date/time
+    for (const b of bookings) {
+      if (b.start_date > dateStr) {
+        if (!map.has(b.room_id)) {
+          map.set(b.room_id, b);
+        }
       }
     }
     return map;
   }, [bookings, dateStr]);
 
   // ------------- UI helpers --------------
-  function formatUntil(b: Booking) {
+  function formatReservedUntil(b: Booking) {
     const dt = b.end_date + (b.end_time ? ` ${b.end_time}` : "");
     return `Reserved until ${dt.trim()}`;
-    // (dacă dorești, putem face format localizat cu Intl.DateTimeFormat)
+  }
+  function formatAvailableUntil(nextB?: Booking | null) {
+    if (!nextB) return "Available (no upcoming bookings)";
+    return `Available until ${nextB.start_date}`;
   }
   function guestFullName(b?: Booking | null) {
     if (!b) return "";
     const f = (b.guest_first_name ?? "").trim();
     const l = (b.guest_last_name ?? "").trim();
     const full = [f, l].filter(Boolean).join(" ");
-    return full || ""; // afișăm doar dacă avem ceva
+    return full || "";
   }
 
   // Always refresh when the details modal closes (even if nothing saved)
@@ -218,7 +240,7 @@ export default function DayModal({
           </div>
         </div>
 
-        {/* Grid rooms */}
+        {/* Grid rooms (rooms sunt deja sortate alfabetic din query) */}
         <div
           style={{
             display: "grid",
@@ -227,9 +249,10 @@ export default function DayModal({
           }}
         >
           {rooms.map((room) => {
-            const b = bookingByRoom.get(room.id) || null;
-            const isReserved = !!b && b.status !== "cancelled";
-            const fullName = guestFullName(b);
+            const bActive = activeByRoom.get(room.id) || null;
+            const bNext   = nextByRoom.get(room.id) || null;
+            const isReserved = !!bActive && bActive.status !== "cancelled";
+            const fullName = guestFullName(bActive);
 
             return (
               <div
@@ -245,32 +268,34 @@ export default function DayModal({
                   borderRadius: 12,
                   background: "var(--card)",
                   cursor: "pointer",
-                  minHeight: 110,
+                  minHeight: 120,
                   display: "grid",
                   gridTemplateRows: "auto 1fr auto",
                   userSelect: "none",
                 }}
                 title="Open reservation"
               >
-                {/* Room name */}
+                {/* Room name + status chip (ROȘU/VERDE) */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <strong style={{ fontSize: 15 }}>{room.name}</strong>
                   <span
                     style={{
-                      padding: "2px 8px",
+                      padding: "2px 10px",
                       borderRadius: 999,
                       fontSize: 12,
-                      fontWeight: 800,
-                      background: isReserved ? "var(--primary)" : "transparent",
-                      border: isReserved ? "1px solid var(--primary)" : "1px solid var(--border)",
-                      color: isReserved ? "#0c111b" : "var(--text)",
+                      fontWeight: 900,
+                      background: isReserved ? "var(--danger)" : "var(--success)",
+                      border: `1px solid ${isReserved ? "var(--danger)" : "var(--success)"}`,
+                      color: "#fff",
+                      letterSpacing: 0.2,
+                      textTransform: "uppercase",
                     }}
                   >
                     {isReserved ? "Reserved" : "Available"}
                   </span>
                 </div>
 
-                {/* CENTER: Guest name (if any) */}
+                {/* CENTER: Guest name (dacă e rezervată) */}
                 <div
                   style={{
                     display: "grid",
@@ -302,12 +327,24 @@ export default function DayModal({
                       (Guest name not set)
                     </div>
                   )}
+
+                  {!isReserved && (
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 13,
+                        color: "var(--muted)",
+                      }}
+                    >
+                      {formatAvailableUntil(bNext)}
+                    </div>
+                  )}
                 </div>
 
-                {/* Footer: reserved until / action hint */}
+                {/* Footer: reserved until / hint */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <small style={{ color: "var(--muted)" }}>
-                    {isReserved ? formatUntil(b!) : "Tap to create reservation"}
+                    {isReserved ? formatReservedUntil(bActive!) : "Tap to create reservation"}
                   </small>
                   <small style={{ color: "var(--muted)" }}>Open ▸</small>
                 </div>
