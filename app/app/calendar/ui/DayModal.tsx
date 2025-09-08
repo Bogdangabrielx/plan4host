@@ -1,24 +1,29 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import RoomDetailModal from "./RoomDetailModal";
 
-type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null };
-type Room = { id: string; name: string; property_id: string };
+/** Exported so RoomDetailModal can import the base shape */
 export type Booking = {
   id: string;
   property_id: string;
-  room_id: string | null;
-  start_date: string;
-  end_date: string;
-  start_time: string | null;
-  end_time: string | null;
-  status: string;
+  room_id: string;
+  start_date: string; // "YYYY-MM-DD"
+  end_date: string;   // "YYYY-MM-DD"
+  start_time: string | null; // "HH:mm" or null
+  end_time: string | null;   // "HH:mm" or null
+  status: "pending" | "confirmed" | "cancelled" | string;
+
+  // NEW guest fields used in UI
+  guest_first_name?: string | null;
+  guest_last_name?: string | null;
+  guest_email?: string | null;
+  guest_phone?: string | null;
+  guest_address?: string | null;
 };
 
-function pad(n: number) { return String(n).padStart(2, "0"); }
-function addDaysStr(s: string, n: number) { const d = new Date(s + "T00:00:00"); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+type Room = { id: string; name: string; property_id: string };
 
 export default function DayModal({
   dateStr,
@@ -30,174 +35,296 @@ export default function DayModal({
   onClose: () => void;
 }) {
   const supabase = createClient();
-  const [property, setProperty] = useState<Property | null>(null);
+
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState<"Idle" | "Loading" | "Error">("Loading");
+  const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
+  const [statusHint, setStatusHint] = useState<string>("");
 
-  const [selected, setSelected] = useState<null | {
-    room: Room;
-    forceNew?: boolean;
-    prefill?: { startDate: string; startTime: string | null; endDate: string; endTime: string | null };
-  }>(null);
+  // Room detail modal state
+  const [openRoom, setOpenRoom] = useState<Room | null>(null);
 
-  async function reload() {
-    const [p1, p2, p3] = await Promise.all([
+  // ---------- Data load & refresh ----------
+  const refresh = useCallback(async () => {
+    setLoading("loading");
+    setStatusHint("Loading rooms and bookings…");
+
+    const [r1, r2] = await Promise.all([
       supabase
-        .from("properties").select("id,name,check_in_time,check_out_time")
-        .eq("id", propertyId).maybeSingle(),
-      supabase
-        .from("rooms").select("id,name,property_id")
+        .from("rooms")
+        .select("id,name,property_id")
         .eq("property_id", propertyId)
-        .order("sort_index", { ascending: true })
-        .order("created_at", { ascending: true }),
+        .order("name", { ascending: true }),
       supabase
         .from("bookings")
-        .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status")
+        .select(
+          "id,property_id,room_id,start_date,end_date,start_time,end_time,status,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address"
+        )
         .eq("property_id", propertyId)
+        // overlap: start_date <= dateStr <= end_date
+        .lte("start_date", dateStr)
+        .gte("end_date", dateStr)
         .neq("status", "cancelled")
-        .gte("start_date", addDaysStr(dateStr, -365))
-        .lte("end_date", addDaysStr(dateStr, 365))
         .order("start_date", { ascending: true }),
     ]);
-    if (!p1.error) setProperty((p1.data ?? null) as any);
-    if (!p2.error) setRooms((p2.data ?? []) as any);
-    if (!p3.error) setBookings((p3.data ?? []) as any);
-    setLoading("Idle");
-  }
+
+    if (r1.error || r2.error) {
+      setLoading("error");
+      setStatusHint(r1.error?.message || r2.error?.message || "Failed to load data.");
+      return;
+    }
+
+    setRooms(r1.data ?? []);
+    setBookings(r2.data ?? []);
+    setLoading("idle");
+    setStatusHint("");
+  }, [supabase, propertyId, dateStr]);
 
   useEffect(() => {
-    (async () => {
-      setLoading("Loading");
-      await reload();
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propertyId, dateStr]);
+    refresh();
+  }, [refresh]);
 
-  const checkIn  = property?.check_in_time || "14:00";
-  const checkOut = property?.check_out_time || "11:00";
-
-  const activeByRoom = useMemo(() => {
-    const m = new Map<string, Booking | null>();
-    for (const r of rooms) m.set(r.id, null);
-    const arr: Booking[] = Array.isArray(bookings) ? bookings : [];
-    for (const b of arr) {
-      if (!b.room_id) continue;
-      if (b.start_date <= dateStr && dateStr <= b.end_date) m.set(b.room_id, b);
-    }
-    return m;
-  }, [bookings, rooms, dateStr]);
-
-  const nextByRoom = useMemo(() => {
-    const m = new Map<string, Booking | null>();
-    for (const r of rooms) m.set(r.id, null);
-    const arr: Booking[] = Array.isArray(bookings) ? bookings : [];
-    for (const b of arr) {
-      if (!b.room_id) continue;
-      if (b.start_date > dateStr) {
-        const cur = m.get(b.room_id);
-        if (!cur || b.start_date < cur.start_date) m.set(b.room_id, b);
+  // map for quick lookup: room_id -> active booking (if any)
+  const bookingByRoom = useMemo(() => {
+    const map = new Map<string, Booking>();
+    for (const b of bookings) {
+      // safety check; server filter already ensures overlap
+      if (b.start_date <= dateStr && dateStr <= b.end_date) {
+        if (!map.has(b.room_id)) map.set(b.room_id, b);
+        // if multiple, keep earliest start (already sorted)
       }
     }
-    return m;
-  }, [bookings, rooms, dateStr]);
+    return map;
+  }, [bookings, dateStr]);
 
+  // ------------- UI helpers --------------
+  function formatUntil(b: Booking) {
+    const dt = b.end_date + (b.end_time ? ` ${b.end_time}` : "");
+    return `Reserved until ${dt.trim()}`;
+    // (dacă dorești, putem face format localizat cu Intl.DateTimeFormat)
+  }
+  function guestFullName(b?: Booking | null) {
+    if (!b) return "";
+    const f = (b.guest_first_name ?? "").trim();
+    const l = (b.guest_last_name ?? "").trim();
+    const full = [f, l].filter(Boolean).join(" ");
+    return full || ""; // afișăm doar dacă avem ceva
+  }
+
+  // Always refresh when the details modal closes (even if nothing saved)
+  const handleRoomModalClose = useCallback(async () => {
+    setOpenRoom(null);
+    await refresh(); // <— REFRESH AUTOMAT LA ÎNTOARCERE
+  }, [refresh]);
+
+  // Also refresh when RoomDetailModal explicitly signals changes
+  const handleRoomModalChanged = useCallback(async () => {
+    await refresh();
+  }, [refresh]);
+
+  // ------------- Render ------------------
   return (
-    <div role="dialog" aria-modal="true" onClick={onClose}
-      style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.6)", display: "grid", placeItems: "center" }}>
-      <div onClick={(e) => e.stopPropagation()}
-        style={{ width: "min(920px, 92vw)", maxHeight: "86vh", overflow: "auto",
-                 background: "var(--panel)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 200,
+        background: "rgba(0,0,0,0.5)",
+        display: "grid",
+        placeItems: "center",
+        fontFamily: '"Times New Roman", serif',
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "min(1000px, 96vw)",
+          maxHeight: "86vh",
+          overflow: "auto",
+          background: "var(--panel)",
+          color: "var(--text)",
+          border: "1px solid var(--border)",
+          borderRadius: 12,
+          padding: 16,
+        }}
+      >
+        {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <strong>{dateStr} — Rooms</strong>
-          <span style={{
-            fontSize: 12, padding: "4px 8px", borderRadius: 999,
-            background: loading === "Loading" ? "var(--primary)" : loading === "Error" ? "var(--danger)" : "#2a2f3a",
-            color: loading === "Loading" ? "#0c111b" : "#fff", fontWeight: 700
-          }}>
-            {loading === "Loading" ? "Loading…" : loading === "Error" ? "Error" : "Idle"}
-          </span>
+          <strong style={{ letterSpacing: 0.2, fontSize: 16 }}>
+            {dateStr} — Rooms
+          </strong>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {loading === "loading" && (
+              <span
+                style={{
+                  fontSize: 12,
+                  padding: "4px 8px",
+                  borderRadius: 999,
+                  background: "var(--primary)",
+                  color: "#0c111b",
+                  fontWeight: 800,
+                }}
+              >
+                Loading…
+              </span>
+            )}
+            {loading === "error" && (
+              <span
+                style={{
+                  fontSize: 12,
+                  padding: "4px 8px",
+                  borderRadius: 999,
+                  background: "var(--danger)",
+                  color: "#fff",
+                  fontWeight: 800,
+                }}
+              >
+                Error
+              </span>
+            )}
+            {statusHint && <small style={{ color: "var(--muted)" }}>{statusHint}</small>}
+            <button
+              onClick={refresh}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 10,
+                border: "1px solid var(--border)",
+                background: "var(--card)",
+                color: "var(--text)",
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
+              title="Refresh"
+            >
+              Refresh
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 10,
+                border: "1px solid var(--border)",
+                background: "var(--card)",
+                color: "var(--text)",
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
+            >
+              Close
+            </button>
+          </div>
         </div>
 
-        {rooms.length === 0 ? (
-          <div style={{ color: "var(--muted)" }}>No rooms found for this property.</div>
-        ) : (
-          <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
-            {rooms.map((r) => {
-              const active = activeByRoom.get(r.id) || null;
-              const next   = nextByRoom.get(r.id)   || null;
+        {/* Grid rooms */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+            gap: 12,
+          }}
+        >
+          {rooms.map((room) => {
+            const b = bookingByRoom.get(room.id) || null;
+            const isReserved = !!b && b.status !== "cancelled";
+            const fullName = guestFullName(b);
 
-              const showAddNew = !!active && active.end_date === dateStr; // termină azi
-              const badge: "Reserved" | "Available" = active ? "Reserved" : "Available";
-              const subtitle = active
-                ? `Reserved until ${active.end_date} ${active.end_time || checkOut}`
-                : next
-                ? `Available (until ${next.start_date} ${next.start_time || checkIn})`
-                : "Available";
+            return (
+              <div
+                key={room.id}
+                onClick={() => setOpenRoom(room)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === "Enter" ? setOpenRoom(room) : null)}
+                style={{
+                  position: "relative",
+                  padding: 14,
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  background: "var(--card)",
+                  cursor: "pointer",
+                  minHeight: 110,
+                  display: "grid",
+                  gridTemplateRows: "auto 1fr auto",
+                  userSelect: "none",
+                }}
+                title="Open reservation"
+              >
+                {/* Room name */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <strong style={{ fontSize: 15 }}>{room.name}</strong>
+                  <span
+                    style={{
+                      padding: "2px 8px",
+                      borderRadius: 999,
+                      fontSize: 12,
+                      fontWeight: 800,
+                      background: isReserved ? "var(--primary)" : "transparent",
+                      border: isReserved ? "1px solid var(--primary)" : "1px solid var(--border)",
+                      color: isReserved ? "#0c111b" : "var(--text)",
+                    }}
+                  >
+                    {isReserved ? "Reserved" : "Available"}
+                  </span>
+                </div>
 
-              return (
-                <li key={r.id}
-                  onClick={() => setSelected({ room: r })}
-                  style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 12,
-                           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, cursor: "pointer" }}
-                  title={showAddNew ? "Open reservation (current)" : "Open reservation"}>
-                  <div style={{ display: "grid", gap: 4 }}>
-                    <strong style={{ color: "var(--text)" }}>{r.name}</strong>
-                    <small style={{ color: "var(--muted)" }}>{subtitle}</small>
-                  </div>
+                {/* CENTER: Guest name (if any) */}
+                <div
+                  style={{
+                    display: "grid",
+                    placeItems: "center",
+                    textAlign: "center",
+                    padding: "6px 4px",
+                  }}
+                >
+                  {isReserved && fullName && (
+                    <div
+                      style={{
+                        fontWeight: 900,
+                        fontSize: 16,
+                        letterSpacing: 0.2,
+                      }}
+                    >
+                      {fullName}
+                    </div>
+                  )}
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    {showAddNew && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelected({
-                            room: r,
-                            forceNew: true,
-                            prefill: {
-                              startDate: dateStr,
-                              startTime: checkIn,
-                              endDate: addDaysStr(dateStr, 1),
-                              endTime: checkOut
-                            }
-                          });
-                        }}
-                        style={{
-                          padding: "6px 10px",
-                          borderRadius: 8,
-                          border: "1px solid var(--primary)",
-                          background: "transparent",
-                          color: "var(--text)",
-                          fontWeight: 800,
-                          cursor: "pointer"
-                        }}
-                        title="Add new reservation starting after check-out"
-                      >
-                        Add new reservation
-                      </button>
-                    )}
-                    <span style={{ padding: "4px 8px", borderRadius: 999, fontSize: 12, fontWeight: 800,
-                                   background: badge === "Reserved" ? "var(--danger)" : "var(--success, #22c55e)", color: "#0c111b" }}>
-                      {badge}
-                    </span>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+                  {isReserved && !fullName && (
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 13,
+                        color: "var(--muted)",
+                      }}
+                    >
+                      (Guest name not set)
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer: reserved until / action hint */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <small style={{ color: "var(--muted)" }}>
+                    {isReserved ? formatUntil(b!) : "Tap to create reservation"}
+                  </small>
+                  <small style={{ color: "var(--muted)" }}>Open ▸</small>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {selected && (
+      {/* Details modal (create/edit) */}
+      {openRoom && (
         <RoomDetailModal
           dateStr={dateStr}
           propertyId={propertyId}
-          room={selected.room}
-          forceNew={!!selected.forceNew}
-          defaultStart={selected.prefill ? { date: selected.prefill.startDate, time: selected.prefill.startTime } : undefined}
-          defaultEnd={selected.prefill ? { date: selected.prefill.endDate, time: selected.prefill.endTime } : undefined}
-          onClose={() => setSelected(null)}
-          onChanged={async () => { await reload(); }}
+          room={openRoom}
+          onClose={handleRoomModalClose}     // <— Refresh on return (always)
+          onChanged={handleRoomModalChanged} // <— Refresh on save
         />
       )}
     </div>
