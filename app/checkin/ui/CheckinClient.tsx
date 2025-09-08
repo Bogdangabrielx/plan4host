@@ -38,21 +38,26 @@ export default function CheckinClient() {
   const [city,      setCity]      = useState("");
   const [country,   setCountry]   = useState("");
 
-  const [agree,     setAgree]     = useState(false);
+  // consent
+  const [agree, setAgree] = useState(false);
+  const [pdfOpened, setPdfOpened] = useState(false);
+
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
 
-  // Styling helpers
+  // ---------- STYLES (compact + coerent, fără overflow) ----------
   const CARD: React.CSSProperties = useMemo(() => ({
     background: "var(--panel)",
     border: "1px solid var(--border)",
     borderRadius: 16,
     padding: 16,
     boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
+    overflow: "hidden",                // ⬅️ taie orice overflow interior
   }), []);
 
   const INPUT: React.CSSProperties = useMemo(() => ({
     width: "100%",
+    boxSizing: "border-box",           // ⬅️ împiedică depășirea pe orizontală
     padding: "12px 12px",
     background: "var(--card)",
     color: "var(--text)",
@@ -78,6 +83,7 @@ export default function CheckinClient() {
     color: "#0c111b",
     fontWeight: 900,
     cursor: "pointer",
+    whiteSpace: "nowrap",
   }), []);
 
   const BTN_GHOST: React.CSSProperties = useMemo(() => ({
@@ -88,36 +94,55 @@ export default function CheckinClient() {
     color: "var(--text)",
     fontWeight: 800,
     cursor: "pointer",
+    whiteSpace: "nowrap",
   }), []);
 
-  // load property + regulations (silence noisy errors like "Bucket not found")
+  // rând de câmpuri (2 coloane responsive, fără depășiri)
+  const ROW_2: React.CSSProperties = useMemo(() => ({
+    display: "grid",
+    gap: 12,
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))", // ⬅️ minmax(0,1fr) previne overflow
+  }), []);
+  const ROW_1: React.CSSProperties = useMemo(() => ({
+    display: "grid",
+    gap: 12,
+    gridTemplateColumns: "1fr",
+  }), []);
+
+  // load property + regulations (silence noisy errors)
   useEffect(() => {
     (async () => {
       if (!propertyId) { setLoading(false); return; }
 
       try {
-        // Property name (lightweight)
+        // Property (nume)
         const resProp = await fetch(`/api/property/basic?id=${propertyId}`, { cache: "no-store" }).catch(() => null);
         if (resProp && resProp.ok) {
           const j = await resProp.json().catch(() => ({}));
           if (j?.property) setProp(j.property as PropertyInfo);
         }
 
-        // Regulations PDF — ignore errors completely, just treat as "no pdf"
+        // Regulations PDF — dacă nu există, nu arătăm butonul și nu dăm erori
         const resPdf = await fetch(`/api/property/regulation?propertyId=${propertyId}`, { cache: "no-store" }).catch(() => null);
         if (resPdf && resPdf.ok) {
           const j = await resPdf.json().catch(() => ({}));
-          // accept either {url:"..."} or {data:{url:"..."}}
           const url = j?.url ?? j?.data?.url ?? null;
           if (url && typeof url === "string") setPdfUrl(url);
         }
+
+        // restaurăm „pdfOpened” (per property) din sesiune
+        try {
+          const key = `p4h:pdfOpened:${propertyId}`;
+          const val = sessionStorage.getItem(key);
+          if (val === "1") setPdfOpened(true);
+        } catch {}
       } finally {
         setLoading(false);
       }
     })();
   }, [propertyId]);
 
-  // validation
+  // validare
   const canSubmit =
     !!propertyId &&
     firstName.trim().length >= 1 &&
@@ -126,6 +151,19 @@ export default function CheckinClient() {
     phone.trim().length >= 5 &&
     agree &&
     submitState !== "submitting";
+
+  function onOpenPdf() {
+    if (!pdfUrl) return;
+    try {
+      window.open(pdfUrl, "_blank", "noopener,noreferrer");
+      setPdfOpened(true);
+      if (propertyId) {
+        try { sessionStorage.setItem(`p4h:pdfOpened:${propertyId}`, "1"); } catch {}
+      }
+    } catch {
+      setPdfOpened(true);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -162,7 +200,7 @@ export default function CheckinClient() {
       }
 
       setSubmitState("success");
-    } catch (err: any) {
+    } catch {
       setErrorMsg("Unexpected error. Please try again.");
       setSubmitState("error");
     }
@@ -195,24 +233,25 @@ export default function CheckinClient() {
               Please fill in the required details. It takes ~2 minutes.
             </p>
           </div>
+
           {pdfUrl && (
-            <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                ...BTN_GHOST,
-                textDecoration: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                whiteSpace: "nowrap",
-              }}
+            <button
+              type="button"
+              onClick={onOpenPdf}
+              style={BTN_GHOST}
+              title="Open house rules (PDF)"
             >
               📄 House rules (PDF)
-            </a>
+            </button>
           )}
         </div>
+
+        {/* Hint: până nu deschide PDF-ul, nu apare bifa */}
+        {pdfUrl && !pdfOpened && (
+          <p style={{ margin: "10px 0 0 0", color: "var(--muted)", fontStyle: "italic" }}>
+            Please open the House rules (PDF) to continue.
+          </p>
+        )}
       </section>
 
       {/* Form card */}
@@ -229,7 +268,7 @@ export default function CheckinClient() {
         ) : (
           <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }}>
             {/* Name */}
-            <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+            <div style={ROW_2}>
               <div>
                 <label style={LABEL}>First name*</label>
                 <input style={INPUT} value={firstName} onChange={e => setFirstName(e.currentTarget.value)} placeholder="John" />
@@ -241,7 +280,7 @@ export default function CheckinClient() {
             </div>
 
             {/* Contact */}
-            <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+            <div style={ROW_2}>
               <div>
                 <label style={LABEL}>Email*</label>
                 <input style={INPUT} type="email" value={email} onChange={e => setEmail(e.currentTarget.value)} placeholder="john@doe.com" />
@@ -253,12 +292,12 @@ export default function CheckinClient() {
             </div>
 
             {/* Address */}
-            <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr" }}>
+            <div style={ROW_1}>
               <div>
                 <label style={LABEL}>Address</label>
                 <input style={INPUT} value={address} onChange={e => setAddress(e.currentTarget.value)} placeholder="Street, number, apt." />
               </div>
-              <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+              <div style={ROW_2}>
                 <div>
                   <label style={LABEL}>City</label>
                   <input style={INPUT} value={city} onChange={e => setCity(e.currentTarget.value)} placeholder="Bucharest" />
@@ -270,29 +309,31 @@ export default function CheckinClient() {
               </div>
             </div>
 
-            {/* Consent */}
-            <div
-              style={{
-                padding: 12,
-                borderRadius: 12,
-                border: "1px solid var(--border)",
-                background: "var(--card)",
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 10,
-              }}
-            >
-              <input
-                id="agree"
-                type="checkbox"
-                checked={agree}
-                onChange={(e) => setAgree(e.currentTarget.checked)}
-                style={{ marginTop: 3 }}
-              />
-              <label htmlFor="agree" style={{ color: "var(--muted)", cursor: "pointer" }}>
-                I confirm the information is correct and I agree to the house rules{pdfUrl ? " (see PDF link above)" : ""}.
-              </label>
-            </div>
+            {/* Consent — doar după deschiderea PDF-ului (dacă există) */}
+            {(!pdfUrl || pdfOpened) && (
+              <div
+                style={{
+                  padding: 12,
+                  borderRadius: 12,
+                  border: "1px solid var(--border)",
+                  background: "var(--card)",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 10,
+                }}
+              >
+                <input
+                  id="agree"
+                  type="checkbox"
+                  checked={agree}
+                  onChange={(e) => setAgree(e.currentTarget.checked)}
+                  style={{ marginTop: 3 }}
+                />
+                <label htmlFor="agree" style={{ color: "var(--muted)", cursor: "pointer" }}>
+                  I confirm the information is correct and I agree to the house rules{pdfUrl ? " (see PDF link above)" : ""}.
+                </label>
+              </div>
+            )}
 
             {/* Error */}
             {submitState === "error" && errorMsg && (
