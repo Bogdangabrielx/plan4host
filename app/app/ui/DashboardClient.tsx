@@ -58,7 +58,7 @@ export default function DashboardClient({
   const [name, setName] = useState("");
   const [country, setCountry] = useState<string>("");
 
-  // seed din SSR (evită flicker)
+  // seed din SSR (evită flicker/hydration mismatch)
   const [list, setList] = useState<Property[]>(initialProperties);
 
   const [toDelete, setToDelete] = useState<Property | null>(null);
@@ -81,7 +81,7 @@ export default function DashboardClient({
     );
   }, [status, setPill]);
 
-  // Refresh client-side: INCLUDE regulation_*
+  // Refresh client-side: INCLUDE regulation_* (fix pentru „PDF dispare după refresh”)
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase
@@ -155,25 +155,35 @@ export default function DashboardClient({
   }
 
   // —— BASE URL pentru linkurile de check-in ——
-  // 1) NEXT_PUBLIC_CHECKIN_BASE (dacă vrei alt domeniu special pt. check-in)
+  // 1) NEXT_PUBLIC_CHECKIN_BASE (poți seta un domeniu separat pentru form)
   // 2) NEXT_PUBLIC_APP_URL (fallback general)
-  // 3) window.location.origin (fallback local)
+  // 3) window.location.origin (fallback local/dev)
   function getCheckinBase(): string {
-    const s1 = (process.env.NEXT_PUBLIC_CHECKIN_BASE || "").toString().trim();
-    if (s1) return s1.replace(/\/+$/, "");
-    const s2 = (process.env.NEXT_PUBLIC_APP_URL || "").toString().trim();
-    if (s2) return s2.replace(/\/+$/, "");
+    const v1 = (process.env.NEXT_PUBLIC_CHECKIN_BASE || "").toString().trim();
+    if (v1) return v1.replace(/\/+$/, "");
+    const v2 = (process.env.NEXT_PUBLIC_APP_URL || "").toString().trim();
+    if (v2) return v2.replace(/\/+$/, "");
     if (typeof window !== "undefined" && window.location?.origin) {
       return window.location.origin.replace(/\/+$/, "");
     }
     return "";
   }
 
-  // URL absolut, cu ?property=<ID>
+  // Construiește URL ABSOLUT, sigur, cu ?property=<ID>
   function buildPropertyCheckinLink(p: Property): string {
     const base = getCheckinBase();
-    const id = encodeURIComponent(p.id);
-    return `${base}/checkin?property=${id}`;
+    try {
+      const u = new URL(base); // asigură schemă + host valide
+      // normalizează calea și adaugă ruta
+      const normalizedPath = u.pathname.replace(/\/+$/, "");
+      u.pathname = `${normalizedPath}/checkin`;
+      const qs = new URLSearchParams({ property: p.id });
+      u.search = qs.toString();
+      return u.toString();
+    } catch {
+      // fallback dacă baza e “ciudată” dar tot vrem link absolut
+      return `${base.replace(/\/+$/, "")}/checkin?property=${encodeURIComponent(p.id)}`;
+    }
   }
 
   async function copyPropertyCheckinLink(p: Property) {
@@ -184,7 +194,7 @@ export default function DashboardClient({
       if (timerRef.current) window.clearTimeout(timerRef.current);
       timerRef.current = window.setTimeout(() => setCopiedId(null), 2000);
     } catch {
-      // Fallback simplu dacă clipboard nu e permis
+      // Fallback când Clipboard API e blocat (Safari incognito, etc.)
       prompt("Copy this link:", link);
     }
   }
@@ -336,6 +346,7 @@ export default function DashboardClient({
                   <button
                     onClick={() => copyPropertyCheckinLink(p)}
                     title="Copy property check-in link"
+                    data-checkin-link={buildPropertyCheckinLink(p)} // util ptr. debug în Inspector
                     style={{
                       padding: "8px 12px",
                       borderRadius: 10,
