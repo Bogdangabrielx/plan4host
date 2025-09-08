@@ -175,7 +175,6 @@ export default function RoomDetailModal({
       setTextDefs(p4.error ? [] : ((p4.data ?? []) as TextDef[]));
 
       // Init start/end
-      const isCreate = !act;
       const _sDate = defaultStart?.date ?? (act ? act.start_date : dateStr);
       const _sTime = defaultStart?.time ?? (act ? (act.start_time || CI) : CI);
 
@@ -188,11 +187,12 @@ export default function RoomDetailModal({
       setEndDate(_eDate);
       setEndTime(_eTime || "");
 
-      // Names + contact
+      // Names + contact (single contact fetch; reuse for initial refs)
+      let contact: BookingContact | null = null;
       if (act) {
         setGuestFirst(act.guest_first_name ?? "");
         setGuestLast(act.guest_last_name ?? "");
-        const contact = await fetchContact(act.id);
+        contact = await fetchContact(act.id);
         setGuestEmail(contact?.email ?? "");
         setGuestPhone(contact?.phone ?? "");
         setGuestAddr(contact?.address ?? "");
@@ -206,11 +206,11 @@ export default function RoomDetailModal({
       // Set initial refs for dirty tracking
       initialGuestRef.current = { first: act?.guest_first_name ?? "", last: act?.guest_last_name ?? "" };
       initialContactRef.current = {
-        email:   act ? (await fetchContact(act.id))?.email   ?? "" : "",
-        phone:   act ? (await fetchContact(act.id))?.phone   ?? "" : "",
-        address: act ? (await fetchContact(act.id))?.address ?? "" : "",
-        city:    act ? (await fetchContact(act.id))?.city    ?? "" : "",
-        country: act ? (await fetchContact(act.id))?.country ?? "" : "",
+        email:   contact?.email   ?? "",
+        phone:   contact?.phone   ?? "",
+        address: contact?.address ?? "",
+        city:    contact?.city    ?? "",
+        country: contact?.country ?? "",
       };
       initialTimesRef.current = {
         sd: act ? act.start_date : _sDate,
@@ -221,7 +221,7 @@ export default function RoomDetailModal({
 
       // Default ON; open guest panel if creating or no name
       setOn(true);
-      setShowGuest(isCreate || !((act?.guest_first_name ?? "").trim() || (act?.guest_last_name ?? "").trim()));
+      setShowGuest(!act || !((act?.guest_first_name ?? "").trim() || (act?.guest_last_name ?? "").trim()));
       setDetailsDirty(false);
       setStatus("Idle"); setStatusHint("");
     })();
@@ -257,7 +257,7 @@ export default function RoomDetailModal({
     normTime(endTime, CO) !== normTime(initialTimesRef.current.et, CO)
   );
 
-  // For "Extend until" we also make sure it's an extension (newEnd > oldEnd)
+  // For "Extend until" ensure real extension (newEnd > oldEnd)
   const canExtend = (() => {
     if (!active || !endDirty) return false;
     const oldEnd = toDateTime(initialTimesRef.current.ed, initialTimesRef.current.et, CO);
@@ -408,10 +408,18 @@ export default function RoomDetailModal({
 
     setSaving("extending"); setStatus("Saving…"); setStatusHint("Extending…");
 
-    const upd = await supabase.from("bookings").update({
-      end_date: endDate, end_time: endTime || null,
-    }).eq("id", active.id);
-    if (upd.error) { setStatus("Error"); setStatusHint("Failed to extend."); setSaving(false); return; }
+    // Folosește PATCH-ul server-side (are verificări de overlap & permisiuni)
+    const res = await fetch(`/api/bookings/${active.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ end_date: endDate, end_time: endTime || null }),
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      setStatus("Error"); setStatusHint(txt || "Failed to extend.");
+      setSaving(false); return;
+    }
 
     setSaving(false); setStatus("Saved"); setStatusHint("Extended.");
     await onChanged(); onClose();
@@ -421,7 +429,7 @@ export default function RoomDetailModal({
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
     setSaving("releasing"); setStatus("Saving…"); setStatusHint("Releasing…");
 
-    // 1) încercăm direct din client
+    // 1) încercăm direct din client (RLS permisiv)
     const del = await supabase.from("bookings").delete().eq("id", active.id);
     if (!del.error) {
       setSaving(false); setStatus("Saved"); setStatusHint("Released.");
@@ -429,9 +437,9 @@ export default function RoomDetailModal({
       return;
     }
 
-    // 2) fallback: API server-side (Service Role), dacă RLS blochează
+    // 2) fallback: API existent cu DELETE
     try {
-      const res = await fetch(`/api/bookings/${active.id}/delete`, { method: "POST" });
+      const res = await fetch(`/api/bookings/${active.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(await res.text());
       setSaving(false); setStatus("Saved"); setStatusHint("Released.");
       await onChanged(); onClose();
