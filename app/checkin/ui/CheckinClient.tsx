@@ -11,6 +11,9 @@ type PropertyInfo = {
 
 type SubmitState = "idle" | "submitting" | "success" | "error";
 
+type RoomType = { id: string; name: string };
+type Room     = { id: string; name: string; room_type_id?: string | null };
+
 function useQueryParam(key: string) {
   const [val, setVal] = useState<string | null>(null);
   useEffect(() => {
@@ -19,6 +22,23 @@ function useQueryParam(key: string) {
     setVal(u.searchParams.get(key));
   }, []);
   return val;
+}
+
+function todayYMD(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
+}
+function addDaysYMD(ymd: string, days: number): string {
+  const [y, m, d] = ymd.split("-").map((n) => parseInt(n, 10));
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + days);
+  const yy = dt.getFullYear();
+  const mm = String(dt.getMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getDate()).padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
 }
 
 export default function CheckinClient() {
@@ -38,6 +58,19 @@ export default function CheckinClient() {
   const [city,      setCity]      = useState("");
   const [country,   setCountry]   = useState("");
 
+  // dates
+  const [startDate, setStartDate] = useState<string>(() => todayYMD());
+  const [endDate,   setEndDate]   = useState<string>(() => addDaysYMD(todayYMD(), 1));
+  const [dateError, setDateError] = useState<string>("");
+
+  // catalog (NEW)
+  const [types, setTypes] = useState<RoomType[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const hasTypes = types.length > 0;
+
+  const [selectedTypeId, setSelectedTypeId] = useState<string>("");
+  const [selectedRoomId, setSelectedRoomId] = useState<string>("");
+
   // consent
   const [agree, setAgree] = useState(false);
   const [pdfOpened, setPdfOpened] = useState(false);
@@ -45,19 +78,19 @@ export default function CheckinClient() {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
 
-  // ---------- STYLES (compact + coerent, fără overflow) ----------
+  // ---------- STYLES ----------
   const CARD: React.CSSProperties = useMemo(() => ({
     background: "var(--panel)",
     border: "1px solid var(--border)",
     borderRadius: 16,
     padding: 16,
     boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
-    overflow: "hidden",                // ⬅️ taie orice overflow interior
+    overflow: "hidden",
   }), []);
 
   const INPUT: React.CSSProperties = useMemo(() => ({
     width: "100%",
-    boxSizing: "border-box",           // ⬅️ împiedică depășirea pe orizontală
+    boxSizing: "border-box",
     padding: "12px 12px",
     background: "var(--card)",
     color: "var(--text)",
@@ -66,6 +99,8 @@ export default function CheckinClient() {
     fontSize: 14,
     outline: "none",
   }), []);
+
+  const SELECT: React.CSSProperties = INPUT;
 
   const LABEL: React.CSSProperties = useMemo(() => ({
     fontSize: 12,
@@ -92,16 +127,15 @@ export default function CheckinClient() {
     border: "1px solid var(--border)",
     background: "transparent",
     color: "var(--text)",
-    fontWeight: 800,
+    fontWeight: 800, 
     cursor: "pointer",
     whiteSpace: "nowrap",
   }), []);
 
-  // rând de câmpuri (2 coloane responsive, fără depășiri)
   const ROW_2: React.CSSProperties = useMemo(() => ({
     display: "grid",
     gap: 12,
-    gridTemplateColumns: "repeat(2, minmax(0, 1fr))", // ⬅️ minmax(0,1fr) previne overflow
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
   }), []);
   const ROW_1: React.CSSProperties = useMemo(() => ({
     display: "grid",
@@ -109,20 +143,20 @@ export default function CheckinClient() {
     gridTemplateColumns: "1fr",
   }), []);
 
-  // load property + regulations (silence noisy errors)
+  // load property + regulations + room catalog
   useEffect(() => {
     (async () => {
       if (!propertyId) { setLoading(false); return; }
 
       try {
-        // Property (nume)
+        // Property
         const resProp = await fetch(`/api/property/basic?id=${propertyId}`, { cache: "no-store" }).catch(() => null);
         if (resProp && resProp.ok) {
           const j = await resProp.json().catch(() => ({}));
           if (j?.property) setProp(j.property as PropertyInfo);
         }
 
-        // Regulations PDF — dacă nu există, nu arătăm butonul și nu dăm erori
+        // Regulations PDF
         const resPdf = await fetch(`/api/property/regulation?propertyId=${propertyId}`, { cache: "no-store" }).catch(() => null);
         if (resPdf && resPdf.ok) {
           const j = await resPdf.json().catch(() => ({}));
@@ -130,7 +164,24 @@ export default function CheckinClient() {
           if (url && typeof url === "string") setPdfUrl(url);
         }
 
-        // restaurăm „pdfOpened” (per property) din sesiune
+        // Room catalog (robust to shape)
+        const resCat = await fetch(`/api/property/room-catalog?propertyId=${propertyId}`, { cache: "no-store" }).catch(() => null);
+        if (resCat && resCat.ok) {
+          const j = await resCat.json().catch(() => ({}));
+          const t = (j?.types ?? j?.data?.types ?? []) as any[];
+          const r = (j?.rooms ?? j?.data?.rooms ?? []) as any[];
+          const tNorm: RoomType[] = (Array.isArray(t) ? t : []).map((x) => ({ id: String(x.id), name: String(x.name ?? x.label ?? "Type") }));
+          const rNorm: Room[]     = (Array.isArray(r) ? r : []).map((x) => ({ id: String(x.id), name: String(x.name ?? x.label ?? "Room"), room_type_id: x.room_type_id ?? x.type_id ?? null }));
+          setTypes(tNorm);
+          setRooms(rNorm);
+          if ((tNorm?.length ?? 0) > 0) {
+            setSelectedTypeId(tNorm[0].id);
+          } else if ((rNorm?.length ?? 0) > 0) {
+            setSelectedRoomId(rNorm[0].id);
+          }
+        }
+
+        // restore pdfOpened
         try {
           const key = `p4h:pdfOpened:${propertyId}`;
           const val = sessionStorage.getItem(key);
@@ -142,13 +193,22 @@ export default function CheckinClient() {
     })();
   }, [propertyId]);
 
-  // validare
+  // validate dates
+  useEffect(() => {
+    if (!startDate || !endDate) { setDateError(""); return; }
+    if (endDate <= startDate) setDateError("Check-out must be after check-in.");
+    else setDateError("");
+  }, [startDate, endDate]);
+
   const canSubmit =
     !!propertyId &&
     firstName.trim().length >= 1 &&
     lastName.trim().length  >= 1 &&
     /\S+@\S+\.\S+/.test(email) &&
     phone.trim().length >= 5 &&
+    (!dateError && !!startDate && !!endDate) &&
+    // selector obligatoriu în funcție de configurator:
+    (hasTypes ? !!selectedTypeId : !!selectedRoomId) &&
     agree &&
     submitState !== "submitting";
 
@@ -173,9 +233,11 @@ export default function CheckinClient() {
     setErrorMsg("");
 
     try {
-      const payload = {
+      const payload: any = {
         property_id: propertyId,
         booking_id: bookingId ?? null,
+        start_date: startDate,
+        end_date: endDate,
         guest_first_name: firstName.trim(),
         guest_last_name:  lastName.trim(),
         email: email.trim(),
@@ -183,6 +245,9 @@ export default function CheckinClient() {
         address: address.trim(),
         city: city.trim(),
         country: country.trim(),
+        // NEW: preferință de alocare
+        requested_room_type_id: hasTypes ? selectedTypeId || null : null,
+        requested_room_id: hasTypes ? null : (selectedRoomId || null),
       };
 
       const res = await fetch("/api/checkin/submit", {
@@ -206,7 +271,6 @@ export default function CheckinClient() {
     }
   }
 
-  // ——— RENDER ———
   if (!propertyId) {
     return (
       <div style={{ maxWidth: 720, margin: "24px auto", padding: 16 }}>
@@ -222,7 +286,7 @@ export default function CheckinClient() {
 
   return (
     <div style={{ maxWidth: 860, margin: "24px auto", padding: 16, display: "grid", gap: 16 }}>
-      {/* Header card */}
+      {/* Header */}
       <section style={CARD}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div>
@@ -246,7 +310,6 @@ export default function CheckinClient() {
           )}
         </div>
 
-        {/* Hint: până nu deschide PDF-ul, nu apare bifa */}
         {pdfUrl && !pdfOpened && (
           <p style={{ margin: "10px 0 0 0", color: "var(--muted)", fontStyle: "italic" }}>
             Please open the House rules (PDF) to continue.
@@ -254,7 +317,7 @@ export default function CheckinClient() {
         )}
       </section>
 
-      {/* Form card */}
+      {/* Form */}
       <section style={CARD}>
         {loading ? (
           <div style={{ color: "var(--muted)" }}>Loading…</div>
@@ -267,6 +330,81 @@ export default function CheckinClient() {
           </div>
         ) : (
           <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }}>
+            {/* Dates */}
+            <div style={ROW_2}>
+              <div>
+                <label style={LABEL}>Check-in date*</label>
+                <input
+                  style={INPUT}
+                  type="date"
+                  value={startDate}
+                  min={todayYMD()}
+                  onChange={(e) => {
+                    const v = e.currentTarget.value;
+                    setStartDate(v);
+                    if (endDate <= v) setEndDate(addDaysYMD(v, 1));
+                  }}
+                />
+              </div>
+              <div>
+                <label style={LABEL}>Check-out date*</label>
+                <input
+                  style={INPUT}
+                  type="date"
+                  value={endDate}
+                  min={addDaysYMD(startDate, 1)}
+                  onChange={(e) => setEndDate(e.currentTarget.value)}
+                />
+              </div>
+            </div>
+            {dateError && (
+              <div
+                role="alert"
+                style={{
+                  padding: 10,
+                  borderRadius: 10,
+                  background: "var(--danger)",
+                  color: "#0c111b",
+                  fontWeight: 800,
+                }}
+              >
+                {dateError}
+              </div>
+            )}
+
+            {/* RoomType OR Room — in funcție de configurator */}
+            {hasTypes ? (
+              <div style={ROW_1}>
+                <div>
+                  <label style={LABEL}>Preferred room type*</label>
+                  <select
+                    style={SELECT}
+                    value={selectedTypeId}
+                    onChange={(e) => setSelectedTypeId(e.currentTarget.value)}
+                  >
+                    {types.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            ) : (
+              <div style={ROW_1}>
+                <div>
+                  <label style={LABEL}>Preferred room*</label>
+                  <select
+                    style={SELECT}
+                    value={selectedRoomId}
+                    onChange={(e) => setSelectedRoomId(e.currentTarget.value)}
+                  >
+                    {rooms.map((r) => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
             {/* Name */}
             <div style={ROW_2}>
               <div>
@@ -309,7 +447,7 @@ export default function CheckinClient() {
               </div>
             </div>
 
-            {/* Consent — doar după deschiderea PDF-ului (dacă există) */}
+            {/* Consent (only after PDF open if exists) */}
             {(!pdfUrl || pdfOpened) && (
               <div
                 style={{
@@ -376,7 +514,6 @@ export default function CheckinClient() {
         )}
       </section>
 
-      {/* Footer hint */}
       <p style={{ color: "var(--muted)", textAlign: "center", fontSize: 12 }}>
         Powered by Plan4Host — secure check-in.
       </p>
