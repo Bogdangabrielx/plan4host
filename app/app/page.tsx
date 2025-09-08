@@ -1,4 +1,3 @@
-// app/app/page.tsx  (Dashboard)
 import AppShell from "./_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -14,30 +13,37 @@ export default async function DashboardPage() {
 
   // Billing-only guard: owner can access Subscription only
   const mode = await supabase.rpc("account_access_mode");
-  if ((mode.data as string | null) === 'billing_only') {
-    redirect('/app/subscription');
+  if ((mode.data as string | null) === "billing_only") {
+    redirect("/app/subscription");
   }
 
   // Redirect sub-users fără 'dashboard' către prima secțiune permisă
-  const { data: acc } = await supabase.from("accounts").select("id").eq("id", user.id).maybeSingle();
+  const { data: acc } = await supabase
+    .from("accounts")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+
   if (!acc) {
     const { data: au } = await supabase
       .from("account_users")
       .select("role,scopes,disabled")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
+
     const m = (au ?? [])[0] as any;
-    if (m && !m.disabled && !(m.role === 'owner' || m.role === 'manager')) {
+    if (m && !m.disabled && !(m.role === "owner" || m.role === "manager")) {
       const scopes: string[] = (m.scopes as string[] | null) ?? [];
-      if (!scopes.includes('dashboard')) {
-        const order = ['cleaning','inbox','calendar','channels','configurator'];
-        const first = order.find(s => scopes.includes(s));
+      if (!scopes.includes("dashboard")) {
+        const order = ["cleaning", "inbox", "calendar", "channels", "configurator"];
+        const first = order.find((s) => scopes.includes(s));
         if (first) {
-          const path = first === 'cleaning' ? '/app/cleaning'
-            : first === 'inbox' ? '/app/inbox'
-            : first === 'calendar' ? '/app/calendar'
-            : first === 'channels' ? '/app/channels'
-            : '/app/configurator';
+          const path =
+            first === "cleaning" ? "/app/cleaning"
+            : first === "inbox" ? "/app/guest" // 🔁 Inbox → Guest Overview
+            : first === "calendar" ? "/app/calendar"
+            : first === "channels" ? "/app/channels"
+            : "/app/configurator";
           redirect(path);
         }
       }

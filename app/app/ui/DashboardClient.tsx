@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "../_components/HeaderContext";
 import PlanHeaderBadge from "../_components/PlanHeaderBadge"; // ← NEW
@@ -63,6 +63,13 @@ export default function DashboardClient({
 
   const [toDelete, setToDelete] = useState<Property | null>(null);
   const [plan, setPlan] = useState<"basic"|"standard"|"premium"|null>(null);
+
+  // — NEW: state pentru „Copied!” —
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const timerRef = useRef<number | null>(null);
+  useEffect(() => {
+    return () => { if (timerRef.current) window.clearTimeout(timerRef.current); };
+  }, []);
 
   useEffect(() => { setTitle("Dashboard"); }, [setTitle]);
 
@@ -145,6 +152,28 @@ export default function DashboardClient({
 
   function openConfigurator(id: string) {
     window.location.href = `/app/configurator?property=${id}`;
+  }
+
+  // — NEW: build + copy check-in link pentru PROPRIETATE —
+  function buildPropertyCheckinLink(p: Property): string {
+    const origin =
+      (typeof window !== "undefined" && window.location.origin) ||
+      (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
+      "";
+    const qs = new URLSearchParams();
+    qs.set("property", p.id); // IMPORTANT: doar property, fără booking
+    return `${origin}/checkin?${qs.toString()}`;
+  }
+  async function copyPropertyCheckinLink(p: Property) {
+    const link = buildPropertyCheckinLink(p);
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedId(p.id);
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+      timerRef.current = window.setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      alert("Could not copy link");
+    }
   }
 
   async function uploadRegulationPdf(propertyId: string, file: File) {
@@ -290,7 +319,24 @@ export default function DashboardClient({
                     {" • "}CI {p.check_in_time ?? "—"} / CO {p.check_out_time ?? "—"}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 8 }}>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {/* NEW: Copy check-in link */}
+                  <button
+                    onClick={() => copyPropertyCheckinLink(p)}
+                    title="Copy property check-in link"
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border)",
+                      background: "var(--panel)",
+                      color: "var(--text)",
+                      fontWeight: 800,
+                      cursor: "pointer"
+                    }}
+                  >
+                    {copiedId === p.id ? "Copied!" : "Copy check-in link"}
+                  </button>
+
                   <button
                     onClick={() => openConfigurator(p.id)}
                     style={{
