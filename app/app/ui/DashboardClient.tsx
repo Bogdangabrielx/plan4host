@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "../_components/HeaderContext";
-import PlanHeaderBadge from "../_components/PlanHeaderBadge"; // ← NEW
+import PlanHeaderBadge from "../_components/PlanHeaderBadge";
 
 type Property = {
   id: string;
@@ -58,18 +58,16 @@ export default function DashboardClient({
   const [name, setName] = useState("");
   const [country, setCountry] = useState<string>("");
 
-  // ⚠️ seed din SSR (evită flicker/hydration mismatch)
+  // seed din SSR
   const [list, setList] = useState<Property[]>(initialProperties);
 
   const [toDelete, setToDelete] = useState<Property | null>(null);
   const [plan, setPlan] = useState<"basic"|"standard"|"premium"|null>(null);
 
-  // — NEW: state pentru „Copied!” —
+  // Copied! state
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const timerRef = useRef<number | null>(null);
-  useEffect(() => {
-    return () => { if (timerRef.current) window.clearTimeout(timerRef.current); };
-  }, []);
+  useEffect(() => () => { if (timerRef.current) window.clearTimeout(timerRef.current); }, []);
 
   useEffect(() => { setTitle("Dashboard"); }, [setTitle]);
 
@@ -81,18 +79,18 @@ export default function DashboardClient({
     );
   }, [status, setPill]);
 
-  // Refresh client-side (rămâne, dar pornește deja cu initialProperties)
+  // Refresh client-side: INCLUDE regulation_* (fix "dispare după refresh")
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("id,name,country_code,timezone,check_in_time,check_out_time")
+        .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
         .order("created_at", { ascending: true });
       if (!error && data) setList(data as Property[]);
     })();
   }, [supabase]);
 
-  // Load plan for button gating
+  // Load plan
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -138,9 +136,10 @@ export default function DashboardClient({
       return;
     }
 
+    // Re-fetch cu regulation_* (ca să nu „dispară” după refresh)
     const { data: refreshed } = await supabase
       .from("properties")
-      .select("id,name,country_code,timezone,check_in_time,check_out_time")
+      .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
       .order("created_at", { ascending: true });
 
     setList((refreshed ?? []) as Property[]);
@@ -154,14 +153,14 @@ export default function DashboardClient({
     window.location.href = `/app/configurator?property=${id}`;
   }
 
-  // — NEW: build + copy check-in link pentru PROPRIETATE —
+  // Check-in link (property-level)
   function buildPropertyCheckinLink(p: Property): string {
     const origin =
       (typeof window !== "undefined" && window.location.origin) ||
       (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
       "";
     const qs = new URLSearchParams();
-    qs.set("property", p.id); // IMPORTANT: doar property, fără booking
+    qs.set("property", p.id);
     return `${origin}/checkin?${qs.toString()}`;
   }
   async function copyPropertyCheckinLink(p: Property) {
@@ -194,6 +193,7 @@ export default function DashboardClient({
         setStatus("Error");
         return;
       }
+      // Re-fetch cu regulation_* (persistă în listă și după reload)
       const { data } = await supabase
         .from("properties")
         .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
@@ -218,7 +218,7 @@ export default function DashboardClient({
     setTimeout(() => setStatus("Idle"), 800);
   }
 
-  // —— UI helpers pentru lățimi egale ——
+  // UI helpers
   const FIELD_WRAPPER: React.CSSProperties = { width: 340, maxWidth: "100%" };
   const FIELD_STYLE: React.CSSProperties = {
     width: "100%",
@@ -280,7 +280,6 @@ export default function DashboardClient({
             >
               Save property
             </button>
-            {/* Unlimited properties across all plans — no UI gating */}
           </div>
           <small style={{ fontSize: 12, color: "var(--muted)" }}>
             Check-in/out default to 14:00 / 11:00. <br />
@@ -320,7 +319,7 @@ export default function DashboardClient({
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {/* NEW: Copy check-in link */}
+                  {/* Copy check-in link */}
                   <button
                     onClick={() => copyPropertyCheckinLink(p)}
                     title="Copy property check-in link"
