@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type PropertyInfo = {
   id: string;
   name: string;
+  regulation_pdf_url?: string | null;
   timezone?: string | null;
   country_code?: string | null;
 };
@@ -45,9 +47,17 @@ export default function CheckinClient() {
   const propertyId = useQueryParam("property");
   const bookingId  = useQueryParam("booking"); // optional
 
+  const supabase = useMemo(() => createClient(), []);
   const [prop, setProp] = useState<PropertyInfo | null>(null);
+
+  // catalog legat de proprietate
+  const [types, setTypes] = useState<RoomType[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const hasTypes = types.length > 0;
+
+  // PDF
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [pdfOpened, setPdfOpened] = useState(false);
 
   // form fields
   const [firstName, setFirstName] = useState("");
@@ -63,20 +73,14 @@ export default function CheckinClient() {
   const [endDate,   setEndDate]   = useState<string>(() => addDaysYMD(todayYMD(), 1));
   const [dateError, setDateError] = useState<string>("");
 
-  // catalog
-  const [types, setTypes] = useState<RoomType[]>([]);
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const hasTypes = types.length > 0;
-
+  // selections (depend de configurator)
   const [selectedTypeId, setSelectedTypeId] = useState<string>("");
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
 
-  // consent
   const [agree, setAgree] = useState(false);
-  const [pdfOpened, setPdfOpened] = useState(false);
-
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
   // ---------- STYLES ----------
   const CARD: React.CSSProperties = useMemo(() => ({
@@ -99,7 +103,6 @@ export default function CheckinClient() {
     fontSize: 14,
     outline: "none",
   }), []);
-
   const SELECT: React.CSSProperties = INPUT;
 
   const LABEL: React.CSSProperties = useMemo(() => ({
@@ -143,58 +146,74 @@ export default function CheckinClient() {
     gridTemplateColumns: "1fr",
   }), []);
 
-  // load property + regulations + room catalog
+  // ------- LOAD: property + catalog direct din Supabase (legat la propertyId) -------
   useEffect(() => {
     (async () => {
       if (!propertyId) { setLoading(false); return; }
 
       try {
-        // Property
-        const resProp = await fetch(`/api/property/basic?id=${propertyId}`, { cache: "no-store" }).catch(() => null);
-        if (resProp && resProp.ok) {
-          const j = await resProp.json().catch(() => ({}));
-          if (j?.property) setProp(j.property as PropertyInfo);
+        // 1) Property (inclusiv url PDF)
+        const { data: p, error: eP } = await supabase
+          .from("properties")
+          .select("id,name,regulation_pdf_url,timezone,country_code")
+          .eq("id", propertyId)
+          .maybeSingle();
+        if (!eP && p) {
+          setProp(p as PropertyInfo);
+          setPdfUrl((p as any)?.regulation_pdf_url ?? null);
         }
 
-        // Regulations PDF
-        const resPdf = await fetch(`/api/property/regulation?propertyId=${propertyId}`, { cache: "no-store" }).catch(() => null);
-        if (resPdf && resPdf.ok) {
-          const j = await resPdf.json().catch(() => ({}));
-          const url = j?.url ?? j?.data?.url ?? null;
-          if (url && typeof url === "string") setPdfUrl(url);
+        // 2) Room Types (dacă există în configurator)
+        const { data: t, error: eT } = await supabase
+          .from("room_types")
+          .select("id,name")
+          .eq("property_id", propertyId)
+          .order("name", { ascending: true });
+        if (!eT && Array.isArray(t)) {
+          setTypes((t as any[]).map(x => ({ id: String(x.id), name: String(x.name ?? "Type") })));
+        } else {
+          setTypes([]);
         }
 
-        // Room catalog (robust)
-        const resCat = await fetch(`/api/property/room-catalog?propertyId=${propertyId}`, { cache: "no-store" }).catch(() => null);
-        if (resCat && resCat.ok) {
-          const j = await resCat.json().catch(() => ({}));
-          const t = (j?.types ?? j?.data?.types ?? []) as any[];
-          const r = (j?.rooms ?? j?.data?.rooms ?? []) as any[];
-          const tNorm: RoomType[] = (Array.isArray(t) ? t : []).map((x) => ({ id: String(x.id), name: String(x.name ?? x.label ?? "Type") }));
-          const rNorm: Room[]     = (Array.isArray(r) ? r : []).map((x) => ({ id: String(x.id), name: String(x.name ?? x.label ?? "Room"), room_type_id: x.room_type_id ?? x.type_id ?? null }));
-          setTypes(tNorm);
-          setRooms(rNorm);
-          // preselect first available (reduce friction)
-          if ((tNorm?.length ?? 0) > 0) {
-            setSelectedTypeId(tNorm[0].id);
-          } else if ((rNorm?.length ?? 0) > 0) {
-            setSelectedRoomId(rNorm[0].id);
-          }
+        // 3) Rooms (pentru fallback când nu avem types)
+        const { data: r, error: eR } = await supabase
+          .from("rooms")
+          .select("id,name,room_type_id")
+          .eq("property_id", propertyId)
+          .order("name", { ascending: true });
+        if (!eR && Array.isArray(r)) {
+          setRooms((r as any[]).map(x => ({
+            id: String(x.id),
+            name: String(x.name ?? "Room"),
+            room_type_id: x.room_type_id ?? null,
+          })));
+        } else {
+          setRooms([]);
         }
 
-        // restore pdfOpened
+        // 4) pdfOpened din sesiune (per property)
         try {
           const key = `p4h:pdfOpened:${propertyId}`;
           const val = sessionStorage.getItem(key);
           if (val === "1") setPdfOpened(true);
         } catch {}
+
+        // 5) Preselect (în funcție de configurator)
+        setTimeout(() => {
+          const hasTypesLocal = (t?.length ?? 0) > 0;
+          if (hasTypesLocal) {
+            setSelectedTypeId(String(t![0].id));
+          } else if ((r?.length ?? 0) > 0) {
+            setSelectedRoomId(String(r![0].id));
+          }
+        }, 0);
       } finally {
         setLoading(false);
       }
     })();
-  }, [propertyId]);
+  }, [propertyId, supabase]);
 
-  // validate dates
+  // ------- Validări -------
   useEffect(() => {
     if (!startDate || !endDate) { setDateError(""); return; }
     if (endDate <= startDate) setDateError("Check-out must be after check-in.");
@@ -203,15 +222,19 @@ export default function CheckinClient() {
 
   const canSubmit =
     !!propertyId &&
+    !!prop?.id &&
     firstName.trim().length >= 1 &&
     lastName.trim().length  >= 1 &&
     /\S+@\S+\.\S+/.test(email) &&
     phone.trim().length >= 5 &&
     (!dateError && !!startDate && !!endDate) &&
-    (hasTypes ? !!selectedTypeId : !!selectedRoomId) &&
+    ((types.length > 0) ? !!selectedTypeId : !!selectedRoomId) &&
+    // acordul e obligatoriu; checkbox-ul devine vizibil doar după ce deschide PDF-ul (dacă există)
+    (!pdfUrl || (pdfUrl && pdfOpened)) &&
     agree &&
     submitState !== "submitting";
 
+  // ------- PDF Gate -------
   function onOpenPdf() {
     if (!pdfUrl) return;
     try {
@@ -225,6 +248,7 @@ export default function CheckinClient() {
     }
   }
 
+  // ------- Submit -------
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
@@ -245,8 +269,8 @@ export default function CheckinClient() {
         address: address.trim(),
         city: city.trim(),
         country: country.trim(),
-        requested_room_type_id: hasTypes ? selectedTypeId || null : null,
-        requested_room_id:     hasTypes ? null : (selectedRoomId || null),
+        requested_room_type_id: (types.length > 0) ? (selectedTypeId || null) : null,
+        requested_room_id:     (types.length > 0) ? null : (selectedRoomId || null),
       };
 
       const res = await fetch("/api/checkin/submit", {
@@ -270,6 +294,7 @@ export default function CheckinClient() {
     }
   }
 
+  // ------- RENDER -------
   if (!propertyId) {
     return (
       <div style={{ maxWidth: 720, margin: "24px auto", padding: 16 }}>
@@ -289,7 +314,6 @@ export default function CheckinClient() {
       <section style={CARD}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div>
-            {/* ➜ Titlu cu numele proprietății clar, nu doar ca subtext */}
             <h1 style={{ margin: 0, fontSize: 22, letterSpacing: 0.3 }}>
               Guest Check-in — {prop?.name ?? "Property"}
             </h1>
@@ -372,8 +396,8 @@ export default function CheckinClient() {
               </div>
             )}
 
-            {/* RoomType OR Room */}
-            {hasTypes ? (
+            {/* RoomType sau Room (în funcție de configurator) */}
+            {types.length > 0 ? (
               <div style={ROW_1}>
                 <div>
                   <label style={LABEL}>Preferred room type*</label>
@@ -447,7 +471,7 @@ export default function CheckinClient() {
               </div>
             </div>
 
-            {/* Consent (only after PDF open if exists) */}
+            {/* Consent (vizibil doar după ce deschide PDF-ul, dacă există) */}
             {(!pdfUrl || pdfOpened) && (
               <div
                 style={{
