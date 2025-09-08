@@ -77,7 +77,6 @@ export default function DayModal({
         .gte("end_date", dateStr)
         .neq("status", "cancelled")
         .order("start_date", { ascending: true }),
-      // ✅ FIX: include end_date and end_time so it matches Booking type
       supabase
         .from("bookings")
         .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status")
@@ -275,10 +274,6 @@ export default function DayModal({
             const isReserved = !!b && b.status !== "cancelled";
             const fullName = guestFullName(b);
 
-            // For available rooms: preset default dates (start=today, end=tomorrow)
-            const defaultStart = { date: dateStr, time: null as string | null };
-            const defaultEnd = { date: nextDate(dateStr), time: null as string | null };
-
             return (
               <div
                 key={room.id}
@@ -355,17 +350,10 @@ export default function DayModal({
                 {/* Footer: until text */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <small style={{ color: "var(--muted)" }}>
-                    {isReserved ? formatReservedUntil(b!) : formatAvailableUntil(room.id)}
+                    {isReserved ? `Reserved until ${b!.end_date}${b!.end_time ? ` ${b!.end_time}` : ""}` : formatAvailableUntil(room.id)}
                   </small>
                   <small style={{ color: "var(--muted)" }}>Open ▸</small>
                 </div>
-
-                {/* Hint: when creating, dates will be prefilled */}
-                {!isReserved && (
-                  <small style={{ position: "absolute", bottom: 8, left: 14, color: "var(--muted)" }}>
-                    (Start: {defaultStart.date} • End: {defaultEnd.date})
-                  </small>
-                )}
               </div>
             );
           })}
