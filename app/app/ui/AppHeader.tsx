@@ -60,9 +60,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
     "/app/subscription": { light: "/subscription_forlight.png", dark: "/subscription_fordark.png" },
     // Noua rută pentru Guest Overview reutilizează iconul de inbox până ai un asset dedicat
-    "/app/guest": { light: "/inbox_forlight.png", dark: "/inbox_fordark.png" },
+    "/app/guest": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
     // (opțional) legacy mapping dacă mai există rute vechi în circulație:
-    "/app/inbox": { light: "/inbox_forlight.png", dark: "/inbox_fordark.png" },
+    "/app/inbox": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
   };
 
   function NavIcon({ href, emoji, size }: { href: string; emoji: string; size: number }) {

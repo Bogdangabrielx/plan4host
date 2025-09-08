@@ -79,7 +79,7 @@ export default function DashboardClient({
     );
   }, [status, setPill]);
 
-  // Refresh client-side: INCLUDE regulation_* (fix "dispare după refresh")
+  // Refresh client-side: INCLUDE regulation_* (fix pentru PDF „dispare după refresh”)
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase
@@ -136,7 +136,7 @@ export default function DashboardClient({
       return;
     }
 
-    // Re-fetch cu regulation_* (ca să nu „dispară” după refresh)
+    // Re-fetch cu regulation_* (persistă după reload)
     const { data: refreshed } = await supabase
       .from("properties")
       .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
@@ -153,16 +153,24 @@ export default function DashboardClient({
     window.location.href = `/app/configurator?property=${id}`;
   }
 
-  // Check-in link (property-level)
-  function buildPropertyCheckinLink(p: Property): string {
-    const origin =
-      (typeof window !== "undefined" && window.location.origin) ||
-      (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
-      "";
-    const qs = new URLSearchParams();
-    qs.set("property", p.id);
-    return `${origin}/checkin?${qs.toString()}`;
+  // URL absolut, întotdeauna cu ?property=<ID>
+  function getAppBase(): string {
+    // Preferă URL-ul public din env (ex.: https://plan4host.com)
+    const env = (process.env.NEXT_PUBLIC_APP_URL || "").toString().trim();
+    if (env) return env.replace(/\/+$/, "");
+    // Fallback sigur în browser
+    if (typeof window !== "undefined" && window.location?.origin) {
+      return window.location.origin.replace(/\/+$/, "");
+    }
+    return ""; // teoretic nu ajungem aici în UI
   }
+
+  function buildPropertyCheckinLink(p: Property): string {
+    const base = getAppBase();
+    const id = encodeURIComponent(p.id);
+    return `${base}/checkin?property=${id}`;
+  }
+
   async function copyPropertyCheckinLink(p: Property) {
     const link = buildPropertyCheckinLink(p);
     try {
@@ -171,7 +179,8 @@ export default function DashboardClient({
       if (timerRef.current) window.clearTimeout(timerRef.current);
       timerRef.current = window.setTimeout(() => setCopiedId(null), 2000);
     } catch {
-      alert("Could not copy link");
+      // fallback simplu
+      prompt("Copy this link:", link);
     }
   }
 
@@ -193,7 +202,7 @@ export default function DashboardClient({
         setStatus("Error");
         return;
       }
-      // Re-fetch cu regulation_* (persistă în listă și după reload)
+      // Re-fetch cu regulation_* (persistă în listă după refresh)
       const { data } = await supabase
         .from("properties")
         .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
@@ -319,7 +328,7 @@ export default function DashboardClient({
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {/* Copy check-in link */}
+                  {/* Copy property check-in link (ABSOLUT + ?property=<ID>) */}
                   <button
                     onClick={() => copyPropertyCheckinLink(p)}
                     title="Copy property check-in link"
