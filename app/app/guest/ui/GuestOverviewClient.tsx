@@ -11,7 +11,8 @@ type Property = {
   check_out_time: string | null;
 };
 
-type Room = { id: string; name: string; property_id: string };
+type Room = { id: string; name: string; property_id: string; room_type_id?: string | null };
+type RoomType = { id: string; name: string; property_id: string };
 
 /** Booking extended with optional fields we may use if they exist in DB */
 type Booking = {
@@ -41,6 +42,9 @@ type Booking = {
   is_soft_hold?: boolean | null;
   hold_expires_at?: string | null;
   hold_status?: "active" | "expired" | "promoted" | "cancelled" | null;
+
+  // legături posibile
+  room_type_id?: string | null;
 
   [k: string]: any; // tolerate extra fields from select("*")
 };
@@ -127,6 +131,30 @@ function formSubmittedAt(b: Booking): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 
+// Base pt linkul public /checkin
+function getCheckinBase(): string {
+  const v1 = (process.env.NEXT_PUBLIC_CHECKIN_BASE || "").toString().trim();
+  if (v1) return v1.replace(/\/+$/, "");
+  const v2 = (process.env.NEXT_PUBLIC_APP_URL || "").toString().trim();
+  if (v2) return v2.replace(/\/+$/, "");
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return window.location.origin.replace(/\/+$/, "");
+  }
+  return "";
+}
+function buildPropertyCheckinLink(propertyId: string): string {
+  const base = getCheckinBase();
+  try {
+    const u = new URL(base);
+    const normalized = u.pathname.replace(/\/+$/, "");
+    u.pathname = `${normalized}/checkin`;
+    u.search = new URLSearchParams({ property: propertyId }).toString();
+    return u.toString();
+  } catch {
+    return `${base.replace(/\/+$/, "")}/checkin?property=${encodeURIComponent(propertyId)}`;
+  }
+}
+
 export default function InboxClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = createClient();
 
@@ -135,6 +163,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
   const [activePropertyId, setActivePropertyId] = useState<string | null>(initialProperties?.[0]?.id ?? null);
 
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
 
   const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
@@ -155,16 +184,20 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
 
     const today = todayLocalISODate();
 
-    const [rRooms, rBookings] = await Promise.all([
+    const [rRooms, rTypes, rBookings] = await Promise.all([
       supabase
         .from("rooms")
+        .select("id,name,property_id,room_type_id")
+        .eq("property_id", activePropertyId)
+        .order("name", { ascending: true }),
+      supabase
+        .from("room_types")
         .select("id,name,property_id")
         .eq("property_id", activePropertyId)
         .order("name", { ascending: true }),
-      // select("*): luăm ce e disponibil (ex: created_at, form_submitted_at, ical_uid, is_soft_hold, hold_expires_at, ...)
       supabase
         .from("bookings")
-        .select("*")
+        .select("*") // luăm created_at, form_submitted_at, is_soft_hold, hold_expires_at, room_type_id etc.
         .eq("property_id", activePropertyId)
         .gte("end_date", today) // doar curente/viitoare
         .neq("status", "cancelled")
@@ -172,13 +205,14 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
         .order("start_time", { ascending: true, nullsFirst: true }),
     ]);
 
-    if (rRooms.error || rBookings.error) {
+    if (rRooms.error || rTypes.error || rBookings.error) {
       setLoading("error");
-      setHint(rRooms.error?.message || rBookings.error?.message || "Failed to load.");
+      setHint(rRooms.error?.message || rTypes.error?.message || rBookings.error?.message || "Failed to load.");
       return;
     }
 
     setRooms((rRooms.data ?? []) as Room[]);
+    setRoomTypes((rTypes.data ?? []) as RoomType[]);
     setBookings((rBookings.data ?? []) as Booking[]);
     setLoading("idle");
     setHint("");
@@ -198,8 +232,15 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
   const rows: Row[] = useMemo(() => {
     const now = new Date();
 
+    // map-uri pentru lookup rapid
+    const roomById = new Map<string, Room>();
+    rooms.forEach((r) => roomById.set(String(r.id), r));
+
+    const typeById = new Map<string, RoomType>();
+    roomTypes.forEach((t) => typeById.set(String(t.id), t));
+
     return bookings.map((b) => {
-      const room = rooms.find((r) => r.id === b.room_id) ?? null;
+      const room = b.room_id ? (roomById.get(String(b.room_id)) ?? null) : null;
 
       const _hasForm = hasForm(b);
       const _hasIcal = hasIcal(b);
@@ -258,33 +299,35 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
         cutoffISO = toLocalISO(now);
       }
 
-      // Type – necunoscut momentan; îl vom lega la room_types în pasul următor
-      const typeName: string | null = null;
+      // —— Derivă Type pentru afișare ——
+      // 1) dacă booking are room_type_id -> numele din room_types
+      // 2) altfel, dacă avem room și ea are room_type_id -> numele din room_types
+      let typeName: string | null = null;
+      if (b.room_type_id) {
+        typeName = typeById.get(String(b.room_type_id))?.name ?? null;
+      } else if (room?.room_type_id) {
+        typeName = typeById.get(String(room.room_type_id))?.name ?? null;
+      }
 
       return { booking: b, room, typeName, color, reason, subcopy, cutoffISO };
     });
-  }, [bookings, rooms]);
+  }, [bookings, rooms, roomTypes]);
 
   // ---- Actions
-  const buildCheckinLink = useCallback((b: Booking): string => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const qs = new URLSearchParams();
-    qs.set("booking", b.id);
-    if (activePropertyId) qs.set("property", activePropertyId); // include property în link
-    return `${origin}/checkin?${qs.toString()}`;
-  }, [activePropertyId]);
-
-  async function copyLinkFor(b: Booking) {
-    const link = buildCheckinLink(b);
+  // Acum copiem linkul pe PROPRIETATE (nu pe booking), ca să meargă perfect în incognito:
+  const copyLinkFor = useCallback(async (b: Booking) => {
+    const propId = b.property_id;
+    const link = buildPropertyCheckinLink(propId);
     try {
       await navigator.clipboard.writeText(link);
       setCopiedBookingId(b.id);
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       copyTimer.current = window.setTimeout(() => setCopiedBookingId(null), 2000);
     } catch {
-      alert("Could not copy link");
+      // fallback simplu
+      prompt("Copy this link:", link);
     }
-  }
+  }, []);
 
   function openCalendarFor(b: Booking) {
     const url = `/app/calendar?date=${b.start_date}`;
@@ -398,7 +441,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
                   </small>
 
                   <div style={{ display: "flex", gap: 8 }}>
-                    {/* iCal fără Form -> oferă Copy check-in link */}
+                    {/* iCal fără Form -> oferă Copy check-in link (pe proprietate) */}
                     {(isIcalNoForm || (r.color === "RED" && r.reason === "missing_form")) && (
                       <button
                         onClick={() => copyLinkFor(b)}
