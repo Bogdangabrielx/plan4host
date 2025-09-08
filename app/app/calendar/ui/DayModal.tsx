@@ -24,6 +24,7 @@ export type Booking = {
 };
 
 type Room = { id: string; name: string; property_id: string };
+type Property = { id: string; check_in_time: string | null; check_out_time: string | null };
 
 function nextDate(dateStr: string): string {
   const [y, m, d] = dateStr.split("-").map((n) => parseInt(n, 10));
@@ -46,21 +47,28 @@ export default function DayModal({
 }) {
   const supabase = createClient();
 
+  const [property, setProperty] = useState<Property | null>(null);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookingsToday, setBookingsToday] = useState<Booking[]>([]);
   const [futureBookings, setFutureBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
   const [statusHint, setStatusHint] = useState<string>("");
 
-  // Room detail modal state
-  const [openRoom, setOpenRoom] = useState<Room | null>(null);
+  // Modale
+  const [openRoom, setOpenRoom] = useState<Room | null>(null);   // view/edit existentă
+  const [createRoom, setCreateRoom] = useState<Room | null>(null); // creare nouă (forceNew)
 
   // ---------- Data load & refresh ----------
   const refresh = useCallback(async () => {
     setLoading("loading");
     setStatusHint("Loading rooms and bookings…");
 
-    const [rRooms, rToday, rFuture] = await Promise.all([
+    const [rProp, rRooms, rToday, rFuture] = await Promise.all([
+      supabase
+        .from("properties")
+        .select("id,check_in_time,check_out_time")
+        .eq("id", propertyId)
+        .maybeSingle(),
       supabase
         .from("rooms")
         .select("id,name,property_id")
@@ -87,12 +95,19 @@ export default function DayModal({
         .order("start_time", { ascending: true, nullsFirst: true }),
     ]);
 
-    if (rRooms.error || rToday.error || rFuture.error) {
+    if (rProp.error || rRooms.error || rToday.error || rFuture.error) {
       setLoading("error");
-      setStatusHint(rRooms.error?.message || rToday.error?.message || rFuture.error?.message || "Failed to load data.");
+      setStatusHint(
+        rProp.error?.message ||
+          rRooms.error?.message ||
+          rToday.error?.message ||
+          rFuture.error?.message ||
+          "Failed to load data."
+      );
       return;
     }
 
+    setProperty((rProp.data as Property) ?? null);
     setRooms(rRooms.data ?? []);
     setBookingsToday(rToday.data ?? []);
     setFutureBookings(rFuture.data ?? []);
@@ -104,7 +119,10 @@ export default function DayModal({
     refresh();
   }, [refresh]);
 
-  // map: room_id -> active booking (if any) for the selected day
+  const CI = property?.check_in_time || "14:00";
+  const CO = property?.check_out_time || "11:00";
+
+  // map: room_id -> active booking (if any) pentru ziua selectată
   const activeByRoom = useMemo(() => {
     const map = new Map<string, Booking>();
     for (const b of bookingsToday) {
@@ -126,26 +144,21 @@ export default function DayModal({
     return map;
   }, [futureBookings]);
 
-  // ✅ Numeric-aware alphabetical sort (e.g., "Room 2" before "Room 10")
+  // ✅ sortare numeric-aware (ex: "Room 2" înainte de "Room 10")
   const collator = useMemo(() => new Intl.Collator(undefined, { numeric: true, sensitivity: "base" }), []);
-  const roomsSorted = useMemo(
-    () => [...rooms].sort((a, b) => collator.compare(a.name, b.name)),
-    [rooms, collator]
-  );
+  const roomsSorted = useMemo(() => [...rooms].sort((a, b) => collator.compare(a.name, b.name)), [rooms, collator]);
 
   // ------------- UI helpers --------------
   function formatReservedUntil(b: Booking) {
     const dt = b.end_date + (b.end_time ? ` ${b.end_time}` : "");
     return `Reserved until ${dt.trim()}`;
   }
-
   function formatAvailableUntil(roomId: string) {
     const nxt = nextStartByRoom.get(roomId);
     if (!nxt) return "Available (no upcoming bookings)";
     const dt = nxt.start_date + (nxt.start_time ? ` ${nxt.start_time}` : "");
     return `Available until ${dt.trim()}`;
   }
-
   function guestFullName(b?: Booking | null) {
     if (!b) return "";
     const f = (b.guest_first_name ?? "").trim();
@@ -154,14 +167,17 @@ export default function DayModal({
     return full || "";
   }
 
-  // Always refresh when the details modal closes (even if nothing saved)
+  // Refresh automat la închiderea modalei
   const handleRoomModalClose = useCallback(async () => {
     setOpenRoom(null);
-    await refresh(); // auto-refresh on return
+    await refresh();
+  }, [refresh]);
+  const handleRoomModalChanged = useCallback(async () => {
+    await refresh();
   }, [refresh]);
 
-  // Also refresh when RoomDetailModal explicitly signals changes
-  const handleRoomModalChanged = useCallback(async () => {
+  const handleCreateModalClose = useCallback(async () => {
+    setCreateRoom(null);
     await refresh();
   }, [refresh]);
 
@@ -273,6 +289,7 @@ export default function DayModal({
             const b = activeByRoom.get(room.id) || null;
             const isReserved = !!b && b.status !== "cancelled";
             const fullName = guestFullName(b);
+            const endsToday = isReserved && b!.end_date === dateStr; // checkout în ziua selectată
 
             return (
               <div
@@ -288,7 +305,7 @@ export default function DayModal({
                   borderRadius: 12,
                   background: "var(--card)",
                   cursor: "pointer",
-                  minHeight: 120,
+                  minHeight: 140,
                   display: "grid",
                   gridTemplateRows: "auto 1fr auto",
                   userSelect: "none",
@@ -347,11 +364,34 @@ export default function DayModal({
                   )}
                 </div>
 
-                {/* Footer: until text */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                {/* Footer: until text + Add reservation on checkout-day */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
                   <small style={{ color: "var(--muted)" }}>
-                    {isReserved ? `Reserved until ${b!.end_date}${b!.end_time ? ` ${b!.end_time}` : ""}` : formatAvailableUntil(room.id)}
+                    {isReserved ? formatReservedUntil(b!) : formatAvailableUntil(room.id)}
                   </small>
+
+                  {/* ✅ Buton special: dacă rezervarea se termină azi, permite creare imediată de rezervare nouă */}
+                  {endsToday && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // nu deschide modalul de vizualizare
+                        setCreateRoom(room);
+                      }}
+                      style={{
+                        padding: "6px 10px",
+                        borderRadius: 10,
+                        border: "1px solid var(--primary)",
+                        background: "var(--primary)",
+                        color: "#0c111b",
+                        fontWeight: 900,
+                        cursor: "pointer",
+                      }}
+                      title={`Add reservation starting today ${CI}`}
+                    >
+                      Add reservation
+                    </button>
+                  )}
+
                   <small style={{ color: "var(--muted)" }}>Open ▸</small>
                 </div>
               </div>
@@ -360,21 +400,28 @@ export default function DayModal({
         </div>
       </div>
 
-      {/* Details modal (create/edit) */}
+      {/* Details modal (view/edit existent) */}
       {openRoom && (
         <RoomDetailModal
           dateStr={dateStr}
           propertyId={propertyId}
           room={openRoom}
-          // If room has NO active booking, prefill start=today, end=tomorrow
-          defaultStart={
-            activeByRoom.has(openRoom.id) ? undefined : { date: dateStr, time: null }
-          }
-          defaultEnd={
-            activeByRoom.has(openRoom.id) ? undefined : { date: nextDate(dateStr), time: null }
-          }
           onClose={handleRoomModalClose}     // auto refresh on return
           onChanged={handleRoomModalChanged} // refresh on save
+        />
+      )}
+
+      {/* Create modal (forceNew) pentru camere cu checkout în aceeași zi */}
+      {createRoom && (
+        <RoomDetailModal
+          dateStr={dateStr}
+          propertyId={propertyId}
+          room={createRoom}
+          forceNew={true}
+          defaultStart={{ date: dateStr, time: CI }}             // începe azi, la check-in time (ex: 14:00)
+          defaultEnd={{ date: nextDate(dateStr), time: null }}   // mâine, time implicit (salvezi în modal)
+          onClose={handleCreateModalClose}       // auto refresh on return
+          onChanged={handleRoomModalChanged}     // refresh on save
         />
       )}
     </div>
