@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
+import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
 
 /** DB types */
 type Property = { id: string; name: string; timezone: string | null };
@@ -53,7 +54,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [status, setStatus] = useState<"Idle" | "Loading" | "Saving…" | "Error">("Idle");
 
   const [properties] = useState<Property[]>(initialProperties);
-  const [propertyId, setPropertyId] = useState<string>(initialProperties[0]?.id ?? "");
+  const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [timezone, setTimezone] = useState<string>(initialProperties[0]?.timezone ?? "");
 
   const [rooms, setRooms] = useState<Room[]>([]);

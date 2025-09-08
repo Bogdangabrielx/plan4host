@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
+import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
 
 // Robust dynamic import: works whether DayModal is a default or a named export.
 const DayModal: any = dynamic(
@@ -44,7 +45,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
   const [properties] = useState<Property[]>(initialProperties);
-  const [propertyId, setPropertyId] = useState<string>(initialProperties[0]?.id ?? "");
+  const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [isSmall, setIsSmall] = useState(false);
 
   // View state

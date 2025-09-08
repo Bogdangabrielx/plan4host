@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
+import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
 
 /** Types */
 type Property  = { id: string; name: string; check_in_time: string | null; check_out_time: string | null };
@@ -50,7 +51,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
   const [status, setStatus] = useState<"Idle" | "Loading" | "Error">("Idle");
 
   const [properties] = useState<Property[]>(initialProperties);
-  const [propertyId, setPropertyId] = useState<string>(initialProperties[0]?.id ?? "");
+  const [propertyId, setPropertyId] = usePersistentProperty(properties);
 
   const [types, setTypes] = useState<RoomType[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);

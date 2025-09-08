@@ -9,6 +9,7 @@ import RoomDetailsTab from "./RoomDetailsTab";
 import CleaningTab from "./CleaningTab";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
+import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
 
 type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null; };
 type Room = { id: string; name: string; capacity: number | null; property_id: string; sort_index: number; room_type_id: string | null };
@@ -25,7 +26,7 @@ export default function ConfiguratorClient({ initialProperties }: { initialPrope
   const [isSmall, setIsSmall] = useState(false);
 
   const [properties, setProperties] = useState<Property[]>(initialProperties);
-  const [selectedId, setSelectedId] = useState<string>(initialProperties[0]?.id ?? "");
+  const [selectedId, setSelectedId] = usePersistentProperty(properties);
 
   const [rooms, setRooms]     = useState<Room[]>([]);
   const [checks, setChecks]   = useState<CheckDef[]>([]);
