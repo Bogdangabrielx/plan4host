@@ -24,7 +24,7 @@ export async function GET() {
     // Fallback: owner of own account
     const { data: acc } = await supa.from("accounts").select("id,plan,valid_until").eq("id", user.id).maybeSingle();
     if (acc) {
-      return NextResponse.json({ ok: true, me: { role: 'owner', scopes: ['dashboard','calendar','configurator','cleaning','channels','inbox','team'], disabled: false, plan: acc.plan } });
+      return NextResponse.json({ ok: true, me: { role: 'owner', scopes: ['dashboard','calendar','property setup','cleaning','channels','inbox','team'], disabled: false, plan: acc.plan } });
     }
     return bad(403, { error: "No account context" });
   } catch (e: any) {

@@ -336,7 +336,7 @@
        POST /api/bridge/ical/unassigned/assign  (creates booking from unassigned)
        Auxiliary: /api/bridge/ical/type/list, /api/bridge/ical/type/add
 
-   Cleaning (Configurator & Board)
+   Cleaning (Property Setup & Board)
    - Client reads/writes:
        cleaning_task_defs, cleaning_progress (RLS member policies).
      DB trigger trg_enforce_cleaning_plan blocks INSERT/UPDATE/DELETE on Basic

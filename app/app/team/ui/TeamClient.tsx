@@ -89,7 +89,7 @@ export default function TeamClient() {
     await load();
   }
 
-  const allScopes = ["cleaning","reservations","channels","inbox","calendar","configurator"];
+  const allScopes = ["cleaning","reservations","channels","inbox","calendar","propertySetup"];
 
   return (
     <div style={{ display: "grid", gap: 16 }}>

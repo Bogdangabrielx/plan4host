@@ -358,7 +358,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
       {tdefs.length === 0 ? (
         <div style={{ color: "var(--muted)" }}>
           No cleaning checklist defined. Configure tasks in{" "}
-          <a href="/app/configurator" style={{ color: "var(--primary)" }}>Configurator → Cleaning</a>.
+          <a href="/app/propertySetup" style={{ color: "var(--primary)" }}>Property Setup → Cleaning</a>.
         </div>
       ) : items.length === 0 ? (
         <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>

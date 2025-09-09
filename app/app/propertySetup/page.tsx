@@ -1,20 +1,21 @@
-// app/app/configurator/page.tsx
+// app/app/propertySetup/page.tsx
 import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ensureScope } from "@/lib/auth/scopes";
-import ConfiguratorClient from "./ui/ConfiguratorClient";
+import propertySetupClient from "./ui/PropertySetupClient";
+import PropertySetupClient from "./ui/PropertySetupClient";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function ConfiguratorPage() {
+export default async function propertySetupPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
   const mode = await supabase.rpc("account_access_mode");
   if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
-  await ensureScope("configurator", supabase, user.id);
+  await ensureScope("propertySetup", supabase, user.id);
 
   const { data: props = [] } = await supabase
     .from("properties")
@@ -29,8 +30,8 @@ export default async function ConfiguratorPage() {
   }));
 
   return (
-    <AppShell currentPath="/app/configurator" title="Property Setup">
-      <ConfiguratorClient initialProperties={properties} />
+    <AppShell currentPath="/app/properySetup" title="Property Setup">
+      <PropertySetupClient initialProperties={properties} />
     </AppShell>
   );
 }

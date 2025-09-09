@@ -31,14 +31,14 @@ export async function ensureScope(scope: string, supa?: any, actorId?: string) {
   if (scopes.includes(scope)) return;
 
   // redirect to first allowed section
-  const order = ["cleaning","inbox","calendar","channels","configurator"]; // dashboard requires explicit scope
+  const order = ["cleaning","inbox","calendar","channels","propertySetup"]; // dashboard requires explicit scope
   const first = order.find((s) => scopes.includes(s));
   if (first) {
     const path = first === 'cleaning' ? '/app/cleaning'
       : first === 'inbox' ? '/app/inbox'
       : first === 'calendar' ? '/app/calendar'
       : first === 'channels' ? '/app/channels'
-      : '/app/configurator';
+      : '/app/propertySetup';
     redirect(path);
   }
   redirect("/app");

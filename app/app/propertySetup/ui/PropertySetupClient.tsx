@@ -20,7 +20,7 @@ type RoomType = { id: string; property_id: string; name: string };
 
 type Plan = "basic" | "standard" | "premium";
 
-export default function ConfiguratorClient({ initialProperties }: { initialProperties: Property[] }) {
+export default function PropertySetupClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
   const [isSmall, setIsSmall] = useState(false);
@@ -38,7 +38,7 @@ export default function ConfiguratorClient({ initialProperties }: { initialPrope
   const selected = properties.find(p => p.id === selectedId) || null;
 
   const { setTitle, setPill } = useHeader();
-  useEffect(() => { setTitle("Configurator"); }, [setTitle]);
+  useEffect(() => { setTitle("Property Setup"); }, [setTitle]);
 
   // Detect small screens (fallback override if CSS not applied yet on device)
   useEffect(() => {
@@ -209,7 +209,7 @@ export default function ConfiguratorClient({ initialProperties }: { initialPrope
 
   return (
     <div>
-      <PlanHeaderBadge title="Configurator" slot="header-right" />
+      <PlanHeaderBadge title="Property Setup" slot="header-right" />
 
       {/* minimalist layout */}
       <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>

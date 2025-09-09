@@ -43,7 +43,7 @@ export default async function DashboardPage() {
             : first === "inbox" ? "/app/guest" // 🔁 Inbox → Guest Overview
             : first === "calendar" ? "/app/calendar"
             : first === "channels" ? "/app/channels"
-            : "/app/configurator";
+            : "/app/propertySetup";
           redirect(path);
         }
       }

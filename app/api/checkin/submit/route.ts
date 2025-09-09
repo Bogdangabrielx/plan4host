@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
       requested_room_id,
       requested_room_type_id,
 
-      // opțional din client; dacă lipsesc, folosim orele din configurator
+      // opțional din client; dacă lipsesc, folosim orele din propertySetup
       start_time: start_time_client,
       end_time: end_time_client,
 
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "end_date must be after start_date" }, { status: 400 });
     }
 
-    // 1) Orele din configurator
+    // 1) Orele din PropertySetup
     const rProp = await admin
       .from("properties")
       .select("id,check_in_time,check_out_time")

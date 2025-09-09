@@ -6,7 +6,7 @@ import { useHeader } from "../_components/HeaderContext";
 const NAV_BASE = [
   { href: "/app", label: "Dashboard", emoji: "🏠", scope: "dashboard" },
   { href: "/app/calendar", label: "Calendar", emoji: "📅", scope: "calendar" },
-  { href: "/app/configurator", label: "Property Setup", emoji: "⚙️", scope: "configurator" },
+  { href: "/app/propertySetup", label: "Property Setup", emoji: "⚙️", scope: "propertySetup" },
   { href: "/app/cleaning", label: "Cleaning Board", emoji: "🧹", scope: "cleaning" },
   { href: "/app/channels", label: "Channels & iCal", emoji: "🔗", scope: "channels" },
   // 🔁 Inbox -> Guest Overview (păstrăm scope: "inbox")
@@ -54,7 +54,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     "/app": { light: "/dashboard_forlight.png", dark: "/dashboard_fordark.png" },
     "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
     "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
-    "/app/configurator": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
+    "/app/propertySetup": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
     "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
     "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
     "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },

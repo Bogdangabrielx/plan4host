@@ -159,8 +159,8 @@ export default function DashboardClient({
     setTimeout(() => setStatus("Idle"), 800);
   }
 
-  function openConfigurator(id: string) {
-    window.location.href = `/app/configurator?property=${id}`;
+  function openPropertySetup(id: string) {
+    window.location.href = `/app/propertySetupr?property=${id}`;
   }
 
   // —— BASE URL pentru linkurile de check-in ——
@@ -333,7 +333,7 @@ export default function DashboardClient({
           </div>
           <small style={{ fontSize: 12, color: "var(--muted)" }}>
             Check-in/out default to 14:00 / 11:00. <br />
-            Customizable anytime in the Configurator.
+            Customizable anytime in the Property Setup.
           </small>
         </div>
       </section>
@@ -392,7 +392,7 @@ export default function DashboardClient({
                     </button>
 
                     <button
-                      onClick={() => openConfigurator(p.id)}
+                      onClick={() => openPropertySetup(p.id)}
                       style={{
                         padding: "8px 12px",
                         borderRadius: 10,
