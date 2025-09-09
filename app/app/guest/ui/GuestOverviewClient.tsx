@@ -1,4 +1,3 @@
-// app/app/guest/ui/GuestOverviewClient.tsx
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -56,9 +55,6 @@ function fullName(item: OverviewItem): string {
   const combined = [f, l].filter(Boolean).join(" ").trim();
   if (combined) return combined;
   return (item.guest_name ?? "").trim();
-}
-function hasName(item: OverviewItem): boolean {
-  return fullName(item).length > 0;
 }
 function toBadge(kind: OverviewItem["kind"]): "GREEN" | "YELLOW" | "RED" {
   return kind === "green" ? "GREEN" : kind === "yellow" ? "YELLOW" : "RED";
@@ -139,6 +135,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setLoading("loading");
     setHint("Loading…");
 
+    // 1) Rooms + Types
     const [rRooms, rTypes] = await Promise.all([
       supabase
         .from("rooms")
@@ -161,6 +158,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setRooms((rRooms.data ?? []) as Room[]);
     setRoomTypes((rTypes.data ?? []) as RoomType[]);
 
+    // 2) Overview items din API (no-store)
     try {
       const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(activePropertyId)}`, { cache: "no-store" });
       if (!res.ok) {
@@ -241,46 +239,22 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     }
   }, []);
 
-  // ▶ RED → deschide calendarul pe luna start_date-ului
   function resolveInCalendar(item: OverviewItem, _propertyId: string) {
-    if (!item.start_date) {
-      if (typeof window !== "undefined") window.location.href = "/app/calendar";
-      return;
-    }
-    const d = new Date(`${item.start_date}T00:00:00`);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    // trimitem atât date (ziua exactă), cât și month (YYYY-MM) ca fallback
-    const url = `/app/calendar?date=${item.start_date}&month=${yyyy}-${mm}`;
+    // deschide calendar pe luna din start_date
+    const url = `/app/calendar?date=${item.start_date}`;
     if (typeof window !== "undefined") window.location.href = url;
   }
 
-  // ▶ GREEN → deschide RoomDetailModal (fallback: fetch room dacă nu e în cache)
-  async function openReservation(item: OverviewItem, propertyId: string) {
+  function openReservation(item: OverviewItem, propertyId: string) {
     if (!item.room_id) {
       alert("This booking has no assigned room yet.");
       return;
     }
-
-    let room = roomById.get(String(item.room_id)) || null;
-
+    const room = roomById.get(String(item.room_id));
     if (!room) {
-      const { data, error } = await supabase
-        .from("rooms")
-        .select("id,name,property_id,room_type_id")
-        .eq("id", item.room_id)
-        .maybeSingle();
-
-      if (!error && data) {
-        room = data as Room;
-      }
-    }
-
-    if (!room) {
-      alert("Room not found. Try refreshing.");
+      alert("Room not found locally. Try refreshing.");
       return;
     }
-
     setModal({ propertyId, dateStr: item.start_date, room });
   }
 
@@ -339,19 +313,22 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       <div style={{ display: "grid", gap: 10 }}>
         {rows.map((it) => {
           const name = fullName(it) || "Unknown guest";
-          const effectiveKind: OverviewItem["kind"] = hasName(it) ? "green" : it.kind;
+
+          // Fail-safe: dacă din greșeală vine GREEN fără room -> degradează local la YELLOW
+          const kind: OverviewItem["kind"] =
+            it.kind === "green" && !it.room_id ? "yellow" : it.kind;
 
           const roomNo = it.room_label ? `#${it.room_label}` : "#—";
-          const badge = toBadge(effectiveKind);
+          const badge = toBadge(kind);
           const typeName = it.room_type_name ?? (it.room_type_id ? typeNameById.get(String(it.room_type_id)) ?? null : null);
 
-          const subcopy = effectiveKind === "green" ? null : subcopyFor(it);
+          const subcopy = kind === "green" ? null : subcopyFor(it);
           const propertyId = activePropertyId!;
 
           const key = `${it.booking_id ?? "noid"}|${it.start_date}|${it.end_date}|${it.room_type_id ?? "null"}`;
 
           const showCopy =
-            effectiveKind !== "green" &&
+            kind !== "green" &&
             ((it.kind === "yellow" && it.reason === "waiting_form") || (it.kind === "red" && it.reason === "missing_form"));
 
           return (
@@ -360,7 +337,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 <strong style={{ letterSpacing: 0.2 }}>
                   {name} · {roomNo} — Type: {typeName ?? "—"} — {formatRange(it.start_date, it.end_date)}
                 </strong>
-                <span style={badgeStyle(effectiveKind)}>{badge}</span>
+                <span style={badgeStyle(kind)}>{badge}</span>
               </div>
 
               {subcopy && <small style={{ color: "var(--muted)" }}>{subcopy}</small>}
@@ -368,18 +345,18 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               {/* Actions */}
               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
                 {/* GREEN → Open reservation (RoomDetailModal) */}
-                {effectiveKind === "green" && (
+                {kind === "green" && (
                   <button
                     onClick={() => openReservation(it, propertyId)}
-                    disabled={!it.room_id}
+                    disabled={!it.room_id || !roomById.has(String(it.room_id))}
                     style={{
                       padding: "8px 12px",
                       borderRadius: 10,
                       border: "1px solid var(--border)",
-                      background: it.room_id ? "var(--primary)" : "var(--card)",
-                      color: it.room_id ? "#0c111b" : "var(--text)",
+                      background: it.room_id && roomById.has(String(it.room_id)) ? "var(--primary)" : "var(--card)",
+                      color: it.room_id && roomById.has(String(it.room_id)) ? "#0c111b" : "var(--text)",
                       fontWeight: 900,
-                      cursor: it.room_id ? "pointer" : "not-allowed",
+                      cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
                     }}
                     title={it.room_id ? "Open reservation" : "No room assigned yet"}
                   >
@@ -398,8 +375,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   </button>
                 )}
 
-                {/* RED → Resolve in Calendar (pe luna potrivită) */}
-                {effectiveKind === "red" && (
+                {/* RED → Resolve in Calendar (deschide pe luna corectă) */}
+                {kind === "red" && (
                   <button
                     onClick={() => resolveInCalendar(it, propertyId)}
                     style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--danger)", background: "transparent", color: "var(--text)", fontWeight: 900, cursor: "pointer" }}
