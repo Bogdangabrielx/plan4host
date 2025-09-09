@@ -7,7 +7,7 @@ import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
 
-// Robust dynamic import: works whether DayModal is a default or a named export.
+// Robust dynamic import
 const DayModal: any = dynamic(
   () => import("./DayModal").then((m: any) => m.default ?? m.DayModal ?? (() => null)),
   { ssr: false }
@@ -19,10 +19,10 @@ type Booking = {
   id: string;
   property_id: string;
   room_id: string | null;
-  start_date: string;   // "YYYY-MM-DD"
-  end_date: string;     // "YYYY-MM-DD"
-  start_time: string | null; // "HH:MM"
-  end_time: string | null;   // "HH:MM"
+  start_date: string;
+  end_date: string;
+  start_time: string | null;
+  end_time: string | null;
   status: string;
 };
 
@@ -32,42 +32,48 @@ const weekdayShort = ["Mo","Tu","We","Th","Fr","Sa","Su"];
 function pad(n: number) { return String(n).padStart(2, "0"); }
 function ymd(d: Date)   { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
 function daysInMonth(y: number, m: number) { return new Date(y, m+1, 0).getDate(); } // m: 0..11
-function firstWeekday(y: number, m: number) { // Monday=0 … Sunday=6
-  const js = new Date(y, m, 1).getDay(); // 0..6 (Sun..Sat)
-  return (js + 6) % 7;
-}
-function addDaysStr(s: string, n: number) {
-  const d = new Date(s + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d);
-}
+function firstWeekday(y: number, m: number) { const js = new Date(y, m, 1).getDay(); return (js + 6) % 7; } // Mon=0 .. Sun=6
+function addDaysStr(s: string, n: number) { const d = new Date(s + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); }
 function sameYMD(a: string, b: string) { return a === b; }
+function isYMD(s: unknown): s is string { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s); }
 
-export default function CalendarClient({ initialProperties }: { initialProperties: Property[] }) {
+export default function CalendarClient({
+  initialProperties,
+  initialDate, // poate lipsi
+}: {
+  initialProperties: Property[];
+  initialDate?: string;
+}) {
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [isSmall, setIsSmall] = useState(false);
 
-  // View state
+  // === View state (inițializăm din initialDate dacă e valid) ===
   const today = new Date();
+  const safeInitialDate = initialDate && isYMD(initialDate) ? initialDate : ymd(today);
+  const initDt = new Date(`${safeInitialDate}T00:00:00`);
+
   const [view, setView]   = useState<"year" | "month">("month");
-  const [year, setYear]   = useState<number>(today.getFullYear());
-  const [month, setMonth] = useState<number>(today.getMonth()); // 0..11
-  const [highlightDate, setHighlightDate] = useState<string | null>(null); // highlight în Month view
+  const [year, setYear]   = useState<number>(initDt.getFullYear());
+  const [month, setMonth] = useState<number>(initDt.getMonth()); // 0..11
+  const [highlightDate, setHighlightDate] = useState<string | null>(safeInitialDate);
 
   // Data
   const [rooms, setRooms]       = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading]   = useState<"Idle"|"Loading"|"Error">("Idle");
 
-  // Day modal (ONLY in Month view)
+  // Day modal (only Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
-  // Year overlay (opened from a dedicated button) + month picker
+
+  // Year overlay + month picker
   const [showYear, setShowYear] = useState<boolean>(false);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const dateOverlayInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Detect very small screens and prefer Month view there
+  // Detect small screens
   useEffect(() => {
     const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
     detect();
@@ -77,7 +83,18 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
 
   useEffect(() => {
     if (isSmall && view !== "month") setView("month");
-  }, [isSmall]);
+  }, [isSmall, view]);
+
+  // Repoziționează dacă se schimbă initialDate (navigare cu alt query)
+  useEffect(() => {
+    if (initialDate && isYMD(initialDate)) {
+      const d = new Date(`${initialDate}T00:00:00`);
+      setYear(d.getFullYear());
+      setMonth(d.getMonth());
+      setView("month");
+      setHighlightDate(initialDate);
+    }
+  }, [initialDate]);
 
   // Load rooms + bookings for current window
   useEffect(() => {
@@ -106,7 +123,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
           .neq("status","cancelled")
           .gte("start_date", from)
           .lte("end_date", to)
-          .order("start_date", { ascending: true })
+          .order("start_date", { ascending: true }),
       ]);
       if (r1.error || r2.error) {
         setRooms([]); setBookings([]); setLoading("Error");
@@ -118,13 +135,13 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
     })();
   }, [propertyId, view, year, month, supabase]);
 
-  // Header status pill next to title
+  // Header pill
   useEffect(() => {
     const label = loading === "Loading" ? "Syncing…" : loading === "Error" ? "Error" : "Idle";
     setPill(label);
   }, [loading, setPill]);
 
-  // Occupancy map: dateStr -> set(room_id)
+  // Occupancy map
   const occupancyMap = useMemo(() => {
     const map = new Map<string, Set<string>>();
     for (const b of bookings) {
@@ -145,28 +162,27 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
     const d = new Date(dateStr + "T00:00:00");
     setYear(d.getFullYear());
     setMonth(d.getMonth());
-    setHighlightDate(null);
     setView("month");
+    setHighlightDate(dateStr); // păstrăm highlight pe ziua selectată
   }
   function goToday() {
     const ds = ymd(today);
     goToMonthFor(ds);
   }
-  // backToYear removed (legacy)
-
   function openDatePicker() { setShowDatePicker(true); }
-
   function onPickedDate(value: string) {
     if (!value) return;
     const d = new Date(value + "T00:00:00");
     if (!isNaN(d.getTime())) {
       setYear(d.getFullYear());
       setMonth(d.getMonth());
+      setView("month");
+      setHighlightDate(null);
     }
     setShowDatePicker(false);
   }
 
-  // Auto focus the visible input when popover opens (and try showPicker if available)
+  // Auto focus input în popover
   useEffect(() => {
     if (!showDatePicker) return;
     const el = dateOverlayInputRef.current;
@@ -178,17 +194,13 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
     } catch {}
   }, [showDatePicker]);
 
-  // Keyboard shortcuts: Left/Right = prev/next month, T = today, Y = year overlay
+  // Shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
-        setMonth(m => {
-          const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm;
-        });
+        setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; });
       } else if (e.key === "ArrowRight") {
-        setMonth(m => {
-          const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm;
-        });
+        setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; });
       } else if (e.key.toLowerCase() === "t") {
         goToday();
       } else if (e.key.toLowerCase() === "y") {
@@ -202,11 +214,11 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
   return (
     <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
       <PlanHeaderBadge title="Calendar" slot="header-right" />
-      {/* Minimal toolbar */}
+      {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20 }}>
         <select
           className="sb-select"
-          value={propertyId}
+          value={propertyId ?? ""} // evităm undefined
           onChange={(e) => { setPropertyId(e.currentTarget.value); }}
           style={{ minWidth: 220, maxWidth: 380, paddingInline: 12, height: 36, width: "auto" }}
         >
@@ -214,41 +226,20 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
-        {/* line break to push nav to next row */}
         <div style={{ flexBasis: "100%", height: 8 }} />
 
         <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 12 : 18, marginLeft: 0 }}>
-          <button
-            type="button"
-            className="sb-btn sb-btn--icon"
-            aria-label="Previous month"
+          <button type="button" className="sb-btn sb-btn--icon" aria-label="Previous month"
             onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}
-          >
-            ◀
-          </button>
-          <button
-            type="button"
-            className="sb-btn sb-btn--ghost"
-            onClick={openDatePicker}
-            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 36 }}
-            aria-label="Pick date"
-          >
+          >◀</button>
+          <button type="button" className="sb-btn sb-btn--ghost" onClick={openDatePicker}
+            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 36 }} aria-label="Pick date">
             {monthNames[month]} {year}
           </button>
-          <button
-            type="button"
-            className="sb-btn sb-btn--icon"
-            aria-label="Next month"
+          <button type="button" className="sb-btn sb-btn--icon" aria-label="Next month"
             onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}
-          >
-            ▶
-          </button>
-          <button
-            type="button"
-            className="sb-btn sb-btn--ghost sb-btn--small"
-            onClick={() => setShowYear(true)}
-            aria-label="Open year overview"
-          >
+          >▶</button>
+          <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label="Open year overview">
             Year
           </button>
         </div>
@@ -260,7 +251,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
         month={month}
         roomsCount={rooms.length}
         occupancyMap={occupancyMap}
-        highlightDate={null}
+        highlightDate={highlightDate}  // <-- important: nu mai e null forțat
         isSmall={isSmall}
         onDayClick={(dateStr) => setOpenDate(dateStr)}
       />
@@ -274,7 +265,7 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
         />
       )}
 
-      {/* Year overlay (opened via dedicated button) */}
+      {/* Year overlay */}
       {showYear && (
         <div role="dialog" aria-modal="true" onClick={() => setShowYear(false)}
           style={{ position: "fixed", inset: 0, zIndex: 225, background: "var(--bg)", display: "grid", placeItems: "center" }}>
@@ -292,14 +283,14 @@ export default function CalendarClient({ initialProperties }: { initialPropertie
               roomsCount={rooms.length}
               occupancyMap={occupancyMap}
               isSmall={isSmall}
-              onMonthTitleClick={(m) => { setMonth(m); setShowYear(false); }}
+              onMonthTitleClick={(m) => { setMonth(m); setView("month"); setHighlightDate(null); setShowYear(false); }}
               onDayClick={(dateStr) => { goToMonthFor(dateStr); setShowYear(false); }}
             />
           </div>
         </div>
       )}
 
-      {/* Visible popover date picker */}
+      {/* Popover date picker */}
       {showDatePicker && (
         <div role="dialog" aria-modal="true" onClick={() => setShowDatePicker(false)}
           style={{ position: "fixed", inset: 0, zIndex: 230, background: "rgba(0,0,0,0.5)", display: "grid", placeItems: "center" }}>
@@ -360,7 +351,6 @@ function YearView({
             <small style={{color: "var(--muted)" }}>{year}</small>
           </div>
 
-          {/* Mini month (7 cols) — zile CLICKABILE și NUMEROTATE */}
           <MiniMonth
             year={year}
             month={m}
@@ -415,7 +405,6 @@ function MiniMonth({
               overflow: "hidden",
             }}
           >
-            {/* day number (vizibil pe dark) */}
             {typeof c.dayNum === "number" && (
               <span style={{
                 position: "absolute", top: 3, left: 4, fontSize: 10,
@@ -424,8 +413,6 @@ function MiniMonth({
                 {c.dayNum}
               </span>
             )}
-
-            {/* vertical occupancy fill (bottom→top) */}
             {typeof c.occPct === "number" && (
               <div
                 style={{
@@ -479,7 +466,7 @@ function MonthView({
 
   return (
     <div className="sb-card" style={{ boxShadow: "0 3px 20px #2e6dc656", padding: 12 }}>
-      {/* week day headers */}
+      {/* headers */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
         {weekdayShort.map((w) => (
           <div key={w} style={{ textAlign: "center", color: "var(--muted)", fontSize: isSmall ? 11 : 12 }}>{w}</div>
@@ -509,9 +496,9 @@ function MonthView({
               onMouseDown={(e)=>{ (e.currentTarget as HTMLDivElement).style.transform='scale(0.99)'; }}
               onMouseUp={(e)=>{ (e.currentTarget as HTMLDivElement).style.transform='scale(1)'; }}
             >
-              {weekend && (
-                <div style={{ position: "absolute", inset: 0, background: "var(--cal-wkend)" }} />
-              )}
+              {/* weekend tint */}
+              {weekend && <div style={{ position: "absolute", inset: 0, background: "var(--cal-wkend)" }} />}
+
               {/* day number */}
               {c.dateStr && (
                 <div style={{
@@ -522,14 +509,15 @@ function MonthView({
                   {parseInt(c.dateStr.slice(-2), 10)}
                 </div>
               )}
-              {/* highlight for selected day from Year view */}
+
+              {/* highlight ring if selected */}
               {c.isHL && (
                 <div style={{
                   position: "absolute", inset: 0, border: "2px solid var(--primary)", borderRadius: 10, pointerEvents: "none"
                 }} />
               )}
 
-              {/* vertical occupancy fill */}
+              {/* occupancy fill */}
               {typeof c.occPct === "number" && (
                 <div
                   style={{
@@ -541,7 +529,8 @@ function MonthView({
                   }}
                 />
               )}
-              {/* tiny today dot */}
+
+              {/* today dot */}
               {c.isToday && (
                 <span aria-hidden style={{ position: "absolute", top: 8, right: 8, width: 6, height: 6, borderRadius: 999, background: "var(--primary)" }} />
               )}
@@ -549,7 +538,8 @@ function MonthView({
           );
         })}
       </div>
-      {/* Legend (aligned with visuals) */}
+
+      {/* Legend */}
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 10, color: "var(--muted)", fontSize: 12, flexWrap: "wrap" }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <span style={{ width: 14, height: 6, background: "var(--primary)", borderRadius: 4, display: "inline-block", opacity: .22 }} />
@@ -567,5 +557,3 @@ function MonthView({
     </div>
   );
 }
-
-/* Legacy local styles (kept only for inline elements in the grid) */
