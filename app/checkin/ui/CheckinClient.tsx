@@ -230,6 +230,8 @@ export default function CheckinClient() {
   }, [countries]);
 
   const hasTypes = types.length > 0;
+
+  // trebuie să fie deschis PDF-ul dacă există
   const consentGatePassed = !pdfUrl || pdfViewed;
 
   const countryValid = countryText.trim().length > 0;
@@ -253,16 +255,15 @@ export default function CheckinClient() {
     (hasTypes ? !!selectedTypeId : !!selectedRoomId) &&
     countryValid &&
     docValid &&
-    !!docFile && // ← document upload obligatoriu
+    !!docFile && // document upload obligatoriu
     consentGatePassed && agree &&
     submitState !== "submitting";
 
-  function onOpenPdf() {
+  // deschide PDF-ul (marchează vizualizat)
+  function onOpenPdf(ev?: React.MouseEvent) {
     if (!pdfUrl) return;
-    try {
-      window.open(pdfUrl, "_blank", "noopener,noreferrer");
-      setPdfViewed(true);
-    } catch { setPdfViewed(true); }
+    // permitem navigarea normală a <a>, doar marcăm viewed
+    try { setPdfViewed(true); } catch {}
   }
 
   // upload helper
@@ -292,7 +293,7 @@ export default function CheckinClient() {
     const countryToSend = countryText.trim();
 
     try {
-      // 4.1 upload fișier dacă este (obligatoriu)
+      // 4.1 upload fișier (obligatoriu)
       const uploaded = await uploadDocFile();
       if (!uploaded) throw new Error("Please upload your ID document.");
 
@@ -375,11 +376,7 @@ export default function CheckinClient() {
               Please note that all information you provide is strictly confidential. Thank you for your patience!
             </p>
           </div>
-          {pdfUrl && (
-            <button type="button" onClick={onOpenPdf} style={BTN_GHOST} title="Open house rules (PDF)">
-              📄 House rules (PDF)
-            </button>
-          )}
+          {/* (Mutat linkul PDF lângă bifa de acord) */}
         </div>
       </section>
 
@@ -645,36 +642,55 @@ export default function CheckinClient() {
               </div>
             </div>
 
-            {/* Consent */}
-            {(!pdfUrl || pdfViewed) && (
-              <div
-                style={{
-                  padding: 12,
-                  borderRadius: 12,
-                  border: "1px solid var(--border)",
-                  background: "var(--card)",
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 10,
-                }}
-              >
-                <input
-                  id="agree"
-                  type="checkbox"
-                  checked={agree}
-                  onChange={(e) => setAgree(e.currentTarget.checked)}
-                  style={{ marginTop: 3 }}
-                />
-                <label htmlFor="agree" style={{ color: "var(--muted)", cursor: "pointer" }}>
-                  I confirm the information is correct and I agree to the house rules{pdfUrl ? " (PDF opened)" : ""}.
-                </label>
-              </div>
-            )}
-            {pdfUrl && !pdfViewed && (
-              <div style={{ color: "var(--muted)", fontSize: 12 }}>
-                Please open the House rules (PDF) above to enable consent.
-              </div>
-            )}
+            {/* Consent — ALWAYS visible; checkbox enabled only after opening the PDF (if exists) */}
+            <div
+              style={{
+                padding: 12,
+                borderRadius: 12,
+                border: "1px solid var(--border)",
+                background: "var(--card)",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+              }}
+            >
+              <input
+                id="agree"
+                type="checkbox"
+                checked={agree}
+                disabled={!!pdfUrl && !pdfViewed}
+                onChange={(e) => setAgree(e.currentTarget.checked)}
+                style={{ marginTop: 3, cursor: (!!pdfUrl && !pdfViewed) ? "not-allowed" : "pointer" }}
+                title={!!pdfUrl && !pdfViewed ? "Open the House Rules to enable this checkbox." : undefined}
+              />
+              <label htmlFor="agree" style={{ color: "var(--muted)" }}>
+                I have read and agree to the{" "}
+                {pdfUrl ? (
+                  <a
+                    href={pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={onOpenPdf}
+                    style={{ textDecoration: "underline", fontWeight: 700 }}
+                  >
+                    House Rules (PDF)
+                  </a>
+                ) : (
+                  <span style={{ fontStyle: "italic" }}>House Rules</span>
+                )}
+                .
+                {!!pdfUrl && !pdfViewed && (
+                  <span style={{ marginLeft: 6 }}>
+                    (Please open the PDF to enable the checkbox)
+                  </span>
+                )}
+                {!!pdfUrl && pdfViewed && (
+                  <span style={{ marginLeft: 6, color: "var(--success, #22c55e)", fontWeight: 700 }}>
+                    Opened ✓
+                  </span>
+                )}
+              </label>
+            </div>
 
             {/* Error */}
             {submitState === "error" && errorMsg && (
