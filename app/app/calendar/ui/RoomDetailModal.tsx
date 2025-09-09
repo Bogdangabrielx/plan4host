@@ -170,7 +170,8 @@ export default function RoomDetailModal({
   // Load everything (property, bookings, field definitions, existing values/defaults)
   useEffect(() => {
     (async () => {
-      const [p1, p2, p3, p4] = await Promise.all([
+      // p1: property, p2: bookings, p3: legacy check fields, p4: text fields, p5: NEW unified check defs
+      const [p1, p2, p3, p4, p5] = await Promise.all([
         supabase
           .from("properties")
           .select("id,name,check_in_time,check_out_time")
@@ -193,6 +194,12 @@ export default function RoomDetailModal({
           .select("id,label,placeholder,sort_index,property_id")
           .eq("property_id", propertyId)
           .order("sort_index", { ascending: true }),
+        // NEW: unified checks table (optional, if present)
+        supabase
+          .from("room_detail_checks")
+          .select("id,label,default_value,sort_index,property_id")
+          .eq("property_id", propertyId)
+          .order("sort_index", { ascending: true }),
       ]);
 
       const prop = (p1.error ? null : (p1.data ?? null)) as Property | null;
@@ -210,18 +217,29 @@ export default function RoomDetailModal({
       }
       setActive(act);
 
-      const defsChecks = (p3.error ? [] : ((p3.data ?? []) as CheckDef[]));
+      // Merge legacy check fields + NEW unified checks (dedupe by id; prefer NEW over legacy on conflicts)
+      const legacyChecks = (p3.error ? [] : ((p3.data ?? []) as CheckDef[]));
+      const unifiedChecks = (p5.error ? [] : ((p5.data ?? []) as CheckDef[]));
+      const mergedChecksMap = new Map<string, CheckDef>();
+      for (const c of [...unifiedChecks, ...legacyChecks]) {
+        if (c && c.id && !mergedChecksMap.has(c.id)) mergedChecksMap.set(c.id, c);
+      }
+      const mergedChecks = Array.from(mergedChecksMap.values()).sort((a,b) => a.sort_index - b.sort_index);
+      setCheckDefs(mergedChecks);
+
       const defsTexts  = (p4.error ? [] : ((p4.data ?? []) as TextDef[]));
-      setCheckDefs(defsChecks);
       setTextDefs(defsTexts);
 
       // Init start/end
+      const CIlocal = prop?.check_in_time || "14:00";
+      const COlocal = prop?.check_out_time || "11:00";
+
       const _sDate = defaultStart?.date ?? (act ? act.start_date : dateStr);
-      const _sTime = defaultStart?.time ?? (act ? (act.start_time || CI) : CI);
+      const _sTime = defaultStart?.time ?? (act ? (act.start_time || CIlocal) : CIlocal);
 
       // IMPORTANT: for create, default End = Start + 1 day
       const _eDate = defaultEnd?.date   ?? (act ? act.end_date : addDaysYMD(_sDate, 1));
-      const _eTime = defaultEnd?.time   ?? (act ? (act.end_time || CO) : CO);
+      const _eTime = defaultEnd?.time   ?? (act ? (act.end_time || COlocal) : COlocal);
 
       setStartDate(_sDate);
       setStartTime(_sTime || "");
@@ -249,7 +267,7 @@ export default function RoomDetailModal({
 
       // ---------- Room details: load saved values or defaults ----------
       const defaultCheckValues: Record<string, boolean> = Object.fromEntries(
-        defsChecks.map((d) => [d.id, !!d.default_value])
+        mergedChecks.map((d) => [d.id, !!d.default_value])
       );
       const defaultTextValues: Record<string, string> = Object.fromEntries(
         defsTexts.map((d) => [d.id, ""])
@@ -296,9 +314,9 @@ export default function RoomDetailModal({
       };
       initialTimesRef.current = {
         sd: act ? act.start_date : _sDate,
-        st: act ? (act.start_time || CI) : _sTime,
+        st: act ? (act.start_time || CIlocal) : _sTime,
         ed: act ? act.end_date : _eDate,
-        et: act ? (act.end_time || CO) : _eTime,
+        et: act ? (act.end_time || COlocal) : _eTime,
       };
 
       // Default ON; open guest panel if creating or no name
@@ -968,8 +986,6 @@ export default function RoomDetailModal({
               </small>
             </div>
           )}
-
-          {/* (Removed) Guest documents card — replaced by the 4 read-only fields above */}
 
           {/* Custom detail fields */}
           {(checkDefs.length > 0 || textDefs.length > 0) && (
