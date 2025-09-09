@@ -160,7 +160,7 @@ export default function DashboardClient({
   }
 
   function openPropertySetup(id: string) {
-    window.location.href = `/app/propertySetupr?property=${id}`;
+    window.location.href = `/app/propertySetup?property=${id}`;
   }
 
   // —— BASE URL pentru linkurile de check-in ——
