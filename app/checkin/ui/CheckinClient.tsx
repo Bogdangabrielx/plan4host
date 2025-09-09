@@ -365,7 +365,7 @@ export default function CheckinClient() {
       <section style={CARD}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: 22, letterSpacing: 0.3 }}>
+            <h1 style={{ margin: 0, fontSize: 22, letterSpacing: 0.3, alignContent:"center" }}>
                "Stay smart, experience better" <br />
                This is the check-in form of property {prop?.name ?? "Property"}.
             </h1>
