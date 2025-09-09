@@ -68,8 +68,16 @@ export default function DashboardClient({
   // Copied! state
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const timerRef = useRef<number | null>(null);
+
+  // Warn (no PDF) state
+  const [needsPdfId, setNeedsPdfId] = useState<string | null>(null);
+  const warnTimerRef = useRef<number | null>(null);
+
   useEffect(() => {
-    return () => { if (timerRef.current) window.clearTimeout(timerRef.current); };
+    return () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+      if (warnTimerRef.current) window.clearTimeout(warnTimerRef.current);
+    };
   }, []);
 
   useEffect(() => { setTitle("Dashboard"); }, [setTitle]);
@@ -183,6 +191,14 @@ export default function DashboardClient({
   }
 
   async function copyPropertyCheckinLink(p: Property) {
+    // Dacă NU există PDF, nu copiem și arătăm hint pe buton
+    if (!p.regulation_pdf_url) {
+      setNeedsPdfId(p.id);
+      if (warnTimerRef.current) window.clearTimeout(warnTimerRef.current);
+      warnTimerRef.current = window.setTimeout(() => setNeedsPdfId(null), 2000);
+      return;
+    }
+
     const link = buildPropertyCheckinLink(p);
     try {
       await navigator.clipboard.writeText(link);
@@ -190,6 +206,7 @@ export default function DashboardClient({
       if (timerRef.current) window.clearTimeout(timerRef.current);
       timerRef.current = window.setTimeout(() => setCopiedId(null), 2000);
     } catch {
+      // Fallback când Clipboard API e blocat (Safari incognito, etc.)
       prompt("Copy this link:", link);
     }
   }
@@ -329,145 +346,125 @@ export default function DashboardClient({
           <p style={{ color: "var(--muted)" }}>No properties yet.</p>
         ) : (
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 10 }}>
-            {list.map((p) => (
-              <li
-                key={p.id}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr auto",
-                  gap: 10,
-                  alignItems: "center",
-                  background: "var(--card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 10,
-                  padding: 12,
-                }}
-              >
-                <div>
-                  <strong>{p.name}</strong>
-                  <div style={{ color: "var(--muted)", fontSize: 12 }}>
-                    {p.country_code ? `${flagEmoji(p.country_code)} ${COUNTRY_NAMES[p.country_code] ?? p.country_code}` : "—"}
-                    {" • "}{p.timezone ?? "—"}
-                    {" • "}CI {p.check_in_time ?? "—"} / CO {p.check_out_time ?? "—"}
+            {list.map((p) => {
+              const isWarn = needsPdfId === p.id;
+              const isCopied = copiedId === p.id;
+
+              return (
+                <li
+                  key={p.id}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto",
+                    gap: 10,
+                    alignItems: "center",
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 10,
+                    padding: 12,
+                  }}
+                >
+                  <div>
+                    <strong>{p.name}</strong>
+                    <div style={{ color: "var(--muted)", fontSize: 12 }}>
+                      {p.country_code ? `${flagEmoji(p.country_code)} ${COUNTRY_NAMES[p.country_code] ?? p.country_code}` : "—"}
+                      {" • "}{p.timezone ?? "—"}
+                      {" • "}CI {p.check_in_time ?? "—"} / CO {p.check_out_time ?? "—"}
+                    </div>
                   </div>
-                </div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {/* Copy property check-in link (ABSOLUT + ?property=<ID>) */}
-                  <button
-                    onClick={() => copyPropertyCheckinLink(p)}
-                    title="Copy property check-in link"
-                    data-checkin-link={buildPropertyCheckinLink(p)}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border)",
-                      background: "var(--panel)",
-                      color: "var(--text)",
-                      fontWeight: 800,
-                      cursor: "pointer"
-                    }}
-                  >
-                    {copiedId === p.id ? "Copied!" : "Copy check-in link"}
-                  </button>
-
-                  <button
-                    onClick={() => openConfigurator(p.id)}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border)",
-                      background: "var(--panel)",
-                      color: "var(--text)",
-                      fontWeight: 800,
-                      cursor: "pointer"
-                    }}
-                  >
-                    Open Configurator
-                  </button>
-
-                  {/* Existing big upload button (optional to keep) */}
-                  <label
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border)",
-                      background: "var(--panel)",
-                      color: "var(--text)",
-                      fontWeight: 800,
-                      cursor: "pointer"
-                    }}
-                  >
-                    Upload Regulations (PDF)
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      style={{ display: "none" }}
-                      onChange={(e) => {
-                        const f = (e.target as HTMLInputElement).files?.[0];
-                        if (f) uploadRegulationPdf(p.id, f);
-                        (e.target as HTMLInputElement).value = "";
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {/* Copy property check-in link (ABSOLUT + ?property=<ID>) */}
+                    <button
+                      onClick={() => copyPropertyCheckinLink(p)}
+                      title={p.regulation_pdf_url ? "Copy property check-in link" : "Upload House Rules PDF first"}
+                      data-checkin-link={buildPropertyCheckinLink(p)}
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: 10,
+                        border: "1px solid var(--border)",
+                        background: isWarn ? "var(--danger)" : "var(--panel)",
+                        color: isWarn ? "#0c111b" : "var(--text)",
+                        fontWeight: 800,
+                        cursor: "pointer"
                       }}
-                    />
-                  </label>
+                    >
+                      {isWarn ? "Upload rules first" : (isCopied ? "Copied!" : "Copy check-in link")}
+                    </button>
 
-                  <button
-                    onClick={() => setToDelete(p)}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: 10,
-                      border: "1px solid var(--danger)",
-                      background: "transparent",
-                      color: "var(--text)",
-                      fontWeight: 800,
-                      cursor: "pointer"
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
+                    <button
+                      onClick={() => openConfigurator(p.id)}
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: 10,
+                        border: "1px solid var(--border)",
+                        background: "var(--panel)",
+                        color: "var(--text)",
+                        fontWeight: 800,
+                        cursor: "pointer"
+                      }}
+                    >
+                      Open Configurator
+                    </button>
 
-                {/* Footer line with tiny links: Open + Change/Upload */}
-                <div style={{ gridColumn: "1 / -1", color: "var(--muted)", fontSize: 12, marginTop: 6 }}>
-                  {p.regulation_pdf_url ? (
-                    <span>
-                      Regulations PDF uploaded
-                      {p.regulation_pdf_uploaded_at ? ` • ${new Date(p.regulation_pdf_uploaded_at).toLocaleString()}` : ""}
-                      {" • "}
-                      <a
-                        href={p.regulation_pdf_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ color: "var(--primary)", textDecoration: "none" }}
-                      >
-                        Open
-                      </a>
-                      {" • "}
-                      <a
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); triggerHouseRulesUpload(p.id); }}
-                        style={{ color: "var(--primary)", textDecoration: "none" }}
-                        title="Change / re-upload House Rules PDF"
-                      >
-                        Change
-                      </a>
-                    </span>
-                  ) : (
-                    <span>
-                      No Regulations PDF uploaded
-                      {" • "}
-                      <a
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); triggerHouseRulesUpload(p.id); }}
-                        style={{ color: "var(--primary)", textDecoration: "none" }}
-                        title="Upload House Rules PDF"
-                      >
-                        Upload
-                      </a>
-                    </span>
-                  )}
-                </div>
-              </li>
-            ))}
+                    <button
+                      onClick={() => setToDelete(p)}
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: 10,
+                        border: "1px solid var(--danger)",
+                        background: "transparent",
+                        color: "var(--text)",
+                        fontWeight: 800,
+                        cursor: "pointer"
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+
+                  {/* Footer line with tiny links: Open + Change/Upload */}
+                  <div style={{ gridColumn: "1 / -1", color: "var(--muted)", fontSize: 12, marginTop: 6 }}>
+                    {p.regulation_pdf_url ? (
+                      <span>
+                        Regulations PDF uploaded
+                        {p.regulation_pdf_uploaded_at ? ` • ${new Date(p.regulation_pdf_uploaded_at).toLocaleString()}` : ""}
+                        {" • "}
+                        <a
+                          href={p.regulation_pdf_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ color: "var(--primary)", textDecoration: "none" }}
+                        >
+                          Open
+                        </a>
+                        {" • "}
+                        <a
+                          href="#"
+                          onClick={(e) => { e.preventDefault(); triggerHouseRulesUpload(p.id); }}
+                          style={{ color: "var(--primary)", textDecoration: "none" }}
+                          title="Change / re-upload House Rules PDF"
+                        >
+                          Change
+                        </a>
+                      </span>
+                    ) : (
+                      <span>
+                        No Regulations PDF uploaded
+                        {" • "}
+                        <a
+                          href="#"
+                          onClick={(e) => { e.preventDefault(); triggerHouseRulesUpload(p.id); }}
+                          style={{ color: "var(--primary)", textDecoration: "none" }}
+                          title="Upload House Rules PDF"
+                        >
+                          Upload
+                        </a>
+                      </span>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
