@@ -365,8 +365,8 @@ export default function CheckinClient() {
       <section style={CARD}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: 22, letterSpacing: 0.3, alignContent:"center" }}>
-               "Stay smart, experience better" <br />
+            <h1 style={{ margin: 0, fontSize: 30, letterSpacing: 0.3, alignContent:"center" }}>
+               Stay smart, experience better  <br />
                <br />
             </h1>
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
