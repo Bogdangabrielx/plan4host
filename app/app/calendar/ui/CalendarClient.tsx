@@ -60,6 +60,15 @@ export default function CalendarClient({
   const [month, setMonth] = useState<number>(initDt.getMonth()); // 0..11
   const [highlightDate, setHighlightDate] = useState<string | null>(safeInitialDate);
 
+  const bgStyle = useMemo(() => ({
+  minHeight: "100vh",
+  backgroundImage: 'url(/background_forlight.png)',
+  backgroundSize: "cover",
+  backgroundRepeat: "no-repeat",
+  backgroundPosition: "center",
+  backgroundAttachment: "fixed", // rămâne fix când scrollezi
+}), []);
+
   // Data
   const [rooms, setRooms]       = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
