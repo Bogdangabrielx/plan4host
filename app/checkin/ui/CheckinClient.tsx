@@ -61,19 +61,18 @@ export default function CheckinClient() {
   const [address,   setAddress]   = useState("");
   const [city,      setCity]      = useState("");
 
-  // Country (select cu fallback la text)
+  // Country (searchable input + sugestii)
   const [countries, setCountries] = useState<Country[]>([]);
-  const [countryIso, setCountryIso] = useState<string>("");
   const [countryText, setCountryText] = useState<string>("");
 
   // Document section
   type DocType = "" | "id_card" | "passport";
   const [docType, setDocType] = useState<DocType>("");
-  const [docSeries, setDocSeries] = useState<string>("");   // doar CI
+  const [docSeries, setDocSeries] = useState<string>("");   // doar CI (uppercase)
   const [docNumber, setDocNumber] = useState<string>("");   // comun
-  const [docNationality, setDocNationality] = useState<string>(""); // doar pașaport (din nationality_en)
+  const [docNationality, setDocNationality] = useState<string>(""); // doar pașaport (searchable)
 
-  // Upload file (foto/PDF)
+  // Upload file (foto/PDF) — obligatoriu
   const [docFile, setDocFile] = useState<File | null>(null);
   const [docFilePreview, setDocFilePreview] = useState<string | null>(null);
 
@@ -189,9 +188,7 @@ export default function CheckinClient() {
         setPdfUrl(p?.regulation_pdf_url ?? null);
         setTypes(t.map(x => ({ id: String(x.id), name: String(x.name ?? "Type") })));
         setRooms(r.map(x => ({ id: String(x.id), name: String(x.name ?? "Room"), room_type_id: x.room_type_id ?? null })));
-
-        // IMPORTANT: fără preselect — userul alege explicit ce e „booked”
-        // (nu setăm selectedTypeId / selectedRoomId aici)
+        // fără preselect — guest alege explicit „Booked …”
       } catch (e: any) {
         setErrorMsg(e?.message || "Failed to load property data.");
         setSubmitState("error");
@@ -232,17 +229,10 @@ export default function CheckinClient() {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [countries]);
 
-  const selectedCountryName = useMemo(() => {
-    if (!countryIso) return "";
-    return countries.find(c => c.iso2 === countryIso)?.name ?? "";
-  }, [countryIso, countries]);
-
   const hasTypes = types.length > 0;
   const consentGatePassed = !pdfUrl || pdfViewed;
 
-  const countryValid = countries.length === 0
-    ? countryText.trim().length > 0
-    : countryIso.trim().length > 0;
+  const countryValid = countryText.trim().length > 0;
 
   const docValid = (() => {
     if (docType === "") return false;
@@ -263,6 +253,7 @@ export default function CheckinClient() {
     (hasTypes ? !!selectedTypeId : !!selectedRoomId) &&
     countryValid &&
     docValid &&
+    !!docFile && // ← document upload obligatoriu
     consentGatePassed && agree &&
     submitState !== "submitting";
 
@@ -298,14 +289,12 @@ export default function CheckinClient() {
     setSubmitState("submitting");
     setErrorMsg("");
 
-    const countryToSend = countries.length === 0 ? countryText.trim() : (selectedCountryName || countryText).trim();
+    const countryToSend = countryText.trim();
 
     try {
-      // 4.1 upload fișier dacă este
-      let uploaded: { path: string; mime: string } | null = null;
-      if (docFile) {
-        uploaded = await uploadDocFile();
-      }
+      // 4.1 upload fișier dacă este (obligatoriu)
+      const uploaded = await uploadDocFile();
+      if (!uploaded) throw new Error("Please upload your ID document.");
 
       // 4.2 payload
       const payload: any = {
@@ -329,9 +318,9 @@ export default function CheckinClient() {
         doc_number: docNumber.trim(),
         doc_nationality: docType === "passport" ? docNationality.trim() : null,
 
-        // file (opțional)
-        doc_file_path: uploaded?.path ?? null,
-        doc_file_mime: uploaded?.mime ?? null,
+        // file
+        doc_file_path: uploaded.path,
+        doc_file_mime: uploaded.mime,
       };
 
       const res = await fetch("/api/checkin/submit", {
@@ -379,8 +368,10 @@ export default function CheckinClient() {
               Guest Check-in — {prop?.name ?? "Property"}
             </h1>
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
-              Thank you for choosing us! Please fill in the fields below with the requested information. 
-              Once you complete the online check-in, you will automatically receive an email with instant access to the digital guide for {prop?.name ?? "the property"}, including House Rules, general and local information, a precise location section, and step-by-step arrival instructions. 
+              Thank you for choosing us! Please fill in the fields below with the requested information.
+              Once you complete the online check-in, you will automatically receive an email with instant access
+              to the digital guide for {prop?.name ?? "the property"}, including House Rules, general and local
+              information, a precise location section, and step-by-step arrival instructions.
               Please note that all information you provide is strictly confidential. Thank you for your patience!
             </p>
           </div>
@@ -517,25 +508,19 @@ export default function CheckinClient() {
 
                 <div>
                   <label style={LABEL}>Country*</label>
-                  {countries.length > 0 ? (
-                    <select
-                      style={SELECT}
-                      value={countryIso}
-                      onChange={(e) => setCountryIso(e.currentTarget.value)}
-                    >
-                      <option value="" disabled>Select country…</option>
-                      {countries.map((c) => (
-                        <option key={c.iso2} value={c.iso2}>{c.name}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      style={INPUT}
-                      value={countryText}
-                      onChange={(e) => setCountryText(e.currentTarget.value)}
-                      placeholder="Romania"
-                    />
-                  )}
+                  {/* searchable input cu datalist */}
+                  <input
+                    style={INPUT}
+                    list="country-list"
+                    value={countryText}
+                    onChange={(e) => setCountryText(e.currentTarget.value)}
+                    placeholder="Start typing… e.g. Romania"
+                  />
+                  <datalist id="country-list">
+                    {countries.map(c => (
+                      <option key={c.iso2} value={c.name} />
+                    ))}
+                  </datalist>
                 </div>
               </div>
             </div>
@@ -567,10 +552,11 @@ export default function CheckinClient() {
                   <div>
                     <label style={LABEL}>Series*</label>
                     <input
-                      style={INPUT}
+                      style={{ ...INPUT, textTransform: "uppercase" }}
                       value={docSeries}
-                      onChange={(e) => setDocSeries(e.currentTarget.value)}
+                      onChange={(e) => setDocSeries(e.currentTarget.value.toUpperCase())}
                       placeholder="e.g. AB"
+                      inputMode="text"
                     />
                   </div>
                   <div>
@@ -580,6 +566,7 @@ export default function CheckinClient() {
                       value={docNumber}
                       onChange={(e) => setDocNumber(e.currentTarget.value)}
                       placeholder="e.g. 123456"
+                      inputMode="numeric"
                     />
                   </div>
                 </div>
@@ -589,25 +576,19 @@ export default function CheckinClient() {
                 <div style={ROW_2}>
                   <div>
                     <label style={LABEL}>Nationality (citizenship)*</label>
-                    {nationalityOptions.length > 0 ? (
-                      <select
-                        style={SELECT}
-                        value={docNationality}
-                        onChange={(e) => setDocNationality(e.currentTarget.value)}
-                      >
-                        <option value="" disabled>Select nationality…</option>
-                        {nationalityOptions.map((n) => (
-                          <option key={n} value={n}>{n}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        style={INPUT}
-                        value={docNationality}
-                        onChange={(e) => setDocNationality(e.currentTarget.value)}
-                        placeholder="e.g. Romanian, Dutch"
-                      />
-                    )}
+                    {/* searchable input cu datalist */}
+                    <input
+                      style={INPUT}
+                      list="nationality-list"
+                      value={docNationality}
+                      onChange={(e) => setDocNationality(e.currentTarget.value)}
+                      placeholder="Start typing… e.g. Romanian"
+                    />
+                    <datalist id="nationality-list">
+                      {nationalityOptions.map((n) => (
+                        <option key={n} value={n} />
+                      ))}
+                    </datalist>
                   </div>
                   <div>
                     <label style={LABEL}>Number*</label>
@@ -621,9 +602,9 @@ export default function CheckinClient() {
                 </div>
               )}
 
-              {/* Upload ID document (photo/PDF) — doar „Choose file” */}
+              {/* Upload ID document (photo/PDF) — obligatoriu */}
               <div style={{ marginTop: 6 }}>
-                <label style={LABEL}>Upload ID document (photo/PDF)</label>
+                <label style={LABEL}>Upload ID document (photo/PDF)*</label>
                 <input
                   style={INPUT}
                   type="file"
