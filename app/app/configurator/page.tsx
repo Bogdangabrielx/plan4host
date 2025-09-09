@@ -29,7 +29,7 @@ export default async function ConfiguratorPage() {
   }));
 
   return (
-    <AppShell currentPath="/app/configurator" title="Configurator">
+    <AppShell currentPath="/app/configurator" title="Property Setup">
       <ConfiguratorClient initialProperties={properties} />
     </AppShell>
   );

@@ -403,7 +403,7 @@ export default function DashboardClient({
                         cursor: "pointer"
                       }}
                     >
-                      Open Configurator
+                      Property Setup
                     </button>
 
                     <button
