@@ -663,7 +663,7 @@ export default function CheckinClient() {
                 style={{ marginTop: 3, cursor: (!!pdfUrl && !pdfViewed) ? "not-allowed" : "pointer" }}
                 title={!!pdfUrl && !pdfViewed ? "Open the House Rules to enable this checkbox." : undefined}
               />
-              <label htmlFor="agree" style={{ fontSize:14, color: "var(--muted)" }}>
+              <label htmlFor="agree" style={{ fontSize:13, color: "var(--muted)" }}>
                 I have read and agree to the{" "}
                 {pdfUrl ? (
                   <a
@@ -671,7 +671,7 @@ export default function CheckinClient() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={onOpenPdf}
-                    style={{ fontWeight: 700, fontSize:14 }}
+                    style={{ fontWeight: 700, fontSize:12 }}
                   >
                     Property Rules (pdf))
                   </a>
