@@ -366,14 +366,15 @@ export default function CheckinClient() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div>
             <h1 style={{ margin: 0, fontSize: 22, letterSpacing: 0.3 }}>
-              Guest Check-in — {prop?.name ?? "Property"}
+               "Stay smart, experience better" <br />
+               This is the check-in form of property {prop?.name ?? "Property"}.
             </h1>
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
-              Thank you for choosing us! Please fill in the fields below with the requested information.
-              Once you complete the online check-in, you will automatically receive an email with instant access
-              to the digital guide for {prop?.name ?? "the property"}, including House Rules, general and local
-              information, a precise location section, and step-by-step arrival instructions.
-              Please note that all information you provide is strictly confidential. Thank you for your patience!
+              Thank you for choosing us!<br />
+              Please fill in the fields below with the requested information.<br />
+              Once you complete the online check-in, you will automatically receive an email with confirmation of check-in for {prop?.name ?? "the property"}. <br />
+              Please note that all information you provide is strictly confidential.<br />
+              Thank you for your patience!
             </p>
           </div>
           {/* (Mutat linkul PDF lângă bifa de acord) */}
