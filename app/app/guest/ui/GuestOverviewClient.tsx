@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import RoomDetailModal from "@/app/app/calendar/ui/RoomDetailModal"; // <- modalul calendarului
 
 /** Server page passes these in; we keep same shape */
 type Property = {
@@ -181,6 +182,13 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
     return () => { if (copyTimer.current) window.clearTimeout(copyTimer.current); };
   }, []);
 
+  // NEW: modal state pentru RoomDetailModal
+  const [modal, setModal] = useState<null | {
+    propertyId: string;
+    dateStr: string;
+    room: Room;
+  }>(null);
+
   // ---- Refresh pentru proprietatea aktivă + SUPRESII iCal
   const refresh = useCallback(async () => {
     if (!activePropertyId) return;
@@ -208,7 +216,6 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
         .neq("status", "cancelled")
         .order("start_date", { ascending: true })
         .order("start_time", { ascending: true, nullsFirst: true }),
-      // NEW: suprimări iCal pentru proprietate
       supabase
         .from("ical_suppressions")
         .select("property_id, ical_uid")
@@ -358,6 +365,19 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
     if (typeof window !== "undefined") window.location.href = url;
   }
 
+  // NEW: deschide direct RoomDetailModal pentru rândul GREEN
+  function openReservationFromRow(row: Row) {
+    if (!row.room) {
+      alert("This booking has no assigned room yet.");
+      return;
+    }
+    setModal({
+      propertyId: row.booking.property_id,
+      dateStr: row.booking.start_date, // în intervalul rez. => modal găsește rezervarea
+      room: row.room,
+    });
+  }
+
   // ---- Sorting rows (by start_date then room name numeric-aware)
   const collator = useMemo(() => new Intl.Collator(undefined, { numeric: true, sensitivity: "base" }), []);
   const rowsSorted = useMemo(() => {
@@ -467,7 +487,29 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
                 <small style={{ color: "var(--muted)" }}>{contactLine}</small>
               )}
 
-              {/* Subtext + actions */}
+              {/* GREEN — acțiune: deschide direct rezervarea în RoomDetailModal */}
+              {r.color === "GREEN" && (
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <button
+                    onClick={() => openReservationFromRow(r)}
+                    disabled={!r.room}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border)",
+                      background: r.room ? "var(--primary)" : "var(--card)",
+                      color: r.room ? "#0c111b" : "var(--text)",
+                      fontWeight: 900,
+                      cursor: r.room ? "pointer" : "not-allowed",
+                    }}
+                    title={r.room ? "Open reservation" : "No room assigned yet"}
+                  >
+                    Open reservation
+                  </button>
+                </div>
+              )}
+
+              {/* YELLOW / RED — subtext + acțiuni */}
               {(r.color === "YELLOW" || r.color === "RED") && (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                   <small style={{ color: "var(--muted)" }}>
@@ -509,6 +551,21 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
           </div>
         )}
       </div>
+
+      {/* Modalul: apare când utilizatorul apasă “Open reservation” pe un rând GREEN */}
+      {modal && (
+        <RoomDetailModal
+          dateStr={modal.dateStr}
+          propertyId={modal.propertyId}
+          room={modal.room}
+          forceNew={false}
+          onClose={() => setModal(null)}
+          onChanged={() => {
+            // reîncarcă overview-ul după schimbări în rezervare (opțional)
+            refresh();
+          }}
+        />
+      )}
     </div>
   );
 }
