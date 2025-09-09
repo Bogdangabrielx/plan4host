@@ -1,4 +1,3 @@
-// app/checkin/ui/CheckinClient.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -12,6 +11,8 @@ type PropertyInfo = {
 type RoomType = { id: string; name: string };
 type Room     = { id: string; name: string; room_type_id?: string | null };
 type SubmitState = "idle" | "submitting" | "success" | "error";
+
+type Country = { iso2: string; name: string; nationality_en?: string | null };
 
 function getQueryParam(k: string): string | null {
   if (typeof window === "undefined") return null;
@@ -39,7 +40,7 @@ function addDaysYMD(ymd: string, days: number): string {
 export default function CheckinClient() {
   // strict pe ?property=<id>
   const [propertyId, setPropertyId] = useState<string | null>(null);
-  const [bookingId, setBookingId]   = useState<string | null>(null); // opțional, dacă îl pui în link
+  const [bookingId, setBookingId]   = useState<string | null>(null); // opțional
 
   // catalog încărcat prin endpoint public (bypass RLS)
   const [prop, setProp]   = useState<PropertyInfo | null>(null);
@@ -58,7 +59,18 @@ export default function CheckinClient() {
   const [phone,     setPhone]     = useState("");
   const [address,   setAddress]   = useState("");
   const [city,      setCity]      = useState("");
-  const [country,   setCountry]   = useState("");
+
+  // Country (select cu fallback la text)
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [countryIso, setCountryIso] = useState<string>(""); // din dropdown
+  const [countryText, setCountryText] = useState<string>(""); // fallback text
+
+  // Document section
+  type DocType = "" | "id_card" | "passport";
+  const [docType, setDocType] = useState<DocType>("");
+  const [docSeries, setDocSeries] = useState<string>("");   // doar CI
+  const [docNumber, setDocNumber] = useState<string>("");   // comun
+  const [docNationality, setDocNationality] = useState<string>(""); // doar pașaport (din nationality_en)
 
   // dates
   const [startDate, setStartDate] = useState<string>(() => todayYMD());
@@ -117,7 +129,7 @@ export default function CheckinClient() {
     setBookingId(getQueryParam("booking"));
   }, []);
 
-  // 2) fetch catalog via endpoint public (fără Supabase client, deci fără RLS)
+  // 2) fetch catalog via endpoint public (bypass RLS)
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -166,14 +178,62 @@ export default function CheckinClient() {
     return () => { alive = false; };
   }, [propertyId]);
 
+  // 2.1) Fetch countries & nationalities (endpoint public; fallback = input text)
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/public/countries", { cache: "no-store" });
+        if (!res.ok) return; // fallback auto
+        const j = await res.json();
+        if (!alive) return;
+        const arr: Country[] = Array.isArray(j?.countries) ? j.countries : [];
+        // sort by name asc
+        arr.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" }));
+        setCountries(arr);
+      } catch {
+        // ignore → fallback text inputs
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
   // 3) validare date
   useEffect(() => {
     if (!startDate || !endDate) { setDateError(""); return; }
     setDateError(endDate <= startDate ? "Check-out must be after check-in." : "");
   }, [startDate, endDate]);
 
+  // Nationality options (distinct, alpha)
+  const nationalityOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const c of countries) {
+      const n = (c.nationality_en ?? "").trim();
+      if (n) set.add(n);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [countries]);
+
+  // Country display value (submit ca text)
+  const selectedCountryName = useMemo(() => {
+    if (!countryIso) return "";
+    return countries.find(c => c.iso2 === countryIso)?.name ?? "";
+  }, [countryIso, countries]);
+
   const hasTypes = types.length > 0;
   const consentGatePassed = !pdfUrl || pdfViewed; // dacă nu ai PDF, nu condiționăm bifa
+  const countryValid = countries.length === 0
+    ? countryText.trim().length > 0
+    : countryIso.trim().length > 0;
+
+  const docValid = (() => {
+    if (docType === "") return false;
+    if (docNumber.trim().length < 1) return false;
+    if (docType === "id_card") return docSeries.trim().length > 0;
+    if (docType === "passport") return docNationality.trim().length > 0;
+    return false;
+  })();
+
   const canSubmit =
     !!propertyId &&
     !!prop?.id &&
@@ -183,6 +243,8 @@ export default function CheckinClient() {
     phone.trim().length >= 5 &&
     (!dateError && !!startDate && !!endDate) &&
     (hasTypes ? !!selectedTypeId : !!selectedRoomId) &&
+    countryValid &&
+    docValid &&
     consentGatePassed && agree &&
     submitState !== "submitting";
 
@@ -192,12 +254,11 @@ export default function CheckinClient() {
       window.open(pdfUrl, "_blank", "noopener,noreferrer");
       setPdfViewed(true);
     } catch {
-      // dacă popup blocker, tot marcăm vizualizarea la click
       setPdfViewed(true);
     }
   }
 
-  // 4) submit – trimite property_id + selecția corectă (type sau room)
+  // 4) submit – trimite și câmpurile documentului + country ca text
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
@@ -205,8 +266,10 @@ export default function CheckinClient() {
     setSubmitState("submitting");
     setErrorMsg("");
 
+    const countryToSend = countries.length === 0 ? countryText.trim() : (selectedCountryName || countryText).trim();
+
     try {
-      const payload = {
+      const payload: any = {
         property_id: propertyId!,
         booking_id: bookingId, // poate fi null
         start_date: startDate,
@@ -217,9 +280,17 @@ export default function CheckinClient() {
         phone: phone.trim(),
         address: address.trim(),
         city: city.trim(),
-        country: country.trim(),
+        country: countryToSend,
+
+        // room selection
         requested_room_type_id: hasTypes ? selectedTypeId : null,
         requested_room_id:     hasTypes ? null : selectedRoomId,
+
+        // document
+        doc_type: docType, // "id_card" | "passport"
+        doc_series: docType === "id_card" ? docSeries.trim() : null,
+        doc_number: docNumber.trim(),
+        doc_nationality: docType === "passport" ? docNationality.trim() : null,
       };
 
       const res = await fetch("/api/checkin/submit", {
@@ -387,16 +458,119 @@ export default function CheckinClient() {
                 <label style={LABEL}>Address</label>
                 <input style={INPUT} value={address} onChange={e => setAddress(e.currentTarget.value)} placeholder="Street, number, apt." />
               </div>
+
               <div style={ROW_2}>
                 <div>
                   <label style={LABEL}>City</label>
                   <input style={INPUT} value={city} onChange={e => setCity(e.currentTarget.value)} placeholder="Bucharest" />
                 </div>
+
                 <div>
-                  <label style={LABEL}>Country</label>
-                  <input style={INPUT} value={country} onChange={e => setCountry(e.currentTarget.value)} placeholder="Romania" />
+                  <label style={LABEL}>Country*</label>
+                  {countries.length > 0 ? (
+                    <select
+                      style={SELECT}
+                      value={countryIso}
+                      onChange={(e) => setCountryIso(e.currentTarget.value)}
+                    >
+                      <option value="" disabled>Select country…</option>
+                      {countries.map((c) => (
+                        <option key={c.iso2} value={c.iso2}>{c.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      style={INPUT}
+                      value={countryText}
+                      onChange={(e) => setCountryText(e.currentTarget.value)}
+                      placeholder="Romania"
+                    />
+                  )}
                 </div>
               </div>
+            </div>
+
+            {/* Identity document */}
+            <div style={{ ...ROW_1, marginTop: 6 }}>
+              <div>
+                <label style={LABEL}>Document type*</label>
+                <select
+                  style={SELECT}
+                  value={docType}
+                  onChange={(e) => {
+                    const v = e.currentTarget.value as DocType;
+                    setDocType(v);
+                    // reset câmpuri când schimbă tipul
+                    setDocSeries("");
+                    setDocNumber("");
+                    setDocNationality("");
+                  }}
+                >
+                  <option value="" disabled>Select document type…</option>
+                  <option value="id_card">Identity card</option>
+                  <option value="passport">Passport</option>
+                </select>
+              </div>
+
+              {/* Conditional fields */}
+              {docType === "id_card" && (
+                <div style={ROW_2}>
+                  <div>
+                    <label style={LABEL}>Series*</label>
+                    <input
+                      style={INPUT}
+                      value={docSeries}
+                      onChange={(e) => setDocSeries(e.currentTarget.value)}
+                      placeholder="e.g. AB"
+                    />
+                  </div>
+                  <div>
+                    <label style={LABEL}>Number*</label>
+                    <input
+                      style={INPUT}
+                      value={docNumber}
+                      onChange={(e) => setDocNumber(e.currentTarget.value)}
+                      placeholder="e.g. 123456"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {docType === "passport" && (
+                <div style={ROW_2}>
+                  <div>
+                    <label style={LABEL}>Nationality (citizenship)*</label>
+                    {nationalityOptions.length > 0 ? (
+                      <select
+                        style={SELECT}
+                        value={docNationality}
+                        onChange={(e) => setDocNationality(e.currentTarget.value)}
+                      >
+                        <option value="" disabled>Select nationality…</option>
+                        {nationalityOptions.map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        style={INPUT}
+                        value={docNationality}
+                        onChange={(e) => setDocNationality(e.currentTarget.value)}
+                        placeholder="e.g. Romanian, Dutch"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <label style={LABEL}>Number*</label>
+                    <input
+                      style={INPUT}
+                      value={docNumber}
+                      onChange={(e) => setDocNumber(e.currentTarget.value)}
+                      placeholder="e.g. X1234567"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Consent — apare doar după ce a deschis PDF-ul, dacă există */}
