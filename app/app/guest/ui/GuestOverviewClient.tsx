@@ -249,16 +249,32 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (typeof window !== "undefined") window.location.href = url;
   }
 
-  function openReservation(item: OverviewItem, propertyId: string) {
+  // ✅ Robust: dacă nu găsim camera în cache, o citim din Supabase înainte să deschidem modalul
+  async function openReservation(item: OverviewItem, propertyId: string) {
     if (!item.room_id) {
       alert("This booking has no assigned room yet.");
       return;
     }
-    const room = roomById.get(String(item.room_id));
+
+    let room = roomById.get(String(item.room_id)) || null;
+
     if (!room) {
-      alert("Room not found locally. Try refreshing.");
+      const { data, error } = await supabase
+        .from("rooms")
+        .select("id,name,property_id,room_type_id")
+        .eq("id", item.room_id)
+        .maybeSingle();
+
+      if (!error && data) {
+        room = data as Room;
+      }
+    }
+
+    if (!room) {
+      alert("Room not found. Try refreshing.");
       return;
     }
+
     setModal({ propertyId, dateStr: item.start_date, room });
   }
 
@@ -350,15 +366,15 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 {effectiveKind === "green" && (
                   <button
                     onClick={() => openReservation(it, propertyId)}
-                    disabled={!it.room_id || !roomById.has(String(it.room_id))}
+                    disabled={!it.room_id}
                     style={{
                       padding: "8px 12px",
                       borderRadius: 10,
                       border: "1px solid var(--border)",
-                      background: it.room_id && roomById.has(String(it.room_id)) ? "var(--primary)" : "var(--card)",
-                      color: it.room_id && roomById.has(String(it.room_id)) ? "#0c111b" : "var(--text)",
+                      background: it.room_id ? "var(--primary)" : "var(--card)",
+                      color: it.room_id ? "#0c111b" : "var(--text)",
                       fontWeight: 900,
-                      cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
+                      cursor: it.room_id ? "pointer" : "not-allowed",
                     }}
                     title={it.room_id ? "Open reservation" : "No room assigned yet"}
                   >
