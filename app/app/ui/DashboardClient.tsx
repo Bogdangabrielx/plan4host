@@ -1,3 +1,4 @@
+// app/app/DashboardClient.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -155,9 +156,6 @@ export default function DashboardClient({
   }
 
   // —— BASE URL pentru linkurile de check-in ——
-  // 1) NEXT_PUBLIC_CHECKIN_BASE (poți seta un domeniu separat pentru form)
-  // 2) NEXT_PUBLIC_APP_URL (fallback general)
-  // 3) window.location.origin (fallback local/dev)
   function getCheckinBase(): string {
     const v1 = (process.env.NEXT_PUBLIC_CHECKIN_BASE || "").toString().trim();
     if (v1) return v1.replace(/\/+$/, "");
@@ -173,15 +171,13 @@ export default function DashboardClient({
   function buildPropertyCheckinLink(p: Property): string {
     const base = getCheckinBase();
     try {
-      const u = new URL(base); // asigură schemă + host valide
-      // normalizează calea și adaugă ruta
+      const u = new URL(base);
       const normalizedPath = u.pathname.replace(/\/+$/, "");
       u.pathname = `${normalizedPath}/checkin`;
       const qs = new URLSearchParams({ property: p.id });
       u.search = qs.toString();
       return u.toString();
     } catch {
-      // fallback dacă baza e “ciudată” dar tot vrem link absolut
       return `${base.replace(/\/+$/, "")}/checkin?property=${encodeURIComponent(p.id)}`;
     }
   }
@@ -194,7 +190,6 @@ export default function DashboardClient({
       if (timerRef.current) window.clearTimeout(timerRef.current);
       timerRef.current = window.setTimeout(() => setCopiedId(null), 2000);
     } catch {
-      // Fallback când Clipboard API e blocat (Safari incognito, etc.)
       prompt("Copy this link:", link);
     }
   }
@@ -228,6 +223,21 @@ export default function DashboardClient({
       console.error(e);
       setStatus("Error");
     }
+  }
+
+  // ——— Small hyperlink-triggered file picker for House Rules ———
+  function triggerHouseRulesUpload(propertyId: string) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/pdf";
+    input.style.display = "none";
+    input.onchange = (e: Event) => {
+      const file = (e.currentTarget as HTMLInputElement).files?.[0];
+      if (file) uploadRegulationPdf(propertyId, file);
+      input.remove();
+    };
+    document.body.appendChild(input);
+    input.click();
   }
 
   async function confirmDelete() {
@@ -346,7 +356,7 @@ export default function DashboardClient({
                   <button
                     onClick={() => copyPropertyCheckinLink(p)}
                     title="Copy property check-in link"
-                    data-checkin-link={buildPropertyCheckinLink(p)} // util ptr. debug în Inspector
+                    data-checkin-link={buildPropertyCheckinLink(p)}
                     style={{
                       padding: "8px 12px",
                       borderRadius: 10,
@@ -374,6 +384,8 @@ export default function DashboardClient({
                   >
                     Open Configurator
                   </button>
+
+                  {/* Existing big upload button (optional to keep) */}
                   <label
                     style={{
                       padding: "8px 12px",
@@ -397,6 +409,7 @@ export default function DashboardClient({
                       }}
                     />
                   </label>
+
                   <button
                     onClick={() => setToDelete(p)}
                     style={{
@@ -412,18 +425,45 @@ export default function DashboardClient({
                     Delete
                   </button>
                 </div>
+
+                {/* Footer line with tiny links: Open + Change/Upload */}
                 <div style={{ gridColumn: "1 / -1", color: "var(--muted)", fontSize: 12, marginTop: 6 }}>
                   {p.regulation_pdf_url ? (
                     <span>
                       Regulations PDF uploaded
                       {p.regulation_pdf_uploaded_at ? ` • ${new Date(p.regulation_pdf_uploaded_at).toLocaleString()}` : ""}
                       {" • "}
-                      <a href={p.regulation_pdf_url} target="_blank" rel="noreferrer" style={{ color: "var(--primary)", textDecoration: "none" }}>
+                      <a
+                        href={p.regulation_pdf_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: "var(--primary)", textDecoration: "none" }}
+                      >
                         Open
+                      </a>
+                      {" • "}
+                      <a
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); triggerHouseRulesUpload(p.id); }}
+                        style={{ color: "var(--primary)", textDecoration: "none" }}
+                        title="Change / re-upload House Rules PDF"
+                      >
+                        Change
                       </a>
                     </span>
                   ) : (
-                    <span>No Regulations PDF uploaded</span>
+                    <span>
+                      No Regulations PDF uploaded
+                      {" • "}
+                      <a
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); triggerHouseRulesUpload(p.id); }}
+                        style={{ color: "var(--primary)", textDecoration: "none" }}
+                        title="Upload House Rules PDF"
+                      >
+                        Upload
+                      </a>
+                    </span>
                   )}
                 </div>
               </li>
