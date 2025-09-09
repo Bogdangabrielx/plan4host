@@ -645,8 +645,8 @@ export default function CheckinClient() {
             {/* Consent — ALWAYS visible; checkbox enabled only after opening the PDF (if exists) */}
             <div
               style={{
-                padding: 12,
-                borderRadius: 12,
+                padding: 10,
+                borderRadius: 10,
                 border: "1px solid var(--border)",
                 background: "var(--card)",
                 display: "flex",
