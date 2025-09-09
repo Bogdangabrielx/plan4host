@@ -651,7 +651,7 @@ export default function CheckinClient() {
                 background: "var(--card)",
                 display: "flex",
                 alignItems: "flex-start",
-                gap: 10,
+                gap: 5,
               }}
             >
               <input
