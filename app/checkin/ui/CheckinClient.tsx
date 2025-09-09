@@ -76,7 +76,6 @@ export default function CheckinClient() {
   // Upload file (foto/PDF)
   const [docFile, setDocFile] = useState<File | null>(null);
   const [docFilePreview, setDocFilePreview] = useState<string | null>(null);
-  const cameraInputRef = useRef<HTMLInputElement | null>(null);
 
   // dates
   const [startDate, setStartDate] = useState<string>(() => todayYMD());
@@ -107,7 +106,7 @@ export default function CheckinClient() {
     };
   }, []);
 
-  // revocăm URL-ul de preview când se schimbă fișierul
+  // revoke preview URLs
   useEffect(() => {
     return () => { if (docFilePreview) URL.revokeObjectURL(docFilePreview); };
   }, [docFilePreview]);
@@ -131,6 +130,10 @@ export default function CheckinClient() {
     borderRadius: 10,
     fontSize: 14,
   }), []);
+  const INPUT_DATE: React.CSSProperties = useMemo(() => ({
+    ...INPUT,
+    maxWidth: 260, // nu mai umple cardul
+  }), [INPUT]);
   const SELECT: React.CSSProperties = INPUT;
   const LABEL: React.CSSProperties = useMemo(() => ({
     fontSize: 12, fontWeight: 800, color: "var(--muted)", marginBottom: 6, display: "block",
@@ -187,8 +190,8 @@ export default function CheckinClient() {
         setTypes(t.map(x => ({ id: String(x.id), name: String(x.name ?? "Type") })));
         setRooms(r.map(x => ({ id: String(x.id), name: String(x.name ?? "Room"), room_type_id: x.room_type_id ?? null })));
 
-        if (t.length > 0) setSelectedTypeId(String(t[0].id));
-        else if (r.length > 0) setSelectedRoomId(String(r[0].id));
+        // IMPORTANT: fără preselect — userul alege explicit ce e „booked”
+        // (nu setăm selectedTypeId / selectedRoomId aici)
       } catch (e: any) {
         setErrorMsg(e?.message || "Failed to load property data.");
         setSubmitState("error");
@@ -376,7 +379,9 @@ export default function CheckinClient() {
               Guest Check-in — {prop?.name ?? "Property"}
             </h1>
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
-              Mulțumim că ați ales să vă cazați la {prop?.name ?? "noi"}! Completarea formularului durează ~2 minute. 🙏
+              Thank you for choosing us! Please fill in the fields below with the requested information. 
+              Once you complete the online check-in, you will automatically receive an email with instant access to the digital guide for {prop?.name ?? "the property"}, including House Rules, general and local information, a precise location section, and step-by-step arrival instructions. 
+              Please note that all information you provide is strictly confidential. Thank you for your patience!
             </p>
           </div>
           {pdfUrl && (
@@ -405,11 +410,12 @@ export default function CheckinClient() {
               display: "grid",
               gap: 12,
               gridTemplateColumns: isNarrow ? "1fr" : "1fr 1fr",
+              alignItems: "start",
             }}>
               <div>
                 <label style={LABEL}>Check-in date*</label>
                 <input
-                  style={INPUT}
+                  style={INPUT_DATE}
                   type="date"
                   value={startDate}
                   min={todayYMD()}
@@ -423,7 +429,7 @@ export default function CheckinClient() {
               <div>
                 <label style={LABEL}>Check-out date*</label>
                 <input
-                  style={INPUT}
+                  style={INPUT_DATE}
                   type="date"
                   value={endDate}
                   min={addDaysYMD(startDate, 1)}
@@ -441,12 +447,13 @@ export default function CheckinClient() {
             {types.length > 0 ? (
               <div style={ROW_1}>
                 <div>
-                  <label style={LABEL}>Preferred room type*</label>
+                  <label style={LABEL}>Booked room type*</label>
                   <select
                     style={SELECT}
                     value={selectedTypeId}
                     onChange={(e) => setSelectedTypeId(e.currentTarget.value)}
                   >
+                    <option value="" disabled>Select room type…</option>
                     {types.map((t) => (
                       <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
@@ -456,12 +463,13 @@ export default function CheckinClient() {
             ) : (
               <div style={ROW_1}>
                 <div>
-                  <label style={LABEL}>Preferred room*</label>
+                  <label style={LABEL}>Booked room*</label>
                   <select
                     style={SELECT}
                     value={selectedRoomId}
                     onChange={(e) => setSelectedRoomId(e.currentTarget.value)}
                   >
+                    <option value="" disabled>Select room…</option>
                     {rooms.map((r) => (
                       <option key={r.id} value={r.id}>{r.name}</option>
                     ))}
@@ -613,11 +621,9 @@ export default function CheckinClient() {
                 </div>
               )}
 
-              {/* Upload ID document (foto sau PDF) */}
-              <div style={{ marginTop: 6, display: "grid", gap: 8 }}>
+              {/* Upload ID document (photo/PDF) — doar „Choose file” */}
+              <div style={{ marginTop: 6 }}>
                 <label style={LABEL}>Upload ID document (photo/PDF)</label>
-
-                {/* input normal — NU deschide camera direct */}
                 <input
                   style={INPUT}
                   type="file"
@@ -633,38 +639,8 @@ export default function CheckinClient() {
                     }
                   }}
                 />
-
-                {/* buton separat pentru camera */}
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button
-                    type="button"
-                    style={BTN_GHOST}
-                    onClick={() => cameraInputRef.current?.click()}
-                    title="Open camera"
-                  >
-                    📷 Take a photo
-                  </button>
-                  <input
-                    ref={cameraInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    style={{ display: "none" }}
-                    onChange={(e) => {
-                      const f = e.currentTarget.files?.[0] ?? null;
-                      setDocFile(f || null);
-                      if (f && f.type.startsWith("image/")) {
-                        const url = URL.createObjectURL(f);
-                        setDocFilePreview(url);
-                      } else {
-                        setDocFilePreview(null);
-                      }
-                    }}
-                  />
-                </div>
-
                 {docFile && (
-                  <div style={{ display: "grid", gap: 6 }}>
+                  <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
                     {docFilePreview ? (
                       <img
                         src={docFilePreview}
