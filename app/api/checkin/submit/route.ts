@@ -10,6 +10,8 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const admin = createClient(url, service, { auth: { persistSession: false } });
 
+const DEFAULT_DOCS_BUCKET = (process.env.NEXT_PUBLIC_DEFAULT_DOCS_BUCKET || "guest_docs").toString();
+
 // yyyy-mm-dd validator
 function isYMD(s: unknown): s is string {
   return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
@@ -25,7 +27,6 @@ function clampTime(t: unknown, fallback: string): string {
   return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
 
-// helpers pentru detecția unor erori comune
 function looksEnumHoldError(msg?: string) {
   return !!msg && /invalid input value for enum .*: "hold"/i.test(msg);
 }
@@ -50,7 +51,8 @@ async function normalizeRoomTypeId(room_type_id: any, property_id: string): Prom
 }
 
 // Dacă avem room_id dar nu avem room_type_id, întoarce type-ul camerei
-async function roomTypeFromRoom(room_id: string): Promise<string | null> {
+async function roomTypeFromRoom(room_id: string | null): Promise<string | null> {
+  if (!room_id) return null;
   const r = await admin.from("rooms").select("room_type_id").eq("id", room_id).maybeSingle();
   if (r.error || !r.data) return null;
   return r.data.room_type_id ? String(r.data.room_type_id) : null;
@@ -60,12 +62,11 @@ async function roomTypeFromRoom(room_id: string): Promise<string | null> {
 async function findFreeRoomForType(opts: {
   property_id: string;
   room_type_id: string;
-  start_date: string; // yyyy-mm-dd
-  end_date: string;   // yyyy-mm-dd
+  start_date: string;
+  end_date: string;
 }): Promise<string | null> {
   const { property_id, room_type_id, start_date, end_date } = opts;
 
-  // 1) camere candidate
   const rRooms = await admin
     .from("rooms")
     .select("id,name")
@@ -76,14 +77,13 @@ async function findFreeRoomForType(opts: {
   if (rRooms.error || !rRooms.data || rRooms.data.length === 0) return null;
   const candIds = rRooms.data.map((r) => r.id as string);
 
-  // 2) booking-uri care se suprapun (half-open: [start, end))
   const rBusy = await admin
     .from("bookings")
     .select("room_id,start_date,end_date,status")
     .in("room_id", candIds)
     .neq("status", "cancelled")
-    .lt("start_date", end_date) // start < newEnd
-    .gt("end_date", start_date); // end > newStart
+    .lt("start_date", end_date)
+    .gt("end_date", start_date);
 
   const busy = new Set<string>();
   if (!rBusy.error) {
@@ -92,7 +92,6 @@ async function findFreeRoomForType(opts: {
     }
   }
 
-  // 3) alege prima cameră liberă
   const free = candIds.find((id) => !busy.has(id));
   return free ?? null;
 }
@@ -106,7 +105,7 @@ export async function POST(req: NextRequest) {
       start_date,
       end_date,
 
-      // guest (vizibile în RoomDetailModal)
+      // guest
       guest_first_name,
       guest_last_name,
 
@@ -114,41 +113,37 @@ export async function POST(req: NextRequest) {
       requested_room_id,
       requested_room_type_id,
 
-      // opțional din client; dacă lipsesc, folosim orele din propertySetup
+      // opțional; dacă lipsesc -> fallback din property
       start_time: start_time_client,
       end_time: end_time_client,
 
-      // contact (opționale; le scriem și în bookings, și structurat în booking_contacts)
+      // contact
       email,
       phone,
       address,
       city,
       country,
 
-      // ---- document (formă veche sau nouă) ----
-      // v1 (legacy, un singur doc):
-      doc_type,          // "id_card" | "passport"
-      doc_series,        // string | null (doar pentru id_card)
-      doc_number,        // string
-      doc_nationality,   // string | null (doar pentru passport)
-      doc_file_path,     // string | null (ex: <property>/<folder>/<uuid>.<ext>)
-      doc_file_mime,     // string | null (ex: image/jpeg, application/pdf)
+      // ---- document (v1) ----
+      doc_type,
+      doc_series,
+      doc_number,
+      doc_nationality,
+      doc_file_path,
+      doc_file_mime,
 
-      // v2 (nou): listă de documente
-      docs,              // Array<{ storage_path, storage_bucket?, mime_type?, size_bytes?, doc_type?, doc_series?, doc_number?, doc_nationality? }>
+      // ---- documente (v2) ----
+      docs,
     } = body ?? {};
 
-    if (!property_id || !isYMD(start_date) || !isYMD(end_date)) {
-      return NextResponse.json({ error: "Missing/invalid property_id or dates" }, { status: 400 });
-    }
-    if (end_date <= start_date) {
-      return NextResponse.json({ error: "end_date must be after start_date" }, { status: 400 });
+    if (!property_id) {
+      return NextResponse.json({ error: "Missing property_id" }, { status: 400 });
     }
 
-    // 1) Orele din PropertySetup
+    // 1) Citește orele default (+ timezone dacă îl folosești ulterior)
     const rProp = await admin
       .from("properties")
-      .select("id,check_in_time,check_out_time")
+      .select("id,check_in_time,check_out_time,timezone")
       .eq("id", property_id)
       .maybeSingle();
 
@@ -157,31 +152,176 @@ export async function POST(req: NextRequest) {
 
     const checkInDefault  = rProp.data.check_in_time  ?? "14:00";
     const checkOutDefault = rProp.data.check_out_time ?? "11:00";
-
     const start_time = clampTime(start_time_client, checkInDefault);
     const end_time   = clampTime(end_time_client,   checkOutDefault);
 
-    // 2) Normalize room / room_type
-    let room_id: string | null = await normalizeRoomId(requested_room_id, property_id);
-    let room_type_id: string | null = await normalizeRoomTypeId(requested_room_type_id, property_id);
+    // Derivă tipul din selecții
+    let form_room_id: string | null = await normalizeRoomId(requested_room_id, property_id);
+    let form_room_type_id: string | null =
+      (await normalizeRoomTypeId(requested_room_type_id, property_id)) ??
+      (await roomTypeFromRoom(form_room_id));
 
-    if (!room_type_id && room_id) {
-      room_type_id = await roomTypeFromRoom(room_id);
+    // =========================
+    // A) ÎNCERCARE MATCH cu rezervare iCal existentă (fără booking_id în link)
+    //    Criteriu: dates_equal + type_equal + source iCal (sau ical_uid not null)
+    // =========================
+    let matchedBookingId: string | null = null;
+    if (isYMD(start_date) && isYMD(end_date) && form_room_type_id) {
+      const rIcal = await admin
+        .from("bookings")
+        .select("id,room_id,room_type_id,start_date,end_date,status,source,ical_uid")
+        .eq("property_id", property_id)
+        .eq("start_date", start_date)
+        .eq("end_date", end_date)
+        .neq("status", "cancelled")
+        .or("source.eq.ical,ical_uid.not.is.null"); // iCal candidate
+
+      if (!rIcal.error && Array.isArray(rIcal.data)) {
+        for (const b of rIcal.data) {
+          const b_type = b.room_type_id ?? (await roomTypeFromRoom(b.room_id ?? null));
+          if (b_type && String(b_type) === String(form_room_type_id)) {
+            matchedBookingId = String(b.id);
+            break;
+          }
+        }
+      }
     }
 
-    if (!room_id && room_type_id) {
-      room_id = await findFreeRoomForType({ property_id, room_type_id, start_date, end_date });
+    if (matchedBookingId) {
+      // —— MERGE pe booking-ul iCal existent —— //
+      // 1) Guest + mark form received
+      await admin
+        .from("bookings")
+        .update({
+          guest_first_name: guest_first_name ?? null,
+          guest_last_name:  guest_last_name  ?? null,
+          guest_email:      email ?? null,
+          guest_phone:      phone ?? null,
+          guest_address:    [address, city, country].map(v => (v ?? "").trim()).filter(Boolean).join(", ") || null,
+          form_submitted_at: new Date().toISOString(),
+          source: "ical", // păstrăm „ical” ca sursă principală (formular primit)
+        })
+        .eq("id", matchedBookingId);
+
+      // 2) Auto-assign cameră de tipul respectiv (dacă încă nu are)
+      let auto_assigned_room_id: string | null = null;
+      const tryAssign = await admin
+        .from("bookings")
+        .select("room_id")
+        .eq("id", matchedBookingId)
+        .maybeSingle();
+
+      if (!tryAssign.error && tryAssign.data && !tryAssign.data.room_id && form_room_type_id) {
+        const free = await findFreeRoomForType({
+          property_id,
+          room_type_id: form_room_type_id,
+          start_date,
+          end_date,
+        });
+        if (free) {
+          await admin.from("bookings").update({ room_id: free }).eq("id", matchedBookingId);
+          auto_assigned_room_id = free;
+        }
+        // dacă nu e liber, UI va marca RED (room_required_auto_failed) — nu blocăm submitul
+      }
+
+      // 3) Contact structurat
+      if (email || phone || address || city || country) {
+        try {
+          await admin
+            .from("booking_contacts")
+            .upsert(
+              {
+                booking_id: matchedBookingId,
+                email: email ?? null,
+                phone: phone ?? null,
+                address: address ?? null,
+                city: city ?? null,
+                country: country ?? null,
+              },
+              { onConflict: "booking_id" }
+            )
+            .select("booking_id")
+            .single();
+        } catch { /* ignore */ }
+      }
+
+      // 4) Documente
+      const docsArray: Array<any> = Array.isArray(docs) ? docs : [];
+      if (!docsArray.length && (doc_type || doc_file_path || doc_file_mime)) {
+        docsArray.push({
+          doc_type,
+          doc_series,
+          doc_number,
+          doc_nationality,
+          storage_bucket: DEFAULT_DOCS_BUCKET,
+          storage_path: doc_file_path,
+          mime_type: doc_file_mime,
+        });
+      }
+      let documents_saved = 0;
+      if (docsArray.length) {
+        const rows = docsArray
+          .map((d) => {
+            const bucket = String(d.storage_bucket || DEFAULT_DOCS_BUCKET);
+            const path   = String(d.storage_path || d.path || "");
+            if (!path) return null;
+
+            const t = (d.doc_type ?? "").toString();
+            const typeText = t === "id_card" || t === "passport" ? t : null;
+
+            const r: any = {
+              property_id,
+              booking_id: matchedBookingId!,
+              doc_type: typeText,
+              storage_bucket: bucket,
+              storage_path: path,
+              mime_type: d.mime_type ? String(d.mime_type) : null,
+              size_bytes: Number.isFinite(d.size_bytes) ? Number(d.size_bytes) : null,
+              uploaded_at: new Date().toISOString(),
+            };
+            if (typeof d.doc_series === "string")      r.doc_series = d.doc_series;
+            if (typeof d.doc_number === "string")      r.doc_number = d.doc_number;
+            if (typeof d.doc_nationality === "string") r.doc_nationality = d.doc_nationality;
+            return r;
+          })
+          .filter(Boolean) as any[];
+
+        if (rows.length) {
+          try {
+            const insDocs = await admin.from("booking_documents").insert(rows).select("id");
+            if (!insDocs.error) documents_saved = insDocs.data?.length ?? 0;
+          } catch { /* ignore */ }
+        }
+      }
+
+      return NextResponse.json({
+        ok: true,
+        id: matchedBookingId,
+        updated_existing_booking: true,
+        auto_assigned_room_id,
+        documents_saved,
+      });
     }
 
-    // 3) Construcția adresei afișabile (pt. RoomDetailModal)
-    const parts = [address, city, country].map(v => (v ?? "").trim()).filter(Boolean);
-    const displayAddress = parts.length ? parts.join(", ") : null;
+    // =========================
+    // B) FĂRĂ MATCH iCal → Form-only
+    //    → Cream doar SOFT HOLD pe tip (NU asignezi cameră)
+    // =========================
+    if (!isYMD(start_date) || !isYMD(end_date)) {
+      return NextResponse.json({ error: "Missing/invalid dates" }, { status: 400 });
+    }
+    if (end_date <= start_date) {
+      return NextResponse.json({ error: "end_date must be after start_date" }, { status: 400 });
+    }
 
-    // 4) Insert booking (status soft)
+    // NU mai alocăm cameră automat aici. Doar room_type_id (dacă există).
+    const displayAddress = [address, city, country].map(v => (v ?? "").trim()).filter(Boolean).join(", ") || null;
+
     const basePayload: any = {
       property_id,
-      room_id: room_id ?? null,
-      room_type_id: room_type_id ?? null,
+      room_id: null,                          // ← important: fără auto-assign
+      room_type_id: form_room_type_id ?? null,
       start_date,
       end_date,
       start_time,
@@ -194,43 +334,23 @@ export async function POST(req: NextRequest) {
       guest_address:    displayAddress,
       form_submitted_at: new Date().toISOString(),
       source: "form",
+      is_soft_hold: true,                     // ← contează la capacitate ca soft-hold
+      hold_status: "active",
+      // opțional: poți seta hold_expires_at ≈ cutoff (Arrival-3 zile la 00:00, TZ proprietate)
     };
 
     let ins = await admin.from("bookings").insert(basePayload).select("id").single();
-
     if (ins.error && looksEnumHoldError(ins.error.message)) {
       basePayload.status = "pending";
       ins = await admin.from("bookings").insert(basePayload).select("id").single();
     }
-
-    if (ins.error && room_id && looksForeignKeyOrOverlap(ins.error.message)) {
-      const fallbackPayload = { ...basePayload, room_id: null };
-      ins = await admin.from("bookings").insert(fallbackPayload).select("id").single();
-    }
-
-    if (ins.error) {
-      return NextResponse.json({ error: ins.error.message }, { status: 500 });
-    }
+    if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 });
 
     const newId = ins.data.id as string;
 
-    // 5) Soft-hold (dacă schema permite)
-    try {
-      await admin
-        .from("bookings")
-        .update({
-          is_soft_hold: true,
-          hold_status: "active",
-          hold_expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-        } as any)
-        .eq("id", newId);
-    } catch {}
-
-    // 6) Contact structurat (best-effort)
-    let contact_saved = false;
     if (email || phone || address || city || country) {
       try {
-        const up = await admin
+        await admin
           .from("booking_contacts")
           .upsert(
             {
@@ -245,39 +365,29 @@ export async function POST(req: NextRequest) {
           )
           .select("booking_id")
           .single();
-        contact_saved = !up.error;
-      } catch {
-        contact_saved = false;
-      }
+      } catch { /* ignore */ }
     }
 
-    // 7) Documente — inserăm în booking_documents (schema ta actuală)
-    let documents_saved = 0;
-
-    // Normalize docs[] (v2) sau doc_* (v1)
     const docsArray: Array<any> = Array.isArray(docs) ? docs : [];
-
     if (!docsArray.length && (doc_type || doc_file_path || doc_file_mime)) {
-      // transformă forma v1 într-un doc compatibil
       docsArray.push({
         doc_type,
         doc_series,
         doc_number,
         doc_nationality,
-        storage_bucket: "guest_docs",
+        storage_bucket: DEFAULT_DOCS_BUCKET,
         storage_path: doc_file_path,
         mime_type: doc_file_mime,
       });
     }
-
+    let documents_saved = 0;
     if (docsArray.length) {
       const rows = docsArray
         .map((d) => {
-          const bucket = String(d.storage_bucket || "guest_docs");
-          const path = String(d.storage_path || d.path || "");
+          const bucket = String(d.storage_bucket || DEFAULT_DOCS_BUCKET);
+          const path   = String(d.storage_path || d.path || "");
           if (!path) return null;
 
-          // la tine doc_type e text; păstrăm doar valorile cunoscute, altfel null
           const t = (d.doc_type ?? "").toString();
           const typeText = t === "id_card" || t === "passport" ? t : null;
 
@@ -291,36 +401,30 @@ export async function POST(req: NextRequest) {
             size_bytes: Number.isFinite(d.size_bytes) ? Number(d.size_bytes) : null,
             uploaded_at: new Date().toISOString(),
           };
-
-          // coloane opționale (există în schema ta)
           if (typeof d.doc_series === "string")      r.doc_series = d.doc_series;
           if (typeof d.doc_number === "string")      r.doc_number = d.doc_number;
           if (typeof d.doc_nationality === "string") r.doc_nationality = d.doc_nationality;
-
           return r;
         })
         .filter(Boolean) as any[];
-
       if (rows.length) {
         try {
           const insDocs = await admin.from("booking_documents").insert(rows).select("id");
           if (!insDocs.error) documents_saved = insDocs.data?.length ?? 0;
-        } catch {
-          // ignore (nu oprim flow-ul de submit)
-        }
+        } catch { /* ignore */ }
       }
     }
 
     return NextResponse.json({
       ok: true,
       id: newId,
-      auto_assigned_room_id: room_id ?? null,
-      room_type_id: room_type_id ?? null,
+      updated_existing_booking: false,
+      auto_assigned_room_id: null,
+      room_type_id: form_room_type_id ?? null,
       start_date,
       end_date,
       start_time,
       end_time,
-      contact_saved,
       documents_saved,
     });
   } catch (e: any) {
