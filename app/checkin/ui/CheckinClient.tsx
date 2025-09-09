@@ -685,7 +685,7 @@ export default function CheckinClient() {
                   </span>
                 )}
                 {!!pdfUrl && pdfViewed && (
-                  <span style={{ marginLeft: 6, color: "var(--text)", fontWeight: 700 }}>
+                  <span style={{ marginLeft: 6, color: "var(--text)", fontWeight: 700,fontSize:9 }}>
                     Opened
                   </span>
                 )}
