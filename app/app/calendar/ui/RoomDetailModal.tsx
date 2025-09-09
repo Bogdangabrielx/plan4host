@@ -26,6 +26,9 @@ type BookingContact = {
 type BookingDoc = {
   id: string;
   doc_type: string | null;
+  doc_series: string | null;
+  doc_number: string | null;
+  doc_nationality: string | null;
   mime_type: string | null;
   size_bytes: number | null;
   uploaded_at: string;
@@ -56,6 +59,18 @@ function humanSize(n?: number | null) {
   let i = 0, v = n;
   while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
   return `${v.toFixed(v >= 10 ? 0 : 1)} ${u[i]}`;
+}
+function fmtDocType(t: string | null | undefined) {
+  if (!t) return "document";
+  return t === "id_card" ? "ID card" : t === "passport" ? "Passport" : t.replace(/_/g, " "); // compat ES2020
+}
+function fmtDocLine(d: BookingDoc) {
+  const parts: string[] = [];
+  if (d.doc_type) parts.push(fmtDocType(d.doc_type));
+  if (d.doc_series) parts.push(`Series ${d.doc_series}`);
+  if (d.doc_number) parts.push(`No. ${d.doc_number}`);
+  if (d.doc_nationality) parts.push(`Nationality ${d.doc_nationality}`);
+  return parts.join(" · ");
 }
 
 export default function RoomDetailModal({
@@ -115,6 +130,7 @@ export default function RoomDetailModal({
 
   // Documents (from guest check-in)
   const [docs, setDocs] = useState<BookingDoc[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
 
   // Dirty tracking (names + contacts + times)
   const initialGuestRef   = useRef<{ first: string; last: string }>({ first: "", last: "" });
@@ -146,6 +162,19 @@ export default function RoomDetailModal({
       });
       return res.ok;
     } catch { return false; }
+  }
+
+  async function fetchDocuments(bookingId: string) {
+    try {
+      setDocsLoading(true);
+      const r = await fetch(`/api/bookings/${bookingId}/documents`, { cache: "no-store" });
+      const j = await r.json().catch(() => ({}));
+      setDocs(Array.isArray(j?.documents) ? j.documents : []);
+    } catch {
+      setDocs([]);
+    } finally {
+      setDocsLoading(false);
+    }
   }
 
   // Load everything
@@ -218,9 +247,12 @@ export default function RoomDetailModal({
         setGuestAddr(contact?.address ?? "");
         setGuestCity(contact?.city ?? "");
         setGuestCountry(contact?.country ?? "");
+        // Documents
+        await fetchDocuments(act.id);
       } else {
         setGuestFirst(""); setGuestLast("");
         setGuestEmail(""); setGuestPhone(""); setGuestAddr(""); setGuestCity(""); setGuestCountry("");
+        setDocs([]);
       }
 
       // Set initial refs for dirty tracking
@@ -238,17 +270,6 @@ export default function RoomDetailModal({
         ed: act ? act.end_date : _eDate,
         et: act ? (act.end_time || CO) : _eTime,
       };
-
-      // Documents (signed URLs via server API)
-      if (act) {
-        try {
-          const r = await fetch(`/api/bookings/${act.id}/documents`, { cache: "no-store" });
-          const j = await r.json().catch(() => ({}));
-          setDocs(Array.isArray(j?.documents) ? j.documents : []);
-        } catch { setDocs([]); }
-      } else {
-        setDocs([]);
-      }
 
       // Default ON; open guest panel if creating or no name
       setOn(true);
@@ -439,7 +460,6 @@ export default function RoomDetailModal({
 
     setSaving("extending"); setStatus("Saving…"); setStatusHint("Extending…");
 
-    // Folosește PATCH-ul server-side (are verificări de overlap & permisiuni)
     const res = await fetch(`/api/bookings/${active.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -814,7 +834,7 @@ export default function RoomDetailModal({
           )}
 
           {/* Guest documents */}
-          {active && docs.length > 0 && (
+          {active && (
             <div
               style={{
                 marginTop: 6,
@@ -826,54 +846,69 @@ export default function RoomDetailModal({
                 gap: 10,
               }}
             >
-              <strong style={{ letterSpacing: 0.3 }}>Guest documents</strong>
-
-              <div style={{ display: "grid", gap: 10 }}>
-                {docs.map((d) => {
-                  const isImg = (d.mime_type || "").startsWith("image/");
-                  const isPdf = (d.mime_type || "") === "application/pdf";
-                  const when = new Date(d.uploaded_at);
-                  const meta = `${when.toLocaleString()} • ${humanSize(d.size_bytes)}`;
-
-                  return (
-                    <div key={d.id} style={{ display: "grid", gap: 6 }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                        <div style={{ fontWeight: 700 }}>
-                          {d.doc_type ? d.doc_type.replace("_", " ") : "document"} — <span style={{ color: "var(--muted)" }}>{meta}</span>
-                        </div>
-                        {d.url && (
-                          <a
-                            href={d.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ textDecoration: "underline", fontWeight: 800 }}
-                          >
-                            Open
-                          </a>
-                        )}
-                      </div>
-
-                      {isImg && d.url && (
-                        <img
-                          src={d.url}
-                          alt="Document"
-                          style={{ maxWidth: "100%", maxHeight: 260, borderRadius: 10, border: "1px solid var(--border)" }}
-                        />
-                      )}
-
-                      {isPdf && d.url && (
-                        <iframe
-                          src={d.url}
-                          style={{ width: "100%", height: 320, border: "1px solid var(--border)", borderRadius: 10 }}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <strong style={{ letterSpacing: 0.3 }}>Guest documents</strong>
+                <button
+                  type="button"
+                  onClick={() => active?.id && fetchDocuments(active.id)}
+                  style={baseBtn}
+                  disabled={docsLoading}
+                  title="Refresh signed links"
+                >
+                  {docsLoading ? "Refreshing…" : "Refresh documents"}
+                </button>
               </div>
 
+              {docs.length === 0 ? (
+                <div style={{ color: "var(--muted)" }}>No documents uploaded from the check-in form.</div>
+              ) : (
+                <div style={{ display: "grid", gap: 10 }}>
+                  {docs.map((d) => {
+                    const isImg = (d.mime_type || "").startsWith("image/");
+                    const isPdf = (d.mime_type || "") === "application/pdf";
+                    const when = new Date(d.uploaded_at);
+                    const meta = `${when.toLocaleString()} · ${humanSize(d.size_bytes)}`;
+
+                    return (
+                      <div key={d.id} style={{ display: "grid", gap: 6 }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                          <div style={{ fontWeight: 700 }}>
+                            {fmtDocLine(d)} — <span style={{ color: "var(--muted)" }}>{meta}</span>
+                          </div>
+                          {d.url && (
+                            <a
+                              href={d.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ textDecoration: "underline", fontWeight: 800 }}
+                            >
+                              Open
+                            </a>
+                          )}
+                        </div>
+
+                        {isImg && d.url && (
+                          <img
+                            src={d.url}
+                            alt="Document"
+                            style={{ maxWidth: "100%", maxHeight: 260, borderRadius: 10, border: "1px solid var(--border)" }}
+                          />
+                        )}
+
+                        {isPdf && d.url && (
+                          <iframe
+                            src={d.url}
+                            style={{ width: "100%", height: 320, border: "1px solid var(--border)", borderRadius: 10 }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               <small style={{ color: "var(--muted)" }}>
-                Links are temporary (secure). Reopen the modal to refresh if they expire.
+                Links are temporary (secure). Use “Refresh documents” if they expire.
               </small>
             </div>
           )}
@@ -943,28 +978,24 @@ export default function RoomDetailModal({
 
             {active && (
               <>
-                {/* Apare doar dacă există modificări în guest/contact/custom */}
                 {anyDetailsDirty && (
                   <button onClick={saveDetails} style={baseBtn} disabled={saving !== false && saving !== "updating"}>
                     Save details
                   </button>
                 )}
 
-                {/* Apare doar dacă s-au modificat datele/orele (Start sau End) și Reservation este ON */}
                 {on && timesDirty && (
                   <button onClick={saveTimes} style={baseBtn} disabled={saving !== false && saving !== "times"} title="Save updated dates & times">
                     Save dates & times
                   </button>
                 )}
 
-                {/* Apare doar dacă s-a modificat End-ul și este o reală extindere */}
                 {on && canExtend && (
                   <button onClick={extendUntil} style={baseBtn} disabled={saving !== false && saving !== "extending"}>
                     Extend until
                   </button>
                 )}
 
-                {/* Apare doar când Reservation este OFF */}
                 {!on && (
                   <button onClick={releaseBooking} style={dangerBtn} disabled={saving !== false && saving !== "releasing"}>
                     Confirm release
