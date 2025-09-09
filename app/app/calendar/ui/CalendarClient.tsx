@@ -62,7 +62,7 @@ export default function CalendarClient({
 
   const bgStyle = useMemo(() => ({
   minHeight: "100vh",
-  backgroundImage: 'url(/background_forlight.png)',
+  backgroundImage: 'url(/backgorund_forlight.png)',
   backgroundSize: "cover",
   backgroundRepeat: "no-repeat",
   backgroundPosition: "center",
