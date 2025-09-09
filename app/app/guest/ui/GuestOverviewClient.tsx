@@ -36,7 +36,7 @@ type OverviewItem = {
   booking_id?: string | null;
   guest_first_name?: string | null;
   guest_last_name?: string | null;
-  guest_name?: string | null; // ← NEW: fallback pentru manual
+  guest_name?: string | null; // fallback pentru manual
   cutoff_ts?: string | null;
 };
 
@@ -55,7 +55,6 @@ function fullName(item: OverviewItem): string {
   const l = (item.guest_last_name ?? "").trim();
   const combined = [f, l].filter(Boolean).join(" ").trim();
   if (combined) return combined;
-  // fallback legacy (manual)
   return (item.guest_name ?? "").trim();
 }
 function hasName(item: OverviewItem): boolean {
@@ -140,7 +139,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setLoading("loading");
     setHint("Loading…");
 
-    // 1) Rooms + Types
     const [rRooms, rTypes] = await Promise.all([
       supabase
         .from("rooms")
@@ -163,7 +161,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setRooms((rRooms.data ?? []) as Room[]);
     setRoomTypes((rTypes.data ?? []) as RoomType[]);
 
-    // 2) Overview items din API (no-store)
     try {
       const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(activePropertyId)}`, { cache: "no-store" });
       if (!res.ok) {
@@ -244,12 +241,21 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     }
   }, []);
 
+  // ▶ RED → deschide calendarul pe luna start_date-ului
   function resolveInCalendar(item: OverviewItem, _propertyId: string) {
-    const url = `/app/calendar?date=${item.start_date}`;
+    if (!item.start_date) {
+      if (typeof window !== "undefined") window.location.href = "/app/calendar";
+      return;
+    }
+    const d = new Date(`${item.start_date}T00:00:00`);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    // trimitem atât date (ziua exactă), cât și month (YYYY-MM) ca fallback
+    const url = `/app/calendar?date=${item.start_date}&month=${yyyy}-${mm}`;
     if (typeof window !== "undefined") window.location.href = url;
   }
 
-  // ✅ Robust: dacă nu găsim camera în cache, o citim din Supabase înainte să deschidem modalul
+  // ▶ GREEN → deschide RoomDetailModal (fallback: fetch room dacă nu e în cache)
   async function openReservation(item: OverviewItem, propertyId: string) {
     if (!item.room_id) {
       alert("This booking has no assigned room yet.");
@@ -332,7 +338,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       {/* Rows */}
       <div style={{ display: "grid", gap: 10 }}>
         {rows.map((it) => {
-          // Regula de aur în UI: dacă are NUME (inclusiv guest_name), forțăm GREEN
           const name = fullName(it) || "Unknown guest";
           const effectiveKind: OverviewItem["kind"] = hasName(it) ? "green" : it.kind;
 
@@ -393,7 +398,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   </button>
                 )}
 
-                {/* RED → Resolve in Calendar */}
+                {/* RED → Resolve in Calendar (pe luna potrivită) */}
                 {effectiveKind === "red" && (
                   <button
                     onClick={() => resolveInCalendar(it, propertyId)}
