@@ -6,7 +6,7 @@ import { useHeader } from "../_components/HeaderContext";
 const NAV_BASE = [
   { href: "/app", label: "Dashboard", emoji: "🏠", scope: "dashboard" },
   { href: "/app/calendar", label: "Calendar", emoji: "📅", scope: "calendar" },
-  { href: "/app/configurator", label: "Configurator", emoji: "⚙️", scope: "configurator" },
+  { href: "/app/configurator", label: "Property Setup", emoji: "⚙️", scope: "configurator" },
   { href: "/app/cleaning", label: "Cleaning Board", emoji: "🧹", scope: "cleaning" },
   { href: "/app/channels", label: "Channels & iCal", emoji: "🔗", scope: "channels" },
   // 🔁 Inbox -> Guest Overview (păstrăm scope: "inbox")
