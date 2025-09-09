@@ -1,3 +1,4 @@
+// RoomDetailModal.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -53,24 +54,9 @@ function normTime(t: string | null | undefined, fallback: string) {
   const v = (t ?? "").trim();
   return /^\d\d:\d\d$/.test(v) ? v : fallback;
 }
-function humanSize(n?: number | null) {
-  if (!n || n <= 0) return "—";
-  const u = ["B","KB","MB","GB"];
-  let i = 0, v = n;
-  while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
-  return `${v.toFixed(v >= 10 ? 0 : 1)} ${u[i]}`;
-}
 function fmtDocType(t: string | null | undefined) {
-  if (!t) return "document";
+  if (!t) return "—";
   return t === "id_card" ? "ID card" : t === "passport" ? "Passport" : t.replace(/_/g, " ");
-}
-function fmtDocLine(d: BookingDoc) {
-  const parts: string[] = [];
-  if (d.doc_type) parts.push(fmtDocType(d.doc_type));
-  if (d.doc_series) parts.push(`Series ${d.doc_series}`);
-  if (d.doc_number) parts.push(`No. ${d.doc_number}`);
-  if (d.doc_nationality) parts.push(`Nationality ${d.doc_nationality}`);
-  return parts.join(" · ");
 }
 
 export default function RoomDetailModal({
@@ -130,7 +116,6 @@ export default function RoomDetailModal({
 
   // Documents (from guest check-in)
   const [docs, setDocs] = useState<BookingDoc[]>([]);
-  const [docsLoading, setDocsLoading] = useState(false);
 
   // Dirty tracking (names + contacts + times)
   const initialGuestRef   = useRef<{ first: string; last: string }>({ first: "", last: "" });
@@ -166,16 +151,21 @@ export default function RoomDetailModal({
 
   async function fetchDocuments(bookingId: string) {
     try {
-      setDocsLoading(true);
       const r = await fetch(`/api/bookings/${bookingId}/documents`, { cache: "no-store" });
       const j = await r.json().catch(() => ({}));
       setDocs(Array.isArray(j?.documents) ? j.documents : []);
     } catch {
       setDocs([]);
-    } finally {
-      setDocsLoading(false);
     }
   }
+
+  // Alege documentul „principal”: ID card / Passport, altfel cel mai recent
+  const primaryDoc: BookingDoc | null = useMemo(() => {
+    if (!docs.length) return null;
+    const pref = docs.find(d => d.doc_type === "id_card" || d.doc_type === "passport");
+    if (pref) return pref;
+    return [...docs].sort((a,b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime())[0];
+  }, [docs]);
 
   // Load everything (property, bookings, field definitions, existing values/defaults)
   useEffect(() => {
@@ -249,7 +239,7 @@ export default function RoomDetailModal({
         setGuestAddr(contact?.address ?? "");
         setGuestCity(contact?.city ?? "");
         setGuestCountry(contact?.country ?? "");
-        // Documents
+        // Documents (include signed URL)
         await fetchDocuments(act.id);
       } else {
         setGuestFirst(""); setGuestLast("");
@@ -257,8 +247,7 @@ export default function RoomDetailModal({
         setDocs([]);
       }
 
-      // ---------- Room details: load saved values or fallback to defaults ----------
-      // Build defaults from field definitions
+      // ---------- Room details: load saved values or defaults ----------
       const defaultCheckValues: Record<string, boolean> = Object.fromEntries(
         defsChecks.map((d) => [d.id, !!d.default_value])
       );
@@ -294,7 +283,7 @@ export default function RoomDetailModal({
       }
       setCheckValues(initCheckValues);
       setTextValues(initTextValues);
-      // ---------------------------------------------------------------------------
+      // -----------------------------------------------------------------
 
       // Set initial refs for dirty tracking
       initialGuestRef.current = { first: act?.guest_first_name ?? "", last: act?.guest_last_name ?? "" };
@@ -716,7 +705,7 @@ export default function RoomDetailModal({
             </div>
           </div>
 
-          {/* Guest details (name + contact) */}
+          {/* Guest details (name + contact + document from check-in) */}
           {showGuest && (
             <div
               style={{
@@ -868,91 +857,119 @@ export default function RoomDetailModal({
                 </div>
               </div>
 
+              {/* Document (read-only, from check-in) */}
+              <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
+                <strong style={{ letterSpacing: 0.3 }}>Guest ID document</strong>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  {/* Type + link */}
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Document type</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={fmtDocType(primaryDoc?.doc_type)}
+                      placeholder="—"
+                      style={{
+                        padding: "12px 12px",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        fontSize: 14,
+                        fontWeight: 600,
+                        opacity: 0.9,
+                      }}
+                    />
+                    {primaryDoc?.url ? (
+                      <a
+                        href={primaryDoc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ textDecoration: "underline", fontWeight: 800 }}
+                      >
+                        View file
+                      </a>
+                    ) : (
+                      <small style={{ color: "var(--muted)" }}>No file available</small>
+                    )}
+                  </div>
+
+                  {/* Number */}
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Number</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={primaryDoc?.doc_number || ""}
+                      placeholder="—"
+                      style={{
+                        padding: "12px 12px",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        fontSize: 14,
+                        fontWeight: 600,
+                        opacity: 0.9,
+                      }}
+                    />
+                  </div>
+
+                  {/* Series (if any) */}
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Series</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={primaryDoc?.doc_series || ""}
+                      placeholder="—"
+                      style={{
+                        padding: "12px 12px",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        fontSize: 14,
+                        fontWeight: 600,
+                        opacity: 0.9,
+                      }}
+                    />
+                  </div>
+
+                  {/* Nationality (for passports) */}
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Nationality</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={primaryDoc?.doc_nationality || ""}
+                      placeholder="—"
+                      style={{
+                        padding: "12px 12px",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        fontSize: 14,
+                        fontWeight: 600,
+                        opacity: 0.9,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <small style={{ color: "var(--muted)" }}>
+                  Document data is read-only and comes from the guest’s online check-in.
+                </small>
+              </div>
+
               <small style={{ color: "var(--muted)" }}>
                 Name is stored on the booking; contact (email/phone/address/city/country) is stored on the reservation’s contact profile.
               </small>
             </div>
           )}
 
-          {/* Guest documents */}
-          {active && (
-            <div
-              style={{
-                marginTop: 6,
-                padding: 12,
-                border: "1px solid var(--border)",
-                borderRadius: 12,
-                background: "var(--card)",
-                display: "grid",
-                gap: 10,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <strong style={{ letterSpacing: 0.3 }}>Guest documents</strong>
-                <button
-                  type="button"
-                  onClick={() => active?.id && fetchDocuments(active.id)}
-                  style={baseBtn}
-                  disabled={docsLoading}
-                  title="Refresh signed links"
-                >
-                  {docsLoading ? "Refreshing…" : "Refresh documents"}
-                </button>
-              </div>
-
-              {docs.length === 0 ? (
-                <div style={{ color: "var(--muted)" }}>No documents uploaded from the check-in form.</div>
-              ) : (
-                <div style={{ display: "grid", gap: 10 }}>
-                  {docs.map((d) => {
-                    const isImg = (d.mime_type || "").startsWith("image/");
-                    const isPdf = (d.mime_type || "") === "application/pdf";
-                    const when = new Date(d.uploaded_at);
-                    const meta = `${when.toLocaleString()} · ${humanSize(d.size_bytes)}`;
-
-                    return (
-                      <div key={d.id} style={{ display: "grid", gap: 6 }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                          <div style={{ fontWeight: 700 }}>
-                            {fmtDocLine(d)} — <span style={{ color: "var(--muted)" }}>{meta}</span>
-                          </div>
-                          {d.url && (
-                            <a
-                              href={d.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{ textDecoration: "underline", fontWeight: 800 }}
-                            >
-                              Open
-                            </a>
-                          )}
-                        </div>
-
-                        {isImg && d.url && (
-                          <img
-                            src={d.url}
-                            alt="Document"
-                            style={{ maxWidth: "100%", maxHeight: 260, borderRadius: 10, border: "1px solid var(--border)" }}
-                          />
-                        )}
-
-                        {isPdf && d.url && (
-                          <iframe
-                            src={d.url}
-                            style={{ width: "100%", height: 320, border: "1px solid var(--border)", borderRadius: 10 }}
-                          />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              <small style={{ color: "var(--muted)" }}>
-                Links are temporary (secure). Use “Refresh documents” if they expire.
-              </small>
-            </div>
-          )}
+          {/* (Removed) Guest documents card — replaced by the 4 read-only fields above */}
 
           {/* Custom detail fields */}
           {(checkDefs.length > 0 || textDefs.length > 0) && (
@@ -1009,7 +1026,7 @@ export default function RoomDetailModal({
             </div>
           )}
 
-          {/* Actions (cu gating) */}
+          {/* Actions */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 6 }}>
             {!active && (
               <button onClick={saveCreated} style={primaryBtn} disabled={saving !== false}>
