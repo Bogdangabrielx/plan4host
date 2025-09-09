@@ -1,143 +1,68 @@
-// app/app/guest/ui/Client.tsx
+// app/app/guest/ui/GuestOverviewClient.tsx
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import RoomDetailModal from "@/app/app/calendar/ui/RoomDetailModal"; // <- modalul calendarului
+import RoomDetailModal from "@/app/app/calendar/ui/RoomDetailModal"; // modalul calendarului
 
-/** Server page passes these in; we keep same shape */
+// ---- Types din pagina server (le folosim și aici) ----
 type Property = {
   id: string;
   name: string;
   check_in_time: string | null;
   check_out_time: string | null;
+  // (opțional) dacă vrei să gate-ui "Copy link" după rules PDF:
+  regulation_pdf_url?: string | null;
 };
 
 type Room = { id: string; name: string; property_id: string; room_type_id?: string | null };
 type RoomType = { id: string; name: string; property_id: string };
 
-/** Booking extended with optional fields we may use if they exist in DB */
-type Booking = {
-  id: string;
-  property_id: string;
-  room_id: string | null;
-  start_date: string; // "YYYY-MM-DD"
-  end_date: string;   // "YYYY-MM-DD"
-  start_time: string | null;
-  end_time: string | null;
-  status: "pending" | "confirmed" | "cancelled" | string;
-
-  // Guest / form
+// ---- Shape-ul din /api/guest-overview (sub-pas 2) ----
+type OverviewItem = {
+  kind: "green" | "yellow" | "red";
+  reason?:
+    | "waiting_form"            // YELLOW (iCal)
+    | "waiting_ical"            // YELLOW (Form)
+    | "missing_form"            // RED
+    | "no_ota_found"            // RED
+    | "type_conflict"           // RED
+    | "room_required_auto_failed"; // RED
+  start_date: string;
+  end_date: string;
+  room_id?: string | null;
+  room_label?: string | null;
+  room_type_id?: string | null;
+  room_type_name?: string | null;
+  booking_id?: string | null; // id-ul “principal” al pachetului
   guest_first_name?: string | null;
   guest_last_name?: string | null;
-  guest_email?: string | null;
-  guest_phone?: string | null;
-  form_submitted_at?: string | null; // optional (fallback: created_at)
-  created_at?: string | null;
-
-  // iCal hints (any of these may exist)
-  has_ical?: boolean | null;
-  ical_uid?: string | null;
-  ota_event_id?: string | null;
-  ota_reservation_id?: string | null;
-  source?: string | null;
-
-  // Soft-hold (variant A)
-  is_soft_hold?: boolean | null;
-  hold_expires_at?: string | null;
-  hold_status?: "active" | "expired" | "promoted" | "cancelled" | null;
-
-  // legături posibile
-  room_type_id?: string | null;
-
-  [k: string]: any; // tolerate extra fields from select("*")
+  cutoff_ts?: string | null; // până când stă în YELLOW
 };
 
-type Row = {
-  booking: Booking;
-  room: Room | null;
-  typeName: string | null;
-  color: "GREEN" | "YELLOW" | "RED";
-  reason?: "missing_form" | "no_ota_found" | "type_conflict" | "room_required_auto_failed";
-  subcopy?: string | null;
-  cutoffISO: string; // informational
-};
-
-type IcalSuppression = { property_id: string; ical_uid: string };
-
-// ---- Date helpers ----
-function parseYMD(ymd: string): Date {
-  const [y, m, d] = ymd.split("-").map((n) => parseInt(n, 10));
-  return new Date(y, m - 1, d, 0, 0, 0, 0);
-}
-function addDays(date: Date, days: number): Date {
-  const dt = new Date(date);
-  dt.setDate(dt.getDate() + days);
-  return dt;
-}
-function addHours(date: Date, hours: number): Date {
-  return new Date(date.getTime() + hours * 3600_000);
-}
-function todayLocalISODate(): string {
-  const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-function toLocalISO(dt: Date): string {
-  const yyyy = dt.getFullYear();
-  const mm = String(dt.getMonth() + 1).padStart(2, "0");
-  const dd = dt.getDate().toString().padStart(2, "0");
-  const HH = dt.getHours().toString().padStart(2, "0");
-  const MM = dt.getMinutes().toString().padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}T${HH}:${MM}:00`;
-}
-
-// NEW: format dd.mm.yyyy (și opțional HH:mm)
+// ---- Helpers dată/oră & text ----
 function fmtDate(ymd: string): string {
   const [y, m, d] = ymd.split("-").map((n) => parseInt(n, 10));
   const dd = String(d).padStart(2, "0");
   const mm = String(m).padStart(2, "0");
   return `${dd}.${mm}.${y}`;
 }
-function fmtDateTime(ymd: string, time: string | null): string {
-  const base = fmtDate(ymd);
-  return time ? `${base} ${time}` : base;
+function fmtDateTime(ymd: string, time: string | null | undefined): string {
+  return time ? `${fmtDate(ymd)} ${time}` : fmtDate(ymd);
 }
-function formatRange(b: Booking): string {
-  const start = fmtDateTime(b.start_date, b.start_time);
-  const end = fmtDateTime(b.end_date, b.end_time);
-  return `${start} → ${end}`;
+function formatRange(startYMD: string, endYMD: string): string {
+  return `${fmtDate(startYMD)} → ${fmtDate(endYMD)}`;
 }
-
-function fullName(b: Booking): string {
-  const f = (b.guest_first_name ?? "").trim();
-  const l = (b.guest_last_name ?? "").trim();
+function fullName(item: OverviewItem): string {
+  const f = (item.guest_first_name ?? "").trim();
+  const l = (item.guest_last_name ?? "").trim();
   return [f, l].filter(Boolean).join(" ");
 }
-
-// Heuristics: infer presence of Form/iCal from available fields
-function hasForm(b: Booking): boolean {
-  return !!fullName(b) || !!b.form_submitted_at;
-}
-function hasIcal(b: Booking): boolean {
-  return !!(
-    b.has_ical ||
-    b.ical_uid ||
-    b.ota_event_id ||
-    b.ota_reservation_id ||
-    (b.source && b.source.toLowerCase() === "ical")
-  );
-}
-function formSubmittedAt(b: Booking): Date | null {
-  const ts = b.form_submitted_at ?? b.created_at;
-  if (!ts) return null;
-  const d = new Date(ts);
-  return isNaN(d.getTime()) ? null : d;
+function toBadge(kind: OverviewItem["kind"]): "GREEN" | "YELLOW" | "RED" {
+  return kind === "green" ? "GREEN" : kind === "yellow" ? "YELLOW" : "RED";
 }
 
-// Base pt linkul public /checkin
+// Link public /checkin pe proprietate
 function getCheckinBase(): string {
   const v1 = (process.env.NEXT_PUBLIC_CHECKIN_BASE || "").toString().trim();
   if (v1) return v1.replace(/\/+$/, "");
@@ -161,43 +86,61 @@ function buildPropertyCheckinLink(propertyId: string): string {
   }
 }
 
-export default function InboxClient({ initialProperties }: { initialProperties: Property[] }) {
+// Subcopy pentru stări (conform specificației)
+function subcopyFor(item: OverviewItem): string | null {
+  if (item.kind === "yellow") {
+    if (item.reason === "waiting_form") {
+      return "Waiting for the guest to complete the check-in form (until 3 days before arrival).";
+    }
+    if (item.reason === "waiting_ical") {
+      return "Waiting for a matching OTA iCal event (max 2 hours after form submission).";
+    }
+  }
+  if (item.kind === "red") {
+    if (item.reason === "missing_form") return "No check-in form was received for this OTA reservation.";
+    if (item.reason === "no_ota_found") return "Form dates do not match any OTA reservation.";
+    if (item.reason === "type_conflict")
+      return "Unmatched Room: OTA type and form type differ. Resolve in Calendar.";
+    if (item.reason === "room_required_auto_failed")
+      return "No free room of the booked type was available for auto-assignment.";
+    return "Action required.";
+  }
+  return null;
+}
+
+// ---- Componenta principală ----
+export default function GuestOverviewClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = createClient();
 
-  // ---- State
+  // Proprietăți + selecție
   const [properties, setProperties] = useState<Property[]>(initialProperties || []);
   const [activePropertyId, setActivePropertyId] = useState<string | null>(initialProperties?.[0]?.id ?? null);
 
+  // Date auxiliare pentru UI (Rooms + Types)
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
 
+  // Items din API-ul nou
+  const [items, setItems] = useState<OverviewItem[]>([]);
   const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
   const [hint, setHint] = useState<string>("");
 
-  // UX: „Copy link” feedback
-  const [copiedBookingId, setCopiedBookingId] = useState<string | null>(null);
+  // UX: feedback “Copied!”
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const copyTimer = useRef<number | null>(null);
-  useEffect(() => {
-    return () => { if (copyTimer.current) window.clearTimeout(copyTimer.current); };
-  }, []);
+  useEffect(() => () => { if (copyTimer.current) window.clearTimeout(copyTimer.current); }, []);
 
-  // NEW: modal state pentru RoomDetailModal
-  const [modal, setModal] = useState<null | {
-    propertyId: string;
-    dateStr: string;
-    room: Room;
-  }>(null);
+  // Modal — deschidem rezervarea (GREEN)
+  const [modal, setModal] = useState<null | { propertyId: string; dateStr: string; room: Room }>(null);
 
-  // ---- Refresh pentru proprietatea aktivă + SUPRESII iCal
+  // Refresh (rooms + types + overview items)
   const refresh = useCallback(async () => {
     if (!activePropertyId) return;
     setLoading("loading");
     setHint("Loading…");
 
-    const today = todayLocalISODate();
-
-    const [rRooms, rTypes, rBookings, rSupp] = await Promise.all([
+    // 1) Rooms + Types (pt. label & RoomDetailModal)
+    const [rRooms, rTypes] = await Promise.all([
       supabase
         .from("rooms")
         .select("id,name,property_id,room_type_id")
@@ -208,53 +151,37 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
         .select("id,name,property_id")
         .eq("property_id", activePropertyId)
         .order("name", { ascending: true }),
-      supabase
-        .from("bookings_visible")
-        .select("*")
-        .eq("property_id", activePropertyId)
-        .gte("end_date", today)
-        .neq("status", "cancelled")
-        .order("start_date", { ascending: true })
-        .order("start_time", { ascending: true, nullsFirst: true }),
-      supabase
-        .from("ical_suppressions")
-        .select("property_id, ical_uid")
-        .eq("property_id", activePropertyId),
     ]);
 
-    if (rRooms.error || rTypes.error || rBookings.error || rSupp.error) {
+    if (rRooms.error || rTypes.error) {
       setLoading("error");
-      setHint(
-        rRooms.error?.message ||
-        rTypes.error?.message ||
-        rBookings.error?.message ||
-        rSupp.error?.message ||
-        "Failed to load."
-      );
+      setHint(rRooms.error?.message || rTypes.error?.message || "Failed to load rooms/types.");
       return;
     }
 
-    // Set-uri pentru UID-uri suprimate
-    const suppressed = new Set<string>(
-      ((rSupp.data ?? []) as IcalSuppression[])
-        .map((s) => (s.ical_uid || "").trim())
-        .filter(Boolean)
-    );
-
-    // NEW: filtrăm rezervările care corespund unui ical_uid suprimat
-    const filteredBookings = ((rBookings.data ?? []) as Booking[]).filter((b) => {
-      const uid = (b.ical_uid ?? "").trim();
-      return !uid || !suppressed.has(uid);
-    });
-
     setRooms((rRooms.data ?? []) as Room[]);
     setRoomTypes((rTypes.data ?? []) as RoomType[]);
-    setBookings(filteredBookings);
-    setLoading("idle");
-    setHint("");
-  }, [supabase, activePropertyId]);
 
-  // Reacționează la schimbarea proprietății inițiale (navigare)
+    // 2) Overview items din API (no-store)
+    try {
+      const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(activePropertyId)}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(txt || `HTTP ${res.status}`);
+      }
+      const j = await res.json();
+      const arr: OverviewItem[] = Array.isArray(j?.items) ? j.items : [];
+      setItems(arr);
+      setLoading("idle");
+      setHint("");
+    } catch (e: any) {
+      setLoading("error");
+      setHint(e?.message || "Failed to load guest overview.");
+    }
+  }, [activePropertyId, supabase]);
+
   useEffect(() => {
     setProperties(initialProperties || []);
     if (!activePropertyId && initialProperties?.[0]?.id) {
@@ -264,132 +191,33 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  // ---- Build rows + „regula de aur”
-  const rows: Row[] = useMemo(() => {
-    const now = new Date();
+  // Mape utile
+  const roomById = useMemo(() => {
+    const m = new Map<string, Room>();
+    rooms.forEach((r) => m.set(String(r.id), r));
+    return m;
+  }, [rooms]);
 
-    const roomById = new Map<string, Room>();
-    rooms.forEach((r) => roomById.set(String(r.id), r));
+  const typeNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    roomTypes.forEach((t) => m.set(String(t.id), t.name));
+    return m;
+  }, [roomTypes]);
 
-    const typeById = new Map<string, RoomType>();
-    roomTypes.forEach((t) => typeById.set(String(t.id), t));
-
-    return bookings.map((b) => {
-      const room = b.room_id ? (roomById.get(String(b.room_id)) ?? null) : null;
-
-      const _hasForm = hasForm(b);
-      const _hasIcal = hasIcal(b);
-      const _hasName = !!fullName(b);
-
-      // Praguri
-      const arrival0 = parseYMD(b.start_date);
-      const cutoff3d = addDays(arrival0, -3);     // iCal-only window
-      const formTs   = formSubmittedAt(b);
-      const fallback2h = formTs ? addHours(formTs, 2) : null;
-      const holdExpires = b.hold_expires_at ? new Date(b.hold_expires_at) : null;
-      const cutoff2h = holdExpires ?? fallback2h;
-
-      // Defaults
-      let color: Row["color"] = "GREEN";
-      let reason: Row["reason"] | undefined = undefined;
-      let subcopy: Row["subcopy"] | null = null;
-      let cutoffISO = toLocalISO(cutoff3d);
-
-      // 🟢 Regula de aur: dacă avem NUME, e GREEN, nu mai așteptăm iCal.
-      if (_hasName) {
-        color = "GREEN";
-      } else {
-        // 1) iCal dar fără Form → YELLOW până la Arrival−3 zile, apoi RED
-        if (_hasIcal && !_hasForm) {
-          if (now < cutoff3d) {
-            color = "YELLOW";
-            subcopy = "Waiting for the guest to complete the check-in form (until 3 days before arrival).";
-            cutoffISO = toLocalISO(cutoff3d);
-          } else {
-            color = "RED";
-            reason = "missing_form";
-            subcopy = "No check-in form was received for this OTA reservation.";
-            cutoffISO = toLocalISO(cutoff3d);
-          }
-        }
-        // 2) Form dar fără iCal → YELLOW max 2h, apoi RED
-        else if (_hasForm && !_hasIcal) {
-          if (cutoff2h && now < cutoff2h) {
-            color = "YELLOW";
-            subcopy = "Waiting for a matching OTA iCal event (max 2 hours after form submission).";
-            cutoffISO = toLocalISO(cutoff2h);
-          } else {
-            color = "RED";
-            reason = "no_ota_found";
-            subcopy = "Form dates do not match any OTA reservation.";
-            cutoffISO = cutoff2h ? toLocalISO(cutoff2h) : toLocalISO(now);
-          }
-        }
-        // 3) fallback (rar): nici form, nici iCal
-        else if (!_hasForm && !_hasIcal) {
-          color = "RED";
-          reason = "no_ota_found";
-          subcopy = "No source data yet.";
-          cutoffISO = toLocalISO(now);
-        }
-      }
-
-      // Derivă Type pentru afișare
-      let typeName: string | null = null;
-      if (b.room_type_id) {
-        typeName = typeById.get(String(b.room_type_id))?.name ?? null;
-      } else if (room?.room_type_id) {
-        typeName = typeById.get(String(room.room_type_id))?.name ?? null;
-      }
-
-      return { booking: b, room, typeName, color, reason, subcopy, cutoffISO };
-    });
-  }, [bookings, rooms, roomTypes]);
-
-  // ---- Actions
-  const copyLinkFor = useCallback(async (b: Booking) => {
-    const propId = b.property_id;
-    const link = buildPropertyCheckinLink(propId);
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopiedBookingId(b.id);
-      if (copyTimer.current) window.clearTimeout(copyTimer.current);
-      copyTimer.current = window.setTimeout(() => setCopiedBookingId(null), 2000);
-    } catch {
-      prompt("Copy this link:", link);
-    }
-  }, []);
-
-  function openCalendarFor(b: Booking) {
-    const url = `/app/calendar?date=${b.start_date}`;
-    if (typeof window !== "undefined") window.location.href = url;
-  }
-
-  // NEW: deschide direct RoomDetailModal pentru rândul GREEN
-  function openReservationFromRow(row: Row) {
-    if (!row.room) {
-      alert("This booking has no assigned room yet.");
-      return;
-    }
-    setModal({
-      propertyId: row.booking.property_id,
-      dateStr: row.booking.start_date, // în intervalul rez. => modal găsește rezervarea
-      room: row.room,
-    });
-  }
-
-  // ---- Sorting rows (by start_date then room name numeric-aware)
+  // Sortare: după start_date, apoi după nume cameră (natural)
   const collator = useMemo(() => new Intl.Collator(undefined, { numeric: true, sensitivity: "base" }), []);
-  const rowsSorted = useMemo(() => {
-    return [...rows].sort((a, b) => {
-      const d = a.booking.start_date.localeCompare(b.booking.start_date);
+  const rows = useMemo(() => {
+    return [...items].sort((a, b) => {
+      const d = a.start_date.localeCompare(b.start_date);
       if (d !== 0) return d;
-      return collator.compare(a.room?.name ?? "", b.room?.name ?? "");
+      const rnA = a.room_label ?? "";
+      const rnB = b.room_label ?? "";
+      return collator.compare(rnA, rnB);
     });
-  }, [rows, collator]);
+  }, [items, collator]);
 
-  // ---- Badge styles
-  function badgeStyle(color: Row["color"]): React.CSSProperties {
+  // Badge styling
+  function badgeStyle(kind: OverviewItem["kind"]): React.CSSProperties {
     const base: React.CSSProperties = {
       display: "inline-block",
       padding: "2px 10px",
@@ -399,12 +227,43 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
       border: "1px solid transparent",
       color: "#0c111b",
     };
-    if (color === "GREEN") return { ...base, background: "var(--success)", borderColor: "var(--success)" };
-    if (color === "RED") return { ...base, background: "var(--danger)", borderColor: "var(--danger)", color: "#fff" };
+    if (kind === "green") return { ...base, background: "var(--success)", borderColor: "var(--success)" };
+    if (kind === "red") return { ...base, background: "var(--danger)", borderColor: "var(--danger)", color: "#fff" };
     return { ...base, background: "var(--warning, #fbbf24)", borderColor: "var(--warning, #f59e0b)" };
   }
 
-  // ---- Render
+  // Actions
+  const copyCheckinLink = useCallback(async (propertyId: string, key: string) => {
+    const link = buildPropertyCheckinLink(propertyId);
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedKey(key);
+      if (copyTimer.current) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopiedKey(null), 2000);
+    } catch {
+      prompt("Copy this link:", link);
+    }
+  }, []);
+
+  function resolveInCalendar(item: OverviewItem, propertyId: string) {
+    // Deep-link minim: calendar pe ziua de start
+    const url = `/app/calendar?date=${item.start_date}`;
+    if (typeof window !== "undefined") window.location.href = url;
+  }
+
+  function openReservation(item: OverviewItem, propertyId: string) {
+    if (!item.room_id) {
+      alert("This booking has no assigned room yet.");
+      return;
+    }
+    const room = roomById.get(String(item.room_id));
+    if (!room) {
+      alert("Room not found locally. Try refreshing.");
+      return;
+    }
+    setModal({ propertyId, dateStr: item.start_date, room });
+  }
+
   return (
     <div style={{ padding: 16, fontFamily: '"Times New Roman", serif', color: "var(--text)" }}>
       {/* Header */}
@@ -448,111 +307,118 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
 
       {/* Legend */}
       <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12 }}>
-        <span style={badgeStyle("GREEN")}>GREEN</span>
+        <span style={badgeStyle("green")}>GREEN</span>
         <small style={{ color: "var(--muted)" }}>All good</small>
-        <span style={badgeStyle("YELLOW")}>YELLOW</span>
+        <span style={badgeStyle("yellow")}>YELLOW</span>
         <small style={{ color: "var(--muted)" }}>Waiting window (Form: max 2h; OTA: until 3 days before arrival)</small>
-        <span style={badgeStyle("RED")}>RED</span>
+        <span style={badgeStyle("red")}>RED</span>
         <small style={{ color: "var(--muted)" }}>Action required</small>
       </div>
 
       {/* Rows */}
       <div style={{ display: "grid", gap: 10 }}>
-        {rowsSorted.map((r) => {
-          const b = r.booking;
-          const nm = fullName(b) || "Unknown guest";
-          const roomNo = r.room?.name ? `#${r.room.name}` : "#—";
+        {rows.map((it) => {
+          // Afișarea principală
+          const nm = fullName(it) || "Unknown guest";
+          const roomNo = it.room_label ? `#${it.room_label}` : "#—";
+          const badge = toBadge(it.kind);
+          const typeName = it.room_type_name ?? (it.room_type_id ? typeNameById.get(String(it.room_type_id)) ?? null : null);
 
-          const isIcalNoForm = hasIcal(b) && !hasForm(b);
-          const isFormNoIcal = hasForm(b) && !hasIcal(b);
+          const subcopy = subcopyFor(it);
+          const propertyId = activePropertyId!; // avem o proprietate activă
 
-          // Contact line (mic): email • phone
-          const contactBits: string[] = [];
-          if ((b.guest_email ?? "").trim()) contactBits.push((b.guest_email as string).trim());
-          if ((b.guest_phone ?? "").trim()) contactBits.push((b.guest_phone as string).trim());
-          const contactLine = contactBits.join(" • ");
+          // cheie unică pentru feedback la copy (per item)
+          const key = `${it.start_date}|${it.end_date}|${it.room_type_id ?? "null"}`;
+
+          const showCopy =
+            (it.kind === "yellow" && it.reason === "waiting_form") ||
+            (it.kind === "red" && it.reason === "missing_form");
 
           return (
-            <div key={b.id} style={{ border: "1px solid var(--border)", background: "var(--panel)", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
-              {/* Top line */}
+            <div key={`${it.booking_id ?? key}`} style={{ border: "1px solid var(--border)", background: "var(--panel)", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                 <strong style={{ letterSpacing: 0.2 }}>
-                  {nm} · {roomNo} — Type: {r.typeName ?? "—"} — {formatRange(b)}
+                  {nm} · {roomNo} — Type: {typeName ?? "—"} — {formatRange(it.start_date, it.end_date)}
                 </strong>
-                <span style={badgeStyle(r.color)}>{r.color}</span>
+                <span style={badgeStyle(it.kind)}>{badge}</span>
               </div>
 
-              {/* Contact (mic) */}
-              {contactLine && (
-                <small style={{ color: "var(--muted)" }}>{contactLine}</small>
+              {(it.kind === "yellow" || it.kind === "red") && subcopy && (
+                <small style={{ color: "var(--muted)" }}>{subcopy}</small>
               )}
 
-              {/* GREEN — acțiune: deschide direct rezervarea în RoomDetailModal */}
-              {r.color === "GREEN" && (
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              {/* Actions */}
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
+                {/* GREEN → Open reservation (RoomDetailModal) */}
+                {it.kind === "green" && (
                   <button
-                    onClick={() => openReservationFromRow(r)}
-                    disabled={!r.room}
+                    onClick={() => openReservation(it, propertyId)}
+                    disabled={!it.room_id || !roomById.has(String(it.room_id))}
                     style={{
                       padding: "8px 12px",
                       borderRadius: 10,
                       border: "1px solid var(--border)",
-                      background: r.room ? "var(--primary)" : "var(--card)",
-                      color: r.room ? "#0c111b" : "var(--text)",
+                      background: it.room_id && roomById.has(String(it.room_id)) ? "var(--primary)" : "var(--card)",
+                      color: it.room_id && roomById.has(String(it.room_id)) ? "#0c111b" : "var(--text)",
                       fontWeight: 900,
-                      cursor: r.room ? "pointer" : "not-allowed",
+                      cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
                     }}
-                    title={r.room ? "Open reservation" : "No room assigned yet"}
+                    title={it.room_id ? "Open reservation" : "No room assigned yet"}
                   >
                     Open reservation
                   </button>
-                </div>
-              )}
+                )}
 
-              {/* YELLOW / RED — subtext + acțiuni */}
-              {(r.color === "YELLOW" || r.color === "RED") && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-                  <small style={{ color: "var(--muted)" }}>
-                    {r.subcopy}
-                  </small>
+                {/* YELLOW(iCal) sau RED(missing_form) → Copy check-in link */}
+                {showCopy && (
+                  <button
+                    onClick={() => copyCheckinLink(propertyId, key)}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border)",
+                      background: "var(--card)",
+                      color: "var(--text)",
+                      fontWeight: 900,
+                      cursor: "pointer",
+                    }}
+                    title="Copy check-in link"
+                  >
+                    {copiedKey === key ? "Copied!" : "Copy check-in link"}
+                  </button>
+                )}
 
-                  <div style={{ display: "flex", gap: 8 }}>
-                    {/* iCal fără Form -> oferă Copy check-in link (pe proprietate) */}
-                    {(isIcalNoForm || (r.color === "RED" && r.reason === "missing_form")) && (
-                      <button
-                        onClick={() => copyLinkFor(b)}
-                        style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 900, cursor: "pointer" }}
-                        title="Copy check-in link"
-                      >
-                        {copiedBookingId === b.id ? "Copied!" : "Copy check-in link"}
-                      </button>
-                    )}
-
-                    {/* RED -> Resolve in Calendar */}
-                    {r.color === "RED" && (
-                      <button
-                        onClick={() => openCalendarFor(b)}
-                        style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--danger)", background: "transparent", color: "var(--text)", fontWeight: 900, cursor: "pointer" }}
-                        title="Resolve in Calendar"
-                      >
-                        Resolve in Calendar
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
+                {/* RED → Resolve in Calendar */}
+                {it.kind === "red" && (
+                  <button
+                    onClick={() => resolveInCalendar(it, propertyId)}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 10,
+                      border: "1px solid var(--danger)",
+                      background: "transparent",
+                      color: "var(--text)",
+                      fontWeight: 900,
+                      cursor: "pointer",
+                    }}
+                    title="Resolve in Calendar"
+                  >
+                    Resolve in Calendar
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
 
-        {rowsSorted.length === 0 && (
+        {rows.length === 0 && (
           <div style={{ border: "1px solid var(--border)", background: "var(--panel)", borderRadius: 12, padding: 16, color: "var(--muted)", textAlign: "center" }}>
             No current or upcoming reservations.
           </div>
         )}
       </div>
 
-      {/* Modalul: apare când utilizatorul apasă “Open reservation” pe un rând GREEN */}
+      {/* Modal pentru “Open reservation” din GREEN */}
       {modal && (
         <RoomDetailModal
           dateStr={modal.dateStr}
@@ -561,7 +427,7 @@ export default function InboxClient({ initialProperties }: { initialProperties: 
           forceNew={false}
           onClose={() => setModal(null)}
           onChanged={() => {
-            // reîncarcă overview-ul după schimbări în rezervare (opțional)
+            // reîncarcă overview-ul după schimbări
             refresh();
           }}
         />
