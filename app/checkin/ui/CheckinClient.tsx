@@ -671,9 +671,9 @@ export default function CheckinClient() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={onOpenPdf}
-                    style={{ textDecoration: "underline", fontWeight: 700 }}
+                    style={{ fontWeight: 700 }}
                   >
-                    House Rules (PDF)
+                    Property Rules (pdf))
                   </a>
                 ) : (
                   <span style={{ fontStyle: "italic" }}>House Rules</span>
@@ -685,8 +685,8 @@ export default function CheckinClient() {
                   </span>
                 )}
                 {!!pdfUrl && pdfViewed && (
-                  <span style={{ marginLeft: 6, color: "var(--success, #22c55e)", fontWeight: 700 }}>
-                    Opened ✓
+                  <span style={{ marginLeft: 6, color: "var(--text)", fontWeight: 700 }}>
+                    Opened
                   </span>
                 )}
               </label>
