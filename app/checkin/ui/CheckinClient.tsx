@@ -367,7 +367,6 @@ export default function CheckinClient() {
           <div>
             <h1 style={{ margin: 0, fontSize: 22, letterSpacing: 0.3, alignContent:"center" }}>
                "Stay smart, experience better" <br />
-               This is the check-in form of property {prop?.name ?? "Property"}.
             </h1>
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
               Thank you for choosing us!<br />
