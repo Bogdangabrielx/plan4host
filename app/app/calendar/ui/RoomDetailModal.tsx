@@ -62,7 +62,7 @@ function humanSize(n?: number | null) {
 }
 function fmtDocType(t: string | null | undefined) {
   if (!t) return "document";
-  return t === "id_card" ? "ID card" : t === "passport" ? "Passport" : t.replace(/_/g, " "); // compat ES2020
+  return t === "id_card" ? "ID card" : t === "passport" ? "Passport" : t.replace(/_/g, " ");
 }
 function fmtDocLine(d: BookingDoc) {
   const parts: string[] = [];
@@ -121,7 +121,7 @@ export default function RoomDetailModal({
 
   const [showGuest, setShowGuest] = useState<boolean>(false);
 
-  // Custom room detail fields (as-is)
+  // Custom room detail fields
   const [checkDefs, setCheckDefs] = useState<CheckDef[]>([]);
   const [textDefs,  setTextDefs]  = useState<TextDef[]>([]);
   const [checkValues, setCheckValues] = useState<Record<string, boolean>>({});
@@ -177,7 +177,7 @@ export default function RoomDetailModal({
     }
   }
 
-  // Load everything
+  // Load everything (property, bookings, field definitions, existing values/defaults)
   useEffect(() => {
     (async () => {
       const [p1, p2, p3, p4] = await Promise.all([
@@ -211,7 +211,7 @@ export default function RoomDetailModal({
       const allBookings = (p2.error ? [] : (p2.data ?? [])) as Booking[];
       setBookings(allBookings);
 
-      // Active booking if not creating
+      // Determine active booking if not creating
       let act: Booking | null = null;
       if (!forceNew) {
         for (const b of allBookings) {
@@ -220,8 +220,10 @@ export default function RoomDetailModal({
       }
       setActive(act);
 
-      setCheckDefs(p3.error ? [] : ((p3.data ?? []) as CheckDef[]));
-      setTextDefs(p4.error ? [] : ((p4.data ?? []) as TextDef[]));
+      const defsChecks = (p3.error ? [] : ((p3.data ?? []) as CheckDef[]));
+      const defsTexts  = (p4.error ? [] : ((p4.data ?? []) as TextDef[]));
+      setCheckDefs(defsChecks);
+      setTextDefs(defsTexts);
 
       // Init start/end
       const _sDate = defaultStart?.date ?? (act ? act.start_date : dateStr);
@@ -254,6 +256,45 @@ export default function RoomDetailModal({
         setGuestEmail(""); setGuestPhone(""); setGuestAddr(""); setGuestCity(""); setGuestCountry("");
         setDocs([]);
       }
+
+      // ---------- Room details: load saved values or fallback to defaults ----------
+      // Build defaults from field definitions
+      const defaultCheckValues: Record<string, boolean> = Object.fromEntries(
+        defsChecks.map((d) => [d.id, !!d.default_value])
+      );
+      const defaultTextValues: Record<string, string> = Object.fromEntries(
+        defsTexts.map((d) => [d.id, ""])
+      );
+
+      let initCheckValues = { ...defaultCheckValues };
+      let initTextValues  = { ...defaultTextValues };
+
+      if (act) {
+        const [vc, vt] = await Promise.all([
+          supabase
+            .from("booking_check_values")
+            .select("check_id,value")
+            .eq("booking_id", act.id),
+          supabase
+            .from("booking_text_values")
+            .select("field_id,value")
+            .eq("booking_id", act.id),
+        ]);
+
+        if (!vc.error && Array.isArray(vc.data)) {
+          for (const row of vc.data as Array<{ check_id: string; value: boolean | null }>) {
+            if (row && row.check_id) initCheckValues[row.check_id] = !!row.value;
+          }
+        }
+        if (!vt.error && Array.isArray(vt.data)) {
+          for (const row of vt.data as Array<{ field_id: string; value: string | null }>) {
+            if (row && row.field_id) initTextValues[row.field_id] = row.value ?? "";
+          }
+        }
+      }
+      setCheckValues(initCheckValues);
+      setTextValues(initTextValues);
+      // ---------------------------------------------------------------------------
 
       // Set initial refs for dirty tracking
       initialGuestRef.current = { first: act?.guest_first_name ?? "", last: act?.guest_last_name ?? "" };
@@ -368,7 +409,7 @@ export default function RoomDetailModal({
       });
     }
 
-    // Custom fields (optional)
+    // Custom fields (persist what’s on screen)
     const checkRows = Object.entries(checkValues).map(([check_id, value]) => ({ booking_id: newId, check_id, value }));
     const textRows  = Object.entries(textValues).map(([field_id, value]) => ({ booking_id: newId, field_id, value }));
     if (checkRows.length) await supabase.from("booking_check_values").upsert(checkRows);
