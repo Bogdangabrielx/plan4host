@@ -23,6 +23,16 @@ type BookingContact = {
   country: string | null;
 };
 
+type BookingDoc = {
+  id: string;
+  doc_type: string | null;
+  mime_type: string | null;
+  size_bytes: number | null;
+  uploaded_at: string;
+  path: string;
+  url: string | null; // signed URL
+};
+
 function toDateTime(dateStr: string, timeStr: string | null | undefined, fallbackTime: string) {
   const t = timeStr && /^\d\d:\d\d$/.test(timeStr) ? timeStr : fallbackTime;
   return new Date(`${dateStr}T${t}:00`);
@@ -39,6 +49,13 @@ function addDaysYMD(ymd: string, days: number) {
 function normTime(t: string | null | undefined, fallback: string) {
   const v = (t ?? "").trim();
   return /^\d\d:\d\d$/.test(v) ? v : fallback;
+}
+function humanSize(n?: number | null) {
+  if (!n || n <= 0) return "—";
+  const u = ["B","KB","MB","GB"];
+  let i = 0, v = n;
+  while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+  return `${v.toFixed(v >= 10 ? 0 : 1)} ${u[i]}`;
 }
 
 export default function RoomDetailModal({
@@ -95,6 +112,9 @@ export default function RoomDetailModal({
   const [checkValues, setCheckValues] = useState<Record<string, boolean>>({});
   const [textValues,  setTextValues]  = useState<Record<string, string>>({});
   const [detailsDirty, setDetailsDirty] = useState(false); // only for custom fields
+
+  // Documents (from guest check-in)
+  const [docs, setDocs] = useState<BookingDoc[]>([]);
 
   // Dirty tracking (names + contacts + times)
   const initialGuestRef   = useRef<{ first: string; last: string }>({ first: "", last: "" });
@@ -218,6 +238,17 @@ export default function RoomDetailModal({
         ed: act ? act.end_date : _eDate,
         et: act ? (act.end_time || CO) : _eTime,
       };
+
+      // Documents (signed URLs via server API)
+      if (act) {
+        try {
+          const r = await fetch(`/api/bookings/${act.id}/documents`, { cache: "no-store" });
+          const j = await r.json().catch(() => ({}));
+          setDocs(Array.isArray(j?.documents) ? j.documents : []);
+        } catch { setDocs([]); }
+      } else {
+        setDocs([]);
+      }
 
       // Default ON; open guest panel if creating or no name
       setOn(true);
@@ -426,21 +457,21 @@ export default function RoomDetailModal({
   }
 
   async function releaseBooking() {
-  if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
-  setSaving("releasing"); setStatus("Saving…"); setStatusHint("Releasing…");
+    if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
+    setSaving("releasing"); setStatus("Saving…"); setStatusHint("Releasing…");
 
-  try {
-    const res = await fetch(`/api/bookings/${active.id}`, { method: "DELETE" });
-    const j = await res.json().catch(() => ({}));
-    if (!res.ok || j?.error) throw new Error(j?.error || `HTTP ${res.status}`);
-    setSaving(false); setStatus("Saved"); setStatusHint("Released.");
-    await onChanged(); onClose();
-  } catch (e: any) {
-    setStatus("Error");
-    setStatusHint(e?.message || "Failed to release.");
-    setSaving(false);
+    try {
+      const res = await fetch(`/api/bookings/${active.id}`, { method: "DELETE" });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || j?.error) throw new Error(j?.error || `HTTP ${res.status}`);
+      setSaving(false); setStatus("Saved"); setStatusHint("Released.");
+      await onChanged(); onClose();
+    } catch (e: any) {
+      setStatus("Error");
+      setStatusHint(e?.message || "Failed to release.");
+      setSaving(false);
+    }
   }
-}
 
   // --- UI --------------------------------------------------------------------
 
@@ -778,6 +809,71 @@ export default function RoomDetailModal({
 
               <small style={{ color: "var(--muted)" }}>
                 Name is stored on the booking; contact (email/phone/address/city/country) is stored on the reservation’s contact profile.
+              </small>
+            </div>
+          )}
+
+          {/* Guest documents */}
+          {active && docs.length > 0 && (
+            <div
+              style={{
+                marginTop: 6,
+                padding: 12,
+                border: "1px solid var(--border)",
+                borderRadius: 12,
+                background: "var(--card)",
+                display: "grid",
+                gap: 10,
+              }}
+            >
+              <strong style={{ letterSpacing: 0.3 }}>Guest documents</strong>
+
+              <div style={{ display: "grid", gap: 10 }}>
+                {docs.map((d) => {
+                  const isImg = (d.mime_type || "").startsWith("image/");
+                  const isPdf = (d.mime_type || "") === "application/pdf";
+                  const when = new Date(d.uploaded_at);
+                  const meta = `${when.toLocaleString()} • ${humanSize(d.size_bytes)}`;
+
+                  return (
+                    <div key={d.id} style={{ display: "grid", gap: 6 }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                        <div style={{ fontWeight: 700 }}>
+                          {d.doc_type ? d.doc_type.replace("_", " ") : "document"} — <span style={{ color: "var(--muted)" }}>{meta}</span>
+                        </div>
+                        {d.url && (
+                          <a
+                            href={d.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ textDecoration: "underline", fontWeight: 800 }}
+                          >
+                            Open
+                          </a>
+                        )}
+                      </div>
+
+                      {isImg && d.url && (
+                        <img
+                          src={d.url}
+                          alt="Document"
+                          style={{ maxWidth: "100%", maxHeight: 260, borderRadius: 10, border: "1px solid var(--border)" }}
+                        />
+                      )}
+
+                      {isPdf && d.url && (
+                        <iframe
+                          src={d.url}
+                          style={{ width: "100%", height: 320, border: "1px solid var(--border)", borderRadius: 10 }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <small style={{ color: "var(--muted)" }}>
+                Links are temporary (secure). Reopen the modal to refresh if they expire.
               </small>
             </div>
           )}

@@ -62,8 +62,8 @@ export default function CheckinClient() {
 
   // Country (select cu fallback la text)
   const [countries, setCountries] = useState<Country[]>([]);
-  const [countryIso, setCountryIso] = useState<string>(""); // din dropdown
-  const [countryText, setCountryText] = useState<string>(""); // fallback text
+  const [countryIso, setCountryIso] = useState<string>("");
+  const [countryText, setCountryText] = useState<string>("");
 
   // Document section
   type DocType = "" | "id_card" | "passport";
@@ -72,12 +72,16 @@ export default function CheckinClient() {
   const [docNumber, setDocNumber] = useState<string>("");   // comun
   const [docNationality, setDocNationality] = useState<string>(""); // doar pașaport (din nationality_en)
 
+  // Upload file (foto/PDF)
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [docFilePreview, setDocFilePreview] = useState<string | null>(null);
+
   // dates
   const [startDate, setStartDate] = useState<string>(() => todayYMD());
   const [endDate,   setEndDate]   = useState<string>(() => addDaysYMD(todayYMD(), 1));
   const [dateError, setDateError] = useState<string>("");
 
-  // house rules gate: bifa apare doar după ce a deschis PDF-ul (dacă există)
+  // house rules gate
   const [pdfViewed, setPdfViewed] = useState(false);
   const [agree, setAgree] = useState(false);
 
@@ -123,32 +127,27 @@ export default function CheckinClient() {
     display: "grid", gap: 12, gridTemplateColumns: "1fr",
   }), []);
 
-  // 1) citește parametrii din URL
+  // 1) URL params
   useEffect(() => {
     setPropertyId(getQueryParam("property"));
     setBookingId(getQueryParam("booking"));
   }, []);
 
-  // 2) fetch catalog via endpoint public (bypass RLS)
+  // 2) catalog public
   useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
       setProp(null);
-      setTypes([]);
-      setRooms([]);
+      setTypes([]); setRooms([]);
       setPdfUrl(null);
-      setSelectedTypeId("");
-      setSelectedRoomId("");
-      setAgree(false);
-      setPdfViewed(false);
+      setSelectedTypeId(""); setSelectedRoomId("");
+      setAgree(false); setPdfViewed(false);
 
       if (!propertyId) { setLoading(false); return; }
 
       try {
-        const res = await fetch(`/api/public/property-catalog?property=${encodeURIComponent(propertyId)}`, {
-          cache: "no-store",
-        });
+        const res = await fetch(`/api/public/property-catalog?property=${encodeURIComponent(propertyId)}`, { cache: "no-store" });
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
           throw new Error(j?.error || `Failed to load property catalog (${res.status})`);
@@ -165,35 +164,29 @@ export default function CheckinClient() {
         setTypes(t.map(x => ({ id: String(x.id), name: String(x.name ?? "Type") })));
         setRooms(r.map(x => ({ id: String(x.id), name: String(x.name ?? "Room"), room_type_id: x.room_type_id ?? null })));
 
-        // preselect
         if (t.length > 0) setSelectedTypeId(String(t[0].id));
         else if (r.length > 0) setSelectedRoomId(String(r[0].id));
       } catch (e: any) {
         setErrorMsg(e?.message || "Failed to load property data.");
         setSubmitState("error");
-      } finally {
-        if (alive) setLoading(false);
-      }
+      } finally { if (alive) setLoading(false); }
     })();
     return () => { alive = false; };
   }, [propertyId]);
 
-  // 2.1) Fetch countries & nationalities (endpoint public; fallback = input text)
+  // 2.1) țări + naționalități
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
         const res = await fetch("/api/public/countries", { cache: "no-store" });
-        if (!res.ok) return; // fallback auto
+        if (!res.ok) return;
         const j = await res.json();
         if (!alive) return;
         const arr: Country[] = Array.isArray(j?.countries) ? j.countries : [];
-        // sort by name asc
         arr.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" }));
         setCountries(arr);
-      } catch {
-        // ignore → fallback text inputs
-      }
+      } catch { /* fallback text */ }
     })();
     return () => { alive = false; };
   }, []);
@@ -204,7 +197,6 @@ export default function CheckinClient() {
     setDateError(endDate <= startDate ? "Check-out must be after check-in." : "");
   }, [startDate, endDate]);
 
-  // Nationality options (distinct, alpha)
   const nationalityOptions = useMemo(() => {
     const set = new Set<string>();
     for (const c of countries) {
@@ -214,14 +206,14 @@ export default function CheckinClient() {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [countries]);
 
-  // Country display value (submit ca text)
   const selectedCountryName = useMemo(() => {
     if (!countryIso) return "";
     return countries.find(c => c.iso2 === countryIso)?.name ?? "";
   }, [countryIso, countries]);
 
   const hasTypes = types.length > 0;
-  const consentGatePassed = !pdfUrl || pdfViewed; // dacă nu ai PDF, nu condiționăm bifa
+  const consentGatePassed = !pdfUrl || pdfViewed;
+
   const countryValid = countries.length === 0
     ? countryText.trim().length > 0
     : countryIso.trim().length > 0;
@@ -253,12 +245,26 @@ export default function CheckinClient() {
     try {
       window.open(pdfUrl, "_blank", "noopener,noreferrer");
       setPdfViewed(true);
-    } catch {
-      setPdfViewed(true);
-    }
+    } catch { setPdfViewed(true); }
   }
 
-  // 4) submit – trimite și câmpurile documentului + country ca text
+  // upload helper
+  async function uploadDocFile(): Promise<{ path: string; mime: string } | null> {
+    if (!docFile || !propertyId) return null;
+    const fd = new FormData();
+    fd.append("file", docFile);
+    fd.append("property", propertyId);
+    if (bookingId) fd.append("booking", bookingId);
+    const res = await fetch("/api/checkin/upload", { method: "POST", body: fd });
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(txt || "Upload failed");
+    }
+    const j = await res.json();
+    return { path: j?.path as string, mime: docFile.type || "application/octet-stream" };
+  }
+
+  // 4) submit
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
@@ -269,9 +275,16 @@ export default function CheckinClient() {
     const countryToSend = countries.length === 0 ? countryText.trim() : (selectedCountryName || countryText).trim();
 
     try {
+      // 4.1 upload fișier dacă este
+      let uploaded: { path: string; mime: string } | null = null;
+      if (docFile) {
+        uploaded = await uploadDocFile();
+      }
+
+      // 4.2 payload
       const payload: any = {
         property_id: propertyId!,
-        booking_id: bookingId, // poate fi null
+        booking_id: bookingId,
         start_date: startDate,
         end_date: endDate,
         guest_first_name: firstName.trim(),
@@ -281,8 +294,6 @@ export default function CheckinClient() {
         address: address.trim(),
         city: city.trim(),
         country: countryToSend,
-
-        // room selection
         requested_room_type_id: hasTypes ? selectedTypeId : null,
         requested_room_id:     hasTypes ? null : selectedRoomId,
 
@@ -291,6 +302,10 @@ export default function CheckinClient() {
         doc_series: docType === "id_card" ? docSeries.trim() : null,
         doc_number: docNumber.trim(),
         doc_nationality: docType === "passport" ? docNationality.trim() : null,
+
+        // file (opțional)
+        doc_file_path: uploaded?.path ?? null,
+        doc_file_mime: uploaded?.mime ?? null,
       };
 
       const res = await fetch("/api/checkin/submit", {
@@ -308,8 +323,8 @@ export default function CheckinClient() {
       }
 
       setSubmitState("success");
-    } catch {
-      setErrorMsg("Unexpected error. Please try again.");
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Unexpected error. Please try again.");
       setSubmitState("error");
     }
   }
@@ -500,7 +515,6 @@ export default function CheckinClient() {
                   onChange={(e) => {
                     const v = e.currentTarget.value as DocType;
                     setDocType(v);
-                    // reset câmpuri când schimbă tipul
                     setDocSeries("");
                     setDocNumber("");
                     setDocNationality("");
@@ -571,9 +585,53 @@ export default function CheckinClient() {
                   </div>
                 </div>
               )}
+
+              {/* Upload ID document (foto sau PDF) */}
+              <div style={{ marginTop: 6 }}>
+                <label style={LABEL}>Upload ID document (photo/PDF)</label>
+                <input
+                  style={INPUT}
+                  type="file"
+                  accept="image/*,application/pdf"
+                  // pe mobil deschide camera implicit (pentru foto)
+                  capture="environment"
+                  onChange={(e) => {
+                    const f = e.currentTarget.files?.[0] ?? null;
+                    setDocFile(f || null);
+                    if (f && f.type.startsWith("image/")) {
+                      const url = URL.createObjectURL(f);
+                      setDocFilePreview(url);
+                    } else {
+                      setDocFilePreview(null);
+                    }
+                  }}
+                />
+                {docFile && (
+                  <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                    {docFilePreview ? (
+                      <img
+                        src={docFilePreview}
+                        alt="Preview"
+                        style={{ maxWidth: "320px", borderRadius: 8, border: "1px solid var(--border)" }}
+                      />
+                    ) : (
+                      <small style={{ color: "var(--muted)" }}>
+                        {docFile.name} ({docFile.type || "application/octet-stream"})
+                      </small>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => { setDocFile(null); setDocFilePreview(null); }}
+                      style={BTN_GHOST}
+                    >
+                      Remove file
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Consent — apare doar după ce a deschis PDF-ul, dacă există */}
+            {/* Consent */}
             {(!pdfUrl || pdfViewed) && (
               <div
                 style={{

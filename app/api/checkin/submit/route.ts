@@ -124,6 +124,14 @@ export async function POST(req: NextRequest) {
       address,
       city,
       country,
+
+      // ---- document (noi) ----
+      doc_type,          // "id_card" | "passport"
+      doc_series,        // string | null (doar pentru id_card)
+      doc_number,        // string
+      doc_nationality,   // string | null (doar pentru passport)
+      doc_file_path,     // string | null (setat de /api/checkin/upload)
+      doc_file_mime,     // string | null (setat de /api/checkin/upload)
     } = body ?? {};
 
     if (!property_id || !isYMD(start_date) || !isYMD(end_date)) {
@@ -251,6 +259,34 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 8) Best-effort: salvăm detaliile documentului (dacă avem date)
+    let document_saved = false;
+    try {
+      const t = typeof doc_type === "string" ? doc_type : "";
+      const normalizedDocType = t === "id_card" || t === "passport" ? t : null;
+      const numberOk = typeof doc_number === "string" && doc_number.trim().length > 0;
+
+      if (normalizedDocType && numberOk) {
+        const insDoc = await admin
+          .from("booking_documents")
+          .insert({
+            booking_id: newId,
+            doc_type: normalizedDocType,                          // 'id_card' | 'passport'
+            doc_series: normalizedDocType === "id_card" ? (doc_series ?? null) : null,
+            doc_number: String(doc_number).trim(),
+            doc_nationality: normalizedDocType === "passport" ? (doc_nationality ?? null) : null,
+            file_path: doc_file_path ?? null,
+            file_mime: doc_file_mime ?? null,
+          } as any)
+          .select("id")
+          .maybeSingle();
+
+        document_saved = !insDoc.error;
+      }
+    } catch {
+      document_saved = false;
+    }
+
     return NextResponse.json({
       ok: true,
       id: newId,
@@ -261,6 +297,7 @@ export async function POST(req: NextRequest) {
       start_time,
       end_time,
       contact_saved,
+      document_saved,
     });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "Unexpected error" }, { status: 500 });
