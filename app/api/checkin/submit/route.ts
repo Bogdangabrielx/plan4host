@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+export const runtime = "nodejs";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -124,17 +125,17 @@ export async function POST(req: NextRequest) {
       city,
       country,
 
-      // ---- document (poate fi formă veche sau nouă) ----
+      // ---- document (formă veche sau nouă) ----
       // v1 (legacy, un singur doc):
       doc_type,          // "id_card" | "passport"
       doc_series,        // string | null (doar pentru id_card)
       doc_number,        // string
       doc_nationality,   // string | null (doar pentru passport)
-      doc_file_path,     // string | null (ex: raw/<property>/<uuid>.<ext>)
+      doc_file_path,     // string | null (ex: <property>/<folder>/<uuid>.<ext>)
       doc_file_mime,     // string | null (ex: image/jpeg, application/pdf)
 
       // v2 (nou): listă de documente
-      docs,              // Array<{ storage_path, storage_bucket?, mime_type?, size_bytes?, original_name?, doc_type?, doc_series?, doc_number?, doc_nationality? }>
+      docs,              // Array<{ storage_path, storage_bucket?, mime_type?, size_bytes?, doc_type?, doc_series?, doc_number?, doc_nationality? }>
     } = body ?? {};
 
     if (!property_id || !isYMD(start_date) || !isYMD(end_date)) {
@@ -250,10 +251,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 7) Documente (both v1 & v2) — inserăm în booking_documents
+    // 7) Documente — inserăm în booking_documents (schema ta actuală)
     let documents_saved = 0;
 
-    // normalize docs[] (v2) sau doc_* (v1)
+    // Normalize docs[] (v2) sau doc_* (v1)
     const docsArray: Array<any> = Array.isArray(docs) ? docs : [];
 
     if (!docsArray.length && (doc_type || doc_file_path || doc_file_mime)) {
@@ -276,21 +277,22 @@ export async function POST(req: NextRequest) {
           const path = String(d.storage_path || d.path || "");
           if (!path) return null;
 
+          // la tine doc_type e text; păstrăm doar valorile cunoscute, altfel null
           const t = (d.doc_type ?? "").toString();
-          const docTypeNorm = t === "id_card" || t === "passport" ? t : "other";
+          const typeText = t === "id_card" || t === "passport" ? t : null;
 
           const r: any = {
             property_id,
             booking_id: newId,
-            doc_type: docTypeNorm,                 // enum: 'id_card' | 'passport' | 'other'
+            doc_type: typeText,
             storage_bucket: bucket,
             storage_path: path,
             mime_type: d.mime_type ? String(d.mime_type) : null,
             size_bytes: Number.isFinite(d.size_bytes) ? Number(d.size_bytes) : null,
-            original_name: d.original_name ? String(d.original_name) : null,
+            uploaded_at: new Date().toISOString(),
           };
 
-          // coloane opționale (există doar dacă le-ai adăugat în SQL)
+          // coloane opționale (există în schema ta)
           if (typeof d.doc_series === "string")      r.doc_series = d.doc_series;
           if (typeof d.doc_number === "string")      r.doc_number = d.doc_number;
           if (typeof d.doc_nationality === "string") r.doc_nationality = d.doc_nationality;
@@ -304,7 +306,7 @@ export async function POST(req: NextRequest) {
           const insDocs = await admin.from("booking_documents").insert(rows).select("id");
           if (!insDocs.error) documents_saved = insDocs.data?.length ?? 0;
         } catch {
-          // ignore
+          // ignore (nu oprim flow-ul de submit)
         }
       }
     }
