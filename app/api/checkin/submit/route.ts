@@ -56,7 +56,6 @@ async function roomTypeFromRoom(room_id: string): Promise<string | null> {
 }
 
 // găsește o cameră liberă pentru un tip, în intervalul [start_date, end_date)
-// întoarce primul id găsit (sortare alfabetică)
 async function findFreeRoomForType(opts: {
   property_id: string;
   room_type_id: string;
@@ -65,7 +64,7 @@ async function findFreeRoomForType(opts: {
 }): Promise<string | null> {
   const { property_id, room_type_id, start_date, end_date } = opts;
 
-  // 1) camere candidate (de acel tip, la proprietatea respectivă)
+  // 1) camere candidate
   const rRooms = await admin
     .from("rooms")
     .select("id,name")
@@ -76,7 +75,7 @@ async function findFreeRoomForType(opts: {
   if (rRooms.error || !rRooms.data || rRooms.data.length === 0) return null;
   const candIds = rRooms.data.map((r) => r.id as string);
 
-  // 2) booking-uri care se suprapun
+  // 2) booking-uri care se suprapun (half-open: [start, end))
   const rBusy = await admin
     .from("bookings")
     .select("room_id,start_date,end_date,status")
@@ -125,13 +124,17 @@ export async function POST(req: NextRequest) {
       city,
       country,
 
-      // ---- document (noi) ----
+      // ---- document (poate fi formă veche sau nouă) ----
+      // v1 (legacy, un singur doc):
       doc_type,          // "id_card" | "passport"
       doc_series,        // string | null (doar pentru id_card)
       doc_number,        // string
       doc_nationality,   // string | null (doar pentru passport)
-      doc_file_path,     // string | null (setat de /api/checkin/upload)
-      doc_file_mime,     // string | null (setat de /api/checkin/upload)
+      doc_file_path,     // string | null (ex: raw/<property>/<uuid>.<ext>)
+      doc_file_mime,     // string | null (ex: image/jpeg, application/pdf)
+
+      // v2 (nou): listă de documente
+      docs,              // Array<{ storage_path, storage_bucket?, mime_type?, size_bytes?, original_name?, doc_type?, doc_series?, doc_number?, doc_nationality? }>
     } = body ?? {};
 
     if (!property_id || !isYMD(start_date) || !isYMD(end_date)) {
@@ -161,27 +164,19 @@ export async function POST(req: NextRequest) {
     let room_id: string | null = await normalizeRoomId(requested_room_id, property_id);
     let room_type_id: string | null = await normalizeRoomTypeId(requested_room_type_id, property_id);
 
-    // dacă nu s-a dat explicit room_type_id și avem room_id → deducem din cameră
     if (!room_type_id && room_id) {
       room_type_id = await roomTypeFromRoom(room_id);
     }
 
-    // dacă nu avem room_id dar avem room_type_id → auto-assign
     if (!room_id && room_type_id) {
-      room_id = await findFreeRoomForType({
-        property_id,
-        room_type_id,
-        start_date,
-        end_date,
-      });
+      room_id = await findFreeRoomForType({ property_id, room_type_id, start_date, end_date });
     }
 
     // 3) Construcția adresei afișabile (pt. RoomDetailModal)
     const parts = [address, city, country].map(v => (v ?? "").trim()).filter(Boolean);
     const displayAddress = parts.length ? parts.join(", ") : null;
 
-    // 4) Payload minim (evităm crash dacă lipsesc unele coloane pe instanțe mai vechi)
-    //    Scriem și câmpurile de contact în bookings ca să apară în RoomDetailModal.
+    // 4) Insert booking (status soft)
     const basePayload: any = {
       property_id,
       room_id: room_id ?? null,
@@ -200,7 +195,6 @@ export async function POST(req: NextRequest) {
       source: "form",
     };
 
-    // 5) Insert principal, cu fallback la 'pending' dacă enumul 'hold' nu există
     let ins = await admin.from("bookings").insert(basePayload).select("id").single();
 
     if (ins.error && looksEnumHoldError(ins.error.message)) {
@@ -208,7 +202,6 @@ export async function POST(req: NextRequest) {
       ins = await admin.from("bookings").insert(basePayload).select("id").single();
     }
 
-    // Dacă insertul cu room_id pică din cauza FK/overlap, reîncearcă fără room_id
     if (ins.error && room_id && looksForeignKeyOrOverlap(ins.error.message)) {
       const fallbackPayload = { ...basePayload, room_id: null };
       ins = await admin.from("bookings").insert(fallbackPayload).select("id").single();
@@ -220,7 +213,7 @@ export async function POST(req: NextRequest) {
 
     const newId = ins.data.id as string;
 
-    // 6) Upgrade opțional: setăm câmpurile de soft-hold dacă schema le are (ignore dacă nu)
+    // 5) Soft-hold (dacă schema permite)
     try {
       await admin
         .from("bookings")
@@ -230,11 +223,9 @@ export async function POST(req: NextRequest) {
           hold_expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
         } as any)
         .eq("id", newId);
-    } catch {
-      // ignorăm — dacă lipsesc coloanele, inserția rămâne valabilă
-    }
+    } catch {}
 
-    // 7) Best-effort: salvăm contactul structurat (dacă a fost trimis)
+    // 6) Contact structurat (best-effort)
     let contact_saved = false;
     if (email || phone || address || city || country) {
       try {
@@ -259,32 +250,63 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 8) Best-effort: salvăm detaliile documentului (dacă avem date)
-    let document_saved = false;
-    try {
-      const t = typeof doc_type === "string" ? doc_type : "";
-      const normalizedDocType = t === "id_card" || t === "passport" ? t : null;
-      const numberOk = typeof doc_number === "string" && doc_number.trim().length > 0;
+    // 7) Documente (both v1 & v2) — inserăm în booking_documents
+    let documents_saved = 0;
 
-      if (normalizedDocType && numberOk) {
-        const insDoc = await admin
-          .from("booking_documents")
-          .insert({
+    // normalize docs[] (v2) sau doc_* (v1)
+    const docsArray: Array<any> = Array.isArray(docs) ? docs : [];
+
+    if (!docsArray.length && (doc_type || doc_file_path || doc_file_mime)) {
+      // transformă forma v1 într-un doc compatibil
+      docsArray.push({
+        doc_type,
+        doc_series,
+        doc_number,
+        doc_nationality,
+        storage_bucket: "guest_docs",
+        storage_path: doc_file_path,
+        mime_type: doc_file_mime,
+      });
+    }
+
+    if (docsArray.length) {
+      const rows = docsArray
+        .map((d) => {
+          const bucket = String(d.storage_bucket || "guest_docs");
+          const path = String(d.storage_path || d.path || "");
+          if (!path) return null;
+
+          const t = (d.doc_type ?? "").toString();
+          const docTypeNorm = t === "id_card" || t === "passport" ? t : "other";
+
+          const r: any = {
+            property_id,
             booking_id: newId,
-            doc_type: normalizedDocType,                          // 'id_card' | 'passport'
-            doc_series: normalizedDocType === "id_card" ? (doc_series ?? null) : null,
-            doc_number: String(doc_number).trim(),
-            doc_nationality: normalizedDocType === "passport" ? (doc_nationality ?? null) : null,
-            file_path: doc_file_path ?? null,
-            file_mime: doc_file_mime ?? null,
-          } as any)
-          .select("id")
-          .maybeSingle();
+            doc_type: docTypeNorm,                 // enum: 'id_card' | 'passport' | 'other'
+            storage_bucket: bucket,
+            storage_path: path,
+            mime_type: d.mime_type ? String(d.mime_type) : null,
+            size_bytes: Number.isFinite(d.size_bytes) ? Number(d.size_bytes) : null,
+            original_name: d.original_name ? String(d.original_name) : null,
+          };
 
-        document_saved = !insDoc.error;
+          // coloane opționale (există doar dacă le-ai adăugat în SQL)
+          if (typeof d.doc_series === "string")      r.doc_series = d.doc_series;
+          if (typeof d.doc_number === "string")      r.doc_number = d.doc_number;
+          if (typeof d.doc_nationality === "string") r.doc_nationality = d.doc_nationality;
+
+          return r;
+        })
+        .filter(Boolean) as any[];
+
+      if (rows.length) {
+        try {
+          const insDocs = await admin.from("booking_documents").insert(rows).select("id");
+          if (!insDocs.error) documents_saved = insDocs.data?.length ?? 0;
+        } catch {
+          // ignore
+        }
       }
-    } catch {
-      document_saved = false;
     }
 
     return NextResponse.json({
@@ -297,7 +319,7 @@ export async function POST(req: NextRequest) {
       start_time,
       end_time,
       contact_saved,
-      document_saved,
+      documents_saved,
     });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "Unexpected error" }, { status: 500 });

@@ -1,6 +1,7 @@
+// app/checkin/ui/CheckinClient.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type PropertyInfo = {
   id: string;
@@ -75,6 +76,7 @@ export default function CheckinClient() {
   // Upload file (foto/PDF)
   const [docFile, setDocFile] = useState<File | null>(null);
   const [docFilePreview, setDocFilePreview] = useState<string | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
 
   // dates
   const [startDate, setStartDate] = useState<string>(() => todayYMD());
@@ -88,6 +90,27 @@ export default function CheckinClient() {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [loading, setLoading] = useState(true);
+
+  // responsive helper: 1 col sub 560px
+  const [isNarrow, setIsNarrow] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 560px)");
+    const handler = (e: MediaQueryListEvent | MediaQueryList) =>
+      setIsNarrow("matches" in e ? e.matches : (e as MediaQueryList).matches);
+    handler(mq);
+    mq.addEventListener?.("change", handler as any);
+    mq.addListener?.(handler as any); // fallback safari vechi
+    return () => {
+      mq.removeEventListener?.("change", handler as any);
+      mq.removeListener?.(handler as any);
+    };
+  }, []);
+
+  // revocăm URL-ul de preview când se schimbă fișierul
+  useEffect(() => {
+    return () => { if (docFilePreview) URL.revokeObjectURL(docFilePreview); };
+  }, [docFilePreview]);
 
   // ---------- STYLES ----------
   const CARD: React.CSSProperties = useMemo(() => ({
@@ -353,7 +376,7 @@ export default function CheckinClient() {
               Guest Check-in — {prop?.name ?? "Property"}
             </h1>
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
-              Please fill in the required details. It takes ~2 minutes.
+              Mulțumim că ați ales să vă cazați la {prop?.name ?? "noi"}! Completarea formularului durează ~2 minute. 🙏
             </p>
           </div>
           {pdfUrl && (
@@ -378,7 +401,11 @@ export default function CheckinClient() {
         ) : (
           <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }}>
             {/* Dates */}
-            <div style={ROW_2}>
+            <div style={{
+              display: "grid",
+              gap: 12,
+              gridTemplateColumns: isNarrow ? "1fr" : "1fr 1fr",
+            }}>
               <div>
                 <label style={LABEL}>Check-in date*</label>
                 <input
@@ -587,14 +614,14 @@ export default function CheckinClient() {
               )}
 
               {/* Upload ID document (foto sau PDF) */}
-              <div style={{ marginTop: 6 }}>
+              <div style={{ marginTop: 6, display: "grid", gap: 8 }}>
                 <label style={LABEL}>Upload ID document (photo/PDF)</label>
+
+                {/* input normal — NU deschide camera direct */}
                 <input
                   style={INPUT}
                   type="file"
                   accept="image/*,application/pdf"
-                  // pe mobil deschide camera implicit (pentru foto)
-                  capture="environment"
                   onChange={(e) => {
                     const f = e.currentTarget.files?.[0] ?? null;
                     setDocFile(f || null);
@@ -606,8 +633,38 @@ export default function CheckinClient() {
                     }
                   }}
                 />
+
+                {/* buton separat pentru camera */}
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    style={BTN_GHOST}
+                    onClick={() => cameraInputRef.current?.click()}
+                    title="Open camera"
+                  >
+                    📷 Take a photo
+                  </button>
+                  <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const f = e.currentTarget.files?.[0] ?? null;
+                      setDocFile(f || null);
+                      if (f && f.type.startsWith("image/")) {
+                        const url = URL.createObjectURL(f);
+                        setDocFilePreview(url);
+                      } else {
+                        setDocFilePreview(null);
+                      }
+                    }}
+                  />
+                </div>
+
                 {docFile && (
-                  <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                  <div style={{ display: "grid", gap: 6 }}>
                     {docFilePreview ? (
                       <img
                         src={docFilePreview}
