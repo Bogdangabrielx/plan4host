@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import RoomDetailModal from "@/app/app/calendar/ui/RoomDetailModal"; // modalul calendarului
+import RoomDetailModal from "@/app/app/calendar/ui/RoomDetailModal";
 
 // ---- Types din pagina server (le folosim și aici) ----
 type Property = {
@@ -11,33 +11,33 @@ type Property = {
   name: string;
   check_in_time: string | null;
   check_out_time: string | null;
-  // (opțional) dacă vrei să gate-ui "Copy link" după rules PDF:
-  regulation_pdf_url?: string | null;
+  regulation_pdf_url?: string | null; // opțional
 };
 
 type Room = { id: string; name: string; property_id: string; room_type_id?: string | null };
 type RoomType = { id: string; name: string; property_id: string };
 
-// ---- Shape-ul din /api/guest-overview (sub-pas 2) ----
+// ---- Shape-ul din /api/guest-overview ----
 type OverviewItem = {
   kind: "green" | "yellow" | "red";
   reason?:
-    | "waiting_form"            // YELLOW (iCal)
-    | "waiting_ical"            // YELLOW (Form)
-    | "missing_form"            // RED
-    | "no_ota_found"            // RED
-    | "type_conflict"           // RED
-    | "room_required_auto_failed"; // RED
+    | "waiting_form"
+    | "waiting_ical"
+    | "missing_form"
+    | "no_ota_found"
+    | "type_conflict"
+    | "room_required_auto_failed";
   start_date: string;
   end_date: string;
   room_id?: string | null;
   room_label?: string | null;
   room_type_id?: string | null;
   room_type_name?: string | null;
-  booking_id?: string | null; // id-ul “principal” al pachetului
+  booking_id?: string | null;
   guest_first_name?: string | null;
   guest_last_name?: string | null;
-  cutoff_ts?: string | null; // până când stă în YELLOW
+  guest_name?: string | null; // ← NEW: fallback pentru manual
+  cutoff_ts?: string | null;
 };
 
 // ---- Helpers dată/oră & text ----
@@ -47,16 +47,19 @@ function fmtDate(ymd: string): string {
   const mm = String(m).padStart(2, "0");
   return `${dd}.${mm}.${y}`;
 }
-function fmtDateTime(ymd: string, time: string | null | undefined): string {
-  return time ? `${fmtDate(ymd)} ${time}` : fmtDate(ymd);
-}
 function formatRange(startYMD: string, endYMD: string): string {
   return `${fmtDate(startYMD)} → ${fmtDate(endYMD)}`;
 }
 function fullName(item: OverviewItem): string {
   const f = (item.guest_first_name ?? "").trim();
   const l = (item.guest_last_name ?? "").trim();
-  return [f, l].filter(Boolean).join(" ");
+  const combined = [f, l].filter(Boolean).join(" ").trim();
+  if (combined) return combined;
+  // fallback legacy (manual)
+  return (item.guest_name ?? "").trim();
+}
+function hasName(item: OverviewItem): boolean {
+  return fullName(item).length > 0;
 }
 function toBadge(kind: OverviewItem["kind"]): "GREEN" | "YELLOW" | "RED" {
   return kind === "green" ? "GREEN" : kind === "yellow" ? "YELLOW" : "RED";
@@ -86,7 +89,7 @@ function buildPropertyCheckinLink(propertyId: string): string {
   }
 }
 
-// Subcopy pentru stări (conform specificației)
+// Subcopy pentru stări
 function subcopyFor(item: OverviewItem): string | null {
   if (item.kind === "yellow") {
     if (item.reason === "waiting_form") {
@@ -99,10 +102,8 @@ function subcopyFor(item: OverviewItem): string | null {
   if (item.kind === "red") {
     if (item.reason === "missing_form") return "No check-in form was received for this OTA reservation.";
     if (item.reason === "no_ota_found") return "Form dates do not match any OTA reservation.";
-    if (item.reason === "type_conflict")
-      return "Unmatched Room: OTA type and form type differ. Resolve in Calendar.";
-    if (item.reason === "room_required_auto_failed")
-      return "No free room of the booked type was available for auto-assignment.";
+    if (item.reason === "type_conflict") return "Unmatched Room: OTA type and form type differ. Resolve in Calendar.";
+    if (item.reason === "room_required_auto_failed") return "No free room of the booked type was available for auto-assignment.";
     return "Action required.";
   }
   return null;
@@ -139,7 +140,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setLoading("loading");
     setHint("Loading…");
 
-    // 1) Rooms + Types (pt. label & RoomDetailModal)
+    // 1) Rooms + Types
     const [rRooms, rTypes] = await Promise.all([
       supabase
         .from("rooms")
@@ -164,9 +165,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
     // 2) Overview items din API (no-store)
     try {
-      const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(activePropertyId)}`, {
-        cache: "no-store",
-      });
+      const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(activePropertyId)}`, { cache: "no-store" });
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
         throw new Error(txt || `HTTP ${res.status}`);
@@ -245,8 +244,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     }
   }, []);
 
-  function resolveInCalendar(item: OverviewItem, propertyId: string) {
-    // Deep-link minim: calendar pe ziua de start
+  function resolveInCalendar(item: OverviewItem, _propertyId: string) {
     const url = `/app/calendar?date=${item.start_date}`;
     if (typeof window !== "undefined") window.location.href = url;
   }
@@ -318,39 +316,38 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       {/* Rows */}
       <div style={{ display: "grid", gap: 10 }}>
         {rows.map((it) => {
-          // Afișarea principală
-          const nm = fullName(it) || "Unknown guest";
+          // Regula de aur în UI: dacă are NUME (inclusiv guest_name), forțăm GREEN
+          const name = fullName(it) || "Unknown guest";
+          const effectiveKind: OverviewItem["kind"] = hasName(it) ? "green" : it.kind;
+
           const roomNo = it.room_label ? `#${it.room_label}` : "#—";
-          const badge = toBadge(it.kind);
+          const badge = toBadge(effectiveKind);
           const typeName = it.room_type_name ?? (it.room_type_id ? typeNameById.get(String(it.room_type_id)) ?? null : null);
 
-          const subcopy = subcopyFor(it);
-          const propertyId = activePropertyId!; // avem o proprietate activă
+          const subcopy = effectiveKind === "green" ? null : subcopyFor(it);
+          const propertyId = activePropertyId!;
 
-          // cheie unică pentru feedback la copy (per item)
-          const key = `${it.start_date}|${it.end_date}|${it.room_type_id ?? "null"}`;
+          const key = `${it.booking_id ?? "noid"}|${it.start_date}|${it.end_date}|${it.room_type_id ?? "null"}`;
 
           const showCopy =
-            (it.kind === "yellow" && it.reason === "waiting_form") ||
-            (it.kind === "red" && it.reason === "missing_form");
+            effectiveKind !== "green" &&
+            ((it.kind === "yellow" && it.reason === "waiting_form") || (it.kind === "red" && it.reason === "missing_form"));
 
           return (
-            <div key={`${it.booking_id ?? key}`} style={{ border: "1px solid var(--border)", background: "var(--panel)", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
+            <div key={key} style={{ border: "1px solid var(--border)", background: "var(--panel)", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                 <strong style={{ letterSpacing: 0.2 }}>
-                  {nm} · {roomNo} — Type: {typeName ?? "—"} — {formatRange(it.start_date, it.end_date)}
+                  {name} · {roomNo} — Type: {typeName ?? "—"} — {formatRange(it.start_date, it.end_date)}
                 </strong>
-                <span style={badgeStyle(it.kind)}>{badge}</span>
+                <span style={badgeStyle(effectiveKind)}>{badge}</span>
               </div>
 
-              {(it.kind === "yellow" || it.kind === "red") && subcopy && (
-                <small style={{ color: "var(--muted)" }}>{subcopy}</small>
-              )}
+              {subcopy && <small style={{ color: "var(--muted)" }}>{subcopy}</small>}
 
               {/* Actions */}
               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
                 {/* GREEN → Open reservation (RoomDetailModal) */}
-                {it.kind === "green" && (
+                {effectiveKind === "green" && (
                   <button
                     onClick={() => openReservation(it, propertyId)}
                     disabled={!it.room_id || !roomById.has(String(it.room_id))}
@@ -369,19 +366,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   </button>
                 )}
 
-                {/* YELLOW(iCal) sau RED(missing_form) → Copy check-in link */}
+                {/* YELLOW(iCal) / RED(missing_form) → Copy link */}
                 {showCopy && (
                   <button
                     onClick={() => copyCheckinLink(propertyId, key)}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border)",
-                      background: "var(--card)",
-                      color: "var(--text)",
-                      fontWeight: 900,
-                      cursor: "pointer",
-                    }}
+                    style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 900, cursor: "pointer" }}
                     title="Copy check-in link"
                   >
                     {copiedKey === key ? "Copied!" : "Copy check-in link"}
@@ -389,18 +378,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 )}
 
                 {/* RED → Resolve in Calendar */}
-                {it.kind === "red" && (
+                {effectiveKind === "red" && (
                   <button
                     onClick={() => resolveInCalendar(it, propertyId)}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: 10,
-                      border: "1px solid var(--danger)",
-                      background: "transparent",
-                      color: "var(--text)",
-                      fontWeight: 900,
-                      cursor: "pointer",
-                    }}
+                    style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--danger)", background: "transparent", color: "var(--text)", fontWeight: 900, cursor: "pointer" }}
                     title="Resolve in Calendar"
                   >
                     Resolve in Calendar
@@ -427,7 +408,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           forceNew={false}
           onClose={() => setModal(null)}
           onChanged={() => {
-            // reîncarcă overview-ul după schimbări
             refresh();
           }}
         />
