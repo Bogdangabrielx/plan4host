@@ -34,7 +34,7 @@ export default function HomePage() {
             more customizable way to manage every stay.
           </p>
           <div className={styles.heroCta}>
-            <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary}`}>Get Free Trial</a>
+            <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnText}`}>Get Free Trial</a>
             <a href="#features" className={`${styles.btn} ${styles.btnGhost}`}>Learn more</a>
           </div>
         </div>
