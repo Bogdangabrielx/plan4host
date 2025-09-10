@@ -9,7 +9,6 @@ const NAV_BASE = [
   { href: "/app/propertySetup", label: "Property Setup", emoji: "⚙️", scope: "propertySetup" },
   { href: "/app/cleaning", label: "Cleaning Board", emoji: "🧹", scope: "cleaning" },
   { href: "/app/channels", label: "Channels & iCal", emoji: "🔗", scope: "channels" },
-  // 🔁 Inbox -> Guest Overview (păstrăm scope: "inbox")
   { href: "/app/guest", label: "Guest Overview", emoji: "📥", scope: "inbox" },
   { href: "/app/team", label: "Team", emoji: "👥", scope: "team" },
   { href: "/auth/logout", label: "Logout", emoji: "🚪", scope: "logout" },
@@ -21,7 +20,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const [nav, setNav] = useState(NAV_BASE);
   const [me, setMe] = useState<{ role: string; scopes: string[]; disabled: boolean } | null>(null);
   const [isSmall, setIsSmall] = useState(false);
-  // Theme (for switching icons like Channels & iCal)
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
   const [aboutFailed, setAboutFailed] = useState(false);
@@ -33,7 +31,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     return () => window.removeEventListener("resize", detect);
   }, []);
 
-  // Detect and react to theme changes (so we can swap icons)
   useEffect(() => {
     setMounted(true);
     try {
@@ -49,7 +46,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     return () => window.removeEventListener("themechange" as any, onThemeChange);
   }, []);
 
-  // Themed icons mapping for certain routes
   const THEME_ICONS: Record<string, { light: string; dark: string }> = {
     "/app": { light: "/dashboard_forlight.png", dark: "/dashboard_fordark.png" },
     "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
@@ -59,9 +55,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
     "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
     "/app/subscription": { light: "/subscription_forlight.png", dark: "/subscription_fordark.png" },
-    // Noua rută pentru Guest Overview reutilizează iconul de inbox până ai un asset dedicat
     "/app/guest": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
-    // (opțional) legacy mapping dacă mai există rute vechi în circulație:
     "/app/inbox": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
   };
 
@@ -83,12 +77,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     );
   }
 
-  // IMPORTANT: domeniul tău (injectat la build)
   const BASE =
     (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
     (typeof window !== "undefined" ? window.location.origin : "");
 
-  // Inbox (Guest Overview) count badge in the menu
   const [inboxCount, setInboxCount] = useState<number>(() => {
     try {
       const raw = typeof window !== "undefined" ? localStorage.getItem("p4h:inboxCount") : null;
@@ -117,16 +109,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   function hardNavigate(href: string) {
     try {
       setOpen(false);
-      // navigare FULL reload, URL absolut pe domeniul tău
       const u = href.startsWith("http") ? href : `${BASE}${href}`;
       window.location.assign(u);
     } catch {
-      // fallback – tot hard reload
       window.location.href = href;
     }
   }
 
-  // Load role/scopes and filter nav client-side
   useEffect(() => {
     (async () => {
       try {
@@ -141,12 +130,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         const plan = (info.plan || 'basic').toLowerCase();
         let filtered = NAV_BASE.filter(it => {
           if (it.scope === 'logout') return true;
-          // Team menu: only Owner on Premium
           if (it.href === '/app/team') return info.role === 'owner' && plan === 'premium';
           if (allowAll) return true;
           return sc.has(it.scope);
         });
-        // Show Subscription for owners explicitly
         if (info.role === 'owner') {
           const exists = filtered.some(x => x.href === '/app/subscription');
           if (!exists) {
@@ -166,7 +153,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       <header
         style={{
           position: "sticky",
-          top: 0,
+          top: "var(--safe-top)",        // 🟢 stă sub notch când e sticky
           zIndex: 30,
           display: "flex",
           alignItems: "center",
@@ -206,7 +193,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             )}
           </button>
 
-          {/* Title poate fi ReactNode */}
           <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
             <div style={{ margin: 0, fontSize: isSmall ? 16 : 18, lineHeight: 1 }}>{title}</div>
             {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
@@ -250,6 +236,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               zIndex: 41,
               display: "grid",
               gridTemplateRows: "auto 1fr",
+              paddingTop: "var(--safe-top)", // 🟢 nu intră sub notch
             }}
           >
             <div
@@ -286,7 +273,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   const active = currentPath
                     ? currentPath === it.href || currentPath.startsWith(it.href + "/")
                     : false;
-                  // Mutăm badge-ul pe Guest Overview
                   const isInbox = it.href === "/app/guest";
                   const ICON_SIZE_DEFAULT = 36;
                   const ICON_SIZE_PER_ROUTE: Record<string, number> = {
@@ -296,7 +282,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   const ICON_SIZE = ICON_SIZE_PER_ROUTE[it.href] ?? ICON_SIZE_DEFAULT;
                   return (
                     <li key={it.href}>
-                      {/* Buton care face hard navigate pe domeniul tău */}
                       <button
                         onClick={() => hardNavigate(it.href)}
                         style={{
