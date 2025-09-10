@@ -72,3 +72,10 @@
 
 /* Anchor offset for sticky header (dup safety) */
 .features, .pricing, .about, .contact, .footer { scroll-margin-top: 90px; }
+
+/* Arată logo-ul corect în funcție de tema din <html data-theme="..."> */
+.logoLight { display: inline-block; }
+.logoDark  { display: none; }
+
+:global(:root[data-theme="dark"]) .logoLight { display: none; }
+:global(:root[data-theme="dark"]) .logoDark  { display: inline-block; }

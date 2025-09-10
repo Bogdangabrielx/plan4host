@@ -1,14 +1,29 @@
-// app/page.tsx — live landing homepage
+// /app/page.tsx — live landing homepage
 import styles from "./home.module.css";
 
 export default function HomePage() {
   return (
     <main className={styles.landing}>
+      {/* CSS global mic pentru switch-ul de logo în funcție de data-theme */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            .logoLight { display: inline-block; }
+            .logoDark  { display: none; }
+            :root[data-theme="dark"] .${styles.brand} .logoLight { display: none; }
+            :root[data-theme="dark"] .${styles.brand} .logoDark  { display: inline-block; }
+          `,
+        }}
+      />
+
       {/* Nav */}
       <header className={styles.nav}>
         <a href="/" className={styles.brand} aria-label="Plan4Host">
-          <img src="/Logo.png" alt="Plan4Host" height={47} />
+          {/* Afisăm ambele; CSS alege corect în funcție de tema curentă */}
+          <img src="/logo_forlight.png" alt="Plan4Host" height={47} className="logoLight" />
+          <img src="/logo_fordark.png" alt="" aria-hidden="true" height={47} className="logoDark" />
         </a>
+
         <nav className={styles.menu} aria-label="Primary">
           <a className={styles.menuLink} href="#features">Features</a>
           <a className={styles.menuLink} href="#pricing">Pricing</a>
@@ -33,17 +48,15 @@ export default function HomePage() {
             Simplify hosting. Empower your team. Delight your guests. With Plan4Host, experience a smarter,
             more customizable way to manage every stay.
           </p>
-          <div className={styles.heroCta}>
-            <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnGhost}`}>Get Free Trial</a>
-            <a href="#features" className={`${styles.btn} ${styles.btnGhost}`}>Learn more</a>
-          </div>
         </div>
         <div className={styles.heroVisual} aria-hidden="true">
-          {/* Optional image placeholder — drop your own PNG in /public and set src */}
           {/* <img src="/hero.png" alt="" loading="lazy" decoding="async" /> */}
         </div>
+        <div className={styles.heroCta}>
+          <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnText}`}>Get Free Trial</a>
+          <a href="#features" className={`${styles.btn} ${styles.btnGhost}`}>Learn more</a>
+        </div>
       </section>
-
 
       {/* Features */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
@@ -150,8 +163,7 @@ export default function HomePage() {
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
           <p style={{ margin: 0, color: "var(--muted)" }}>
-            We’re just an email away: 
-            {" "}
+            We’re just an email away:{" "}
             <a href="mailto:office@plan4host.com" style={{ color: "var(--text)", fontWeight: 800 }}>
               office@plan4host.com
             </a>
@@ -184,5 +196,3 @@ function PricingCard({
     </article>
   );
 }
-
-// Contact form removed — showing email address only
