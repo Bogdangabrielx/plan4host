@@ -30,7 +30,6 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  // themeColor trebuie să fie aici (nu în metadata)
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
     { media: "(prefers-color-scheme: dark)",  color: "#0c111b" },
@@ -83,10 +82,30 @@ html, body { background: var(--bg); color: var(--text); }
 
 .rd-row { display: grid; grid-template-columns: 1fr 160px 90px 90px; gap: 8px; align-items: center; }
 @media (max-width: 480px) { .rd-row { grid-template-columns: 1fr; } }
+
+/* ---------- iOS notch safe-area ---------- */
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+@supports (padding-top: constant(safe-area-inset-top)){
+  :root{
+    --safe-top: constant(safe-area-inset-top);
+    --safe-bottom: constant(safe-area-inset-bottom);
+  }
+}
+/* utilitare pe care le poți folosi oriunde */
+.safe-top-pad{ padding-top: calc(var(--safe-top) + 8px); }
+.safe-bottom-pad{ padding-bottom: var(--safe-bottom); }
+.safe-top-sticky{ position: sticky; top: 0; }
+.safe-top-fixed{ position: fixed; top: var(--safe-top); }
 `,
           }}
         />
-        {children}
+        {/* Wrapper global: împinge conținutul sub notch & deasupra home-indicatorului */}
+        <div style={{ paddingTop: "var(--safe-top)", paddingBottom: "var(--safe-bottom)" }}>
+          {children}
+        </div>
       </body>
     </html>
   );
