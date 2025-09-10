@@ -20,8 +20,8 @@ export default function HomePage() {
       <header className={styles.nav}>
         <a href="/" className={styles.brand} aria-label="Plan4Host">
           {/* Afisăm ambele; CSS alege corect în funcție de tema curentă */}
-          <img src="/logo_forlight.png" alt="Plan4Host" height={47} className="logoLight" />
-          <img src="/logo_fordark.png" alt="" aria-hidden="true" height={47} className="logoDark" />
+          <img src="/logo_forlight.png" alt="Plan4Host" height={72} className="logoLight" />
+          <img src="/logo_fordark.png" alt="" aria-hidden="true" height={72} className="logoDark" />
         </a>
 
         <nav className={styles.menu} aria-label="Primary">
