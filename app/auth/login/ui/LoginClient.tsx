@@ -8,13 +8,23 @@ type Mode = "login" | "signup";
 
 export default function LoginClient({ initialTheme = "light" }: { initialTheme?: Theme }) {
   const [mode, setMode] = useState<Mode>("login");
-  const [email, setEmail] = useState("");
-  const [pass, setPass] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [pass, setPass] = useState<string>("");
   const [status, setStatus] = useState<"Idle"|"Loading"|"Error">("Idle");
   const [err, setErr] = useState<string>("");
 
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [mounted, setMounted] = useState(false);
+
+  // ————— helpers null-safe —————
+  const asStr = (v: unknown) => (typeof v === "string" ? v : v == null ? "" : String(v));
+  const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(asStr(s).trim());
+  const safeDecode = (v: string | null) => {
+    try { return v ? decodeURIComponent(v) : ""; } catch { return asStr(v); }
+  };
+  const safeJson = async (res: Response) => {
+    try { return await res.json(); } catch { return {}; }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -39,11 +49,11 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
 
   useEffect(() => {
     const u = new URL(window.location.href);
-    const e = u.searchParams.get("error");
-    if (e) { setErr(decodeURIComponent(e)); setStatus("Error"); }
+    const e = safeDecode(u.searchParams.get("error"));
+    if (e) { setErr(e); setStatus("Error"); }
 
     const raw = u.searchParams.get("mode") || u.searchParams.get("tab") || u.searchParams.get("view") || u.searchParams.get("signup") || u.searchParams.get("trial");
-    const val = (raw || "").toLowerCase();
+    const val = asStr(raw).toLowerCase();
     if (["signup", "create", "register", "1", "true", "yes"].includes(val)) {
       setMode("signup");
     }
@@ -51,18 +61,18 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (status === "Loading") return; // anti dublu-submit
     setErr("");
 
-    // Basic client-side validation (after click)
-    const emailTrim = email.trim();
-    const passTrim = pass;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Validare client
+    const emailTrim = asStr(email).trim();
+    const passTrim  = asStr(pass);
     if (!emailTrim) {
       setErr("Please enter your email.");
       setStatus("Error");
       return;
     }
-    if (!emailRegex.test(emailTrim)) {
+    if (!isEmail(emailTrim)) {
       setErr("Please enter a valid email address.");
       setStatus("Error");
       return;
@@ -76,37 +86,64 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     setStatus("Loading");
 
     const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/signup";
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password: pass })
-    });
 
-    if (res.ok) {
-      // For signup, handle confirmation-required
-      const j = await res.json().catch(() => ({} as any));
-      if (mode === "signup" && j?.requiresConfirmation) {
-        setStatus("Idle");
-        setErr("");
-        alert("We sent a confirmation email from noreply@plan4host.com. Please confirm to continue.");
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email: emailTrim, password: passTrim }),
+      });
+
+      // Acceptă și 204 (No Content) ca succes
+      if (res.ok) {
+        const j = await safeJson(res);
+        if (mode === "signup" && (j as any)?.requiresConfirmation) {
+          setStatus("Idle");
+          setErr("");
+          alert("We sent a confirmation email from noreply@plan4host.com. Please confirm to continue.");
+          return;
+        }
+
+        // Dacă API setează un redirect în header (de ex 'x-redirect'), respectă-l
+        const hdrNext = res.headers.get("x-redirect");
+        if (hdrNext && /^\/|^https?:\/\//i.test(hdrNext)) {
+          location.assign(hdrNext);
+          return;
+        }
+
+        // fallback implicit
+        location.assign("/app");
         return;
       }
-      // Login or auto-signed signup: go to app
-      location.href = "/app";
-    } else {
-      const j = await res.json().catch(() => ({}));
-      setErr(j?.error || (mode === "login" ? "Invalid credentials." : "Could not create account."));
+
+      // Eroare de aplicație (cu JSON sau fără)
+      const j = await safeJson(res);
+      const message =
+        asStr((j as any)?.error) ||
+        asStr((j as any)?.message) ||
+        (mode === "login" ? "Invalid credentials." : "Could not create account.");
+      setErr(message);
+      setStatus("Error");
+    } catch (ex: any) {
+      // Eroare de rețea / CORS / timeouts
+      setErr(asStr(ex?.message) || "Network error. Please try again.");
       setStatus("Error");
     }
   }
 
-  // ✅ Folosește domeniul tău, nu relativ
+  // ✅ OAuth Google (folosește domeniul tău)
   function signInWithGoogle() {
     const APP_URL =
-      (typeof process !== "undefined" && process.env.NEXT_PUBLIC_APP_URL) ||
+      (typeof process !== "undefined" && (process as any).env?.NEXT_PUBLIC_APP_URL) ||
       (typeof window !== "undefined" ? window.location.origin : "https://plan4host.com");
     const next = "/app";
-    window.location.href = `${APP_URL}/auth/oauth/google?next=${encodeURIComponent(next)}`;
+    try {
+      window.location.href = `${APP_URL}/auth/oauth/google?next=${encodeURIComponent(next)}`;
+    } catch {
+      // fallback sigur
+      location.assign("/auth/oauth/google?next=%2Fapp");
+    }
   }
 
   const pill =
@@ -152,7 +189,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
             <input
               type="email"
               value={email}
-              onChange={(e)=>setEmail(e.currentTarget.value)}
+              onChange={(e)=>setEmail(asStr(e.currentTarget.value))}
               placeholder="you@example.com"
               style={input}
               required
@@ -163,7 +200,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
             <input
               type="password"
               value={pass}
-              onChange={(e)=>setPass(e.currentTarget.value)}
+              onChange={(e)=>setPass(asStr(e.currentTarget.value))}
               placeholder="••••••••"
               style={input}
               required
