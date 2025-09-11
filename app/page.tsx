@@ -1,25 +1,29 @@
-// /app/page.tsx — live landing homepage
+// /app/page.tsx — live landing homepage (static, safe)
+export const dynamic = "force-static";
+export const revalidate = 3600;
+
 import styles from "./home.module.css";
 
 export default function HomePage() {
   return (
     <main className={styles.landing}>
-      {/* CSS global mic pentru switch-ul de logo în funcție de data-theme */}
+      {/* Mic CSS global: schimbă logo în funcție de data-theme, fără să depindă de className din CSS Modules */}
       <style
+        // evităm referințe la styles.brand în CSS inline (care pot fi undefined la build)
         dangerouslySetInnerHTML={{
           __html: `
             .logoLight { display: inline-block; }
             .logoDark  { display: none; }
-            :root[data-theme="dark"] .${styles.brand} .logoLight { display: none; }
-            :root[data-theme="dark"] .${styles.brand} .logoDark  { display: inline-block; }
+            :root[data-theme="dark"] [data-logo-swap] .logoLight { display: none; }
+            :root[data-theme="dark"] [data-logo-swap] .logoDark  { display: inline-block; }
           `,
         }}
       />
 
       {/* Nav */}
       <header className={styles.nav}>
-        <a href="/" className={styles.brand} aria-label="Plan4Host">
-          {/* Afisăm ambele; CSS alege corect în funcție de tema curentă */}
+        <a href="/" className={styles.brand} aria-label="Plan4Host" data-logo-swap>
+          {/* Afișăm ambele; CSS alege corect în funcție de temă */}
           <img src="/logo_forlight.png" alt="Plan4Host" height={72} className="logoLight" />
           <img src="/logo_fordark.png" alt="" aria-hidden="true" height={72} className="logoDark" />
         </a>
@@ -174,7 +178,9 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer id="footer" className={styles.footer}>
-        <p>© {new Date().getFullYear()} Plan4Host</p>
+        <p>
+          © <span suppressHydrationWarning>{new Date().getFullYear()}</span> Plan4Host
+        </p>
       </footer>
     </main>
   );
@@ -186,10 +192,11 @@ function PricingCard({
   items,
 }: { img: string; tier: string; items: string[] }) {
   return (
-    <article className={styles.priceCard}>
+    <article className={styles.priceCard} aria-labelledby={`tier-${tier}`}>
+      <h3 id={`tier-${tier}`} className="sr-only">{tier}</h3>
       <ul className={styles.priceList}>
         {items.map((t, i) => (
-          <li key={i}>{t}</li>
+          <li key={`${tier}-${i}`}>{t}</li>
         ))}
       </ul>
       <img src={img} alt="" className={styles.priceImg} loading="lazy" decoding="async" />
