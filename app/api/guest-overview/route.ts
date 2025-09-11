@@ -20,33 +20,31 @@ type BRow = {
   status: string | null;
   source: string | null;
   ical_uid: string | null;
-
-  // Guest
   guest_first_name: string | null;
   guest_last_name: string | null;
-  guest_name: string | null; // ← important pt. manual
-
-  // Form / holds
+  guest_name: string | null;
   is_soft_hold?: boolean | null;
   form_submitted_at?: string | null;
   created_at?: string | null;
+  hold_status?: "active" | "expired" | null;
+  hold_expires_at?: string | null;
 };
 
 type Room = { id: string; room_type_id: string | null; name: string | null };
 type RoomType = { id: string; name: string | null };
 
-function ymdToDate(ymd: string) { return new Date(`${ymd}T00:00:00`); }
-function addDays(d: Date, days: number) { const x = new Date(d.getTime()); x.setDate(x.getDate() + days); return x; }
-function nowUtc() { return new Date(); }
 const safeLower = (s?: string | null) => (s ?? "").toLowerCase();
+const ymdToDate = (ymd: string) => new Date(`${ymd}T00:00:00Z`);
+const addDays = (d: Date, days: number) => { const x = new Date(d.getTime()); x.setUTCDate(x.getUTCDate() + days); return x; };
+const nowUtc = () => new Date();
 
 function isIcalish(b: BRow) {
   const src = safeLower(b.source);
-  return !!b.ical_uid || src === "ical" || src === "ota" || src === "airbnb" || src === "booking" || src === "booking.com" || src === "expedia";
+  return !!b.ical_uid || ["ical","ota","airbnb","booking","booking.com","expedia","channel_manager"].includes(src);
 }
 function isFormish(b: BRow) {
   const src = safeLower(b.source);
-  return src === "form" || !!b.is_soft_hold || !!b.form_submitted_at;
+  return src === "form" || !!b.is_soft_hold || !!b.form_submitted_at || b.status === "hold";
 }
 function hasAnyName(b: Pick<BRow, "guest_first_name"|"guest_last_name"|"guest_name">) {
   const f = (b.guest_first_name ?? "").trim();
@@ -54,7 +52,6 @@ function hasAnyName(b: Pick<BRow, "guest_first_name"|"guest_last_name"|"guest_na
   const gn = (b.guest_name ?? "").trim();
   return (f.length + l.length) > 0 || gn.length > 0;
 }
-// Derivă tipul din room_id dacă lipsește
 function typeFor(b: BRow, roomById: Map<string, Room>) {
   if (b.room_type_id) return String(b.room_type_id);
   if (b.room_id) {
@@ -72,16 +69,33 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Missing ?property=<id>" }, { status: 400 });
     }
 
+    // ——— Guard: cont suspendat? ———
+    const rProp = await admin
+      .from("properties")
+      .select("id,account_id")
+      .eq("id", property_id)
+      .maybeSingle();
+    if (rProp.error) return NextResponse.json({ error: rProp.error.message }, { status: 500 });
+    if (!rProp.data)  return NextResponse.json({ error: "Property not found" }, { status: 404 });
+
+    try {
+      const susp = await admin.rpc("account_is_suspended", { account_id: rProp.data.account_id as string });
+      if (!susp.error && susp.data === true) {
+        return NextResponse.json({ error: "Account suspended" }, { status: 403 });
+      }
+    } catch { /* if RPC missing, we don't block */ }
+
     const todayYMD = new Date().toISOString().slice(0,10);
 
-    // 1) Booking-uri curente/viitoare, non-cancelled
+    // ——— Bookings: viitoare/curente, non-cancelled ———
     const rBookings = await admin
       .from("bookings")
       .select(`
         id, property_id, room_id, room_type_id,
         start_date, end_date, status, source, ical_uid,
         guest_first_name, guest_last_name, guest_name,
-        is_soft_hold, form_submitted_at, created_at
+        is_soft_hold, form_submitted_at, created_at,
+        hold_status, hold_expires_at
       `)
       .eq("property_id", property_id)
       .neq("status", "cancelled")
@@ -93,7 +107,7 @@ export async function GET(req: Request) {
     }
     const bookings: BRow[] = (rBookings.data ?? []) as any[];
 
-    // 2) Rooms & roomTypes (pt. label & tip)
+    // ——— Rooms & types ———
     const [rRooms, rTypes] = await Promise.all([
       admin.from("rooms").select("id, room_type_id, name").eq("property_id", property_id),
       admin.from("room_types").select("id, name").eq("property_id", property_id),
@@ -106,7 +120,7 @@ export async function GET(req: Request) {
     const typeNameById = new Map<string, string>();
     for (const t of types) typeNameById.set(String(t.id), t.name ?? "Type");
 
-    // 3) Grupăm pe (start_date, end_date, type_id)
+    // ——— Grupare pe (start_date, end_date, type_id) ———
     type Pack = {
       key: string;
       start_date: string;
@@ -115,7 +129,7 @@ export async function GET(req: Request) {
       type_name: string | null;
       ical?: BRow;
       form?: BRow;
-      others: BRow[]; // manual, etc.
+      others: BRow[];
     };
     const packs = new Map<string, Pack>();
 
@@ -124,7 +138,11 @@ export async function GET(req: Request) {
       const key = `${b.start_date}|${b.end_date}|${tId ?? "null"}`;
       let entry = packs.get(key);
       if (!entry) {
-        entry = { key, start_date: b.start_date, end_date: b.end_date, type_id: tId, type_name: tId ? (typeNameById.get(tId) ?? "Type") : null, others: [] };
+        entry = {
+          key, start_date: b.start_date, end_date: b.end_date,
+          type_id: tId, type_name: tId ? (typeNameById.get(tId) ?? "Type") : null,
+          others: []
+        };
         packs.set(key, entry);
       }
       if (isIcalish(b)) {
@@ -136,23 +154,36 @@ export async function GET(req: Request) {
       }
     }
 
-    // 4) Determinare stare pentru fiecare pachet
-    const items: any[] = [];
+    // ——— Evaluare stări ———
+    type Item = {
+      kind: "green" | "yellow" | "red";
+      reason?: string;
+      start_date: string;
+      end_date: string;
+      room_id: string | null;
+      room_label: string | null;
+      room_type_id: string | null;
+      room_type_name: string | null;
+      booking_id: string | null;
+      guest_first_name?: string | null;
+      guest_last_name?: string | null;
+      cutoff_ts?: string;
+    };
+
+    const items: Item[] = [];
     const now = nowUtc();
 
     for (const [, pk] of packs) {
       const startDt = ymdToDate(pk.start_date);
-      const cutoffIcal = addDays(startDt, -3); // iCal waiting window
+      const cutoffIcal = addDays(startDt, -3); // T-3 zile la check-in
       const hasIcal = !!pk.ical;
       const hasForm = !!pk.form;
 
-      // name known din ORICARE componentă (form / ical / others)
       const nameKnown =
         (pk.form && hasAnyName(pk.form)) ||
         (pk.ical && hasAnyName(pk.ical)) ||
         pk.others.some(o => hasAnyName(o));
 
-      // alegem un room_id afișabil (prefer iCal, apoi Form, apoi prima „other” cu room)
       const roomId =
         pk.ical?.room_id ??
         pk.form?.room_id ??
@@ -161,14 +192,13 @@ export async function GET(req: Request) {
       const room = roomId ? roomById.get(roomId) : null;
       const roomLabel = room?.name ?? (roomId ? `#${String(roomId).slice(0,4)}` : null);
 
-      // cutoff de 2h pentru Form
-      let formCutoff: Date | null = null;
-      if (pk.form?.form_submitted_at) {
-        const s = new Date(pk.form.form_submitted_at);
-        if (!isNaN(s.getTime())) formCutoff = new Date(s.getTime() + 2 * 60 * 60 * 1000);
-      }
+      // Preferăm hold_expires_at; fallback = form_submitted_at + 2h
+      const formDeadline =
+        (pk.form?.hold_expires_at && !isNaN(new Date(pk.form.hold_expires_at).getTime()))
+          ? new Date(pk.form.hold_expires_at)
+          : (pk.form?.form_submitted_at ? new Date(new Date(pk.form.form_submitted_at).getTime() + 2*60*60*1000) : null);
 
-      // 4.a Exact match (iCal + Form)
+      // A) iCal + Form — ok dacă avem ori nume ori cameră
       if (hasIcal && hasForm) {
         if (roomId || nameKnown) {
           items.push({
@@ -180,9 +210,8 @@ export async function GET(req: Request) {
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
             booking_id: pk.ical?.id ?? pk.form?.id,
-            // trim la UI
-            guest_first_name: (pk.form?.guest_first_name ?? pk.ical?.guest_first_name ?? null),
-            guest_last_name:  (pk.form?.guest_last_name  ?? pk.ical?.guest_last_name  ?? null),
+            guest_first_name: pk.form?.guest_first_name ?? pk.ical?.guest_first_name ?? null,
+            guest_last_name:  pk.form?.guest_last_name  ?? pk.ical?.guest_last_name  ?? null,
           });
         } else {
           items.push({
@@ -190,6 +219,8 @@ export async function GET(req: Request) {
             reason: "room_required_auto_failed",
             start_date: pk.start_date,
             end_date: pk.end_date,
+            room_id: null,
+            room_label: null,
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
             booking_id: pk.ical?.id ?? pk.form?.id,
@@ -200,10 +231,9 @@ export async function GET(req: Request) {
         continue;
       }
 
-      // 4.b NUMAI iCal
+      // B) doar iCal
       if (hasIcal && !hasForm) {
         if (nameKnown) {
-          // dacă cineva a completat manual numele în bookingul iCal
           items.push({
             kind: "green",
             start_date: pk.start_date,
@@ -212,7 +242,7 @@ export async function GET(req: Request) {
             room_label: roomLabel,
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
-            booking_id: pk.ical?.id,
+            booking_id: pk.ical?.id ?? null,
             guest_first_name: pk.ical?.guest_first_name ?? null,
             guest_last_name:  pk.ical?.guest_last_name  ?? null,
           });
@@ -226,7 +256,7 @@ export async function GET(req: Request) {
             room_label: pk.ical?.room_id ? (roomLabel ?? null) : null,
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
-            booking_id: pk.ical?.id,
+            booking_id: pk.ical?.id ?? null,
             guest_first_name: null,
             guest_last_name: null,
             cutoff_ts: cutoffIcal.toISOString(),
@@ -241,21 +271,20 @@ export async function GET(req: Request) {
             room_label: pk.ical?.room_id ? (roomLabel ?? null) : null,
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
-            booking_id: pk.ical?.id,
+            booking_id: pk.ical?.id ?? null,
           });
         }
         continue;
       }
 
-      // 4.c NUMAI Form
+      // C) doar Form
       if (hasForm && !hasIcal) {
-        // Există în același interval un iCal-only pe alt tip? -> conflict
+        // conflict: există iCal-only pe alt tip în același interval?
         let hasIcalOtherType = false;
         for (const [, pk2] of packs) {
           if (pk2 === pk) continue;
           if (pk2.start_date === pk.start_date && pk2.end_date === pk.end_date && pk2.ical && !pk2.form) {
-            hasIcalOtherType = true;
-            break;
+            hasIcalOtherType = true; break;
           }
         }
 
@@ -265,14 +294,15 @@ export async function GET(req: Request) {
             reason: "type_conflict",
             start_date: pk.start_date,
             end_date: pk.end_date,
+            room_id: roomId,
+            room_label: roomLabel,
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
-            booking_id: pk.form?.id,
+            booking_id: pk.form?.id ?? null,
             guest_first_name: pk.form?.guest_first_name ?? null,
             guest_last_name:  pk.form?.guest_last_name  ?? null,
           });
         } else if (nameKnown) {
-          // are nume — regula de aur
           items.push({
             kind: "green",
             start_date: pk.start_date,
@@ -281,40 +311,48 @@ export async function GET(req: Request) {
             room_label: roomLabel,
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
-            booking_id: pk.form?.id,
+            booking_id: pk.form?.id ?? null,
             guest_first_name: pk.form?.guest_first_name ?? null,
             guest_last_name:  pk.form?.guest_last_name  ?? null,
-          });
-        } else if (formCutoff && now < formCutoff) {
-          items.push({
-            kind: "yellow",
-            reason: "waiting_ical",
-            start_date: pk.start_date,
-            end_date: pk.end_date,
-            room_type_id: pk.type_id,
-            room_type_name: pk.type_name,
-            booking_id: pk.form?.id,
-            guest_first_name: pk.form?.guest_first_name ?? null,
-            guest_last_name:  pk.form?.guest_last_name  ?? null,
-            cutoff_ts: formCutoff.toISOString(),
           });
         } else {
-          items.push({
-            kind: "red",
-            reason: "no_ota_found",
-            start_date: pk.start_date,
-            end_date: pk.end_date,
-            room_type_id: pk.type_id,
-            room_type_name: pk.type_name,
-            booking_id: pk.form?.id,
-            guest_first_name: pk.form?.guest_first_name ?? null,
-            guest_last_name:  pk.form?.guest_last_name  ?? null,
-          });
+          const holdActive = pk.form?.hold_status !== "expired";
+          const notExpiredYet = !!formDeadline && now < formDeadline;
+          if (holdActive && notExpiredYet) {
+            items.push({
+              kind: "yellow",
+              reason: "waiting_ical",
+              start_date: pk.start_date,
+              end_date: pk.end_date,
+              room_id: roomId,
+              room_label: roomLabel,
+              room_type_id: pk.type_id,
+              room_type_name: pk.type_name,
+              booking_id: pk.form?.id ?? null,
+              guest_first_name: pk.form?.guest_first_name ?? null,
+              guest_last_name:  pk.form?.guest_last_name  ?? null,
+              cutoff_ts: formDeadline?.toISOString(),
+            });
+          } else {
+            items.push({
+              kind: "red",
+              reason: "no_ota_found",
+              start_date: pk.start_date,
+              end_date: pk.end_date,
+              room_id: roomId,
+              room_label: roomLabel,
+              room_type_id: pk.type_id,
+              room_type_name: pk.type_name,
+              booking_id: pk.form?.id ?? null,
+              guest_first_name: pk.form?.guest_first_name ?? null,
+              guest_last_name:  pk.form?.guest_last_name  ?? null,
+            });
+          }
         }
         continue;
       }
 
-      // 4.d Nici iCal, nici Form (ex. rezervare manuală)
+      // D) nici iCal, nici Form (manual)
       if (nameKnown) {
         items.push({
           kind: "green",
@@ -325,7 +363,6 @@ export async function GET(req: Request) {
           room_type_id: pk.type_id,
           room_type_name: pk.type_name,
           booking_id: pk.others[0]?.id ?? null,
-          // nu avem neapărat first/last separat la manual
           guest_first_name: pk.others.find(o => (o.guest_first_name ?? "").trim())?.guest_first_name ?? null,
           guest_last_name:  pk.others.find(o => (o.guest_last_name  ?? "").trim())?.guest_last_name  ?? null,
         });
@@ -353,8 +390,26 @@ export async function GET(req: Request) {
       return (a.room_type_name || "").localeCompare(b.room_type_name || "");
     });
 
+    // —— Output compatibil cu GuestOverviewList (id, status) ——
+    const rows = items.map((it) => ({
+      id: it.booking_id,                    // folosit de openReservationByBooking
+      property_id,
+      room_id: it.room_id ?? null,
+      start_date: it.start_date,
+      end_date: it.end_date,
+      status: it.kind,                      // "green" | "yellow" | "red"
+      // păstrăm și câteva câmpuri utile dacă vrei un UI mai bogat:
+      _room_label: it.room_label,
+      _room_type_id: it.room_type_id,
+      _room_type_name: it.room_type_name,
+      _reason: it.reason ?? null,
+      _cutoff_ts: it.cutoff_ts ?? null,
+      _guest_first_name: it.guest_first_name ?? null,
+      _guest_last_name: it.guest_last_name ?? null,
+    }));
+
     return NextResponse.json(
-      { ok: true, items },
+      { ok: true, items: rows },
       { status: 200, headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   } catch (e: any) {

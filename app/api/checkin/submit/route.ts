@@ -140,15 +140,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing property_id" }, { status: 400 });
     }
 
-    // 1) Citește orele default (+ timezone dacă îl folosești ulterior)
+    // 1) Citește orele default (+ account_id pentru check suspendare)
     const rProp = await admin
       .from("properties")
-      .select("id,check_in_time,check_out_time,timezone")
+      .select("id,account_id,check_in_time,check_out_time,timezone")
       .eq("id", property_id)
       .maybeSingle();
 
     if (rProp.error) return NextResponse.json({ error: rProp.error.message }, { status: 500 });
     if (!rProp.data) return NextResponse.json({ error: "Property not found" }, { status: 404 });
+
+    // 1.a) Blochează dacă account-ul e suspendat (IMPORTANT pt. flux public)
+    try {
+      const susp = await admin.rpc("account_is_suspended", { account_id: rProp.data.account_id as string });
+      if (!susp.error && susp.data === true) {
+        return NextResponse.json({ error: "Account suspended" }, { status: 403 });
+      }
+    } catch {
+      // dacă RPC lipsește, nu oprim; dar recomandat să existe
+    }
 
     const checkInDefault  = rProp.data.check_in_time  ?? "14:00";
     const checkOutDefault = rProp.data.check_out_time ?? "11:00";
@@ -222,7 +232,7 @@ export async function POST(req: NextRequest) {
           await admin.from("bookings").update({ room_id: free }).eq("id", matchedBookingId);
           auto_assigned_room_id = free;
         }
-        // dacă nu e liber, UI va marca RED (room_required_auto_failed) — nu blocăm submitul
+        // dacă nu e liber, UI va marca RED — nu blocăm submitul
       }
 
       // 3) Contact structurat
@@ -320,7 +330,7 @@ export async function POST(req: NextRequest) {
 
     const basePayload: any = {
       property_id,
-      room_id: null,                          // ← important: fără auto-assign
+      room_id: null,                          // ← fără auto-assign
       room_type_id: form_room_type_id ?? null,
       start_date,
       end_date,
@@ -328,7 +338,7 @@ export async function POST(req: NextRequest) {
       end_time,
       status: "hold",
       guest_first_name: guest_first_name ?? null,
-      guest_last_name:  guest_last_name ?? null,
+      guest_last_name:  guest_last_name  ?? null,
       guest_email:      email ?? null,
       guest_phone:      phone ?? null,
       guest_address:    displayAddress,
@@ -336,7 +346,7 @@ export async function POST(req: NextRequest) {
       source: "form",
       is_soft_hold: true,                     // ← contează la capacitate ca soft-hold
       hold_status: "active",
-      // opțional: poți seta hold_expires_at ≈ cutoff (Arrival-3 zile la 00:00, TZ proprietate)
+      hold_expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // ← NOU: expiră în 2h
     };
 
     let ins = await admin.from("bookings").insert(basePayload).select("id").single();
