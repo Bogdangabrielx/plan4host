@@ -368,6 +368,8 @@ export default function DashboardClient({
                     <strong>{p.name}</strong>
                     <div style={{ color: "var(--muted)", fontSize: 12 }}>
                       {p.country_code ? `${flagEmoji(p.country_code)} ${COUNTRY_NAMES[p.country_code] ?? p.country_code}` : "—"}
+                      {" • "}{p.timezone ?? "—"}
+                      {" • "}CI {p.check_in_time ?? "—"} / CO {p.check_out_time ?? "—"}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -386,7 +388,7 @@ export default function DashboardClient({
                         cursor: "pointer"
                       }}
                     >
-                      {isWarn ? "Upload rules first" : (isCopied ? "Copied!" : "Get check-in link")}
+                      {isWarn ? "Upload rules first" : (isCopied ? "Copied!" : "Copy check-in link")}
                     </button>
 
                     <button
