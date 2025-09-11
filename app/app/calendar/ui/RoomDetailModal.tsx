@@ -1,4 +1,4 @@
-// RoomDetailModal.tsx
+// app/app/calendar/ui/RoomDetailModal.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -170,7 +170,6 @@ export default function RoomDetailModal({
   // Load everything (property, bookings, field definitions, existing values/defaults)
   useEffect(() => {
     (async () => {
-      // p1: property, p2: bookings, p3: legacy check fields, p4: text fields, p5: NEW unified check defs
       const [p1, p2, p3, p4, p5] = await Promise.all([
         supabase
           .from("properties")
@@ -217,7 +216,7 @@ export default function RoomDetailModal({
       }
       setActive(act);
 
-      // Merge legacy check fields + NEW unified checks (dedupe by id; prefer NEW over legacy on conflicts)
+      // Merge legacy + unified checks (dedupe by id; prefer unified)
       const legacyChecks = (p3.error ? [] : ((p3.data ?? []) as CheckDef[]));
       const unifiedChecks = (p5.error ? [] : ((p5.data ?? []) as CheckDef[]));
       const mergedChecksMap = new Map<string, CheckDef>();
@@ -246,7 +245,7 @@ export default function RoomDetailModal({
       setEndDate(_eDate);
       setEndTime(_eTime || "");
 
-      // Names + contact (single contact fetch; reuse for initial refs)
+      // Names + contact
       let contact: BookingContact | null = null;
       if (act) {
         setGuestFirst(act.guest_first_name ?? "");
@@ -257,15 +256,14 @@ export default function RoomDetailModal({
         setGuestAddr(contact?.address ?? "");
         setGuestCity(contact?.city ?? "");
         setGuestCountry(contact?.country ?? "");
-        // Documents (include signed URL)
-        await fetchDocuments(act.id);
+        await fetchDocuments(act.id); // signed URLs
       } else {
         setGuestFirst(""); setGuestLast("");
         setGuestEmail(""); setGuestPhone(""); setGuestAddr(""); setGuestCity(""); setGuestCountry("");
         setDocs([]);
       }
 
-      // ---------- Room details: load saved values or defaults ----------
+      // ---------- Saved values / defaults ----------
       const defaultCheckValues: Record<string, boolean> = Object.fromEntries(
         mergedChecks.map((d) => [d.id, !!d.default_value])
       );
@@ -301,9 +299,9 @@ export default function RoomDetailModal({
       }
       setCheckValues(initCheckValues);
       setTextValues(initTextValues);
-      // -----------------------------------------------------------------
+      // --------------------------------------------
 
-      // Set initial refs for dirty tracking
+      // Dirty tracking initial refs
       initialGuestRef.current = { first: act?.guest_first_name ?? "", last: act?.guest_last_name ?? "" };
       initialContactRef.current = {
         email:   contact?.email   ?? "",
@@ -319,7 +317,6 @@ export default function RoomDetailModal({
         et: act ? (act.end_time || COlocal) : _eTime,
       };
 
-      // Default ON; open guest panel if creating or no name
       setOn(true);
       setShowGuest(!act || !((act?.guest_first_name ?? "").trim() || (act?.guest_last_name ?? "").trim()));
       setDetailsDirty(false);
@@ -357,7 +354,6 @@ export default function RoomDetailModal({
     normTime(endTime, CO) !== normTime(initialTimesRef.current.et, CO)
   );
 
-  // For "Extend until" ensure real extension (newEnd > oldEnd)
   const canExtend = (() => {
     if (!active || !endDirty) return false;
     const oldEnd = toDateTime(initialTimesRef.current.ed, initialTimesRef.current.et, CO);
@@ -396,6 +392,7 @@ export default function RoomDetailModal({
       start_time: startTime || null,
       end_time: endTime || null,
       status: "confirmed",
+      source: "manual",                 // ← IMPORTANT pentru Guest Overview
       guest_first_name: guestFirst || null,
       guest_last_name:  guestLast  || null,
     }).select("id").maybeSingle();
@@ -416,7 +413,6 @@ export default function RoomDetailModal({
       });
     }
 
-    // Custom fields (persist what’s on screen)
     const checkRows = Object.entries(checkValues).map(([check_id, value]) => ({ booking_id: newId, check_id, value }));
     const textRows  = Object.entries(textValues).map(([field_id, value]) => ({ booking_id: newId, field_id, value }));
     if (checkRows.length) await supabase.from("booking_check_values").upsert(checkRows);
@@ -464,7 +460,6 @@ export default function RoomDetailModal({
     await onChanged(); onClose();
   }
 
-  // Save dates & times (start OR end changed)
   async function saveTimes() {
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
     if (!on)     { setStatus("Error"); setStatusHint("Turn reservation ON to change times."); return; }
@@ -933,7 +928,7 @@ export default function RoomDetailModal({
                     />
                   </div>
 
-                  {/* Series (if any) */}
+                  {/* Series */}
                   <div style={{ display: "grid", gap: 6 }}>
                     <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Series</label>
                     <input
@@ -954,7 +949,7 @@ export default function RoomDetailModal({
                     />
                   </div>
 
-                  {/* Nationality (for passports) */}
+                  {/* Nationality */}
                   <div style={{ display: "grid", gap: 6 }}>
                     <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Nationality</label>
                     <input

@@ -13,9 +13,10 @@ const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-// bucket confirmat la tine
+// Bucket confirmat în setup
 const DEFAULT_BUCKET = (process.env.NEXT_PUBLIC_DEFAULT_DOCS_BUCKET || "guest_docs").toString();
 
+// GET /api/bookings/:id/documents
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   try {
     const booking_id = params.id;
@@ -23,23 +24,25 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       return NextResponse.json({ error: "Missing booking id" }, { status: 400 });
     }
 
-    // Select DOAR coloanele care există în schema ta actuală
+    // Doar coloanele prezente în schema actuală
+    const sel = `
+      id,
+      booking_id,
+      property_id,
+      doc_type,
+      doc_series,
+      doc_number,
+      doc_nationality,
+      storage_bucket,
+      storage_path,
+      mime_type,
+      size_bytes,
+      uploaded_at
+    `;
+
     const { data, error } = await admin
       .from("booking_documents")
-      .select(`
-        id,
-        booking_id,
-        property_id,
-        doc_type,
-        doc_series,
-        doc_number,
-        doc_nationality,
-        storage_bucket,
-        storage_path,
-        mime_type,
-        size_bytes,
-        uploaded_at
-      `)
+      .select(sel)
       .eq("booking_id", booking_id)
       .order("uploaded_at", { ascending: false });
 
@@ -55,7 +58,10 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         let url: string | null = null;
         if (objectPath) {
           try {
-            const signed = await admin.storage.from(bucket).createSignedUrl(objectPath, 60 * 10); // 10 min
+            const signed = await admin
+              .storage
+              .from(bucket)
+              .createSignedUrl(objectPath, 60 * 10); // 10 minute
             url = signed.data?.signedUrl ?? null;
           } catch {
             url = null;
@@ -63,16 +69,16 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         }
 
         return {
-          id: d.id as string,
+          id: String(d.id),
           doc_type: d.doc_type as string | null,
           doc_series: d.doc_series as string | null,
           doc_number: d.doc_number as string | null,
           doc_nationality: d.doc_nationality as string | null,
           mime_type: d.mime_type as string | null,
-          size_bytes: d.size_bytes as number | null,
-          uploaded_at: d.uploaded_at as string,
+          size_bytes: (d.size_bytes ?? null) as number | null,
+          uploaded_at: String(d.uploaded_at),
           path: objectPath,
-          url, // ← linkul semnat pentru RoomDetailModal
+          url, // folosit de RoomDetailModal pentru „View file”
         };
       })
     );

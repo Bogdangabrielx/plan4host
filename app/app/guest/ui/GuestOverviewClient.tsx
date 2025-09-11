@@ -16,27 +16,30 @@ type Property = {
 type Room = { id: string; name: string; property_id: string; room_type_id?: string | null };
 type RoomType = { id: string; name: string; property_id: string };
 
-// ---- Shape-ul din /api/guest-overview ----
-type OverviewItem = {
-  kind: "green" | "yellow" | "red";
-  reason?:
+// ---- Forma pe care o întoarce /api/guest-overview (rows) ----
+type OverviewRow = {
+  id: string | null;             // booking_id
+  property_id: string;
+  room_id: string | null;
+  start_date: string;            // yyyy-mm-dd
+  end_date: string;              // yyyy-mm-dd
+  status: "green" | "yellow" | "red";
+
+  // meta opționale pentru UI
+  _room_label?: string | null;
+  _room_type_id?: string | null;
+  _room_type_name?: string | null;
+  _reason?:
     | "waiting_form"
     | "waiting_ical"
     | "missing_form"
     | "no_ota_found"
     | "type_conflict"
-    | "room_required_auto_failed";
-  start_date: string;
-  end_date: string;
-  room_id?: string | null;
-  room_label?: string | null;
-  room_type_id?: string | null;
-  room_type_name?: string | null;
-  booking_id?: string | null;
-  guest_first_name?: string | null;
-  guest_last_name?: string | null;
-  guest_name?: string | null; // fallback pentru manual
-  cutoff_ts?: string | null;
+    | "room_required_auto_failed"
+    | null;
+  _cutoff_ts?: string | null;
+  _guest_first_name?: string | null;
+  _guest_last_name?: string | null;
 };
 
 // ---- Helpers dată/oră & text ----
@@ -49,14 +52,13 @@ function fmtDate(ymd: string): string {
 function formatRange(startYMD: string, endYMD: string): string {
   return `${fmtDate(startYMD)} → ${fmtDate(endYMD)}`;
 }
-function fullName(item: OverviewItem): string {
-  const f = (item.guest_first_name ?? "").trim();
-  const l = (item.guest_last_name ?? "").trim();
+function fullName(item: OverviewRow): string {
+  const f = (item._guest_first_name ?? "").trim();
+  const l = (item._guest_last_name ?? "").trim();
   const combined = [f, l].filter(Boolean).join(" ").trim();
-  if (combined) return combined;
-  return (item.guest_name ?? "").trim();
+  return combined || "—";
 }
-function toBadge(kind: OverviewItem["kind"]): "GREEN" | "YELLOW" | "RED" {
+function toBadge(kind: OverviewRow["status"]): "GREEN" | "YELLOW" | "RED" {
   return kind === "green" ? "GREEN" : kind === "yellow" ? "YELLOW" : "RED";
 }
 
@@ -84,21 +86,21 @@ function buildPropertyCheckinLink(propertyId: string): string {
   }
 }
 
-// Subcopy pentru stări
-function subcopyFor(item: OverviewItem): string | null {
-  if (item.kind === "yellow") {
-    if (item.reason === "waiting_form") {
+// Subcopy pentru stări (folosește status + _reason din OverviewRow)
+function subcopyFor(row: OverviewRow): string | null {
+  if (row.status === "yellow") {
+    if (row._reason === "waiting_form") {
       return "Waiting for the guest to complete the check-in form (until 3 days before arrival).";
     }
-    if (item.reason === "waiting_ical") {
+    if (row._reason === "waiting_ical") {
       return "Waiting for a matching OTA iCal event (max 2 hours after form submission).";
     }
   }
-  if (item.kind === "red") {
-    if (item.reason === "missing_form") return "No check-in form was received for this OTA reservation.";
-    if (item.reason === "no_ota_found") return "Form dates do not match any OTA reservation.";
-    if (item.reason === "type_conflict") return "Unmatched Room: OTA type and form type differ. Resolve in Calendar.";
-    if (item.reason === "room_required_auto_failed") return "No free room of the booked type was available for auto-assignment.";
+  if (row.status === "red") {
+    if (row._reason === "missing_form") return "No check-in form was received for this OTA reservation.";
+    if (row._reason === "no_ota_found") return "Form dates do not match any OTA reservation.";
+    if (row._reason === "type_conflict") return "Unmatched Room: OTA type and form type differ. Resolve in Calendar.";
+    if (row._reason === "room_required_auto_failed") return "No free room of the booked type was available for auto-assignment.";
     return "Action required.";
   }
   return null;
@@ -116,8 +118,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
 
-  // Items din API-ul nou
-  const [items, setItems] = useState<OverviewItem[]>([]);
+  // Items din API-ul nou (/api/guest-overview)
+  const [items, setItems] = useState<OverviewRow[]>([]);
   const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
   const [hint, setHint] = useState<string>("");
 
@@ -166,7 +168,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         throw new Error(txt || `HTTP ${res.status}`);
       }
       const j = await res.json();
-      const arr: OverviewItem[] = Array.isArray(j?.items) ? j.items : [];
+      const arr: OverviewRow[] = Array.isArray(j?.items) ? j.items : [];
       setItems(arr);
       setLoading("idle");
       setHint("");
@@ -192,26 +194,20 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     return m;
   }, [rooms]);
 
-  const typeNameById = useMemo(() => {
-    const m = new Map<string, string>();
-    roomTypes.forEach((t) => m.set(String(t.id), t.name));
-    return m;
-  }, [roomTypes]);
-
   // Sortare: după start_date, apoi după nume cameră (natural)
   const collator = useMemo(() => new Intl.Collator(undefined, { numeric: true, sensitivity: "base" }), []);
   const rows = useMemo(() => {
     return [...items].sort((a, b) => {
       const d = a.start_date.localeCompare(b.start_date);
       if (d !== 0) return d;
-      const rnA = a.room_label ?? "";
-      const rnB = b.room_label ?? "";
+      const rnA = a._room_label ?? "";
+      const rnB = b._room_label ?? "";
       return collator.compare(rnA, rnB);
     });
   }, [items, collator]);
 
   // Badge styling
-  function badgeStyle(kind: OverviewItem["kind"]): React.CSSProperties {
+  function badgeStyle(kind: OverviewRow["status"]): React.CSSProperties {
     const base: React.CSSProperties = {
       display: "inline-block",
       padding: "2px 10px",
@@ -235,17 +231,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       copyTimer.current = window.setTimeout(() => setCopiedKey(null), 2000);
     } catch {
+      // fallback
       prompt("Copy this link:", link);
     }
   }, []);
 
-  function resolveInCalendar(item: OverviewItem, _propertyId: string) {
-    // deschide calendar pe luna din start_date
+  function resolveInCalendar(item: OverviewRow, _propertyId: string) {
     const url = `/app/calendar?date=${item.start_date}`;
     if (typeof window !== "undefined") window.location.href = url;
   }
 
-  function openReservation(item: OverviewItem, propertyId: string) {
+  function openReservation(item: OverviewRow, propertyId: string) {
     if (!item.room_id) {
       alert("This booking has no assigned room yet.");
       return;
@@ -315,27 +311,27 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           const name = fullName(it) || "Unknown guest";
 
           // Fail-safe: dacă din greșeală vine GREEN fără room -> degradează local la YELLOW
-          const kind: OverviewItem["kind"] =
-            it.kind === "green" && !it.room_id ? "yellow" : it.kind;
+          const kind: OverviewRow["status"] =
+            it.status === "green" && !it.room_id ? "yellow" : it.status;
 
-          const roomNo = it.room_label ? `#${it.room_label}` : "#—";
+          const roomLabel = it._room_label ?? "—";
           const badge = toBadge(kind);
-          const typeName = it.room_type_name ?? (it.room_type_id ? typeNameById.get(String(it.room_type_id)) ?? null : null);
+          const typeName = it._room_type_name ?? "—";
 
           const subcopy = kind === "green" ? null : subcopyFor(it);
           const propertyId = activePropertyId!;
 
-          const key = `${it.booking_id ?? "noid"}|${it.start_date}|${it.end_date}|${it.room_type_id ?? "null"}`;
+          const key = `${it.id ?? "noid"}|${it.start_date}|${it.end_date}|${it._room_type_id ?? "null"}`;
 
           const showCopy =
             kind !== "green" &&
-            ((it.kind === "yellow" && it.reason === "waiting_form") || (it.kind === "red" && it.reason === "missing_form"));
+            ((kind === "yellow" && it._reason === "waiting_form") || (kind === "red" && it._reason === "missing_form"));
 
           return (
             <div key={key} style={{ border: "1px solid var(--border)", background: "var(--panel)", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                 <strong style={{ letterSpacing: 0.2 }}>
-                  {name} · {roomNo} — Type: {typeName ?? "—"} — {formatRange(it.start_date, it.end_date)}
+                  {name} · Room: {roomLabel} — Type: {typeName} — {formatRange(it.start_date, it.end_date)}
                 </strong>
                 <span style={badgeStyle(kind)}>{badge}</span>
               </div>
