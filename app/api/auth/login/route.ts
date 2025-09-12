@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     // nu stricăm login-ul dacă bootstrap-ul e blocat de RLS sau concurență
     // (poți loga accErr?.message într-un sistem de logging, dacă ai)
 
-    // 2.b) account_users — verificăm întâi dacă există rândul owner
+    // 2.b) account_users — verificăm întâi dacă există rândul admin
     const { data: existingAU } = await supabase
       .from("account_users")
       .select("account_id")
@@ -82,13 +82,13 @@ export async function POST(req: Request) {
       const { error: auErr } = await supabase
         .from("account_users")
         .upsert(
-          { account_id: user.id, user_id: user.id, role: "owner" },
+          { account_id: user.id, user_id: user.id, role: "admin" },
           { onConflict: "account_id,user_id", ignoreDuplicates: true }
         );
 
       // Dacă RLS-ul tău cere Premium pentru INSERT pe account_users, e posibil ca asta să pice.
       // Nu mai propagăm 500 — lăsăm login-ul să continue.
-      // (ideal, bootstrap-ul owner se face printr-un RPC SECURITY DEFINER sau la signup)
+      // (ideal, bootstrap-ul admin se face printr-un RPC SECURITY DEFINER sau la signup)
       void auErr;
     }
 

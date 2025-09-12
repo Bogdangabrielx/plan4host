@@ -50,6 +50,28 @@ export default function CalendarClient({
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [isSmall, setIsSmall] = useState(false);
 
+  // === Permissions (admin/editor w/ calendar|reservations; viewer or disabled => read-only) ===
+  const [me, setMe] = useState<null | { role: "admin"|"editor"|"viewer"; scopes: string[]; disabled: boolean }>(null);
+  const [canEdit, setCanEdit] = useState(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch("/api/me", { cache: "no-store" });
+        const j = await r.json();
+        if (!j?.me) return;
+        const info = j.me as { role:"admin"|"editor"|"viewer"; scopes:string[]; disabled:boolean };
+        setMe(info);
+        const sc = new Set(info.scopes || []);
+        const allowed = !info.disabled && (
+          info.role === "admin" ||
+          (info.role === "editor" && (sc.has("calendar") || sc.has("reservations")))
+        );
+        setCanEdit(!!allowed);
+      } catch {/* ignore */}
+    })();
+  }, []);
+  const readOnly = !canEdit;
+
   // === View state (inițializăm din initialDate dacă e valid) ===
   const today = new Date();
   const safeInitialDate = initialDate && isYMD(initialDate) ? initialDate : ymd(today);
@@ -59,8 +81,6 @@ export default function CalendarClient({
   const [year, setYear]   = useState<number>(initDt.getFullYear());
   const [month, setMonth] = useState<number>(initDt.getMonth()); // 0..11
   const [highlightDate, setHighlightDate] = useState<string | null>(safeInitialDate);
-
-
 
   // Data
   const [rooms, setRooms]       = useState<Room[]>([]);
@@ -137,11 +157,15 @@ export default function CalendarClient({
     })();
   }, [propertyId, view, year, month, supabase]);
 
-  // Header pill
+  // Header pill (show Read-only when idle)
   useEffect(() => {
-    const label = loading === "Loading" ? "Syncing…" : loading === "Error" ? "Error" : "Idle";
+    const label =
+      loading === "Loading" ? "Syncing…" :
+      loading === "Error"   ? "Error"    :
+      readOnly              ? "Read-only":
+                              "Idle";
     setPill(label);
-  }, [loading, setPill]);
+  }, [loading, readOnly, setPill]);
 
   // Occupancy map
   const occupancyMap = useMemo(() => {
@@ -253,16 +277,17 @@ export default function CalendarClient({
         month={month}
         roomsCount={rooms.length}
         occupancyMap={occupancyMap}
-        highlightDate={highlightDate}  // <-- important: nu mai e null forțat
+        highlightDate={highlightDate}
         isSmall={isSmall}
         onDayClick={(dateStr) => setOpenDate(dateStr)}
       />
 
-      {/* DayModal — only in Month view */}
+      {/* DayModal — only Month view */}
       {openDate && (
         <DayModal
           dateStr={openDate}
           propertyId={propertyId}
+          canEdit={canEdit}        /* <-- gating passed to modal */
           onClose={() => setOpenDate(null)}
         />
       )}

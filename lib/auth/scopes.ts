@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-type Me = { role: string; scopes: string[]; disabled?: boolean };
+type Me = { role: "admin" | "editor" | "viewer"; scopes: string[]; disabled?: boolean };
 
 // Safer guard: reuse existing Supabase client + user id when provided, to avoid double getUser()
 export async function ensureScope(scope: string, supa?: any, actorId?: string) {
@@ -22,10 +22,10 @@ export async function ensureScope(scope: string, supa?: any, actorId?: string) {
     .order("created_at", { ascending: true });
   const m = (au ?? [])[0] as Me | undefined;
 
-  // owners/managers get full access
-  if (!m) return; // owner of own account
+  // Admin of own account: full access
+  if (!m) return; // admin (base account user)
   if (m.disabled) redirect("/auth/logout");
-  if (m.role === "owner" || m.role === "manager") return;
+  if (m.role === "admin") return;
 
   const scopes = (m.scopes ?? []) as string[];
   if (scopes.includes(scope)) return;

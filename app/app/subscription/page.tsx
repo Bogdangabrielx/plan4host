@@ -12,7 +12,7 @@ export default async function SubscriptionPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Owner-only access: if user is member of another account (not their own), redirect back
+  // Admin-only access: if user is member of another account (not their own), redirect back
   const { data: au } = await supabase
     .from("account_users")
     .select("account_id, role, disabled")

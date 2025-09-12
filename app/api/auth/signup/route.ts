@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     }
 
     // 2) Bootstrap tenant: create accounts row and membership
-    //    We use the user's id as the first account id (owner model).
+    //    We use the user's id as the first account id (admin model).
     //    Policies allow this because auth.uid() == id on INSERT for accounts,
     //    and account_users.user_id must be auth.uid().
     const accountId = user.id;
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     const { error: auErr } = await supabase
       .from("account_users")
       .upsert(
-        { account_id: accountId, user_id: user.id, role: "owner" },
+        { account_id: accountId, user_id: user.id, role: "admin" },
         { onConflict: "account_id,user_id", ignoreDuplicates: true }
       );
     if (auErr) {

@@ -14,7 +14,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
   const supabase = useMemo(() => createClient(), []);
   const [plans] = useState<PlanRow[]>(initialPlans);
   const [account, setAccount] = useState<any>(initialAccount);
-  const [role, setRole] = useState<string>("owner");
+  const [role, setRole] = useState<string>("admin");
   const [saving, setSaving] = useState<string | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
@@ -36,12 +36,12 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
         .eq("account_id", uid)
         .eq("user_id", uid)
         .maybeSingle();
-      if (au) setRole((au as any).role || "owner");
+      if (au) setRole((au as any).role || "admin");
     })();
   }, [supabase]);
 
   async function setPlan(slug: string) {
-    if (role !== "owner") return;
+    if (role !== "admin") return;
     setSaving(slug);
     const { data: auth } = await supabase.auth.getUser();
     const uid = auth?.user?.id as string | undefined;
@@ -116,7 +116,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
           ) : (
             <button
               className="sb-btn sb-btn--primary"
-              disabled={saving !== null || role !== 'owner'}
+              disabled={saving !== null || role !== 'admin'}
               onClick={() => setPlan(p.slug)}
             >
               {saving === p.slug ? 'Applying…' : 'Choose plan'}
@@ -139,7 +139,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span className="sb-badge">Current: {planLabel(currentPlan)}</span>
         <small style={{ color: 'var(--muted)' }}>until {validUntil || '—'}</small>
-        {role !== 'owner' && (
+        {role !== 'admin' && (
           <small style={{ color: 'var(--muted)' }}>(read-only)</small>
         )}
       </div>

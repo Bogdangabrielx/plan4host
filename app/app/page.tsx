@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Billing-only guard: owner can access Subscription only
+  // Billing-only guard: admin can access Subscription only
   const mode = await supabase.rpc("account_access_mode");
   if ((mode.data as string | null) === "billing_only") {
     redirect("/app/subscription");
@@ -32,7 +32,7 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: true });
 
     const m = (au ?? [])[0] as any;
-    if (m && !m.disabled && !(m.role === "owner" || m.role === "manager")) {
+    if (m && !m.disabled && m.role !== "admin") {
       const scopes: string[] = (m.scopes as string[] | null) ?? [];
       if (!scopes.includes("dashboard")) {
         const order = ["cleaning", "inbox", "calendar", "channels", "Property Setup"];
