@@ -2,24 +2,47 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function bad(status: number, body: any) {
-  return NextResponse.json(body, { status });
+  return NextResponse.json(body, {
+    status,
+    headers: { "Cache-Control": "no-store, max-age=0" },
+  });
 }
 
-/**
- * Returnează profilul UI:
- * {
- *   role: "admin" | "editor" | "viewer",
- *   scopes: string[],
- *   disabled: boolean,
- *   plan: "basic" | "standard" | "premium"
- * }
- *
- * Reguli:
- * - Dacă user-ul e listat în `account_users`, folosim acel rând (role/scopes/disabled) + planul contului.
- * - Dacă NU există rând în `account_users`, atunci e "contul de bază" => role="admin", disabled=false, scopes „full”,
- *   iar account_id = user.id (și citim planul din `accounts`).
- */
+// Scope-uri implicite pe rol (UI gating; RLS va aplica regulile reale)
+const DEFAULT_SCOPES: Record<"admin" | "editor" | "viewer", string[]> = {
+  admin: [
+    "dashboard",
+    "calendar",
+    "propertySetup",
+    "cleaning",
+    "channels",
+    "inbox",
+    "team",
+    "subscription",
+  ],
+  editor: [
+    "dashboard",
+    "calendar",
+    "propertySetup",
+    "cleaning",
+    "channels",
+    "inbox",
+    // fără "team" și "subscription"
+  ],
+  viewer: [
+    "dashboard",
+    "calendar",
+    "cleaning",
+    "channels",
+    "inbox",
+    // poate vezi și propertySetup în read-only; îl poți adăuga dacă vrei în UI
+  ],
+};
+
 export async function GET() {
   try {
     const supa = createClient();
@@ -27,7 +50,7 @@ export async function GET() {
     const user = auth.user;
     if (!user) return bad(401, { error: "Not authenticated" });
 
-    // 1) Caută întâi context ca sub-user într-un cont existent
+    // 1) Încearcă să găsești user-ul ca membru într-un cont (sub-user)
     const { data: au, error: eAu } = await supa
       .from("account_users")
       .select("account_id, role, scopes, disabled")
@@ -37,7 +60,12 @@ export async function GET() {
     if (eAu) return bad(500, { error: eAu.message });
 
     const member = (au ?? [])[0] as
-      | { account_id: string; role: "admin" | "editor" | "viewer"; scopes: string[] | null; disabled: boolean | null }
+      | {
+          account_id: string;
+          role: "admin" | "editor" | "viewer";
+          scopes: string[] | null;
+          disabled: boolean | null;
+        }
       | undefined;
 
     if (member) {
@@ -49,18 +77,24 @@ export async function GET() {
 
       if (eAcc2) return bad(500, { error: eAcc2.message });
 
-      return NextResponse.json({
-        ok: true,
-        me: {
-          role: member.role,
-          scopes: Array.isArray(member.scopes) ? member.scopes : [],
-          disabled: !!member.disabled,
-          plan: (acc2?.plan as string | undefined) ?? "basic",
+      const role = member.role;
+      const disabled = !!member.disabled;
+      const plan = (acc2?.plan as string | undefined) ?? "basic";
+      const scopes =
+        Array.isArray(member.scopes) && member.scopes.length > 0
+          ? member.scopes
+          : DEFAULT_SCOPES[role];
+
+      return NextResponse.json(
+        {
+          ok: true,
+          me: { role, scopes, disabled, plan },
         },
-      });
+        { headers: { "Cache-Control": "no-store, max-age=0" } }
+      );
     }
 
-    // 2) Fallback: utilizatorul este titularul contului propriu (contul „de bază”)
+    // 2) Fallback: utilizatorul este titularul propriului cont (contul de bază)
     const { data: acc, error: eAcc } = await supa
       .from("accounts")
       .select("id, plan")
@@ -70,26 +104,18 @@ export async function GET() {
     if (eAcc) return bad(500, { error: eAcc.message });
 
     if (acc) {
-      // admin = acces total; scopes pot fi folosite în UI pentru gating fin
-      const adminScopes = [
-        "dashboard",
-        "calendar",
-        "propertySetup",
-        "cleaning",
-        "channels",
-        "inbox",
-        "team",
-        "subscription",
-      ];
-      return NextResponse.json({
-        ok: true,
-        me: {
-          role: "admin",
-          scopes: adminScopes,
-          disabled: false,
-          plan: (acc.plan as string | undefined) ?? "basic",
+      return NextResponse.json(
+        {
+          ok: true,
+          me: {
+            role: "admin" as const,
+            scopes: DEFAULT_SCOPES.admin,
+            disabled: false,
+            plan: (acc.plan as string | undefined) ?? "basic",
+          },
         },
-      });
+        { headers: { "Cache-Control": "no-store, max-age=0" } }
+      );
     }
 
     // 3) Nici cont propriu, nici membru într-un cont -> fără context valid

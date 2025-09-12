@@ -14,11 +14,18 @@ const NAV_BASE = [
   { href: "/auth/logout", label: "Logout", emoji: "🚪", scope: "logout" },
 ];
 
+type MeInfo = {
+  role: "admin" | "editor" | "viewer";
+  scopes: string[];
+  disabled: boolean;
+  plan?: string;
+};
+
 export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const { title, pill, right } = useHeader();
   const [open, setOpen] = useState(false);
   const [nav, setNav] = useState(NAV_BASE);
-  const [me, setMe] = useState<{ role: "admin" | "editor" | "viewer"; scopes: string[]; disabled: boolean; plan?: string } | null>(null);
+  const [me, setMe] = useState<MeInfo | null>(null);
   const [isSmall, setIsSmall] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
@@ -124,33 +131,33 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         const j = await res.json();
         if (!j?.me) return;
 
-        const info = j.me as { role: "admin" | "editor" | "viewer"; scopes: string[]; disabled: boolean; plan?: string };
+        const info = j.me as MeInfo;
         setMe(info);
 
-        // Dacă e dezactivat, afișăm doar Logout
+        // dacă e dezactivat, arată doar Logout
         if (info.disabled) {
-          setNav(NAV_BASE.filter(it => it.scope === "logout"));
+          setNav(NAV_BASE.filter((it) => it.scope === "logout"));
           return;
         }
 
-        const allowAll = info.role === "admin"; // admin vede toate meniurile (cu excepțiile de plan)
+        const allowAll = info.role === "admin";
         const sc = new Set((info.scopes || []) as string[]);
         const plan = (info.plan || "basic").toLowerCase();
 
-        let filtered = NAV_BASE.filter(it => {
+        let filtered = NAV_BASE.filter((it) => {
           if (it.scope === "logout") return true;
 
-          // Pagina Team doar dacă e admin + plan Premium
+          // Team doar pentru admin + Premium
           if (it.href === "/app/team") return info.role === "admin" && plan === "premium";
 
-          // Admin vede restul indiferent de scopes; editor/viewer pe baza scopes
+          // Admin vede restul; altfel pe baza scopes
           if (allowAll) return true;
           return sc.has(it.scope);
         });
 
-        // Admin vede și Subscription (pentru upgrade/downgrade)
+        // Admin vede și Subscription (upgrade/downgrade)
         if (info.role === "admin") {
-          const exists = filtered.some(x => x.href === "/app/subscription");
+          const exists = filtered.some((x) => x.href === "/app/subscription");
           if (!exists) {
             filtered = [
               { href: "/app/subscription", label: "Subscription", emoji: "💳", scope: "subscription" },
@@ -161,7 +168,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
         setNav(filtered);
       } catch {
-        // dacă /api/me eșuează, lăsăm NAV_BASE ca fallback
+        // fallback: lăsăm NAV_BASE dacă /api/me eșuează
       }
     })();
   }, []);

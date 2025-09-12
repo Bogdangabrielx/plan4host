@@ -2,20 +2,30 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+type Role = "admin" | "editor" | "viewer";
+type Member = {
+  user_id: string;
+  email?: string | null;
+  role: Role;
+  scopes: string[] | null;
+  disabled: boolean | null;
+};
+
 export default function TeamClient() {
-  const supa = useMemo(() => createClient(), []);
+  const supa = useMemo(() => createClient(), []); // (îl păstrăm dacă îl vei folosi)
   const [loading, setLoading] = useState(false);
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("member");
+  // Nou: default role = "editor" (nu mai folosim "member")
+  const [role, setRole] = useState<Role>("editor");
   const [scopes, setScopes] = useState<string[]>([]);
 
   async function load() {
     setLoading(true);
     const res = await fetch("/api/team/user/list");
     const j = await res.json().catch(() => ({}));
-    if (j?.ok) setMembers(j.members);
+    if (j?.ok && Array.isArray(j.members)) setMembers(j.members as Member[]);
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
@@ -45,12 +55,16 @@ export default function TeamClient() {
         ...prev,
       ]);
     }
-    setEmail(""); setPassword(""); setRole("member"); setScopes([]);
-    // Reconcile from server in background (without flipping UI back to Loading)
-    load();
+    setEmail("");
+    setPassword("");
+    setRole("editor");
+    setScopes([]);
+    await load();
   }
 
-  async function updateUser(u: any, patch: any) {
+  async function updateUser(u: Member, patch: Partial<Member>) {
+    // Protecție: nu permitem acțiuni pe admin din UI
+    if (u.role === "admin") return;
     setLoading(true);
     const res = await fetch("/api/team/user/update", {
       method: "PATCH",
@@ -62,7 +76,8 @@ export default function TeamClient() {
     await load();
   }
 
-  async function setPasswordFor(u: any) {
+  async function setPasswordFor(u: Member) {
+    if (u.role === "admin") return; // nu setăm parole pt admin din UI-ul de team
     const np = prompt("New password for " + (u.email || u.user_id));
     if (!np) return;
     setLoading(true);
@@ -76,7 +91,8 @@ export default function TeamClient() {
     await load();
   }
 
-  async function removeUser(u: any) {
+  async function removeUser(u: Member) {
+    if (u.role === "admin") return;
     if (!confirm("Remove this user from account?")) return;
     setLoading(true);
     const res = await fetch("/api/team/user/remove", {
@@ -96,20 +112,38 @@ export default function TeamClient() {
       <section style={card}>
         <h3 style={{ margin: 0 }}>Add user</h3>
         <div style={{ display: "grid", gap: 8 }}>
-          <input placeholder="email" value={email} onChange={(e)=>setEmail((e.target as HTMLInputElement).value)} style={input} />
-          <input placeholder="password" type="password" value={password} onChange={(e)=>setPassword((e.target as HTMLInputElement).value)} style={input} />
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input
+            placeholder="email"
+            value={email}
+            onChange={(e)=>setEmail((e.target as HTMLInputElement).value)}
+            style={input}
+            disabled={loading}
+          />
+          <input
+            placeholder="password"
+            type="password"
+            value={password}
+            onChange={(e)=>setPassword((e.target as HTMLInputElement).value)}
+            style={input}
+            disabled={loading}
+          />
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <label style={label}>Role</label>
-            <select value={role} onChange={(e)=>setRole((e.target as HTMLSelectElement).value)} style={select}>
-              <option>member</option>
-              <option>viewer</option>
+            <select
+              value={role}
+              onChange={(e)=>setRole((e.target as HTMLSelectElement).value as Role)}
+              style={select}
+              disabled={loading}
+            >
+              <option value="editor">editor</option>
+              <option value="viewer">viewer</option>
             </select>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <label style={label}>Scopes</label>
             {allScopes.map(s => (
               <label key={s} style={{ display: "flex", gap: 6, alignItems: "center", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 8 }}>
-                <input type="checkbox" checked={scopes.includes(s)} onChange={()=>toggleScope(s)} /> {s}
+                <input type="checkbox" checked={scopes.includes(s)} onChange={()=>toggleScope(s)} disabled={loading} /> {s}
               </label>
             ))}
           </div>
@@ -123,21 +157,56 @@ export default function TeamClient() {
         <h3 style={{ margin: 0 }}>Members</h3>
         {loading && <div style={{ color: "var(--muted)" }}>Loading…</div>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
-          {members.map(u => (
-            <li key={u.user_id} style={row}>
-              <div style={{ display: "grid", gap: 4 }}>
-                <strong>{u.email || u.user_id}</strong>
-                <small style={{ color: "var(--muted)" }}>role: {u.role} • {u.disabled ? 'disabled' : 'active'}</small>
-                <small style={{ color: "var(--muted)" }}>scopes: {(u.scopes || []).join(', ') || '—'}</small>
-              </div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button style={ghostBtn} onClick={()=>setPasswordFor(u)}>Set password</button>
-                <button style={ghostBtn} onClick={()=>updateUser(u, { role: u.role === 'member' ? 'viewer' : 'member' })}>Toggle role</button>
-                <button style={ghostBtn} onClick={()=>updateUser(u, { disabled: !u.disabled })}>{u.disabled ? 'Enable' : 'Disable'}</button>
-                <button style={dangerBtn} onClick={()=>removeUser(u)}>Remove</button>
-              </div>
-            </li>
-          ))}
+          {members.map((u) => {
+            const isAdmin = u.role === "admin";
+            return (
+              <li key={u.user_id} style={row}>
+                <div style={{ display: "grid", gap: 4 }}>
+                  <strong>{u.email || u.user_id}</strong>
+                  <small style={{ color: "var(--muted)" }}>
+                    role: {u.role}{isAdmin ? " (base account)" : ""} • {u.disabled ? "disabled" : "active"}
+                  </small>
+                  <small style={{ color: "var(--muted)" }}>
+                    scopes: {(u.scopes || []).join(", ") || "—"}
+                  </small>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    style={{ ...ghostBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
+                    onClick={()=>!isAdmin && setPasswordFor(u)}
+                    disabled={loading || isAdmin}
+                    title={isAdmin ? "Not allowed for admin" : "Set password"}
+                  >
+                    Set password
+                  </button>
+                  <button
+                    style={{ ...ghostBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
+                    onClick={()=>!isAdmin && updateUser(u, { role: u.role === "editor" ? "viewer" : "editor" })}
+                    disabled={loading || isAdmin}
+                    title={isAdmin ? "Not allowed for admin" : "Toggle role"}
+                  >
+                    Toggle role
+                  </button>
+                  <button
+                    style={{ ...ghostBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
+                    onClick={()=>!isAdmin && updateUser(u, { disabled: !u.disabled })}
+                    disabled={loading || isAdmin}
+                    title={isAdmin ? "Not allowed for admin" : (u.disabled ? "Enable" : "Disable")}
+                  >
+                    {u.disabled ? "Enable" : "Disable"}
+                  </button>
+                  <button
+                    style={{ ...dangerBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
+                    onClick={()=>!isAdmin && removeUser(u)}
+                    disabled={loading || isAdmin}
+                    title={isAdmin ? "Not allowed for admin" : "Remove"}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </section>
     </div>
