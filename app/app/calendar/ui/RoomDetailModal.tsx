@@ -385,7 +385,7 @@ export default function RoomDetailModal({
     }
 
     const ins = await supabase.from("bookings").insert({
-      property_id: propertyId,
+      property_id: room.property_id,
       room_id: room.id,
       start_date: startDate,
       end_date: endDate,
