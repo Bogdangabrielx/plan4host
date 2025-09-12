@@ -23,8 +23,10 @@ type MeInfo = {
 
 export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const { title, pill, right } = useHeader();
-  const [open, setOpen] = useState(false);
-  const [nav, setNav] = useState(NAV_BASE);
+  const [open, setOpen] = useState(false);        // left drawer (Navigation)
+  const [openRight, setOpenRight] = useState(false); // right drawer (Management)
+  const [navLeft, setNavLeft] = useState(NAV_BASE.filter(n => ["/app/calendar","/app/cleaning","/app/guest"].includes(n.href)));
+  const [navRight, setNavRight] = useState(NAV_BASE.filter(n => !["/app/calendar","/app/cleaning","/app/guest"].includes(n.href)));
   const [me, setMe] = useState<MeInfo | null>(null);
   const [isSmall, setIsSmall] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -99,7 +101,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   });
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setOpen(false); setOpenRight(false); }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
@@ -134,9 +138,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         const info = j.me as MeInfo;
         setMe(info);
 
-        // dacă e dezactivat, arată doar Logout
+        // dacă e dezactivat, arată doar Logout (în Management)
         if (info.disabled) {
-          setNav(NAV_BASE.filter((it) => it.scope === "logout"));
+          setNavLeft([]);
+          setNavRight(NAV_BASE.filter((it) => it.scope === "logout"));
           return;
         }
 
@@ -166,7 +171,11 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           }
         }
 
-        setNav(filtered);
+        // Împarte în Navigation (stânga) și Management (dreapta)
+        const left = filtered.filter((it) => ["/app/calendar","/app/cleaning","/app/guest"].includes(it.href));
+        const right = filtered.filter((it) => !["/app/calendar","/app/cleaning","/app/guest"].includes(it.href));
+        setNavLeft(left);
+        setNavRight(right);
       } catch {
         // fallback: lăsăm NAV_BASE dacă /api/me eșuează
       }
@@ -192,7 +201,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       >
         <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
           <button
-            onClick={() => setOpen(true)}
+            onClick={() => { setOpen(true); setOpenRight(false); }}
             aria-label="Open menu"
             style={{
               padding: isSmall ? 4 : 6,
@@ -236,6 +245,32 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           }}
         >
           {right}
+          <button
+            onClick={() => { setOpenRight(true); setOpen(false); }}
+            aria-label="Open management menu"
+            style={{
+              padding: isSmall ? 4 : 6,
+              borderRadius: 10,
+              border: "1px solid var(--border)",
+              background: "var(--card)",
+              color: "var(--text)",
+              fontWeight: 800,
+              cursor: "pointer",
+            }}
+          >
+            {mounted && !aboutFailed ? (
+              <img
+                src={theme === "light" ? "/aboutme_forlight.png" : "/aboutme_fordark.png"}
+                alt=""
+                width={isSmall ? 28 : 32}
+                height={isSmall ? 28 : 32}
+                style={{ display: "block" }}
+                onError={() => setAboutFailed(true)}
+              />
+            ) : (
+              <>≡</>
+            )}
+          </button>
         </div>
       </header>
 
@@ -274,7 +309,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 alignItems: "center",
               }}
             >
-              <strong>Plan4Host</strong>
+              <strong>Navigation</strong>
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close"
@@ -294,7 +329,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
             <nav style={{ padding: 12, overflowY: "auto" }}>
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
-                {nav.map((it) => {
+                {navLeft.map((it) => {
                   const active = currentPath
                     ? currentPath === it.href || currentPath.startsWith(it.href + "/")
                     : false;
@@ -309,6 +344,109 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                     <li key={it.href}>
                       <button
                         onClick={() => hardNavigate(it.href)}
+                        style={{
+                          width: "100%",
+                          textAlign: "left",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border)",
+                          background: active ? "var(--primary)" : "var(--card)",
+                          color: active ? "#0c111b" : "var(--text)",
+                          fontWeight: 800,
+                          position: "relative",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
+                        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          {it.label}
+                          {isInbox && inboxCount > 0 && (
+                            <span style={inboxDotStyle}>{inboxCount > 99 ? "99+" : inboxCount}</span>
+                          )}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          </aside>
+        </>
+      )}
+
+      {openRight && (
+        <>
+          <div
+            onClick={() => setOpenRight(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 40 }}
+          />
+          <aside
+            role="dialog"
+            aria-modal="true"
+            style={{
+              position: "fixed",
+              top: 0,
+              right: 0,
+              height: "100%",
+              width: 300,
+              background: "var(--panel)",
+              color: "var(--text)",
+              borderLeft: "1px solid var(--border)",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
+              zIndex: 41,
+              display: "grid",
+              gridTemplateRows: "auto 1fr",
+              paddingTop: "var(--safe-top)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 21,
+                padding: 16,
+                borderBottom: "1px solid var(--border)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <strong>Management</strong>
+              <button
+                onClick={() => setOpenRight(false)}
+                aria-label="Close"
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 8,
+                  border: "1px solid var(--border)",
+                  background: "transparent",
+                  color: "var(--text)",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <nav style={{ padding: 12, overflowY: "auto" }}>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
+                {navRight.map((it) => {
+                  const active = currentPath
+                    ? currentPath === it.href || currentPath.startsWith(it.href + "/")
+                    : false;
+                  const isInbox = it.href === "/app/guest";
+                  const ICON_SIZE_DEFAULT = 36;
+                  const ICON_SIZE_PER_ROUTE: Record<string, number> = {
+                    "/app/calendar": 32,
+                    "/app/team": 32,
+                  };
+                  const ICON_SIZE = ICON_SIZE_PER_ROUTE[it.href] ?? ICON_SIZE_DEFAULT;
+                  return (
+                    <li key={it.href}>
+                      <button
+                        onClick={() => { setOpenRight(false); hardNavigate(it.href); }}
                         style={{
                           width: "100%",
                           textAlign: "left",
