@@ -281,7 +281,7 @@ export default function DashboardClient({
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
-      <PlanHeaderBadge title="Dashboard" slot="header-right" />
+      <PlanHeaderBadge title="Dashboard" slot="under-title" />
 
       {/* Add property */}
       <section style={card}>

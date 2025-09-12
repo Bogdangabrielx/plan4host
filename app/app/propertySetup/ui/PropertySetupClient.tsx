@@ -234,7 +234,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 
   return (
     <div>
-      <PlanHeaderBadge title="Property Setup" slot="header-right" />
+      <PlanHeaderBadge title="Property Setup" slot="under-title" />
 
       {/* minimalist layout */}
       <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>

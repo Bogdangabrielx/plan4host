@@ -53,15 +53,17 @@ function planBadgeStyle(plan: Plan): React.CSSProperties {
   };
 }
 
-export default function PlanHeaderBadge({ title, slot = "below" }: { title: string; slot?: "below" | "header-right" }) {
+export default function PlanHeaderBadge({ title, slot = "below" }: { title: string; slot?: "below" | "header-right" | "under-title" }) {
   const supabase = useMemo(() => createClient(), []);
   const { setTitle, setRight } = useHeader();
   const [plan, setPlan] = useState<Plan>(null);
 
-  // Setează titlul în header ca simplu string
+  // Setează titlul la mount și când se schimbă titlul
   useEffect(() => {
-    setTitle(title);
-  }, [setTitle, title]);
+    if (slot !== 'under-title') {
+      setTitle(title);
+    }
+  }, [setTitle, title, slot]);
 
   // Citește planul activ din RPC (derivat din account_plan.plan_slug)
   useEffect(() => {
@@ -81,15 +83,25 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
   // Compose badge element
   const badge = plan ? <span style={planBadgeStyle(plan)}>{planLabel(plan)}</span> : null;
 
-  // If we place in header-right, push into header and render nothing
+  // Slot behaviors
   useEffect(() => {
     if (slot === "header-right") {
       setRight(badge);
       return () => { setRight(null); };
     }
-  }, [badge, setRight, slot]);
+    if (slot === 'under-title') {
+      // Mută badge-ul sub titlu, în zona titlului din header
+      const composed = (
+        <div style={{ display: 'grid', gap: 4 }}>
+          <span>{title}</span>
+          {badge}
+        </div>
+      );
+      setTitle(composed);
+    }
+  }, [badge, setRight, setTitle, slot, title]);
 
-  if (slot === "header-right") return null;
+  if (slot === "header-right" || slot === 'under-title') return null;
   if (!plan) return null;
   return <div style={{ margin: "6px 0 12px" }}>{badge}</div>;
 }

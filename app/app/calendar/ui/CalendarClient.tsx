@@ -239,7 +239,7 @@ export default function CalendarClient({
 
   return (
     <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
-      <PlanHeaderBadge title="Calendar" slot="header-right" />
+      <PlanHeaderBadge title="Calendar" slot="under-title" />
       {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20 }}>
         <select
