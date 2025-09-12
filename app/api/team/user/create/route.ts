@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     // determină account + cere ca actorul să fie admin al contului
     let accountId: string | null = null;
-    const { data: accSelf } = await supa.from("accounts").select("id, plan, valid_until").eq("id", actor.id).maybeSingle();
+    const { data: accSelf } = await supa.from("accounts").select("id").eq("id", actor.id).maybeSingle();
     if (accSelf?.id) {
       accountId = accSelf.id as string;
       // verifică actorul e admin în contul lui (ar trebui să existe rând admin în account_users)
@@ -39,10 +39,10 @@ export async function POST(req: Request) {
         .eq("user_id", actor.id)
         .maybeSingle();
       if (!me || me.disabled || me.role !== "admin") return bad(403, { error: "Only admin can create users" });
-      // plan gating
-      const plan = (accSelf.plan as string | undefined)?.toLowerCase?.() ?? "basic";
-      const active = !accSelf.valid_until || new Date(accSelf.valid_until as any) > new Date();
-      if (!active || plan !== "premium") return bad(403, { error: "Team is available on Premium plan only" });
+      // plan gating via account_plan.plan_slug
+      const eff = await supa.rpc("account_effective_plan_slug", { p_account_id: accountId });
+      const plan = (eff.data as string | null)?.toLowerCase?.() ?? "basic";
+      if (plan !== "premium") return bad(403, { error: "Team is available on Premium plan only" });
     } else {
       const { data: au } = await supa
         .from("account_users")
@@ -54,10 +54,9 @@ export async function POST(req: Request) {
       if (!row || row.disabled || row.role !== "admin") return bad(403, { error: "Only admin can create users" });
       accountId = row.account_id as string;
 
-      const { data: acc } = await supa.from("accounts").select("plan, valid_until").eq("id", accountId).maybeSingle();
-      const plan = (acc?.plan as string | undefined)?.toLowerCase?.() ?? "basic";
-      const active = !acc?.valid_until || new Date(acc!.valid_until as any) > new Date();
-      if (!active || plan !== "premium") return bad(403, { error: "Team is available on Premium plan only" });
+      const eff = await supa.rpc("account_effective_plan_slug", { p_account_id: accountId });
+      const plan = (eff.data as string | null)?.toLowerCase?.() ?? "basic";
+      if (plan !== "premium") return bad(403, { error: "Team is available on Premium plan only" });
     }
 
     // creează utilizator auth

@@ -63,23 +63,14 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
     setTitle(title);
   }, [setTitle, title]);
 
-  // Citește planul (RLS permite membrilor contului)
+  // Citește planul activ din RPC (derivat din account_plan.plan_slug)
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const { data: u } = await supabase.auth.getUser();
-        const uid = u?.user?.id;
-        if (!uid) { if (mounted) setPlan("basic"); return; }
-        const { data } = await supabase
-          .from("accounts")
-          .select("plan, valid_until")
-          .eq("id", uid)
-          .maybeSingle();
-        const now = new Date();
-        const active = !data?.valid_until || new Date(data.valid_until) > now;
-        const p = (data?.plan as Plan) ?? "basic";
-        if (mounted) setPlan(active ? p : "basic");
+        const r = await supabase.rpc("account_current_plan");
+        const p = (r.data as string | null)?.toLowerCase?.() as Plan | null;
+        if (mounted) setPlan((p ?? "basic") as Plan);
       } catch {
         if (mounted) setPlan("basic");
       }

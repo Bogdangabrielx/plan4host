@@ -14,6 +14,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
   const supabase = useMemo(() => createClient(), []);
   const [plans] = useState<PlanRow[]>(initialPlans);
   const [account, setAccount] = useState<any>(initialAccount);
+  const [currentPlanSlug, setCurrentPlanSlug] = useState<string>(() => (initialAccount?.plan || 'basic').toString().toLowerCase());
   const [role, setRole] = useState<string>("admin");
   const [saving, setSaving] = useState<string | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
@@ -37,6 +38,11 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
         .eq("user_id", uid)
         .maybeSingle();
       if (au) setRole((au as any).role || "admin");
+
+      // sync current plan from RPC (account_plan.plan_slug)
+      const r = await supabase.rpc("account_current_plan");
+      const pl = (r.data as string | null)?.toLowerCase?.() || "basic";
+      setCurrentPlanSlug(pl);
     })();
   }, [supabase]);
 
@@ -54,19 +60,23 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
       p_trial_days: null,
     });
     if (!error) {
-      // refresh account header
+      // refresh account validity (for "until")
       const { data: acc } = await supabase
         .from("accounts")
-        .select("id,plan,valid_until,trial_used")
+        .select("id,valid_until,trial_used")
         .eq("id", uid)
         .maybeSingle();
-      setAccount(acc as any);
+      if (acc) setAccount((prev: any) => ({ ...(prev||{}), ...acc }));
+      // refresh current plan via RPC (from account_plan)
+      const r = await supabase.rpc("account_current_plan");
+      const pl = (r.data as string | null)?.toLowerCase?.() || "basic";
+      setCurrentPlanSlug(pl);
     }
     setSaving(null);
   }
 
   function planCard(p: PlanRow) {
-    const isCurrent = (account?.plan as string | null)?.toLowerCase?.() === p.slug;
+    const isCurrent = currentPlanSlug === p.slug;
     const expanded = !!open[p.slug];
     const propsStr = p.max_properties == null ? 'Unlimited properties' : `Up to ${p.max_properties} properties`;
     const roomsStr = p.max_rooms_per_property == null ? 'Unlimited rooms per property' : `Up to ${p.max_rooms_per_property} rooms per property`;
@@ -128,7 +138,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
   }
 
   const validUntil = account?.valid_until ? new Date(account.valid_until).toLocaleString() : null;
-  const currentPlan = (account?.plan || 'basic').toString();
+  const currentPlan = currentPlanSlug;
 
   // Order BASIC → STANDARD → PREMIUM
   const ORDER = new Map([['basic', 0], ['standard', 1], ['premium', 2]]);

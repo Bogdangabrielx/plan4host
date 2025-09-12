@@ -69,17 +69,11 @@ export async function GET() {
       | undefined;
 
     if (member) {
-      const { data: acc2, error: eAcc2 } = await supa
-        .from("accounts")
-        .select("plan")
-        .eq("id", member.account_id)
-        .maybeSingle();
-
-      if (eAcc2) return bad(500, { error: eAcc2.message });
-
+      // Plan efectiv conform account_plan.plan_slug
+      const rPlan = await supa.rpc("account_effective_plan_slug", { p_account_id: member.account_id });
       const role = member.role;
       const disabled = !!member.disabled;
-      const plan = (acc2?.plan as string | undefined) ?? "basic";
+      const plan = ((rPlan.data as string | null)?.toLowerCase?.() ?? "basic") as string;
       const scopes =
         Array.isArray(member.scopes) && member.scopes.length > 0
           ? member.scopes
@@ -95,15 +89,9 @@ export async function GET() {
     }
 
     // 2) Fallback: utilizatorul este titularul propriului cont (contul de bază)
-    const { data: acc, error: eAcc } = await supa
-      .from("accounts")
-      .select("id, plan")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (eAcc) return bad(500, { error: eAcc.message });
-
-    if (acc) {
+    // Plan pentru contul propriu (admin): folosește RPC cu account_plan
+    const rAcc = await supa.rpc("account_effective_plan_slug", { p_account_id: user.id });
+    if (!rAcc.error) {
       return NextResponse.json(
         {
           ok: true,
@@ -111,7 +99,7 @@ export async function GET() {
             role: "admin" as const,
             scopes: DEFAULT_SCOPES.admin,
             disabled: false,
-            plan: (acc.plan as string | undefined) ?? "basic",
+            plan: ((rAcc.data as string | null)?.toLowerCase?.() ?? "basic") as string,
           },
         },
         { headers: { "Cache-Control": "no-store, max-age=0" } }
