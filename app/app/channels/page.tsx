@@ -15,7 +15,6 @@ export default async function ChannelsPage() {
   const mode = await supabase.rpc("account_access_mode");
   if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
   await ensureScope("channels", supabase, user.id);
-  await ensureScope("channels");
 
   const { data: props = [] } = await supabase
     .from("properties")

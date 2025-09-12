@@ -70,6 +70,22 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     })();
   }, [supabase]);
 
+  // Role/scopes gating: admin or editor with 'propertySetup' can write
+  const [canWrite, setCanWrite] = useState<boolean>(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch("/api/me", { cache: "no-store" });
+        const j = await r.json().catch(() => ({}));
+        const me = j?.me as { role?: string; scopes?: string[]; disabled?: boolean } | undefined;
+        if (!me) { setCanWrite(false); return; }
+        const sc = new Set((me.scopes || []) as string[]);
+        const allowed = !me.disabled && (me.role === 'admin' || (me.role === 'editor' && sc.has('propertySetup')));
+        setCanWrite(!!allowed);
+      } catch { setCanWrite(false); }
+    })();
+  }, []);
+
   // Load data for selected property
   useEffect(() => {
     if (!selectedId) return;
@@ -121,6 +137,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 
   // SETTINGS
   async function saveTime(field: "check_in_time" | "check_out_time", value: string) {
+    if (!canWrite) return;
     if (!selected) return;
     startSaving();
     const { error } = await supabase.from("properties").update({ [field]: value }).eq("id", selected.id);
@@ -130,6 +147,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 
   // ROOMS
   async function addRoom() {
+    if (!canWrite) return;
     if (!selected) return;
     startSaving();
     const nextIndex = rooms.length;
@@ -142,12 +160,14 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     finishSaving(!error);
   }
   async function renameRoom(roomId: string, name: string) {
+    if (!canWrite) return;
     startSaving();
     const { error } = await supabase.from("rooms").update({ name }).eq("id", roomId);
     if (!error) setRooms(prev => prev.map(r => r.id === roomId ? { ...r, name } : r));
     finishSaving(!error);
   }
   async function deleteRoom(roomId: string) {
+    if (!canWrite) return;
     startSaving();
     const { error } = await supabase.from("rooms").delete().eq("id", roomId);
     if (!error) {
@@ -159,6 +179,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     finishSaving(!error);
   }
   async function moveRoom(roomId: string, dir: "up" | "down") {
+    if (!canWrite) return;
     const idx = rooms.findIndex(r => r.id === roomId);
     if (idx < 0) return;
     const swapWith = dir === "up" ? idx - 1 : idx + 1;
@@ -175,6 +196,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 
   // ROOM TYPES (create / rename / delete)
   async function addRoomType(name: string) {
+    if (!canWrite) return;
     if (!selected) return;
     startSaving();
     const { data, error } = await supabase.from("room_types").insert({ property_id: selected.id, name }).select().single();
@@ -182,12 +204,14 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     finishSaving(!error);
   }
   async function renameRoomType(id: string, name: string) {
+    if (!canWrite) return;
     startSaving();
     const { error } = await supabase.from("room_types").update({ name }).eq("id", id);
     if (!error) setRoomTypes(prev => prev.map(t => t.id === id ? { ...t, name } : t));
     finishSaving(!error);
   }
   async function deleteRoomType(id: string) {
+    if (!canWrite) return;
     startSaving();
     const { error } = await supabase.from("room_types").delete().eq("id", id);
     if (!error) {
@@ -199,6 +223,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 
   // ASSIGN type to room
   async function setRoomType(roomId: string, typeId: string | null) {
+    if (!canWrite) return;
     startSaving();
     const { error } = await supabase.from("rooms").update({ room_type_id: typeId }).eq("id", roomId);
     if (!error) setRooms(prev => prev.map(r => r.id === roomId ? { ...r, room_type_id: typeId } : r));
@@ -240,6 +265,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                   checks={checks}
                   texts={texts}
                   onAddCheck={async () => {
+                    if (!canWrite) return;
                     if (!selected) return;
                     startSaving();
                     const next = checks.length;
@@ -252,18 +278,21 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                     finishSaving(!error);
                   }}
                   onRenameCheck={async (id, label) => {
+                    if (!canWrite) return;
                     startSaving();
                     const { error } = await supabase.from("room_detail_checks").update({ label }).eq("id", id);
                     if (!error) setChecks(prev => prev.map(c => c.id === id ? { ...c, label } : c));
                     finishSaving(!error);
                   }}
                   onToggleCheckDefault={async (id, v) => {
+                    if (!canWrite) return;
                     startSaving();
                     const { error } = await supabase.from("room_detail_checks").update({ default_value: v }).eq("id", id);
                     if (!error) setChecks(prev => prev.map(c => c.id === id ? { ...c, default_value: v } : c));
                     finishSaving(!error);
                   }}
                   onDeleteCheck={async (id) => {
+                    if (!canWrite) return;
                     startSaving();
                     const { error } = await supabase.from("room_detail_checks").delete().eq("id", id);
                     if (!error) {
@@ -275,6 +304,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                     finishSaving(!error);
                   }}
                   onMoveCheck={async (id, dir) => {
+                    if (!canWrite) return;
                     const idx = checks.findIndex(c => c.id === id); if (idx < 0) return;
                     const swap = dir === "up" ? idx - 1 : idx + 1; if (swap < 0 || swap >= checks.length) return;
                     startSaving();
@@ -287,6 +317,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                     finishSaving(!(e1||e2));
                   }}
                   onAddText={async () => {
+                    if (!canWrite) return;
                     if (!selected) return;
                     startSaving();
                     const next = texts.length;
@@ -299,18 +330,21 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                     finishSaving(!error);
                   }}
                   onRenameText={async (id, label) => {
+                    if (!canWrite) return;
                     startSaving();
                     const { error } = await supabase.from("room_detail_text_fields").update({ label }).eq("id", id);
                     if (!error) setTexts(prev => prev.map(t => t.id === id ? { ...t, label } : t));
                     finishSaving(!error);
                   }}
                   onPlaceholderText={async (id, placeholder) => {
+                    if (!canWrite) return;
                     startSaving();
                     const { error } = await supabase.from("room_detail_text_fields").update({ placeholder }).eq("id", id);
                     if (!error) setTexts(prev => prev.map(t => t.id === id ? { ...t, placeholder } : t));
                     finishSaving(!error);
                   }}
                   onDeleteText={async (id) => {
+                    if (!canWrite) return;
                     startSaving();
                     const { error } = await supabase.from("room_detail_text_fields").delete().eq("id", id);
                     if (!error) {
@@ -322,6 +356,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                     finishSaving(!error);
                   }}
                   onMoveText={async (id, dir) => {
+                    if (!canWrite) return;
                     const idx = texts.findIndex(t => t.id === id); if (idx < 0) return;
                     const swap = dir === "up" ? idx - 1 : idx + 1; if (swap < 0 || swap >= texts.length) return;
                     startSaving();
@@ -342,7 +377,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                   <CleaningTab
                     tasks={tasks.map(t => ({ id: t.id, label: t.label, sort_index: t.sort_index }))}
                     onAdd={async () => {
-                      if (!selected) return;
+                      if (!canWrite || !selected) return;
                       startSaving();
                       const next = tasks.length;
                       const { data, error } = await supabase
@@ -353,10 +388,16 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                       if (!error && data) setTasks(prev => [...prev, data as TaskDef]);
                       finishSaving(!error);
                     }}
-                    onRename={(id, label) => supabase.from("cleaning_task_defs").update({ label }).eq("id", id).then(({ error }) => {
-                      if (!error) setTasks(prev => prev.map(t => t.id === id ? { ...t, label } : t)); finishSaving(!error);
-                    })}
+                    onRename={(id, label) => {
+                      if (!canWrite) return Promise.resolve();
+                      startSaving();
+                      return supabase.from("cleaning_task_defs").update({ label }).eq("id", id).then(({ error }) => {
+                        if (!error) setTasks(prev => prev.map(t => t.id === id ? { ...t, label } : t));
+                        finishSaving(!error);
+                      });
+                    }}
                     onDelete={async (id) => {
+                      if (!canWrite) return;
                       startSaving();
                       const { error } = await supabase.from("cleaning_task_defs").delete().eq("id", id);
                       if (!error) {
@@ -368,6 +409,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                       finishSaving(!error);
                     }}
                     onMove={async (id, dir) => {
+                      if (!canWrite) return;
                       const idx = tasks.findIndex(t => t.id === id); if (idx < 0) return;
                       const swap = dir === "up" ? idx - 1 : idx + 1; if (swap < 0 || swap >= tasks.length) return;
                       startSaving();

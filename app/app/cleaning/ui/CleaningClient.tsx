@@ -58,6 +58,22 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   const hasCleaningBoard = plan === "standard" || plan === "premium";
   const hasPriority      = plan === "premium";
 
+  // Role/scopes gating: admin OR editor with 'cleaning' can write
+  const [canWrite, setCanWrite] = useState<boolean>(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch("/api/me", { cache: "no-store" });
+        const j = await r.json().catch(() => ({}));
+        const me = j?.me as { role?: string; scopes?: string[]; disabled?: boolean } | undefined;
+        if (!me) { setCanWrite(false); return; }
+        const sc = new Set((me.scopes || []) as string[]);
+        const allowed = !me.disabled && (me.role === 'admin' || (me.role === 'editor' && sc.has('cleaning')));
+        setCanWrite(!!allowed);
+      } catch { setCanWrite(false); }
+    })();
+  }, []);
+
   const [dateStr, setDateStr] = useState<string>(dstr(new Date()));
 
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -374,7 +390,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             return (
               <li
                 key={it.room.id + "|" + it.cleanDate}
-                onClick={cleaned ? undefined : () => setOpenItem(it)}
+                onClick={(!canWrite || cleaned) ? undefined : () => setOpenItem(it)}
                 className="sb-card"
                 style={{ aspectRatio: "1.2 / 1", padding: 10, cursor: cleaned ? "default" : "pointer", display: "grid", placeItems: "center", gap: 6, opacity: cleaned ? .66 : 1 }}
                 title={cleaned ? "Cleaned" : "Open cleaning tasks"}

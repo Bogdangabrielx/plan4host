@@ -83,6 +83,22 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [countdownSec, setCountdownSec] = useState<number | null>(null);
   const [syncBtnText, setSyncBtnText] = useState<string>("Sync now");
 
+  // Role/scopes gating: admin OR editor with 'channels' can write
+  const [canWrite, setCanWrite] = useState<boolean>(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch("/api/me", { cache: "no-store" });
+        const j = await r.json().catch(() => ({}));
+        const me = j?.me as { role?: string; scopes?: string[]; disabled?: boolean } | undefined;
+        if (!me) { setCanWrite(false); return; }
+        const sc = new Set((me.scopes || []) as string[]);
+        const allowed = !me.disabled && (me.role === 'admin' || (me.role === 'editor' && sc.has('channels')));
+        setCanWrite(!!allowed);
+      } catch { setCanWrite(false); }
+    })();
+  }, []);
+
   // Countdown tick
   useEffect(() => {
     if (countdownSec === null) return;
@@ -171,6 +187,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
   /* Integrations CRUD (Import per TYPE) */
   async function addIntegration(roomTypeId: string, provider: string, url: string) {
+    if (!canWrite) return;
     if (!propertyId || !roomTypeId || !url.trim()) return;
     setStatus("Saving…");
     const { data, error } = await supabase
@@ -182,12 +199,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     setStatus(error ? "Error" : "Idle");
   }
   async function deleteIntegration(id: string) {
+    if (!canWrite) return;
     setStatus("Saving…");
     const { error } = await supabase.from("ical_type_integrations").delete().eq("id", id);
     if (!error) setIntegrations(prev => prev.filter(x => x.id !== id));
     setStatus(error ? "Error" : "Idle");
   }
   async function toggleActive(integration: TypeIntegration) {
+    if (!canWrite) return;
     setStatus("Saving…");
     const next = !integration.is_active;
     const { error, data } = await supabase
@@ -353,9 +372,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               {syncBtnText}
             </button>
 
-            <button className="sb-btn" onClick={() => setShowTypesModal(true)}>Export</button>
-            <button className="sb-btn" onClick={() => setShowImportModal(true)}>Import</button>
-            <button className="sb-btn" onClick={() => setShowRoomsModal(true)}>Export Room Only</button>
+            <button className="sb-btn" disabled={!canWrite} onClick={() => { if (!canWrite) return; setShowTypesModal(true); }}>Export</button>
+            <button className="sb-btn" disabled={!canWrite} onClick={() => { if (!canWrite) return; setShowImportModal(true); }}>Import</button>
+            <button className="sb-btn" disabled={!canWrite} onClick={() => { if (!canWrite) return; setShowRoomsModal(true); }}>Export Room Only</button>
           </div>
 
           {/* PILLAȘ persistent sub buton */}
