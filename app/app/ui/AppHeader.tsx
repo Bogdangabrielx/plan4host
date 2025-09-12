@@ -193,7 +193,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           alignItems: "center",
           justifyContent: "space-between",
           gap: isSmall ? 8 : 12,
-          padding: isSmall ? "8px 10px" : "12px 16px",
+          padding: isSmall ? "8px 10px 16px" : "12px 16px 20px",
           flexWrap: "nowrap",
           background: "var(--panel)",
           borderBottom: "1px solid var(--border)",
