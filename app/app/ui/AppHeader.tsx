@@ -227,8 +227,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             )}
           </button>
 
-          <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
-            <div style={{ margin: 0, fontSize: isSmall ? 16 : 18, lineHeight: 1 }}>{title}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
+            <div style={{ margin: 0, fontSize: isSmall ? 22 : 26, lineHeight: 1.05, fontWeight: 800 }}>{title}</div>
             {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
           </div>
         </div>
