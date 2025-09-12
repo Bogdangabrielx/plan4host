@@ -11,46 +11,18 @@ function planLabel(plan: Plan) {
   return plan[0].toUpperCase() + plan.slice(1);
 }
 function planBadgeStyle(plan: Plan): React.CSSProperties {
-  if (plan === "premium") {
-    return {
-      display: "inline-block",
-    padding: "2px 29px",
-    borderRadius: 999,
-    background: "transparent",
-    color: "var(--muted)",
-    border: "1px solid #94a3b8",
-    fontSize: 11,
-    fontWeight: 800,
-    letterSpacing: 0.2,
-    boxShadow:  "0 0px 4px #51be36e4"
-    };
-  }
-  if (plan === "standard") {
-    return {
-      display: "inline-block",
-    padding: "2px 29px",
-    borderRadius: 999,
-    background: "transparent",
-    color: "var(--muted)",
-    border: "1px solid #94a3b8",
-    fontSize: 11,
-    fontWeight: 800,
-    letterSpacing: 0.2,
-    boxShadow:  "0 0px 4px #51be36e4"
-    };
-  }
-  return {
+  const base: React.CSSProperties = {
     display: "inline-block",
-    padding: "2px 29px",
+    padding: "2px 10px",
     borderRadius: 999,
     background: "transparent",
     color: "var(--muted)",
     border: "1px solid #94a3b8",
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 800,
     letterSpacing: 0.2,
-    boxShadow:  "0 0px 4px #51be36e4"
   };
+  return base;
 }
 
 export default function PlanHeaderBadge({ title, slot = "below" }: { title: string; slot?: "below" | "header-right" | "under-title" }) {
@@ -92,7 +64,7 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
     if (slot === 'under-title') {
       // Mută badge-ul sub titlu, în zona titlului din header
       const composed = (
-        <div style={{ display: 'grid', gap: 4 }}>
+        <div style={{ display: 'grid', gap: 2 }}>
           <span>{title}</span>
           {badge}
         </div>

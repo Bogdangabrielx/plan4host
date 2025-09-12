@@ -194,7 +194,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           justifyContent: "space-between",
           gap: isSmall ? 8 : 12,
           padding: isSmall ? "8px 10px" : "12px 16px",
-          flexWrap: "wrap",
+          flexWrap: "nowrap",
           background: "var(--panel)",
           borderBottom: "1px solid var(--border)",
         }}
@@ -238,10 +238,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             display: "flex",
             alignItems: "center",
             gap: isSmall ? 8 : 12,
-            flexWrap: "wrap",
-            width: isSmall ? "100%" : "auto",
-            justifyContent: isSmall ? "flex-start" : "flex-end",
-            marginTop: isSmall ? 6 : 0,
+            flexWrap: "nowrap",
+            width: "auto",
+            justifyContent: "flex-end",
+            marginTop: 0,
           }}
         >
           {right}
