@@ -79,7 +79,7 @@ export default function RoomDetailModal({
   onChanged: () => Promise<void> | void;
 }) {
   const supabase = createClient();
-
+  const PID = room.property_id || propertyId;
   // Data
   const [property, setProperty] = useState<Property | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -385,7 +385,7 @@ export default function RoomDetailModal({
     }
 
     const ins = await supabase.from("bookings").insert({
-      property_id: room.property_id,
+      property_id: propertyId,
       room_id: room.id,
       start_date: startDate,
       end_date: endDate,
