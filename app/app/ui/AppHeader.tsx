@@ -18,7 +18,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const { title, pill, right } = useHeader();
   const [open, setOpen] = useState(false);
   const [nav, setNav] = useState(NAV_BASE);
-  const [me, setMe] = useState<{ role: string; scopes: string[]; disabled: boolean } | null>(null);
+  const [me, setMe] = useState<{ role: "admin" | "editor" | "viewer"; scopes: string[]; disabled: boolean; plan?: string } | null>(null);
   const [isSmall, setIsSmall] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
@@ -119,23 +119,38 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/me', { cache: 'no-store' });
+        const res = await fetch("/api/me", { cache: "no-store" });
         if (!res.ok) return;
         const j = await res.json();
         if (!j?.me) return;
-        const info = j.me as { role: string; scopes: string[]; disabled: boolean; plan?: string };
+
+        const info = j.me as { role: "admin" | "editor" | "viewer"; scopes: string[]; disabled: boolean; plan?: string };
         setMe(info);
-        const allowAll = info.role === 'owner' || info.role === 'manager';
+
+        // Dacă e dezactivat, afișăm doar Logout
+        if (info.disabled) {
+          setNav(NAV_BASE.filter(it => it.scope === "logout"));
+          return;
+        }
+
+        const allowAll = info.role === "admin"; // admin vede toate meniurile (cu excepțiile de plan)
         const sc = new Set((info.scopes || []) as string[]);
-        const plan = (info.plan || 'basic').toLowerCase();
+        const plan = (info.plan || "basic").toLowerCase();
+
         let filtered = NAV_BASE.filter(it => {
-          if (it.scope === 'logout') return true;
-          if (it.href === '/app/team') return info.role === 'owner' && plan === 'premium';
+          if (it.scope === "logout") return true;
+
+          // Pagina Team doar dacă e admin + plan Premium
+          if (it.href === "/app/team") return info.role === "admin" && plan === "premium";
+
+          // Admin vede restul indiferent de scopes; editor/viewer pe baza scopes
           if (allowAll) return true;
           return sc.has(it.scope);
         });
-        if (info.role === 'owner') {
-          const exists = filtered.some(x => x.href === '/app/subscription');
+
+        // Admin vede și Subscription (pentru upgrade/downgrade)
+        if (info.role === "admin") {
+          const exists = filtered.some(x => x.href === "/app/subscription");
           if (!exists) {
             filtered = [
               { href: "/app/subscription", label: "Subscription", emoji: "💳", scope: "subscription" },
@@ -143,8 +158,11 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             ];
           }
         }
+
         setNav(filtered);
-      } catch {}
+      } catch {
+        // dacă /api/me eșuează, lăsăm NAV_BASE ca fallback
+      }
     })();
   }, []);
 
@@ -153,7 +171,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       <header
         style={{
           position: "sticky",
-          top: "var(--safe-top)",        // 🟢 stă sub notch când e sticky
+          top: "var(--safe-top)",
           zIndex: 30,
           display: "flex",
           alignItems: "center",
@@ -236,7 +254,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               zIndex: 41,
               display: "grid",
               gridTemplateRows: "auto 1fr",
-              paddingTop: "var(--safe-top)", // 🟢 nu intră sub notch
+              paddingTop: "var(--safe-top)",
             }}
           >
             <div

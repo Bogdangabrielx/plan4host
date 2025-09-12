@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     { "path": "/api/cron/ical/autosync", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/soft-holds",   "schedule": "*/5 * * * *" }
+    { "path": "/api/cron/soft-holds",   "schedule": "*/5 * * * *" },
+    {"path": "/api/cron/cancel-expired-holds/", "schedule": "*/10 * * * *"}
   ]
 }
