@@ -35,12 +35,12 @@ export default async function DashboardPage() {
     if (m && !m.disabled && m.role !== "admin") {
       const scopes: string[] = (m.scopes as string[] | null) ?? [];
       if (!scopes.includes("dashboard")) {
-        const order = ["cleaning", "inbox", "calendar", "channels", "Property Setup"];
+        const order = ["cleaning", "guest_overview", "calendar", "channels", "property_setup"];
         const first = order.find((s) => scopes.includes(s));
         if (first) {
           const path =
             first === "cleaning" ? "/app/cleaning"
-            : first === "inbox" ? "/app/guest" // 🔁 Inbox → Guest Overview
+            : first === "guest_overview" ? "/app/guest"
             : first === "calendar" ? "/app/calendar"
             : first === "channels" ? "/app/channels"
             : "/app/propertySetup";

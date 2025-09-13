@@ -6,10 +6,10 @@ import { useHeader } from "../_components/HeaderContext";
 const NAV_BASE = [
   { href: "/app", label: "Dashboard", emoji: "🏠", scope: "dashboard" },
   { href: "/app/calendar", label: "Calendar", emoji: "📅", scope: "calendar" },
-  { href: "/app/propertySetup", label: "Property Setup", emoji: "⚙️", scope: "propertySetup" },
+  { href: "/app/propertySetup", label: "Property Setup", emoji: "⚙️", scope: "property_setup" },
   { href: "/app/cleaning", label: "Cleaning Board", emoji: "🧹", scope: "cleaning" },
   { href: "/app/channels", label: "Channels & iCal", emoji: "🔗", scope: "channels" },
-  { href: "/app/guest", label: "Guest Overview", emoji: "📥", scope: "inbox" },
+  { href: "/app/guest", label: "Guest Overview", emoji: "📥", scope: "guest_overview" },
   { href: "/app/team", label: "Team", emoji: "👥", scope: "team" },
   { href: "/auth/logout", label: "Logout", emoji: "🚪", scope: "logout" },
 ];
