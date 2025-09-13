@@ -81,7 +81,12 @@ export async function POST(req: Request) {
     const admin = createAdmin(url, serviceKey, { auth: { persistSession: false } });
 
     const created = await admin.auth.admin.createUser({
-      email, password, email_confirm: true, app_metadata: { disabled: false }
+      email,
+      password,
+      email_confirm: true,
+      // Marcăm contul ca sub-user, pentru a evita bootstrap de tenant în triggerul DB
+      app_metadata: { disabled: false, sub_user: true, parent_account_id: accountId },
+      user_metadata: { sub_user: true, parent_account_id: accountId },
     });
     if (created.error) return bad(400, { error: created.error.message });
 
