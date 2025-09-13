@@ -131,6 +131,22 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   // Modal — deschidem rezervarea (GREEN)
   const [modal, setModal] = useState<null | { propertyId: string; dateStr: string; room: Room }>(null);
 
+  // Permisiuni: editor/admin pot face acțiuni (viewer = read-only)
+  const [canEditGuest, setCanEditGuest] = useState<boolean>(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch('/api/me', { cache: 'no-store' });
+        const j = await r.json().catch(() => ({}));
+        const me = j?.me as { role?: string; disabled?: boolean } | undefined;
+        if (!me || me.disabled) { setCanEditGuest(false); return; }
+        setCanEditGuest(me.role === 'admin' || me.role === 'editor');
+      } catch {
+        setCanEditGuest(false);
+      }
+    })();
+  }, []);
+
   // Refresh (rooms + types + overview items)
   const refresh = useCallback(async () => {
     if (!activePropertyId) return;
@@ -341,7 +357,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               {/* Actions */}
               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
                 {/* GREEN → Open reservation (RoomDetailModal) */}
-                {kind === "green" && (
+                {kind === "green" && canEditGuest && (
                   <button
                     onClick={() => openReservation(it, propertyId)}
                     disabled={!it.room_id || !roomById.has(String(it.room_id))}
@@ -372,7 +388,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 )}
 
                 {/* RED → Resolve in Calendar (deschide pe luna corectă) */}
-                {kind === "red" && (
+                {kind === "red" && canEditGuest && (
                   <button
                     onClick={() => resolveInCalendar(it, propertyId)}
                     style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--danger)", background: "transparent", color: "var(--text)", fontWeight: 900, cursor: "pointer" }}
