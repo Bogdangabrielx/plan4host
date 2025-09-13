@@ -170,7 +170,7 @@ export default function RoomDetailModal({
   // Load everything (property, bookings, field definitions, existing values/defaults)
   useEffect(() => {
     (async () => {
-      const [p1, p2, p3, p4, p5] = await Promise.all([
+      const [p1, p2, p4, p5] = await Promise.all([
         supabase
           .from("properties")
           .select("id,name,check_in_time,check_out_time")
@@ -183,11 +183,6 @@ export default function RoomDetailModal({
           .eq("room_id", room.id)
           .neq("status", "cancelled")
           .order("start_date", { ascending: true }),
-        supabase
-          .from("room_detail_check_fields")
-          .select("id,label,default_value,sort_index,property_id")
-          .eq("property_id", propertyId)
-          .order("sort_index", { ascending: true }),
         supabase
           .from("room_detail_text_fields")
           .select("id,label,placeholder,sort_index,property_id")
@@ -216,15 +211,10 @@ export default function RoomDetailModal({
       }
       setActive(act);
 
-      // Merge legacy + unified checks (dedupe by id; prefer unified)
-      const legacyChecks = (p3.error ? [] : ((p3.data ?? []) as CheckDef[]));
+      // Use unified checks table exclusively (avoid legacy table 404)
       const unifiedChecks = (p5.error ? [] : ((p5.data ?? []) as CheckDef[]));
-      const mergedChecksMap = new Map<string, CheckDef>();
-      for (const c of [...unifiedChecks, ...legacyChecks]) {
-        if (c && c.id && !mergedChecksMap.has(c.id)) mergedChecksMap.set(c.id, c);
-      }
-      const mergedChecks = Array.from(mergedChecksMap.values()).sort((a,b) => a.sort_index - b.sort_index);
-      setCheckDefs(mergedChecks);
+      const checksSorted = [...unifiedChecks].sort((a,b) => a.sort_index - b.sort_index);
+      setCheckDefs(checksSorted);
 
       const defsTexts  = (p4.error ? [] : ((p4.data ?? []) as TextDef[]));
       setTextDefs(defsTexts);
@@ -265,7 +255,7 @@ export default function RoomDetailModal({
 
       // ---------- Saved values / defaults ----------
       const defaultCheckValues: Record<string, boolean> = Object.fromEntries(
-        mergedChecks.map((d) => [d.id, !!d.default_value])
+        checksSorted.map((d) => [d.id, !!d.default_value])
       );
       const defaultTextValues: Record<string, string> = Object.fromEntries(
         defsTexts.map((d) => [d.id, ""])
