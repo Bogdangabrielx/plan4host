@@ -139,10 +139,12 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
       (typeof window !== "undefined" ? window.location.origin : "https://plan4host.com");
     const next = "/app";
     try {
-      window.location.href = `${APP_URL}/auth/oauth/google?next=${encodeURIComponent(next)}`;
+      const intent = mode === "login" ? "signin" : "signup";
+      window.location.href = `${APP_URL}/auth/oauth/google?next=${encodeURIComponent(next)}&intent=${intent}`;
     } catch {
       // fallback sigur
-      location.assign("/auth/oauth/google?next=%2Fapp");
+      const intent = mode === "login" ? "signin" : "signup";
+      location.assign(`/auth/oauth/google?next=%2Fapp&intent=${intent}`);
     }
   }
 
@@ -174,7 +176,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
             height={20}
             style={{ display: "block" }}
           />
-          Continue with Google
+          {mode === "login" ? "Sign in with Google" : "Create account with Google"}
         </button>
 
         <div style={dividerRow}>

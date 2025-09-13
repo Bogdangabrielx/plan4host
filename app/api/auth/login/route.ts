@@ -58,39 +58,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2) Bootstrap tenant (idempotent, nu dăm fail login pe erori non-critice)
-
-    // 2.a) accounts — folosim default-urile DB (ex. plan='standard', suspended=false)
-    //      Evităm să trimitem 'plan' ca text ca să nu lovim enum-uri diferite (plan_t vs plan_tier).
-    const { error: accErr } = await supabase
-      .from("accounts")
-      .upsert({ id: user.id }, { onConflict: "id", ignoreDuplicates: true });
-
-    // nu stricăm login-ul dacă bootstrap-ul e blocat de RLS sau concurență
-    // (poți loga accErr?.message într-un sistem de logging, dacă ai)
-
-    // 2.b) account_users — verificăm întâi dacă există rândul admin
-    const { data: existingAU } = await supabase
-      .from("account_users")
-      .select("account_id")
-      .eq("account_id", user.id)
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
-
-    if (!existingAU) {
-      const { error: auErr } = await supabase
-        .from("account_users")
-        .upsert(
-          { account_id: user.id, user_id: user.id, role: "admin" },
-          { onConflict: "account_id,user_id", ignoreDuplicates: true }
-        );
-
-      // Dacă RLS-ul tău cere Premium pentru INSERT pe account_users, e posibil ca asta să pice.
-      // Nu mai propagăm 500 — lăsăm login-ul să continue.
-      // (ideal, bootstrap-ul admin se face printr-un RPC SECURITY DEFINER sau la signup)
-      void auErr;
-    }
+    // 2) Fără bootstrap în login. Tenantul se creează doar pe signup (admin)
+    //    sau de trigger-ul DB la crearea userului (handle_new_user).
 
     // 3) Succes — UI-ul face redirect dacă găsește x-redirect
     const res = NextResponse.json({ ok: true }, { status: 200 });

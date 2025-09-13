@@ -38,7 +38,7 @@
    - public.billing_plans(slug, name, description, max_properties, max_rooms_per_property,
      sync_interval_minutes, allow_sync_now, features, created_at)
    - public.accounts(id, plan, valid_until, created_at, trial_used)
-   - public.account_plan(account_id, plan_slug, status, trial_ends_at, valid_until, created_at, updated_at)
+   -- Deprecated/removed: public.account_plan(...)
    - public.account_users(account_id, user_id, role, scopes, disabled, created_at)
 
    Inventory + bookings
@@ -65,13 +65,7 @@
    3) KEY RPC FUNCTIONS (STABLE INTERFACES)
    ---------------------------------------------------------------------
    Plan resolution & limits
-   - public.account_effective_plan_slug(p_account_id uuid) -> text
-       Returns 'basic' | 'standard' | 'premium' for the given account, considering
-       account_plan row (status/expiry) and accounts.valid_until fallback.
-
-   - public.account_plan_limits(p_account_id uuid)
-       Returns (plan_slug, max_properties, max_rooms_per_property) from billing_plans.
-       With the simplified model, max_* are NULL (unlimited) for all plans.
+   -- Removed: account_effective_plan_slug/account_plan_limits. Runtime reads plan from accounts.plan only.
 
    Current plan for caller (UI convenience)
    - public.account_current_plan() -> text
@@ -99,8 +93,7 @@
 
    Plan changes (admin-only)
    - public.account_set_plan(p_account_id uuid, p_plan_slug text, p_valid_days int, p_trial_days int)
-       Core setter used by server; updates account_plan + accounts and performs housekeeping.
-       (Note: in the simplified model we no longer freeze properties; use for future hooks.)
+       Core setter used by server; updates accounts only (account_plan removed); housekeeping as needed.
 
    - public.account_set_plan_self(p_plan_slug text, p_valid_days int, p_trial_days int)
        SECURITY DEFINER wrapper; derives account from auth.uid(), validates ADMIN, and
@@ -279,8 +272,9 @@
        FROM information_schema.triggers
        WHERE trigger_schema='public';
    - To verify plan gating for sync:
-       SELECT account_effective_plan_slug(a.id), account_can_sync_now_v2(a.id,'sync_now')
-       FROM accounts a;
+       SELECT lower(coalesce(a.plan::text,'basic')) AS plan,
+              account_can_sync_now_v2(a.id,'sync_now')
+       FROM public.accounts a;
    ===================================================================== */
 
 /* =====================================================================
@@ -297,7 +291,6 @@
 
    Account / Subscription
    - RPC account_current_plan() → text
-   - RPC account_effective_plan_slug(p_account_id uuid) → text
    - RPC account_access_mode() → 'full'|'billing_only'|'blocked' (UI redirects admins to /app/subscription on 'billing_only')
    - RPC account_set_plan_self(p_plan_slug text, p_valid_days int, p_trial_days int)
        Admin-only setter used by Subscription page; delegates to account_set_plan.
@@ -360,7 +353,7 @@
    ---------------------------------------------------------------------
    -- a) Verify plan → policy mapping
    SELECT a.id,
-          public.account_effective_plan_slug(a.id) AS plan,
+          lower(coalesce(a.plan::text,'basic')) AS plan,
           (public.account_can_sync_now_v2(a.id,'sync_now')->>'allowed')::boolean AS can_sync_now,
           (public.account_can_sync_now_v2(a.id,'autosync')->>'cooldown_remaining_sec')::int AS autosync_cooldown_sec
      FROM public.accounts a
