@@ -69,7 +69,18 @@ export async function PATCH(req: Request) {
       patch.role = r;
     }
     if (scopesRaw !== undefined) {
-      patch.scopes = sanitizeScopes(scopesRaw);
+      // Canonicalize incoming scopes (UI or external callers)
+      const CANON = new Set(["calendar","guest_overview","property_setup","cleaning","channels"]);
+      const ALIASES: Record<string, string> = { inbox: "guest_overview", reservations: "calendar", propertySetup: "property_setup" };
+      const normalize = (s: string) => ALIASES[s] ?? s;
+      const list = Array.isArray(scopesRaw) ? scopesRaw : [];
+      const result = new Set<string>();
+      for (const x of list) {
+        if (typeof x !== 'string') continue;
+        const k = normalize(x);
+        if (CANON.has(k)) result.add(k);
+      }
+      patch.scopes = Array.from(result);
     }
     if (Object.keys(patch).length === 0) return NextResponse.json({ ok: true });
 

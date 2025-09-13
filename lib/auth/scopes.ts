@@ -3,6 +3,18 @@ import { createClient } from "@/lib/supabase/server";
 
 type Me = { role: "admin" | "editor" | "viewer"; scopes: string[]; disabled?: boolean };
 
+// Map legacy tokens -> new canonical tokens
+const SCOPE_ALIAS: Record<string, string> = {
+  // legacy -> new
+  inbox: "guest_overview",
+  reservations: "calendar",
+  propertySetup: "property_setup",
+};
+
+function normalizeToken(token: string): string {
+  return SCOPE_ALIAS[token] ?? token;
+}
+
 // Safer guard: reuse existing Supabase client + user id when provided, to avoid double getUser()
 export async function ensureScope(scope: string, supa?: any, actorId?: string) {
   const client = supa ?? createClient();
@@ -27,15 +39,23 @@ export async function ensureScope(scope: string, supa?: any, actorId?: string) {
   if (m.disabled) redirect("/auth/logout");
   if (m.role === "admin") return;
 
-  const scopes = (m.scopes ?? []) as string[];
-  if (scopes.includes(scope)) return;
+  const scopesRaw = (m.scopes ?? []) as string[];
+  const scopes = new Set(scopesRaw.map(normalizeToken));
+  const want = normalizeToken(scope);
+  if (scopes.has(want)) return;
 
   // redirect to first allowed section
-  const order = ["cleaning","inbox","calendar","channels","propertySetup"]; // dashboard requires explicit scope
-  const first = order.find((s) => scopes.includes(s));
+  const order = [
+    "cleaning",
+    "guest_overview",
+    "calendar",
+    "channels",
+    "property_setup",
+  ];
+  const first = order.find((s) => scopes.has(s));
   if (first) {
     const path = first === 'cleaning' ? '/app/cleaning'
-      : first === 'inbox' ? '/app/inbox'
+      : first === 'guest_overview' ? '/app/guest'
       : first === 'calendar' ? '/app/calendar'
       : first === 'channels' ? '/app/channels'
       : '/app/propertySetup';

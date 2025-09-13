@@ -80,7 +80,10 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         const me = j?.me as { role?: string; scopes?: string[]; disabled?: boolean } | undefined;
         if (!me) { setCanWrite(false); return; }
         const sc = new Set((me.scopes || []) as string[]);
-        const allowed = !me.disabled && (me.role === 'admin' || (me.role === 'editor' && sc.has('propertySetup')));
+        const allowed = !me.disabled && (
+          me.role === 'admin' ||
+          (me.role === 'editor' && (sc.has('property_setup') || sc.has('propertySetup')))
+        );
         setCanWrite(!!allowed);
       } catch { setCanWrite(false); }
     })();

@@ -15,8 +15,8 @@ export default async function GuestOverviewPage() {
   const mode = await supabase.rpc("account_access_mode");
   if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
 
-  // păstrăm același scope ca înainte
-  await ensureScope("inbox", supabase, user.id);
+  // Nou token: guest_overview (compat handled in ensureScope)
+  await ensureScope("guest_overview", supabase, user.id);
 
   const { data: props = [] } = await supabase
     .from("properties")

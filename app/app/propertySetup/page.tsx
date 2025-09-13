@@ -15,7 +15,8 @@ export default async function propertySetupPage() {
   if (!user) redirect("/auth/login");
   const mode = await supabase.rpc("account_access_mode");
   if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
-  await ensureScope("propertySetup", supabase, user.id);
+  // Nou token: property_setup (compat handled in ensureScope)
+  await ensureScope("property_setup", supabase, user.id);
 
   const { data: props = [] } = await supabase
     .from("properties")

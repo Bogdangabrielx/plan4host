@@ -101,6 +101,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   /* Load data */
   useEffect(() => {
     if (!propertyId) return;
+    if (!hasCleaningBoard) { setStatus("Idle"); return; }
     setStatus("Loading");
 
     (async () => {
@@ -267,7 +268,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
       setItems(list);
       setStatus("Idle");
     })();
-  }, [propertyId, dateStr, supabase, initialProperties, hasPriority]);
+  }, [propertyId, dateStr, supabase, initialProperties, hasPriority, hasCleaningBoard]);
 
   function sortedTasks(): TaskDef[] { return [...tasks].sort((a, b) => a.sort_index - b.sort_index); }
 
@@ -308,7 +309,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
           </p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <a
-              href="/app/billing"
+              href="/app/subscription"
               style={{
                 padding: "10px 14px",
                 borderRadius: 10,

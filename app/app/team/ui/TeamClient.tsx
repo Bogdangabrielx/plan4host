@@ -30,8 +30,8 @@ export default function TeamClient() {
   }
   useEffect(() => { load(); }, []);
 
-  function toggleScope(s: string) {
-    setScopes((prev) => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  function toggleScope(key: string) {
+    setScopes((prev) => prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]);
   }
 
   async function createUser() {
@@ -105,7 +105,13 @@ export default function TeamClient() {
     await load();
   }
 
-  const allScopes = ["cleaning","reservations","channels","inbox","calendar","propertySetup"];
+  const allScopes: { key: string; title: string }[] = [
+    { key: "calendar",        title: "Calendar" },
+    { key: "guest_overview",  title: "Guest Overview" },
+    { key: "property_setup",  title: "Property Setup" },
+    { key: "cleaning",        title: "Cleaning Board" },
+    { key: "channels",        title: "Channels & iCal" },
+  ];
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
@@ -140,10 +146,9 @@ export default function TeamClient() {
             </select>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <label style={label}>Scopes</label>
-            {allScopes.map(s => (
-              <label key={s} style={{ display: "flex", gap: 6, alignItems: "center", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 8 }}>
-                <input type="checkbox" checked={scopes.includes(s)} onChange={()=>toggleScope(s)} disabled={loading} /> {s}
+            {allScopes.map(({ key, title }) => (
+              <label key={key} style={{ display: "flex", gap: 6, alignItems: "center", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 8 }}>
+                <input type="checkbox" checked={scopes.includes(key)} onChange={()=>toggleScope(key)} disabled={loading} /> {title}
               </label>
             ))}
           </div>

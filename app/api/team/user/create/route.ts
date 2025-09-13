@@ -6,9 +6,25 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 
 function bad(status: number, body: any) { return NextResponse.json(body, { status }); }
 
-const ALLOWED_SCOPES = new Set(["cleaning","reservations","channels","inbox","calendar","propertySetup"]);
-const sanitizeScopes = (arr: any): string[] =>
-  (Array.isArray(arr) ? arr : []).filter((s) => typeof s === "string" && ALLOWED_SCOPES.has(s));
+// Canonical scope tokens (DB):
+//  - calendar, guest_overview, property_setup, cleaning, channels
+const CANON = new Set(["calendar","guest_overview","property_setup","cleaning","channels"]);
+const ALIASES: Record<string, string> = {
+  inbox: "guest_overview",
+  reservations: "calendar",
+  propertySetup: "property_setup",
+};
+const normalize = (s: string) => ALIASES[s] ?? s;
+const sanitizeScopes = (arr: any): string[] => {
+  const input = Array.isArray(arr) ? arr : [];
+  const out = new Set<string>();
+  for (const x of input) {
+    if (typeof x !== 'string') continue;
+    const k = normalize(x);
+    if (CANON.has(k)) out.add(k);
+  }
+  return Array.from(out);
+};
 
 export async function POST(req: Request) {
   try {
