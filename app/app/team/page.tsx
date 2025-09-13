@@ -26,15 +26,22 @@ export default async function TeamPage() {
   const m = (au ?? [])[0] as { account_id: string; role: string; disabled: boolean } | undefined;
   if (!m || m.disabled) redirect("/app");
 
-  // doar ADMIN poate gestiona echipa
-  if (m.role !== "admin") redirect("/app");
+  // preferăm rândul unde utilizatorul este admin, dacă există
+  let membership = m;
+  const adminRow = (au ?? []).find((row: any) => row.role === "admin" && !row.disabled);
+  if (adminRow) membership = adminRow as any;
 
-  // Team e disponibil doar pe plan Premium
-  const accountId = m.account_id;
-  const plan = await supa.rpc("account_effective_plan_slug", { p_account_id: accountId });
-  if ((plan.data as string | null)?.toLowerCase?.() !== "premium") {
-    redirect("/app/subscription");
-  }
+  if (membership.role !== "admin") redirect("/app");
+
+  // Team e disponibil doar pe plan Premium (citit direct din accounts.plan)
+  const accountId = membership.account_id;
+  const { data: acc } = await supa
+    .from("accounts")
+    .select("plan")
+    .eq("id", accountId)
+    .maybeSingle();
+  const plan = (acc?.plan as string | null)?.toLowerCase?.() ?? "basic";
+  if (plan !== "premium") redirect("/app/subscription");
 
   return (
     <AppShell currentPath="/app/team" title="Team">

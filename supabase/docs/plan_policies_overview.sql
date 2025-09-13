@@ -28,7 +28,7 @@
      - Autosync every 10 minutes
      - Sync Now: allowed
      - Cleaning Board: available
-     - Team: available (owner only in UI; DB enforces Premium-only)
+     - Team: available (admin only in UI; DB enforces Premium-only)
    ===================================================================== */
 
 /* =====================================================================
@@ -42,7 +42,7 @@
    - public.account_users(account_id, user_id, role, scopes, disabled, created_at)
 
    Inventory + bookings
-   - public.properties(id, owner_id/account_id, name, timezone, check_in_time, check_out_time, ...)
+   - public.properties(id, admin_id, name, timezone, check_in_time, check_out_time, ...)
    - public.rooms(id, property_id, name, capacity, sort_index, ...)
    - public.room_types(id, property_id, name, ...)
    - public.bookings(id, property_id, room_id, start_date, end_date, start_time, end_time, status, ...)
@@ -95,24 +95,24 @@
 
    - public.account_access_mode() -> text
        Returns: 'full' | 'billing_only' | 'blocked' for the current user. UI redirects
-       owners to /app/subscription when in 'billing_only'.
+       admins to /app/subscription when in 'billing_only'.
 
-   Plan changes (owner-only)
+   Plan changes (admin-only)
    - public.account_set_plan(p_account_id uuid, p_plan_slug text, p_valid_days int, p_trial_days int)
        Core setter used by server; updates account_plan + accounts and performs housekeeping.
        (Note: in the simplified model we no longer freeze properties; use for future hooks.)
 
    - public.account_set_plan_self(p_plan_slug text, p_valid_days int, p_trial_days int)
-       SECURITY DEFINER wrapper; derives account from auth.uid(), validates OWNER, and
+       SECURITY DEFINER wrapper; derives account from auth.uid(), validates ADMIN, and
        delegates to account_set_plan(). Used by the Subscription page.
 
-   Property deletion (owner-only)
+   Property deletion (admin-only)
    - public.account_delete_property(p_account_id uuid, p_property_id uuid)
        Deletes a property and all dependent data (rooms/types/bookings/ical/cleaning),
        then performs housekeeping.
 
    - public.account_delete_property_self(p_property_id uuid)
-       SECURITY DEFINER wrapper for owners; derives account from property_id and auth.uid().
+       SECURITY DEFINER wrapper for admins; derives account from property_id and auth.uid().
    ===================================================================== */
 
 /* =====================================================================
@@ -128,13 +128,13 @@
      Blocks writes on Basic. Attached as 'trg_enforce_cleaning_plan' on:
        public.cleaning_task_defs, public.cleaning_progress
 
-   Trial auto-grant (owner account bootstrap)
+   Trial auto-grant (admin account bootstrap)
    - public.trg_account_auto_trial AFTER INSERT ON public.accounts
      Calls public.account_grant_trial(NEW.id, 7) to start STANDARD 7-day trial.
 
    Auth onboarding
    - auth.users → public.handle_new_user() AFTER INSERT (trigger name: on_auth_user_created)
-     Creates the owner account + membership and grants STANDARD 7‑day trial.
+     Creates the admin account + membership and grants STANDARD 7‑day trial.
      The function is SECURITY DEFINER and defensive (never blocks user creation).
    ===================================================================== */
 
@@ -195,10 +195,10 @@
    RLS is enabled on certain tables for scoping data to the account membership.
    Example policies (kept from previous migrations, adjust as needed):
 
-   - public.bookings: policy allowing members with scope 'reservations' (or owner/manager)
+   - public.bookings: policy allowing members (admin/editor with the right scope)
      to SELECT/INSERT/UPDATE on bookings of properties where they belong.
 
-   - public.cleaning_task_defs: policy allowing members with scope 'cleaning' (or owner/manager)
+   - public.cleaning_task_defs: policy allowing members with scope 'cleaning' (admin/editor for writes)
      to SELECT/INSERT/UPDATE for the property they belong to.
 
    Note: Team/Plan gating for Basic/Standard/Premium is enforced by triggers above,
@@ -218,14 +218,14 @@
    - Steps:
      1) INSERT INTO public.accounts(id) VALUES (NEW.id) ON CONFLICT DO NOTHING
      2) INSERT INTO public.account_users(account_id,user_id,role,scopes,disabled)
-        VALUES (NEW.id, NEW.id, 'owner', '{}'::text[], false)
-        ON CONFLICT(account_id,user_id) DO UPDATE SET role='owner', disabled=false
+       VALUES (NEW.id, NEW.id, 'admin', '{}'::text[], false)
+        ON CONFLICT(account_id,user_id) DO UPDATE SET role='admin', disabled=false
      3) PERFORM public.account_grant_trial(NEW.id, 7)
    - Defensive: wraps with set_config('app.bypass_property_write','on', true) and catches exceptions.
    ===================================================================== */
 
 /* =====================================================================
-   10) BACKFILL (OWNER + TRIAL) FOR EXISTING AUTH USERS
+   10) BACKFILL (ADMIN + TRIAL) FOR EXISTING AUTH USERS
    ---------------------------------------------------------------------
    -- Run once if you already have auth.users but no matching accounts/account_users rows
    DO $$
@@ -239,7 +239,7 @@
      WHERE a.id IS NULL;
 
      INSERT INTO public.account_users(account_id, user_id, role, scopes, disabled)
-     SELECT u.id, u.id, 'owner', '{}'::text[], false
+     SELECT u.id, u.id, 'admin', '{}'::text[], false
      FROM auth.users u
      LEFT JOIN public.account_users au ON au.account_id = u.id AND au.user_id = u.id
      WHERE au.user_id IS NULL;
@@ -260,10 +260,10 @@
    - public.accounts: acc_insert/acc_update/acc_delete/acc_select (id = auth.uid()), tenant_select
    - public.account_users: au_insert/au_update/au_delete/au_select (self), team operations additionally gated by trigger (Premium-only)
    - public.account_sync_usage: insert/select by members of the account
-   - public.bookings: policies for owner/tenants; additional helper policies p_bookings_reservations_*
+   - public.bookings: policies for admin/members; additional helper policies as needed
    - public.cleaning_task_defs, public.cleaning_progress: member policies for "cleaning" scope; writes further gated by trigger (blocked on Basic)
-   - public.ical_type_integrations and public.ical_type_sync_logs: member/owner policies for the property's account
-   - public.calendar_settings, room detail tables: member/owner policies per property
+   - public.ical_type_integrations and public.ical_type_sync_logs: admin/member policies for the property's account
+   - public.calendar_settings, room detail tables: admin/member policies per property
 
    Auth schema (managed by Supabase): auth.users and related tables have RLS enabled by default.
    ===================================================================== */
@@ -289,7 +289,7 @@
    Auth
    - POST /api/auth/signup
        Uses Supabase Auth to create user; Auth trigger on_auth_user_created → public.handle_new_user
-       creates owner account + membership and grants STANDARD 7‑day trial.
+       creates admin account + membership and grants STANDARD 7‑day trial.
    - POST /api/auth/login
        Signs in (email/password). On success, session cookies set by Supabase SDK.
    - GET  /auth/callback
@@ -298,15 +298,15 @@
    Account / Subscription
    - RPC account_current_plan() → text
    - RPC account_effective_plan_slug(p_account_id uuid) → text
-   - RPC account_access_mode() → 'full'|'billing_only'|'blocked' (UI redirects owners to /app/subscription on 'billing_only')
+   - RPC account_access_mode() → 'full'|'billing_only'|'blocked' (UI redirects admins to /app/subscription on 'billing_only')
    - RPC account_set_plan_self(p_plan_slug text, p_valid_days int, p_trial_days int)
-       Owner-only setter used by Subscription page; delegates to account_set_plan.
+       Admin-only setter used by Subscription page; delegates to account_set_plan.
 
    Properties & Rooms
    - POST /api/properties
-       Creates a property (RLS owner/members); no quotas with simplified plans.
+       Creates a property (RLS admin/members); no quotas with simplified plans.
    - RPC account_delete_property_self(p_property_id uuid)
-       Owner-only; deletes property with dependencies and performs housekeeping.
+       Admin-only; deletes property with dependencies and performs housekeeping.
    - POST /api/rooms
        Creates room for a property (RLS).
    - GET  /api/rooms/[id].ics
@@ -344,11 +344,11 @@
 
    Team (Premium-only)
    - GET    /api/team/user/list           (client fetch)
-   - POST   /api/team/user/create         (Owner-only; roles: member/viewer; plan must be Premium)
-   - PATCH  /api/team/user/update         (Owner-only; toggle role member↔viewer, scopes, disabled)
-   - PATCH  /api/team/user/password       (Owner-only)
-   - POST   /api/team/user/remove         (Owner-only; cannot remove owner)
-     DB trigger trg_enforce_team_plan blocks any non-owner membership writes unless plan is Premium.
+   - POST   /api/team/user/create         (Admin-only; roles: editor/viewer; plan must be Premium)
+   - PATCH  /api/team/user/update         (Admin-only; toggle role editor↔viewer, scopes, disabled)
+   - PATCH  /api/team/user/password       (Admin-only)
+   - POST   /api/team/user/remove         (Admin-only; cannot remove admin)
+     DB trigger trg_enforce_team_plan blocks any non-admin membership writes unless plan is Premium.
 
    Identity / Context
    - GET /api/me
@@ -384,7 +384,7 @@
    -- e) Trial grant for a fresh account
    SELECT public.account_grant_trial('<account-uuid>'::uuid, 7);
 
-   -- f) Owner-only plan change
+   -- f) Admin-only plan change
    SELECT public.account_set_plan_self('premium', 30, NULL);
    ===================================================================== */
 

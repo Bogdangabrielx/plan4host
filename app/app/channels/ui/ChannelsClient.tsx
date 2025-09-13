@@ -129,17 +129,17 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     });
   }, [countdownSec]);
 
-  // Load plan for the CURRENT PROPERTY (so gating is accurate per property account)
+  // Load plan for the CURRENT PROPERTY (so gating is accurate per property admin)
   useEffect(() => {
     (async () => {
       if (!propertyId) { setIsPremium(null); return; }
-      // 1) owner/account of selected property
-      const rProp = await supabase.from("properties").select("owner_id").eq("id", propertyId).single();
-      const accId = (rProp.data as any)?.owner_id as string | undefined;
+      // 1) admin/account of selected property
+      const rProp = await supabase.from("properties").select("admin_id").eq("id", propertyId).single();
+      const accId = (rProp.data as any)?.admin_id as string | undefined;
       if (!accId) { setIsPremium(false); setHintText(""); setHintVariant("muted"); return; }
-      // 2) effective plan for that account
-      const plan = await supabase.rpc("account_effective_plan_slug", { p_account_id: accId });
-      const p = (plan.data as string | null)?.toLowerCase?.() ?? "basic";
+      // 2) plan for that account
+      const rPlan = await supabase.from("accounts").select("plan").eq("id", accId).maybeSingle();
+      const p = ((rPlan.data as any)?.plan as string | null)?.toLowerCase?.() ?? "basic";
       const premium = p === "premium";
       setIsPremium(premium);
       if (premium) {

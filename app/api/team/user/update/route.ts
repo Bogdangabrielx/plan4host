@@ -59,6 +59,11 @@ export async function PATCH(req: Request) {
     if (target.role === "admin") return bad(403, { error: "Cannot modify admin user" });
     if (userId === actor.id) return bad(403, { error: "Cannot modify your own membership" });
 
+    // plan gating: Premium only for team management
+    const { data: accPlan } = await supa.from("accounts").select("plan").eq("id", accountId).maybeSingle();
+    const plan = (accPlan?.plan as string | null)?.toLowerCase?.() ?? "basic";
+    if (plan !== "premium") return bad(403, { error: "Team is available on Premium plan only" });
+
     // pregătește patch
     const patch: any = {};
     if (typeof disabled === "boolean") patch.disabled = disabled;

@@ -113,6 +113,19 @@ export default function TeamClient() {
     { key: "channels",        title: "Channels & iCal" },
   ];
 
+  // Pretty-print scopes in Members list (handles legacy tokens too)
+  const ORDER = ["calendar","guest_overview","property_setup","cleaning","channels"] as const;
+  const TITLE_BY: Record<string, string> = Object.fromEntries(allScopes.map(s => [s.key, s.title]));
+  const ALIASES: Record<string, string> = { inbox: "guest_overview", reservations: "calendar", propertySetup: "property_setup" };
+  const normalize = (s: string) => ALIASES[s] ?? s;
+  function formatScopes(scopes: string[] | null | undefined): string {
+    if (!Array.isArray(scopes) || scopes.length === 0) return "—";
+    const norm = Array.from(new Set(scopes.map(normalize)));
+    norm.sort((a, b) => (ORDER.indexOf(a as any) - ORDER.indexOf(b as any)) || a.localeCompare(b));
+    const titles = norm.map((k) => TITLE_BY[k] ?? k);
+    return titles.join(", ");
+  }
+
   return (
     <div style={{ display: "grid", gap: 16 }}>
       <section style={card}>
@@ -172,7 +185,7 @@ export default function TeamClient() {
                     role: {u.role}{isAdmin ? " (base account)" : ""} • {u.disabled ? "disabled" : "active"}
                   </small>
                   <small style={{ color: "var(--muted)" }}>
-                    scopes: {(u.scopes || []).join(", ") || "—"}
+                    {formatScopes(u.scopes)}
                   </small>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

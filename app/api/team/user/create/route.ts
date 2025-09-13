@@ -55,9 +55,9 @@ export async function POST(req: Request) {
         .eq("user_id", actor.id)
         .maybeSingle();
       if (!me || me.disabled || me.role !== "admin") return bad(403, { error: "Only admin can create users" });
-      // plan gating via account_plan.plan_slug
-      const eff = await supa.rpc("account_effective_plan_slug", { p_account_id: accountId });
-      const plan = (eff.data as string | null)?.toLowerCase?.() ?? "basic";
+      // plan gating: Premium only (direct from accounts.plan)
+      const { data: accPlan } = await supa.from("accounts").select("plan").eq("id", accountId).maybeSingle();
+      const plan = (accPlan?.plan as string | null)?.toLowerCase?.() ?? "basic";
       if (plan !== "premium") return bad(403, { error: "Team is available on Premium plan only" });
     } else {
       const { data: au } = await supa
@@ -70,8 +70,8 @@ export async function POST(req: Request) {
       if (!row || row.disabled || row.role !== "admin") return bad(403, { error: "Only admin can create users" });
       accountId = row.account_id as string;
 
-      const eff = await supa.rpc("account_effective_plan_slug", { p_account_id: accountId });
-      const plan = (eff.data as string | null)?.toLowerCase?.() ?? "basic";
+      const { data: accPlan } = await supa.from("accounts").select("plan").eq("id", accountId).maybeSingle();
+      const plan = (accPlan?.plan as string | null)?.toLowerCase?.() ?? "basic";
       if (plan !== "premium") return bad(403, { error: "Team is available on Premium plan only" });
     }
 

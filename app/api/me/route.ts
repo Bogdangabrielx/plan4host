@@ -17,20 +17,20 @@ const DEFAULT_SCOPES: Record<"admin" | "editor" | "viewer", string[]> = {
   admin: [
     "dashboard",
     "calendar",
-    "propertySetup",
+    "property_setup",
     "cleaning",
     "channels",
-    "inbox",
+    "guest_overview",
     "team",
     "subscription",
   ],
   editor: [
     "dashboard",
     "calendar",
-    "propertySetup",
+    "property_setup",
     "cleaning",
     "channels",
-    "inbox",
+    "guest_overview",
     // fără "team" și "subscription"
   ],
   viewer: [
@@ -38,7 +38,7 @@ const DEFAULT_SCOPES: Record<"admin" | "editor" | "viewer", string[]> = {
     "calendar",
     "cleaning",
     "channels",
-    "inbox",
+    "guest_overview",
     // poate vezi și propertySetup în read-only; îl poți adăuga dacă vrei în UI
   ],
 };
@@ -69,11 +69,11 @@ export async function GET() {
       | undefined;
 
     if (member) {
-      // Plan efectiv conform account_plan.plan_slug
-      const rPlan = await supa.rpc("account_effective_plan_slug", { p_account_id: member.account_id });
+      // Plan direct din accounts.plan
+      const { data: acc } = await supa.from("accounts").select("plan").eq("id", member.account_id).maybeSingle();
       const role = member.role;
       const disabled = !!member.disabled;
-      const plan = ((rPlan.data as string | null)?.toLowerCase?.() ?? "basic") as string;
+      const plan = ((acc?.plan as string | null)?.toLowerCase?.() ?? "basic") as string;
       const scopes =
         Array.isArray(member.scopes) && member.scopes.length > 0
           ? member.scopes
@@ -88,23 +88,21 @@ export async function GET() {
       );
     }
 
-    // 2) Fallback: utilizatorul este titularul propriului cont (contul de bază)
-    // Plan pentru contul propriu (admin): folosește RPC cu account_plan
-    const rAcc = await supa.rpc("account_effective_plan_slug", { p_account_id: user.id });
-    if (!rAcc.error) {
-      return NextResponse.json(
-        {
-          ok: true,
-          me: {
-            role: "admin" as const,
-            scopes: DEFAULT_SCOPES.admin,
-            disabled: false,
-            plan: ((rAcc.data as string | null)?.toLowerCase?.() ?? "basic") as string,
-          },
+    // 2) Fallback: titularul propriului cont (admin)
+    const { data: accSelf } = await supa.from("accounts").select("plan").eq("id", user.id).maybeSingle();
+    const planSelf = ((accSelf?.plan as string | null)?.toLowerCase?.() ?? "basic") as string;
+    return NextResponse.json(
+      {
+        ok: true,
+        me: {
+          role: "admin" as const,
+          scopes: DEFAULT_SCOPES.admin,
+          disabled: false,
+          plan: planSelf,
         },
-        { headers: { "Cache-Control": "no-store, max-age=0" } }
-      );
-    }
+      },
+      { headers: { "Cache-Control": "no-store, max-age=0" } }
+    );
 
     // 3) Nici cont propriu, nici membru într-un cont -> fără context valid
     return bad(403, { error: "No account context" });

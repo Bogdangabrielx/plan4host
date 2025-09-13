@@ -174,17 +174,17 @@ export async function POST(req: Request) {
       return j(400, { error: "Missing propertyId" });
     }
 
-    // 1) Property + timezone + owner (RLS asigură că userul are acces)
+    // 1) Property + timezone + admin (RLS asigură că userul are acces)
     const { data: prop, error: propErr } = await supabase
       .from("properties")
-      .select("id, timezone, owner_id")
+      .select("id, timezone, admin_id")
       .eq("id", propertyId)
       .single();
     if (propErr || !prop) {
       return j(404, { error: "Property not found" });
     }
 
-    const accountId: string = (prop as any).owner_id as string;
+    const accountId: string = (prop as any).admin_id as string;
     const propTZ: string = (prop as any).timezone || "UTC";
 
     // 2) Rate-limit check (sync_now)

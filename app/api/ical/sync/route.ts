@@ -34,15 +34,15 @@ export async function POST(req: Request) {
     if (e1 || !integ) return bad(404, { error: "Integration not found" });
     if (!integ.is_active) return bad(409, { error: "Integration is inactive" });
 
-    // 2) Get account (owner) for the property
+    // 2) Get account (admin) for the property
     const { data: prop, error: e2 } = await supabase
       .from("properties")
-      .select("id, owner_id")
+      .select("id, admin_id")
       .eq("id", integ.property_id)
       .single();
 
     if (e2 || !prop) return bad(404, { error: "Property not found" });
-    const accountId = prop.owner_id as string;
+    const accountId = (prop as any).admin_id as string;
 
     // 3) Policy check (rate limits & gating)
     const { data: decision, error: eCheck } = await supabase

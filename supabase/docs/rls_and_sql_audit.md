@@ -178,10 +178,10 @@ VALUES ('<PROPERTY_ID>','<ROOM_ID>','2025-01-10','2025-01-11','confirmed','manua
 ```
 
 Common reasons for a `bookings` RLS failure:
-- `account_users.role` is `viewer` (no write); needs `admin` or `editor` with `reservations` in `scopes`.
+- `account_users.role` is `viewer` (no write); needs `admin` or `editor` with the right scope (e.g., `calendar`).
 - `disabled=true` for the member.
-- Policies still reference legacy roles (`owner/manager/member`) or the join uses `properties.owner_id` while schema uses `properties.account_id`.
-- `property_id` doesn’t belong to the member’s account.
+- Policies still reference legacy roles (`owner/manager/member`) or the join uses `properties.owner_id` while schema uses `properties.admin_id`.
+- `property_id` doesn’t belong to the member’s account (admin_id).
 
 ---
 
@@ -241,4 +241,3 @@ ORDER BY tablename, policyname;
 ## 9) Notes / Paste Findings Here
 
 - Paste the outputs relevant to your failure (bookings INSERT, member row, policy text) and annotate what failed.
-

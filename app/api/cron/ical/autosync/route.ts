@@ -245,7 +245,7 @@ async function runAutosync(req: Request) {
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
     const supabase = createSb(url, serviceKey, { auth: { persistSession: false } });
 
-    // 3) ia toate feed-urile active + property(owner_id, timezone)
+    // 3) ia toate feed-urile active + property(admin_id, timezone)
     const { data: feeds, error: fErr } = await supabase
       .from("ical_type_integrations")
       .select(`
@@ -258,7 +258,7 @@ async function runAutosync(req: Request) {
         last_sync,
         properties:properties!inner(
           id,
-          owner_id,
+          admin_id,
           timezone
         )
       `)
@@ -280,13 +280,13 @@ async function runAutosync(req: Request) {
       url: string;
       is_active: boolean | null;
       last_sync: string | null;
-      properties: { id: string; owner_id: string; timezone: string | null };
+      properties: { id: string; admin_id: string; timezone: string | null };
     };
 
     // group by account
     const byAccount = new Map<string, FeedRow[]>();
     for (const f of (feeds as any[] as FeedRow[])) {
-      const acc = f.properties.owner_id;
+      const acc = f.properties.admin_id;
       if (!byAccount.has(acc)) byAccount.set(acc, []);
       byAccount.get(acc)!.push(f);
     }
