@@ -238,6 +238,7 @@ export default function CheckinClient() {
     placeholder,
     ariaLabel,
     id,
+    minChars = 2,
   }: {
     value: string;
     onChange: (v: string) => void;
@@ -245,6 +246,7 @@ export default function CheckinClient() {
     placeholder?: string;
     ariaLabel?: string;
     id?: string;
+    minChars?: number;
   }) {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState(value || "");
@@ -252,10 +254,10 @@ export default function CheckinClient() {
     const wrapRef = useRef<HTMLDivElement | null>(null);
     const list = useMemo(() => {
       const q = query.trim().toLowerCase();
-      if (!q) return options.slice(0, 20);
+      if (!q || q.length < minChars) return [];
       const filtered = options.filter((o) => o.toLowerCase().includes(q));
       return filtered.slice(0, 30);
-    }, [options, query]);
+    }, [options, query, minChars]);
 
     useEffect(() => setQuery(value || ""), [value]);
 
@@ -285,8 +287,15 @@ export default function CheckinClient() {
           aria-autocomplete="list"
           value={query}
           placeholder={placeholder}
-          onChange={(e) => { setQuery(e.currentTarget.value); setOpen(true); onChange(e.currentTarget.value); }}
-          onFocus={() => setOpen(true)}
+          autoComplete="off"
+          spellCheck={false}
+          onChange={(e) => {
+            const v = e.currentTarget.value;
+            setQuery(v);
+            onChange(v);
+            setOpen(v.trim().length >= minChars);
+          }}
+          onFocus={() => setOpen(query.trim().length >= minChars)}
           onKeyDown={(e) => {
             if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) { setOpen(true); return; }
             if (e.key === "ArrowDown") { setHi((i) => Math.min(i + 1, list.length - 1)); e.preventDefault(); }
@@ -625,6 +634,7 @@ export default function CheckinClient() {
                     onChange={setCountryText}
                     options={countries.map(c => c.name)}
                     placeholder="Start typing… e.g. Romania"
+                    minChars={2}
                   />
                 </div>
               </div>
@@ -688,6 +698,7 @@ export default function CheckinClient() {
                       onChange={setDocNationality}
                       options={nationalityOptions}
                       placeholder="Start typing… e.g. Romanian"
+                      minChars={2}
                     />
                   </div>
                   <div>
