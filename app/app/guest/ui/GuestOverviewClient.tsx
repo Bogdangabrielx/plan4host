@@ -235,7 +235,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     };
     if (kind === "green") return { ...base, background: "transparent", borderColor: "var(--success)",color:"var(--success)" };
     if (kind === "red") return { ...base, background: "transparent", borderColor: "var(--danger)", color:"var(--danger)" };
-    return { ...base, background: "transparent", borderColor: "var(--warning, #f59e0b)", color:"var(--warning)" };
+    return { ...base, background: "transparent", borderColor: "var(--warning, #f59e0b)", color:"var(--warning, #f59e0b)" };
   }
 
   // Actions
@@ -275,7 +275,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <h1 style={{ margin: 0, fontSize: 20 }}>Guest Overview</h1>
+          <h1 style={{ margin: 0, fontSize: 29, fontStyle:"italic"}}>Guest Overview</h1>
           {loading === "loading" && (
             <span style={{ fontSize: 12, padding: "4px 8px", borderRadius: 999, background: "var(--primary)", color: "#0c111b", fontWeight: 800 }}>
               Loading…
