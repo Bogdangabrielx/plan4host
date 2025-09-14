@@ -238,7 +238,7 @@ export default function CheckinClient() {
     placeholder,
     ariaLabel,
     id,
-    minChars = 2,
+    minChars = 3,
   }: {
     value: string;
     onChange: (v: string) => void;
