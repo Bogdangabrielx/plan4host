@@ -108,7 +108,7 @@ export default function CleaningRoomModal({
       style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.6)", display: "grid", placeItems: "center" }}>
       <div onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(680px, calc(100vw - 32px))", maxHeight: "86vh", overflow: "auto",
+          width: "min(680px, calc(100vw - 32px))", maxHeight: "calc(100vh - 32px)", overflow: "auto",
           background: "var(--panel)", color: "var(--text)",
           border: "1px solid var(--border)", borderRadius: 12, padding: 16,
           fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif'

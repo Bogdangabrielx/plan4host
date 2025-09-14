@@ -176,6 +176,18 @@ html, body {
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
 }
 
+/* Responsive media: prevent lateral overflow */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Utility: force-wrap very long words/URLs when needed */
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 /* Switzer variable font (self-hosted) */
 @font-face {
   font-family: 'Switzer';

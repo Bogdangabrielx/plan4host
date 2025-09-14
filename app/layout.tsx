@@ -60,11 +60,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 html, body { background: var(--bg); color: var(--text); }
 
-/* Mobile overflow guard */
-@media (max-width: 480px) {
-  html, body { overflow-x: hidden; }
-}
-
 /* accents */
 :root[data-theme="dark"][data-accent="base"]   { --primary:#60a5fa; }
 :root[data-theme="dark"][data-accent="blue"]   { --primary:#60a5fa; }

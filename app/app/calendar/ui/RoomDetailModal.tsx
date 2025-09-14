@@ -577,7 +577,7 @@ export default function RoomDetailModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "min(1000px, calc(100vw - 32px))",
-          maxHeight: "88vh",
+          maxHeight: "calc(100vh - 32px)",
           overflow: "auto",
           background: "var(--panel)",
           color: "var(--text)",
