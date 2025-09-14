@@ -277,10 +277,11 @@ export default function DashboardClient({
     color: "var(--text)",
     border: "1px solid var(--border)",
     borderRadius: 8,
+    fontFamily: 'inherit',
   };
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
+    <div style={{ display: "grid", gap: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
       <PlanHeaderBadge title="Dashboard" slot="header-right" />
 
       {/* Add property */}
