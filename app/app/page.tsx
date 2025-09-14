@@ -50,14 +50,21 @@ export default async function DashboardPage() {
     }
   }
 
-  const { data: properties = [] } = await supabase
-    .from("properties")
-    .select("id,name,country_code,timezone,check_in_time,check_out_time")
-    .order("created_at", { ascending: true });
+  // Defensive: always pass an array to the client component
+  let properties: any[] = [];
+  try {
+    const { data, error } = await supabase
+      .from("properties")
+      .select("id,name,country_code,timezone,check_in_time,check_out_time")
+      .order("created_at", { ascending: true });
+    if (!error && Array.isArray(data)) properties = data as any[];
+  } catch {
+    properties = [];
+  }
 
   return (
     <AppShell currentPath="/app" title="Dashboard">
-      <DashboardClient initialProperties={properties as any[]} />
+      <DashboardClient initialProperties={properties} />
     </AppShell>
   );
 }
