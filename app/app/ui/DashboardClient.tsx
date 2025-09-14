@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "../_components/HeaderContext";
+import { COUNTRIES as TZ_COUNTRIES, findCountry } from "@/lib/timezones";
 import PlanHeaderBadge from "../_components/PlanHeaderBadge";
 
 type Property = {
@@ -24,14 +25,9 @@ const card: React.CSSProperties = {
   padding: 16,
 };
 
-const COUNTRY_NAMES: Record<string, string> = {
-  RO: "Romania",
-  ES: "Spain",
-  IT: "Italy",
-  FR: "France",
-  GB: "United Kingdom",
-  DE: "Germany",
-};
+const COUNTRY_NAMES: Record<string, string> = Object.fromEntries(
+  TZ_COUNTRIES.map(c => [c.code, c.name])
+);
 
 function flagEmoji(cc: string | null | undefined): string {
   if (!cc) return "";
@@ -116,17 +112,10 @@ export default function DashboardClient({
     })();
   }, [supabase]);
 
-  function guessTZ(cc: string) {
-    switch (cc) {
-      case "ES": return "Europe/Madrid";
-      case "IT": return "Europe/Rome";
-      case "FR": return "Europe/Paris";
-      case "GB": return "Europe/London";
-      case "DE": return "Europe/Berlin";
-      case "RO":
-      default:   return "Europe/Bucharest";
-    }
-  }
+function guessTZ(cc: string) {
+  const c = findCountry(cc);
+  return c?.tz || "Europe/Bucharest";
+}
 
   async function addProperty() {
     if (!name || !country) return;
@@ -307,12 +296,12 @@ export default function DashboardClient({
               style={FIELD_STYLE}
             >
               <option value="">— select —</option>
-              <option value="RO">{countryLabel("RO")}</option>
-              <option value="ES">{countryLabel("ES")}</option>
-              <option value="IT">{countryLabel("IT")}</option>
-              <option value="FR">{countryLabel("FR")}</option>
-              <option value="GB">{countryLabel("GB")}</option>
-              <option value="DE">{countryLabel("DE")}</option>
+              {TZ_COUNTRIES
+                .slice()
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((c) => (
+                  <option key={c.code} value={c.code}>{countryLabel(c.code)}</option>
+                ))}
             </select>
           </div>
 
