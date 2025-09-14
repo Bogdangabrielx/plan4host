@@ -215,7 +215,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           >
             {mounted && !aboutFailed ? (
               <img
-                src={theme === "light" ? "/aboutme_forlight.png" : "/aboutme_fordark.png"}
+                src={theme === "light" ? "/navigation_forlight.png" : "/navigation_fordark.png"}
                 alt=""
                 width={isSmall ? 28 : 32}
                 height={isSmall ? 28 : 32}
