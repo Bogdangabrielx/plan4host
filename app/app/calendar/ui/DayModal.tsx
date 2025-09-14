@@ -201,7 +201,7 @@ export default function DayModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "min(1100px, calc(100vw - 32px))",
-          maxHeight: "calc(100vh - 32px)",
+          maxHeight: "calc(100dvh - 32px)",
           overflow: "auto",
           background: "var(--panel)",
           color: "var(--text)",
@@ -211,7 +211,7 @@ export default function DayModal({
         }}
       >
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, position: "sticky", top: 0, background: "var(--panel)", zIndex: 1, paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
           <strong style={{ letterSpacing: 0.2, fontSize: 16 }}>
             {dateStr} — Rooms
           </strong>
