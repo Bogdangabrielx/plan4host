@@ -233,9 +233,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       border: "1px solid transparent",
       color: "#0c111b",
     };
-    if (kind === "green") return { ...base, background: "transparent", borderColor: "var(--success)" };
-    if (kind === "red") return { ...base, background: "transparent", borderColor: "var(--danger)", color: "#fff" };
-    return { ...base, background: "transparent", borderColor: "var(--warning, #f59e0b)" };
+    if (kind === "green") return { ...base, background: "transparent", borderColor: "var(--success)",color:"var(--text)" };
+    if (kind === "red") return { ...base, background: "transparent", borderColor: "var(--danger)", color:"var(--text)" };
+    return { ...base, background: "transparent", borderColor: "var(--warning, #f59e0b)", color:"var(--text)" };
   }
 
   // Actions
