@@ -570,7 +570,7 @@ export default function RoomDetailModal({
         background: "rgba(0,0,0,0.6)",
         display: "grid",
         placeItems: "center",
-        fontFamily: '"Times New Roman", serif',
+        fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
       }}
     >
       <div
@@ -651,6 +651,7 @@ export default function RoomDetailModal({
                     borderRadius: 10,
                     fontSize: 14,
                     fontWeight: 600,
+                    fontFamily: "inherit",
                     flex: 1,
                   }}
                 />
@@ -666,6 +667,7 @@ export default function RoomDetailModal({
                     borderRadius: 10,
                     fontSize: 14,
                     fontWeight: 600,
+                    fontFamily: "inherit",
                     width: 160,
                   }}
                 />
@@ -688,6 +690,7 @@ export default function RoomDetailModal({
                     borderRadius: 10,
                     fontSize: 14,
                     fontWeight: 600,
+                    fontFamily: "inherit",
                     flex: 1,
                   }}
                 />
@@ -703,6 +706,7 @@ export default function RoomDetailModal({
                     borderRadius: 10,
                     fontSize: 14,
                     fontWeight: 600,
+                    fontFamily: "inherit",
                     width: 160,
                   }}
                 />
