@@ -194,7 +194,7 @@ export default function DayModal({
         background: "rgba(0,0,0,0.5)",
         display: "grid",
         placeItems: "center",
-        fontFamily: '"Times New Roman", serif',
+        fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
       }}
     >
       <div
