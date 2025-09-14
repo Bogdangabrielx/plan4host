@@ -110,7 +110,8 @@ export default function CleaningRoomModal({
         style={{
           width: "min(680px, 92vw)", maxHeight: "86vh", overflow: "auto",
           background: "var(--panel)", color: "var(--text)",
-          border: "1px solid var(--border)", borderRadius: 12, padding: 16
+          border: "1px solid var(--border)", borderRadius: 12, padding: 16,
+          fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif'
         }}>
 
         {/* Header */}

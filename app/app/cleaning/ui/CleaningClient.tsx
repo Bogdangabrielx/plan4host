@@ -344,7 +344,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
 
   /* ─── UI principal ─────────────────────────────────────────────────── */
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 12, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
       <PlanHeaderBadge title="Cleaning Board" slot="header-right" />
       {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: 12 }}>
@@ -352,7 +352,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
           className="sb-select"
           value={propertyId}
           onChange={(e) => setPropertyId(e.currentTarget.value)}
-          style={{ minWidth: 220 }}
+          style={{ minWidth: 220, fontFamily: "inherit" }}
         >
           {properties.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>
@@ -366,7 +366,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             value={dateStr}
             onChange={(e) => setDateStr(e.currentTarget.value)}
             className="sb-select"
-            style={{ padding: "8px 12px" }}
+            style={{ padding: "8px 12px", fontFamily: "inherit" }}
           />
           <button type="button" className="sb-btn sb-btn--icon" aria-label="Next day" onClick={() => setDateStr(addDaysStr(dateStr, 1))}>▶</button>
         </div>
