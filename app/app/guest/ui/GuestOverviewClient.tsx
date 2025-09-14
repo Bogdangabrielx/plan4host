@@ -316,7 +316,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         <span style={badgeStyle("green")}>GREEN</span>
         <small style={{ color: "var(--muted)" }}>All good</small>
         <span style={badgeStyle("yellow")}>YELLOW</span>
-        <small style={{ color: "var(--muted)" }}>Waiting window (Form: max 2h; OTA: until 3 days before arrival)</small>
+        <small style={{ color: "var(--muted)" }}>Waiting window <br /> (Only Form: max 2h  <br /> Only iCal: until 3 days before arrival)</small>
         <span style={badgeStyle("red")}>RED</span>
         <small style={{ color: "var(--muted)" }}>Action required</small>
       </div>
