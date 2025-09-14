@@ -183,6 +183,10 @@ Common reasons for a `bookings` RLS failure:
 - Policies still reference legacy roles (`owner/manager/member`) or the join uses `properties.owner_id` while schema uses `properties.admin_id`.
 - `property_id` doesn’t belong to the member’s account (admin_id).
 
+Note on account_users recursion:
+- Avoid policies on `account_users` that call helper functions reading from `account_users` again (RLS can recurse and cause `stack depth exceeded`).
+- Recommended minimal policy: `SELECT` only on self (user_id = auth.uid()); perform admin list/manage via service-role.
+
 ---
 
 ## 7) Billing/Plans Catalog (handy checks)

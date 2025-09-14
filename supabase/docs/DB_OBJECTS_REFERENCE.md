@@ -71,7 +71,9 @@ Acest document descrie obiectele principale din schema `public` (și `auth` acol
   - `checkin_forms`, `booking_contacts`, `booking_documents` — SELECT/WRITE pe `guest_overview`.
 
 - Team:
-  - `account_users` — SELECT self + SELECT admin; INSERT/UPDATE/DELETE doar admin și doar când plan='premium'; țintele non‑admin, fără self‑edit.
+  - `account_users` — Simplificat pentru a evita recursivitatea: policy minimă `SELECT self`.
+    Operațiile de listare/gestionare pentru admin se fac prin API cu service‑role (bypass RLS).
+    Dacă în viitor permiți scrieri din client, adaugă politici strict locale care NU citesc din `account_users` în USING/WITH CHECK.
 
 ## 4) Triggere active
 - `auth.users` → `public.handle_new_user()` (AFTER INSERT)
@@ -107,7 +109,7 @@ select * from public.properties limit 5;
   - Canonizat `properties.admin_id` ca legătură de tenant; RLS/endpointuri actualizate.
   - Onboarding sub_user: triggerul (handle_new_user) nu creează tenant pentru Team.
   - Cleaning/Team gating prin RLS, fără triggere dedicate.
+  - Simplificat RLS pe `account_users`: numai `SELECT self`; Team admin rulează prin service-role.
 
 ---
 Acest document se sincronizează cu `supabase/docs/plan_policies_overview.sql`. Pentru un audit complet (politici/expr), folosește și `supabase/docs/rls_and_sql_audit.md`.
-

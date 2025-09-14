@@ -7,6 +7,7 @@
 --     - Added accounts.trial_ends_at and aligned account_grant_trial()
 --     - Team/Cleaning gating enforced via RLS policies (no custom DB triggers)
 --     - OAuth decider handled in app; DB onboarding skips sub_user=true
+--     - Simplified RLS on account_users to avoid recursive evaluation; keep only SELECT self
 --
 -- This file documents the server-side (SQL/RPC) logic that governs
 -- subscription plans, autosync/sync-now, Cleaning Board, Team access,
@@ -347,7 +348,7 @@
    - PATCH  /api/team/user/update         (Admin-only; toggle role editor↔viewer, scopes, disabled)
    - PATCH  /api/team/user/password       (Admin-only)
    - POST   /api/team/user/remove         (Admin-only; cannot remove admin)
-     DB trigger trg_enforce_team_plan blocks any non-admin membership writes unless plan is Premium.
+     RLS note: account_users has minimal policy (SELECT self). Admin list/manage runs via service-role API.
 
    Identity / Context
    - GET /api/me

@@ -85,8 +85,9 @@ export default function RoomDetailModal({
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [active, setActive] = useState<Booking | null>(null);
 
-  // Reservation toggle
-  const [on, setOn] = useState<boolean>(true);
+  // Reservation toggle (default OFF for new)
+  const [on, setOn] = useState<boolean>(false);
+  const userTouchedToggleRef = useRef(false);
 
   // Reservation fields
   const [startDate, setStartDate] = useState<string>("");
@@ -307,7 +308,8 @@ export default function RoomDetailModal({
         et: act ? (act.end_time || COlocal) : _eTime,
       };
 
-      setOn(true);
+      // Set ON only when editing an existing booking; preserve user's manual toggle
+      if (!userTouchedToggleRef.current) setOn(!!act);
       setShowGuest(!act || !((act?.guest_first_name ?? "").trim() || (act?.guest_last_name ?? "").trim()));
       setDetailsDirty(false);
       setStatus("Idle"); setStatusHint("");
@@ -612,7 +614,7 @@ export default function RoomDetailModal({
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <label style={{ fontWeight: 800, fontSize: 14, letterSpacing: 0.2 }}>Reservation</label>
             <button
-              onClick={() => { setOn(v => !v); setStatus("Idle"); setStatusHint(""); }}
+              onClick={() => { userTouchedToggleRef.current = true; setOn(v => !v); setStatus("Idle"); setStatusHint(""); }}
               style={{
                 padding: "8px 12px",
                 borderRadius: 10,
