@@ -397,7 +397,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 key={r.id}
                 onClick={() => setActiveRoomId(r.id)}
                 className="sb-card"
-                style={{ ...tile, border: 0, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
+                style={{ ...tile, border:"var(--text)",boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
                 title={r.name}
               >
                 <span style={tileTitle}>{r.name}</span>
@@ -435,7 +435,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 key={t.id}
                 onClick={() => setActiveTypeId(t.id)}
                 className="sb-card"
-                style={{ ...tile, border: 0, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
+                style={{ ...tile, border:"var(--text)", boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
                 title={t.name}
               >
                 <span style={tileTitle}>{t.name}</span>
@@ -473,7 +473,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 key={t.id}
                 onClick={() => setManageTypeId(t.id)}
                 className="sb-card"
-                style={{ ...tile, border: 0, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
+                style={{ ...tile, border:"var(--text)", boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
                 title={`Manage ${t.name}`}
               >
                 <span style={tileTitle}>{t.name}</span>
