@@ -971,10 +971,6 @@ export default function RoomDetailModal({
                   Document data is read-only and comes from the guest’s online check-in.
                 </small>
               </div>
-
-              <small style={{ color: "var(--muted)" }}>
-                Name is stored on the booking; contact (email/phone/address/city/country) is stored on the reservation’s contact profile.
-              </small>
             </div>
           )}
 
