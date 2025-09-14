@@ -251,7 +251,11 @@ export default function CheckinClient() {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState(value || "");
     const [hi, setHi] = useState<number>(-1);
+    const [focused, setFocused] = useState(false);
     const wrapRef = useRef<HTMLDivElement | null>(null);
+    const debounceRef = useRef<number | null>(null);
+
+    // compute filtered list (only after minChars, but typing is always free)
     const list = useMemo(() => {
       const q = query.trim().toLowerCase();
       if (!q || q.length < minChars) return [];
@@ -259,7 +263,10 @@ export default function CheckinClient() {
       return filtered.slice(0, 30);
     }, [options, query, minChars]);
 
-    useEffect(() => setQuery(value || ""), [value]);
+    // keep local query in sync with external value ONLY when not typing in this field
+    useEffect(() => {
+      if (!focused) setQuery(value || "");
+    }, [value, focused]);
 
     useEffect(() => {
       const onDoc = (e: MouseEvent) => {
@@ -270,7 +277,21 @@ export default function CheckinClient() {
       return () => document.removeEventListener("mousedown", onDoc);
     }, []);
 
+    // cleanup debounce on unmount
+    useEffect(() => {
+      return () => {
+        if (debounceRef.current) window.clearTimeout(debounceRef.current);
+      };
+    }, []);
+
+    function scheduleParentUpdate(v: string) {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+      // a tiny debounce keeps typing buttery-smooth even on slower devices
+      debounceRef.current = window.setTimeout(() => onChange(v), 120);
+    }
+
     function select(v: string) {
+      // immediate commit on select
       onChange(v);
       setQuery(v);
       setOpen(false);
@@ -289,13 +310,15 @@ export default function CheckinClient() {
           placeholder={placeholder}
           autoComplete="off"
           spellCheck={false}
+          onFocus={() => { setFocused(true); setOpen(true); }}
+          onBlur={() => { setFocused(false); setOpen(false); onChange(query.trim()); }}
           onChange={(e) => {
             const v = e.currentTarget.value;
-            setQuery(v);
-            onChange(v);
-            setOpen(v.trim().length >= minChars);
+            setQuery(v);                  // instant local update (no lag)
+            scheduleParentUpdate(v);      // light debounce to parent
+            // keep dropdown open while typing; list will show/hide based on minChars
+            if (!open) setOpen(true);
           }}
-          onFocus={() => setOpen(query.trim().length >= minChars)}
           onKeyDown={(e) => {
             if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) { setOpen(true); return; }
             if (e.key === "ArrowDown") { setHi((i) => Math.min(i + 1, list.length - 1)); e.preventDefault(); }
@@ -305,7 +328,8 @@ export default function CheckinClient() {
           }}
           style={INPUT}
         />
-        {open && list.length > 0 && (
+        {/* We always keep the dropdown container ready; it only renders items when list has results */}
+        {open && (
           <ul
             role="listbox"
             id={id ? id + "-listbox" : undefined}
@@ -323,6 +347,7 @@ export default function CheckinClient() {
               overflow: "auto",
               padding: 6,
               listStyle: "none",
+              display: list.length > 0 ? "block" : "none",
             }}
           >
             {list.map((opt, idx) => (
