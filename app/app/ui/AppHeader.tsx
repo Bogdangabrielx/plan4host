@@ -182,6 +182,89 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     })();
   }, []);
 
+  const useInnerContainer = (currentPath || "").startsWith("/app/propertySetup");
+  const headerPadding = useInnerContainer ? 0 : (isSmall ? "8px 10px 16px" : "12px 16px 20px");
+
+  const headerInner = (
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
+        <button
+          onClick={() => { setOpen(true); setOpenRight(false); }}
+          aria-label="Open menu"
+          style={{
+            padding: isSmall ? 4 : 6,
+            borderRadius: 10,
+            border: "1px solid var(--border)",
+            background: "var(--card)",
+            color: "var(--text)",
+            fontWeight: 800,
+            cursor: "pointer",
+          }}
+        >
+          {mounted && !aboutFailed ? (
+            <img
+              src={theme === "light" ? "/navigation_forlight.png" : "/navigation_fordark.png"}
+              alt=""
+              width={isSmall ? 28 : 32}
+              height={isSmall ? 28 : 32}
+              style={{ display: "block" }}
+              onError={() => setAboutFailed(true)}
+            />
+          ) : (
+            <>≡</>
+          )}
+        </button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
+          <div style={{ margin: 0, fontSize: isSmall ? 22 : 26, lineHeight: (isSmall ? 32 : 36) + "px", fontWeight: 800 }}>{title}</div>
+          {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: isSmall ? 8 : 12,
+          flexWrap: "nowrap",
+          width: "auto",
+          justifyContent: "flex-end",
+          marginTop: 0,
+          // on very small screens, allow this group to flow under the title when wrapped
+          ...(useInnerContainer && isSmall ? { flex: "1 1 100%" } : {}),
+        }}
+      >
+        {right}
+        <button
+          onClick={() => { setOpenRight(true); setOpen(false); }}
+          aria-label="Open management menu"
+          style={{
+            padding: isSmall ? 4 : 6,
+            borderRadius: 10,
+            border: "1px solid var(--border)",
+            background: "var(--card)",
+            color: "var(--text)",
+            fontWeight: 800,
+            cursor: "pointer",
+          }}
+        >
+          {mounted && !aboutFailed ? (
+            <img
+              src={theme === "light" ? "/aboutme_forlight.png" : "/aboutme_fordark.png"}
+              alt=""
+              width={isSmall ? 28 : 32}
+              height={isSmall ? 28 : 32}
+              style={{ display: "block" }}
+              onError={() => setAboutFailed(true)}
+            />
+          ) : (
+            <>≡</>
+          )}
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <>
       <header
@@ -193,85 +276,31 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           alignItems: "center",
           justifyContent: "space-between",
           gap: isSmall ? 8 : 12,
-          padding: isSmall ? "8px 10px 16px" : "12px 16px 20px",
+          padding: headerPadding,
           flexWrap: "nowrap",
           background: "var(--panel)",
           borderBottom: "1px solid var(--border)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
-          <button
-            onClick={() => { setOpen(true); setOpenRight(false); }}
-            aria-label="Open menu"
+        {useInnerContainer ? (
+          <div
             style={{
-              padding: isSmall ? 4 : 6,
-              borderRadius: 10,
-              border: "1px solid var(--border)",
-              background: "var(--card)",
-              color: "var(--text)",
-              fontWeight: 800,
-              cursor: "pointer",
+              maxWidth: 1200,
+              margin: "0 auto",
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: isSmall ? 8 : 12,
+              padding: isSmall ? "8px 10px 16px" : "12px 16px 20px",
+              flexWrap: isSmall ? "wrap" : "nowrap",
             }}
           >
-            {mounted && !aboutFailed ? (
-              <img
-                src={theme === "light" ? "/navigation_forlight.png" : "/navigation_fordark.png"}
-                alt=""
-                width={isSmall ? 28 : 32}
-                height={isSmall ? 28 : 32}
-                style={{ display: "block" }}
-                onError={() => setAboutFailed(true)}
-              />
-            ) : (
-              <>≡</>
-            )}
-          </button>
-
-            <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
-            <div style={{ margin: 0, fontSize: isSmall ? 22 : 26, lineHeight: (isSmall ? 32 : 36) + "px", fontWeight: 800 }}>{title}</div>
-            {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
+            {headerInner}
           </div>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: isSmall ? 8 : 12,
-            flexWrap: "nowrap",
-            width: "auto",
-            justifyContent: "flex-end",
-            marginTop: 0,
-          }}
-        >
-          {right}
-          <button
-            onClick={() => { setOpenRight(true); setOpen(false); }}
-            aria-label="Open management menu"
-            style={{
-              padding: isSmall ? 4 : 6,
-              borderRadius: 10,
-              border: "1px solid var(--border)",
-              background: "var(--card)",
-              color: "var(--text)",
-              fontWeight: 800,
-              cursor: "pointer",
-            }}
-          >
-            {mounted && !aboutFailed ? (
-              <img
-                src={theme === "light" ? "/aboutme_forlight.png" : "/aboutme_fordark.png"}
-                alt=""
-                width={isSmall ? 28 : 32}
-                height={isSmall ? 28 : 32}
-                style={{ display: "block" }}
-                onError={() => setAboutFailed(true)}
-              />
-            ) : (
-              <>≡</>
-            )}
-          </button>
-        </div>
+        ) : (
+          headerInner
+        )}
       </header>
 
       {open && (
