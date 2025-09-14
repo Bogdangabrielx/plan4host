@@ -1,7 +1,7 @@
 // app/checkin/ui/CheckinClient.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useImperativeHandle } from "react";
 
 type PropertyInfo = {
   id: string;
@@ -38,6 +38,150 @@ function addDaysYMD(ymd: string, days: number): string {
   return `${yy}-${mm}-${dd}`;
 }
 
+/** ---------- Reusable Combobox (decoupled from parent) ---------- */
+type ComboboxHandle = {
+  getText: () => string;
+  commit: () => void;
+};
+type ComboboxProps = {
+  value: string;                    // committed value from parent
+  onCommit: (v: string) => void;    // called on blur, Enter or option select
+  options: string[];
+  placeholder?: string;
+  ariaLabel?: string;
+  id?: string;
+  minChars?: number;                // min chars to start listing options (typing is always free)
+  inputStyle?: React.CSSProperties;
+};
+
+const Combobox = React.forwardRef<ComboboxHandle, ComboboxProps>(function Combobox(
+  { value, onCommit, options, placeholder, ariaLabel, id, minChars = 0, inputStyle },
+  ref
+) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState(value || "");
+  const [hi, setHi] = useState<number>(-1);
+  const [focused, setFocused] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  // Precompute a lowercase view for fast includes()
+  const lowerOptions = useMemo(() => options.map(o => [o, o.toLowerCase()] as const), [options]);
+
+  const list = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < minChars) return [];
+    const out: string[] = [];
+    for (let i = 0; i < lowerOptions.length; i++) {
+      const [orig, low] = lowerOptions[i];
+      if (low.includes(q)) out.push(orig);
+      if (out.length >= 50) break; // safety cap
+    }
+    return out;
+  }, [query, minChars, lowerOptions]);
+
+  // Sync external value only when not actively typing here
+  useEffect(() => {
+    if (!focused) setQuery(value || "");
+  }, [value, focused]);
+
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  function select(v: string) {
+    setQuery(v);
+    onCommit(v.trim());
+    setOpen(false);
+  }
+
+  React.useImperativeHandle(ref, () => ({
+    getText: () => query,
+    commit: () => onCommit(query.trim()),
+  }));
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative" }}>
+      <input
+        id={id}
+        aria-label={ariaLabel}
+        role="combobox"
+        aria-expanded={open}
+        aria-controls={id ? id + "-listbox" : undefined}
+        aria-autocomplete="list"
+        value={query}
+        placeholder={placeholder}
+        autoComplete="off"
+        spellCheck={false}
+        onFocus={() => { setFocused(true); setOpen(true); }}
+        onBlur={() => { setFocused(false); setOpen(false); onCommit(query.trim()); }}
+        onChange={(e) => {
+          const v = e.currentTarget.value;
+          setQuery(v);            // local only → no parent re-render per key
+          if (!open) setOpen(true);
+        }}
+        onKeyDown={(e) => {
+          if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) { setOpen(true); return; }
+          if (e.key === "ArrowDown") { setHi((i) => Math.min(i + 1, list.length - 1)); e.preventDefault(); }
+          else if (e.key === "ArrowUp") { setHi((i) => Math.max(i - 1, 0)); e.preventDefault(); }
+          else if (e.key === "Enter") {
+            if (open && hi >= 0 && hi < list.length) { select(list[hi]); e.preventDefault(); }
+            else { onCommit(query.trim()); setOpen(false); }
+          }
+          else if (e.key === "Escape") { setOpen(false); }
+        }}
+        style={inputStyle}
+      />
+      {open && (
+        <ul
+          role="listbox"
+          id={id ? id + "-listbox" : undefined}
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            background: "var(--panel)",
+            border: "1px solid var(--border)",
+            borderRadius: 10,
+            marginTop: 6,
+            maxHeight: 220,
+            overflow: "auto",
+            padding: 6,
+            listStyle: "none",
+            display: list.length > 0 ? "block" : "none",
+          }}
+        >
+          {list.map((opt, idx) => (
+            <li
+              key={opt + idx}
+              role="option"
+              aria-selected={idx === hi}
+              onMouseEnter={() => setHi(idx)}
+              onMouseDown={(e) => { e.preventDefault(); select(opt); }}
+              style={{
+                padding: "8px 10px",
+                borderRadius: 8,
+                cursor: "pointer",
+                background: idx === hi ? "var(--primary)" : "transparent",
+                color: idx === hi ? "#0c111b" : "var(--text)",
+                fontWeight: 700,
+              }}
+            >
+              {opt}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+});
+
 export default function CheckinClient() {
   // strict pe ?property=<id>
   const [propertyId, setPropertyId] = useState<string | null>(null);
@@ -61,16 +205,20 @@ export default function CheckinClient() {
   const [address,   setAddress]   = useState("");
   const [city,      setCity]      = useState("");
 
-  // Country (searchable input + sugestii)
+  // Country & Nationality
   const [countries, setCountries] = useState<Country[]>([]);
-  const [countryText, setCountryText] = useState<string>("");
+  const [countryText, setCountryText] = useState<string>("");           // committed
+  const [docNationality, setDocNationality] = useState<string>("");     // committed
+
+  // Refs to read the current draft (non-committed) text without re-render
+  const countryRef = useRef<ComboboxHandle | null>(null);
+  const nationalityRef = useRef<ComboboxHandle | null>(null);
 
   // Document section
   type DocType = "" | "id_card" | "passport";
   const [docType, setDocType] = useState<DocType>("");
   const [docSeries, setDocSeries] = useState<string>("");   // doar CI (uppercase)
   const [docNumber, setDocNumber] = useState<string>("");   // comun
-  const [docNationality, setDocNationality] = useState<string>(""); // doar pașaport (searchable)
 
   // Upload file (foto/PDF) — obligatoriu
   const [docFile, setDocFile] = useState<File | null>(null);
@@ -132,7 +280,7 @@ export default function CheckinClient() {
   }), []);
   const INPUT_DATE: React.CSSProperties = useMemo(() => ({
     ...INPUT,
-    maxWidth: 260, // nu mai umple cardul
+    maxWidth: 260,
   }), [INPUT]);
   const SELECT: React.CSSProperties = INPUT;
   const LABEL: React.CSSProperties = useMemo(() => ({
@@ -189,7 +337,6 @@ export default function CheckinClient() {
         setPdfUrl(p?.regulation_pdf_url ?? null);
         setTypes(t.map(x => ({ id: String(x.id), name: String(x.name ?? "Type") })));
         setRooms(r.map(x => ({ id: String(x.id), name: String(x.name ?? "Room"), room_type_id: x.room_type_id ?? null })));
-        // fără preselect — guest alege explicit „Booked …”
       } catch (e: any) {
         setErrorMsg(e?.message || "Failed to load property data.");
         setSubmitState("error");
@@ -230,163 +377,22 @@ export default function CheckinClient() {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [countries]);
 
-  // ——— Reusable small combobox (searchable dropdown) ———
-  function Combobox({
-    value,
-    onChange,
-    options,
-    placeholder,
-    ariaLabel,
-    id,
-    minChars = 3,
-  }: {
-    value: string;
-    onChange: (v: string) => void;
-    options: string[];
-    placeholder?: string;
-    ariaLabel?: string;
-    id?: string;
-    minChars?: number;
-  }) {
-    const [open, setOpen] = useState(false);
-    const [query, setQuery] = useState(value || "");
-    const [hi, setHi] = useState<number>(-1);
-    const [focused, setFocused] = useState(false);
-    const wrapRef = useRef<HTMLDivElement | null>(null);
-    const debounceRef = useRef<number | null>(null);
-
-    // compute filtered list (only after minChars, but typing is always free)
-    const list = useMemo(() => {
-      const q = query.trim().toLowerCase();
-      if (!q || q.length < minChars) return [];
-      const filtered = options.filter((o) => o.toLowerCase().includes(q));
-      return filtered.slice(0, 30);
-    }, [options, query, minChars]);
-
-    // keep local query in sync with external value ONLY when not typing in this field
-    useEffect(() => {
-      if (!focused) setQuery(value || "");
-    }, [value, focused]);
-
-    useEffect(() => {
-      const onDoc = (e: MouseEvent) => {
-        if (!wrapRef.current) return;
-        if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
-      };
-      document.addEventListener("mousedown", onDoc);
-      return () => document.removeEventListener("mousedown", onDoc);
-    }, []);
-
-    // cleanup debounce on unmount
-    useEffect(() => {
-      return () => {
-        if (debounceRef.current) window.clearTimeout(debounceRef.current);
-      };
-    }, []);
-
-    function scheduleParentUpdate(v: string) {
-      if (debounceRef.current) window.clearTimeout(debounceRef.current);
-      // a tiny debounce keeps typing buttery-smooth even on slower devices
-      debounceRef.current = window.setTimeout(() => onChange(v), 120);
-    }
-
-    function select(v: string) {
-      // immediate commit on select
-      onChange(v);
-      setQuery(v);
-      setOpen(false);
-    }
-
-    return (
-      <div ref={wrapRef} style={{ position: "relative" }}>
-        <input
-          id={id}
-          aria-label={ariaLabel}
-          role="combobox"
-          aria-expanded={open}
-          aria-controls={id ? id + "-listbox" : undefined}
-          aria-autocomplete="list"
-          value={query}
-          placeholder={placeholder}
-          autoComplete="off"
-          spellCheck={false}
-          onFocus={() => { setFocused(true); setOpen(true); }}
-          onBlur={() => { setFocused(false); setOpen(false); onChange(query.trim()); }}
-          onChange={(e) => {
-            const v = e.currentTarget.value;
-            setQuery(v);                  // instant local update (no lag)
-            scheduleParentUpdate(v);      // light debounce to parent
-            // keep dropdown open while typing; list will show/hide based on minChars
-            if (!open) setOpen(true);
-          }}
-          onKeyDown={(e) => {
-            if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) { setOpen(true); return; }
-            if (e.key === "ArrowDown") { setHi((i) => Math.min(i + 1, list.length - 1)); e.preventDefault(); }
-            else if (e.key === "ArrowUp") { setHi((i) => Math.max(i - 1, 0)); e.preventDefault(); }
-            else if (e.key === "Enter") { if (open && hi >= 0 && hi < list.length) { select(list[hi]); e.preventDefault(); } }
-            else if (e.key === "Escape") { setOpen(false); }
-          }}
-          style={INPUT}
-        />
-        {/* We always keep the dropdown container ready; it only renders items when list has results */}
-        {open && (
-          <ul
-            role="listbox"
-            id={id ? id + "-listbox" : undefined}
-            style={{
-              position: "absolute",
-              top: "100%",
-              left: 0,
-              right: 0,
-              zIndex: 100,
-              background: "var(--panel)",
-              border: "1px solid var(--border)",
-              borderRadius: 10,
-              marginTop: 6,
-              maxHeight: 220,
-              overflow: "auto",
-              padding: 6,
-              listStyle: "none",
-              display: list.length > 0 ? "block" : "none",
-            }}
-          >
-            {list.map((opt, idx) => (
-              <li
-                key={opt + idx}
-                role="option"
-                aria-selected={idx === hi}
-                onMouseEnter={() => setHi(idx)}
-                onMouseDown={(e) => { e.preventDefault(); select(opt); }}
-                style={{
-                  padding: "8px 10px",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                  background: idx === hi ? "var(--primary)" : "transparent",
-                  color: idx === hi ? "#0c111b" : "var(--text)",
-                  fontWeight: 700,
-                }}
-              >
-                {opt}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    );
-  }
-
   const hasTypes = types.length > 0;
 
   // trebuie să fie deschis PDF-ul dacă există
   const consentGatePassed = !pdfUrl || pdfViewed;
 
-  const countryValid = countryText.trim().length > 0;
+  // Folosim textul curent din input-uri chiar dacă nu e "commit"
+  const currentCountry = (countryRef.current?.getText() ?? countryText).trim();
+  const currentNationality = (nationalityRef.current?.getText() ?? docNationality).trim();
+
+  const countryValid = currentCountry.length > 0;
 
   const docValid = (() => {
     if (docType === "") return false;
     if (docNumber.trim().length < 1) return false;
     if (docType === "id_card") return docSeries.trim().length > 0;
-    if (docType === "passport") return docNationality.trim().length > 0;
+    if (docType === "passport") return currentNationality.length > 0;
     return false;
   })();
 
@@ -406,9 +412,8 @@ export default function CheckinClient() {
     submitState !== "submitting";
 
   // deschide PDF-ul (marchează vizualizat)
-  function onOpenPdf(ev?: React.MouseEvent) {
+  function onOpenPdf() {
     if (!pdfUrl) return;
-    // permitem navigarea normală a <a>, doar marcăm viewed
     try { setPdfViewed(true); } catch {}
   }
 
@@ -436,7 +441,12 @@ export default function CheckinClient() {
     setSubmitState("submitting");
     setErrorMsg("");
 
-    const countryToSend = countryText.trim();
+    // asigură „commit” din combobox-uri înainte de trimis
+    countryRef.current?.commit();
+    nationalityRef.current?.commit();
+
+    const countryToSend = (countryRef.current?.getText() ?? countryText).trim();
+    const nationalityToSend = (nationalityRef.current?.getText() ?? docNationality).trim();
 
     try {
       // 4.1 upload fișier (obligatoriu)
@@ -463,7 +473,7 @@ export default function CheckinClient() {
         doc_type: docType, // "id_card" | "passport"
         doc_series: docType === "id_card" ? docSeries.trim() : null,
         doc_number: docNumber.trim(),
-        doc_nationality: docType === "passport" ? docNationality.trim() : null,
+        doc_nationality: docType === "passport" ? nationalityToSend : null,
 
         // file
         doc_file_path: uploaded.path,
@@ -483,6 +493,10 @@ export default function CheckinClient() {
         setSubmitState("error");
         return;
       }
+
+      // păstrăm în parent și valorile finale „committed”
+      setCountryText(countryToSend);
+      if (docType === "passport") setDocNationality(nationalityToSend);
 
       setSubmitState("success");
     } catch (err: any) {
@@ -523,7 +537,6 @@ export default function CheckinClient() {
               Thank you for your patience!
             </p>
           </div>
-          {/* (Mutat linkul PDF lângă bifa de acord) */}
         </div>
       </section>
 
@@ -653,13 +666,15 @@ export default function CheckinClient() {
                 <div>
                   <label style={LABEL}>Country*</label>
                   <Combobox
+                    ref={countryRef}
                     id="checkin-country"
                     ariaLabel="Country"
                     value={countryText}
-                    onChange={setCountryText}
+                    onCommit={setCountryText}
                     options={countries.map(c => c.name)}
                     placeholder="Start typing… e.g. Romania"
-                    minChars={2}
+                    minChars={0}
+                    inputStyle={INPUT}
                   />
                 </div>
               </div>
@@ -678,6 +693,8 @@ export default function CheckinClient() {
                     setDocSeries("");
                     setDocNumber("");
                     setDocNationality("");
+                    // Reset combobox draft for nationality when switching types
+                    if (nationalityRef.current) nationalityRef.current.commit();
                   }}
                 >
                   <option value="" disabled>Select document type…</option>
@@ -717,13 +734,15 @@ export default function CheckinClient() {
                   <div>
                     <label style={LABEL}>Nationality (citizenship)*</label>
                     <Combobox
+                      ref={nationalityRef}
                       id="checkin-nationality"
                       ariaLabel="Nationality"
                       value={docNationality}
-                      onChange={setDocNationality}
+                      onCommit={setDocNationality}
                       options={nationalityOptions}
                       placeholder="Start typing… e.g. Romanian"
-                      minChars={2}
+                      minChars={0}
+                      inputStyle={INPUT}
                     />
                   </div>
                   <div>
@@ -812,7 +831,7 @@ export default function CheckinClient() {
                     onClick={onOpenPdf}
                     style={{ fontWeight: 700, fontSize:12 }}
                   >
-                    Property Rules (pdf))
+                    Property Rules (pdf)
                   </a>
                 ) : (
                   <span style={{ fontStyle: "italic" }}>House Rules</span>
@@ -824,7 +843,7 @@ export default function CheckinClient() {
                   </span>
                 )}
                 {!!pdfUrl && pdfViewed && (
-                  <span style={{ marginLeft: 6, color: "var(--text)", fontWeight: 700,fontSize:9 }}>
+                  <span style={{ marginLeft: 6, color: "var(--text)", fontWeight: 700, fontSize:9 }}>
                     Opened
                   </span>
                 )}
