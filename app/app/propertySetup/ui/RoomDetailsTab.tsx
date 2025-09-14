@@ -94,5 +94,5 @@ export default function RoomDetailsTab({
 // card replaced by sb-card
 const head: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 };
 const rowBase: React.CSSProperties  = { background: "transparent", display: "grid", gap: 8, alignItems: "center" };
-const textInput: React.CSSProperties = { padding: 8, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8 };
+const textInput: React.CSSProperties = { padding: 8, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, fontFamily: 'inherit' };
 // buttons now use sb-btn classes

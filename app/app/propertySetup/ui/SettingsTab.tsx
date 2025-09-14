@@ -61,5 +61,6 @@ const inputStyle: React.CSSProperties = {
   background: "var(--card)",
   color: "var(--text)",
   border: "1px solid var(--border)",
-  borderRadius: 8
+  borderRadius: 8,
+  fontFamily: 'inherit'
 };

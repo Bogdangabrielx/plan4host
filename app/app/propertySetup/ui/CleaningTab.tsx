@@ -48,7 +48,7 @@ export default function CleaningTab({
 }
 
 const row: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 90px 90px", gap: 8, alignItems: "center" };
-const textInput: React.CSSProperties = { padding: 8, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8 };
+const textInput: React.CSSProperties = { padding: 8, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, fontFamily: 'inherit' };
 const primaryBtn: React.CSSProperties = { padding: "8px 12px", background: "var(--primary)", color: "#0c111b", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 700 };
 const ghostBtn: React.CSSProperties   = { padding: "6px 10px", background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, cursor: "pointer" };
 const dangerBtn: React.CSSProperties  = { padding: "6px 10px", background: "transparent", color: "var(--text)", border: "1px solid var(--danger)", borderRadius: 8, cursor: "pointer", fontWeight: 700 };

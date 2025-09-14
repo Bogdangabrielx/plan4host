@@ -113,6 +113,7 @@ export default function RoomsTab({
                     value={r.room_type_id ?? ""}
                     onChange={(e) => onAssignType(r.id, e.currentTarget.value || null)}
                     className="sb-select"
+                    style={{ fontFamily: 'inherit' }}
                   >
                     <option value="">— None —</option>
                     {roomTypes.map((t) => (
@@ -251,6 +252,7 @@ const input: React.CSSProperties = {
   color: "var(--text)",
   border: "1px solid var(--border)",
   borderRadius: 8,
+  fontFamily: 'inherit',
 };
 
 const select: React.CSSProperties = {
