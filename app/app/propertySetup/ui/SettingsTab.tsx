@@ -30,7 +30,7 @@ export default function SettingsTab({
   return (
     <div style={{ display: "grid", gap: 12 }}>
       <div style={{ display: "grid", gap: 6 }}>
-        <label style={{ fontWeight: 600 }}>Default check-in (HH:MM)</label>
+        <label style={{ fontWeight: 600 }}>Property check-in (HH:MM)</label>
         <input
           type="time"
           value={ci}
@@ -42,7 +42,7 @@ export default function SettingsTab({
       </div>
 
       <div style={{ display: "grid", gap: 6 }}>
-        <label style={{ fontWeight: 600 }}>Default check-out (HH:MM)</label>
+        <label style={{ fontWeight: 600 }}>Property check-out (HH:MM)</label>
         <input
           type="time"
           value={co}
