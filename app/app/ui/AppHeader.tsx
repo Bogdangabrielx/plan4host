@@ -217,8 +217,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <img
                 src={theme === "light" ? "/navigation_forlight.png" : "/navigation_fordark.png"}
                 alt=""
-                width={isSmall ? 28 : 32}
-                height={isSmall ? 28 : 32}
+                width={isSmall ? 28 : 48}
+                height={isSmall ? 28 : 48}
                 style={{ display: "block" }}
                 onError={() => setAboutFailed(true)}
               />

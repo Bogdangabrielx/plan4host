@@ -126,6 +126,7 @@ export default function CheckinClient() {
     background: "var(--card)",
     color: "var(--text)",
     border: "1px solid var(--border)",
+    fontFamily: 'inherit',
     borderRadius: 10,
     fontSize: 14,
   }), []);
@@ -348,7 +349,7 @@ export default function CheckinClient() {
   // 5) render
   if (!propertyId) {
     return (
-      <div style={{ maxWidth: 720, margin: "24px auto", padding: 16 }}>
+      <div style={{ maxWidth: 720, margin: "24px auto", padding: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
         <div style={CARD}>
           <h1 style={{ marginTop: 0, marginBottom: 8 }}>Check-in</h1>
           <p style={{ color: "var(--muted)" }}>
@@ -360,13 +361,13 @@ export default function CheckinClient() {
   }
 
   return (
-    <div style={{ maxWidth: 860, margin: "24px auto", padding: 16, display: "grid", gap: 16 }}>
+    <div style={{ maxWidth: 860, margin: "24px auto", padding: 16, display: "grid", gap: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
       {/* Header */}
       <section style={CARD}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div>
             <h1 style={{ margin: 0, fontSize: 30, letterSpacing: 0.3, alignContent:"center" }}>
-               Stay smart, experience better  <br />
+               Stay Smart, Experience Better  <br />
                <br />
             </h1>
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
