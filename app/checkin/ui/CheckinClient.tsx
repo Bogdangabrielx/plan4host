@@ -630,11 +630,11 @@ export default function CheckinClient() {
             <div style={ROW_2}>
               <div>
                 <label style={LABEL}>First name*</label>
-                <input style={INPUT} value={firstName} onChange={e => setFirstName(e.currentTarget.value)} placeholder="John" />
+                <input style={INPUT} value={firstName} onChange={e => setFirstName(e.currentTarget.value)} placeholder="First Name" />
               </div>
               <div>
                 <label style={LABEL}>Last name*</label>
-                <input style={INPUT} value={lastName} onChange={e => setLastName(e.currentTarget.value)} placeholder="Doe" />
+                <input style={INPUT} value={lastName} onChange={e => setLastName(e.currentTarget.value)} placeholder="Last Name" />
               </div>
             </div>
 
@@ -642,11 +642,11 @@ export default function CheckinClient() {
             <div style={ROW_2}>
               <div>
                 <label style={LABEL}>Email*</label>
-                <input style={INPUT} type="email" value={email} onChange={e => setEmail(e.currentTarget.value)} placeholder="john@doe.com" />
+                <input style={INPUT} type="email" value={email} onChange={e => setEmail(e.currentTarget.value)} placeholder="***@example.com" />
               </div>
               <div>
                 <label style={LABEL}>Phone*</label>
-                <input style={INPUT} value={phone} onChange={e => setPhone(e.currentTarget.value)} placeholder="+40 712 345 678" />
+                <input style={INPUT} value={phone} onChange={e => setPhone(e.currentTarget.value)} placeholder="+40 700 000 000" />
               </div>
             </div>
 
