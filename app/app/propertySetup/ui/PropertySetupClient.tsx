@@ -235,12 +235,17 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 
   const hasStandardOrBetter = plan === "standard" || plan === "premium";
 
+  // Page content slightly narrower than AppHeader width (by ~2%)
+  const pageShrinkPct = 0.02; // 2%
+  const pageMaxWidth = 1200 * (1 - pageShrinkPct);
+
   return (
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
-      <PlanHeaderBadge title="Property Setup" slot="header-right" />
+      <div style={{ margin: '0 auto', width: 'calc(100% - 2%)', maxWidth: pageMaxWidth }}>
+        <PlanHeaderBadge title="Property Setup" slot="header-right" />
 
-      {/* minimalist layout */}
-      <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>
+        {/* minimalist layout */}
+        <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>
         <PropertySidebar properties={properties} selectedId={selectedId} onSelect={setSelectedId} status={status} />
         <section className="sb-card" style={{ padding: 16 }}>
           {!selected ? (
@@ -462,6 +467,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
             />
           )}
         </section>
+      </div>
       </div>
     </div>
   );

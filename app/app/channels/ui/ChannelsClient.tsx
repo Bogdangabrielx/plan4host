@@ -333,9 +333,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     setPill(pillLabel);
   }, [pillLabel, setPill]);
 
+  // Page content slightly narrower than AppHeader width (by ~2%)
+  const pageShrinkPct = 0.02;
+  const pageMaxWidth = 1200 * (1 - pageShrinkPct);
+
   return (
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
-      <PlanHeaderBadge title="Channels & iCal" slot="header-right" />
+      <div style={{ margin: '0 auto', width: 'calc(100% - 2%)', maxWidth: pageMaxWidth }}>
+        <PlanHeaderBadge title="Channels & iCal" slot="header-right" />
       {/* Toolbar minimalistă */}
       <div className="sb-toolbar" style={{ gap: 12, marginBottom: 8 }}>
         <select className="sb-select" value={propertyId} onChange={(e) => setPropertyId(e.target.value)} style={{ minWidth: 220, fontFamily: 'inherit' }}>
@@ -385,6 +390,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           ) : null}
         </div>
       </section>
+
+      </div>
 
       {/* ======= MODAL A: EXPORT per ROOM ======= */}
       {showRoomsModal && (
@@ -510,13 +517,7 @@ function Modal({ title, children, onClose }:{
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: "var(--card)",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
-          padding: 16,
-          width: "min(980px, calc(100vw - 32px))",
-        }}
+        style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, width: "min(980px, calc(100vw - 32px))" }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
           <h3 style={{ margin: 0 }}>{title}</h3>
@@ -538,13 +539,7 @@ function InnerModal({ title, children, onClose }:{
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: "var(--panel)",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
-          padding: 16,
-          width: "min(720px, calc(100vw - 32px))",
-        }}
+        style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, width: "min(720px, calc(100vw - 32px))" }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
           <h3 style={{ margin: 0 }}>{title}</h3>
