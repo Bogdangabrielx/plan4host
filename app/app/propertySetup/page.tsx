@@ -31,7 +31,7 @@ export default async function propertySetupPage() {
   }));
 
   return (
-    <AppShell currentPath="/app/propertySetup" title="Property Setup">
+    <AppShell currentPath="/app/properySetup" title="Property Setup">
       <PropertySetupClient initialProperties={properties} />
     </AppShell>
   );
