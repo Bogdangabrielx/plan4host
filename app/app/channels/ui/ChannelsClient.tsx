@@ -334,11 +334,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   }, [pillLabel, setPill]);
 
   return (
-    <div>
+    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
       <PlanHeaderBadge title="Channels & iCal" slot="header-right" />
       {/* Toolbar minimalistă */}
       <div className="sb-toolbar" style={{ gap: 12, marginBottom: 8 }}>
-        <select className="sb-select" value={propertyId} onChange={(e) => setPropertyId(e.target.value)} style={{ minWidth: 220 }}>
+        <select className="sb-select" value={propertyId} onChange={(e) => setPropertyId(e.target.value)} style={{ minWidth: 220, fontFamily: 'inherit' }}>
           {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
         <span className="sb-badge">Timezone: {timezone || "—"}</span>
@@ -506,7 +506,7 @@ function Modal({ title, children, onClose }:{
   return (
     <div
       role="dialog" aria-modal="true" onClick={onClose}
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 40, display: "grid", placeItems: "center", padding: 12 }}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 40, display: "grid", placeItems: "center", padding: 12, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -528,7 +528,7 @@ function InnerModal({ title, children, onClose }:{
   return (
     <div
       role="dialog" aria-modal="true" onClick={onClose}
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 50, display: "grid", placeItems: "center", padding: 12 }}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 50, display: "grid", placeItems: "center", padding: 12, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -567,7 +567,7 @@ function ManageTypeModal({
         <div style={{ display: "grid", gap: 8 }}>
           <div style={{ display: "grid", gap: 6 }}>
             <label style={label}>Provider</label>
-            <select className="sb-select" value={provider} onChange={(e) => setProvider((e.target as HTMLSelectElement).value)}>
+            <select className="sb-select" value={provider} onChange={(e) => setProvider((e.target as HTMLSelectElement).value)} style={{ fontFamily: 'inherit' }}>
               <option>Booking</option>
               <option>Airbnb</option>
               <option>Expedia</option>
@@ -660,6 +660,7 @@ const input: React.CSSProperties = {
   color: "var(--text)",
   border: "1px solid var(--border)",
   borderRadius: 8,
+  fontFamily: 'inherit',
 };
 
 // select now uses sb-select

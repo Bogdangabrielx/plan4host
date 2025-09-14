@@ -271,7 +271,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   }
 
   return (
-    <div style={{ padding: 16, fontFamily: '"Times New Roman", serif', color: "var(--text)" }}>
+    <div style={{ padding: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -295,7 +295,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           <select
             value={activePropertyId ?? ""}
             onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value || null)}
-            style={{ padding: "8px 10px", background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 10, fontWeight: 700 }}
+            style={{ padding: "8px 10px", background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 10, fontWeight: 700, fontFamily: 'inherit' }}
           >
             {properties.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
