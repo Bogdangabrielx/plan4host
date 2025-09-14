@@ -230,6 +230,117 @@ export default function CheckinClient() {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [countries]);
 
+  // ——— Reusable small combobox (searchable dropdown) ———
+  function Combobox({
+    value,
+    onChange,
+    options,
+    placeholder,
+    ariaLabel,
+    id,
+  }: {
+    value: string;
+    onChange: (v: string) => void;
+    options: string[];
+    placeholder?: string;
+    ariaLabel?: string;
+    id?: string;
+  }) {
+    const [open, setOpen] = useState(false);
+    const [query, setQuery] = useState(value || "");
+    const [hi, setHi] = useState<number>(-1);
+    const wrapRef = useRef<HTMLDivElement | null>(null);
+    const list = useMemo(() => {
+      const q = query.trim().toLowerCase();
+      if (!q) return options.slice(0, 20);
+      const filtered = options.filter((o) => o.toLowerCase().includes(q));
+      return filtered.slice(0, 30);
+    }, [options, query]);
+
+    useEffect(() => setQuery(value || ""), [value]);
+
+    useEffect(() => {
+      const onDoc = (e: MouseEvent) => {
+        if (!wrapRef.current) return;
+        if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
+      };
+      document.addEventListener("mousedown", onDoc);
+      return () => document.removeEventListener("mousedown", onDoc);
+    }, []);
+
+    function select(v: string) {
+      onChange(v);
+      setQuery(v);
+      setOpen(false);
+    }
+
+    return (
+      <div ref={wrapRef} style={{ position: "relative" }}>
+        <input
+          id={id}
+          aria-label={ariaLabel}
+          role="combobox"
+          aria-expanded={open}
+          aria-controls={id ? id + "-listbox" : undefined}
+          aria-autocomplete="list"
+          value={query}
+          placeholder={placeholder}
+          onChange={(e) => { setQuery(e.currentTarget.value); setOpen(true); onChange(e.currentTarget.value); }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) { setOpen(true); return; }
+            if (e.key === "ArrowDown") { setHi((i) => Math.min(i + 1, list.length - 1)); e.preventDefault(); }
+            else if (e.key === "ArrowUp") { setHi((i) => Math.max(i - 1, 0)); e.preventDefault(); }
+            else if (e.key === "Enter") { if (open && hi >= 0 && hi < list.length) { select(list[hi]); e.preventDefault(); } }
+            else if (e.key === "Escape") { setOpen(false); }
+          }}
+          style={INPUT}
+        />
+        {open && list.length > 0 && (
+          <ul
+            role="listbox"
+            id={id ? id + "-listbox" : undefined}
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              right: 0,
+              zIndex: 100,
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              marginTop: 6,
+              maxHeight: 220,
+              overflow: "auto",
+              padding: 6,
+              listStyle: "none",
+            }}
+          >
+            {list.map((opt, idx) => (
+              <li
+                key={opt + idx}
+                role="option"
+                aria-selected={idx === hi}
+                onMouseEnter={() => setHi(idx)}
+                onMouseDown={(e) => { e.preventDefault(); select(opt); }}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  background: idx === hi ? "var(--primary)" : "transparent",
+                  color: idx === hi ? "#0c111b" : "var(--text)",
+                  fontWeight: 700,
+                }}
+              >
+                {opt}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
   const hasTypes = types.length > 0;
 
   // trebuie să fie deschis PDF-ul dacă există
@@ -507,19 +618,14 @@ export default function CheckinClient() {
 
                 <div>
                   <label style={LABEL}>Country*</label>
-                  {/* searchable input cu datalist */}
-                  <input
-                    style={INPUT}
-                    list="country-list"
+                  <Combobox
+                    id="checkin-country"
+                    ariaLabel="Country"
                     value={countryText}
-                    onChange={(e) => setCountryText(e.currentTarget.value)}
+                    onChange={setCountryText}
+                    options={countries.map(c => c.name)}
                     placeholder="Start typing… e.g. Romania"
                   />
-                  <datalist id="country-list">
-                    {countries.map(c => (
-                      <option key={c.iso2} value={c.name} />
-                    ))}
-                  </datalist>
                 </div>
               </div>
             </div>
@@ -575,19 +681,14 @@ export default function CheckinClient() {
                 <div style={ROW_2}>
                   <div>
                     <label style={LABEL}>Nationality (citizenship)*</label>
-                    {/* searchable input cu datalist */}
-                    <input
-                      style={INPUT}
-                      list="nationality-list"
+                    <Combobox
+                      id="checkin-nationality"
+                      ariaLabel="Nationality"
                       value={docNationality}
-                      onChange={(e) => setDocNationality(e.currentTarget.value)}
+                      onChange={setDocNationality}
+                      options={nationalityOptions}
                       placeholder="Start typing… e.g. Romanian"
                     />
-                    <datalist id="nationality-list">
-                      {nationalityOptions.map((n) => (
-                        <option key={n} value={n} />
-                      ))}
-                    </datalist>
                   </div>
                   <div>
                     <label style={LABEL}>Number*</label>
