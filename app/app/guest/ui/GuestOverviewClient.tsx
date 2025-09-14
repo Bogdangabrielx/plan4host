@@ -272,6 +272,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   return (
     <div style={{ padding: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
+      <div style={{ margin: '0 auto', width: 'min(1200px, calc(100vw - 32px))' }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -422,6 +423,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           }}
         />
       )}
+      </div>
     </div>
   );
 }
