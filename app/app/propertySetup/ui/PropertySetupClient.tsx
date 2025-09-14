@@ -474,7 +474,7 @@ function Tabs({ settings, rooms, roomDetails, cleaning }:{
   return (
     <div style={{ display: "grid", gap: 12 }}>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <button onClick={() => setTab("settings")}    style={tabBtn(tab === "settings")}>Settings (check-in/out)</button>
+        <button onClick={() => setTab("settings")}    style={tabBtn(tab === "settings")}>Check-in/out Time</button>
         <button onClick={() => setTab("rooms")}       style={tabBtn(tab === "rooms")}>Rooms</button>
         <button onClick={() => setTab("roomdetails")} style={tabBtn(tab === "roomdetails")}>Room details</button>
         <button onClick={() => setTab("cleaning")}    style={tabBtn(tab === "cleaning")}>Cleaning</button>
