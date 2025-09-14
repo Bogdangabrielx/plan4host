@@ -236,7 +236,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   const hasStandardOrBetter = plan === "standard" || plan === "premium";
 
   return (
-    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', overflowX: 'hidden' }}>
       <PlanHeaderBadge title="Property Setup" slot="header-right" />
 
       {/* minimalist layout */}
