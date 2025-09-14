@@ -103,11 +103,7 @@ export default function RoomsTab({
               >
                 {/* Row 1: NAME (full width) */}
                 <div style={{ gridArea: "name", minWidth: 0 }}>
-                  <input
-                    value={r.name}
-                    onChange={(e) => onRenameRoom(r.id, (e.target as HTMLInputElement).value)}
-                    style={input}
-                  />
+                  <RoomNameField room={r} onRenameRoom={onRenameRoom} />
                 </div>
 
                 {/* Row 2 (left): TYPE */}
@@ -139,6 +135,28 @@ export default function RoomsTab({
         )}
       </section>
     </div>
+  );
+}
+
+function RoomNameField({ room, onRenameRoom }: { room: Room; onRenameRoom: (roomId: string, name: string) => void | Promise<void> }) {
+  const [name, setName] = useState<string>(room.name);
+
+  // Re-sync when parent updates the room
+  useMemo(() => { setName(room.name); }, [room.id, room.name]);
+
+  const commit = () => {
+    const v = name.trim();
+    if (v && v !== room.name) onRenameRoom(room.id, v);
+  };
+
+  return (
+    <input
+      value={name}
+      onChange={(e) => setName((e.target as HTMLInputElement).value)}
+      onBlur={commit}
+      placeholder="Room name"
+      style={input}
+    />
   );
 }
 
