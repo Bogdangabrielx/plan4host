@@ -93,7 +93,7 @@ export default function CleanTaskModal({
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 50 }} />
 
       {/* Modal */}
-      <div role="dialog" aria-modal="true" className="sb-card" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(640px, 92vw)", zIndex: 51, display: "grid", gridTemplateRows: "auto 1fr auto", padding: 0, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+      <div role="dialog" aria-modal="true" className="sb-card" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(640px, calc(100vw - 32px))", zIndex: 51, display: "grid", gridTemplateRows: "auto 1fr auto", padding: 0, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
         {/* HEADER – centered room name */}
 <div style={{ padding: 14, borderBottom: "1px solid var(--border)" }}>
   <div

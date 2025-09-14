@@ -200,7 +200,7 @@ export default function DayModal({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(1100px, 96vw)",
+          width: "min(1100px, calc(100vw - 32px))",
           maxHeight: "86vh",
           overflow: "auto",
           background: "var(--panel)",

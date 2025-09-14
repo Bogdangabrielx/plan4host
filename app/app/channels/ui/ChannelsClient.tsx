@@ -510,7 +510,7 @@ function Modal({ title, children, onClose }:{
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, width: "min(980px, 96vw)" }}
+        style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, width: "min(980px, calc(100vw - 32px))" }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
           <h3 style={{ margin: 0 }}>{title}</h3>
@@ -532,7 +532,7 @@ function InnerModal({ title, children, onClose }:{
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, width: "min(720px, 94vw)" }}
+        style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, width: "min(720px, calc(100vw - 32px))" }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
           <h3 style={{ margin: 0 }}>{title}</h3>
