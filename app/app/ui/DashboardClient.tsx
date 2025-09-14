@@ -489,7 +489,9 @@ export default function DashboardClient({
           >
             <div
               style={{
-                width: 480, maxWidth: "90vw",
+                width: "min(480px, calc(100vw - 32px))",
+                maxHeight: "calc(100vh - 32px)",
+                overflow: "auto",
                 background: "var(--panel)",
                 border: "1px solid var(--border)",
                 borderRadius: 12,

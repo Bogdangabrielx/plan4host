@@ -296,7 +296,7 @@ export default function CalendarClient({
       {showYear && (
         <div role="dialog" aria-modal="true" onClick={() => setShowYear(false)}
           style={{ position: "fixed", inset: 0, zIndex: 225, background: "var(--bg)", display: "grid", placeItems: "center" }}>
-          <div onClick={(e) => e.stopPropagation()} className="sb-card" style={{ width: "min(1024px, 95vw)", maxHeight: "86vh", overflow: "auto", padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} className="sb-card" style={{ width: "min(1024px, calc(100vw - 32px))", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <strong style={{ fontSize: 16 }}>Pick a month — {year}</strong>
               <div style={{ display: "flex", gap: 8 }}>
