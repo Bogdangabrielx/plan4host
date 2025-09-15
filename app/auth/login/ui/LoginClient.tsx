@@ -227,7 +227,6 @@ const page: React.CSSProperties = {
 /* Card fluid: încape pe mobil, nu sare pe laptop */
 function wrap(theme: Theme): React.CSSProperties {
   return {
-    width: "min(5em, 8%)",
     background: "var(--panel)",
     border: "1px solid var(--border)",
     borderRadius: 12,
