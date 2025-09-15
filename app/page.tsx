@@ -32,16 +32,16 @@ export default function HomePage() {
     <img
       src="/logo_forlight.png"
       alt="Plan4Host"
-      width={300}
-      height={300}
+      width={133}
+      height={133}
       className={`${styles.logo} logoLight`}
     />
     <img
       src="/logo_fordark.png"
       alt=""
       aria-hidden="true"
-      width={300}
-      height={300}
+      width={133}
+      height={133}
       className={`${styles.logo} logoDark`}
     />
   </a>
