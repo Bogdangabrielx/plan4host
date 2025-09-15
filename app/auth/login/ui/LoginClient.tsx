@@ -16,23 +16,17 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [mounted, setMounted] = useState(false);
 
-  // ————— helpers null-safe —————
+  // ————— helpers —————
   const asStr = (v: unknown) => (typeof v === "string" ? v : v == null ? "" : String(v));
   const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(asStr(s).trim());
-  const safeDecode = (v: string | null) => {
-    try { return v ? decodeURIComponent(v) : ""; } catch { return asStr(v); }
-  };
-  const safeJson = async (res: Response) => {
-    try { return await res.json(); } catch { return {}; }
-  };
+  const safeDecode = (v: string | null) => { try { return v ? decodeURIComponent(v) : ""; } catch { return asStr(v); } };
+  const safeJson = async (res: Response) => { try { return await res.json(); } catch { return {}; } };
 
   useEffect(() => {
     setMounted(true);
-
     const fromHtml = (document.documentElement.getAttribute("data-theme") as Theme | null);
     const fromLS   = (typeof window !== "undefined" ? (localStorage.getItem("theme_v1") as Theme | null) : null);
     const current  = fromHtml ?? fromLS ?? initialTheme;
-
     document.documentElement.setAttribute("data-theme", current);
     setTheme(current);
 
@@ -51,40 +45,23 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     const u = new URL(window.location.href);
     const e = safeDecode(u.searchParams.get("error"));
     if (e) { setErr(e); setStatus("Error"); }
-
     const raw = u.searchParams.get("mode") || u.searchParams.get("tab") || u.searchParams.get("view") || u.searchParams.get("signup") || u.searchParams.get("trial");
     const val = asStr(raw).toLowerCase();
-    if (["signup", "create", "register", "1", "true", "yes"].includes(val)) {
-      setMode("signup");
-    }
+    if (["signup", "create", "register", "1", "true", "yes"].includes(val)) setMode("signup");
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (status === "Loading") return; // anti dublu-submit
+    if (status === "Loading") return;
     setErr("");
 
-    // Validare client
     const emailTrim = asStr(email).trim();
     const passTrim  = asStr(pass);
-    if (!emailTrim) {
-      setErr("Please enter your email.");
-      setStatus("Error");
-      return;
-    }
-    if (!isEmail(emailTrim)) {
-      setErr("Please enter a valid email address.");
-      setStatus("Error");
-      return;
-    }
-    if (!passTrim) {
-      setErr("Please enter your password.");
-      setStatus("Error");
-      return;
-    }
+    if (!emailTrim) { setErr("Please enter your email."); setStatus("Error"); return; }
+    if (!isEmail(emailTrim)) { setErr("Please enter a valid email address."); setStatus("Error"); return; }
+    if (!passTrim) { setErr("Please enter your password."); setStatus("Error"); return; }
 
     setStatus("Loading");
-
     const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/signup";
 
     try {
@@ -95,44 +72,30 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
         body: JSON.stringify({ email: emailTrim, password: passTrim }),
       });
 
-      // Acceptă și 204 (No Content) ca succes
       if (res.ok) {
         const j = await safeJson(res);
         if (mode === "signup" && (j as any)?.requiresConfirmation) {
-          setStatus("Idle");
-          setErr("");
+          setStatus("Idle"); setErr("");
           alert("We sent a confirmation email from noreply@plan4host.com. Please confirm to continue.");
           return;
         }
-
-        // Dacă API setează un redirect în header (de ex 'x-redirect'), respectă-l
         const hdrNext = res.headers.get("x-redirect");
-        if (hdrNext && /^\/|^https?:\/\//i.test(hdrNext)) {
-          location.assign(hdrNext);
-          return;
-        }
-
-        // fallback implicit
-        location.assign("/app");
-        return;
+        if (hdrNext && /^\/|^https?:\/\//i.test(hdrNext)) { location.assign(hdrNext); return; }
+        location.assign("/app"); return;
       }
 
-      // Eroare de aplicație (cu JSON sau fără)
       const j = await safeJson(res);
       const message =
         asStr((j as any)?.error) ||
         asStr((j as any)?.message) ||
         (mode === "login" ? "Invalid credentials." : "Could not create account.");
-      setErr(message);
-      setStatus("Error");
+      setErr(message); setStatus("Error");
     } catch (ex: any) {
-      // Eroare de rețea / CORS / timeouts
       setErr(asStr(ex?.message) || "Network error. Please try again.");
       setStatus("Error");
     }
   }
 
-  // ✅ OAuth Google (folosește domeniul tău)
   function signInWithGoogle() {
     const APP_URL =
       (typeof process !== "undefined" && (process as any).env?.NEXT_PUBLIC_APP_URL) ||
@@ -142,7 +105,6 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
       const intent = mode === "login" ? "signin" : "signup";
       window.location.href = `${APP_URL}/auth/oauth/google?next=${encodeURIComponent(next)}&intent=${intent}`;
     } catch {
-      // fallback sigur
       const intent = mode === "login" ? "signin" : "signup";
       location.assign(`/auth/oauth/google?next=%2Fapp&intent=${intent}`);
     }
@@ -154,108 +116,115 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     : "Idle";
 
   return (
-    <div style={wrap(mounted ? theme : "dark")}>
-      <div style={headRow}>
-        <h1 style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? "Sign in" : "Create account"}</h1>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <span style={pillStyle(pill)}>{pill}</span>
-          <ThemeToggle size="md" />
-        </div>
-      </div>
-
-      <div style={{ display: "grid", gap: 10 }}>
-        <button onClick={signInWithGoogle} style={oauthBtn}>
-          <img
-            src={
-              mounted
-                ? (theme === "light" ? "/Google light.png" : "/Google dark.png")
-                : "/Google dark.png"
-            }
-            alt="Google"
-            width={20}
-            height={20}
-            style={{ display: "block" }}
-          />
-          {mode === "login" ? "Sign in with Google" : "Create account with Google"}
-        </button>
-
-        <div style={dividerRow}>
-          <span style={dividerLine} />
-          <small style={{ color: "var(--muted)" }}>or</small>
-          <span style={dividerLine} />
+    <main style={page}>
+      <div style={wrap(mounted ? theme : "dark")}>
+        <div style={headRow}>
+          <h1 style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? "Sign in" : "Create account"}</h1>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <span style={pillStyle(pill)}>{pill}</span>
+            <ThemeToggle size="md" />
+          </div>
         </div>
 
-        <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={lbl}>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e)=>setEmail(asStr(e.currentTarget.value))}
-              placeholder="you@example.com"
-              style={input}
-              required
+        <div style={{ display: "grid", gap: 10, minWidth: 0 }}>
+          <button onClick={signInWithGoogle} style={oauthBtn}>
+            <img
+              src={
+                mounted
+                  ? (theme === "light" ? "/Google light.png" : "/Google dark.png")
+                  : "/Google dark.png"
+              }
+              alt="Google"
+              width={20}
+              height={20}
+              style={{ display: "block" }}
             />
-          </div>
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={lbl}>{mode === "login" ? "Password" : "Choose a password"}</label>
-            <input
-              type="password"
-              value={pass}
-              onChange={(e)=>setPass(asStr(e.currentTarget.value))}
-              placeholder="••••••••"
-              style={input}
-              required
-            />
-          </div>
-
-          {err && <div style={{ color: "var(--text)", fontSize: 13 }}>{err}</div>}
-
-          <button
-            type="submit"
-            disabled={status==="Loading"}
-            style={primaryBtn}
-          >
-            {mode === "login" ? "Sign in" : "Create account"}
+            {mode === "login" ? "Sign in with Google" : "Create account with Google"}
           </button>
 
-          <small style={{ color: "var(--muted)" }}>
-            {mode === "login" ? (
-              <>
-                Don’t have an account?{" "}
-                <a
-                  href="#"
-                  onClick={(e) => { e.preventDefault(); setMode("signup"); setErr(""); }}
-                  style={{ color: "var(--primary)", fontWeight: 700 }}
-                >
-                  Create one
-                </a>
-                .
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
-                <a
-                  href="#"
-                  onClick={(e) => { e.preventDefault(); setMode("login"); setErr(""); }}
-                  style={{ color: "var(--primary)", fontWeight: 700 }}
-                >
-                  Sign in
-                </a>
-                .
-              </>
-            )}
-          </small>
-        </form>
+          <div style={dividerRow}>
+            <span style={dividerLine} />
+            <small style={{ color: "var(--muted)" }}>or</small>
+            <span style={dividerLine} />
+          </div>
+
+          <form onSubmit={onSubmit} style={{ display: "grid", gap: 10, minWidth: 0 }}>
+            <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
+              <label style={lbl}>Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e)=>setEmail(asStr(e.currentTarget.value))}
+                placeholder="you@example.com"
+                style={input}
+                required
+              />
+            </div>
+            <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
+              <label style={lbl}>{mode === "login" ? "Password" : "Choose a password"}</label>
+              <input
+                type="password"
+                value={pass}
+                onChange={(e)=>setPass(asStr(e.currentTarget.value))}
+                placeholder="••••••••"
+                style={input}
+                required
+              />
+            </div>
+
+            {err && <div style={{ color: "var(--text)", fontSize: 13, minWidth: 0 }}>{err}</div>}
+
+            <button type="submit" disabled={status==="Loading"} style={primaryBtn}>
+              {mode === "login" ? "Sign in" : "Create account"}
+            </button>
+
+            <small style={{ color: "var(--muted)" }}>
+              {mode === "login" ? (
+                <>
+                  Don’t have an account?{" "}
+                  <a
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setMode("signup"); setErr(""); }}
+                    style={{ color: "var(--primary)", fontWeight: 700 }}
+                  >
+                    Create one
+                  </a>
+                  .
+                </>
+              ) : (
+                <>
+                  Already have an account?{" "}
+                  <a
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setMode("login"); setErr(""); }}
+                    style={{ color: "var(--primary)", fontWeight: 700 }}
+                  >
+                    Sign in
+                  </a>
+                  .
+                </>
+              )}
+            </small>
+          </form>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
 
-/* styles identice cu ce ai deja */
+/* ---------- styles ---------- */
+
+const page: React.CSSProperties = {
+  minHeight: "100dvh",
+  padding: "min(5em, 8%)",     // responsive page padding
+  boxSizing: "border-box",
+  display: "grid",
+  placeItems: "center",
+};
+
 function wrap(theme: Theme): React.CSSProperties {
   return {
-    width: 380,
+    width: "min(420px, 100%)",  // card fluid
     background: "var(--panel)",
     border: "1px solid var(--border)",
     borderRadius: 12,
@@ -263,13 +232,57 @@ function wrap(theme: Theme): React.CSSProperties {
     boxShadow: theme === "light" ? "0 2px 40px rgba(2, 6, 23, 0.23)" : "0 2px 20px rgba(113, 120, 152, 0.25)",
   };
 }
-const headRow: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 };
-const input: React.CSSProperties = { padding: "10px 12px", background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8 };
+
+const headRow: React.CSSProperties = {
+  display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10, minWidth: 0,
+};
+
+const input: React.CSSProperties = {
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
+  boxSizing: "border-box",
+  padding: "10px 12px",
+  background: "var(--bg)",
+  color: "var(--text)",
+  border: "1px solid var(--border)",
+  borderRadius: 8,
+  // Evită zoom pe iOS care poate produce „ieșiri” vizuale
+  fontSize: 16,
+};
+
 const lbl: React.CSSProperties = { fontSize: 12, color: "var(--muted)" };
-const primaryBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--primary)", color: "#0c111b", fontWeight: 800, cursor: "pointer" };
-const oauthBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 };
-const dividerRow: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8 };
+
+const primaryBtn: React.CSSProperties = {
+  width: "100%",
+  padding: "10px 14px",
+  borderRadius: 10,
+  border: "1px solid var(--border)",
+  background: "var(--primary)",
+  color: "#0c111b",
+  fontWeight: 800,
+  cursor: "pointer",
+};
+
+const oauthBtn: React.CSSProperties = {
+  width: "100%",
+  padding: "10px 14px",
+  borderRadius: 10,
+  border: "1px solid var(--border)",
+  background: "var(--card)",
+  color: "var(--text)",
+  fontWeight: 800,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 10,
+  minWidth: 0,
+};
+
+const dividerRow: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8, minWidth: 0 };
 const dividerLine: React.CSSProperties = { height: 1, background: "var(--border)", display: "block" };
+
 function pillStyle(pill: string): React.CSSProperties {
   const isError = /error/i.test(pill);
   const isBusy = /(sign|load|creat)/i.test(pill);
