@@ -224,7 +224,7 @@ const page: React.CSSProperties = {
 
 function wrap(theme: Theme): React.CSSProperties {
   return {
-    width: "min(420px, 100%)",  // card fluid
+    
     background: "var(--panel)",
     border: "1px solid var(--border)",
     borderRadius: 12,
