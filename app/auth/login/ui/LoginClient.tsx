@@ -215,7 +215,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
 /* ---------- styles ---------- */
 
 const page: React.CSSProperties = {
-  minHeight: "100dvh",
+  
   padding: "min(3em, 18%)",     // responsive page padding
   boxSizing: "border-box",
   display: "grid",
@@ -228,7 +228,7 @@ function wrap(theme: Theme): React.CSSProperties {
     background: "var(--panel)",
     border: "1px solid var(--border)",
     borderRadius: 12,
-    padding: 18,
+    
     boxShadow: theme === "light" ? "0 2px 40px rgba(2, 6, 23, 0.23)" : "0 2px 20px rgba(113, 120, 152, 0.25)",
   };
 }
