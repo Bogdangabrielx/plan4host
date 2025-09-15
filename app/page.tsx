@@ -21,24 +21,43 @@ export default function HomePage() {
       />
 
       {/* Nav */}
-      <header className={styles.nav}>
-        <a href="/" className={styles.brand} aria-label="Plan4Host" data-logo-swap>
-          {/* Afișăm ambele; CSS alege corect în funcție de temă */}
-          <img src="/logo_forlight.png" alt="Plan4Host" height={72} className="logoLight" />
-          <img src="/logo_fordark.png" alt="" aria-hidden="true" height={72} className="logoDark" />
-        </a>
+<header className={styles.nav}>
+  <a
+    href="/"
+    className={styles.brand}
+    aria-label="Plan4Host"
+    data-logo-swap
+  >
+    {/* Afișăm ambele; CSS alege corect în funcție de temă */}
+    <img
+      src="/logo_forlight.png"
+      alt="Plan4Host"
+      width={300}
+      height={300}
+      className={`${styles.logo} logoLight`}
+    />
+    <img
+      src="/logo_fordark.png"
+      alt=""
+      aria-hidden="true"
+      width={300}
+      height={300}
+      className={`${styles.logo} logoDark`}
+    />
+  </a>
 
-        <nav className={styles.menu} aria-label="Primary">
-          <a className={styles.menuLink} href="#features">Features</a>
-          <a className={styles.menuLink} href="#pricing">Pricing</a>
-          <a className={styles.menuLink} href="#about">About</a>
-          <a className={styles.menuLink} href="#contact">Contact</a>
-        </nav>
-        <div className={styles.actions}>
-          <a href="/auth/login" className={`${styles.btn} ${styles.btnGhost}`}>Sign in</a>
-          <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnText}`}>Get Free Trial</a>
-        </div>
-      </header>
+  <nav className={styles.menu} aria-label="Primary">
+    <a className={styles.menuLink} href="#features">Features</a>
+    <a className={styles.menuLink} href="#pricing">Pricing</a>
+    <a className={styles.menuLink} href="#about">About</a>
+    <a className={styles.menuLink} href="#contact">Contact</a>
+  </nav>
+
+  <div className={styles.actions}>
+    <a href="/auth/login" className={`${styles.btn} ${styles.btnGhost}`}>Sign in</a>
+    <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnText}`}>Get Free Trial</a>
+  </div>
+</header>
 
       {/* Hero */}
       <section className={styles.hero} id="hero">
