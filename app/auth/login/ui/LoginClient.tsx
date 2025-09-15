@@ -216,7 +216,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
 
 const page: React.CSSProperties = {
   minHeight: "100dvh",
-  padding: "min(5em, 8%)",     // responsive page padding
+  padding: "min(7em, 18%)",     // responsive page padding
   boxSizing: "border-box",
   display: "grid",
   placeItems: "center",
