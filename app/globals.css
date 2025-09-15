@@ -6,13 +6,13 @@
 /* DARK este implicit */
 :root,
 [data-theme="dark"] {
-  --bg: #0c111b;
+  --bg: #1a1b1a;
   --panel: #121826;
-  --card: #0f1724;
+  --card: #1c2815;
   --text: #e5e7eb;
-  --muted: #94a3b8;
-  --border: #1f2937;
-  --primary: #60a5fa;
+  --muted: #3c7f77;
+  --border: #2e7c1f;
+  --primary: #60fa7a;
   --danger: #ef4444;
   --success: #22c55e;
   --confComun: #79dc608d;
