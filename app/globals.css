@@ -6,13 +6,13 @@
 /* DARK este implicit */
 :root,
 [data-theme="dark"] {
-  --bg: #353735;
+  --bg: #0f182a;
   --panel: #121826;
-  --card: #1c2815;
+  --card: #0f1724;
   --text: #e5e7eb;
-  --muted: #3c7f77;
-  --border: #2e7c1f;
-  --primary: #60fa7a;
+  --muted: #94a3b8;
+  --border: #1f2937;
+  --primary: #60a5fa;
   --danger: #ef4444;
   --success: #22c55e;
   --confComun: #79dc608d;
@@ -24,13 +24,13 @@
 
 /* LIGHT */
 [data-theme="light"] {
-  --bg: #363836;
+  --bg: #f8fafc;
   --panel: #ffffff;
   --card: #ffffff;
   --text: #0f172a;
   --muted: #64748b;
   --border: #e2e8f0;
-  --primary: #268d24;
+  --primary: #2563eb;
   --danger: #dc2626;
   --success: #16a34a;
   --confComun: #9244ec;
