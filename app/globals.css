@@ -6,7 +6,7 @@
 /* DARK este implicit */
 :root,
 [data-theme="dark"] {
-  --bg: #1a1b1a;
+  --bg: #353735;
   --panel: #121826;
   --card: #1c2815;
   --text: #e5e7eb;
@@ -24,13 +24,13 @@
 
 /* LIGHT */
 [data-theme="light"] {
-  --bg: #f8fafc;
+  --bg: #363836;
   --panel: #ffffff;
   --card: #ffffff;
   --text: #0f172a;
   --muted: #64748b;
   --border: #e2e8f0;
-  --primary: #2563eb;
+  --primary: #268d24;
   --danger: #dc2626;
   --success: #16a34a;
   --confComun: #9244ec;
