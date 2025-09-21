@@ -96,7 +96,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
   // Simplified editor state
   const [titleText, setTitleText] = useState<string>("");
-  const [bodyHtml, setBodyHtml] = useState<string>("");
+  // body content is unmanaged (uncontrolled) to keep caret stable
   const [focusedInput, setFocusedInput] = useState<null | "title" | "body">(null);
   const [saving, setSaving] = useState<"Idle"|"Saving…"|"Synced"|"Error">("Idle");
   const { setPill } = useHeader();
@@ -117,11 +117,11 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       // derive simple editor fields from blocks
       const { title, body } = deriveFromBlocks(base.blocks);
       if (titleRef.current) titleRef.current.textContent = title;
-      setBodyHtml(markdownToHtmlInline(body));
+      if (bodyRef.current) bodyRef.current.innerHTML = markdownToHtmlInline(body);
     } catch {
       setTpl(EMPTY);
       setTitleText("");
-      setBodyHtml("");
+      if (bodyRef.current) bodyRef.current.innerHTML = '';
     }
     // also try to load from server (overrides LS if available)
     (async () => {
@@ -138,7 +138,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
         const { title, body } = deriveFromBlocks(blocks);
         if (titleRef.current) titleRef.current.textContent = title;
-        setBodyHtml(markdownToHtmlInline(body));
+        if (bodyRef.current) bodyRef.current.innerHTML = markdownToHtmlInline(body);
       } catch {}
     })();
   }, [storageKey, propertyId]);
@@ -176,7 +176,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     try { localStorage.setItem(storageKey, JSON.stringify(seeded)); } catch {}
     setTpl(seeded);
     setTitleText("Reservation details");
-    setBodyHtml(markdownToHtmlInline("Hello {{guest_first_name}},\nCheck‑in {{check_in_date}} {{check_in_time}}.\nCheck‑out {{check_out_date}} {{check_out_time}}.\nRoom: {{room_name}}.\nWi‑Fi: {{wifi_name}} / {{wifi_password}}.\nDoor code: {{door_code}}."));
+    if (bodyRef.current) bodyRef.current.innerHTML = markdownToHtmlInline("Hello {{guest_first_name}},\nCheck‑in {{check_in_date}} {{check_in_time}}.\nCheck‑out {{check_out_date}} {{check_out_time}}.\nRoom: {{room_name}}.\nWi‑Fi: {{wifi_name}} / {{wifi_password}}.\nDoor code: {{door_code}}.");
   }
 
   async function syncToServer(status: "draft"|"published", blocks?: Block[]) {
@@ -204,21 +204,20 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       setTitleText(t);
     } else if (focusedInput === "body" && bodyRef.current) {
       insertTokenChip(bodyRef.current, token.replace(/[{}]/g, ""));
-      setBodyHtml(bodyRef.current.innerHTML);
     }
   }
 
   function focusBody() { if (bodyRef.current) { try { bodyRef.current.focus(); } catch {} } }
-  function applyBold() { if (focusedInput==='body') { focusBody(); document.execCommand('bold'); setBodyHtml(bodyRef.current?.innerHTML || ''); } }
-  function applyItalic() { if (focusedInput==='body') { focusBody(); document.execCommand('italic'); setBodyHtml(bodyRef.current?.innerHTML || ''); } }
-  function applyUnderline() { if (focusedInput==='body') { focusBody(); document.execCommand('underline'); setBodyHtml(bodyRef.current?.innerHTML || ''); } }
-  function applyLink() { if (focusedInput==='body') { const url = prompt('Link URL (https://...)'); if (!url) return; focusBody(); document.execCommand('createLink', false, url); setBodyHtml(bodyRef.current?.innerHTML || ''); } }
+  function applyBold() { if (focusedInput==='body') { focusBody(); document.execCommand('bold'); } }
+  function applyItalic() { if (focusedInput==='body') { focusBody(); document.execCommand('italic'); } }
+  function applyUnderline() { if (focusedInput==='body') { focusBody(); document.execCommand('underline'); } }
+  function applyLink() { if (focusedInput==='body') { const url = prompt('Link URL (https://...)'); if (!url) return; focusBody(); document.execCommand('createLink', false, url); } }
 
   // Convert simple editor state to blocks
   function composeBlocks(): Block[] {
     const blocks: Block[] = [];
-    const t = titleText.trim();
-    const b = htmlToMarkdownWithTokens(bodyRef.current?.innerHTML || bodyHtml).trim();
+    const t = (titleRef.current?.innerText || '').trim();
+    const b = htmlToMarkdownWithTokens(bodyRef.current?.innerHTML || '').trim();
     if (t) blocks.push({ id: uid(), type: "heading", text: t });
     if (b) blocks.push({ id: uid(), type: "paragraph", text: b });
     return blocks;
@@ -388,10 +387,9 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
               contentEditable
               suppressContentEditableWarning
               onFocus={()=>setFocusedInput('body')}
-              onInput={(e)=>setBodyHtml((e.currentTarget as HTMLDivElement).innerHTML)}
+              onInput={()=>{/* unmanaged to avoid caret jumps */}}
               style={{ ...input, minHeight: 260, lineHeight: 1.5, whiteSpace: 'pre-wrap', direction: 'ltr', textAlign: 'left' }}
               data-placeholder="Your message..."
-              dangerouslySetInnerHTML={{ __html: bodyHtml }}
             />
             <style dangerouslySetInnerHTML={{ __html: `
               [data-placeholder]:empty:before{ content: attr(data-placeholder); color: var(--muted); }
@@ -405,6 +403,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           <button style={btnPri} onClick={publish} disabled={!isAdmin}>Publish</button>
         </div>
       </section>
+      </div>
   );
 }
 
