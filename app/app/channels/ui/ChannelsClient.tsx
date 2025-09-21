@@ -545,9 +545,10 @@ function InnerModal({ title, children, onClose }:{
 }
 
 function ManageTypeModal({
-  timezone, integrations, onClose, onAdd, onDelete, onToggle
+  timezone, typeId, integrations, onClose, onAdd, onDelete, onToggle
 }:{
   timezone: string | null;
+  typeId: string;
   integrations: { id: string; provider: string | null; url: string; is_active: boolean | null; last_sync: string | null; }[];
   onClose: () => void;
   onAdd: (provider: string, url: string) => void;
@@ -557,6 +558,34 @@ function ManageTypeModal({
   const [provider, setProvider] = useState("Booking");
   const [url, setUrl] = useState("");
   const [customProvider, setCustomProvider] = useState("");
+
+  // OTA color map (UI-only), persisted per room type
+  const [colorMap, setColorMap] = useState<Record<string,string>>({});
+  const [pickerFor, setPickerFor] = useState<string | null>(null);
+  const LS_KEY = `p4h:otaColors:type:${typeId}`;
+  function norm(p?: string | null) { return (p || '').toLowerCase().trim(); }
+  function defaultColor(p?: string | null) {
+    const s = norm(p);
+    if (s.includes('airbnb')) return 'rgba(255,90,95,0.18)';
+    if (s.includes('booking')) return 'rgba(30,144,255,0.18)';
+    if (s.includes('expedia')) return 'rgba(254,203,46,0.22)';
+    return 'rgba(139,92,246,0.18)';
+  }
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      const parsed = raw ? JSON.parse(raw) as Record<string,string> : {};
+      setColorMap(parsed || {});
+    } catch { setColorMap({}); }
+  }, [LS_KEY]);
+  function saveColor(p: string, c: string) {
+    const key = norm(p);
+    setColorMap(prev => {
+      const next = { ...prev, [key]: c };
+      try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }
 
   return (
     <InnerModal title="Manage imports for room type" onClose={onClose}>
@@ -574,6 +603,29 @@ function ManageTypeModal({
               <option>Expedia</option>
               <option>Other</option>
             </select>
+          </div>
+          {/* color selector for current provider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <label style={label}>Color</label>
+            <button
+              type="button"
+              onClick={() => setPickerFor('new')}
+              title="Choose color"
+              style={{ width: 20, height: 20, borderRadius: 999, border: '1px solid var(--border)',
+                      background: colorMap[norm(provider === 'Other' ? customProvider || 'other' : provider)] || defaultColor(provider) }}
+            />
+            {pickerFor === 'new' && (
+              <div style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
+                {[
+                  'rgba(30,144,255,0.18)','rgba(255,90,95,0.18)','rgba(254,203,46,0.22)','rgba(34,197,94,0.18)',
+                  'rgba(139,92,246,0.18)','rgba(13,148,136,0.18)','rgba(148,163,184,0.15)','rgba(59,130,246,0.18)',
+                  'rgba(251,146,60,0.18)','rgba(244,114,182,0.18)'
+                ].map((c,i)=>(
+                  <button key={i} onClick={()=>{ saveColor(provider==='Other'? (customProvider||'other') : provider, c); setPickerFor(null); }}
+                    title="Pick color" style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
+                ))}
+              </div>
+            )}
           </div>
           {provider === 'Other' && (
             <div style={{ display: "grid", gap: 6 }}>
@@ -610,11 +662,27 @@ function ManageTypeModal({
           {integrations.map(ii => (
             <li key={ii.id} className="sb-card" style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               <div style={{ display: "grid", gap: 4, minWidth: 260 }}>
-                <strong>{ii.provider || "Unknown"}</strong>
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <span title="Provider color" style={{ width: 14, height: 14, borderRadius: 999, border: '1px solid var(--border)', display:'inline-block', background: (colorMap[norm(ii.provider)] || defaultColor(ii.provider)) }} />
+                  <strong>{ii.provider || "Unknown"}</strong>
+                </div>
                 <small style={{ color: "var(--muted)", wordBreak: "break-all" }}>{ii.url}</small>
                 {ii.last_sync && <small style={{ color: "var(--muted)" }}>Last sync: {new Date(ii.last_sync).toLocaleString()}</small>}
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <button className="sb-btn" onClick={()=> setPickerFor(ii.id)}>Color</button>
+                {pickerFor === ii.id && (
+                  <div style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
+                    {[
+                      'rgba(30,144,255,0.18)','rgba(255,90,95,0.18)','rgba(254,203,46,0.22)','rgba(34,197,94,0.18)',
+                      'rgba(139,92,246,0.18)','rgba(13,148,136,0.18)','rgba(148,163,184,0.15)','rgba(59,130,246,0.18)',
+                      'rgba(251,146,60,0.18)','rgba(244,114,182,0.18)'
+                    ].map((c,i)=>(
+                      <button key={i} onClick={()=>{ saveColor(ii.provider || 'other', c); setPickerFor(null); }}
+                        title="Pick color" style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
+                    ))}
+                  </div>
+                )}
                 <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontSize: 12 }}>
                   <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> active
                 </label>
