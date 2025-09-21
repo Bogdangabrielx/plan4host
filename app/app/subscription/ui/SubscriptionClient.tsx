@@ -148,9 +148,9 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
       {/* Minimal current plan header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span className="sb-badge">Current: {planLabel(currentPlan)}</span>
-        <small style={{ color: 'var(--muted)' }}>until {validUntil || '—'}</small>
+        <small style={{ color: '#ffff' }}>until {validUntil || '—'}</small>
         {role !== 'admin' && (
-          <small style={{ color: 'var(--muted)' }}>(read-only)</small>
+          <small style={{ color: '#ffff' }}>(read-only)</small>
         )}
       </div>
 
