@@ -325,104 +325,100 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         <small style={{ color: saving === 'Error' ? 'var(--danger)' : 'var(--muted)' }}>{saving}</small>
       </div>
 
-      <div className="config-grid" style={{ alignItems: "start" }}>
-        {/* Left: Simple editor */}
-        <section style={card}>
-          <h2 style={{ marginTop: 0 }}>Message</h2>
-          {/* Variable chips */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-            <small style={{ color: 'var(--muted)' }}>Insert variable:</small>
-            {BUILTIN_VARS.map((v)=>(
-              <button key={v.key} style={btn} onClick={()=>insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
-            ))}
-            {(tpl.fields||[]).map((f)=>(
-              <button key={f.uid} style={btn} onClick={()=>insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
-            ))}
-          </div>
-
-          <div style={{ display: 'grid', gap: 8 }}>
-            <div>
-              <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Title</label>
-              <div
-                ref={titleRef}
-                contentEditable
-                suppressContentEditableWarning
-                onFocus={()=>setFocusedInput('title')}
-                onInput={(e)=>setTitleText((e.currentTarget as HTMLDivElement).innerText)}
-                style={{ ...input, minHeight: 38 }}
-                data-placeholder="Reservation details"
-              >{titleText}</div>
-            </div>
-            <div>
-              <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Message</label>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
-                <small style={{ color: 'var(--muted)' }}>Formatting:</small>
-                <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyBold();}} disabled={!isAdmin}><strong>B</strong></button>
-                <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyItalic();}} disabled={!isAdmin}><span style={{ fontStyle: 'italic' }}>I</span></button>
-                <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyUnderline();}} disabled={!isAdmin}><span style={{ textDecoration: 'underline' }}>U</span></button>
-                <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyLink();}} disabled={!isAdmin}>Link</button>
-              </div>
-              <div
-                ref={bodyRef}
-                contentEditable
-                suppressContentEditableWarning
-                onFocus={()=>setFocusedInput('body')}
-                onInput={(e)=>setBodyHtml((e.currentTarget as HTMLDivElement).innerHTML)}
-                style={{ ...input, minHeight: 160, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}
-                data-placeholder="Your message..."
-                dangerouslySetInnerHTML={{ __html: bodyHtml }}
-              />
-              <style dangerouslySetInnerHTML={{ __html: `
-                [data-placeholder]:empty:before{ content: attr(data-placeholder); color: var(--muted); }
-                .rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }
-              `}}/>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-            <button style={btn} onClick={saveDraft} disabled={!isAdmin}>Save</button>
-            <button style={btnPri} onClick={publish} disabled={!isAdmin}>Publish</button>
-          </div>
-        </section>
-
-        {/* Right: Fields */}
-        <section style={{ display: "grid", gap: 12 }}>
-          <div style={card}>
-            <h2 style={{ marginTop: 0 }}>Fields you will fill when generating the link</h2>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-              <button style={btn} onClick={addField} disabled={!isAdmin}>+ Add field</button>
-            </div>
-
-            {(tpl.fields.length === 0) ? (
-              <p style={{ color: "var(--muted)" }}>No manual fields.</p>
-            ) : (
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
-                {tpl.fields.map((f, i) => (
-                  <li key={f.uid} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 10, background: "var(--card)" }}>
-                    <div style={{ display: "grid", gap: 6 }}>
-                      <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr 160px" }}>
-                        <input value={f.label} onChange={(e)=>updateField(i,{ label: e.currentTarget.value })} style={input} placeholder="Label (e.g. Wi‑Fi password)" disabled={!isAdmin} />
-                        <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <input type="checkbox" checked={f.required} onChange={(e)=>updateField(i,{ required: e.currentTarget.checked })} disabled={!isAdmin} /> required
-                        </label>
-                      </div>
-                      <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr" }}>
-                        <input value={f.key} onChange={(e)=>updateField(i,{ key: e.currentTarget.value })} style={input} placeholder="Key (e.g. wifi_password)" disabled={!isAdmin} />
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={()=>removeField(i)} disabled={!isAdmin}>Remove</button>
-                      </div>
+      {/* Dynamic fields (full width, top) */}
+      <section style={card}>
+        <h2 style={{ marginTop: 0 }}>Dynamic fields</h2>
+        <p style={{ color: 'var(--muted)', marginTop: 0 }}>These are the extra fields you will fill when generating the link. Built‑in fields like guest name and dates are always available.</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+          <button style={btn} onClick={addField} disabled={!isAdmin}>+ Add field</button>
+        </div>
+        <div style={card}>
+          {(tpl.fields.length === 0) ? (
+            <p style={{ color: "var(--muted)" }}>No custom fields.</p>
+          ) : (
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
+              {tpl.fields.map((f, i) => (
+                <li key={f.uid} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 10, background: "var(--card)" }}>
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr 160px" }}>
+                      <input value={f.label} onChange={(e)=>updateField(i,{ label: e.currentTarget.value })} style={input} placeholder="Label (e.g. Wi‑Fi password)" disabled={!isAdmin} />
+                      <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <input type="checkbox" checked={f.required} onChange={(e)=>updateField(i,{ required: e.currentTarget.checked })} disabled={!isAdmin} /> required
+                      </label>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+                    <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr" }}>
+                      <input value={f.key} onChange={(e)=>updateField(i,{ key: e.currentTarget.value })} style={input} placeholder="Key (e.g. wifi_password)" disabled={!isAdmin} />
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                      <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={()=>removeField(i)} disabled={!isAdmin}>Remove</button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
 
-          {/* Preview removed per request (WYSIWYG composing) */}
-        </section>
+      {/* Message composer (full width, bottom) */}
+      <section style={card}>
+        <h2 style={{ marginTop: 0 }}>Message</h2>
+        {/* Variable chips */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+          <small style={{ color: 'var(--muted)' }}>Insert variable:</small>
+          {BUILTIN_VARS.map((v)=>(
+            <button key={v.key} style={btn} onClick={()=>insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
+          ))}
+          {(tpl.fields||[]).map((f)=>(
+            <button key={f.uid} style={btn} onClick={()=>insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
+          ))}
+        </div>
+
+        <div style={{ display: 'grid', gap: 8 }}>
+          <div>
+            <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Title</label>
+            <div
+              ref={titleRef}
+              contentEditable
+              suppressContentEditableWarning
+              onFocus={()=>setFocusedInput('title')}
+              onInput={(e)=>setTitleText((e.currentTarget as HTMLDivElement).innerText)}
+              style={{ ...input, minHeight: 38 }}
+              data-placeholder="Reservation details"
+            >{titleText}</div>
+          </div>
+          <div>
+            <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Message</label>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
+              <small style={{ color: 'var(--muted)' }}>Formatting:</small>
+              <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyBold();}} disabled={!isAdmin}><strong>B</strong></button>
+              <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyItalic();}} disabled={!isAdmin}><span style={{ fontStyle: 'italic' }}>I</span></button>
+              <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyUnderline();}} disabled={!isAdmin}><span style={{ textDecoration: 'underline' }}>U</span></button>
+              <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyLink();}} disabled={!isAdmin}>Link</button>
+            </div>
+            <div
+              ref={bodyRef}
+              contentEditable
+              suppressContentEditableWarning
+              onFocus={()=>setFocusedInput('body')}
+              onInput={(e)=>setBodyHtml((e.currentTarget as HTMLDivElement).innerHTML)}
+              style={{ ...input, minHeight: 260, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}
+              data-placeholder="Your message..."
+              dangerouslySetInnerHTML={{ __html: bodyHtml }}
+            />
+            <style dangerouslySetInnerHTML={{ __html: `
+              [data-placeholder]:empty:before{ content: attr(data-placeholder); color: var(--muted); }
+              .rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }
+            `}}/>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+          <button style={btn} onClick={saveDraft} disabled={!isAdmin}>Save</button>
+          <button style={btnPri} onClick={publish} disabled={!isAdmin}>Publish</button>
+        </div>
+      </section>
       </div>
-    </div>
   );
 }
 
