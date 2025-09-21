@@ -610,13 +610,14 @@ function ManageTypeModal({
             <label style={label}>Color</label>
             <button
               type="button"
+              data-picker="keep"
               onClick={() => setPickerFor('new')}
               title="Choose color"
               style={{ width: 20, height: 20, borderRadius: 999, border: '1px solid var(--border)',
                       background: colorMap[norm(provider === 'Other' ? customProvider || 'other' : provider)] || defaultColor(provider) }}
             />
             {pickerFor === 'new' && (
-              <div style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
+              <div data-picker="keep" onMouseLeave={() => setPickerFor(null)} style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
                 {[
                   'rgba(30,144,255,0.81)','rgba(255,90,95,0.81)','rgba(254,203,46,0.81)','rgba(34,197,94,0.81)',
                   'rgba(139,92,246,0.81)','rgba(13,148,136,0.81)','rgba(148,163,184,0.81)','rgba(59,130,246,0.81)',
@@ -671,9 +672,9 @@ function ManageTypeModal({
                 {ii.last_sync && <small style={{ color: "var(--muted)" }}>Last sync: {new Date(ii.last_sync).toLocaleString()}</small>}
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <button className="sb-btn" onClick={()=> setPickerFor(ii.id)}>Color</button>
+                <button className="sb-btn" data-picker="keep" onClick={()=> setPickerFor(ii.id)}>Color</button>
                 {pickerFor === ii.id && (
-                  <div style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
+                  <div data-picker="keep" onMouseLeave={() => setPickerFor(null)} style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
                     {[
                       'rgba(30,144,255,0.81)','rgba(255,90,95,0.81)','rgba(254,203,46,0.81)','rgba(34,197,94,0.81)',
                       'rgba(139,92,246,0.81)','rgba(13,148,136,0.81)','rgba(148,163,184,0.81)','rgba(59,130,246,0.81)',
