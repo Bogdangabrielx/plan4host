@@ -90,9 +90,13 @@ function replaceVars(s: string, vars: Record<string, string>) {
 
 export default function ReservationMessageClient({ initialProperties, isAdmin }: { initialProperties: Property[]; isAdmin: boolean }) {
   const [properties] = useState<Property[]>(initialProperties);
-  const [propertyId] = usePersistentProperty(properties);
+  const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
-  const [focusedBlock, setFocusedBlock] = useState<string | null>(null);
+  // Simplified editor state
+  const [titleText, setTitleText] = useState<string>("");
+  const [bodyText, setBodyText] = useState<string>("");
+  const [focusedInput, setFocusedInput] = useState<null | "title" | "body">(null);
+  const [saving, setSaving] = useState<"Idle"|"Saving…"|"Synced"|"Error">("Idle");
   const [previewVars, setPreviewVars] = useState<Record<string, string>>({
     guest_first_name: "Alex",
     guest_last_name: "Popescu",
@@ -112,9 +116,16 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     try {
       const raw = localStorage.getItem(storageKey);
       const parsed: TemplateState | null = raw ? JSON.parse(raw) : null;
-      setTpl(parsed || EMPTY);
+      const base = parsed || EMPTY;
+      setTpl(base);
+      // derive simple editor fields from blocks
+      const { title, body } = deriveFromBlocks(base.blocks);
+      setTitleText(title);
+      setBodyText(body);
     } catch {
       setTpl(EMPTY);
+      setTitleText("");
+      setBodyText("");
     }
     // also try to load from server (overrides LS if available)
     (async () => {
@@ -129,57 +140,89 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         const next: TemplateState = { status: (t.status || 'draft') as any, blocks, fields };
         setTpl(next);
         try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+        const { title, body } = deriveFromBlocks(blocks);
+        setTitleText(title);
+        setBodyText(body);
       } catch {}
     })();
   }, [storageKey, propertyId]);
 
   function saveDraft() {
     if (!propertyId) return;
-    try { localStorage.setItem(storageKey, JSON.stringify({ ...tpl, status: "draft" })); } catch {}
-    setTpl(prev => ({ ...prev, status: "draft" }));
-    syncToServer("draft");
+    const blocks = composeBlocks();
+    const next = { ...tpl, status: "draft" as const, blocks };
+    try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+    setTpl(next);
+    syncToServer("draft", blocks);
   }
   function publish() {
     if (!propertyId) return;
-    try { localStorage.setItem(storageKey, JSON.stringify({ ...tpl, status: "published" })); } catch {}
-    setTpl(prev => ({ ...prev, status: "published" }));
-    syncToServer("published");
+    const blocks = composeBlocks();
+    const next = { ...tpl, status: "published" as const, blocks };
+    try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+    setTpl(next);
+    syncToServer("published", blocks);
   }
   function resetAll() {
     if (!propertyId) return;
     const seeded: TemplateState = {
       status: "draft",
       fields: [
-        { key: "door_code", label: "Door access code", required: false, multiline: false, placeholder: "e.g. 1234" },
-        { key: "wifi_name", label: "Wi-Fi name", required: false, multiline: false },
-        { key: "wifi_password", label: "Wi-Fi password", required: false, multiline: false },
+        { key: "wifi_name", label: "Wi‑Fi name", required: false, multiline: false },
+        { key: "wifi_password", label: "Wi‑Fi password", required: false, multiline: false },
+        { key: "door_code", label: "Door code", required: false, multiline: false },
       ],
       blocks: [
-        { id: uid(), type: "heading", text: "Reservation Details" },
-        { id: uid(), type: "paragraph", text: "Hello {{guest_first_name}},\nWe are happy to welcome you to {{property_name}}." },
-        { id: uid(), type: "paragraph", text: "Check-in: **{{check_in_date}}** at {{check_in_time}}\nCheck-out: **{{check_out_date}}** at {{check_out_time}}\nRoom: {{room_name}}" },
-        { id: uid(), type: "divider" },
-        { id: uid(), type: "paragraph", text: "Wi‑Fi: **{{wifi_name}}** — Password: **{{wifi_password}}**" },
-        { id: uid(), type: "paragraph", text: "Door code: **{{door_code}}**" },
+        { id: uid(), type: "heading", text: "Reservation details" },
+        { id: uid(), type: "paragraph", text: "Hello {{guest_first_name}},\nCheck‑in {{check_in_date}} {{check_in_time}}.\nCheck‑out {{check_out_date}} {{check_out_time}}.\nRoom: {{room_name}}.\nWi‑Fi: {{wifi_name}} / {{wifi_password}}.\nDoor code: {{door_code}}." },
       ],
     };
     try { localStorage.setItem(storageKey, JSON.stringify(seeded)); } catch {}
     setTpl(seeded);
-    // don't auto publish
+    setTitleText("Reservation details");
+    setBodyText("Hello {{guest_first_name}},\nCheck‑in {{check_in_date}} {{check_in_time}}.\nCheck‑out {{check_out_date}} {{check_out_time}}.\nRoom: {{room_name}}.\nWi‑Fi: {{wifi_name}} / {{wifi_password}}.\nDoor code: {{door_code}}.");
   }
 
-  async function syncToServer(status: "draft"|"published") {
+  async function syncToServer(status: "draft"|"published", blocks?: Block[]) {
     try {
+      setSaving("Saving…");
+      const blk = blocks ?? composeBlocks();
       const payload = {
         property_id: propertyId,
         status,
-        blocks: tpl.blocks.map((b) => ({ type: b.type, text: (b as any).text || null })),
+        blocks: blk.map((b) => ({ type: b.type, text: (b as any).text || null })),
         fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, required: !!f.required, multiline: !!f.multiline, placeholder: f.placeholder || null })),
       };
       const res = await fetch('/api/reservation-message/template', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       // ignore errors silently in UI; RLS/server will enforce perms
-      void res;
-    } catch {}
+      if (!res.ok) setSaving("Error"); else { setSaving("Synced"); setTimeout(()=>setSaving("Idle"), 800); }
+    } catch { setSaving("Error"); }
+  }
+
+  // Insert variable into the focused input
+  function insertVarIntoFocused(token: string) {
+    if (focusedInput === "title") setTitleText((t) => (t || "") + token);
+    else if (focusedInput === "body") setBodyText((t) => (t || "") + token);
+  }
+
+  // Convert simple editor state to blocks
+  function composeBlocks(): Block[] {
+    const blocks: Block[] = [];
+    const t = titleText.trim();
+    const b = bodyText.trim();
+    if (t) blocks.push({ id: uid(), type: "heading", text: t });
+    if (b) blocks.push({ id: uid(), type: "paragraph", text: b });
+    return blocks;
+  }
+
+  function deriveFromBlocks(blocks: Block[]): { title: string; body: string } {
+    let title = "";
+    const paras: string[] = [];
+    for (const bl of blocks || []) {
+      if (bl.type === "heading" && !title) title = (bl as any).text || "";
+      if (bl.type === "paragraph") paras.push(((bl as any).text || ""));
+    }
+    return { title, body: paras.join("\n") };
   }
 
   function addBlock(kind: Block["type"]) {
@@ -254,86 +297,55 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   return (
     <div style={{ display: "grid", gap: 12 }}>
       <PlanHeaderBadge title="Reservation Message" slot="header-right" />
-      {!isAdmin && (
-        <div style={card}>
-          <p style={{ margin: 0, color: "var(--muted)" }}>Only admins can configure the Reservation Message template.</p>
-        </div>
-      )}
+      {/* Property selector */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Property</label>
+        <select className="sb-select" value={propertyId} onChange={(e)=>setPropertyId((e.target as HTMLSelectElement).value)} style={{ minWidth: 220 }}>
+          {properties.map((p)=> (<option key={p.id} value={p.id}>{p.name}</option>))}
+        </select>
+        <div style={{ flex: 1 }} />
+        <small style={{ color: saving === 'Error' ? 'var(--danger)' : 'var(--muted)' }}>{saving}</small>
+      </div>
 
       <div className="config-grid" style={{ alignItems: "start" }}>
-        {/* Left: Blocks */}
+        {/* Left: Simple editor */}
         <section style={card}>
-          <h2 style={{ marginTop: 0 }}>Blocks</h2>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button style={btn} onClick={() => addBlock("heading")}>+ Heading</button>
-            <button style={btn} onClick={() => addBlock("paragraph")}>+ Paragraph (Markdown)</button>
-            <button style={btn} onClick={() => addBlock("divider")}>+ Divider</button>
+          <h2 style={{ marginTop: 0 }}>Message</h2>
+          {/* Variable chips */}
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+            <small style={{ color: 'var(--muted)' }}>Insert variable:</small>
+            {BUILTIN_VARS.map((v)=>(
+              <button key={v.key} style={btn} onClick={()=>insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
+            ))}
+            {(tpl.fields||[]).map((f)=>(
+              <button key={f.key} style={btn} onClick={()=>insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
+            ))}
           </div>
 
-          {tpl.blocks.length === 0 ? (
-            <p style={{ color: "var(--muted)" }}>No blocks yet.</p>
-          ) : (
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 10 }}>
-              {tpl.blocks.map((b, i) => (
-                <li key={b.id} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 10, background: "var(--card)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                    <strong>{b.type === "heading" ? "Heading" : b.type === "paragraph" ? "Paragraph" : "Divider"}</strong>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button style={btn} onClick={() => moveBlock(b.id, "up")}>↑</button>
-                      <button style={btn} onClick={() => moveBlock(b.id, "down")}>↓</button>
-                      <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={() => removeBlock(b.id)}>Delete</button>
-                    </div>
-                  </div>
-                  {b.type !== "divider" && (
-                    <>
-                      <textarea
-                        value={(b as any).text}
-                        onChange={(e) => updateBlock(b.id, e.currentTarget.value)}
-                        onFocus={() => setFocusedBlock(b.id)}
-                        rows={b.type === "heading" ? 1 : 4}
-                        style={{ ...input, resize: "vertical" }}
-                        placeholder={b.type === "heading" ? "Heading text" : "Markdown paragraph. You can use **bold**, *italic*, [link](https://example.com). Use {{variable}} to insert fields."}
-                      />
-                      <details style={{ marginTop: 6 }}>
-                        <summary style={{ cursor: "pointer", color: "var(--muted)" }}>Preview</summary>
-                        <div
-                          style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 8, marginTop: 6, background: "var(--panel)" }}
-                          dangerouslySetInnerHTML={{ __html: renderTemplateToHtml({ ...tpl, blocks: [b] }, mergedVars) }}
-                        />
-                      </details>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+          <div style={{ display: 'grid', gap: 8 }}>
+            <div>
+              <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Title</label>
+              <input value={titleText} onChange={(e)=>setTitleText(e.currentTarget.value)} onFocus={()=>setFocusedInput('title')} style={input} placeholder="Reservation details" />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Message</label>
+              <textarea value={bodyText} onChange={(e)=>setBodyText(e.currentTarget.value)} onFocus={()=>setFocusedInput('body')} rows={8} style={{ ...input, resize: 'vertical' }} placeholder="Your message... You can use variables like {{guest_first_name}}." />
+            </div>
+          </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-            <button style={btn} onClick={saveDraft}>Save draft</button>
-            <button style={btnPri} onClick={publish}>Publish</button>
-            <button style={{ ...btn, border: "1px dashed var(--border)" }} onClick={resetAll}>Reset to example</button>
+            <button style={btn} onClick={saveDraft} disabled={!isAdmin}>Save</button>
+            <button style={btnPri} onClick={publish} disabled={!isAdmin}>Publish</button>
+            <button style={{ ...btn, border: "1px dashed var(--border)" }} onClick={resetAll} disabled={!isAdmin}>Reset to minimal</button>
           </div>
         </section>
 
         {/* Right: Fields + Preview */}
         <section style={{ display: "grid", gap: 12 }}>
           <div style={card}>
-            <h2 style={{ marginTop: 0 }}>Manual fields</h2>
-            <p style={{ color: "var(--muted)", marginTop: 0 }}>
-              Define the extra fields you will fill in when generating a message (e.g., Wi‑Fi password). Use Insert
-              variable to place {"{{"}key{"}"} into your text.
-            </p>
+            <h2 style={{ marginTop: 0 }}>Fields you will fill when generating the link</h2>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-              <button style={btn} onClick={addField}>+ Add field</button>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <small style={{ color: "var(--muted)" }}>Insert variable into focused block:</small>
-                {(tpl.fields || []).map((f) => (
-                  <button key={f.key} style={btn} onClick={() => insertVar(`{{${f.key}}}`)} title={`Insert {{${f.key}}}`}>{f.key}</button>
-                ))}
-                {BUILTIN_VARS.map((v) => (
-                  <button key={v.key} style={btn} onClick={() => insertVar(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
-                ))}
-              </div>
+              <button style={btn} onClick={addField} disabled={!isAdmin}>+ Add field</button>
             </div>
 
             {(tpl.fields.length === 0) ? (
@@ -343,21 +355,17 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
                 {tpl.fields.map((f, i) => (
                   <li key={f.key} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 10, background: "var(--card)" }}>
                     <div style={{ display: "grid", gap: 6 }}>
-                      <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr 120px 120px" }}>
-                        <input value={f.label} onChange={(e)=>updateField(i,{ label: e.currentTarget.value })} style={input} placeholder="Label (e.g. Wi‑Fi password)" />
+                      <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr 160px" }}>
+                        <input value={f.label} onChange={(e)=>updateField(i,{ label: e.currentTarget.value })} style={input} placeholder="Label (e.g. Wi‑Fi password)" disabled={!isAdmin} />
                         <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <input type="checkbox" checked={f.required} onChange={(e)=>updateField(i,{ required: e.currentTarget.checked })} /> required
-                        </label>
-                        <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <input type="checkbox" checked={f.multiline} onChange={(e)=>updateField(i,{ multiline: e.currentTarget.checked })} /> multiline
+                          <input type="checkbox" checked={f.required} onChange={(e)=>updateField(i,{ required: e.currentTarget.checked })} disabled={!isAdmin} /> required
                         </label>
                       </div>
-                      <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr 1fr" }}>
-                        <input value={f.key} onChange={(e)=>updateField(i,{ key: slugify(e.currentTarget.value) })} style={input} placeholder="Key (e.g. wifi_password)" />
-                        <input value={f.placeholder || ""} onChange={(e)=>updateField(i,{ placeholder: e.currentTarget.value })} style={input} placeholder="Placeholder (optional)" />
+                      <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr" }}>
+                        <input value={f.key} onChange={(e)=>updateField(i,{ key: slugify(e.currentTarget.value) })} style={input} placeholder="Key (e.g. wifi_password)" disabled={!isAdmin} />
                       </div>
                       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={()=>removeField(i)}>Remove</button>
+                        <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={()=>removeField(i)} disabled={!isAdmin}>Remove</button>
                       </div>
                     </div>
                   </li>
@@ -396,7 +404,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
             )}
             <div
               style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 10, background: "var(--card)" }}
-              dangerouslySetInnerHTML={{ __html: renderTemplateToHtml(tpl, mergedVars) }}
+              dangerouslySetInnerHTML={{ __html: renderTemplateToHtml({ ...tpl, blocks: composeBlocks() }, mergedVars) }}
             />
             <small style={{ color: "var(--muted)" }}>Note: built-in variables are shown with sample values here. The final content binds to real booking data when generating the link.</small>
           </div>
