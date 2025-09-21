@@ -77,7 +77,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
 
   function planCard(p: PlanRow) {
     const isCurrent = currentPlanSlug === p.slug;
-    const expanded = !!open[p.slug];
+    const expanded = true; // benefits always visible
     const propsStr = p.max_properties == null ? 'Unlimited properties' : `Up to ${p.max_properties} properties`;
     const roomsStr = p.max_rooms_per_property == null ? 'Unlimited rooms per property' : `Up to ${p.max_rooms_per_property} rooms per property`;
     const autoStr  = `Automatic sync every ${p.sync_interval_minutes} minutes`;
@@ -93,34 +93,11 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
     return (
       <div
         key={p.slug}
-        className="sb-card"
-        style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12, display: 'grid', gap: 8 }}
+        className="glass-card"
+        style={{ padding: 16, borderRadius: 12, display: 'grid', gap: 10, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}
       >
-        <button
-          onClick={() => setOpen(prev => ({ ...prev, [p.slug]: !prev[p.slug] }))}
-          className="sb-btn sb-btn--ghost"
-          style={{ justifySelf: 'start', padding: '8px 10px', fontWeight: 900 }}
-          aria-expanded={expanded}
-        >
-          {p.name}
-        </button>
-
-        {expanded && (
-          <div style={{ color: "var(--muted)", display: 'grid', gap: 8, fontWeight: 600, lineHeight: 1.5 }}>
-            {p.description && <div style={{ fontWeight: 600 }}>{p.description}</div>}
-            <ul style={{ margin: 0, paddingLeft: 18, listStyle: 'disc' }}>
-              <li>{propsStr}</li>
-              <li>{roomsStr}</li>
-              <li>{autoStr}</li>
-              <li>{nowStr}</li>
-              {featureLines.map((f, i) => (
-                <li key={i}>{f}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h3 style={{ margin: 0 }}>{p.name}</h3>
           {isCurrent ? (
             <span className="sb-badge">Current</span>
           ) : (
@@ -132,6 +109,19 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
               {saving === p.slug ? 'Applying…' : 'Choose plan'}
             </button>
           )}
+        </div>
+
+        <div style={{ color: "var(--muted)", display: 'grid', gap: 8, fontWeight: 600, lineHeight: 1.5 }}>
+          {p.description && <div style={{ fontWeight: 600 }}>{p.description}</div>}
+          <ul style={{ margin: 0, paddingLeft: 18, listStyle: 'disc' }}>
+            <li>{propsStr}</li>
+            <li>{roomsStr}</li>
+            <li>{autoStr}</li>
+            <li>{nowStr}</li>
+            {featureLines.map((f, i) => (
+              <li key={i}>{f}</li>
+            ))}
+          </ul>
         </div>
       </div>
     );
