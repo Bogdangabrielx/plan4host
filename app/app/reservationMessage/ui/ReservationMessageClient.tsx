@@ -102,17 +102,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   const { setPill } = useHeader();
   const titleRef = useRef<HTMLDivElement|null>(null);
   const bodyRef = useRef<HTMLDivElement|null>(null);
-  const [previewFontPx, setPreviewFontPx] = useState<number>(16);
-  const [previewVars, setPreviewVars] = useState<Record<string, string>>({
-    guest_first_name: "Alex",
-    guest_last_name: "Popescu",
-    check_in_date: "2025-01-02",
-    check_in_time: "14:00",
-    check_out_date: "2025-01-05",
-    check_out_time: "11:00",
-    room_name: "Room 101",
-    property_name: properties.find(p=>p.id===propertyId)?.name || "Your Property",
-  });
+  // sample vars removed; WYSIWYG-only composing
 
   const storageKey = propertyId ? lsKey(propertyId) : "";
 
@@ -296,10 +286,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
 
   // (old block-based insert removed; using insertVarIntoFocused instead)
 
-  const mergedVars = useMemo(() => ({
-    ...previewVars,
-    ...(tpl.fields || []).reduce((acc, f) => { acc[f.key] = acc[f.key] ?? ""; return acc; }, {} as Record<string,string>),
-  }), [previewVars, tpl.fields]);
+  // no preview binding
 
   // Styles
   const card: React.CSSProperties = { background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 };
@@ -383,7 +370,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
               suppressContentEditableWarning
               onFocus={()=>setFocusedInput('title')}
               onInput={(e)=>setTitleText((e.currentTarget as HTMLDivElement).innerText)}
-              style={{ ...input, minHeight: 38 }}
+              style={{ ...input, minHeight: 38, direction: 'ltr', textAlign: 'left' }}
               data-placeholder="Reservation details"
             >{titleText}</div>
           </div>
@@ -402,7 +389,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
               suppressContentEditableWarning
               onFocus={()=>setFocusedInput('body')}
               onInput={(e)=>setBodyHtml((e.currentTarget as HTMLDivElement).innerHTML)}
-              style={{ ...input, minHeight: 260, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}
+              style={{ ...input, minHeight: 260, lineHeight: 1.5, whiteSpace: 'pre-wrap', direction: 'ltr', textAlign: 'left' }}
               data-placeholder="Your message..."
               dangerouslySetInnerHTML={{ __html: bodyHtml }}
             />
