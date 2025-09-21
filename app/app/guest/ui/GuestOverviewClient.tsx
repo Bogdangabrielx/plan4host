@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useHeader } from "@/app/app/_components/HeaderContext";
+import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import RoomDetailModal from "@/app/app/calendar/ui/RoomDetailModal";
 
 // ---- Types din pagina server (le folosim și aici) ----
@@ -109,6 +111,7 @@ function subcopyFor(row: OverviewRow): string | null {
 // ---- Componenta principală ----
 export default function GuestOverviewClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = createClient();
+  const { setPill } = useHeader();
 
   // Proprietăți + selecție
   const [properties, setProperties] = useState<Property[]>(initialProperties || []);
@@ -203,6 +206,14 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   useEffect(() => { refresh(); }, [refresh]);
 
+  // Reflect loading status in the AppHeader pill
+  useEffect(() => {
+    const label =
+      loading === "error" ? "Error" :
+      loading === "loading" ? "Loading…" : "Idle";
+    setPill(label);
+  }, [loading, setPill]);
+
   // Mape utile
   const roomById = useMemo(() => {
     const m = new Map<string, Room>();
@@ -272,21 +283,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   return (
     <div style={{ padding: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
+      {/* Put plan badge in AppHeader (right slot) and ensure title */}
+      <PlanHeaderBadge title="Guest Overview" slot="header-right" />
       <div style={{ margin: '0 auto', width: 'min(1200px, calc(100vw - 32px))' }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <h1 style={{ margin: 0, fontSize: 29, fontStyle:"italic"}}>Guest Overview</h1>
-          {loading === "loading" && (
-            <span style={{ fontSize: 12, padding: "4px 8px", borderRadius: 999, background: "var(--primary)", color: "#0c111b", fontWeight: 800 }}>
-              Loading…
-            </span>
-          )}
-          {loading === "error" && (
-            <span style={{ fontSize: 12, padding: "4px 8px", borderRadius: 999, background: "var(--danger)", color: "#fff", fontWeight: 800 }}>
-              Error
-            </span>
-          )}
           {hint && <small style={{ color: "var(--muted)" }}>{hint}</small>}
         </div>
 
