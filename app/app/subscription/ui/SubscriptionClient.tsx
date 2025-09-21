@@ -111,8 +111,8 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
           )}
         </div>
 
-        <div style={{ color: "var(--muted)", display: 'grid', gap: 8, fontWeight: 600, lineHeight: 1.5 }}>
-          {p.description && <div style={{ fontWeight: 600 }}>{p.description}</div>}
+        <div style={{ color: '#ffffff', display: 'grid', gap: 8, fontWeight: 600, lineHeight: 1.5 }}>
+          {/* Description intentionally hidden per request */}
           <ul style={{ margin: 0, paddingLeft: 18, listStyle: 'disc' }}>
             <li>{propsStr}</li>
             <li>{roomsStr}</li>
