@@ -606,7 +606,7 @@ function ManageTypeModal({
             </select>
           </div>
           {/* color selector for current provider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <label style={label}>Color</label>
             <button
               type="button"
@@ -617,22 +617,7 @@ function ManageTypeModal({
                       background: colorMap[norm(provider === 'Other' ? customProvider || 'other' : provider)] || defaultColor(provider) }}
             />
             {pickerFor === 'new' && (
-              <div
-                data-picker="keep"
-                onMouseLeave={() => setPickerFor(null)}
-                style={{
-                  position: 'absolute',
-                  top: 28,
-                  right: 0,
-                  zIndex: 10,
-                  background: 'var(--panel)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 10,
-                  padding: 8,
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
-                  display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6
-                }}
-              >
+              <div data-picker="keep" onMouseLeave={() => setPickerFor(null)} style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
                 {[
                   'rgba(30,144,255,0.81)','rgba(255,90,95,0.81)','rgba(254,203,46,0.81)','rgba(34,197,94,0.81)',
                   'rgba(139,92,246,0.81)','rgba(13,148,136,0.81)','rgba(148,163,184,0.81)','rgba(59,130,246,0.81)',
@@ -687,25 +672,9 @@ function ManageTypeModal({
                 {ii.last_sync && <small style={{ color: "var(--muted)" }}>Last sync: {new Date(ii.last_sync).toLocaleString()}</small>}
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <div style={{ position: 'relative', display: 'inline-block' }}>
-                  <button className="sb-btn" data-picker="keep" onClick={()=> setPickerFor(ii.id)}>Color</button>
-                  {pickerFor === ii.id && (
-                    <div
-                      data-picker="keep"
-                      onMouseLeave={() => setPickerFor(null)}
-                      style={{
-                        position: 'absolute',
-                        top: 34,
-                        right: 0,
-                        zIndex: 10,
-                        background: 'var(--panel)',
-                        border: '1px solid var(--border)',
-                        borderRadius: 10,
-                        padding: 8,
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
-                        display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6
-                      }}
-                    >
+                <button className="sb-btn" data-picker="keep" onClick={()=> setPickerFor(ii.id)}>Color</button>
+                {pickerFor === ii.id && (
+                  <div data-picker="keep" onMouseLeave={() => setPickerFor(null)} style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
                     {[
                       'rgba(30,144,255,0.81)','rgba(255,90,95,0.81)','rgba(254,203,46,0.81)','rgba(34,197,94,0.81)',
                       'rgba(139,92,246,0.81)','rgba(13,148,136,0.81)','rgba(148,163,184,0.81)','rgba(59,130,246,0.81)',
@@ -714,9 +683,8 @@ function ManageTypeModal({
                       <button key={i} onClick={()=>{ saveColor(ii.provider || 'other', c); setPickerFor(null); }}
                         title="Pick color" style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
                     ))}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
                 <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontSize: 12 }}>
                   <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> active
                 </label>

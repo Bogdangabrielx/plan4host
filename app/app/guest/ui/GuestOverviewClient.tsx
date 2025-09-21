@@ -136,6 +136,19 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   // Legend info popovers
   const [legendInfo, setLegendInfo] = useState<null | 'green' | 'yellow' | 'red'>(null);
+  // Close legend on outside click
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      let el = e.target as HTMLElement | null;
+      while (el) {
+        if ((el as HTMLElement).dataset && (el as HTMLElement).dataset.legend === 'keep') return;
+        el = el.parentElement as HTMLElement | null;
+      }
+      setLegendInfo(null);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
 
   // Permisiuni: editor/admin pot face acțiuni (viewer = read-only)
   const [canEditGuest, setCanEditGuest] = useState<boolean>(false);
@@ -318,18 +331,19 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       {/* Legend */}
       <div style={{ display: "flex", gap: 18, alignItems: "flex-start", marginBottom: 12 }}>
         {/* GREEN */}
-        <div style={{ position: 'relative', display: 'inline-block' }}>
+        <div style={{ position: 'relative', display: 'inline-block' }} data-legend="keep"
+             onMouseEnter={() => setLegendInfo('green')} onMouseLeave={() => setLegendInfo(null)}>
           <span style={badgeStyle('green')}>GREEN</span>
           <button
             type="button"
             aria-label="What is GREEN?"
             onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'green' ? null : 'green'); }}
-            style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 10, cursor: 'pointer' }}
+            style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', lineHeight: 0, fontSize: 10, cursor: 'pointer' }}
           >
             ?
           </button>
           {legendInfo === 'green' && (
-            <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220 }}>
+            <div data-legend="keep" style={{ position: 'absolute', top: '50%', left: 'calc(100% + 8px)', transform: 'translateY(-50%)', zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220, maxWidth: 'min(300px, calc(100vw - 32px))' }}>
               <div style={{ fontWeight: 800, marginBottom: 4 }}>GREEN</div>
               <div style={{ fontSize: 12, color: 'var(--muted)' }}>Nothing to do</div>
             </div>
@@ -337,18 +351,19 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         </div>
 
         {/* YELLOW */}
-        <div style={{ position: 'relative', display: 'inline-block' }}>
+        <div style={{ position: 'relative', display: 'inline-block' }} data-legend="keep"
+             onMouseEnter={() => setLegendInfo('yellow')} onMouseLeave={() => setLegendInfo(null)}>
           <span style={badgeStyle('yellow')}>YELLOW</span>
           <button
             type="button"
             aria-label="What is YELLOW?"
             onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'yellow' ? null : 'yellow'); }}
-            style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 10, cursor: 'pointer' }}
+            style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', lineHeight: 0, fontSize: 10, cursor: 'pointer' }}
           >
             ?
           </button>
           {legendInfo === 'yellow' && (
-            <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 260 }}>
+            <div data-legend="keep" style={{ position: 'absolute', top: '50%', left: 'calc(100% + 8px)', transform: 'translateY(-50%)', zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 260, maxWidth: 'min(320px, calc(100vw - 32px))' }}>
               <div style={{ fontWeight: 800, marginBottom: 4 }}>YELLOW — Waiting window</div>
               <div style={{ fontSize: 12, color: 'var(--muted)', display: 'grid', gap: 2 }}>
                 <span>Only Form: max 2h</span>
@@ -359,18 +374,19 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         </div>
 
         {/* RED */}
-        <div style={{ position: 'relative', display: 'inline-block' }}>
+        <div style={{ position: 'relative', display: 'inline-block' }} data-legend="keep"
+             onMouseEnter={() => setLegendInfo('red')} onMouseLeave={() => setLegendInfo(null)}>
           <span style={badgeStyle('red')}>RED</span>
           <button
             type="button"
             aria-label="What is RED?"
             onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'red' ? null : 'red'); }}
-            style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 10, cursor: 'pointer' }}
+            style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', lineHeight: 0, fontSize: 10, cursor: 'pointer' }}
           >
             ?
           </button>
           {legendInfo === 'red' && (
-            <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220 }}>
+            <div data-legend="keep" style={{ position: 'absolute', top: '50%', left: 'calc(100% + 8px)', transform: 'translateY(-50%)', zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220, maxWidth: 'min(300px, calc(100vw - 32px))' }}>
               <div style={{ fontWeight: 800, marginBottom: 4 }}>RED</div>
               <div style={{ fontSize: 12, color: 'var(--muted)' }}>Action required</div>
             </div>
