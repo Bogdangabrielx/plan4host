@@ -556,6 +556,7 @@ function ManageTypeModal({
 }) {
   const [provider, setProvider] = useState("Booking");
   const [url, setUrl] = useState("");
+  const [customProvider, setCustomProvider] = useState("");
 
   return (
     <InnerModal title="Manage imports for room type" onClose={onClose}>
@@ -574,12 +575,28 @@ function ManageTypeModal({
               <option>Other</option>
             </select>
           </div>
+          {provider === 'Other' && (
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={label}>Custom provider name</label>
+              <input style={input} value={customProvider} onChange={(e) => setCustomProvider((e.target as HTMLInputElement).value)} placeholder="e.g., Vrbo, Agoda" />
+            </div>
+          )}
           <div style={{ display: "grid", gap: 6 }}>
             <label style={label}>iCal URL</label>
             <input style={input} value={url} onChange={(e) => setUrl((e.target as HTMLInputElement).value)} placeholder="https://..." />
           </div>
           <div>
-            <button className="sb-btn sb-btn--primary" onClick={() => { if (url.trim()) { onAdd(provider, url); setUrl(""); } }}>
+            <button
+              className="sb-btn sb-btn--primary"
+              onClick={() => {
+                const prov = provider === 'Other' ? customProvider.trim() : provider;
+                if (!prov || !url.trim()) return;
+                onAdd(prov, url);
+                setUrl("");
+                setCustomProvider("");
+              }}
+              disabled={provider === 'Other' && !customProvider.trim()}
+            >
               Add feed
             </button>
           </div>

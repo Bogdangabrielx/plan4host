@@ -14,6 +14,7 @@ export type Booking = {
   start_time: string | null; // "HH:mm" or null
   end_time: string | null;   // "HH:mm" or null
   status: "pending" | "confirmed" | "cancelled" | string;
+  source?: string | null;
 
   // Guest fields
   guest_first_name?: string | null;
@@ -77,7 +78,7 @@ export default function DayModal({
       supabase
         .from("bookings")
         .select(
-          "id,property_id,room_id,start_date,end_date,start_time,end_time,status,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address"
+          "id,property_id,room_id,start_date,end_date,start_time,end_time,status,source,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address"
         )
         .eq("property_id", propertyId)
         // overlap with the selected day
@@ -87,7 +88,7 @@ export default function DayModal({
         .order("start_date", { ascending: true }),
       supabase
         .from("bookings")
-        .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status")
+        .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status,source")
         .eq("property_id", propertyId)
         .gte("start_date", dateStr)
         .neq("status", "cancelled")
@@ -312,6 +313,9 @@ export default function DayModal({
                 }}
                 title="Open reservation"
               >
+                {isReserved && (
+                  <div aria-hidden style={{ position: 'absolute', inset: 0, borderRadius: 12, background: otaFill(b?.source) }} />
+                )}
                 {/* Room name + status badge */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <strong style={{ fontSize: 15 }}>{room.name}</strong>
@@ -424,6 +428,14 @@ export default function DayModal({
           onChanged={handleRoomModalChanged}     // refresh on save
         />
       )}
+  function otaFill(src: string | null | undefined): string {
+    const s = (src || '').toLowerCase();
+    if (s.includes('airbnb')) return 'rgba(255,90,95,0.18)';      // Airbnb red (soft)
+    if (s.includes('booking')) return 'rgba(30,144,255,0.18)';    // Booking blue (soft)
+    if (s.includes('expedia')) return 'rgba(254,203,46,0.22)';    // Expedia yellow (soft)
+    if (s.includes('ota') || s.includes('ical')) return 'rgba(139,92,246,0.18)'; // OTA/iCal violet (soft)
+    return 'rgba(139,92,246,0.18)'; // default violet
+  }
     </div>
   );
 }
