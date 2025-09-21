@@ -134,6 +134,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   // Modal — deschidem rezervarea (GREEN)
   const [modal, setModal] = useState<null | { propertyId: string; dateStr: string; room: Room }>(null);
 
+  // Legend info popovers
+  const [legendInfo, setLegendInfo] = useState<null | 'green' | 'yellow' | 'red'>(null);
+
   // Permisiuni: editor/admin pot face acțiuni (viewer = read-only)
   const [canEditGuest, setCanEditGuest] = useState<boolean>(false);
   useEffect(() => {
@@ -313,13 +316,66 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       </div>
 
       {/* Legend */}
-      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12 }}>
-        <span style={badgeStyle("green")}>GREEN</span>
-        <small style={{ color: "var(--muted)" }}>All good</small>
-        <span style={badgeStyle("yellow")}>YELLOW</span>
-        <small style={{ color: "var(--muted)" }}>Waiting window <br /> (Only Form: max 2h  <br /> Only iCal: until 3 days before arrival)</small>
-        <span style={badgeStyle("red")}>RED</span>
-        <small style={{ color: "var(--muted)" }}>Action required</small>
+      <div style={{ display: "flex", gap: 14, alignItems: "center", marginBottom: 12 }}>
+        {/* GREEN */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, position: 'relative' }}>
+          <span style={badgeStyle('green')}>GREEN</span>
+          <button
+            type="button"
+            aria-label="What is GREEN?"
+            onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'green' ? null : 'green'); }}
+            style={{ width: 18, height: 18, borderRadius: 999, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 12, cursor: 'pointer' }}
+          >
+            ?
+          </button>
+          {legendInfo === 'green' && (
+            <div style={{ position: 'absolute', top: 24, left: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220 }}>
+              <div style={{ fontWeight: 800, marginBottom: 4 }}>GREEN</div>
+              <div style={{ fontSize: 12, color: 'var(--muted)' }}>Nothing to do</div>
+            </div>
+          )}
+        </div>
+
+        {/* YELLOW */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, position: 'relative' }}>
+          <span style={badgeStyle('yellow')}>YELLOW</span>
+          <button
+            type="button"
+            aria-label="What is YELLOW?"
+            onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'yellow' ? null : 'yellow'); }}
+            style={{ width: 18, height: 18, borderRadius: 999, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 12, cursor: 'pointer' }}
+          >
+            ?
+          </button>
+          {legendInfo === 'yellow' && (
+            <div style={{ position: 'absolute', top: 24, left: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 260 }}>
+              <div style={{ fontWeight: 800, marginBottom: 4 }}>YELLOW — Waiting window</div>
+              <div style={{ fontSize: 12, color: 'var(--muted)', display: 'grid', gap: 2 }}>
+                <span>Only Form: max 2h</span>
+                <span>Only iCal: until 3 days before arrival</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* RED */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, position: 'relative' }}>
+          <span style={badgeStyle('red')}>RED</span>
+          <button
+            type="button"
+            aria-label="What is RED?"
+            onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'red' ? null : 'red'); }}
+            style={{ width: 18, height: 18, borderRadius: 999, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 12, cursor: 'pointer' }}
+          >
+            ?
+          </button>
+          {legendInfo === 'red' && (
+            <div style={{ position: 'absolute', top: 24, left: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220 }}>
+              <div style={{ fontWeight: 800, marginBottom: 4 }}>RED</div>
+              <div style={{ fontSize: 12, color: 'var(--muted)' }}>Action required</div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Rows */}
