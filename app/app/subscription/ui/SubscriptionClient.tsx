@@ -134,7 +134,17 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
   const ORDER = new Map([['basic', 0], ['standard', 1], ['premium', 2]]);
   const sorted = [...plans].sort((a, b) => (ORDER.get(a.slug) ?? 99) - (ORDER.get(b.slug) ?? 99));
   return (
-    <div style={{ display: 'grid', gap: 12, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+    <div style={{
+      display: 'grid',
+      gap: 12,
+      fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+      backgroundImage: "url('/backgorund_forlight.png')",
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+      borderRadius: 12,
+      padding: 4,
+    }}>
       {/* Minimal current plan header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span className="sb-badge">Current: {planLabel(currentPlan)}</span>

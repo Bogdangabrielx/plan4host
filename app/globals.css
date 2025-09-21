@@ -190,11 +190,14 @@ html, body {
   backdrop-filter: saturate(120%) blur(10px);
   -webkit-backdrop-filter: saturate(120%) blur(8px);
   flex-direction: column;
+  color: #fff;
+  
 }
 [data-theme="dark"] .glass-card {
   background-image:
     linear-gradient( to bottom right, rgba(15,22,35,0.70), rgba(15,22,35,0.45) ),
     url('/backgorund_forlight.png');
+  color: #fff;
 }
 
 /* Responsive media: prevent lateral overflow */
