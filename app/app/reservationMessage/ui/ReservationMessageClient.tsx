@@ -100,6 +100,9 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   const [focusedInput, setFocusedInput] = useState<null | "title" | "body">(null);
   const [saving, setSaving] = useState<"Idle"|"Saving…"|"Synced"|"Error">("Idle");
   const { setPill } = useHeader();
+  const titleRef = useRef<HTMLInputElement|null>(null);
+  const bodyRef = useRef<HTMLTextAreaElement|null>(null);
+  const [previewFontPx, setPreviewFontPx] = useState<number>(16);
   const [previewVars, setPreviewVars] = useState<Record<string, string>>({
     guest_first_name: "Alex",
     guest_last_name: "Popescu",
@@ -206,6 +209,21 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   function insertVarIntoFocused(token: string) {
     if (focusedInput === "title") setTitleText((t) => (t || "") + token);
     else if (focusedInput === "body") setBodyText((t) => (t || "") + token);
+  }
+
+  function applyBold() {
+    if (focusedInput !== 'body' || !bodyRef.current) return;
+    const el = bodyRef.current;
+    const { text, start, end } = wrapSelectionInTextarea(el, '**', '**');
+    setBodyText(text);
+    setTimeout(() => { try { el.focus(); el.setSelectionRange(start, end); } catch {} }, 0);
+  }
+  function applyItalic() {
+    if (focusedInput !== 'body' || !bodyRef.current) return;
+    const el = bodyRef.current;
+    const { text, start, end } = wrapSelectionInTextarea(el, '*', '*');
+    setBodyText(text);
+    setTimeout(() => { try { el.focus(); el.setSelectionRange(start, end); } catch {} }, 0);
   }
 
   // Convert simple editor state to blocks
@@ -327,11 +345,16 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           <div style={{ display: 'grid', gap: 8 }}>
             <div>
               <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Title</label>
-              <input value={titleText} onChange={(e)=>setTitleText(e.currentTarget.value)} onFocus={()=>setFocusedInput('title')} style={input} placeholder="Reservation details" />
+              <input ref={titleRef} value={titleText} onChange={(e)=>setTitleText(e.currentTarget.value)} onFocus={()=>setFocusedInput('title')} style={input} placeholder="Reservation details" />
             </div>
             <div>
               <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Message</label>
-              <textarea value={bodyText} onChange={(e)=>setBodyText(e.currentTarget.value)} onFocus={()=>setFocusedInput('body')} rows={8} style={{ ...input, resize: 'vertical' }} placeholder="Your message... You can use variables like {{guest_first_name}}." />
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
+                <small style={{ color: 'var(--muted)' }}>Formatting:</small>
+                <button style={btn} onClick={(e)=>{e.preventDefault(); applyBold();}} disabled={!isAdmin}>B</button>
+                <button style={btn} onClick={(e)=>{e.preventDefault(); applyItalic();}} disabled={!isAdmin}><span style={{ fontStyle: 'italic' }}>I</span></button>
+              </div>
+              <textarea ref={bodyRef} value={bodyText} onChange={(e)=>setBodyText(e.currentTarget.value)} onFocus={()=>setFocusedInput('body')} rows={8} style={{ ...input, resize: 'vertical' }} placeholder="Your message... You can use variables like {{guest_first_name}}." />
             </div>
           </div>
 
@@ -378,6 +401,12 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
 
           <div style={card}>
             <h2 style={{ marginTop: 0 }}>Live preview</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+              <small style={{ color: 'var(--muted)' }}>Preview size:</small>
+              <button style={btn} onClick={(e)=>{e.preventDefault(); setPreviewFontPx(p=>Math.max(12, p-1));}}>A−</button>
+              <button style={btn} onClick={(e)=>{e.preventDefault(); setPreviewFontPx(p=>Math.min(22, p+1));}}>A+</button>
+              <small style={{ color: 'var(--muted)' }}>{previewFontPx}px</small>
+            </div>
             {/* Preview inputs for manual fields */}
             {tpl.fields.length > 0 && (
               <div style={{ display: "grid", gap: 8, marginBottom: 8 }}>
@@ -405,7 +434,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
               </div>
             )}
             <div
-              style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 10, background: "var(--card)" }}
+              style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 10, background: "var(--card)", fontSize: previewFontPx }}
               dangerouslySetInnerHTML={{ __html: renderTemplateToHtml({ ...tpl, blocks: composeBlocks() }, mergedVars) }}
             />
             <small style={{ color: "var(--muted)" }}>Note: built-in variables are shown with sample values here. The final content binds to real booking data when generating the link.</small>
@@ -414,4 +443,16 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       </div>
     </div>
   );
+}
+
+// Formatting helpers (Markdown-like) for body textarea
+function wrapSelectionInTextarea(el: HTMLTextAreaElement, before: string, after: string): { text: string, start: number, end: number } {
+  const start = el.selectionStart ?? 0;
+  const end = el.selectionEnd ?? 0;
+  const value = el.value || '';
+  const selected = value.slice(start, end);
+  const replacement = before + (selected || '') + after;
+  const newText = value.slice(0, start) + replacement + value.slice(end);
+  const newPos = start + replacement.length;
+  return { text: newText, start: newPos, end: newPos };
 }
