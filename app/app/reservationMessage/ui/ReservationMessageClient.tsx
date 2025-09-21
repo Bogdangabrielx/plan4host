@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
+import { useHeader } from "@/app/app/_components/HeaderContext";
 
 type Property = { id: string; name: string };
 
@@ -12,6 +13,7 @@ type Block =
   | { id: string; type: "divider" };
 
 type ManualField = {
+  uid: string; // UI-only stable key
   key: string;
   label: string;
   required: boolean;
@@ -97,6 +99,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   const [bodyText, setBodyText] = useState<string>("");
   const [focusedInput, setFocusedInput] = useState<null | "title" | "body">(null);
   const [saving, setSaving] = useState<"Idle"|"Saving…"|"Synced"|"Error">("Idle");
+  const { setPill } = useHeader();
   const [previewVars, setPreviewVars] = useState<Record<string, string>>({
     guest_first_name: "Alex",
     guest_last_name: "Popescu",
@@ -136,7 +139,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         const t = j?.template;
         if (!t) return;
         const blocks: Block[] = (t.blocks as any[]).map((b) => ({ id: uid(), type: b.type, text: b.text ?? '' }));
-        const fields: ManualField[] = (t.fields as any[]).map((f) => ({ key: f.key, label: f.label, required: !!f.required, multiline: !!f.multiline, placeholder: f.placeholder || '' }));
+        const fields: ManualField[] = (t.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label, required: !!f.required, multiline: !!f.multiline, placeholder: f.placeholder || '' }));
         const next: TemplateState = { status: (t.status || 'draft') as any, blocks, fields };
         setTpl(next);
         try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
@@ -168,9 +171,9 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     const seeded: TemplateState = {
       status: "draft",
       fields: [
-        { key: "wifi_name", label: "Wi‑Fi name", required: false, multiline: false },
-        { key: "wifi_password", label: "Wi‑Fi password", required: false, multiline: false },
-        { key: "door_code", label: "Door code", required: false, multiline: false },
+        { uid: uid(), key: "wifi_name", label: "Wi‑Fi name", required: false, multiline: false },
+        { uid: uid(), key: "wifi_password", label: "Wi‑Fi password", required: false, multiline: false },
+        { uid: uid(), key: "door_code", label: "Door code", required: false, multiline: false },
       ],
       blocks: [
         { id: uid(), type: "heading", text: "Reservation details" },
@@ -257,13 +260,18 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   function addField() {
     setTpl((prev) => ({
       ...prev,
-      fields: [...prev.fields, { key: `field_${prev.fields.length + 1}`, label: "New field", required: false, multiline: false }],
+      fields: [...prev.fields, { uid: uid(), key: `field_${prev.fields.length + 1}`, label: "New field", required: false, multiline: false }],
     }));
   }
   function updateField(i: number, patch: Partial<ManualField>) {
     setTpl((prev) => ({
       ...prev,
-      fields: prev.fields.map((f, idx) => (idx === i ? { ...f, ...patch, key: patch.label ? slugify(patch.label) : f.key } : f)),
+      fields: prev.fields.map((f, idx) => {
+        if (idx !== i) return f;
+        const next = { ...f, ...patch } as ManualField;
+        if (patch.key !== undefined) next.key = slugify(patch.key as string);
+        return next;
+      }),
     }));
   }
   function removeField(i: number) {
@@ -282,6 +290,11 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   const input: React.CSSProperties = { padding: 10, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, width: "100%", boxSizing: "border-box", fontFamily: 'inherit' };
   const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 800, cursor: "pointer" };
   const btnPri: React.CSSProperties = { ...btn, background: "var(--primary)", color: "#0c111b", border: "1px solid var(--border)" };
+
+  // Reflect saving state in AppHeader pill
+  useEffect(() => {
+    setPill(saving);
+  }, [saving, setPill]);
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -307,7 +320,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
               <button key={v.key} style={btn} onClick={()=>insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
             ))}
             {(tpl.fields||[]).map((f)=>(
-              <button key={f.key} style={btn} onClick={()=>insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
+              <button key={f.uid} style={btn} onClick={()=>insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
             ))}
           </div>
 
@@ -342,7 +355,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
             ) : (
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
                 {tpl.fields.map((f, i) => (
-                  <li key={f.key} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 10, background: "var(--card)" }}>
+                  <li key={f.uid} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 10, background: "var(--card)" }}>
                     <div style={{ display: "grid", gap: 6 }}>
                       <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr 160px" }}>
                         <input value={f.label} onChange={(e)=>updateField(i,{ label: e.currentTarget.value })} style={input} placeholder="Label (e.g. Wi‑Fi password)" disabled={!isAdmin} />
@@ -351,7 +364,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
                         </label>
                       </div>
                       <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr" }}>
-                        <input value={f.key} onChange={(e)=>updateField(i,{ key: slugify(e.currentTarget.value) })} style={input} placeholder="Key (e.g. wifi_password)" disabled={!isAdmin} />
+                        <input value={f.key} onChange={(e)=>updateField(i,{ key: e.currentTarget.value })} style={input} placeholder="Key (e.g. wifi_password)" disabled={!isAdmin} />
                       </div>
                       <div style={{ display: "flex", justifyContent: "flex-end" }}>
                         <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={()=>removeField(i)} disabled={!isAdmin}>Remove</button>
