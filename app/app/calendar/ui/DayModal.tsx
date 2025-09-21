@@ -168,6 +168,16 @@ export default function DayModal({
     return full || "";
   }
 
+  // OTA color (soft/pastel) underlay mapping
+  function otaFill(src: any) {
+    const s = (src || '').toLowerCase();
+    if (s.includes('airbnb')) return 'rgba(255,90,95,0.18)';      // Airbnb red (soft)
+    if (s.includes('booking')) return 'rgba(30,144,255,0.18)';    // Booking blue (soft)
+    if (s.includes('expedia')) return 'rgba(254,203,46,0.22)';    // Expedia yellow (soft)
+    if (s.includes('ota') || s.includes('ical')) return 'rgba(139,92,246,0.18)'; // OTA/iCal violet (soft)
+    return 'rgba(139,92,246,0.18)'; // default violet
+  }
+
   // Refresh automat la închiderea modalei
   const handleRoomModalClose = useCallback(async () => {
     setOpenRoom(null);
@@ -428,14 +438,6 @@ export default function DayModal({
           onChanged={handleRoomModalChanged}     // refresh on save
         />
       )}
-  function otaFill(src: string | null | undefined): string {
-    const s = (src || '').toLowerCase();
-    if (s.includes('airbnb')) return 'rgba(255,90,95,0.18)';      // Airbnb red (soft)
-    if (s.includes('booking')) return 'rgba(30,144,255,0.18)';    // Booking blue (soft)
-    if (s.includes('expedia')) return 'rgba(254,203,46,0.22)';    // Expedia yellow (soft)
-    if (s.includes('ota') || s.includes('ical')) return 'rgba(139,92,246,0.18)'; // OTA/iCal violet (soft)
-    return 'rgba(139,92,246,0.18)'; // default violet
-  }
     </div>
   );
 }
