@@ -116,17 +116,34 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     } catch {
       setTpl(EMPTY);
     }
+    // also try to load from server (overrides LS if available)
+    (async () => {
+      try {
+        const res = await fetch(`/api/reservation-message/template?property=${encodeURIComponent(propertyId)}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const j = await res.json();
+        const t = j?.template;
+        if (!t) return;
+        const blocks: Block[] = (t.blocks as any[]).map((b) => ({ id: uid(), type: b.type, text: b.text ?? '' }));
+        const fields: ManualField[] = (t.fields as any[]).map((f) => ({ key: f.key, label: f.label, required: !!f.required, multiline: !!f.multiline, placeholder: f.placeholder || '' }));
+        const next: TemplateState = { status: (t.status || 'draft') as any, blocks, fields };
+        setTpl(next);
+        try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+      } catch {}
+    })();
   }, [storageKey, propertyId]);
 
   function saveDraft() {
     if (!propertyId) return;
     try { localStorage.setItem(storageKey, JSON.stringify({ ...tpl, status: "draft" })); } catch {}
     setTpl(prev => ({ ...prev, status: "draft" }));
+    syncToServer("draft");
   }
   function publish() {
     if (!propertyId) return;
     try { localStorage.setItem(storageKey, JSON.stringify({ ...tpl, status: "published" })); } catch {}
     setTpl(prev => ({ ...prev, status: "published" }));
+    syncToServer("published");
   }
   function resetAll() {
     if (!propertyId) return;
@@ -148,6 +165,21 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     };
     try { localStorage.setItem(storageKey, JSON.stringify(seeded)); } catch {}
     setTpl(seeded);
+    // don't auto publish
+  }
+
+  async function syncToServer(status: "draft"|"published") {
+    try {
+      const payload = {
+        property_id: propertyId,
+        status,
+        blocks: tpl.blocks.map((b) => ({ type: b.type, text: (b as any).text || null })),
+        fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, required: !!f.required, multiline: !!f.multiline, placeholder: f.placeholder || null })),
+      };
+      const res = await fetch('/api/reservation-message/template', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      // ignore errors silently in UI; RLS/server will enforce perms
+      void res;
+    } catch {}
   }
 
   function addBlock(kind: Block["type"]) {

@@ -627,15 +627,41 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
                dangerouslySetInnerHTML={{ __html: preview }} />
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
             <button className="sb-btn" onClick={onCopyPreview}>{copied ? 'Copied!' : 'Copy preview (stub)'}</button>
-            <button className="sb-btn sb-btn--primary" title="Will generate a public link (next step)" disabled>
-              Generate & copy link (coming soon)
-            </button>
+            <GenerateLinkButton propertyId={propertyId} bookingId={row.id} values={values} />
           </div>
-          <small style={{ color: 'var(--muted)' }}>
-            Note: Link generation and public page will be enabled after API/DB step.
-          </small>
         </>
       )}
     </div>
+  );
+}
+
+function GenerateLinkButton({ propertyId, bookingId, values }:{ propertyId: string; bookingId: string|null; values: Record<string,string> }) {
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+  async function onClick() {
+    if (!bookingId) { alert('Missing booking id'); return; }
+    setBusy(true);
+    try {
+      const res = await fetch('/api/reservation-message/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ property_id: propertyId, booking_id: bookingId, values }),
+      });
+      const j = await res.json().catch(()=>({}));
+      if (!res.ok) { alert(j?.error || 'Failed to generate link'); setBusy(false); return; }
+      const url = j?.url as string;
+      if (url) {
+        try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(()=>setCopied(false), 1500); } catch { prompt('Copy link:', url); }
+      }
+    } catch (e:any) {
+      alert(e?.message || 'Network error');
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <button className="sb-btn sb-btn--primary" onClick={onClick} disabled={busy || !bookingId} title={bookingId ? 'Generate link' : 'No booking id'}>
+      {copied ? 'Copied!' : (busy ? 'Generating…' : 'Generate & copy link')}
+    </button>
   );
 }
