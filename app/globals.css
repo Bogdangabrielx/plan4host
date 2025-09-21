@@ -11,8 +11,8 @@
   --card: #0f1724;
   --text: #e5e7eb;
   --muted: #94a3b8;
-  --border: #1f2937;
-  --primary: #60a5fa;
+  --border: #13770a;
+  --primary: #13770a;
   --danger: #ef4444;
   --success: #22c55e;
   --confComun: #79dc608d;
@@ -25,11 +25,11 @@
 /* LIGHT */
 [data-theme="light"] {
   --bg: #f8fafc;
-  --panel: #4fa413;
+  --panel: #ffffff;
   --card: #ffffff;
   --text: #0f172a;
   --muted: #64748b;
-  --border: #4fa413;
+  --border: #e8f0e2;
   --primary: #2563eb;
   --danger: #dc2626;
   --success: #16a34a;
