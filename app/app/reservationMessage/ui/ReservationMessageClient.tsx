@@ -382,7 +382,6 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
             <button style={btn} onClick={saveDraft} disabled={!isAdmin}>Save</button>
             <button style={btnPri} onClick={publish} disabled={!isAdmin}>Publish</button>
-            <button style={{ ...btn, border: "1px dashed var(--border)" }} onClick={resetAll} disabled={!isAdmin}>Reset to minimal</button>
           </div>
         </section>
 
