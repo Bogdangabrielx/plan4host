@@ -324,12 +324,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             type="button"
             aria-label="What is GREEN?"
             onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'green' ? null : 'green'); }}
-            style={{ width: 18, height: 18, borderRadius: 999, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 12, cursor: 'pointer' }}
+            style={{ width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 10, cursor: 'pointer', verticalAlign: 'super', transform: 'translateY(-2px)', marginLeft: 2 }}
           >
             ?
           </button>
           {legendInfo === 'green' && (
-            <div style={{ position: 'absolute', top: 24, left: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220 }}>
+            <div style={{ position: 'absolute', top: 18, left: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220 }}>
               <div style={{ fontWeight: 800, marginBottom: 4 }}>GREEN</div>
               <div style={{ fontSize: 12, color: 'var(--muted)' }}>Nothing to do</div>
             </div>
@@ -343,12 +343,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             type="button"
             aria-label="What is YELLOW?"
             onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'yellow' ? null : 'yellow'); }}
-            style={{ width: 18, height: 18, borderRadius: 999, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 12, cursor: 'pointer' }}
+            style={{ width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 10, cursor: 'pointer', verticalAlign: 'super', transform: 'translateY(-2px)', marginLeft: 2 }}
           >
             ?
           </button>
           {legendInfo === 'yellow' && (
-            <div style={{ position: 'absolute', top: 24, left: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 260 }}>
+            <div style={{ position: 'absolute', top: 18, left: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 260 }}>
               <div style={{ fontWeight: 800, marginBottom: 4 }}>YELLOW — Waiting window</div>
               <div style={{ fontSize: 12, color: 'var(--muted)', display: 'grid', gap: 2 }}>
                 <span>Only Form: max 2h</span>
@@ -365,12 +365,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             type="button"
             aria-label="What is RED?"
             onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'red' ? null : 'red'); }}
-            style={{ width: 18, height: 18, borderRadius: 999, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 12, cursor: 'pointer' }}
+            style={{ width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', fontSize: 10, cursor: 'pointer', verticalAlign: 'super', transform: 'translateY(-2px)', marginLeft: 2 }}
           >
             ?
           </button>
           {legendInfo === 'red' && (
-            <div style={{ position: 'absolute', top: 24, left: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220 }}>
+            <div style={{ position: 'absolute', top: 18, left: 0, zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220 }}>
               <div style={{ fontWeight: 800, marginBottom: 4 }}>RED</div>
               <div style={{ fontSize: 12, color: 'var(--muted)' }}>Action required</div>
             </div>
