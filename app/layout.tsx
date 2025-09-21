@@ -52,17 +52,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --bg:#0c111b; 
   --text:#f8fafc; 
   --muted:#9aa4af;
-  --panel:#111827; 
+  --panel:#13770a; 
   --card:#0f172a; 
-  --border:#13770a;
-  --primary:#13770a; 
+  --border:#22304a;
+  --primary:#60a5fa; 
   --danger:#ef4444; 
   --success:#22c55e;
 }
 :root[data-theme="light"]{
   --bg:#f8fafc; 
   --text:#0c111b; 
-  --muted:#5b6470;
+  --muted:#13770a;
   --panel:#ffffff; 
   --card:#ffffff; 
   --border:#dbe2ea;
