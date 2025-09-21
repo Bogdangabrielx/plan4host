@@ -492,20 +492,21 @@ function MonthView({
   while (days.length < total) days.push({});
 
   return (
-    <div className="sb-card" style={{ boxShadow: "0 3px 20px #2e6dc656", padding: 12 }}>
+    <div className="sb-card cal-smoobu" style={{ boxShadow: "0 3px 20px #2e6dc656", padding: 12 }}>
       {/* headers */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
+      <div className="cal-weekdays" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
         {weekdayShort.map((w) => (
           <div key={w} style={{ textAlign: "center", color: "var(--muted)", fontSize: isSmall ? 11 : 12 }}>{w}</div>
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
+      <div className="cal-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
         {days.map((c, i) => {
           const clickable = !!c.dateStr;
           const weekend = c.dateStr ? (()=>{ const d=new Date(c.dateStr+"T00:00:00"); const w=d.getDay(); return w===0||w===6; })() : false;
           return (
             <div
+              className="cal-day"
               key={i}
               onClick={clickable ? () => onDayClick(c.dateStr!) : undefined}
               title={c.dateStr ? tooltipFor(c.dateStr, roomsCount, occupancyMap) : undefined}
@@ -528,7 +529,7 @@ function MonthView({
 
               {/* day number */}
               {c.dateStr && (
-                <div style={{
+                <div className="cal-day-num" style={{
                   position: "absolute", top: 8, left: 8,
                   fontSize: isSmall ? 15 : 13,
                   color: "var(--text)", fontWeight: 800

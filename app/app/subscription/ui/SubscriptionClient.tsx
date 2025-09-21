@@ -138,7 +138,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
       display: 'grid',
       gap: 12,
       fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-      backgroundImage: "url('/hotel_room_1456x816.jpg')",
+      backgroundImage: "url('/hotel_room_1456x816')",
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed',
@@ -147,8 +147,8 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
     }}>
       {/* Minimal current plan header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span className="sb-transparent">Current: {planLabel(currentPlan)}</span>
-        <small style={{ color: '#ffff',border:'#ffff' }}>until {validUntil || '—'}</small>
+        <span className="sb-badge">Current: {planLabel(currentPlan)}</span>
+        <small style={{ color: '#ffff' }}>until {validUntil || '—'}</small>
         {role !== 'admin' && (
           <small style={{ color: '#ffff' }}>(read-only)</small>
         )}

@@ -176,6 +176,14 @@ html, body {
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
 }
 
+/* ===== Calendar – Smoobu-like skin (visual only) ===== */
+.cal-smoobu { overflow: hidden; }
+.cal-smoobu .cal-weekdays { position: sticky; top: 0; z-index: 1; background: var(--panel); padding-bottom: 6px; }
+.cal-smoobu .cal-grid { }
+.cal-smoobu .cal-day { background: color-mix(in srgb, var(--card) 92%, transparent); border-color: var(--cal-brd); }
+.cal-smoobu .cal-day:hover { border-color: color-mix(in srgb, var(--primary) 40%, var(--cal-brd)); }
+.cal-smoobu .cal-day-num { font-weight: 700; opacity: .9; }
+
 /* Glass card utility (used in Subscription) */
 .glass-card {
   position: relative;
