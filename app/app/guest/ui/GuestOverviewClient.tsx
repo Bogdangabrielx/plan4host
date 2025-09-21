@@ -133,6 +133,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   // Modal — deschidem rezervarea (GREEN)
   const [modal, setModal] = useState<null | { propertyId: string; dateStr: string; room: Room }>(null);
+  // Reservation Message modal (stub UI for now)
+  const [rmModal, setRmModal] = useState<null | { propertyId: string; item: OverviewRow }>(null);
 
   // Legend info popovers
   const [legendInfo, setLegendInfo] = useState<null | 'green' | 'yellow' | 'red'>(null);
@@ -297,6 +299,33 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setModal({ propertyId, dateStr: item.start_date, room });
   }
 
+  // ===== Reservation Message (UI stub) =====
+  type RMField = { key: string; label: string; required: boolean; multiline: boolean; placeholder?: string };
+  type RMTemplate = { status: 'draft'|'published'; fields: RMField[]; blocks: Array<{ id: string; type: 'heading'|'paragraph'|'divider'; text?: string }>; };
+  function tplLsKey(pid: string) { return `p4h:rm:template:${pid}`; }
+  function escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
+  function mdToHtml(src: string) {
+    let s = escapeHtml(src);
+    s = s.replace(/\[(.+?)\]\((https?:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/(^|\s)\*(.+?)\*(?=\s|$)/g, '$1<em>$2</em>');
+    s = s.replace(/\n/g, '<br/>');
+    return s;
+  }
+  function replaceVars(s: string, vars: Record<string,string>) {
+    if (!s) return "";
+    return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => (vars?.[k] ?? `{{${k}}}`));
+  }
+  function renderRM(tpl: RMTemplate, vars: Record<string,string>) {
+    const out: string[] = [];
+    for (const b of (tpl.blocks||[])) {
+      if (b.type === 'divider') out.push('<hr style="border:1px solid var(--border); opacity:.6;"/>');
+      else if (b.type === 'heading') out.push(`<h3 style="margin:8px 0 6px;">${escapeHtml(replaceVars(b.text||'', vars))}</h3>`);
+      else if (b.type === 'paragraph') out.push(`<p style=\"margin:6px 0; line-height:1.5;\">${mdToHtml(replaceVars(b.text||'', vars))}</p>`);
+    }
+    return out.join('\n');
+  }
+
   return (
     <div style={{ padding: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
       {/* Put plan badge in AppHeader (right slot) and ensure title */}
@@ -429,11 +458,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               {subcopy && <small style={{ color: "var(--muted)" }}>{subcopy}</small>}
 
               {/* Actions */}
-              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
-                {/* GREEN → Open reservation (RoomDetailModal) */}
-                {kind === "green" && canEditGuest && (
-                  <button
-                    onClick={() => openReservation(it, propertyId)}
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
+            {/* GREEN → Open reservation (RoomDetailModal) */}
+            {kind === "green" && canEditGuest && (
+              <button
+                onClick={() => openReservation(it, propertyId)}
                     disabled={!it.room_id || !roomById.has(String(it.room_id))}
                     style={{
                       padding: "8px 12px",
@@ -445,10 +474,21 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
                     }}
                     title={it.room_id ? "Open reservation" : "No room assigned yet"}
-                  >
-                    Open reservation
-                  </button>
-                )}
+                >
+                  Open reservation
+                </button>
+            )}
+
+            {/* GREEN → Reservation message (UI stub) */}
+            {kind === "green" && (
+              <button
+                onClick={() => setRmModal({ propertyId, item: it })}
+                style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 900, cursor: "pointer" }}
+                title="Reservation message"
+              >
+                Reservation message
+              </button>
+            )}
 
                 {/* YELLOW(iCal) / RED(missing_form) → Copy link */}
                 {showCopy && (
@@ -496,7 +536,106 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           }}
         />
       )}
+
+      {rmModal && (
+        <div role="dialog" aria-modal="true" onClick={() => setRmModal(null)}
+             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 60, display: "grid", placeItems: "center", padding: 12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width: 'min(860px, calc(100vw - 32px))', maxHeight: 'calc(100vh - 32px)', overflow: 'auto', padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <strong>Reservation message</strong>
+              <button className="sb-btn" onClick={() => setRmModal(null)}>Close</button>
+            </div>
+            <RMContent propertyId={rmModal.propertyId} row={rmModal.item} />
+          </div>
+        </div>
+      )}
       </div>
+    </div>
+  );
+}
+
+function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
+  const storageKey = `p4h:rm:template:${propertyId}`;
+  const [tpl, setTpl] = useState<any>(null);
+  const [values, setValues] = useState<Record<string,string>>({});
+  const [preview, setPreview] = useState<string>("");
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      setTpl(raw ? JSON.parse(raw) : null);
+    } catch { setTpl(null); }
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!tpl) { setPreview(""); return; }
+    const builtins: Record<string,string> = {
+      guest_first_name: (row._guest_first_name || "").toString(),
+      guest_last_name: (row._guest_last_name || "").toString(),
+      check_in_date: row.start_date,
+      check_in_time: "14:00",
+      check_out_date: row.end_date,
+      check_out_time: "11:00",
+      room_name: row._room_label || "",
+      property_name: "",
+    };
+    const merged = { ...builtins, ...values };
+    setPreview(renderRM(tpl, merged));
+  }, [tpl, values, row]);
+
+  async function onCopyPreview() {
+    try {
+      const text = preview.replace(/<br\/>/g, "\n").replace(/<[^>]+>/g, "");
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(()=>setCopied(false), 1500);
+    } catch {}
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: 12 }}>
+      {!tpl ? (
+        <div style={{ color: 'var(--muted)' }}>
+          No template configured for this property. <a href="/app/reservationMessage" style={{ color: 'var(--primary)' }}>Configure now</a>.
+        </div>
+      ) : (
+        <>
+          {(Array.isArray(tpl.fields) && tpl.fields.length > 0) && (
+            <div style={{ display: 'grid', gap: 8 }}>
+              {tpl.fields.map((f: any) => (
+                <div key={f.key} style={{ display: 'grid', gap: 6 }}>
+                  <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>{f.label}{f.required? ' *' : ''}</label>
+                  {f.multiline ? (
+                    <textarea rows={3} style={{ padding: 10, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--card)', color: 'var(--text)', fontFamily: 'inherit' }}
+                              value={values[f.key] || ''}
+                              onChange={(e)=>setValues(prev=>({ ...prev, [f.key]: e.currentTarget.value }))}
+                              placeholder={f.placeholder || ''}
+                    />
+                  ) : (
+                    <input style={{ padding: 10, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--card)', color: 'var(--text)', fontFamily: 'inherit' }}
+                           value={values[f.key] || ''}
+                           onChange={(e)=>setValues(prev=>({ ...prev, [f.key]: e.currentTarget.value }))}
+                           placeholder={f.placeholder || ''}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={{ border: '1px solid var(--border)', borderRadius: 10, background: 'var(--panel)', padding: 12 }}
+               dangerouslySetInnerHTML={{ __html: preview }} />
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+            <button className="sb-btn" onClick={onCopyPreview}>{copied ? 'Copied!' : 'Copy preview (stub)'}</button>
+            <button className="sb-btn sb-btn--primary" title="Will generate a public link (next step)" disabled>
+              Generate & copy link (coming soon)
+            </button>
+          </div>
+          <small style={{ color: 'var(--muted)' }}>
+            Note: Link generation and public page will be enabled after API/DB step.
+          </small>
+        </>
+      )}
     </div>
   );
 }
