@@ -485,9 +485,10 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           {manageTypeId && (
             <ManageTypeModal
               timezone={timezone}
+              typeId={manageTypeId!}
               integrations={integrations.filter(i => i.room_type_id === manageTypeId)}
               onClose={() => setManageTypeId(null)}
-              onAdd={(provider, url) => addIntegration(manageTypeId, provider, url)}
+              onAdd={(provider, url) => addIntegration(manageTypeId!, provider, url)}
               onDelete={(id) => deleteIntegration(id)}
               onToggle={(ii) => toggleActive(ii)}
             />
