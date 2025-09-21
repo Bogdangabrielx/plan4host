@@ -179,16 +179,17 @@ html, body {
 /* Glass card utility (used in Subscription) */
 .glass-card {
   position: relative;
-  border-radius: var(--radius, 12px);
+  border-radius: var(--radius, 20px);
   border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
   background-image:
-    linear-gradient( to bottom right, rgba(255,255,255,0.50), rgba(255,255,255,0.30) ),
+    linear-gradient( to bottom right, rgba(255, 255, 255, 0.1), rgba(255,255,255,0.1) ),
     url('/backgorund_forlight.png');
   background-size: cover;
   background-position: center;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
-  backdrop-filter: saturate(120%) blur(8px);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.37);
+  backdrop-filter: saturate(120%) blur(10px);
   -webkit-backdrop-filter: saturate(120%) blur(8px);
+  flex-direction: column;
 }
 [data-theme="dark"] .glass-card {
   background-image:
