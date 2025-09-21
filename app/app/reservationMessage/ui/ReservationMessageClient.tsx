@@ -131,7 +131,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     } catch {
       setTpl(EMPTY);
       setTitleText("");
-      setBodyText("");
+      setBodyHtml("");
     }
     // also try to load from server (overrides LS if available)
     (async () => {
@@ -350,7 +350,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
                 onFocus={()=>setFocusedInput('title')}
                 onInput={(e)=>setTitleText((e.currentTarget as HTMLDivElement).innerText)}
                 style={{ ...input, minHeight: 38 }}
-                placeholder="Reservation details"
+                data-placeholder="Reservation details"
               >{titleText}</div>
             </div>
             <div>
