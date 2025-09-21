@@ -185,7 +185,7 @@ html, body {
     linear-gradient( to bottom right, rgba(255, 255, 255, 0.1), rgba(255,255,255,0.1) );
   background-size: cover;
   background-position: center;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.37);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.291);
   backdrop-filter: saturate(120%) blur(10px);
   -webkit-backdrop-filter: saturate(120%) blur(8px);
   flex-direction: column;
@@ -194,8 +194,7 @@ html, body {
 }
 [data-theme="dark"] .glass-card {
   background-image:
-    linear-gradient( to bottom right, rgba(15,22,35,0.70), rgba(15,22,35,0.45) ),
-    url('/backgorund_forlight.png');
+    linear-gradient( to bottom right, rgba(225,225,225,0.1), rgba(255,255,255,0.1) );
   color: #fff;
 }
 
