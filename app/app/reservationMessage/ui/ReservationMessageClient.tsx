@@ -287,7 +287,10 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         <section style={{ display: "grid", gap: 12 }}>
           <div style={card}>
             <h2 style={{ marginTop: 0 }}>Manual fields</h2>
-            <p style={{ color: "var(--muted)", marginTop: 0 }}>Define the extra fields you will fill in when generating a message (e.g., Wi‑Fi password). Use Insert variable to place {{key}} into your text.</p>
+            <p style={{ color: "var(--muted)", marginTop: 0 }}>
+              Define the extra fields you will fill in when generating a message (e.g., Wi‑Fi password). Use Insert
+              variable to place {"{{"}key{"}"} into your text.
+            </p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
               <button style={btn} onClick={addField}>+ Add field</button>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -370,4 +373,3 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     </div>
   );
 }
-
