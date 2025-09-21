@@ -198,10 +198,8 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   // Insert variable into the focused input
   function insertVarIntoFocused(token: string) {
     if (focusedInput === "title" && titleRef.current) {
-      // Insert plain text token into title (chips optional later)
-      const t = (titleRef.current.textContent || "") + token;
-      titleRef.current.textContent = t;
-      setTitleText(t);
+      titleRef.current.focus();
+      try { document.execCommand('insertText', false, token); } catch {}
     } else if (focusedInput === "body" && bodyRef.current) {
       insertTokenChip(bodyRef.current, token.replace(/[{}]/g, ""));
     }
@@ -363,14 +361,11 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         <div style={{ display: 'grid', gap: 8 }}>
           <div>
             <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Title</label>
-            <div
+            <ContentEditableStable
               ref={titleRef}
-              contentEditable
-              suppressContentEditableWarning
               onFocus={()=>setFocusedInput('title')}
-              onInput={() => { /* keep uncontrolled to avoid caret jump */ }}
               style={{ ...input, minHeight: 38, direction: 'ltr', textAlign: 'left' }}
-              data-placeholder="Reservation details"
+              placeholder="Reservation details"
             />
           </div>
           <div>
@@ -382,14 +377,11 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
               <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyUnderline();}} disabled={!isAdmin}><span style={{ textDecoration: 'underline' }}>U</span></button>
               <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyLink();}} disabled={!isAdmin}>Link</button>
             </div>
-            <div
+            <ContentEditableStable
               ref={bodyRef}
-              contentEditable
-              suppressContentEditableWarning
               onFocus={()=>setFocusedInput('body')}
-              onInput={()=>{/* unmanaged to avoid caret jumps */}}
               style={{ ...input, minHeight: 260, lineHeight: 1.5, whiteSpace: 'pre-wrap', direction: 'ltr', textAlign: 'left' }}
-              data-placeholder="Your message..."
+              placeholder="Your message..."
             />
             <style dangerouslySetInnerHTML={{ __html: `
               [data-placeholder]:empty:before{ content: attr(data-placeholder); color: var(--muted); }
@@ -406,6 +398,25 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       </div>
   );
 }
+
+// ContentEditable that never re-renders after mount (prevents caret jumps)
+const ContentEditableStable = React.memo(
+  React.forwardRef<HTMLDivElement, { onFocus?: () => void; style?: React.CSSProperties; placeholder?: string }>(
+    function CE({ onFocus, style, placeholder }, ref) {
+      return (
+        <div
+          ref={ref}
+          contentEditable
+          suppressContentEditableWarning
+          onFocus={onFocus}
+          style={style}
+          data-placeholder={placeholder}
+        />
+      );
+    }
+  ),
+  () => true
+);
 
 // Insert a token chip at caret inside a contentEditable container
 function insertTokenChip(container: HTMLDivElement, key: string) {
