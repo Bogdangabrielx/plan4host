@@ -288,9 +288,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       <div style={{ margin: '0 auto', width: 'min(1200px, calc(100vw - 32px))' }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {hint && <small style={{ color: "var(--muted)" }}>{hint}</small>}
-        </div>
+        <div />
 
         {/* Property selector + Refresh */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
