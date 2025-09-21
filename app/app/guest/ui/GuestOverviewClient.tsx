@@ -364,8 +364,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           </button>
           {legendInfo === 'yellow' && (
             <div data-legend="keep" style={{ position: 'absolute', top: '50%', left: 'calc(100% + 8px)', transform: 'translateY(-50%)', zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 260, maxWidth: 'min(320px, calc(100vw - 32px))' }}>
-              <div style={{ fontWeight: 800, marginBottom: 4 }}>YELLOW — Waiting window</div>
+              <div style={{ fontWeight: 800, marginBottom: 4 }}>YELLOW </div>
               <div style={{ fontSize: 12, color: 'var(--muted)', display: 'grid', gap: 2 }}>
+                <span>-Waiting window-</span>
                 <span>Only Form: max 2h</span>
                 <span>Only iCal: until 3 days before arrival</span>
               </div>
