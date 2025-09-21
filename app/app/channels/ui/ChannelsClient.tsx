@@ -397,7 +397,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 key={r.id}
                 onClick={() => setActiveRoomId(r.id)}
                 className="sb-card"
-                style={{ ...tile, border:"var(--text)",boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
+                style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
                 title={r.name}
               >
                 <span style={tileTitle}>{r.name}</span>
@@ -435,7 +435,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 key={t.id}
                 onClick={() => setActiveTypeId(t.id)}
                 className="sb-card"
-                style={{ ...tile, border:"var(--text)", boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
+                style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
                 title={t.name}
               >
                 <span style={tileTitle}>{t.name}</span>
@@ -473,7 +473,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 key={t.id}
                 onClick={() => setManageTypeId(t.id)}
                 className="sb-card"
-                style={{ ...tile, border:"var(--text)", boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
+                style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
                 title={`Manage ${t.name}`}
               >
                 <span style={tileTitle}>{t.name}</span>
@@ -624,7 +624,8 @@ const tileGrid: React.CSSProperties = {
 
 const tile: React.CSSProperties = {
   display: "grid",
-  alignContent: "space-between",
+  alignContent: "center",
+  justifyItems: "center",
   gap: 6,
   aspectRatio: "1 / 1",
   minHeight: 140,
@@ -632,9 +633,10 @@ const tile: React.CSSProperties = {
   color: "var(--text)",
   borderRadius: 12,
   padding: 12,
-  textAlign: "left",
+  textAlign: "center",
   cursor: "pointer",
   fontWeight: 700,
+  border: "1px solid var(--border)",
 };
 
 const tileTitle: React.CSSProperties = {

@@ -347,9 +347,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           return (
             <div key={key} style={{ border: "1px solid var(--border)", background: "var(--panel)", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-                <strong style={{ letterSpacing: 0.2 }}>
+                <em style={{ letterSpacing: 0.2, fontStyle: "italic", fontWeight: 400 }}>
                   {name} · Room: {roomLabel} — Type: {typeName} — {formatRange(it.start_date, it.end_date)}
-                </strong>
+                </em>
                 <span style={badgeStyle(kind)}>{badge}</span>
               </div>
 
