@@ -116,7 +116,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       setTpl(base);
       // derive simple editor fields from blocks
       const { title, body } = deriveFromBlocks(base.blocks);
-      setTitleText(title);
+      if (titleRef.current) titleRef.current.textContent = title;
       setBodyHtml(markdownToHtmlInline(body));
     } catch {
       setTpl(EMPTY);
@@ -137,7 +137,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         setTpl(next);
         try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
         const { title, body } = deriveFromBlocks(blocks);
-        setTitleText(title);
+        if (titleRef.current) titleRef.current.textContent = title;
         setBodyHtml(markdownToHtmlInline(body));
       } catch {}
     })();
@@ -369,10 +369,10 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
               contentEditable
               suppressContentEditableWarning
               onFocus={()=>setFocusedInput('title')}
-              onInput={(e)=>setTitleText((e.currentTarget as HTMLDivElement).innerText)}
+              onInput={() => { /* keep uncontrolled to avoid caret jump */ }}
               style={{ ...input, minHeight: 38, direction: 'ltr', textAlign: 'left' }}
               data-placeholder="Reservation details"
-            >{titleText}</div>
+            />
           </div>
           <div>
             <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Message</label>
@@ -405,7 +405,6 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           <button style={btnPri} onClick={publish} disabled={!isAdmin}>Publish</button>
         </div>
       </section>
-      </div>
   );
 }
 
