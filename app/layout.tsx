@@ -49,36 +49,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
 :root[data-theme="dark"]{
-  --bg:#0c111b; 
-  --text:#f8fafc; 
-  --muted:#9aa4af;
-  --panel:#13770a; 
-  --card:#0f172a; 
-  --border:#22304a;
-  --primary:#60a5fa; 
-  --danger:#ef4444; 
-  --success:#22c55e;
+  /* Supabase-like dark palette (green brand) */
+  --bg:#0b1117; --text:#e6edf3; --muted:#9aa4af;
+  --panel:#0f1623; --card:#0d1320; --border:#1f2937;
+  --primary:#3ECF8E; --danger:#ef4444; --success:#22c55e;
 }
 :root[data-theme="light"]{
-  --bg:#f8fafc; 
-  --text:#0c111b; 
-  --muted:#13770a;
-  --panel:#ffffff; 
-  --card:#ffffff; 
-  --border:#dbe2ea;
-  --primary:#7086b7; 
-  --danger:#d15656; 
-  --success:#50bf79;
+  /* Supabase-like light palette (green brand) */
+  --bg:#f7faf9; --text:#0f172a; --muted:#64748b;
+  --panel:#ffffff; --card:#ffffff; --border:#e2e8f0;
+  --primary:#16b981; --danger:#dc2626; --success:#16a34a;
 }
 html, body { background: var(--bg); color: var(--text); }
 
 /* accents */
-:root[data-theme="dark"][data-accent="base"]   { --primary:#60a5fa; }
-:root[data-theme="dark"][data-accent="blue"]   { --primary:#60a5fa; }
-:root[data-theme="dark"][data-accent="indigo"] { --primary:#818cf8; }
+/* accents */
+:root[data-theme="dark"][data-accent="base"]   { --primary:#3ECF8E; }
+:root[data-theme="dark"][data-accent="blue"]   { --primary:#3b82f6; }
+:root[data-theme="dark"][data-accent="indigo"] { --primary:#6366f1; }
 :root[data-theme="dark"][data-accent="emerald"]{ --primary:#34d399; }
 :root[data-theme="dark"][data-accent="amber"]  { --primary:#f59e0b; }
-:root[data-theme="light"][data-accent="base"]   { --primary:#7086b7; }
+:root[data-theme="light"][data-accent="base"]   { --primary:#16b981; }
 :root[data-theme="light"][data-accent="blue"]   { --primary:#3b82f6; }
 :root[data-theme="light"][data-accent="indigo"] { --primary:#6366f1; }
 :root[data-theme="light"][data-accent="emerald"]{ --primary:#10b981; }
