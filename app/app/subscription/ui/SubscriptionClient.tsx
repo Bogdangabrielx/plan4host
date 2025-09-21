@@ -138,7 +138,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
       display: 'grid',
       gap: 12,
       fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-      backgroundImage: "url('/backgorund_forlight.png')",
+      backgroundImage: "url('/hotel_room_1456x816.jpg')",
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed',
