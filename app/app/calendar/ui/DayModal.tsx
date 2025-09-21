@@ -314,7 +314,7 @@ export default function DayModal({
                 title="Open reservation"
               >
                 {isReserved && (
-                  <div aria-hidden style={{ position: 'absolute', inset: 0, borderRadius: 12, background: otaFill(b?.source) }} />
+                  <div aria-hidden style={{ position: 'absolute', inset: 0, borderRadius: 12, background: otaFill(b?.source), pointerEvents: 'none' }} />
                 )}
                 {/* Room name + status badge */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
