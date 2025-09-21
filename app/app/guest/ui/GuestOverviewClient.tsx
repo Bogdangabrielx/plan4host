@@ -561,6 +561,27 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   const [preview, setPreview] = useState<string>("");
   const [copied, setCopied] = useState(false);
 
+  // Local render helpers (mirror of the builder's preview)
+  function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
+  function _mdToHtml(src: string) {
+    let s = _escapeHtml(src);
+    s = s.replace(/\[(.+?)\]\((https?:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/(^|\s)\*(.+?)\*(?=\s|$)/g, '$1<em>$2</em>');
+    s = s.replace(/\n/g, '<br/>' );
+    return s;
+  }
+  function _replaceVars(s: string, vars: Record<string,string>) { if (!s) return ""; return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m,k)=> (vars?.[k] ?? `{{${k}}}`)); }
+  function _renderRM(t: any, vars: Record<string,string>) {
+    const out: string[] = [];
+    for (const b of ((t?.blocks)||[])) {
+      if (b.type === 'divider') out.push('<hr style="border:1px solid var(--border); opacity:.6;"/>');
+      else if (b.type === 'heading') out.push(`<h3 style="margin:8px 0 6px;">${_escapeHtml(_replaceVars(b.text||'', vars))}</h3>`);
+      else if (b.type === 'paragraph') out.push(`<p style=\"margin:6px 0; line-height:1.5;\">${_mdToHtml(_replaceVars(b.text||'', vars))}</p>`);
+    }
+    return out.join('\n');
+  }
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
@@ -581,7 +602,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
       property_name: "",
     };
     const merged = { ...builtins, ...values };
-    setPreview(renderRM(tpl, merged));
+    setPreview(_renderRM(tpl, merged));
   }, [tpl, values, row]);
 
   async function onCopyPreview() {
