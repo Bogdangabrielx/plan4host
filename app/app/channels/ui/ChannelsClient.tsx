@@ -567,10 +567,10 @@ function ManageTypeModal({
   function norm(p?: string | null) { return (p || '').toLowerCase().trim(); }
   function defaultColor(p?: string | null) {
     const s = norm(p);
-    if (s.includes('airbnb')) return 'rgba(255,90,95,0.18)';
-    if (s.includes('booking')) return 'rgba(30,144,255,0.18)';
-    if (s.includes('expedia')) return 'rgba(254,203,46,0.22)';
-    return 'rgba(139,92,246,0.18)';
+    if (s.includes('airbnb')) return 'rgba(255, 90, 96, 0.81)';
+    if (s.includes('booking')) return 'rgba(30, 143, 255, 0.81)';
+    if (s.includes('expedia')) return 'rgba(254,203,46,0.81)';
+    return 'rgba(139,92,246,0.81)';
   }
   useEffect(() => {
     try {
@@ -618,9 +618,9 @@ function ManageTypeModal({
             {pickerFor === 'new' && (
               <div style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
                 {[
-                  'rgba(30,144,255,0.18)','rgba(255,90,95,0.18)','rgba(254,203,46,0.22)','rgba(34,197,94,0.18)',
-                  'rgba(139,92,246,0.18)','rgba(13,148,136,0.18)','rgba(148,163,184,0.15)','rgba(59,130,246,0.18)',
-                  'rgba(251,146,60,0.18)','rgba(244,114,182,0.18)'
+                  'rgba(30,144,255,0.81)','rgba(255,90,95,0.81)','rgba(254,203,46,0.81)','rgba(34,197,94,0.81)',
+                  'rgba(139,92,246,0.81)','rgba(13,148,136,0.81)','rgba(148,163,184,0.81)','rgba(59,130,246,0.81)',
+                  'rgba(251,146,60,0.81)','rgba(244,114,182,0.81)'
                 ].map((c,i)=>(
                   <button key={i} onClick={()=>{ saveColor(provider==='Other'? (customProvider||'other') : provider, c); setPickerFor(null); }}
                     title="Pick color" style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
