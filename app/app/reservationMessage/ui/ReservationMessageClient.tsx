@@ -96,12 +96,12 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
   // Simplified editor state
   const [titleText, setTitleText] = useState<string>("");
-  const [bodyText, setBodyText] = useState<string>("");
+  const [bodyHtml, setBodyHtml] = useState<string>("");
   const [focusedInput, setFocusedInput] = useState<null | "title" | "body">(null);
   const [saving, setSaving] = useState<"Idle"|"Saving…"|"Synced"|"Error">("Idle");
   const { setPill } = useHeader();
-  const titleRef = useRef<HTMLInputElement|null>(null);
-  const bodyRef = useRef<HTMLTextAreaElement|null>(null);
+  const titleRef = useRef<HTMLDivElement|null>(null);
+  const bodyRef = useRef<HTMLDivElement|null>(null);
   const [previewFontPx, setPreviewFontPx] = useState<number>(16);
   const [previewVars, setPreviewVars] = useState<Record<string, string>>({
     guest_first_name: "Alex",
@@ -127,7 +127,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       // derive simple editor fields from blocks
       const { title, body } = deriveFromBlocks(base.blocks);
       setTitleText(title);
-      setBodyText(body);
+      setBodyHtml(markdownToHtmlInline(body));
     } catch {
       setTpl(EMPTY);
       setTitleText("");
@@ -148,7 +148,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
         const { title, body } = deriveFromBlocks(blocks);
         setTitleText(title);
-        setBodyText(body);
+        setBodyHtml(markdownToHtmlInline(body));
       } catch {}
     })();
   }, [storageKey, propertyId]);
@@ -186,7 +186,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     try { localStorage.setItem(storageKey, JSON.stringify(seeded)); } catch {}
     setTpl(seeded);
     setTitleText("Reservation details");
-    setBodyText("Hello {{guest_first_name}},\nCheck‑in {{check_in_date}} {{check_in_time}}.\nCheck‑out {{check_out_date}} {{check_out_time}}.\nRoom: {{room_name}}.\nWi‑Fi: {{wifi_name}} / {{wifi_password}}.\nDoor code: {{door_code}}.");
+    setBodyHtml(markdownToHtmlInline("Hello {{guest_first_name}},\nCheck‑in {{check_in_date}} {{check_in_time}}.\nCheck‑out {{check_out_date}} {{check_out_time}}.\nRoom: {{room_name}}.\nWi‑Fi: {{wifi_name}} / {{wifi_password}}.\nDoor code: {{door_code}}."));
   }
 
   async function syncToServer(status: "draft"|"published", blocks?: Block[]) {
@@ -207,30 +207,28 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
 
   // Insert variable into the focused input
   function insertVarIntoFocused(token: string) {
-    if (focusedInput === "title") setTitleText((t) => (t || "") + token);
-    else if (focusedInput === "body") setBodyText((t) => (t || "") + token);
+    if (focusedInput === "title" && titleRef.current) {
+      // Insert plain text token into title (chips optional later)
+      const t = (titleRef.current.textContent || "") + token;
+      titleRef.current.textContent = t;
+      setTitleText(t);
+    } else if (focusedInput === "body" && bodyRef.current) {
+      insertTokenChip(bodyRef.current, token.replace(/[{}]/g, ""));
+      setBodyHtml(bodyRef.current.innerHTML);
+    }
   }
 
-  function applyBold() {
-    if (focusedInput !== 'body' || !bodyRef.current) return;
-    const el = bodyRef.current;
-    const { text, start, end } = wrapSelectionInTextarea(el, '**', '**');
-    setBodyText(text);
-    setTimeout(() => { try { el.focus(); el.setSelectionRange(start, end); } catch {} }, 0);
-  }
-  function applyItalic() {
-    if (focusedInput !== 'body' || !bodyRef.current) return;
-    const el = bodyRef.current;
-    const { text, start, end } = wrapSelectionInTextarea(el, '*', '*');
-    setBodyText(text);
-    setTimeout(() => { try { el.focus(); el.setSelectionRange(start, end); } catch {} }, 0);
-  }
+  function focusBody() { if (bodyRef.current) { try { bodyRef.current.focus(); } catch {} } }
+  function applyBold() { if (focusedInput==='body') { focusBody(); document.execCommand('bold'); setBodyHtml(bodyRef.current?.innerHTML || ''); } }
+  function applyItalic() { if (focusedInput==='body') { focusBody(); document.execCommand('italic'); setBodyHtml(bodyRef.current?.innerHTML || ''); } }
+  function applyUnderline() { if (focusedInput==='body') { focusBody(); document.execCommand('underline'); setBodyHtml(bodyRef.current?.innerHTML || ''); } }
+  function applyLink() { if (focusedInput==='body') { const url = prompt('Link URL (https://...)'); if (!url) return; focusBody(); document.execCommand('createLink', false, url); setBodyHtml(bodyRef.current?.innerHTML || ''); } }
 
   // Convert simple editor state to blocks
   function composeBlocks(): Block[] {
     const blocks: Block[] = [];
     const t = titleText.trim();
-    const b = bodyText.trim();
+    const b = htmlToMarkdownWithTokens(bodyRef.current?.innerHTML || bodyHtml).trim();
     if (t) blocks.push({ id: uid(), type: "heading", text: t });
     if (b) blocks.push({ id: uid(), type: "paragraph", text: b });
     return blocks;
@@ -345,16 +343,39 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           <div style={{ display: 'grid', gap: 8 }}>
             <div>
               <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Title</label>
-              <input ref={titleRef} value={titleText} onChange={(e)=>setTitleText(e.currentTarget.value)} onFocus={()=>setFocusedInput('title')} style={input} placeholder="Reservation details" />
+              <div
+                ref={titleRef}
+                contentEditable
+                suppressContentEditableWarning
+                onFocus={()=>setFocusedInput('title')}
+                onInput={(e)=>setTitleText((e.currentTarget as HTMLDivElement).innerText)}
+                style={{ ...input, minHeight: 38 }}
+                placeholder="Reservation details"
+              >{titleText}</div>
             </div>
             <div>
               <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Message</label>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
                 <small style={{ color: 'var(--muted)' }}>Formatting:</small>
-                <button style={btn} onClick={(e)=>{e.preventDefault(); applyBold();}} disabled={!isAdmin}>B</button>
-                <button style={btn} onClick={(e)=>{e.preventDefault(); applyItalic();}} disabled={!isAdmin}><span style={{ fontStyle: 'italic' }}>I</span></button>
+                <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyBold();}} disabled={!isAdmin}><strong>B</strong></button>
+                <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyItalic();}} disabled={!isAdmin}><span style={{ fontStyle: 'italic' }}>I</span></button>
+                <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyUnderline();}} disabled={!isAdmin}><span style={{ textDecoration: 'underline' }}>U</span></button>
+                <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyLink();}} disabled={!isAdmin}>Link</button>
               </div>
-              <textarea ref={bodyRef} value={bodyText} onChange={(e)=>setBodyText(e.currentTarget.value)} onFocus={()=>setFocusedInput('body')} rows={8} style={{ ...input, resize: 'vertical' }} placeholder="Your message... You can use variables like {{guest_first_name}}." />
+              <div
+                ref={bodyRef}
+                contentEditable
+                suppressContentEditableWarning
+                onFocus={()=>setFocusedInput('body')}
+                onInput={(e)=>setBodyHtml((e.currentTarget as HTMLDivElement).innerHTML)}
+                style={{ ...input, minHeight: 160, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}
+                data-placeholder="Your message..."
+                dangerouslySetInnerHTML={{ __html: bodyHtml }}
+              />
+              <style dangerouslySetInnerHTML={{ __html: `
+                [data-placeholder]:empty:before{ content: attr(data-placeholder); color: var(--muted); }
+                .rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }
+              `}}/>
             </div>
           </div>
 
@@ -365,7 +386,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           </div>
         </section>
 
-        {/* Right: Fields + Preview */}
+        {/* Right: Fields */}
         <section style={{ display: "grid", gap: 12 }}>
           <div style={card}>
             <h2 style={{ marginTop: 0 }}>Fields you will fill when generating the link</h2>
@@ -399,60 +420,75 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
             )}
           </div>
 
-          <div style={card}>
-            <h2 style={{ marginTop: 0 }}>Live preview</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
-              <small style={{ color: 'var(--muted)' }}>Preview size:</small>
-              <button style={btn} onClick={(e)=>{e.preventDefault(); setPreviewFontPx(p=>Math.max(12, p-1));}}>A−</button>
-              <button style={btn} onClick={(e)=>{e.preventDefault(); setPreviewFontPx(p=>Math.min(22, p+1));}}>A+</button>
-              <small style={{ color: 'var(--muted)' }}>{previewFontPx}px</small>
-            </div>
-            {/* Preview inputs for manual fields */}
-            {tpl.fields.length > 0 && (
-              <div style={{ display: "grid", gap: 8, marginBottom: 8 }}>
-                {tpl.fields.map((f) => (
-                  <div key={f.key} style={{ display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{f.label} {f.required ? "*" : ""}</label>
-                    {f.multiline ? (
-                      <textarea
-                        value={mergedVars[f.key] || ""}
-                        onChange={(e)=>setPreviewVars((prev)=>({ ...prev, [f.key]: e.currentTarget.value }))}
-                        rows={3}
-                        style={{ ...input, resize: "vertical" }}
-                        placeholder={f.placeholder || ""}
-                      />
-                    ) : (
-                      <input
-                        value={mergedVars[f.key] || ""}
-                        onChange={(e)=>setPreviewVars((prev)=>({ ...prev, [f.key]: e.currentTarget.value }))}
-                        style={input}
-                        placeholder={f.placeholder || ""}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-            <div
-              style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 10, background: "var(--card)", fontSize: previewFontPx }}
-              dangerouslySetInnerHTML={{ __html: renderTemplateToHtml({ ...tpl, blocks: composeBlocks() }, mergedVars) }}
-            />
-            <small style={{ color: "var(--muted)" }}>Note: built-in variables are shown with sample values here. The final content binds to real booking data when generating the link.</small>
-          </div>
+          {/* Preview removed per request (WYSIWYG composing) */}
         </section>
       </div>
     </div>
   );
 }
 
-// Formatting helpers (Markdown-like) for body textarea
-function wrapSelectionInTextarea(el: HTMLTextAreaElement, before: string, after: string): { text: string, start: number, end: number } {
-  const start = el.selectionStart ?? 0;
-  const end = el.selectionEnd ?? 0;
-  const value = el.value || '';
-  const selected = value.slice(start, end);
-  const replacement = before + (selected || '') + after;
-  const newText = value.slice(0, start) + replacement + value.slice(end);
-  const newPos = start + replacement.length;
-  return { text: newText, start: newPos, end: newPos };
+// Insert a token chip at caret inside a contentEditable container
+function insertTokenChip(container: HTMLDivElement, key: string) {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) { container.focus(); return; }
+  const range = sel.getRangeAt(0);
+  // Ensure selection is inside container
+  let node: Node|null = range.commonAncestorContainer;
+  let inside = false;
+  while (node) { if (node === container) { inside = true; break; } node = node.parentNode; }
+  if (!inside) { container.focus(); return; }
+  const chip = document.createElement('span');
+  chip.className = 'rm-token';
+  chip.setAttribute('data-token', key);
+  chip.contentEditable = 'false';
+  chip.textContent = key;
+  range.deleteContents();
+  range.insertNode(chip);
+  // place caret after chip
+  const space = document.createTextNode(' ');
+  chip.after(space);
+  sel.collapse(space, 1);
+}
+
+// Convert HTML (with strong/em/u/a/br and rm-token spans) to markdown + tokens {{ }}
+function htmlToMarkdownWithTokens(html: string): string {
+  // Replace token spans with placeholders
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html || '';
+  tmp.querySelectorAll('span.rm-token[data-token]').forEach((el) => {
+    const k = el.getAttribute('data-token') || '';
+    el.replaceWith(document.createTextNode(`{{${k}}}`));
+  });
+  // Replace <br> with \n
+  const walker = (node: Node): string => {
+    if (node.nodeType === 3) return (node.nodeValue || '');
+    if (!(node instanceof HTMLElement)) return '';
+    const tag = node.tagName.toLowerCase();
+    const content = Array.from(node.childNodes).map(walker).join('');
+    if (tag === 'br') return '\n';
+    if (tag === 'strong' || tag === 'b') return `**${content}**`;
+    if (tag === 'em' || tag === 'i') return `*${content}*`;
+    if (tag === 'u') return `__${content}__`;
+    if (tag === 'a') {
+      const href = node.getAttribute('href') || '';
+      return href ? `[${content}](${href})` : content;
+    }
+    if (tag === 'p' || tag === 'div') return content + '\n';
+    return content;
+  };
+  let out = Array.from(tmp.childNodes).map(walker).join('');
+  // normalize multiple newlines
+  out = out.replace(/\n{3,}/g, '\n\n');
+  return out.trim();
+}
+
+// Basic markdown-to-HTML inline (supports tokens shown as text; builder-only)
+function markdownToHtmlInline(src: string): string {
+  let s = escapeHtml(src || '');
+  s = s.replace(/\[(.+?)\]\((https?:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/__([^_]+?)__/g, '<u>$1</u>');
+  s = s.replace(/(^|\s)\*(.+?)\*(?=\s|$)/g, '$1<em>$2</em>');
+  s = s.replace(/\n/g, '<br/>');
+  return s;
 }
