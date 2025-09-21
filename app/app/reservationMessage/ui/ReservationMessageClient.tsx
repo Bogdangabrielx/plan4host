@@ -270,18 +270,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     setTpl((prev) => ({ ...prev, fields: prev.fields.filter((_, idx) => idx !== i) }));
   }
 
-  function insertVar(token: string) {
-    if (!focusedBlock) return;
-    setTpl((prev) => ({
-      ...prev,
-      blocks: prev.blocks.map((b) => {
-        if (b.id !== focusedBlock) return b;
-        if (b.type === "divider") return b;
-        const cur = (b as any).text as string;
-        return { ...(b as any), text: (cur || "") + token } as Block;
-      }),
-    }));
-  }
+  // (old block-based insert removed; using insertVarIntoFocused instead)
 
   const mergedVars = useMemo(() => ({
     ...previewVars,
