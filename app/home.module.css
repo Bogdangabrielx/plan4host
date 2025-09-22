@@ -180,3 +180,67 @@
 
 :global(:root[data-theme="dark"]) .logoLight { display: none; }
 :global(:root[data-theme="dark"]) .logoDark  { display: inline-block; }
+
+/* ===== Feature Card — robust selectors + always-on (for debug) ===== */
+
+/* Animatable angle (modern engines) */
+@property --ring-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Prinde și varianta hash-uită (module) și varianta globală (string literal) */
+.featureCard, :global(.featureCard) {
+  --ring: 2px;                /* grosimea bordurii */
+  --ring-speed: 2.6s;         /* viteza */
+  position: relative;
+  background: var(--card);
+  border-radius: 22px;
+}
+
+/* Conținutul rămâne deasupra bordurii */
+.featureCard > *, :global(.featureCard) > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Bordura animată cu mască (tehnica din clip) */
+.featureCard::before,
+:global(.featureCard)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: var(--ring);
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--ring-angle),
+    color-mix(in oklab, var(--accent1) 75%, transparent) 0%,
+    color-mix(in oklab, var(--accent2) 75%, transparent) 25%,
+    color-mix(in oklab, var(--primary) 75%, transparent) 50%,
+    color-mix(in oklab, var(--accent2) 75%, transparent) 75%,
+    color-mix(in oklab, var(--accent1) 75%, transparent) 100%
+  );
+  /* decupează interiorul, lăsând doar inelul */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+
+  pointer-events: none;
+  z-index: 1;
+
+  /* HOTFIX: pornește mereu ca să vezi schimbarea imediat */
+  opacity: 1;
+  animation: ring-spin var(--ring-speed) linear infinite;
+  will-change: transform;
+}
+
+@keyframes ring-spin { to { --ring-angle: 360deg; } }
+
+/* Dacă vrei doar la hover/focus, comentează cele 2 linii de mai sus
+   și decomentează blocul de mai jos:
+
+.featureCard::before,
+:global(.featureCard)::before { opacity: 0; animation-play-state:
