@@ -100,7 +100,7 @@ export async function GET(_req: NextRequest, ctx: { params: { token: string } })
           if (rtId) {
             try {
               const rType = await admin.from('room_types').select('name').eq('id', rtId).maybeSingle();
-              if (!rType.error) builtins.room_type_name = (rType.data as any)?.name || '';
+              if (!rType.error) (builtins as any).room_type = (rType.data as any)?.name || '';
             } catch {}
           }
         }

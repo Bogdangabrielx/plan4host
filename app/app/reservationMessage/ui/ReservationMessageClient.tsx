@@ -309,7 +309,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
             <button key={v.key} style={btn} onClick={()=>insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
           ))}
           {hasRoomTypes && (
-            <button key="room_type_name" style={btn} onClick={()=>insertVarIntoFocused(`{{room_type_name}}`)} title="Room type name">room_type_name</button>
+            <button key="room_type" style={btn} onClick={()=>insertVarIntoFocused(`{{room_type}}`)} title="Room type">room_type</button>
           )}
           {tpl.fields.map((f)=>(
             <span key={f.uid} className="rm-token" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>

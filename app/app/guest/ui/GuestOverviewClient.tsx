@@ -609,7 +609,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
       check_out_date: row.end_date,
       check_out_time: "11:00",
       room_name: row._room_label || "",
-      room_type_name: row._room_type_name || "",
+      room_type: row._room_type_name || "",
       property_name: "",
     };
     const merged = { ...builtins, ...values };
