@@ -16,6 +16,29 @@
 .btnPrimary:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); }
 .btnGhost { background: transparent; color: var(--text); }
 
+/* Sparkle CTA */
+.btnText { position: relative; background: var(--primary); color: #0c111b; border-color: color-mix(in srgb, var(--primary) 60%, var(--border)); box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 40%, transparent); overflow: hidden; isolation: isolate; }
+.btnText::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 25%, rgba(255,255,255,.8) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 60% 75%, rgba(255,255,255,.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 35% 60%, rgba(255,255,255,.85) 0 1.7px, transparent 2.7px);
+  opacity: 0;
+  transform: translateY(10%);
+  transition: opacity .25s ease, transform .25s ease;
+}
+.btnText:hover::before { opacity: .9; transform: translateY(0); animation: p4h-sparkle 1.8s linear infinite; }
+@keyframes p4h-sparkle {
+  0%   { background-position: 0 0,    0 0,    0 0,    0 0; }
+  50%  { background-position: 8px -6px, -10px 4px, 6px 8px, -6px -8px; }
+  100% { background-position: 0 0,    0 0,    0 0,    0 0; }
+}
+
 /* Hero */
 .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 32px; max-width: 1100px; margin: 48px auto; padding: 0 20px; align-items: center; }
 .heroText h1 { font-size: clamp(36px, 6vw, 64px); line-height: 1.05; margin: 0 0 12px; }
@@ -31,6 +54,29 @@
 .featureGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .featureCard { background: var(--panel); border: 1px solid var(--border); border-radius: 22px; padding: 26px; min-height: 180px; transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease; }
 .featureCard:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); transform: translateY(-2px); }
+.featureCard { position: relative; overflow: hidden; }
+.featureCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from 0deg,
+    color-mix(in srgb, var(--primary) 70%, transparent),
+    transparent 20%,
+    color-mix(in srgb, var(--primary) 50%, transparent) 40%,
+    transparent 60%,
+    color-mix(in srgb, var(--primary) 70%, transparent) 80%,
+    transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity .25s ease;
+  animation: p4h-rotate 3s linear infinite paused;
+}
+.featureCard:hover::before { opacity: .85; animation-play-state: running; }
+@keyframes p4h-rotate { to { transform: rotate(360deg); } }
 .featureHead { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
 .featureIcon { width: 20px; height: 20px; object-fit: contain; opacity: .9; }
 .featureCard h3 { margin: 0; font-size: 20px; }
