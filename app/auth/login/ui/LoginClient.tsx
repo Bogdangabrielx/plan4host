@@ -154,105 +154,123 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     : "Idle";
 
   return (
-    <div style={wrap(mounted ? theme : "dark")}>
-      <div style={headRow}>
-        <h1 style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? "Sign in" : "Create account"}</h1>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <span style={pillStyle(pill)}>{pill}</span>
-          <ThemeToggle size="md" />
-        </div>
-      </div>
+    <div style={outerWrap}>
+      <h1 style={heroTitle}>Welcome to Plan4host</h1>
 
-      <div style={{ display: "grid", gap: 10 }}>
-        <button onClick={signInWithGoogle} style={oauthBtn}>
-          <img
-            src={
-              mounted
-                ? (theme === "light" ? "/Google light.png" : "/Google dark.png")
-                : "/Google dark.png"
-            }
-            alt="Google"
-            width={20}
-            height={20}
-            style={{ display: "block" }}
-          />
-          {mode === "login" ? "Sign in with Google" : "Create account with Google"}
-        </button>
-
-        <div style={dividerRow}>
-          <span style={dividerLine} />
-          <small style={{ color: "var(--muted)" }}>or</small>
-          <span style={dividerLine} />
+      <div style={wrap(mounted ? theme : "dark")}>
+        <div style={headRow}>
+          <h1 style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? "Sign in" : "Create account"}</h1>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <span style={pillStyle(pill)}>{pill}</span>
+            <ThemeToggle size="md" />
+          </div>
         </div>
 
-        <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={lbl}>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e)=>setEmail(asStr(e.currentTarget.value))}
-              placeholder="you@example.com"
-              style={input}
-              required
+        <div style={{ display: "grid", gap: 10 }}>
+          <button onClick={signInWithGoogle} style={oauthBtn}>
+            <img
+              src={
+                mounted
+                  ? (theme === "light" ? "/Google light.png" : "/Google dark.png")
+                  : "/Google dark.png"
+              }
+              alt="Google"
+              width={20}
+              height={20}
+              style={{ display: "block" }}
             />
-          </div>
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={lbl}>{mode === "login" ? "Password" : "Choose a password"}</label>
-            <input
-              type="password"
-              value={pass}
-              onChange={(e)=>setPass(asStr(e.currentTarget.value))}
-              placeholder="••••••••"
-              style={input}
-              required
-            />
-          </div>
-
-          {err && <div style={{ color: "var(--text)", fontSize: 13 }}>{err}</div>}
-
-          <button
-            type="submit"
-            disabled={status==="Loading"}
-            style={primaryBtn}
-          >
-            {mode === "login" ? "Sign in" : "Create account"}
+            {mode === "login" ? "Sign in with Google" : "Create account with Google"}
           </button>
 
-          <small style={{ color: "var(--muted)" }}>
-            {mode === "login" ? (
-              <>
-                Don’t have an account?{" "}
-                <a
-                  href="#"
-                  onClick={(e) => { e.preventDefault(); setMode("signup"); setErr(""); }}
-                  style={{ color: "var(--primary)", fontWeight: 700 }}
-                >
-                  Create one
-                </a>
-                .
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
-                <a
-                  href="#"
-                  onClick={(e) => { e.preventDefault(); setMode("login"); setErr(""); }}
-                  style={{ color: "var(--primary)", fontWeight: 700 }}
-                >
-                  Sign in
-                </a>
-                .
-              </>
-            )}
-          </small>
-        </form>
+          <div style={dividerRow}>
+            <span style={dividerLine} />
+            <small style={{ color: "var(--muted)" }}>or</small>
+            <span style={dividerLine} />
+          </div>
+
+          <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={lbl}>Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e)=>setEmail(asStr(e.currentTarget.value))}
+                placeholder="you@example.com"
+                style={input}
+                required
+              />
+            </div>
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={lbl}>{mode === "login" ? "Password" : "Choose a password"}</label>
+              <input
+                type="password"
+                value={pass}
+                onChange={(e)=>setPass(asStr(e.currentTarget.value))}
+                placeholder="••••••••"
+                style={input}
+                required
+              />
+            </div>
+
+            {err && <div style={{ color: "var(--text)", fontSize: 13 }}>{err}</div>}
+
+            <button
+              type="submit"
+              disabled={status==="Loading"}
+              style={primaryBtn}
+            >
+              {mode === "login" ? "Sign in" : "Create account"}
+            </button>
+
+            <small style={{ color: "var(--muted)" }}>
+              {mode === "login" ? (
+                <>
+                  Don’t have an account?{" "}
+                  <a
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setMode("signup"); setErr(""); }}
+                    style={{ color: "var(--primary)", fontWeight: 700 }}
+                  >
+                    Create one
+                  </a>
+                  .
+                </>
+              ) : (
+                <>
+                  Already have an account?{" "}
+                  <a
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setMode("login"); setErr(""); }}
+                    style={{ color: "var(--primary)", fontWeight: 700 }}
+                  >
+                    Sign in
+                  </a>
+                  .
+                </>
+              )}
+            </small>
+          </form>
+        </div>
       </div>
     </div>
   );
 }
 
-/* styles identice cu ce ai deja */
+/* —— styles —— */
+const outerWrap: React.CSSProperties = {
+  width: 380,
+  margin: "0 auto",
+  display: "grid",
+  gap: 12,
+};
+const heroTitle: React.CSSProperties = {
+  margin: 0,
+  textAlign: "center",
+  fontSize: 24,
+  fontWeight: 900,
+  color: "var(--text)",
+};
+
 function wrap(theme: Theme): React.CSSProperties {
   return {
     width: 380,
