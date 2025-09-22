@@ -15,25 +15,9 @@ function bad(status: number, body: any) { return NextResponse.json(body, { statu
 function escapeHtml(s: string) {
   return (s || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
 }
-function mdToHtml(src: string) {
-  let s = escapeHtml(src);
-  s = s.replace(/\[(.+?)\]\((https?:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
-  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/(^|\s)\*(.+?)\*(?=\s|$)/g, '$1<em>$2</em>');
-  s = s.replace(/\n/g, '<br/>' );
-  return s;
-}
-function replaceVars(s: string, vars: Record<string,string>) {
-  if (!s) return ""; return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => (vars?.[k] ?? `{{${k}}}`));
-}
-function render(blocks: Array<{type:string;text?:string}>, vars: Record<string,string>) {
-  const out: string[] = [];
-  for (const b of blocks) {
-    if (b.type === 'divider') out.push('<hr style="border:1px solid var(--border); opacity:.6;"/>');
-    else if (b.type === 'heading') out.push(`<h3 style="margin:8px 0 6px;">${escapeHtml(replaceVars(b.text||'', vars))}</h3>`);
-    else if (b.type === 'paragraph') out.push(`<p style=\"margin:6px 0; line-height:1.5;\">${mdToHtml(replaceVars(b.text||'', vars))}</p>`);
-  }
-  return out.join('\n');
+function replaceVarsInHtml(html: string, vars: Record<string,string>) {
+  if (!html) return "";
+  return html.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => escapeHtml(vars?.[k] ?? `{{${k}}}`));
 }
 
 export async function GET(_req: NextRequest, ctx: { params: { token: string } }) {
@@ -94,7 +78,15 @@ export async function GET(_req: NextRequest, ctx: { params: { token: string } })
     }
     const vars = { ...builtins, ...(msg.manual_values || {}) } as Record<string,string>;
 
-    const html = render((rBlocks.data || []) as any[], vars);
+    // Build final HTML from stored blocks (heading escaped, paragraph kept as HTML with vars replaced)
+    const blocks = (rBlocks.data || []) as Array<{ type: string; text?: string; sort_index?: number }>;
+    const parts: string[] = [];
+    for (const b of blocks) {
+      if (b.type === 'divider') parts.push('<hr style="border:1px solid var(--border); opacity:.6;"/>');
+      else if (b.type === 'heading') parts.push(`<h3 style=\"margin:8px 0 6px;\">${escapeHtml(b.text || '')}</h3>`);
+      else if (b.type === 'paragraph') parts.push(`<div style=\"margin:6px 0; line-height:1.5;\">${replaceVarsInHtml(b.text || '', vars)}</div>`);
+    }
+    const html = parts.join('\n');
     return NextResponse.json(
       { ok: true, html, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at },
       { headers: { 'Cache-Control': 'no-store, max-age=0' } }
@@ -103,4 +95,3 @@ export async function GET(_req: NextRequest, ctx: { params: { token: string } })
     return bad(500, { error: e?.message || 'Unexpected error' });
   }
 }
-

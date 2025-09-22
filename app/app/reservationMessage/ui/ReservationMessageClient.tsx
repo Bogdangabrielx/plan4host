@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
@@ -211,13 +211,13 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   function applyUnderline() { if (focusedInput==='body') { focusBody(); document.execCommand('underline'); } }
   function applyLink() { if (focusedInput==='body') { const url = prompt('Link URL (https://...)'); if (!url) return; focusBody(); document.execCommand('createLink', false, url); } }
 
-  // Convert simple editor state to blocks
+  // Convert simple editor state to blocks (store HTML directly with tokens)
   function composeBlocks(): Block[] {
     const blocks: Block[] = [];
     const t = (titleRef.current?.innerText || '').trim();
-    const b = htmlToMarkdownWithTokens(bodyRef.current?.innerHTML || '').trim();
+    const bHtml = htmlWithTokens(bodyRef.current?.innerHTML || '').trim();
     if (t) blocks.push({ id: uid(), type: "heading", text: t });
-    if (b) blocks.push({ id: uid(), type: "paragraph", text: b });
+    if (bHtml) blocks.push({ id: uid(), type: "paragraph", text: bHtml });
     return blocks;
   }
 
@@ -441,36 +441,21 @@ function insertTokenChip(container: HTMLDivElement, key: string) {
   sel.collapse(space, 1);
 }
 
-// Convert HTML (with strong/em/u/a/br and rm-token spans) to markdown + tokens {{ }}
-function htmlToMarkdownWithTokens(html: string): string {
-  // Replace token spans with placeholders
+// Convert HTML with rm-token spans to HTML + {{token}} placeholders (keeps formatting)
+function htmlWithTokens(html: string): string {
   const tmp = document.createElement('div');
   tmp.innerHTML = html || '';
+  // Replace token chips with {{token}}
   tmp.querySelectorAll('span.rm-token[data-token]').forEach((el) => {
     const k = el.getAttribute('data-token') || '';
     el.replaceWith(document.createTextNode(`{{${k}}}`));
   });
-  // Replace <br> with \n
-  const walker = (node: Node): string => {
-    if (node.nodeType === 3) return (node.nodeValue || '');
-    if (!(node instanceof HTMLElement)) return '';
-    const tag = node.tagName.toLowerCase();
-    const content = Array.from(node.childNodes).map(walker).join('');
-    if (tag === 'br') return '\n';
-    if (tag === 'strong' || tag === 'b') return `**${content}**`;
-    if (tag === 'em' || tag === 'i') return `*${content}*`;
-    if (tag === 'u') return `__${content}__`;
-    if (tag === 'a') {
-      const href = node.getAttribute('href') || '';
-      return href ? `[${content}](${href})` : content;
-    }
-    if (tag === 'p' || tag === 'div') return content + '\n';
-    return content;
-  };
-  let out = Array.from(tmp.childNodes).map(walker).join('');
-  // normalize multiple newlines
-  out = out.replace(/\n{3,}/g, '\n\n');
-  return out.trim();
+  // Remove contentEditable artifacts
+  tmp.querySelectorAll('[contenteditable], [data-placeholder]').forEach((el) => {
+    el.removeAttribute('contenteditable');
+    el.removeAttribute('data-placeholder');
+  });
+  return tmp.innerHTML;
 }
 
 // Basic markdown-to-HTML inline (supports tokens shown as text; builder-only)
