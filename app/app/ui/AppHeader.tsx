@@ -333,7 +333,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
                 {navLeft.map((it) => {
                   const active = currentPath
-                    ? currentPath === it.href || currentPath.startsWith(it.href + "/")
+                    ? (it.href === "/app"
+                        ? currentPath === "/app"
+                        : (currentPath === it.href || currentPath.startsWith(it.href + "/")))
                     : false;
                   const isInbox = it.href === "/app/guest";
                   const ICON_SIZE_DEFAULT = 36;
@@ -436,7 +438,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
                 {navRight.map((it) => {
                   const active = currentPath
-                    ? currentPath === it.href || currentPath.startsWith(it.href + "/")
+                    ? (it.href === "/app"
+                        ? currentPath === "/app"
+                        : (currentPath === it.href || currentPath.startsWith(it.href + "/")))
                     : false;
                   const isInbox = it.href === "/app/guest";
                   const ICON_SIZE_DEFAULT = 36;
