@@ -17,7 +17,7 @@ export default async function DashboardPage() {
     redirect("/app/subscription");
   }
 
-  // Redirect sub-users fără 'dashboard' către prima secțiune permisă
+  // Redirect sub-users without 'dashboard' to their first allowed section
   const { data: acc } = await supabase
     .from("accounts")
     .select("id")
