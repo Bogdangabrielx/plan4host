@@ -297,7 +297,6 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           {properties.map((p)=> (<option key={p.id} value={p.id}>{p.name}</option>))}
         </select>
         <div style={{ flex: 1 }} />
-        <small style={{ color: saving === 'Error' ? 'var(--danger)' : 'var(--muted)' }}>{saving}</small>
       </div>
 
       {/* Variables row: built-ins + custom with remove + add input */}
