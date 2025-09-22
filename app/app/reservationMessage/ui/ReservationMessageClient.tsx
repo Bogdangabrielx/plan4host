@@ -113,8 +113,8 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       setTpl(base);
       // derive simple editor fields from blocks
       const { title, body } = deriveFromBlocks(base.blocks);
-      if (titleRef.current) titleRef.current.textContent = title;
-      if (bodyRef.current) bodyRef.current.innerHTML = markdownToHtmlInline(body);
+      if (titleRef.current) tokensTextToChips(titleRef.current, title);
+      if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
     } catch {
       setTpl(EMPTY);
       setTitleText("");
@@ -134,8 +134,8 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         setTpl(next);
         try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
         const { title, body } = deriveFromBlocks(blocks);
-        if (titleRef.current) titleRef.current.textContent = title;
-        if (bodyRef.current) bodyRef.current.innerHTML = markdownToHtmlInline(body);
+        if (titleRef.current) tokensTextToChips(titleRef.current, title);
+        if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
       } catch {}
     })();
   }, [storageKey, propertyId]);
@@ -169,7 +169,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     try { localStorage.setItem(storageKey, JSON.stringify(seeded)); } catch {}
     setTpl(seeded);
     setTitleText("Reservation details");
-    if (bodyRef.current) bodyRef.current.innerHTML = markdownToHtmlInline("Hello {{guest_first_name}},\nCheck‑in {{check_in_date}} {{check_in_time}}.\nCheck‑out {{check_out_date}} {{check_out_time}}.\nRoom: {{room_name}}.\nWi‑Fi: {{wifi_name}} / {{wifi_password}}.\nDoor code: {{door_code}}.");
+    if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML("Hello {{guest_first_name}},<br/>Check‑in {{check_in_date}} {{check_in_time}}.<br/>Check‑out {{check_out_date}} {{check_out_time}}.<br/>Room: {{room_name}}.<br/>Wi‑Fi: {{wifi_name}} / {{wifi_password}}.<br/>Door code: {{door_code}}.");
   }
 
   async function syncToServer(status: "draft"|"published", blocks?: Block[]) {
@@ -191,8 +191,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   // Insert variable into the focused input
   function insertVarIntoFocused(token: string) {
     if (focusedInput === "title" && titleRef.current) {
-      titleRef.current.focus();
-      try { document.execCommand('insertText', false, token); } catch {}
+      insertTokenChip(titleRef.current, token.replace(/[{}]/g, ""));
     } else if (focusedInput === "body" && bodyRef.current) {
       insertTokenChip(bodyRef.current, token.replace(/[{}]/g, ""));
     }
@@ -222,7 +221,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   // Convert simple editor state to blocks (store HTML directly with tokens)
   function composeBlocks(): Block[] {
     const blocks: Block[] = [];
-    const t = (titleRef.current?.innerText || '').trim();
+    const t = titleTextWithTokens(titleRef.current);
     const bHtml = htmlWithTokens(bodyRef.current?.innerHTML || '').trim();
     if (t) blocks.push({ id: uid(), type: "heading", text: t });
     if (bHtml) blocks.push({ id: uid(), type: "paragraph", text: bHtml });
@@ -402,6 +401,50 @@ function insertTokenChip(container: HTMLDivElement, key: string) {
   const space = document.createTextNode(' ');
   chip.after(space);
   sel.collapse(space, 1);
+}
+
+// Convert plain text with {{token}} to chips in a contentEditable container (Title)
+function tokensTextToChips(container: HTMLDivElement, text: string) {
+  const s = text || '';
+  const re = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
+  container.innerHTML = '';
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(s))) {
+    const before = s.slice(last, m.index);
+    if (before) container.appendChild(document.createTextNode(before));
+    const chip = document.createElement('span');
+    chip.className = 'rm-token';
+    chip.setAttribute('data-token', m[1]);
+    chip.contentEditable = 'false';
+    chip.textContent = m[1];
+    container.appendChild(chip);
+    container.appendChild(document.createTextNode(' '));
+    last = m.index + m[0].length;
+  }
+  const tail = s.slice(last);
+  if (tail) container.appendChild(document.createTextNode(tail));
+}
+
+// Build title string with {{token}} from title contentEditable (chips back to tokens)
+function titleTextWithTokens(el: HTMLDivElement | null): string {
+  if (!el) return '';
+  const nodes = Array.from(el.childNodes);
+  let out = '';
+  for (const n of nodes) {
+    if (n.nodeType === 3) out += n.nodeValue || '';
+    else if (n instanceof HTMLElement && n.classList.contains('rm-token')) {
+      const k = n.getAttribute('data-token') || '';
+      out += `{{${k}}}`;
+    } else out += (n.textContent || '');
+  }
+  return out.trim();
+}
+
+// Replace {{token}} inside HTML string with chips markup (for body load)
+function tokensToChipsHTML(html: string): string {
+  if (!html) return '';
+  return html.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => `<span class=\"rm-token\" data-token=\"${k}\" contenteditable=\"false\">${k}</span>`);
 }
 
 // Convert HTML with rm-token spans to HTML + {{token}} placeholders (keeps formatting)
