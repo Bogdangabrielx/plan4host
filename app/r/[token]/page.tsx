@@ -31,7 +31,7 @@ export default async function ReservationPublicPage({ params }: { params: { toke
             dangerouslySetInnerHTML={{
               __html: `
                 .rm-card{ background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow: 0 10px 30px rgba(0,0,0,.20); }
-                .rm-content{ color: var(--text); font-family: Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+                .rm-content{ color: var(--text); font-family: Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; white-space: pre-wrap; }
                 .rm-content h1,.rm-content h2,.rm-content h3{ margin: 0 0 10px; line-height: 1.25; }
                 .rm-content h3:first-of-type{ font-size: 20px; font-weight: 900; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; }
                 .rm-content p{ margin: 10px 0; line-height: 1.6; }

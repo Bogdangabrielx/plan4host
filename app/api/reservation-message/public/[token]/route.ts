@@ -17,7 +17,9 @@ function escapeHtml(s: string) {
 }
 function replaceVarsInHtml(html: string, vars: Record<string,string>) {
   if (!html) return "";
-  return html.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => escapeHtml(vars?.[k] ?? `{{${k}}}`));
+  const withVars = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => escapeHtml(vars?.[k] ?? `{{${k}}}`));
+  // Preserve author newlines as <br/>
+  return withVars.replace(/\r?\n/g, '<br/>');
 }
 
 // Safely render plain-text (heading) with {{tokens}} replaced by escaped values

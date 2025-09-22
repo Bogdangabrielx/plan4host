@@ -201,7 +201,21 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   function applyBold() { if (focusedInput==='body') { focusBody(); document.execCommand('bold'); } }
   function applyItalic() { if (focusedInput==='body') { focusBody(); document.execCommand('italic'); } }
   function applyUnderline() { if (focusedInput==='body') { focusBody(); document.execCommand('underline'); } }
-  function applyLink() { if (focusedInput==='body') { const url = prompt('Link URL (https://...)'); if (!url) return; focusBody(); document.execCommand('createLink', false, url); } }
+  function applyLink() {
+    const container = focusedInput === 'body' ? bodyRef.current : (focusedInput === 'title' ? titleRef.current : null);
+    if (!container) return;
+    const url = prompt('Link URL (https://...)');
+    if (!url) return;
+    const sel = window.getSelection();
+    const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+    const inside = range ? isRangeInside(range, container) : false;
+    if (inside && sel && !sel.isCollapsed && sel.toString().trim()) {
+      try { container.focus(); document.execCommand('createLink', false, url); } catch {}
+    } else {
+      const text = prompt('Link text') || url;
+      insertAnchorAtCaret(container, url, text);
+    }
+  }
 
   // Custom variables management (shown as chips in Variables bar)
   function addFieldFromName(name: string) {
@@ -400,6 +414,31 @@ function insertTokenChip(container: HTMLDivElement, key: string) {
   // place caret after chip
   const space = document.createTextNode(' ');
   chip.after(space);
+  sel.collapse(space, 1);
+}
+
+function isRangeInside(range: Range, container: HTMLElement): boolean {
+  let node: Node | null = range.commonAncestorContainer;
+  while (node) { if (node === container) return true; node = node.parentNode; }
+  return false;
+}
+
+function insertAnchorAtCaret(container: HTMLDivElement, url: string, text: string) {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) { container.focus(); return; }
+  const range = sel.getRangeAt(0);
+  if (!isRangeInside(range, container)) {
+    try { container.focus(); } catch {}
+  }
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noreferrer';
+  a.textContent = text || url;
+  range.deleteContents();
+  range.insertNode(a);
+  const space = document.createTextNode(' ');
+  a.after(space);
   sel.collapse(space, 1);
 }
 
