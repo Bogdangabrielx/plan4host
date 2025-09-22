@@ -650,7 +650,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
           <div style={{ border: '1px solid var(--border)', borderRadius: 10, background: 'var(--panel)', padding: 12 }}
                dangerouslySetInnerHTML={{ __html: preview }} />
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-            <button className="sb-btn" onClick={onCopyPreview}>{copied ? 'Copied!' : 'Copy preview (stub)'}</button>
+            <button className="sb-btn" onClick={onCopyPreview}>{copied ? 'Copied!' : 'Copy preview'}</button>
             <GenerateLinkButton propertyId={propertyId} bookingId={row.id} values={values} />
           </div>
         </>
