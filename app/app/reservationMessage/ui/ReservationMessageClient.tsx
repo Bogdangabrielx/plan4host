@@ -304,7 +304,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       <section style={card}>
         <h2 style={{ marginTop: 0 }}>Variables</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-          <small style={{ color: 'var(--muted)' }}>Insert:</small>
+          <small style={{ color: 'var(--muted)' }}>Insert variables:</small>
           {BUILTIN_VARS.map((v)=>(
             <button key={v.key} style={btn} onClick={()=>insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
           ))}
@@ -326,7 +326,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         <h2 style={{ marginTop: 0 }}>Message</h2>
         {/* Variable chips */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-          <small style={{ color: 'var(--muted)' }}>Insert variable:</small>
+          
           {/* Insert chips already shown above */}
         </div>
 
