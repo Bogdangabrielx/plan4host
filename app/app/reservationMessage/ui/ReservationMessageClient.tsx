@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
@@ -99,6 +100,8 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   const { setPill } = useHeader();
   const titleRef = useRef<HTMLDivElement|null>(null);
   const bodyRef = useRef<HTMLDivElement|null>(null);
+  const sb = useMemo(() => createClient(), []);
+  const [hasRoomTypes, setHasRoomTypes] = useState(false);
   // sample vars removed; WYSIWYG-only composing
 
   const storageKey = propertyId ? lsKey(propertyId) : "";
@@ -139,6 +142,20 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       } catch {}
     })();
   }, [storageKey, propertyId]);
+
+  // Check if property has room types to expose room_type_name variable chip
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        if (!propertyId) { if (alive) setHasRoomTypes(false); return; }
+        const r = await sb.from('room_types').select('id').eq('property_id', propertyId).limit(1);
+        if (!alive) return;
+        setHasRoomTypes((r.data ?? []).length > 0);
+      } catch { if (alive) setHasRoomTypes(false); }
+    })();
+    return () => { alive = false; };
+  }, [sb, propertyId]);
 
   function saveDraft() {
     if (!propertyId) return;
@@ -271,7 +288,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   }, [saving, setPill]);
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 12, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
       <PlanHeaderBadge title="Reservation Message" slot="header-right" />
       {/* Property selector */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -291,6 +308,9 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           {BUILTIN_VARS.map((v)=>(
             <button key={v.key} style={btn} onClick={()=>insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
           ))}
+          {hasRoomTypes && (
+            <button key="room_type_name" style={btn} onClick={()=>insertVarIntoFocused(`{{room_type_name}}`)} title="Room type name">room_type_name</button>
+          )}
           {tpl.fields.map((f)=>(
             <span key={f.uid} className="rm-token" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
               <button style={btn} onClick={()=>insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>

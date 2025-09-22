@@ -93,8 +93,17 @@ export async function GET(_req: NextRequest, ctx: { params: { token: string } })
     };
     if (booking.room_id) {
       try {
-        const rRoom = await admin.from('rooms').select('name').eq('id', booking.room_id).maybeSingle();
-        if (!rRoom.error) builtins.room_name = (rRoom.data as any)?.name || '';
+        const rRoom = await admin.from('rooms').select('name, room_type_id').eq('id', booking.room_id).maybeSingle();
+        if (!rRoom.error) {
+          builtins.room_name = (rRoom.data as any)?.name || '';
+          const rtId = (rRoom.data as any)?.room_type_id as string | null;
+          if (rtId) {
+            try {
+              const rType = await admin.from('room_types').select('name').eq('id', rtId).maybeSingle();
+              if (!rType.error) builtins.room_type_name = (rType.data as any)?.name || '';
+            } catch {}
+          }
+        }
       } catch {}
     }
     const vars = { ...builtins, ...(msg.manual_values || {}) } as Record<string,string>;
