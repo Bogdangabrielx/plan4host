@@ -7,43 +7,12 @@ import styles from "./home.module.css";
 export default function HomePage() {
   return (
     <main className={styles.landing}>
-      {/* Mic CSS global: schimbă logo în funcție de data-theme, fără să depindă de className din CSS Modules */}
-      <style
-        // evităm referințe la styles.brand în CSS inline (care pot fi undefined la build)
-        dangerouslySetInnerHTML={{
-          __html: `
-            .logoLight { display: inline-block; }
-            .logoDark  { display: none; }
-            :root[data-theme="dark"] [data-logo-swap] .logoLight { display: none; }
-            :root[data-theme="dark"] [data-logo-swap] .logoDark  { display: inline-block; }
-          `,
-        }}
-      />
+      {/* Removed theme-swap for logo; use a single dark logo as requested */}
 
       {/* Nav */}
 <header className={styles.nav}>
-  <a
-    href="/"
-    className={styles.brand}
-    aria-label="Plan4Host"
-    data-logo-swap
-  >
-    {/* Afișăm ambele; CSS alege corect în funcție de temă */}
-    <img
-      src="/logo_forlight.png"
-      alt="Plan4Host"
-      width={72}
-      height={72}
-      className={`${styles.logo} logoLight`}
-    />
-    <img
-      src="/logo_fordark.png"
-      alt=""
-      aria-hidden="true"
-      width={72}
-      height={72}
-      className={`${styles.logo} logoDark`}
-    />
+  <a href="/" className={styles.brand} aria-label="Plan4Host">
+    <img src="/logo_fordark.png" alt="Plan4Host" width={72} height={72} />
   </a>
 
   <nav className={styles.menu} aria-label="Primary">
