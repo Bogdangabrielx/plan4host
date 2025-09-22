@@ -239,8 +239,3 @@
 
 @keyframes ring-spin { to { --ring-angle: 360deg; } }
 
-/* Dacă vrei doar la hover/focus, comentează cele 2 linii de mai sus
-   și decomentează blocul de mai jos:
-
-.featureCard::before,
-:global(.featureCard)::before { opacity: 0; animation-play-state:
