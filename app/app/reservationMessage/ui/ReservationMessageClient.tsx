@@ -16,9 +16,6 @@ type ManualField = {
   uid: string; // UI-only stable key
   key: string;
   label: string;
-  required: boolean;
-  multiline: boolean;
-  placeholder?: string;
 };
 
 type TemplateState = {
@@ -132,7 +129,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         const t = j?.template;
         if (!t) return;
         const blocks: Block[] = (t.blocks as any[]).map((b) => ({ id: uid(), type: b.type, text: b.text ?? '' }));
-        const fields: ManualField[] = (t.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label, required: !!f.required, multiline: !!f.multiline, placeholder: f.placeholder || '' }));
+        const fields: ManualField[] = (t.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label }));
         const next: TemplateState = { status: (t.status || 'draft') as any, blocks, fields };
         setTpl(next);
         try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
@@ -163,11 +160,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     if (!propertyId) return;
     const seeded: TemplateState = {
       status: "draft",
-      fields: [
-        { uid: uid(), key: "wifi_name", label: "Wi‑Fi name", required: false, multiline: false },
-        { uid: uid(), key: "wifi_password", label: "Wi‑Fi password", required: false, multiline: false },
-        { uid: uid(), key: "door_code", label: "Door code", required: false, multiline: false },
-      ],
+      fields: [],
       blocks: [
         { id: uid(), type: "heading", text: "Reservation details" },
         { id: uid(), type: "paragraph", text: "Hello {{guest_first_name}},\nCheck‑in {{check_in_date}} {{check_in_time}}.\nCheck‑out {{check_out_date}} {{check_out_time}}.\nRoom: {{room_name}}.\nWi‑Fi: {{wifi_name}} / {{wifi_password}}.\nDoor code: {{door_code}}." },
@@ -187,7 +180,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         property_id: propertyId,
         status,
         blocks: blk.map((b) => ({ type: b.type, text: (b as any).text || null })),
-        fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, required: !!f.required, multiline: !!f.multiline, placeholder: f.placeholder || null })),
+        fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, required: true, multiline: false, placeholder: null })),
       };
       const res = await fetch('/api/reservation-message/template', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       // ignore errors silently in UI; RLS/server will enforce perms
@@ -211,6 +204,21 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   function applyUnderline() { if (focusedInput==='body') { focusBody(); document.execCommand('underline'); } }
   function applyLink() { if (focusedInput==='body') { const url = prompt('Link URL (https://...)'); if (!url) return; focusBody(); document.execCommand('createLink', false, url); } }
 
+  // Custom variables management (shown as chips in Variables bar)
+  function addFieldFromName(name: string) {
+    const label = name.trim();
+    if (!label) return;
+    const key = slugify(label);
+    if (!key) return;
+    setTpl((prev) => {
+      if (prev.fields.some((f) => f.key === key)) return prev;
+      return { ...prev, fields: [...prev.fields, { uid: uid(), key, label }] };
+    });
+  }
+  function removeFieldByUid(uidVal: string) {
+    setTpl((prev) => ({ ...prev, fields: prev.fields.filter((f) => f.uid !== uidVal) }));
+  }
+
   // Convert simple editor state to blocks (store HTML directly with tokens)
   function composeBlocks(): Block[] {
     const blocks: Block[] = [];
@@ -231,55 +239,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     return { title, body: paras.join("\n") };
   }
 
-  function addBlock(kind: Block["type"]) {
-    const base: Block = kind === "divider"
-      ? { id: uid(), type: "divider" }
-      : { id: uid(), type: kind as any, text: "" };
-    setTpl((prev) => ({ ...prev, blocks: [...prev.blocks, base] }));
-  }
-  function updateBlock(id: string, text: string) {
-    setTpl((prev) => ({
-      ...prev,
-      blocks: prev.blocks.map((b) => (b.id === id ? ({ ...(b as any), text } as Block) : b)),
-    }));
-  }
-  function removeBlock(id: string) {
-    setTpl((prev) => ({ ...prev, blocks: prev.blocks.filter((b) => b.id !== id) }));
-  }
-  function moveBlock(id: string, dir: "up" | "down") {
-    setTpl((prev) => {
-      const idx = prev.blocks.findIndex((b) => b.id === id);
-      if (idx < 0) return prev;
-      const swap = dir === "up" ? idx - 1 : idx + 1;
-      if (swap < 0 || swap >= prev.blocks.length) return prev;
-      const list = prev.blocks.slice();
-      const a = list[idx];
-      list[idx] = list[swap];
-      list[swap] = a;
-      return { ...prev, blocks: list };
-    });
-  }
-
-  function addField() {
-    setTpl((prev) => ({
-      ...prev,
-      fields: [...prev.fields, { uid: uid(), key: `field_${prev.fields.length + 1}`, label: "New field", required: false, multiline: false }],
-    }));
-  }
-  function updateField(i: number, patch: Partial<ManualField>) {
-    setTpl((prev) => ({
-      ...prev,
-      fields: prev.fields.map((f, idx) => {
-        if (idx !== i) return f;
-        const next = { ...f, ...patch } as ManualField;
-        if (patch.key !== undefined) next.key = slugify(patch.key as string);
-        return next;
-      }),
-    }));
-  }
-  function removeField(i: number) {
-    setTpl((prev) => ({ ...prev, fields: prev.fields.filter((_, idx) => idx !== i) }));
-  }
+  // helper removal of legacy functions
 
   // (old block-based insert removed; using insertVarIntoFocused instead)
 
@@ -309,38 +269,21 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         <small style={{ color: saving === 'Error' ? 'var(--danger)' : 'var(--muted)' }}>{saving}</small>
       </div>
 
-      {/* Dynamic fields (full width, top) */}
+      {/* Variables row: built-ins + custom with remove + add input */}
       <section style={card}>
-        <h2 style={{ marginTop: 0 }}>Dynamic fields</h2>
-        <p style={{ color: 'var(--muted)', marginTop: 0 }}>These are the extra fields you will fill when generating the link. Built‑in fields like guest name and dates are always available.</p>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-          <button style={btn} onClick={addField} disabled={!isAdmin}>+ Add field</button>
-        </div>
-        <div style={card}>
-          {(tpl.fields.length === 0) ? (
-            <p style={{ color: "var(--muted)" }}>No custom fields.</p>
-          ) : (
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
-              {tpl.fields.map((f, i) => (
-                <li key={f.uid} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 10, background: "var(--card)" }}>
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr 160px" }}>
-                      <input value={f.label} onChange={(e)=>updateField(i,{ label: e.currentTarget.value })} style={input} placeholder="Label (e.g. Wi‑Fi password)" disabled={!isAdmin} />
-                      <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <input type="checkbox" checked={f.required} onChange={(e)=>updateField(i,{ required: e.currentTarget.checked })} disabled={!isAdmin} /> required
-                      </label>
-                    </div>
-                    <div style={{ display: "grid", gap: 6, gridTemplateColumns: "1fr" }}>
-                      <input value={f.key} onChange={(e)=>updateField(i,{ key: e.currentTarget.value })} style={input} placeholder="Key (e.g. wifi_password)" disabled={!isAdmin} />
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                      <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={()=>removeField(i)} disabled={!isAdmin}>Remove</button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+        <h2 style={{ marginTop: 0 }}>Variables</h2>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          <small style={{ color: 'var(--muted)' }}>Insert:</small>
+          {BUILTIN_VARS.map((v)=>(
+            <button key={v.key} style={btn} onClick={()=>insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
+          ))}
+          {tpl.fields.map((f)=>(
+            <span key={f.uid} className="rm-token" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+              <button style={btn} onClick={()=>insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
+              <button style={{ ...btn, border: '1px solid var(--danger)' }} onClick={()=>removeFieldByUid(f.uid)} title="Remove">×</button>
+            </span>
+          ))}
+          <AddVarInline onAdd={(name)=>addFieldFromName(name)} disabled={!isAdmin} />
         </div>
       </section>
 
@@ -350,12 +293,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         {/* Variable chips */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
           <small style={{ color: 'var(--muted)' }}>Insert variable:</small>
-          {BUILTIN_VARS.map((v)=>(
-            <button key={v.key} style={btn} onClick={()=>insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
-          ))}
-          {(tpl.fields||[]).map((f)=>(
-            <button key={f.uid} style={btn} onClick={()=>insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
-          ))}
+          {/* Insert chips already shown above */}
         </div>
 
         <div style={{ display: 'grid', gap: 8 }}>
@@ -417,6 +355,30 @@ const ContentEditableStable = React.memo(
   ),
   () => true
 );
+
+// Inline input to add custom variables to the Variables bar
+function AddVarInline({ onAdd, disabled }: { onAdd: (name: string) => void; disabled?: boolean }) {
+  const [val, setVal] = useState("");
+  function submit() {
+    const v = val.trim();
+    if (!v) return;
+    onAdd(v);
+    setVal("");
+  }
+  return (
+    <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+      <input
+        value={val}
+        onChange={(e)=>setVal(e.currentTarget.value)}
+        onKeyDown={(e)=>{ if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
+        placeholder="Add variable…"
+        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)' }}
+        disabled={!!disabled}
+      />
+      <button onClick={submit} disabled={!!disabled} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--primary)', color: '#0c111b', fontWeight: 800 }}>Add</button>
+    </span>
+  );
+}
 
 // Insert a token chip at caret inside a contentEditable container
 function insertTokenChip(container: HTMLDivElement, key: string) {
