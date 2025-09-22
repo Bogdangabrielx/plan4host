@@ -20,6 +20,25 @@ function replaceVarsInHtml(html: string, vars: Record<string,string>) {
   return html.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => escapeHtml(vars?.[k] ?? `{{${k}}}`));
 }
 
+// Safely render plain-text (heading) with {{tokens}} replaced by escaped values
+function renderHeadingSafe(src: string, vars: Record<string,string>): string {
+  const s = src || "";
+  const re = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
+  let out: string[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(s))) {
+    const before = s.slice(last, m.index);
+    out.push(escapeHtml(before));
+    const key = m[1];
+    const val = vars?.[key] ?? `{{${key}}}`;
+    out.push(escapeHtml(val));
+    last = m.index + m[0].length;
+  }
+  out.push(escapeHtml(s.slice(last)));
+  return out.join("");
+}
+
 export async function GET(_req: NextRequest, ctx: { params: { token: string } }) {
   try {
     const tok = (ctx.params.token || '').trim();
@@ -82,8 +101,8 @@ export async function GET(_req: NextRequest, ctx: { params: { token: string } })
     const blocks = (rBlocks.data || []) as Array<{ type: string; text?: string; sort_index?: number }>;
     const parts: string[] = [];
     for (const b of blocks) {
-      if (b.type === 'divider') parts.push('<hr style="border:1px solid var(--border); opacity:.6;"/>');
-      else if (b.type === 'heading') parts.push(`<h3 style=\"margin:8px 0 6px;\">${escapeHtml(b.text || '')}</h3>`);
+      if (b.type === 'divider') parts.push('<hr style="border:1px solid var(--border); opacity:.6;"/>' );
+      else if (b.type === 'heading') parts.push(`<h3 style=\"margin:8px 0 6px;\">${renderHeadingSafe(b.text || '', vars)}</h3>`);
       else if (b.type === 'paragraph') parts.push(`<div style=\"margin:6px 0; line-height:1.5;\">${replaceVarsInHtml(b.text || '', vars)}</div>`);
     }
     const html = parts.join('\n');

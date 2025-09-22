@@ -236,7 +236,8 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       if (bl.type === "heading" && !title) title = (bl as any).text || "";
       if (bl.type === "paragraph") paras.push(((bl as any).text || ""));
     }
-    return { title, body: paras.join("\n") };
+    // Paragraph text is already HTML; join as-is
+    return { title, body: paras.join("") };
   }
 
   // helper removal of legacy functions
