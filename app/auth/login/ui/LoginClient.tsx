@@ -12,6 +12,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   const [pass, setPass] = useState<string>("");
   const [status, setStatus] = useState<"Idle"|"Loading"|"Error">("Idle");
   const [err, setErr] = useState<string>("");
+  const [failCount, setFailCount] = useState<number>(0);
 
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [mounted, setMounted] = useState(false);
@@ -98,6 +99,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
       // Acceptă și 204 (No Content) ca succes
       if (res.ok) {
         const j = await safeJson(res);
+        if (mode === "login") setFailCount(0);
         if (mode === "signup" && (j as any)?.requiresConfirmation) {
           setStatus("Idle");
           setErr("");
@@ -125,10 +127,12 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
         (mode === "login" ? "Invalid credentials." : "Could not create account.");
       setErr(message);
       setStatus("Error");
+      if (mode === "login") setFailCount((c) => Math.min(99, c + 1));
     } catch (ex: any) {
       // Eroare de rețea / CORS / timeouts
       setErr(asStr(ex?.message) || "Network error. Please try again.");
       setStatus("Error");
+      if (mode === "login") setFailCount((c) => Math.min(99, c + 1));
     }
   }
 
@@ -210,17 +214,24 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                 style={input}
                 required
               />
+          </div>
+
+          {err && <div style={{ color: "var(--text)", fontSize: 13 }}>{err}</div>}
+
+          <button
+            type="submit"
+            disabled={status==="Loading"}
+            style={primaryBtn}
+          >
+            {mode === "login" ? "Sign in" : "Create account"}
+          </button>
+
+          {mode === "login" && failCount >= 3 && (
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop: 8 }}>
+              <a href="/auth/reset" style={{ color:'var(--primary)', fontWeight:800, textDecoration:'none' }}>Forgot your password?</a>
+              <span />
             </div>
-
-            {err && <div style={{ color: "var(--text)", fontSize: 13 }}>{err}</div>}
-
-            <button
-              type="submit"
-              disabled={status==="Loading"}
-              style={primaryBtn}
-            >
-              {mode === "login" ? "Sign in" : "Create account"}
-            </button>
+          )}
 
             <small style={{ color: "var(--muted)" }}>
               {mode === "login" ? (
@@ -228,7 +239,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                   Don’t have an account?{" "}
                   <a
                     href="#"
-                    onClick={(e) => { e.preventDefault(); setMode("signup"); setErr(""); }}
+                  onClick={(e) => { e.preventDefault(); setMode("signup"); setErr(""); setFailCount(0); }}
                     style={{ color: "var(--primary)", fontWeight: 700 }}
                   >
                     Create one
@@ -240,7 +251,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                   Already have an account?{" "}
                   <a
                     href="#"
-                    onClick={(e) => { e.preventDefault(); setMode("login"); setErr(""); }}
+                  onClick={(e) => { e.preventDefault(); setMode("login"); setErr(""); setFailCount(0); }}
                     style={{ color: "var(--primary)", fontWeight: 700 }}
                   >
                     Sign in
