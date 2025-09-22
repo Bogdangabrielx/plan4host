@@ -12,7 +12,13 @@
   --primary: #3ECF8E; /* Supabase green */
   --accent1: #22d3ee; /* cyan */
   --accent2: #6366f1; /* indigo */
+
+  /* Animated ring controls (defaults) */
+  --ring: 2px;           /* border thickness */
+  --ring-speed: 2.6s;    /* rotation speed */
 }
+
+/* Ambient glow background */
 .landing::before {
   content: "";
   position: fixed;
@@ -95,43 +101,93 @@
 .features { max-width: 1100px; margin: 80px auto; padding: 0 20px; }
 .features h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 20px; }
 .featureGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.featureCard { background: #0f172a; /* solid card bg for a clean ring */ border-radius: 22px; padding: 26px; min-height: 180px; transition: box-shadow .15s ease, transform .15s ease; position: relative; }
+
+/* ————————————————————————————————————————————————
+   Feature Card — animated gradient border (clip technique)
+   Uses conic-gradient + mask-composite: exclude (with fallback).
+   ———————————————————————————————————————————————— */
+
+/* Expose the animatable angle (modern engines) */
+@property --ring-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.featureCard {
+  background: var(--card);
+  border-radius: 22px;
+  padding: 26px;
+  min-height: 180px;
+  transition: box-shadow .15s ease, transform .15s ease;
+  position: relative;
+}
 .featureCard > * { position: relative; z-index: 2; }
 .featureCard:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); transform: translateY(-2px); }
-/* Outer rotating gradient ring placed behind the card */
+
+/* Animated gradient border (mask technique) */
 .featureCard::before {
   content: "";
   position: absolute;
-  inset: -2px; /* slightly larger than card */
+  inset: 0;
+  padding: var(--ring);
   border-radius: inherit;
   background: conic-gradient(
-    from 0deg,
+    from var(--ring-angle),
     color-mix(in oklab, var(--accent1) 75%, transparent) 0%,
     color-mix(in oklab, var(--accent2) 75%, transparent) 25%,
     color-mix(in oklab, var(--primary) 75%, transparent) 50%,
     color-mix(in oklab, var(--accent2) 75%, transparent) 75%,
     color-mix(in oklab, var(--accent1) 75%, transparent) 100%
   );
-  z-index: 0;
+  /* carve out the center so only the border shows */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+
   pointer-events: none;
-  opacity: 0;
-  transform-origin: 50% 50%;
-  animation: p4h-rotate 2.6s linear infinite paused;
-}
-/* Inner cover to reveal only a thin ring */
-.featureCard::after {
-  content: "";
-  position: absolute;
-  inset: 0; /* exact card bounds */
-  border-radius: inherit;
-  background: #0f172a; /* same as card bg */
   z-index: 1;
-  pointer-events: none;
-  /* Create the border thickness */
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, transparent 100%, transparent); /* placeholder to keep layout */
+  opacity: 0;
+  animation: ring-spin var(--ring-speed) linear infinite paused;
+  will-change: transform;
 }
-.featureCard:hover::before { opacity: 1; animation-play-state: running; }
-@keyframes p4h-rotate { to { transform: rotate(360deg); } }
+
+/* Play on hover & keyboard focus */
+.featureCard:is(:hover, :focus-visible)::before {
+  opacity: 1;
+  animation-play-state: running;
+}
+
+@keyframes ring-spin { to { --ring-angle: 360deg; } }
+
+/* Fallback for browsers without mask-composite support */
+@supports not (mask-composite: exclude) {
+  .featureCard::before {
+    inset: calc(-1 * var(--ring));
+    padding: 0;
+    -webkit-mask: none;
+            mask: none;
+    z-index: 0;
+    animation: ring-spin-fallback var(--ring-speed) linear infinite paused;
+  }
+  .featureCard:is(:hover, :focus-visible)::before { animation-play-state: running; }
+
+  /* Inner cover to reveal only a thin ring (fallback only) */
+  .featureCard::after {
+    content: "";
+    position: absolute;
+    inset: var(--ring);
+    border-radius: inherit;
+    background: var(--card);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  @keyframes ring-spin-fallback { to { transform: rotate(360deg); } }
+}
+
 .featureHead { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
 .featureIcon { width: 20px; height: 20px; object-fit: contain; opacity: .9; }
 .featureCard h3 { margin: 0; font-size: 20px; }
@@ -174,10 +230,38 @@
 /* Anchor offset for sticky header (dup safety) */
 .features, .pricing, .about, .contact, .footer { scroll-margin-top: 90px; }
 
-/* Arată logo-ul corect în funcție de tema din <html data-theme="..."> */
+/* Show correct logo by theme on <html data-theme="..."> */
 .logoLight { display: inline-block; }
 .logoDark  { display: none; }
 
 :global(:root[data-theme="dark"]) .logoLight { display: none; }
 :global(:root[data-theme="dark"]) .logoDark  { display: inline-block; }
 
+/* Responsive media: prevent lateral overflow (scoped to landing for CSS Modules) */
+.landing :global(img),
+.landing :global(video) {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Utility: force-wrap very long words/URLs when needed */
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Switzer variable font (self-hosted) */
+@font-face {
+  font-family: 'Switzer';
+  src: url('/fonts/Switzer/Switzer-Variable.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Switzer';
+  src: url('/fonts/Switzer/Switzer-VariableItalic.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
