@@ -227,9 +227,15 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
           </button>
 
           {mode === "login" && failCount >= 3 && (
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop: 8 }}>
-              <a href="/auth/reset" style={{ color:'var(--primary)', fontWeight:800, textDecoration:'none' }}>Forgot your password?</a>
-              <span />
+            <div style={{ marginTop: 8 }}>
+              <small style={{ color: "var(--muted)" }}>
+                <a
+                  href="/auth/reset"
+                  style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}
+                >
+                  Forgot your password?
+                </a>
+              </small>
             </div>
           )}
 
