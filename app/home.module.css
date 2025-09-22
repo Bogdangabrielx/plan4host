@@ -95,33 +95,40 @@
 .features { max-width: 1100px; margin: 80px auto; padding: 0 20px; }
 .features h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 20px; }
 .featureGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.featureCard { background: var(--panel); border: 1px solid var(--border); border-radius: 22px; padding: 26px; min-height: 180px; transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease; position: relative; overflow: hidden; }
-.featureCard > * { position: relative; z-index: 1; }
-.featureCard:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); border-color: transparent; transform: translateY(-2px); }
+.featureCard { background: #0f172a; /* solid card bg for a clean ring */ border-radius: 22px; padding: 26px; min-height: 180px; transition: box-shadow .15s ease, transform .15s ease; position: relative; }
+.featureCard > * { position: relative; z-index: 2; }
+.featureCard:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); transform: translateY(-2px); }
+/* Outer rotating gradient ring placed behind the card */
 .featureCard::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -2px; /* slightly larger than card */
   border-radius: inherit;
-  padding: 1.5px; /* thickness of the glowing border */
-  pointer-events: none;
-  z-index: 0;
   background: conic-gradient(
     from 0deg,
-    color-mix(in oklab, var(--accent1) 70%, transparent) 0%,
-    color-mix(in oklab, var(--accent2) 70%, transparent) 25%,
-    color-mix(in oklab, var(--primary) 70%, transparent) 50%,
-    color-mix(in oklab, var(--accent2) 70%, transparent) 75%,
-    color-mix(in oklab, var(--accent1) 70%, transparent) 100%
+    color-mix(in oklab, var(--accent1) 75%, transparent) 0%,
+    color-mix(in oklab, var(--accent2) 75%, transparent) 25%,
+    color-mix(in oklab, var(--primary) 75%, transparent) 50%,
+    color-mix(in oklab, var(--accent2) 75%, transparent) 75%,
+    color-mix(in oklab, var(--accent1) 75%, transparent) 100%
   );
-  /* Mask out the inner area so only the ring shows */
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
+  z-index: 0;
+  pointer-events: none;
   opacity: 0;
-  transition: opacity .25s ease;
   transform-origin: 50% 50%;
   animation: p4h-rotate 2.6s linear infinite paused;
+}
+/* Inner cover to reveal only a thin ring */
+.featureCard::after {
+  content: "";
+  position: absolute;
+  inset: 0; /* exact card bounds */
+  border-radius: inherit;
+  background: #0f172a; /* same as card bg */
+  z-index: 1;
+  pointer-events: none;
+  /* Create the border thickness */
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, transparent 100%, transparent); /* placeholder to keep layout */
 }
 .featureCard:hover::before { opacity: 1; animation-play-state: running; }
 @keyframes p4h-rotate { to { transform: rotate(360deg); } }
