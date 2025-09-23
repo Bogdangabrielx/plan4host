@@ -140,11 +140,10 @@
 /* Gradient text pentru "Better" (cu fallback) */
 .betterGrad {
   color: var(--primary); /* fallback dacă background-clip nu e suportat */
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklab, var(--primary) 95%, white 5%),
-    color-mix(in oklab, var(--primary) 70%, #22d3ee 30%)
-  );
+  background: linear-gradient(90deg,
+  color-mix(in oklab, var(--primary) 92%, white 8%),
+  color-mix(in oklab, var(--primary) 80%, black 20%)
+);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
