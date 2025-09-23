@@ -7,7 +7,6 @@ import styles from "./home.module.css";
 
 export default function HomePage() {
   const [navOpen, setNavOpen] = useState(false);
-
   const year = new Date().getFullYear();
 
   return (
@@ -22,8 +21,9 @@ export default function HomePage() {
         aria-label="Primary"
       >
         <Link href="/" className={`${styles.brand} ${styles.focusable}`}>
-          <img src="/logo-light.svg" alt="Plan4host" height={24} className={styles.logoLight} />
-          <img src="/logo-dark.svg" alt="Plan4host" height={24} className={styles.logoDark} />
+          {/* folosim același logo pentru ambele moduri, după cum ai cerut */}
+          <img src="/logo_fordark.png" alt="Plan4host" height={24} className={styles.logoLight} />
+          <img src="/logo_fordark.png" alt="Plan4host" height={24} className={styles.logoDark} />
           <strong>Plan4host</strong>
         </Link>
 
@@ -69,9 +69,7 @@ export default function HomePage() {
       {/* Hero */}
       <section id="content" className={styles.hero}>
         <div className={styles.heroText}>
-          <h1>
-            Booking calendar that <span className={styles.accent}>just works</span>.
-          </h1>
+          <h1>Stay Smart, Host Better</h1>
           <p>
             Plan4host helps small accommodations manage occupancy, avoid double bookings,
             and sync calendars across channels with ease.
@@ -97,13 +95,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Features — revenite pe varianta ta + PNG icons */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title">Features</h2>
         <div className={styles.featureGrid}>
           <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/icons/sync.svg" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <img src="/icons/sync.png" alt="" aria-hidden="true" className={styles.featureIcon} />
               <h3>iCal Import / Export</h3>
             </div>
             <p>Sync reservations with Airbnb, Booking.com and more. Retry &amp; logging built-in.</p>
@@ -111,7 +109,7 @@ export default function HomePage() {
 
           <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/icons/cleaning.svg" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <img src="/icons/cleaning.png" alt="" aria-hidden="true" className={styles.featureIcon} />
               <h3>Cleaning Board</h3>
             </div>
             <p>Daily tasks with carry-over logic so your team never misses a turnover.</p>
@@ -119,7 +117,7 @@ export default function HomePage() {
 
           <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/icons/fields.svg" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <img src="/icons/fields.png" alt="" aria-hidden="true" className={styles.featureIcon} />
               <h3>Custom Fields</h3>
             </div>
             <p>Capture what matters: guest notes, access codes, add-ons — fully configurable.</p>
@@ -127,7 +125,7 @@ export default function HomePage() {
 
           <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/icons/guard.svg" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <img src="/icons/guard.png" alt="" aria-hidden="true" className={styles.featureIcon} />
               <h3>Plan Guard</h3>
             </div>
             <p>Feature gating with clear upgrade CTAs. No surprises, no hidden limits.</p>
@@ -135,23 +133,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing — BASIC / STANDARD / PREMIUM */}
       <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
         <h2 id="pricing-title">Pricing</h2>
         <div className={styles.pricingGrid}>
           <div className={styles.priceCard}>
-            <div className={styles.priceTier}>Starter</div>
+            <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
               <li>1 property</li>
               <li>iCal export</li>
               <li>Email support</li>
             </ul>
             <img className={styles.priceImg} src="/illustrations/leaf.svg" alt="" aria-hidden="true" />
-            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Starter</Link>
+            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Basic</Link>
           </div>
 
           <div className={styles.priceCard}>
-            <div className={styles.priceTier}>Standard</div>
+            <div className={styles.priceTier}>STANDARD</div>
             <ul className={styles.priceList}>
               <li>Up to 5 properties</li>
               <li>iCal import &amp; export</li>
@@ -162,7 +160,7 @@ export default function HomePage() {
           </div>
 
           <div className={styles.priceCard}>
-            <div className={styles.priceTier}>Premium</div>
+            <div className={styles.priceTier}>PREMIUM</div>
             <ul className={styles.priceList}>
               <li>Unlimited properties</li>
               <li>Autosync + logs</li>
@@ -198,8 +196,8 @@ export default function HomePage() {
         <div className={styles.footerGrid}>
           <div className={styles.footerCol}>
             <div className={styles.footerBrand}>
-              <img src="/logo-light.svg" alt="" aria-hidden="true" height={22} className={styles.logoLight} />
-              <img src="/logo-dark.svg" alt="" aria-hidden="true" height={22} className={styles.logoDark} />
+              <img src="/logo_fordark.png" alt="" aria-hidden="true" height={22} className={styles.logoLight} />
+              <img src="/logo_fordark.png" alt="" aria-hidden="true" height={22} className={styles.logoDark} />
               <strong>Plan4host</strong>
             </div>
             <p className={styles.footerCopy}>
