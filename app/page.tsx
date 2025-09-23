@@ -192,7 +192,8 @@ export default function HomePage() {
         </br>with an adaptive calendar,simple property setup, and powerful team workflows. <br>
         </br>Our goal is to keep things fast, reliable, and easy to use. <br>
         </br>Built with care for clarity and performance,<br>
-        </br>Plan4Host focuses on the tools you actually use every day: calendars, cleaning, guest overview and iCal synchronization that just works.
+        </br>Plan4Host focuses on the tools you actually use every day:<br>
+        </br>calendars, cleaning, guest overview and iCal synchronization that just works.
         </p>
       </section>
 
