@@ -119,7 +119,7 @@
 .btnText:focus-visible {
   box-shadow:
     0 8px 24px color-mix(in oklab, var(--primary) 35%, transparent),
-    0 0 0 1px color-mix(in oklab, #fff 22%, transparent);
+    0 0 0 1px color-mix(in oklab, #3ECF8E 22%, transparent);
 }
 
 /* rotating border highlight */
@@ -130,7 +130,7 @@
     conic-gradient(from var(--sweep-angle),
       transparent 0deg,
       transparent 300deg,
-      rgba(25, 189, 99, 0.95) 315deg,
+      rgba(25, 189, 99, .95) 315deg,
       rgba(25, 189, 99,.8) 330deg,
       transparent 345deg
     );
