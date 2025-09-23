@@ -48,18 +48,18 @@
 /* Top navigation */
 .nav {
   position: sticky; top: 0; z-index: 50;
-  display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+  display: grid; grid-template-columns: minmax(0,auto) 1fr auto; align-items: center;
   gap: 20px; padding: 14px 20px;
   background: color-mix(in srgb, var(--bg) 92%, transparent);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
 }
 .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; min-width: 0; }
-.brand strong { white-space: nowrap; font-weight: 800; }
+.brand strong { white-space: nowrap; font-weight: 800; max-width: 28ch; overflow: hidden; text-overflow: ellipsis; }
 .menu { display: flex; gap: 18px; justify-content: center; }
 .menuLink { color: var(--muted); text-decoration: none; font-weight: 700; }
 .menuLink:hover { color: var(--text); }
-.actions { display: flex; gap: 10px; align-items: center; flex-wrap: nowrap; }
+.actions { display: flex; gap: 10px; align-items: center; flex-wrap: nowrap; white-space: nowrap; }
 
 /* Buttons (base) */
 .btn {
@@ -87,13 +87,7 @@
 }
 
 /* ──────────────────────────────────────────────────────────
-   CTA sparkle like in the video:
-   - default: ghost button (white text + border)
-   - hover: green glow shadow + subtle morph
-   - clockwise light sweep on border
-   - 3 stars in top-left corner
-   You keep class .btnText on your CTA.
-   If combined with .btnPrimary, we override to ghost.
+   CTA sparkle like in the video (desktop hover) + mobile trigger
    ────────────────────────────────────────────────────────── */
 
 /* Let conic-angle animate smoothly */
@@ -112,11 +106,13 @@
 /* subtle morphable shape */
 .btnText { border-radius: 28px; }
 .btnText:hover,
-.btnText:focus-visible { border-radius: 22px; }
+.btnText:focus-visible,
+.btnText[data-animate="true"] { border-radius: 22px; }
 
-/* shadow on hover */
+/* shadow on hover/trigger */
 .btnText:hover,
-.btnText:focus-visible {
+.btnText:focus-visible,
+.btnText[data-animate="true"] {
   box-shadow:
     0 8px 24px color-mix(in oklab, var(--primary) 35%, transparent),
     0 0 0 1px color-mix(in oklab, #3ECF8E 22%, transparent);
@@ -143,31 +139,40 @@
   pointer-events: none; z-index: 1;
 }
 
-/* 3 stars in colțul stânga-sus */
+/* 3 concave-diamond stars în colțul stânga-sus */
 .btnText::after{
   content:"";
   position:absolute; top:8px; left:10px; width:44px; height:22px; pointer-events:none; opacity:0; transition: opacity .2s ease;
-  /* 3 inline-SVG “concave diamond” stars */
-  --star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='Greenish Cyan' d='M50 0 Q 68 30 100 50 Q 70 68 50 100 Q 32 70 0 50 Q 30 32 50 0 Z'/%3E%3C/svg%3E");
+  --star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='white' d='M50 0 Q 68 30 100 50 Q 70 68 50 100 Q 32 70 0 50 Q 30 32 50 0 Z'/%3E%3C/svg%3E");
   background:
     var(--star) 0% 50%/12px 12px no-repeat,
     var(--star) 40% 10%/9px 9px no-repeat,
     var(--star) 82% 70%/10px 10px no-repeat;
   filter:
-    drop-shadow(0 0 6px rgba(25, 189, 99, 0.7))
+    drop-shadow(0 0 6px rgba(255,255,255,.7))
     drop-shadow(0 0 18px color-mix(in oklab, var(--primary) 65%, transparent));
   z-index: 2;
 }
 
-/* Play the effects */
+/* Play the effects (desktop focus/hover) */
 .btnText:hover::before,
 .btnText:focus-visible::before { opacity: 1; animation: sweep-rotate 1.8s linear infinite; }
 .btnText:hover::after,
 .btnText:focus-visible::after  { opacity: 1; animation: stars-twinkle 1.8s ease-in-out infinite; }
 
-/* No heavy effects on touch devices (fix iOS white tap circle) */
+/* ✅ Mobile support: rulează când TS pune [data-animate="true"] */
+.btnText[data-animate="true"]::before{
+  opacity:1; animation:sweep-rotate 1.8s linear infinite;
+}
+.btnText[data-animate="true"]::after{
+  opacity:1; animation:stars-twinkle 1.8s ease-in-out infinite;
+}
+
+/* No heavy effects on touch unless explicit trigger */
 @media (hover:none){
   .btnText::before, .btnText::after { display: none !important; }
+  .btnText[data-animate="true"]::before,
+  .btnText[data-animate="true"]::after { display: block !important; } /* override hide */
   .landing :global(a), .landing :global(button){ -webkit-tap-highlight-color: transparent; }
 }
 
