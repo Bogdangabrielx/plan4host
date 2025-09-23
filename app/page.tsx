@@ -217,7 +217,6 @@ export default function HomePage() {
         <div className={styles.footerGrid}>
           <div className={styles.footerCol}>
             <div className={styles.footerBrand}>
-              <img src="/logo_fordark.png" alt="" aria-hidden="true" className={styles.logoLight} />
               <img src="/logo_fordark.png" alt="" aria-hidden="true" className={styles.logoDark} />
               <strong>Plan4host</strong>
             </div>

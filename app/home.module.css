@@ -286,7 +286,7 @@
   text-decoration-color: color-mix(in oklab, var(--primary) 40%, transparent);
   font-weight: 700;
 }
-.contactCard a:hover { text-decoration-color: var(--primary); }
+.contactCard a:hover { font-weight: 400 ; text-decoration-color: var(--primary); }
 
 /* Anchor offset for sticky header */
 .features, .pricing, .about, .contact, .footer { scroll-margin-top: 90px; }
