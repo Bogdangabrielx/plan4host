@@ -200,7 +200,7 @@ export default function HomePage() {
       <section id="contact" className={styles.contact} aria-labelledby="contact-title">
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
-          <p>We’re just an email away: <a className={styles.focusable} href="mailto:office@plan4host.com">office@plan4host.com</a>.</p>
+          <p>We’re just an email away: office@plan4host.com.</p>
         </div>
       </section>
 
