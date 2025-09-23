@@ -16,6 +16,10 @@
   /* Animated ring controls (defaults) */
   --ring: 2px;           /* border thickness */
   --ring-speed: 2.6s;    /* rotation speed */
+
+  /* Focus util (scoped for CSS Modules; was :root) */
+  --focus-ring: 2px;
+  --focus-color: color-mix(in srgb, var(--primary) 80%, white);
 }
 
 /* Accessible skip link */
@@ -34,7 +38,6 @@
 .skipLink:focus { top: 12px; }
 
 /* Focus util */
-:root { --focus-ring: 2px; --focus-color: color-mix(in srgb, var(--primary) 80%, white); }
 .focusable:focus-visible {
   outline: var(--focus-ring) solid var(--focus-color);
   outline-offset: 3px;
