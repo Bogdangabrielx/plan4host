@@ -185,7 +185,7 @@ export default function HomePage() {
       <section id="contact" className={styles.contact} aria-labelledby="contact-title">
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
-          <p>Questions? Reach us at <a className={styles.focusable} href="mailto:hello@plan4host.com">hello@plan4host.com</a>.</p>
+          <p>We’re just an email away: <a className={styles.focusable} href="mailto:office@plan4host.com">office@plan4host.com</a>.</p>
         </div>
       </section>
 
@@ -221,7 +221,7 @@ export default function HomePage() {
               <li><Link className={styles.footerLink} href="/docs">Docs</Link></li>
               <li><Link className={styles.footerLink} href="/changelog">Changelog</Link></li>
               <li><Link className={styles.footerLink} href="/status">Status</Link></li>
-              <li><a className={styles.footerLink} href="mailto:hello@plan4host.com">Support</a></li>
+              <li><a className={styles.footerLink} href="mailto:office@plan4host.com">Support</a></li>
             </ul>
           </div>
 
