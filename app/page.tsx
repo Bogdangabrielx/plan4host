@@ -95,7 +95,7 @@ export default function HomePage() {
 
         <div className={styles.heroVisual} aria-label="Calendar preview">
           <Image
-            src="/screens/hero-calendar.png"
+            src="/hero_calendar.png"
             alt=""
             width={900}
             height={600}
