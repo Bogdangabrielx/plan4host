@@ -181,7 +181,7 @@ export default function HomePage() {
               <li>Unlimited properties and rooms listed</li>
               <li>Online check-in form</li>
               <li>Autosync every 10 minutes with iCal</li>
-              <li>Smart cleaning board (Advanced Next-Check-In Priority)</li>
+              <li>Smart cleaning board - Advanced Next-Check-In Priority</li>
               <li>Delegate tasks with your team members</li>
             </ul>
             <img className={styles.priceImg} src="/illustrations/rocket.svg" alt="" aria-hidden="true" />
