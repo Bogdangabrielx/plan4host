@@ -180,8 +180,7 @@ export default function HomePage() {
               <li>Custom calendar</li>
               <li>Unlimited properties and rooms listed</li>
               <li>Online check-in form</li>
-              <li>Autosync every 10 minutes with iCal<br>
-                  +Sync Now Button </br></li>
+              <li>Autosync every 10 minutes with iCal</li>
               <li>Smart cleaning board (Advanced Next-Check-In Priority)</li>
               <li>Delegate tasks with your team members</li>
             </ul>
