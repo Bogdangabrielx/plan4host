@@ -154,7 +154,7 @@
     var(--star) 40% 10%/9px 9px no-repeat,
     var(--star) 82% 70%/10px 10px no-repeat;
   filter:
-    drop-shadow(0 0 6px rgba(255,255,255,.7))
+    drop-shadow(0 0 6px rgba(25, 189, 99, 0.7))
     drop-shadow(0 0 18px color-mix(in oklab, var(--primary) 65%, transparent));
   z-index: 2;
 }
