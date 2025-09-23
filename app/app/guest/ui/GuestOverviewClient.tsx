@@ -369,7 +369,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'green' ? null : 'green'); }}
             style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', lineHeight: 0, fontSize: 10, cursor: 'pointer' }}
           >
-            ?
+            i
           </button>
           {legendInfo === 'green' && (
             <div data-legend="keep" style={{ position: 'absolute', top: '50%', left: 'calc(100% + 8px)', transform: 'translateY(-50%)', zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220, maxWidth: 'min(300px, calc(100vw - 32px))' }}>
@@ -389,7 +389,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'yellow' ? null : 'yellow'); }}
             style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', lineHeight: 0, fontSize: 10, cursor: 'pointer' }}
           >
-            ?
+            i
           </button>
           {legendInfo === 'yellow' && (
             <div data-legend="keep" style={{ position: 'absolute', top: '50%', left: 'calc(100% + 8px)', transform: 'translateY(-50%)', zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 260, maxWidth: 'min(320px, calc(100vw - 32px))' }}>
@@ -413,7 +413,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'red' ? null : 'red'); }}
             style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', lineHeight: 0, fontSize: 10, cursor: 'pointer' }}
           >
-            ?
+            i
           </button>
           {legendInfo === 'red' && (
             <div data-legend="keep" style={{ position: 'absolute', top: '50%', left: 'calc(100% + 8px)', transform: 'translateY(-50%)', zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220, maxWidth: 'min(300px, calc(100vw - 32px))' }}>
