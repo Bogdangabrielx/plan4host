@@ -32,10 +32,7 @@
 .skipLink:focus { top: 12px; }
 
 /* Focus util */
-.focusable:focus-visible {
-  outline: var(--focus-ring) solid var(--focus-color);
-  outline-offset: 3px; border-radius: 10px;
-}
+.focusable:focus-visible { outline: var(--focus-ring) solid var(--focus-color); outline-offset: 3px; border-radius: 10px; }
 
 /* Ambient glow background */
 .landing::before {
@@ -64,12 +61,12 @@
 .menuLink:hover { color: var(--text); }
 .actions { display: flex; gap: 10px; align-items: center; flex-wrap: nowrap; }
 
-/* Buttons */
+/* Buttons (base) */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
   padding: 14px 20px; border-radius: 999px; font-weight: 800; text-decoration: none;
   color: var(--text); border: 1px solid var(--border);
-  transition: transform .05s ease, box-shadow .15s ease;
+  transition: transform .05s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease, color .2s ease;
   line-height: 1.1; white-space: nowrap; min-width: max-content;
 }
 .btn:active { transform: scale(0.99); }
@@ -77,81 +74,107 @@
 .btnPrimary:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); }
 .btnGhost { background: transparent; color: var(--text); }
 
-.menuToggle { display: none; } /* shown only on mobile */
-
-/* Mobile menu panel */
-.mobileMenu {
-  display: none; padding: 10px 20px;
-  border-top: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 92%, transparent);
-}
-.mobileLink {
-  display: block; padding: 10px 6px; text-decoration: none; color: var(--text); font-weight: 700;
-  border-radius: 10px;
-}
+/* Mobile nav */
+.menuToggle { display: none; }
+.mobileMenu { display: none; padding: 10px 20px; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--bg) 92%, transparent); }
+.mobileLink { display: block; padding: 10px 6px; text-decoration: none; color: var(--text); font-weight: 700; border-radius: 10px; }
 .mobileLink:hover { background: color-mix(in srgb, var(--card) 85%, transparent); }
 
+@media (max-width: 900px) {
+  .menu { display: none; }
+  .menuToggle { display: inline-flex; }
+  .nav[data-open="true"] + .mobileMenu { display: block; }
+}
+
 /* ──────────────────────────────────────────────────────────
-   Sparkle CTA — diagonal sweep + concave diamond stars (green)
+   CTA sparkle like in the video:
+   - default: ghost button (white text + border)
+   - hover: green glow shadow + subtle morph
+   - clockwise light sweep on border
+   - 3 stars in top-left corner
+   You keep class .btnText on your CTA.
+   If combined with .btnPrimary, we override to ghost.
    ────────────────────────────────────────────────────────── */
-.btnText{
+
+/* Let conic-angle animate smoothly */
+@property --sweep-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+
+/* base ghost look */
+.btnText,
+.btnPrimary.btnText {
+  background: transparent;
+  color: #ffffff;
+  border-color: rgba(255,255,255,.9);
   position: relative;
-  background: var(--primary);
-  color: #0c111b;
-  border-color: color-mix(in oklab, var(--primary) 60%, var(--border));
-  box-shadow: 0 12px 28px color-mix(in oklab, var(--primary) 48%, transparent);
-  overflow: hidden; isolation: isolate; will-change: transform;
+  overflow: clip;
 }
 
-/* moving diagonal highlight */
+/* subtle morphable shape */
+.btnText { border-radius: 28px; }
+.btnText:hover,
+.btnText:focus-visible { border-radius: 22px; }
+
+/* shadow on hover */
+.btnText:hover,
+.btnText:focus-visible {
+  box-shadow:
+    0 8px 24px color-mix(in oklab, var(--primary) 35%, transparent),
+    0 0 0 1px color-mix(in oklab, #fff 22%, transparent);
+}
+
+/* rotating border highlight */
 .btnText::before{
-  content:""; position:absolute; inset:-2px; pointer-events:none; opacity:0;
-  background: linear-gradient(130deg, transparent 42%, rgba(255,255,255,.75) 50%, transparent 58%);
-  background-size: 220% 100%;
-  mix-blend-mode: screen;
-  animation: btn-sweep 1.8s ease-in-out infinite paused;
-  transition: opacity .25s ease;
+  content:"";
+  position:absolute; inset:0; border-radius: inherit; padding: 1.5px; /* thickness of “animated” border */
+  background:
+    conic-gradient(from var(--sweep-angle),
+      transparent 0deg,
+      transparent 300deg,
+      rgba(255,255,255,.95) 315deg,
+      rgba(255,255,255,.8) 330deg,
+      transparent 345deg
+    );
+  /* show only the border, not the fill */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0; transition: opacity .2s ease;
+  pointer-events: none; z-index: 1;
 }
 
-/* concave diamond stars along the path */
+/* 3 stars in colțul stânga-sus */
 .btnText::after{
-  content:""; position:absolute; inset:0; pointer-events:none; opacity:0;
-  /* inline SVG star (diamond with inward-curved sides) */
-  --star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='white' d='M50 0 Q 66 30 100 50 Q 70 66 50 100 Q 34 70 0 50 Q 30 34 50 0 Z'/%3E%3C/svg%3E");
-  background-image: var(--star), var(--star), var(--star), var(--star), var(--star);
-  background-repeat: no-repeat;
-  background-size: 12px 12px, 10px 10px, 12px 12px, 9px 9px, 11px 11px;
-  /* start slightly left so they travel across */
-  background-position: -10% 30%, -5% 70%, -20% 50%, -15% 20%, -25% 80%;
+  content:"";
+  position:absolute; top:8px; left:10px; width:44px; height:22px; pointer-events:none; opacity:0; transition: opacity .2s ease;
+  /* 3 inline-SVG “concave diamond” stars */
+  --star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='white' d='M50 0 Q 68 30 100 50 Q 70 68 50 100 Q 32 70 0 50 Q 30 32 50 0 Z'/%3E%3C/svg%3E");
+  background:
+    var(--star) 0% 50%/12px 12px no-repeat,
+    var(--star) 40% 10%/9px 9px no-repeat,
+    var(--star) 82% 70%/10px 10px no-repeat;
   filter:
-    drop-shadow(0 0 6px rgba(255,255,255,.5))
-    drop-shadow(0 0 18px color-mix(in oklab, var(--primary) 60%, transparent))
-    drop-shadow(0 0 30px color-mix(in oklab, var(--primary) 40%, transparent));
-  animation: stars-flow 1.8s linear infinite paused;
-  transition: opacity .25s ease;
+    drop-shadow(0 0 6px rgba(255,255,255,.7))
+    drop-shadow(0 0 18px color-mix(in oklab, var(--primary) 65%, transparent));
+  z-index: 2;
 }
 
-/* activate on hover/focus where hover exists */
-@media (hover:hover){
-  .btnText:hover::before,
-  .btnText:focus-visible::before{ opacity:1; animation-play-state: running; }
-  .btnText:hover::after,
-  .btnText:focus-visible::after{ opacity:1; animation-play-state: running; }
-}
+/* Play the effects */
+.btnText:hover::before,
+.btnText:focus-visible::before { opacity: 1; animation: sweep-rotate 1.8s linear infinite; }
+.btnText:hover::after,
+.btnText:focus-visible::after  { opacity: 1; animation: stars-twinkle 1.8s ease-in-out infinite; }
 
-/* turn heavy effects off on touch (prevents white tap circle on iOS) */
+/* No heavy effects on touch devices (fix iOS white tap circle) */
 @media (hover:none){
-  .btnText::before, .btnText::after{ display:none !important; }
+  .btnText::before, .btnText::after { display: none !important; }
   .landing :global(a), .landing :global(button){ -webkit-tap-highlight-color: transparent; }
 }
 
-@keyframes btn-sweep{
-  0%   { background-position: 220% 0; }
-  100% { background-position:   0% 0; }
-}
-@keyframes stars-flow{
-  0%   { background-position: -10% 30%, -5% 70%, -20% 50%, -15% 20%, -25% 80%; }
-  100% { background-position: 110% 10%, 105% 50%, 120% 40%, 115% 75%, 130% 25%; }
+@keyframes sweep-rotate { to { --sweep-angle: 360deg; } }
+@keyframes stars-twinkle {
+  0%,100% { filter: drop-shadow(0 0 6px rgba(255,255,255,.7)) drop-shadow(0 0 18px color-mix(in oklab, var(--primary) 65%, transparent)); transform: translateY(0) rotate(0deg); }
+  50%     { filter: drop-shadow(0 0 10px rgba(255,255,255,1)) drop-shadow(0 0 26px color-mix(in oklab, var(--primary) 75%, transparent)); transform: translateY(-1px) rotate(6deg); }
 }
 
 /* Hero */
@@ -162,7 +185,7 @@
 
 /* Gradient text pentru "Better" */
 .betterGrad {
-  color: var(--primary); /* fallback */
+  color: var(--primary);
   background: linear-gradient(90deg,
     color-mix(in oklab, var(--primary) 98%, white 72%),
     color-mix(in oklab, var(--primary) 80%, rgb(13, 80, 24) 30%)
@@ -206,7 +229,7 @@
 .featureCard:is(:hover, :focus-visible)::before { opacity: 1; animation-play-state: running; }
 @keyframes ring-spin { to { --ring-angle: 360deg; } }
 
-/* Fallback */
+/* Fallback pentru feature-card */
 @supports not (mask-composite: exclude) {
   .featureCard::before { inset: calc(-1 * var(--ring)); padding: 0; -webkit-mask: none; mask: none; z-index: 0; animation: ring-spin-fallback var(--ring-speed) linear infinite paused; }
   .featureCard:is(:hover, :focus-visible)::before { animation-play-state: running; }
@@ -231,10 +254,7 @@
 
 /* Footer (expanded) */
 .footer { max-width: 1100px; margin: 60px auto; padding: 0 20px 60px; color: var(--muted); }
-.footerGrid {
-  display: grid; grid-template-columns: 1.2fr repeat(4, minmax(0, 1fr));
-  gap: 20px; align-items: start; border-top: 1px solid var(--border); padding-top: 28px;
-}
+.footerGrid { display: grid; grid-template-columns: 1.2fr repeat(4, minmax(0, 1fr)); gap: 20px; align-items: start; border-top: 1px solid var(--border); padding-top: 28px; }
 .footerCol { display: grid; gap: 10px; }
 .footerBrand { display: inline-flex; align-items: center; gap: 10px; }
 .footerCopy { margin: 0; color: var(--muted); }
@@ -242,10 +262,7 @@
 .footerList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .footerLink { color: var(--muted); text-decoration: none; font-weight: 700; }
 .footerLink:hover { color: var(--text); }
-.legalBar {
-  border-top: 1px solid var(--border); margin-top: 28px; padding-top: 16px;
-  color: var(--muted); display: grid; gap: 6px;
-}
+.legalBar { border-top: 1px solid var(--border); margin-top: 28px; padding-top: 16px; color: var(--muted); display: grid; gap: 6px; }
 .legalMeta { font-size: 12px; opacity: .9; }
 
 /* About */
@@ -288,7 +305,7 @@
 /* 🔧 Mobile tweak: ascunde “Plan4host” + mărește puțin logo-ul */
 @media (max-width: 480px){
   .brand strong { display: none; }
-  .nav .brand img { height: 30px; } /* bigger logo on phones */
+  .nav .brand img { height: 30px; }
 }
 
 /* Responsive media: prevent lateral overflow (scoped) */
