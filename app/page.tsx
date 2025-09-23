@@ -1,152 +1,185 @@
-// /app/page.tsx — live landing homepage (static, safe)
-export const dynamic = "force-static";
-export const revalidate = 3600;
+"use client";
 
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import styles from "./home.module.css";
 
 export default function HomePage() {
+  const [navOpen, setNavOpen] = useState(false);
+
+  const year = new Date().getFullYear();
+
   return (
     <main className={styles.landing}>
-      {/* Removed theme-swap for logo; use a single dark logo as requested */}
+      {/* Accessible skip link */}
+      <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>Skip to content</a>
 
-      {/* Nav */}
-<header className={styles.nav}>
-  <a href="/" className={styles.brand} aria-label="Plan4Host">
-    <img src="/logo_fordark.png" alt="Plan4Host" width={72} height={72} />
-  </a>
+      {/* Top Nav */}
+      <nav
+        className={styles.nav}
+        data-open={navOpen ? "true" : "false"}
+        aria-label="Primary"
+      >
+        <Link href="/" className={`${styles.brand} ${styles.focusable}`}>
+          <img src="/logo-light.svg" alt="Plan4host" height={24} className={styles.logoLight} />
+          <img src="/logo-dark.svg" alt="Plan4host" height={24} className={styles.logoDark} />
+          <strong>Plan4host</strong>
+        </Link>
 
-  <nav className={styles.menu} aria-label="Primary">
-    <a className={styles.menuLink} href="#features">Features</a>
-    <a className={styles.menuLink} href="#pricing">Pricing</a>
-    <a className={styles.menuLink} href="#about">About</a>
-    <a className={styles.menuLink} href="#contact">Contact</a>
-  </nav>
+        {/* Desktop menu */}
+        <div className={styles.menu} id="nav-menu">
+          <a href="#features" className={`${styles.menuLink} ${styles.focusable}`}>Features</a>
+          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
+          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
+          <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
+        </div>
 
-  <div className={styles.actions}>
-    <a href="/auth/login" className={`${styles.btn} ${styles.btnGhost}`}>Sign in</a>
-    <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnText}`}>Get Free Trial</a>
-  </div>
-</header>
+        {/* Actions + Mobile toggle */}
+        <div className={styles.actions}>
+          <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Sign in</Link>
+          <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}>
+            Get started
+          </Link>
+
+          <button
+            type="button"
+            className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
+            aria-controls="mobile-menu"
+            aria-expanded={navOpen}
+            onClick={() => setNavOpen(v => !v)}
+          >
+            {navOpen ? "Close" : "Menu"}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile menu panel */}
+      <div
+        id="mobile-menu"
+        className={styles.mobileMenu}
+        hidden={!navOpen}
+      >
+        <a href="#features" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Features</a>
+        <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Pricing</a>
+        <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>About</a>
+        <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Contact</a>
+      </div>
 
       {/* Hero */}
-      <section className={styles.hero} id="hero">
+      <section id="content" className={styles.hero}>
         <div className={styles.heroText}>
           <h1>
-            Stay Smart,
-            <br />
-            Host <span className={styles.accent}>Better</span>
+            Booking calendar that <span className={styles.accent}>just works</span>.
           </h1>
           <p>
-            Simplify hosting. Empower your team. Delight your guests. With Plan4Host, experience a smarter,
-            more customizable way to manage every stay.
+            Plan4host helps small accommodations manage occupancy, avoid double bookings,
+            and sync calendars across channels with ease.
           </p>
+          <div className={styles.heroCta}>
+            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}>
+              Start free
+            </Link>
+            <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>See features</a>
+          </div>
         </div>
-        <div className={styles.heroVisual} aria-hidden="true">
-          {/* <img src="/hero.png" alt="" loading="lazy" decoding="async" /> */}
-        </div>
-        <div className={styles.heroCta}>
-          <a href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnText}`}>Get Free Trial</a>
-          <a href="#features" className={`${styles.btn} ${styles.btnGhost}`}>Learn more</a>
+
+        <div className={styles.heroVisual} aria-label="Calendar preview">
+          <Image
+            src="/screens/hero-calendar.png"
+            alt=""
+            width={900}
+            height={600}
+            priority
+            sizes="(max-width: 900px) 100vw, 50vw"
+            className={styles.focusable}
+          />
         </div>
       </section>
 
       {/* Features */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
-        <h2 id="features-title">Discover Your Next Tools</h2>
+        <h2 id="features-title">Features</h2>
         <div className={styles.featureGrid}>
-          <article className={styles.featureCard}>
+          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/dashboard_fordark.png" className={styles.featureIcon} alt="" aria-hidden="true" />
-              <h3>Easy-to-use Dashboard</h3>
+              <img src="/icons/sync.svg" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <h3>iCal Import / Export</h3>
             </div>
-            <p>Bring all your properties into one simple dashboard and shape it your way, with flexibility to customize every detail.</p>
+            <p>Sync reservations with Airbnb, Booking.com and more. Retry &amp; logging built-in.</p>
           </article>
 
-          <article className={styles.featureCard}>
+          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/ical_fordark.png" className={styles.featureIcon} alt="" aria-hidden="true" />
-              <h3>Property Setup</h3>
+              <img src="/icons/cleaning.svg" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <h3>Cleaning Board</h3>
             </div>
-            <p>Quickly configure each property to match your needs—add rooms, adjust details, and personalize settings for a smooth workflow.</p>
+            <p>Daily tasks with carry-over logic so your team never misses a turnover.</p>
           </article>
 
-          <article className={styles.featureCard}>
+          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/calendar_fordark.png" className={styles.featureIcon} alt="" aria-hidden="true" />
-              <h3>Adaptive Calendar</h3>
+              <img src="/icons/fields.svg" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <h3>Custom Fields</h3>
             </div>
-            <p>Your calendar, your way. Customize views, organize reservations, and keep everything visible at a glance.</p>
+            <p>Capture what matters: guest notes, access codes, add-ons — fully configurable.</p>
           </article>
 
-          <article className={styles.featureCard}>
+          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/ical_fordark.png" className={styles.featureIcon} alt="" aria-hidden="true" />
-              <h3>Automatic Sync</h3>
+              <img src="/icons/guard.svg" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <h3>Plan Guard</h3>
             </div>
-            <p>Enable automatic iCal synchronization according to your subscription plan—keeping calendars always up to date, effortlessly.</p>
+            <p>Feature gating with clear upgrade CTAs. No surprises, no hidden limits.</p>
           </article>
         </div>
       </section>
 
       {/* Pricing */}
       <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
-        <h2 id="pricing-title">Choose Your Plan</h2>
+        <h2 id="pricing-title">Pricing</h2>
         <div className={styles.pricingGrid}>
-          <PricingCard
-            img="/basic.png"
-            tier="BASIC"
-            items={[
-              "Custom Calendar",
-              "Property Setup",
-              "Up to 1 Property listed",
-              "Up to 3 Rooms/Property",
-              "iCal Automatic Sync ~1h",
-            ]}
-          />
-          <PricingCard
-            img="/standard.png"
-            tier="STANDARD"
-            items={[
-              "Custom Calendar",
-              "Property Setup",
-              "Up to 3 Properties listed",
-              "Up to 10 Rooms/Property",
-              "iCal Automatic Sync ~30 min",
-              "Access to Cleaning Board",
-              "with Custom Cleaning Tasks",
-              "Share Tasks with Your Team",
-            ]}
-          />
-          <PricingCard
-            img="/premium.png"
-            tier="PREMIUM"
-            items={[
-              "Custom Calendar",
-              "Property Setup",
-              "Unlimited Properties Listed",
-              "Unlimited Rooms/Property",
-              "iCal Automatic sync in 10 min",
-              "+ Instant with Sync Now button",
-              "Access to Cleaning Board",
-              "with Custom Cleaning Tasks",
-              "Smart Cleaning Prioritization by Next Check-in",
-              "Share Tasks with Your Team",
-            ]}
-          />
+          <div className={styles.priceCard}>
+            <div className={styles.priceTier}>Starter</div>
+            <ul className={styles.priceList}>
+              <li>1 property</li>
+              <li>iCal export</li>
+              <li>Email support</li>
+            </ul>
+            <img className={styles.priceImg} src="/illustrations/leaf.svg" alt="" aria-hidden="true" />
+            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Starter</Link>
+          </div>
+
+          <div className={styles.priceCard}>
+            <div className={styles.priceTier}>Standard</div>
+            <ul className={styles.priceList}>
+              <li>Up to 5 properties</li>
+              <li>iCal import &amp; export</li>
+              <li>Cleaning board</li>
+            </ul>
+            <img className={styles.priceImg} src="/illustrations/planet.svg" alt="" aria-hidden="true" />
+            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Standard</Link>
+          </div>
+
+          <div className={styles.priceCard}>
+            <div className={styles.priceTier}>Premium</div>
+            <ul className={styles.priceList}>
+              <li>Unlimited properties</li>
+              <li>Autosync + logs</li>
+              <li>Priority support</li>
+            </ul>
+            <img className={styles.priceImg} src="/illustrations/rocket.svg" alt="" aria-hidden="true" />
+            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Premium</Link>
+          </div>
         </div>
       </section>
 
       {/* About */}
       <section id="about" className={styles.about} aria-labelledby="about-title">
-        <h2 id="about-title">About Plan4Host</h2>
+        <h2 id="about-title">About</h2>
         <p>
-          Plan4Host helps small hotels and property managers run smoother operations with an
-          adaptive calendar, simple property setup, and powerful team workflows. Our goal is to
-          keep things fast, reliable, and easy to use.
-        </p>
-        <p>
-          Built with care for clarity and performance, Plan4Host focuses on the tools you actually
-          use every day: calendars, cleaning, and iCal synchronization that just works.
+          We build hospitality tools that are simple, fast, and fair. No dark patterns, no lock-in.
+          Your data stays yours.
         </p>
       </section>
 
@@ -154,40 +187,78 @@ export default function HomePage() {
       <section id="contact" className={styles.contact} aria-labelledby="contact-title">
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
-          <p style={{ margin: 0, color: "var(--muted)" }}>
-            We’re just an email away:{" "}
-            <a href="mailto:office@plan4host.com" style={{ color: "var(--text)", fontWeight: 800 }}>
-              office@plan4host.com
-            </a>
-            .
-          </p>
+          <p>Questions? Reach us at <a className={styles.focusable} href="mailto:hello@plan4host.com">hello@plan4host.com</a>.</p>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer id="footer" className={styles.footer}>
-        <p>
-          © <span suppressHydrationWarning>{new Date().getFullYear()}</span> Plan4Host
-        </p>
+      {/* Footer (expanded, SaaS-style) */}
+      <footer className={styles.footer} aria-labelledby="footer-title">
+        <h2 id="footer-title" className="sr-only">Footer</h2>
+
+        <div className={styles.footerGrid}>
+          <div className={styles.footerCol}>
+            <div className={styles.footerBrand}>
+              <img src="/logo-light.svg" alt="" aria-hidden="true" height={22} className={styles.logoLight} />
+              <img src="/logo-dark.svg" alt="" aria-hidden="true" height={22} className={styles.logoDark} />
+              <strong>Plan4host</strong>
+            </div>
+            <p className={styles.footerCopy}>
+              Lightweight booking calendar &amp; channel sync for small accommodations.
+            </p>
+          </div>
+
+          <div className={styles.footerCol}>
+            <div className={styles.footerTitle}>Product</div>
+            <ul className={styles.footerList}>
+              <li><a className={styles.footerLink} href="#features">Features</a></li>
+              <li><a className={styles.footerLink} href="#pricing">Pricing</a></li>
+              <li><Link className={styles.footerLink} href="/auth/signup">Start free</Link></li>
+              <li><Link className={styles.footerLink} href="/auth/login">Sign in</Link></li>
+            </ul>
+          </div>
+
+          <div className={styles.footerCol}>
+            <div className={styles.footerTitle}>Resources</div>
+            <ul className={styles.footerList}>
+              <li><Link className={styles.footerLink} href="/docs">Docs</Link></li>
+              <li><Link className={styles.footerLink} href="/changelog">Changelog</Link></li>
+              <li><Link className={styles.footerLink} href="/status">Status</Link></li>
+              <li><a className={styles.footerLink} href="mailto:hello@plan4host.com">Support</a></li>
+            </ul>
+          </div>
+
+          <div className={styles.footerCol}>
+            <div className={styles.footerTitle}>Company</div>
+            <ul className={styles.footerList}>
+              <li><Link className={styles.footerLink} href="/about">About us</Link></li>
+              <li><Link className={styles.footerLink} href="/contact">Contact</Link></li>
+              <li><Link className={styles.footerLink} href="/careers">Careers</Link></li>
+              <li><Link className={styles.footerLink} href="/partners">Partners</Link></li>
+            </ul>
+          </div>
+
+          <div className={styles.footerCol}>
+            <div className={styles.footerTitle}>Legal</div>
+            <ul className={styles.footerList}>
+              <li><Link className={styles.footerLink} href="/legal/terms">Terms &amp; Conditions</Link></li>
+              <li><Link className={styles.footerLink} href="/legal/privacy">Privacy Policy</Link></li>
+              <li><Link className={styles.footerLink} href="/legal/dpa">Data Processing Addendum</Link></li>
+              <li><Link className={styles.footerLink} href="/legal/cookies">Cookie Policy</Link></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className={styles.legalBar}>
+          <p>
+            © {year} Plan4host. All rights reserved. By using Plan4host you agree to our{" "}
+            <Link className={styles.footerLink} href="/legal/terms">Terms &amp; Conditions</Link> and{" "}
+            <Link className={styles.footerLink} href="/legal/privacy">Privacy Policy</Link>.
+          </p>
+          <p className={styles.legalMeta}>
+            Plan4host is not affiliated with Airbnb or Booking.com. Trademarks belong to their respective owners.
+          </p>
+        </div>
       </footer>
     </main>
-  );
-}
-
-function PricingCard({
-  img,
-  tier,
-  items,
-}: { img: string; tier: string; items: string[] }) {
-  return (
-    <article className={styles.priceCard} aria-labelledby={`tier-${tier}`}>
-      <h3 id={`tier-${tier}`} className="sr-only">{tier}</h3>
-      <ul className={styles.priceList}>
-        {items.map((t, i) => (
-          <li key={`${tier}-${i}`}>{t}</li>
-        ))}
-      </ul>
-      <img src={img} alt="" className={styles.priceImg} loading="lazy" decoding="async" />
-    </article>
   );
 }
