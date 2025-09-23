@@ -38,7 +38,11 @@ export default function HomePage() {
         {/* Actions + Mobile toggle */}
         <div className={styles.actions}>
           <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Sign in</Link>
-          <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}>
+          {/* Get started -> login in signup mode */}
+          <Link
+            href="/auth/login?mode=signup"
+            className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
+          >
             Get started
           </Link>
 
@@ -69,13 +73,20 @@ export default function HomePage() {
       {/* Hero */}
       <section id="content" className={styles.hero}>
         <div className={styles.heroText}>
-          <h1>Stay Smart, Host Better</h1>
+          <h1>
+            Stay Smart, Host{" "}
+            <span className={styles.betterGrad}>Better</span>
+          </h1>
           <p>
             Plan4host helps small accommodations manage occupancy, avoid double bookings,
             and sync calendars across channels with ease.
           </p>
           <div className={styles.heroCta}>
-            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}>
+            {/* Start free -> login in signup mode */}
+            <Link
+              href="/auth/login?mode=signup"
+              className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
+            >
               Start free
             </Link>
             <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>See features</a>
@@ -210,7 +221,8 @@ export default function HomePage() {
             <ul className={styles.footerList}>
               <li><a className={styles.footerLink} href="#features">Features</a></li>
               <li><a className={styles.footerLink} href="#pricing">Pricing</a></li>
-              <li><Link className={styles.footerLink} href="/auth/signup">Start free</Link></li>
+              {/* Start free -> login in signup mode */}
+              <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Start free</Link></li>
               <li><Link className={styles.footerLink} href="/auth/login">Sign in</Link></li>
             </ul>
           </div>

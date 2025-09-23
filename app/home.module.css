@@ -137,6 +137,18 @@
 .heroText h1 { font-size: clamp(36px, 6vw, 64px); line-height: 1.05; margin: 0 0 12px; }
 .heroText p { color: var(--muted); margin: 0 0 20px; max-width: 58ch; }
 .accent { color: var(--primary); }
+/* Gradient text pentru "Better" (cu fallback) */
+.betterGrad {
+  color: var(--primary); /* fallback dacă background-clip nu e suportat */
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--primary) 95%, white 5%),
+    color-mix(in oklab, var(--primary) 70%, #22d3ee 30%)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 .heroCta { display: flex; gap: 12px; }
 .heroVisual { background: linear-gradient(180deg, rgba(255,255,255,.04), transparent); border: 1px solid var(--border); border-radius: 18px; padding: 16px; min-height: 320px; display: grid; place-items: center; overflow: hidden; }
 .heroVisual img { width: 100%; height: auto; object-fit: contain; }
