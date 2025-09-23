@@ -21,9 +21,9 @@ export default function HomePage() {
         aria-label="Primary"
       >
         <Link href="/" className={`${styles.brand} ${styles.focusable}`}>
-          {/* folosim același logo pentru ambele moduri, după cum ai cerut */}
-          <img src="/logo_fordark.png" alt="Plan4host" height={24} className={styles.logoLight} />
-          <img src="/logo_fordark.png" alt="Plan4host" height={24} className={styles.logoDark} />
+          {/* logo corect și DIMENSIONAT */}
+          <img src="/logo_fordark.png" alt="Plan4host" className={styles.logoLight} />
+          <img src="/logo_fordark.png" alt="Plan4host" className={styles.logoDark} />
           <strong>Plan4host</strong>
         </Link>
 
@@ -95,40 +95,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features — revenite pe varianta ta + PNG icons */}
+      {/* Features — după textul tău + PNG-uri */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title">Features</h2>
         <div className={styles.featureGrid}>
           <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
+              <img src="/icons/dashboard.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <h3>Easy-to-use Dashboard</h3>
+            </div>
+            <p>Bring all your properties into one simple dashboard and shape it your way, with flexibility to customize every detail.</p>
+          </article>
+
+          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+            <div className={styles.featureHead}>
+              <img src="/icons/property-setup.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <h3>Property Setup</h3>
+            </div>
+            <p>Quickly configure each property to match your needs—add rooms, adjust details, and personalize settings for a smooth workflow.</p>
+          </article>
+
+          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+            <div className={styles.featureHead}>
+              <img src="/icons/calendar.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <h3>Adaptive Calendar</h3>
+            </div>
+            <p>Your calendar, your way. Customize views, organize reservations, and keep everything visible at a glance.</p>
+          </article>
+
+          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+            <div className={styles.featureHead}>
               <img src="/icons/sync.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-              <h3>iCal Import / Export</h3>
+              <h3>Automatic Sync</h3>
             </div>
-            <p>Sync reservations with Airbnb, Booking.com and more. Retry &amp; logging built-in.</p>
-          </article>
-
-          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-            <div className={styles.featureHead}>
-              <img src="/icons/cleaning.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-              <h3>Cleaning Board</h3>
-            </div>
-            <p>Daily tasks with carry-over logic so your team never misses a turnover.</p>
-          </article>
-
-          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-            <div className={styles.featureHead}>
-              <img src="/icons/fields.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-              <h3>Custom Fields</h3>
-            </div>
-            <p>Capture what matters: guest notes, access codes, add-ons — fully configurable.</p>
-          </article>
-
-          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-            <div className={styles.featureHead}>
-              <img src="/icons/guard.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-              <h3>Plan Guard</h3>
-            </div>
-            <p>Feature gating with clear upgrade CTAs. No surprises, no hidden limits.</p>
+            <p>Sync reservations with Airbnb, Booking.com and more; according to your subscription plan—keeping calendars always up to date, effortlessly.</p>
           </article>
         </div>
       </section>
@@ -189,15 +189,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer (expanded, SaaS-style) */}
+      {/* Footer (expanded) */}
       <footer className={styles.footer} aria-labelledby="footer-title">
-        <h2 id="footer-title" className="sr-only">Footer</h2>
+        <h2 id="footer-title" className={styles.srOnly}>Footer</h2>
 
         <div className={styles.footerGrid}>
           <div className={styles.footerCol}>
             <div className={styles.footerBrand}>
-              <img src="/logo_fordark.png" alt="" aria-hidden="true" height={22} className={styles.logoLight} />
-              <img src="/logo_fordark.png" alt="" aria-hidden="true" height={22} className={styles.logoDark} />
+              <img src="/logo_fordark.png" alt="" aria-hidden="true" className={styles.logoLight} />
+              <img src="/logo_fordark.png" alt="" aria-hidden="true" className={styles.logoDark} />
               <strong>Plan4host</strong>
             </div>
             <p className={styles.footerCopy}>
