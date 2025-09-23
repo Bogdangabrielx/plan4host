@@ -22,7 +22,6 @@ export default function HomePage() {
       >
         <Link href="/" className={`${styles.brand} ${styles.focusable}`}>
           {/* logo corect și DIMENSIONAT */}
-          <img src="/logo_fordark.png" alt="Plan4host" className={styles.logoLight} />
           <img src="/logo_fordark.png" alt="Plan4host" className={styles.logoDark} />
           <strong>Plan4host</strong>
         </Link>
