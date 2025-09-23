@@ -143,7 +143,7 @@
   color: var(--primary); /* fallback */
   background: linear-gradient(90deg,
     color-mix(in oklab, var(--primary) 98%, white 54%),
-    color-mix(in oklab, var(--primary) 80%, rgb(18, 137, 48) 40%)
+    color-mix(in oklab, var(--primary) 80%, rgb(22, 83, 37) 40%)
   );
   -webkit-background-clip: text;
   background-clip: text;
