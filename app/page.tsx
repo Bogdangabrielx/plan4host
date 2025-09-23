@@ -113,7 +113,7 @@ export default function HomePage() {
         <div className={styles.featureGrid}>
           <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/icons/dashboard.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <img src="/dashboard_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
               <h3>Easy-to-use Dashboard</h3>
             </div>
             <p>Bring all your properties into one simple dashboard and shape it your way, with flexibility to customize every detail.</p>
@@ -121,7 +121,7 @@ export default function HomePage() {
 
           <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/icons/property-setup.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <img src="/configurator_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
               <h3>Property Setup</h3>
             </div>
             <p>Quickly configure each property to match your needs—add rooms, adjust details, and personalize settings for a smooth workflow.</p>
@@ -129,7 +129,7 @@ export default function HomePage() {
 
           <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/icons/calendar.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <img src="/calendar_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
               <h3>Adaptive Calendar</h3>
             </div>
             <p>Your calendar, your way. Customize views, organize reservations, and keep everything visible at a glance.</p>
@@ -137,7 +137,7 @@ export default function HomePage() {
 
           <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
             <div className={styles.featureHead}>
-              <img src="/icons/sync.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <img src="/ical_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
               <h3>Automatic Sync</h3>
             </div>
             <p>Sync reservations with Airbnb, Booking.com and more; according to your subscription plan—keeping calendars always up to date, effortlessly.</p>
@@ -152,9 +152,10 @@ export default function HomePage() {
           <div className={styles.priceCard}>
             <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
-              <li>1 property</li>
-              <li>iCal export</li>
-              <li>Email support</li>
+              <li>Custom calendar</li>
+              <li>Unlimited properties and rooms listed</li>
+              <li>Online check-in form</li>
+              <li>Autosync every 60 minutes with iCal</li>
             </ul>
             <img className={styles.priceImg} src="/illustrations/leaf.svg" alt="" aria-hidden="true" />
             <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Basic</Link>
@@ -163,9 +164,11 @@ export default function HomePage() {
           <div className={styles.priceCard}>
             <div className={styles.priceTier}>STANDARD</div>
             <ul className={styles.priceList}>
-              <li>Up to 5 properties</li>
-              <li>iCal import &amp; export</li>
-              <li>Cleaning board</li>
+              <li>Custom calendar</li>
+              <li>Unlimited properties and rooms listed</li>
+              <li>Online check-in form</li>
+              <li>Autosync every 30 minutes with iCal</li>
+              <li>Smart cleaning board (Advanced Next-Check-In Priority)</li>
             </ul>
             <img className={styles.priceImg} src="/illustrations/planet.svg" alt="" aria-hidden="true" />
             <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Standard</Link>
@@ -174,9 +177,13 @@ export default function HomePage() {
           <div className={styles.priceCard}>
             <div className={styles.priceTier}>PREMIUM</div>
             <ul className={styles.priceList}>
-              <li>Unlimited properties</li>
-              <li>Autosync + logs</li>
-              <li>Priority support</li>
+              <li>Custom calendar</li>
+              <li>Unlimited properties and rooms listed</li>
+              <li>Online check-in form</li>
+              <li>Autosync every 10 minutes with iCal<br>
+                  +Sync Now Button </br></li>
+              <li>Smart cleaning board (Advanced Next-Check-In Priority)</li>
+              <li>Delegate tasks with your team members</li>
             </ul>
             <img className={styles.priceImg} src="/illustrations/rocket.svg" alt="" aria-hidden="true" />
             <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Premium</Link>
@@ -201,7 +208,7 @@ export default function HomePage() {
       <section id="contact" className={styles.contact} aria-labelledby="contact-title">
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
-          <p>We’re just an email away: office@plan4host.com.</p>
+          <p>We’re just an email away: <a className={styles.focusable} href="mailto:office@plan4host.com">office@plan4host.com</a>.</p>
         </div>
       </section>
 
