@@ -181,8 +181,8 @@
 .betterGrad {
   color: var(--primary); /* fallback */
   background: linear-gradient(90deg,
-    color-mix(in oklab, var(--primary) 92%, white 8%),
-    color-mix(in oklab, var(--primary) 80%, black 20%)
+    color-mix(in oklab, var(--primary) 98%, white 72%),
+    color-mix(in oklab, var(--primary) 80%, rgb(13, 80, 24) 30%)
   );
   -webkit-background-clip: text;
   background-clip: text;
