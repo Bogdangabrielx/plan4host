@@ -1,9 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import styles from "./home.module.css";
+
+/** CTA Link that triggers the sparkle animation on touch devices before navigating */
+function CtaLink({
+  href,
+  className,
+  children,
+  onNavigate,
+}: {
+  href: string;
+  className?: string;
+  children: React.ReactNode;
+  onNavigate?: () => void;
+}) {
+  const router = useRouter();
+  const ref = useRef<HTMLAnchorElement>(null);
+
+  const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
+    // Allow new tab / middle click / modified clicks to behave normally
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
+    const isTouch =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(hover: none)").matches;
+
+    if (isTouch) {
+      e.preventDefault();
+      const el = ref.current;
+      // Start animation
+      el?.setAttribute("data-animate", "true");
+      // Let the animation play a bit, then navigate
+      window.setTimeout(() => {
+        el?.removeAttribute("data-animate");
+        router.push(href);
+        onNavigate?.();
+      }, 280);
+    }
+    // On non-touch devices we let normal navigation happen (hover already animates)
+  };
+
+  return (
+    <Link href={href} ref={ref} className={className} onClick={handleClick}>
+      {children}
+    </Link>
+  );
+}
 
 export default function HomePage() {
   const [navOpen, setNavOpen] = useState(false);
@@ -12,7 +59,9 @@ export default function HomePage() {
   return (
     <main className={styles.landing}>
       {/* Accessible skip link */}
-      <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>Skip to content</a>
+      <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>
+        Skip to content
+      </a>
 
       {/* Top Nav */}
       <nav
@@ -21,7 +70,6 @@ export default function HomePage() {
         aria-label="Primary"
       >
         <Link href="/" className={`${styles.brand} ${styles.focusable}`}>
-          {/* logo corect și DIMENSIONAT */}
           <img src="/logo_fordark.png" alt="Plan4host" className={styles.logoDark} />
           <strong>Plan4host</strong>
         </Link>
@@ -36,21 +84,24 @@ export default function HomePage() {
 
         {/* Actions + Mobile toggle */}
         <div className={styles.actions}>
-          <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Sign in</Link>
-          {/* Get started -> login in signup mode */}
-          <Link
+          <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
+            Sign in
+          </Link>
+
+          {/* Get started -> login in signup mode (animated) */}
+          <CtaLink
             href="/auth/login?mode=signup"
             className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
           >
             Get started
-          </Link>
+          </CtaLink>
 
           <button
             type="button"
             className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
             aria-controls="mobile-menu"
             aria-expanded={navOpen}
-            onClick={() => setNavOpen(v => !v)}
+            onClick={() => setNavOpen((v) => !v)}
           >
             {navOpen ? "Close" : "Menu"}
           </button>
@@ -58,38 +109,58 @@ export default function HomePage() {
       </nav>
 
       {/* Mobile menu panel */}
-      <div
-        id="mobile-menu"
-        className={styles.mobileMenu}
-        hidden={!navOpen}
-      >
-        <a href="#features" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Features</a>
-        <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Pricing</a>
-        <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>About</a>
-        <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Contact</a>
+      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
+        <a
+          href="#features"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={() => setNavOpen(false)}
+        >
+          Features
+        </a>
+        <a
+          href="#pricing"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={() => setNavOpen(false)}
+        >
+          Pricing
+        </a>
+        <a
+          href="#about"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={() => setNavOpen(false)}
+        >
+          About
+        </a>
+        <a
+          href="#contact"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={() => setNavOpen(false)}
+        >
+          Contact
+        </a>
       </div>
 
       {/* Hero */}
       <section id="content" className={styles.hero}>
         <div className={styles.heroText}>
           <h1>
-            Stay Smart, <br>
-            </br>Host{" "}
-            <span className={styles.betterGrad}>Better</span>
+            Stay Smart, <br />Host <span className={styles.betterGrad}>Better</span>
           </h1>
           <p>
             Plan4host helps small accommodations manage occupancy, avoid double bookings,
             and sync calendars across channels with ease.
           </p>
           <div className={styles.heroCta}>
-            {/* Start free -> login in signup mode */}
-            <Link
+            {/* Start free -> login in signup mode (animated) */}
+            <CtaLink
               href="/auth/login?mode=signup"
               className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
             >
               Start free
-            </Link>
-            <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>See features</a>
+            </CtaLink>
+            <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
+              See features
+            </a>
           </div>
         </div>
 
@@ -106,7 +177,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features — după textul tău + PNG-uri */}
+      {/* Features */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title">Features</h2>
         <div className={styles.featureGrid}>
@@ -144,7 +215,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing — BASIC / STANDARD / PREMIUM */}
+      {/* Pricing */}
       <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
         <h2 id="pricing-title">Pricing</h2>
         <div className={styles.pricingGrid}>
@@ -157,7 +228,9 @@ export default function HomePage() {
               <li>Autosync every 60 minutes with iCal</li>
             </ul>
             <img className={styles.priceImg} src="/basic.png" alt="" aria-hidden="true" />
-            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Basic</Link>
+            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>
+              Choose Basic
+            </Link>
           </div>
 
           <div className={styles.priceCard}>
@@ -170,7 +243,9 @@ export default function HomePage() {
               <li>Smart cleaning board (Advanced Next-Check-In Priority)</li>
             </ul>
             <img className={styles.priceImg} src="/standard.png" alt="" aria-hidden="true" />
-            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Standard</Link>
+            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>
+              Choose Standard
+            </Link>
           </div>
 
           <div className={styles.priceCard}>
@@ -184,7 +259,9 @@ export default function HomePage() {
               <li>Delegate tasks with your team members</li>
             </ul>
             <img className={styles.priceImg} src="/premium.png" alt="" aria-hidden="true" />
-            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Premium</Link>
+            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>
+              Choose Premium
+            </Link>
           </div>
         </div>
       </section>
@@ -193,12 +270,17 @@ export default function HomePage() {
       <section id="about" className={styles.about} aria-labelledby="about-title">
         <h2 id="about-title">About</h2>
         <p>
-         Plan4Host helps small hotels and property managers run smoother operations<br>
-        </br>with an adaptive calendar,simple property setup, and powerful team workflows. <br>
-        </br>Our goal is to keep things fast, reliable, and easy to use. <br>
-        </br>Built with care for clarity and performance,<br>
-        </br>Plan4Host focuses on the tools you actually use every day:<br>
-        </br>calendars, cleaning, guest overview and iCal synchronization that just works.
+          Plan4Host helps small hotels and property managers run smoother operations
+          <br />
+          with an adaptive calendar, simple property setup, and powerful team workflows.
+          <br />
+          Our goal is to keep things fast, reliable, and easy to use.
+          <br />
+          Built with care for clarity and performance,
+          <br />
+          Plan4Host focuses on the tools you actually use every day:
+          <br />
+          calendars, cleaning, guest overview and iCal synchronization that just works.
         </p>
       </section>
 
@@ -206,13 +288,20 @@ export default function HomePage() {
       <section id="contact" className={styles.contact} aria-labelledby="contact-title">
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
-          <p>We’re just an email away: <a className={styles.focusable} href="mailto:office@plan4host.com">office@plan4host.com</a>.</p>
+          <p>
+            We’re just an email away:{" "}
+            <a className={styles.focusable} href="mailto:office@plan4host.com">
+              office@plan4host.com
+            </a>.
+          </p>
         </div>
       </section>
 
       {/* Footer (expanded) */}
       <footer className={styles.footer} aria-labelledby="footer-title">
-        <h2 id="footer-title" className={styles.srOnly}>Footer</h2>
+        <h2 id="footer-title" className={styles.srOnly}>
+          Footer
+        </h2>
 
         <div className={styles.footerGrid}>
           <div className={styles.footerCol}>
@@ -230,7 +319,6 @@ export default function HomePage() {
             <ul className={styles.footerList}>
               <li><a className={styles.footerLink} href="#features">Features</a></li>
               <li><a className={styles.footerLink} href="#pricing">Pricing</a></li>
-              {/* Start free -> login in signup mode */}
               <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Start free</Link></li>
               <li><Link className={styles.footerLink} href="/auth/login">Sign in</Link></li>
             </ul>
