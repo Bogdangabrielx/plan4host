@@ -74,7 +74,8 @@ export default function HomePage() {
       <section id="content" className={styles.hero}>
         <div className={styles.heroText}>
           <h1>
-            Stay Smart, Host{" "}
+            Stay Smart, <br>
+            </br>Host{" "}
             <span className={styles.betterGrad}>Better</span>
           </h1>
           <p>
@@ -187,8 +188,9 @@ export default function HomePage() {
       <section id="about" className={styles.about} aria-labelledby="about-title">
         <h2 id="about-title">About</h2>
         <p>
-          We build hospitality tools that are simple, fast, and fair. No dark patterns, no lock-in.
-          Your data stays yours.
+         Plan4Host helps small hotels and property managers run smoother operations with an adaptive calendar, simple property setup, and powerful team workflows. <b>
+          </b>Our goal is to keep things fast, reliable, and easy to use. <b>
+          </b>Built with care for clarity and performance, Plan4Host focuses on the tools you actually use every day: calendars, cleaning, guest overview and iCal synchronization that just works.
         </p>
       </section>
 
