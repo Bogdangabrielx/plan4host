@@ -74,6 +74,7 @@
 .menuLink { color: var(--muted); text-decoration: none; font-weight: 700; }
 .menuLink:hover { color: var(--text); }
 .actions { display: flex; gap: 10px; }
+
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
   padding: 14px 20px; border-radius: 999px; font-weight: 800; text-decoration: none;
@@ -105,32 +106,70 @@
   .nav[data-open="true"] + .mobileMenu { display: block; }
 }
 
-/* Sparkle CTA */
-.btnText { position: relative; background: var(--primary); color: #0c111b; border-color: color-mix(in oklab, var(--primary) 60%, var(--border)); box-shadow: 0 12px 28px color-mix(in oklab, var(--primary) 48%, transparent); overflow: hidden; isolation: isolate; }
+/* Sparkle CTA — updated */
+.btnText{
+  position: relative;
+  background: var(--primary);
+  color: #0c111b;
+  border-color: color-mix(in oklab, var(--primary) 60%, var(--border));
+  box-shadow: 0 12px 28px color-mix(in oklab, var(--primary) 48%, transparent);
+  overflow: hidden;
+  isolation: isolate;
+  will-change: transform;
+}
 .btnText::before,
-.btnText::after { content: ""; position: absolute; inset: -2px; pointer-events: none; opacity: 0; transition: opacity .25s ease; }
-.btnText::before {
+.btnText::after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .25s ease;
+}
+/* star sparkles (4 points, layered cross-lines) */
+.btnText::before{
   background:
+    /* star 1 */
     linear-gradient(transparent calc(50% - 1px), rgba(255,255,255,.95) calc(50% - 1px), rgba(255,255,255,.95) calc(50% + 1px), transparent calc(50% + 1px)) 12% 28%/10px 10px no-repeat,
     linear-gradient(90deg, transparent calc(50% - 1px), rgba(255,255,255,.95) calc(50% - 1px), rgba(255,255,255,.95) calc(50% + 1px), transparent calc(50% + 1px)) 12% 28%/10px 10px no-repeat,
+    /* star 2 */
     linear-gradient(transparent calc(50% - 1px), rgba(255,255,255,.9) calc(50% - 1px), rgba(255,255,255,.9) calc(50% + 1px), transparent calc(50% + 1px)) 78% 22%/8px 8px no-repeat,
     linear-gradient(90deg, transparent calc(50% - 1px), rgba(255,255,255,.9) calc(50% - 1px), rgba(255,255,255,.9) calc(50% + 1px), transparent calc(50% + 1px)) 78% 22%/8px 8px no-repeat,
+    /* star 3 */
     linear-gradient(transparent calc(50% - 1px), rgba(255,255,255,.95) calc(50% - 1px), rgba(255,255,255,.95) calc(50% + 1px), transparent calc(50% + 1px)) 62% 78%/9px 9px no-repeat,
     linear-gradient(90deg, transparent calc(50% - 1px), rgba(255,255,255,.95) calc(50% - 1px), rgba(255,255,255,.95) calc(50% + 1px), transparent calc(50% + 1px)) 62% 78%/9px 9px no-repeat,
+    /* star 4 */
     linear-gradient(transparent calc(50% - 1px), rgba(255,255,255,.88) calc(50% - 1px), rgba(255,255,255,.88) calc(50% + 1px), transparent calc(50% + 1px)) 32% 62%/7px 7px no-repeat,
     linear-gradient(90deg, transparent calc(50% - 1px), rgba(255,255,255,.88) calc(50% - 1px), rgba(255,255,255,.88) calc(50% + 1px), transparent calc(50% + 1px)) 32% 62%/7px 7px no-repeat;
   animation: p4h-sparkle-move 1.8s linear infinite paused;
 }
-.btnText::after {
-  background: radial-gradient(40% 120% at 0% 0%, color-mix(in oklab, var(--accent1) 30%, transparent), transparent),
-              radial-gradient(60% 160% at 100% 100%, color-mix(in oklab, var(--accent2) 30%, transparent), transparent);
+/* sheen */
+.btnText::after{
+  background:
+    radial-gradient(40% 120% at 0% 0%, color-mix(in oklab, var(--accent1) 30%, transparent), transparent),
+    radial-gradient(60% 160% at 100% 100%, color-mix(in oklab, var(--accent2) 30%, transparent), transparent);
   mix-blend-mode: screen;
 }
-.btnText:hover::before, .btnText:hover::after { opacity: 1; }
-@keyframes p4h-sparkle-move {
-  0%   { background-position: 12% 28%, 12% 28%, 78% 22%, 78% 22%, 62% 78%, 62% 78%, 32% 62%, 32% 62%; }
-  50%  { background-position: 18% 24%, 18% 24%, 74% 28%, 74% 28%, 64% 72%, 64% 72%, 28% 56%, 28% 56%; }
-  100% { background-position: 12% 28%, 12% 28%, 78% 22%, 78% 22%, 62% 78%, 62% 78%, 32% 62%, 32% 62%; }
+/* start on hover / keyboard focus */
+@media (hover:hover){
+  .btnText:hover::before,
+  .btnText:hover::after,
+  .btnText:focus-visible::before,
+  .btnText:focus-visible::after{ opacity:1; }
+  .btnText:hover::before,
+  .btnText:focus-visible::before{ animation-play-state: running; }
+}
+/* avoid “white circle” on touch devices */
+@media (hover:none){
+  .btnText::before,
+  .btnText::after{ display:none !important; }
+  .landing :global(a),
+  .landing :global(button){ -webkit-tap-highlight-color: transparent; }
+}
+@keyframes p4h-sparkle-move{
+  0%   { background-position: 12% 28%,12% 28%,78% 22%,78% 22%,62% 78%,62% 78%,32% 62%,32% 62%; }
+  50%  { background-position: 18% 24%,18% 24%,74% 28%,74% 28%,64% 72%,64% 72%,28% 56%,28% 56%; }
+  100% { background-position: 12% 28%,12% 28%,78% 22%,78% 22%,62% 78%,62% 78%,32% 62%,32% 62%; }
 }
 
 /* Hero */
@@ -142,8 +181,8 @@
 .betterGrad {
   color: var(--primary); /* fallback */
   background: linear-gradient(90deg,
-    color-mix(in oklab, var(--primary) 98%, white 54%),
-    color-mix(in oklab, var(--primary) 80%, rgb(22, 83, 37) 40%)
+    color-mix(in oklab, var(--primary) 92%, white 8%),
+    color-mix(in oklab, var(--primary) 80%, black 20%)
   );
   -webkit-background-clip: text;
   background-clip: text;
@@ -202,6 +241,7 @@
   animation-play-state: running;
 }
 @keyframes ring-spin { to { --ring-angle: 360deg; } }
+
 /* Fallback */
 @supports not (mask-composite: exclude) {
   .featureCard::before { inset: calc(-1 * var(--ring)); padding: 0; -webkit-mask: none; mask: none; z-index: 0; animation: ring-spin-fallback var(--ring-speed) linear infinite paused; }
@@ -275,11 +315,11 @@
 }
 @media (max-width: 560px) { .footerGrid { grid-template-columns: 1fr; } }
 
-/* Theme logo switching */
-.logoLight { display: inline-block; }
+/* Theme logo switching (if you ever add a light logo asset) */
+/* .logoLight { display: inline-block; }
 .logoDark  { display: none; }
 :global(:root[data-theme="dark"]) .logoLight { display: none; }
-:global(:root[data-theme="dark"]) .logoDark  { display: inline-block; }
+:global(:root[data-theme="dark"]) .logoDark  { display: inline-block; } */
 
 /* ✅ Logo sizing (nav & footer) */
 .nav .brand img { height: 24px; width: auto; display: inline-block; }
@@ -297,22 +337,6 @@
 
 /* Utility: force-wrap very long words/URLs */
 .break-anywhere { overflow-wrap: anywhere; word-break: break-word; }
-
-/* Switzer variable font (self-hosted) */
-@font-face {
-  font-family: 'Switzer';
-  src: url('/fonts/Switzer/Switzer-Variable.ttf') format('truetype-variations');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Switzer';
-  src: url('/fonts/Switzer/Switzer-VariableItalic.ttf') format('truetype-variations');
-  font-weight: 100 900;
-  font-style: italic;
-  font-display: swap;
-}
 
 /* Visually-hidden helper */
 .srOnly {
