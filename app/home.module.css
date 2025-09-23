@@ -73,21 +73,26 @@
 .menu { display: flex; gap: 18px; justify-content: center; }
 .menuLink { color: var(--muted); text-decoration: none; font-weight: 700; }
 .menuLink:hover { color: var(--text); }
-.actions { display: flex; gap: 10px; }
+.actions { display: flex; gap: 10px; align-items: center; flex-wrap: nowrap; }
 
+/* Buttons */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
   padding: 14px 20px; border-radius: 999px; font-weight: 800; text-decoration: none;
   color: var(--text); border: 1px solid var(--border);
   transition: transform .05s ease, box-shadow .15s ease;
+  line-height: 1.1;
+  white-space: nowrap;           /* prevent wrapping -> anti “cerc” pe iOS */
+  min-width: max-content;        /* keep width >= text width */
 }
 .btn:active { transform: scale(0.99); }
 .btnPrimary { background: var(--card); color: #ffffff; border-color: var(--border); box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 35%, transparent); }
 .btnPrimary:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); }
 .btnGhost { background: transparent; color: var(--text); }
 
-/* Mobile nav */
-.menuToggle { display: none; }
+.menuToggle { display: none; }   /* shown only on mobile */
+
+/* Mobile menu panel */
 .mobileMenu {
   display: none;
   padding: 10px 20px;
@@ -102,8 +107,12 @@
 
 @media (max-width: 900px) {
   .menu { display: none; }
-  .menuToggle { display: inline-flex; }
+  .menuToggle { display: inline-flex; background: transparent; color: var(--text); border: 1px solid var(--border); box-shadow: none; }
   .nav[data-open="true"] + .mobileMenu { display: block; }
+
+  /* butoane mai compacte + glow mai mic pe mobil */
+  .btn { padding: 10px 14px; }
+  .btnPrimary { box-shadow: 0 6px 16px color-mix(in oklab, var(--primary) 36%, transparent); }
 }
 
 /* ──────────────────────────────────────────────────────────
@@ -119,7 +128,6 @@
   isolation: isolate;
   will-change: transform;
 }
-
 .btnText::before,
 .btnText::after{
   content:"";
@@ -129,66 +137,36 @@
   opacity:0;
   transition:opacity .25s ease;
 }
-
 /* ⭐ Concave star (diamond with inward-curved sides) via inline SVG */
 .btnText::before{
   /* encoded white concave diamond */
   --sparkle-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='white' d='M50 0 Q 66 30 100 50 Q 70 66 50 100 Q 34 70 0 50 Q 30 34 50 0 Z'/%3E%3C/svg%3E");
-  background-image:
-    var(--sparkle-star),
-    var(--sparkle-star),
-    var(--sparkle-star),
-    var(--sparkle-star);
+  background-image: var(--sparkle-star), var(--sparkle-star), var(--sparkle-star), var(--sparkle-star);
   background-repeat: no-repeat;
-  /* positions across the button surface */
-  background-position:
-    16% 28%,
-    78% 22%,
-    62% 74%,
-    28% 60%;
-  /* slightly different sizes for natural variation */
-  background-size:
-    14px 14px,
-    10px 10px,
-    12px 12px,
-    9px 9px;
-
-  /* pretty glow */
+  background-position: 16% 28%, 78% 22%, 62% 74%, 28% 60%;
+  background-size: 14px 14px, 10px 10px, 12px 12px, 9px 9px;
   filter:
     drop-shadow(0 0 6px rgba(255,255,255,.45))
     drop-shadow(0 0 16px color-mix(in oklab, var(--primary) 55%, transparent));
   transform: translateZ(0) rotate(0deg);
 }
-
-/* soft cyan/indigo sheen layer */
+/* cyan/indigo sheen */
 .btnText::after{
   background:
     radial-gradient(40% 120% at 0% 0%, color-mix(in oklab, var(--accent1) 28%, transparent), transparent),
     radial-gradient(60% 160% at 100% 100%, color-mix(in oklab, var(--accent2) 28%, transparent), transparent);
   mix-blend-mode: screen;
 }
-
-/* show on hover/focus only where hover exists */
 @media (hover:hover){
-  .btnText:hover::before,
-  .btnText:focus-visible::before{ opacity:1; animation: star-wiggle 1.8s ease-in-out infinite; }
-  .btnText:hover::after,
-  .btnText:focus-visible::after{ opacity:1; }
+  .btnText:hover::before, .btnText:focus-visible::before{ opacity:1; animation: star-wiggle 1.8s ease-in-out infinite; }
+  .btnText:hover::after,  .btnText:focus-visible::after { opacity:1; }
 }
-
 /* avoid “white circle” on touch */
 @media (hover:none){
-  .btnText::before,
-  .btnText::after{ display:none !important; }
-  .landing :global(a),
-  .landing :global(button){ -webkit-tap-highlight-color: transparent; }
+  .btnText::before, .btnText::after{ display:none !important; }
+  .landing :global(a), .landing :global(button){ -webkit-tap-highlight-color: transparent; }
 }
-
-@keyframes star-wiggle{
-  0%   { transform: translateZ(0) rotate(0deg); }
-  50%  { transform: translateZ(0) rotate(8deg); }
-  100% { transform: translateZ(0) rotate(0deg); }
-}
+@keyframes star-wiggle{ 0%{transform:translateZ(0) rotate(0)} 50%{transform:translateZ(0) rotate(8deg)} 100%{transform:translateZ(0) rotate(0)} }
 
 /* Hero */
 .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 32px; max-width: 1100px; margin: 48px auto; padding: 0 20px; align-items: center; }
