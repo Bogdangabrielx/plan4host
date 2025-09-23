@@ -17,7 +17,7 @@
   --ring: 2px;           /* border thickness */
   --ring-speed: 2.6s;    /* rotation speed */
 
-  /* Focus util (scoped for CSS Modules; was :root) */
+  /* Focus util (scoped) */
   --focus-ring: 2px;
   --focus-color: color-mix(in srgb, var(--primary) 80%, white);
 }
@@ -44,6 +44,7 @@
   border-radius: 10px;
 }
 
+/* Ambient glow background */
 .landing::before {
   content: "";
   position: fixed;
@@ -137,13 +138,13 @@
 .heroText h1 { font-size: clamp(36px, 6vw, 64px); line-height: 1.05; margin: 0 0 12px; }
 .heroText p { color: var(--muted); margin: 0 0 20px; max-width: 58ch; }
 .accent { color: var(--primary); }
-/* Gradient text pentru "Better" (cu fallback) */
+/* Gradient text pentru "Better" */
 .betterGrad {
-  color: var(--primary); /* fallback dacă background-clip nu e suportat */
+  color: var(--primary); /* fallback */
   background: linear-gradient(90deg,
-  color-mix(in oklab, var(--primary) 92%, white 8%),
-  color-mix(in oklab, var(--primary) 80%, black 20%)
-);
+    color-mix(in oklab, var(--primary) 92%, white 8%),
+    color-mix(in oklab, var(--primary) 80%, black 20%)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -240,7 +241,6 @@
 .footerList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .footerLink { color: var(--muted); text-decoration: none; font-weight: 700; }
 .footerLink:hover { color: var(--text); }
-
 .legalBar {
   border-top: 1px solid var(--border);
   margin-top: 28px;
@@ -265,9 +265,7 @@
 .features, .pricing, .about, .contact, .footer { scroll-margin-top: 90px; }
 
 /* Responsive */
-@media (max-width: 1100px) {
-  .footerGrid { grid-template-columns: 1fr 1fr 1fr; }
-}
+@media (max-width: 1100px) { .footerGrid { grid-template-columns: 1fr 1fr 1fr; } }
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }
   .featureGrid { grid-template-columns: 1fr; }
@@ -275,11 +273,9 @@
   .menu { display: none; }
   .footerGrid { grid-template-columns: 1fr 1fr; }
 }
-@media (max-width: 560px) {
-  .footerGrid { grid-template-columns: 1fr; }
-}
+@media (max-width: 560px) { .footerGrid { grid-template-columns: 1fr; } }
 
-/* Show correct logo by theme on <html data-theme="..."> */
+/* Theme logo switching */
 .logoLight { display: inline-block; }
 .logoDark  { display: none; }
 :global(:root[data-theme="dark"]) .logoLight { display: none; }
@@ -289,17 +285,17 @@
 .nav .brand img { height: 24px; width: auto; display: inline-block; }
 .footer .footerBrand img { height: 22px; width: auto; display: inline-block; }
 
-/* Responsive media: prevent lateral overflow (scoped to landing for CSS Modules) */
+/* Responsive media: prevent lateral overflow (scoped) */
 .landing :global(img),
 .landing :global(video) { max-width: 100%; height: auto; }
 
-/* Reduced motion — respect user preference */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .btnText::before, .btnText::after { animation: none !important; opacity: 0 !important; }
   .featureCard::before { animation: none !important; }
 }
 
-/* Utility: force-wrap very long words/URLs when needed */
+/* Utility: force-wrap very long words/URLs */
 .break-anywhere { overflow-wrap: anywhere; word-break: break-word; }
 
 /* Switzer variable font (self-hosted) */
@@ -318,7 +314,7 @@
   font-display: swap;
 }
 
-/* Visually-hidden helper (for section titles) */
+/* Visually-hidden helper */
 .srOnly {
   position: absolute !important;
   width: 1px; height: 1px;
