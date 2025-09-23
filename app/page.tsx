@@ -151,39 +151,39 @@ export default function HomePage() {
           <div className={styles.priceCard}>
             <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
-              <li>Custom calendar</li>
-              <li>Unlimited properties and rooms listed</li>
+              <li>Adaptive calendar</li>
               <li>Online check-in form</li>
+              <li>Unlimited properties and rooms listed</li>
               <li>Autosync every 60 minutes with iCal</li>
             </ul>
-            <img className={styles.priceImg} src="/illustrations/leaf.svg" alt="" aria-hidden="true" />
+            <img className={styles.priceImg} src="/basic.png" alt="" aria-hidden="true" />
             <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Basic</Link>
           </div>
 
           <div className={styles.priceCard}>
             <div className={styles.priceTier}>STANDARD</div>
             <ul className={styles.priceList}>
-              <li>Custom calendar</li>
-              <li>Unlimited properties and rooms listed</li>
+              <li>Adaptive calendar</li>
               <li>Online check-in form</li>
+              <li>Unlimited properties and rooms listed</li>
               <li>Autosync every 30 minutes with iCal</li>
               <li>Smart cleaning board (Advanced Next-Check-In Priority)</li>
             </ul>
-            <img className={styles.priceImg} src="/illustrations/planet.svg" alt="" aria-hidden="true" />
+            <img className={styles.priceImg} src="/standard.png" alt="" aria-hidden="true" />
             <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Standard</Link>
           </div>
 
           <div className={styles.priceCard}>
             <div className={styles.priceTier}>PREMIUM</div>
             <ul className={styles.priceList}>
-              <li>Custom calendar</li>
-              <li>Unlimited properties and rooms listed</li>
+              <li>Adaptive calendar</li>
               <li>Online check-in form</li>
-              <li>Autosync every 10 minutes with iCal</li>
+              <li>Unlimited properties and rooms listed</li>
+              <li>Autosync every 10 minutes with iCal + Sync Now Function</li>
               <li>Smart cleaning board - Advanced Next-Check-In Priority</li>
               <li>Delegate tasks with your team members</li>
             </ul>
-            <img className={styles.priceImg} src="/illustrations/rocket.svg" alt="" aria-hidden="true" />
+            <img className={styles.priceImg} src="/premium.png" alt="" aria-hidden="true" />
             <Link href="/auth/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}>Choose Premium</Link>
           </div>
         </div>
