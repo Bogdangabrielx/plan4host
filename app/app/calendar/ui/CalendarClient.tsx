@@ -309,7 +309,7 @@ export default function CalendarClient({
     <div
       className="modalCard modalFlip"
       onClick={(e) => e.stopPropagation()}
-      style={{ width: "min(920px, calc(100vw - 32px))", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 }}
+      style={{ overflow: "auto", padding: 16 }}
     >
       <DayModal
         dateStr={openDate}
