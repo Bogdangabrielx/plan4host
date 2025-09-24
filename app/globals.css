@@ -32,6 +32,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ✅ Dark-only ambient gradient pe tot app-ul (light rămâne simplu) */
+:root[data-theme="dark"] body{
+  background:
+    radial-gradient(60rem 60rem at 10% 0%,
+      color-mix(in oklab, #22d3ee 22%, transparent),
+      transparent 60%),
+    radial-gradient(50rem 50rem at 95% 10%,
+      color-mix(in oklab, #0d1323 22%, transparent),
+      transparent 60%),
+    radial-gradient(70rem 60rem at 30% 100%,
+      color-mix(in oklab, var(--primary) 14%, transparent),
+      transparent 60%),
+    var(--bg);
+  background-attachment: fixed, fixed, fixed, fixed;
+}
+
 /* Focus (global fallback) */
 a:focus-visible,
 button:focus-visible,
