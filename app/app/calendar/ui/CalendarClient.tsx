@@ -299,27 +299,13 @@ export default function CalendarClient({
 
       {/* DayModal — only Month view */}
       {openDate && (
-  <div
-    className="modalFlipWrapper"
-    role="dialog"
-    aria-modal="true"
-    onClick={() => setOpenDate(null)}
-  >
-    {/* combinăm flipul cu stilul tău existent de card cu inel */}
-    <div
-      className="modalCard modalFlip"
-      onClick={(e) => e.stopPropagation()}
-      style={{ overflow: "auto"}}
-    >
-      <DayModal
-        dateStr={openDate}
-        propertyId={propertyId}
-        canEdit={canEdit}
-        onClose={() => setOpenDate(null)}
-      />
-    </div>
-  </div>
-)}
+        <DayModal
+          dateStr={openDate}
+          propertyId={propertyId}
+          canEdit={canEdit}        /* <-- gating passed to modal */
+          onClose={() => setOpenDate(null)}
+        />
+      )}
 
       {/* Year overlay */}
       {showYear && (

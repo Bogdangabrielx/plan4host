@@ -385,3 +385,9 @@
   padding: 0; margin: -1px; overflow: hidden;
   clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
+
+/* Cookie table */
+table { border: 1px solid var(--border); }
+th, td { border-bottom: 1px solid var(--border); text-align: left; padding: 10px; }
+thead th { background: color-mix(in srgb, var(--card) 60%, transparent); }
+tbody tr:hover { background: color-mix(in srgb, var(--card) 40%, transparent); }
