@@ -50,17 +50,23 @@ export default function TermsOfServicePage() {
               modify or discontinue trial offers at any time.
             </li>
             <li className={s.p}>
-              <strong>Subscriptions:</strong> Paid plans are billed via{" "}
-              <em>Stripe</em> inside the app’s billing section. Prices, features, and limits are shown on our{" "}
+              <strong>Subscriptions:</strong> Paid plans are billed via <em>Stripe</em> inside the app’s billing
+              section. Prices, features, and limits are shown on our{" "}
               <Link className={s.link} href="https://plan4host.com/#pricing">Pricing</Link> page (where available) or inside the app.
             </li>
             <li className={s.p}>
-              <strong>Renewals:</strong> Subscriptions renew automatically until cancelled. You can cancel at any time
+              <strong>Renewals:</strong> Subscriptions renew automatically until cancelled. You can cancel at any time,
               effective at the end of the current billing period.
             </li>
             <li className={s.p}>
-              <strong>Refunds:</strong> Unless required by law, fees are non-refundable and we do not provide credits
-              for partial periods.
+              <strong>Refunds:</strong> <u>No refunds</u> are provided after the first charge and no credits are issued
+              for partial periods, <em>unless required by applicable law</em>.
+            </li>
+            <li className={s.p}>
+              <strong>Consumers (B2C):</strong> For digital services, once you subscribe you request immediate
+              performance and acknowledge that any statutory right of withdrawal (e.g., 14-day cooling-off) may not
+              apply after service begins. Where mandatory consumer rights do apply, we will comply; otherwise, our
+              “no refunds” policy remains in effect.
             </li>
             <li className={s.p}>
               <strong>Taxes:</strong> Prices may exclude taxes; you are responsible for applicable taxes where required.
@@ -104,9 +110,7 @@ export default function TermsOfServicePage() {
               You grant us a non-exclusive, worldwide license to host, process, and display your content solely to
               operate and improve the Service.
             </li>
-            <li className={s.p}>
-              Feedback is voluntary and may be used without obligation to you.
-            </li>
+            <li className={s.p}>Feedback is voluntary and may be used without obligation to you.</li>
           </ul>
 
           <h2 className={s.h2}>8. Privacy & Data Protection</h2>
