@@ -46,7 +46,7 @@ export function MonthGrid({
               key={formatISODate(d)}
               onClick={() => onDayClick(d)}
               title={`${pct}% occupied`}
-              style={{
+              style={{ 
                 height: isSmall ? 66 : 88,
                 position: "relative",
                 borderRadius: 8,
