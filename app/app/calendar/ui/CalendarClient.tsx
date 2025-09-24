@@ -102,6 +102,30 @@ export default function CalendarClient({
   // Day modal (only Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
 
+  
+  {openDate && (
+  <div
+    className="modalFlipWrapper"
+    role="dialog"
+    aria-modal="true"
+    onClick={() => setOpenDate(null)}
+  >
+    {/* combinăm flipul cu stilul tău existent de card cu inel */}
+    <div
+      className="modalCard modalFlip"
+      onClick={(e) => e.stopPropagation()}
+      style={{ width: "min(920px, calc(100vw - 32px))", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 }}
+    >
+      <DayModal
+        dateStr={openDate}
+        propertyId={propertyId}
+        canEdit={canEdit}
+        onClose={() => setOpenDate(null)}
+      />
+    </div>
+  </div>
+)}
+
   // Year overlay + month picker
   const [showYear, setShowYear] = useState<boolean>(false);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);

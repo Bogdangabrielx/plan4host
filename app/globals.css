@@ -278,3 +278,53 @@ textarea:focus-visible {
   }
   @keyframes modal-ring-rotate { to { transform: rotate(360deg); } }
 }
+
+/* ==== Flip-in modal (card) ================================== */
+.modalFlipWrapper{
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: color-mix(in oklab, var(--bg) 55%, transparent);
+  backdrop-filter: blur(2px);
+  perspective: 1200px; /* 3D space */
+}
+
+.modalFlip{
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-origin: 50% 0%; /* flip din „muchia” de sus */
+  animation: modal-flip-in .55s cubic-bezier(.22,1,.36,1) forwards;
+  will-change: transform, opacity;
+}
+
+/* dacă vrei și umbră + ring din .modalCard, poți combina clasele */
+.modalFlip.modalCard{
+  /* nimic în plus aici — doar le combini în markup */
+}
+
+@keyframes modal-flip-in{
+  0%{
+    transform: rotateX(-88deg) scale(.92);
+    opacity: 0;
+    filter: blur(1px);
+  }
+  60%{
+    transform: rotateX(14deg) scale(1.01);
+    opacity: 1;
+    filter: blur(0);
+  }
+  100%{
+    transform: rotateX(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .modalFlip{ animation: none !important; transform: none !important; }
+  .modalFlipWrapper{ backdrop-filter: none; }
+}
