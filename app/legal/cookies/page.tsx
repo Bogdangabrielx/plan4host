@@ -1,3 +1,5 @@
+
+
 export const metadata = {
   title: "Cookie Policy | Plan4host",
   robots: { index: true },
