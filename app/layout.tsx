@@ -58,14 +58,39 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --bg:#0b1117; --text:#e6edf3; --muted:#9aa4af;
   --panel:#0f1623; --card:#0d1320; --border:#1f2937;
   --primary:#3ECF8E; --danger:#ef4444; --success:#22c55e;
+  /* extras pentru gradient */
+  --accent1:#22d3ee; 
+  --accent2:#0d1323;
 }
 :root[data-theme="light"]{
   /* Supabase-like light palette (green brand) */
   --bg:#f7faf9; --text:#0f172a; --muted:#64748b;
   --panel:#ffffff; --card:#ffffff; --border:#e2e8f0;
   --primary:#16b981; --danger:#dc2626; --success:#16a34a;
+  /* accent vars nefolosite pe light (doar pt consistență) */
+  --accent1:#22d3ee;
+  --accent2:#0d1323;
 }
+
+/* fallback comun */
 html, body { background: var(--bg); color: var(--text); }
+
+/* ✅ Dark-only ambient gradient pe tot app-ul */
+:root[data-theme="dark"] body{
+  background:
+    radial-gradient(60rem 60rem at 10% 0%,
+      color-mix(in oklab, var(--accent1) 22%, transparent),
+      transparent 60%),
+    radial-gradient(50rem 50rem at 95% 10%,
+      color-mix(in oklab, var(--accent2) 22%, transparent),
+      transparent 60%),
+    radial-gradient(70rem 60rem at 30% 100%,
+      color-mix(in oklab, var(--primary) 14%, transparent),
+      transparent 60%),
+    var(--bg);
+  /* păstrează gradientul “lipit” de viewport */
+  background-attachment: fixed, fixed, fixed, fixed;
+}
 
 /* accents */
 :root[data-theme="dark"][data-accent="base"]   { --primary:#3ECF8E; }
