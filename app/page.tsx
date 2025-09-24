@@ -338,7 +338,7 @@ export default function HomePage() {
             <div className={styles.footerTitle}>Company</div>
             <ul className={styles.footerList}>
               <li><Link className={styles.footerLink} href="/about">About us</Link></li>
-              <li><Link className={styles.footerLink} href="/contact">Contact</Link></li>
+              <li><Link className={styles.footerLink} href="#contact">Contact</Link></li>
               <li><Link className={styles.footerLink} href="/careers">Careers</Link></li>
               <li><Link className={styles.footerLink} href="/partners">Partners</Link></li>
             </ul>
