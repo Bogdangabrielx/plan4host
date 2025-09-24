@@ -190,7 +190,7 @@ textarea:focus-visible {
   --modal-border: var(--border, rgba(148,163,184,.18));
   --modal-prim:   var(--primary, #3ECF8E);
   --modal-acc1:   var(--accent1, #22d3ee);
-  --modal-acc2:   var(--accent2, #6366f1);
+  --modal-acc2:   var(--accent2, rgba(12, 19, 35, 0.9));
   --modal-ring:   var(--ring, 2px);
   --modal-speed:  var(--ring-speed, 2.6s);
 
@@ -218,11 +218,11 @@ textarea:focus-visible {
   border-radius: inherit;
   background: conic-gradient(
     from var(--modal-ring-angle),
-    color-mix(in oklab, var(--modal-acc1) 75%, transparent) 0%,
+    color-mix(in oklab, var(--modal-acc2) 75%, transparent) 0%,
     color-mix(in oklab, var(--modal-acc2) 75%, transparent) 25%,
     color-mix(in oklab, var(--modal-prim) 75%, transparent) 50%,
     color-mix(in oklab, var(--modal-acc2) 75%, transparent) 75%,
-    color-mix(in oklab, var(--modal-acc1) 75%, transparent) 100%
+    color-mix(in oklab, var(--modal-acc2) 75%, transparent) 100%
   );
   /* arată doar “inelul” (borderul), nu umplutura */
   -webkit-mask:
