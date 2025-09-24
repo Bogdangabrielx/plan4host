@@ -156,12 +156,18 @@
 
 .btnChoose:hover,
 .btnChoose:focus-visible,
-.btnChoose[data-animate="true"] {
-  box-shadow:
-    0 8px 24px color-mix(in oklab, var(--primary) 35%, transparent),
-    0 0 0 1px color-mix(in oklab, #3ECF8E 22%, transparent);
+.btnChoose:before{
+  content:"";
+  position:absolute; inset:0; border-radius: inherit; padding: 1.5px; /* thickness of “animated” border */
+  background:
+    conic-gradient(from var(--sweep-angle),
+      transparent 0deg,
+      transparent 300deg,
+      rgba(25, 189, 99, .95) 315deg,
+      rgba(25, 189, 99,.8) 330deg,
+      transparent 345deg
+    );
 }
-
 
 /* Play the effects (desktop focus/hover) */
 .btnText:hover::before,
