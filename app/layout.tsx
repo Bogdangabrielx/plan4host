@@ -2,6 +2,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { cookies } from "next/headers";
+import {
+  ConsentProvider,
+  CookieBanner,
+  CookieModal,
+} from "@/components/consent/ConsentManager";
 
 export const metadata: Metadata = {
   title: "plan4host",
@@ -32,7 +37,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
-    { media: "(prefers-color-scheme: dark)",  color: "#0c111b" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c111b" },
   ],
 };
 
@@ -62,7 +67,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 html, body { background: var(--bg); color: var(--text); }
 
-/* accents */
 /* accents */
 :root[data-theme="dark"][data-accent="base"]   { --primary:#3ECF8E; }
 :root[data-theme="dark"][data-accent="blue"]   { --primary:#3b82f6; }
@@ -109,13 +113,18 @@ html, body { background: var(--bg); color: var(--text); }
 `,
           }}
         />
-        {/* Wrapper global: împinge conținutul sub notch & deasupra home-indicatorului */}
-        <div style={{ paddingTop: "var(--safe-top)", paddingBottom: "var(--safe-bottom)" }}>
-          {children}
-        </div>
+
+        {/* Wrapper global + Consent UI */}
+        <ConsentProvider>
+          <div style={{ paddingTop: "var(--safe-top)", paddingBottom: "var(--safe-bottom)" }}>
+            {children}
+          </div>
+
+          {/* Global cookie controls */}
+          <CookieBanner />
+          <CookieModal />
+        </ConsentProvider>
       </body>
     </html>
   );
 }
-
-
