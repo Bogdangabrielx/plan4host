@@ -50,6 +50,18 @@ export default function CalendarClient({
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [isSmall, setIsSmall] = useState(false);
 
+  // 🔔 mic preview al inelului pe mobil
+  const [animateRing, setAnimateRing] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const touch = "ontouchstart" in window || window.matchMedia("(hover: none)").matches;
+    if (touch) {
+      setAnimateRing(true);
+      const t = setTimeout(() => setAnimateRing(false), 1200);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
   // === Permissions (admin/editor w/ calendar|reservations; viewer or disabled => read-only) ===
   const [me, setMe] = useState<null | { role: "admin"|"editor"|"viewer"; scopes: string[]; disabled: boolean }>(null);
   const [canEdit, setCanEdit] = useState(false);
@@ -272,6 +284,7 @@ export default function CalendarClient({
         <div style={{ flex: 1 }} />
       </div>
 
+      {/* 🟢 MonthView în .modalCard cu trigger de mobil */}
       <MonthView
         year={year}
         month={month}
@@ -280,6 +293,7 @@ export default function CalendarClient({
         highlightDate={highlightDate}
         isSmall={isSmall}
         onDayClick={(dateStr) => setOpenDate(dateStr)}
+        animate={animateRing}
       />
 
       {/* DayModal — only Month view */}
@@ -296,7 +310,8 @@ export default function CalendarClient({
       {showYear && (
         <div role="dialog" aria-modal="true" onClick={() => setShowYear(false)}
           style={{ position: "fixed", inset: 0, zIndex: 225, background: "var(--bg)", display: "grid", placeItems: "center" }}>
-          <div onClick={(e) => e.stopPropagation()} className="sb-card" style={{ width: "min(1024px, calc(100vw - 32px))", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 }}>
+          {/* înlocuit sb-card cu modalCard pentru același efect */}
+          <div onClick={(e) => e.stopPropagation()} className="modalCard" style={{ width: "min(1024px, calc(100vw - 32px))", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <strong style={{ fontSize: 16 }}>Pick a month — {year}</strong>
               <div style={{ display: "flex", gap: 8 }}>
@@ -466,13 +481,14 @@ function tooltipFor(dateStr: string, roomsCount: number, map: Map<string, Set<st
 /* ================== MONTH VIEW ================== */
 
 function MonthView({
-  year, month, roomsCount, occupancyMap, highlightDate, isSmall, onDayClick
+  year, month, roomsCount, occupancyMap, highlightDate, isSmall, onDayClick, animate
 }: {
   year: number; month: number; roomsCount: number;
   occupancyMap: Map<string, Set<string>>;
   highlightDate: string | null;
   isSmall: boolean;
   onDayClick: (dateStr: string) => void;
+  animate?: boolean;
 }) {
   const dim = daysInMonth(year, month);
   const fw  = firstWeekday(year, month);
@@ -492,7 +508,8 @@ function MonthView({
   while (days.length < total) days.push({});
 
   return (
-    <div className="sb-card cal-smoobu" style={{ boxShadow: "0 3px 20px #2e6dc656", padding: 12 }}>
+    // 🟢 containerul principal — .modalCard cu inel
+    <section className="modalCard cal-smoobu" data-animate={animate ? "true" : undefined} style={{ padding: 12 }}>
       {/* headers */}
       <div className="cal-weekdays" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
         {weekdayShort.map((w) => (
@@ -582,6 +599,6 @@ function MonthView({
           Today
         </span>
       </div>
-    </div>
+    </section>
   );
 }
