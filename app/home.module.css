@@ -154,6 +154,15 @@
   z-index: 2;
 }
 
+.btnChoose:hover,
+.btnChoose:focus-visible,
+.btnChoose[data-animate="true"] {
+  box-shadow:
+    0 8px 24px color-mix(in oklab, var(--primary) 35%, transparent),
+    0 0 0 1px color-mix(in oklab, #3ECF8E 22%, transparent);
+}
+
+
 /* Play the effects (desktop focus/hover) */
 .btnText:hover::before,
 .btnText:focus-visible::before { opacity: 1; animation: sweep-rotate 1.8s linear infinite; }

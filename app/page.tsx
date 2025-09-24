@@ -243,7 +243,7 @@ export default function HomePage() {
               <li>Smart cleaning board (Advanced Next-Check-In Priority)</li>
             </ul>
             <img className={styles.priceImg} src="/standard.png" alt="" aria-hidden="true" />
-            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnText} ${styles.focusable}`}>
+            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>
               Choose Standard
             </Link>
           </div>
