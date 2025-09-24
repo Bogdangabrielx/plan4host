@@ -218,11 +218,11 @@ textarea:focus-visible {
   border-radius: inherit;
   background: conic-gradient(
     from var(--modal-ring-angle),
-    color-mix(in oklab, var(--modal-acc2) 75%, transparent) 0%,
-    color-mix(in oklab, var(--modal-acc2) 75%, transparent) 25%,
+    color-mix(in oklab, var(--bg) 75%, transparent) 0%,
+    color-mix(in oklab, var(--bg) 75%, transparent) 25%,
     color-mix(in oklab, var(--modal-prim) 75%, transparent) 50%,
-    color-mix(in oklab, var(--modal-acc2) 75%, transparent) 75%,
-    color-mix(in oklab, var(--modal-acc2) 75%, transparent) 100%
+    color-mix(in oklab, var(--bg) 75%, transparent) 75%,
+    color-mix(in oklab, var(--bg) 75%, transparent) 100%
   );
   /* arată doar “inelul” (borderul), nu umplutura */
   -webkit-mask:
