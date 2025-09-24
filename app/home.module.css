@@ -11,7 +11,7 @@
   --border: rgba(148, 163, 184, 0.18);
   --primary: #3ECF8E; /* brand green */
   --accent1: #22d3ee; /* cyan */
-  --accent2: #6366f1; /* indigo */
+  --accent2: #000000; /* indigo */
 
   /* Animation controls */
   --ring: 2px;
