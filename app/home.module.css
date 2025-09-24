@@ -11,7 +11,7 @@
   --border: rgba(148, 163, 184, 0.18);
   --primary: #3ECF8E; /* brand green */
   --accent1: #22d3ee; /* cyan */
-  --accent2: #143514ce; /* indigo */
+  --accent2: #122412; /* indigo */
 
   /* Animation controls */
   --ring: 2px;
@@ -220,11 +220,11 @@
   content: ""; position: absolute; inset: 0; padding: var(--ring); border-radius: inherit;
   background: conic-gradient(
     from var(--ring-angle),
-    color-mix(in oklab, var(--accent1) 75%, transparent) 0%,
+    color-mix(in oklab, var(--accent2) 75%, transparent) 0%,
     color-mix(in oklab, var(--accent2) 75%, transparent) 25%,
     color-mix(in oklab, var(--primary) 75%, transparent) 50%,
     color-mix(in oklab, var(--accent2) 75%, transparent) 75%,
-    color-mix(in oklab, var(--accent1) 75%, transparent) 100%
+    color-mix(in oklab, var(--accent2) 75%, transparent) 100%
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask-composite: exclude;
