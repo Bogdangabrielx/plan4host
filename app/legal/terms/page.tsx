@@ -52,7 +52,7 @@ export default function TermsOfServicePage() {
             <li className={s.p}>
               <strong>Subscriptions:</strong> Paid plans are billed via{" "}
               <em>Stripe</em> inside the app’s billing section. Prices, features, and limits are shown on our{" "}
-              <Link className={s.link} href="/pricing">Pricing</Link> page (where available) or inside the app.
+              <Link className={s.link} href="#pricing">Pricing</Link> page (where available) or inside the app.
             </li>
             <li className={s.p}>
               <strong>Renewals:</strong> Subscriptions renew automatically until cancelled. You can cancel at any time
