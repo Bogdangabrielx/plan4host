@@ -685,7 +685,7 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{ propertyId: stri
   }
   return (
     <button className="sb-btn sb-btn--primary" onClick={onClick} disabled={busy || !bookingId} title={bookingId ? 'Generate link' : 'No booking id'}>
-      {copied ? 'Copied!' : (busy ? 'Generating…' : 'Generate & copy link')}
+      {copied ? 'Copied!' : (busy ? 'Generating…' : 'Copy link')}
     </button>
   );
 }
