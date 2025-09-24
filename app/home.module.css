@@ -156,7 +156,7 @@
 
 .btnChoose:hover,
 .btnChoose:focus-visible,
-.btnChoose:before{
+.btnChoomse::before{
   content:"";
   position:absolute; inset:0; border-radius: inherit; padding: 1.5px; /* thickness of “animated” border */
   background:
@@ -167,7 +167,15 @@
       rgba(25, 189, 99,.8) 330deg,
       transparent 345deg
     );
+  /* show only the border, not the fill */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0; transition: opacity .2s ease;
+  pointer-events: none; z-index: 1;
 }
+
 
 /* Play the effects (desktop focus/hover) */
 .btnText:hover::before,
