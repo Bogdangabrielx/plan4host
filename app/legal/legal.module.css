@@ -1,15 +1,13 @@
-/* /app/legal/cookies/cookies.module.css */
-/* Dark-only scoped palette + utilities inspired by landing CSS */
+/* /app/legal/legal.module.css */
+/* Dark-only scoped palette + utilities (shared by all legal pages) */
 
 .page {
   background: var(--bg);
   color: var(--text);
   position: relative;
   min-height: 100dvh;
-}
 
-/* Dark-only scoped palette (scoped to this page) */
-.page {
+  /* Dark-only scoped palette */
   --bg: #0b1020;
   --text: #e6edf3;
   --muted: #9aa4af;
@@ -55,7 +53,7 @@
   padding: 16px;
 }
 
-/* Buttons */
+/* Buttons/Links */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
   padding: 10px 14px; border-radius: 999px; font-weight: 800; text-decoration: none;
@@ -66,34 +64,32 @@
 .btn:active { transform: scale(0.99); }
 .btnPrimary { background: var(--card); color: #ffffff; border-color: var(--border); box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 35%, transparent); }
 .btnPrimary:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); }
-
-/* Link look */
 .link { color: var(--primary); text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--primary) 40%, transparent); font-weight: 700; }
 .link:hover { text-decoration-color: var(--primary); }
 
-/* Table (scoped) */
-.cookieTable { overflow-x: auto; margin-top: 6px; }
-.cookieTable table {
+/* Tables (shared) */
+.tableWrap, .cookieTable { overflow-x: auto; margin-top: 6px; }
+.tableWrap table, .cookieTable table {
   width: 100%;
   border-collapse: collapse;
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg) 90%, transparent);
 }
-.cookieTable th,
-.cookieTable td {
+.tableWrap th, .tableWrap td,
+.cookieTable th, .cookieTable td {
   border-bottom: 1px solid var(--border);
   text-align: left;
   padding: 10px;
   color: var(--text);
   vertical-align: top;
 }
-.cookieTable thead th {
+.tableWrap thead th, .cookieTable thead th {
   background: color-mix(in srgb, var(--card) 60%, transparent);
   font-weight: 800;
 }
 @media (max-width: 560px) {
-  .cookieTable th,
-  .cookieTable td { padding: 8px; }
+  .tableWrap th, .tableWrap td,
+  .cookieTable th, .cookieTable td { padding: 8px; }
 }
 
 /* Typography helpers */

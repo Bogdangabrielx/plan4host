@@ -1,6 +1,6 @@
 // /app/legal/privacy/page.tsx
 import type { Metadata } from "next";
-import s from ".cookies/cookies.module.css";
+import s from "../legal.module.css";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -39,31 +39,12 @@ export default function PrivacyPolicyPage() {
 
           <h2 className={s.h2}>2. What data we collect</h2>
           <ul className={s.list}>
-            <li className={s.p}>
-              <strong>Account data</strong>: email address, password (hash only, never plaintext),
-              profile details you provide (e.g., display name), organization/property information.
-            </li>
-            <li className={s.p}>
-              <strong>Authentication/session data</strong>: session tokens handled by Supabase
-              (HTTP-only cookies), login timestamps, basic security logs.
-            </li>
-            <li className={s.p}>
-              <strong>Billing & subscription data</strong>: plan, subscription status, invoices and
-              payment identifiers. Card data is processed by <em>Stripe</em>; we do not store full
-              card numbers.
-            </li>
-            <li className={s.p}>
-              <strong>Usage & logs</strong>: server logs (IP address, timestamps, user agent),
-              application events (e.g., iCal import/export jobs) for security and troubleshooting.
-            </li>
-            <li className={s.p}>
-              <strong>Communications</strong>: messages you send to{" "}
-              <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
-            </li>
-            <li className={s.p}>
-              <strong>Cookies & similar</strong>: see our{" "}
-              <Link className={s.link} href="/legal/cookies">Cookie Policy</Link> for details.
-            </li>
+            <li className={s.p}><strong>Account data</strong>: email address, password (hash only, never plaintext), profile details you provide (e.g., display name), organization/property information.</li>
+            <li className={s.p}><strong>Authentication/session data</strong>: session tokens handled by Supabase (HTTP-only cookies), login timestamps, basic security logs.</li>
+            <li className={s.p}><strong>Billing & subscription data</strong>: plan, subscription status, invoices and payment identifiers. Card data is processed by <em>Stripe</em>; we do not store full card numbers.</li>
+            <li className={s.p}><strong>Usage & logs</strong>: server logs (IP address, timestamps, user agent), application events (e.g., iCal import/export jobs) for security and troubleshooting.</li>
+            <li className={s.p}><strong>Communications</strong>: messages you send to <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.</li>
+            <li className={s.p}><strong>Cookies & similar</strong>: see our <Link className={s.link} href="/legal/cookies">Cookie Policy</Link> for details.</li>
           </ul>
 
           <h2 className={s.h2}>3. Why we process your data (purposes)</h2>
@@ -129,9 +110,8 @@ export default function PrivacyPolicyPage() {
 
           <h2 className={s.h2}>6. International transfers</h2>
           <p className={s.p}>
-            When data is transferred outside the EU/EEA by our processors, we rely on appropriate
-            safeguards such as the European Commission’s Standard Contractual Clauses (SCCs) and
-            complementary measures where necessary.
+            When data is transferred outside the EU/EEA by our processors, we rely on appropriate safeguards
+            such as the European Commission’s Standard Contractual Clauses (SCCs) and complementary measures where necessary.
           </p>
 
           <h2 className={s.h2}>7. Retention</h2>
@@ -144,9 +124,7 @@ export default function PrivacyPolicyPage() {
 
           <h2 className={s.h2}>8. Security</h2>
           <p className={s.p}>
-            We implement technical and organizational measures including TLS encryption in transit,
-            encryption at rest provided by our cloud providers, access controls, and least-privilege
-            practices. No method of transmission or storage is 100% secure, but we work to protect your data.
+            We implement technical and organizational measures including TLS encryption in transit, encryption at rest provided by our cloud providers, access controls, and least-privilege practices. No method of transmission or storage is 100% secure, but we work to protect your data.
           </p>
 
           <h2 className={s.h2}>9. Your rights</h2>
@@ -157,9 +135,7 @@ export default function PrivacyPolicyPage() {
             <li className={s.p}>Restrict or object to processing in certain cases.</li>
             <li className={s.p}>Data portability.</li>
             <li className={s.p}>Withdraw consent at any time for processing based on consent.</li>
-            <li className={s.p}>
-              Lodge a complaint with your local supervisory authority. In the EU, you can find your authority via the EDPB.
-            </li>
+            <li className={s.p}>Lodge a complaint with your local supervisory authority (EU/EEA).</li>
           </ul>
           <div className={s.card} style={{ marginTop: 8 }}>
             <p className={s.p} style={{ margin: 0 }}>
@@ -170,10 +146,7 @@ export default function PrivacyPolicyPage() {
           </div>
 
           <h2 className={s.h2}>10. Children</h2>
-          <p className={s.p}>
-            The service is not directed to children under 16. If you believe a child provided us with
-            personal data, contact us and we will take appropriate steps.
-          </p>
+          <p className={s.p}>The service is not directed to children under 16. If you believe a child provided us with personal data, contact us and we will take appropriate steps.</p>
 
           <h2 className={s.h2}>11. Automated decision-making</h2>
           <p className={s.p}>We do not perform automated decision-making or profiling that produces legal effects about you.</p>
@@ -181,18 +154,14 @@ export default function PrivacyPolicyPage() {
           <h2 className={s.h2}>12. Cookies</h2>
           <p className={s.p}>
             For details about cookies we use, see our{" "}
-            <Link className={s.link} href="/legal/cookies">Cookie Policy</Link>. You can open the cookie
-            preferences modal here:{" "}
+            <Link className={s.link} href="/legal/cookies">Cookie Policy</Link>. You can open the cookie preferences modal here:{" "}
             <button id="open-cookie-settings" className={`${s.btn} ${s.btnPrimary}`} type="button" aria-haspopup="dialog">
               Cookie settings
             </button>.
           </p>
 
           <h2 className={s.h2}>13. Changes to this policy</h2>
-          <p className={s.p}>
-            We may update this Privacy Policy to reflect operational, legal, or regulatory changes.
-            We encourage you to review it periodically.
-          </p>
+          <p className={s.p}>We may update this Privacy Policy to reflect operational, legal, or regulatory changes. We encourage you to review it periodically.</p>
 
           <h2 className={s.h2}>14. Contact</h2>
           <p className={s.p}>
