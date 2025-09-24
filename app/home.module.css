@@ -154,29 +154,6 @@
   z-index: 2;
 }
 
-.btnChoose:hover,
-.btnChoose:focus-visible,
-.btnChoomse::before{
-  content:"";
-  position:absolute; inset:0; border-radius: inherit; padding: 1.5px; /* thickness of “animated” border */
-  background:
-    conic-gradient(from var(--sweep-angle),
-      transparent 0deg,
-      transparent 300deg,
-      rgba(25, 189, 99, .95) 315deg,
-      rgba(25, 189, 99,.8) 330deg,
-      transparent 345deg
-    );
-  /* show only the border, not the fill */
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
-  opacity: 0; transition: opacity .2s ease;
-  pointer-events: none; z-index: 1;
-}
-
-
 /* Play the effects (desktop focus/hover) */
 .btnText:hover::before,
 .btnText:focus-visible::before { opacity: 1; animation: sweep-rotate 1.8s linear infinite; }
@@ -203,6 +180,58 @@
 @keyframes stars-twinkle {
   0%,100% { filter: drop-shadow(0 0 6px rgba(255,255,255,.7)) drop-shadow(0 0 18px color-mix(in oklab, var(--primary) 65%, transparent)); transform: translateY(0) rotate(0deg); }
   50%     { filter: drop-shadow(0 0 10px rgba(255,255,255,1)) drop-shadow(0 0 26px color-mix(in oklab, var(--primary) 75%, transparent)); transform: translateY(-1px) rotate(6deg); }
+}
+
+/* ───────────────
+   .btnChoose — same sparkle, NO stars
+   ─────────────── */
+.btnChoose,
+.btnPrimary.btnChoose{
+  background: transparent;
+  color: #ffffff;
+  border-color: rgba(255,255,255,.9);
+  position: relative;
+  overflow: clip;
+}
+.btnChoose{ border-radius: 28px; }
+.btnChoose:hover,
+.btnChoose:focus-visible,
+.btnChoose[data-animate="true"]{
+  border-radius: 22px;
+  box-shadow:
+    0 8px 24px color-mix(in oklab, var(--primary) 35%, transparent),
+    0 0 0 1px color-mix(in oklab, #3ECF8E 22%, transparent);
+}
+.btnChoose::before{
+  content:"";
+  position:absolute; inset:0; border-radius: inherit; padding: 1.5px;
+  background:
+    conic-gradient(from var(--sweep-angle),
+      transparent 0deg,
+      transparent 300deg,
+      rgba(25,189,99,.95) 315deg,
+      rgba(25,189,99,.8) 330deg,
+      transparent 345deg
+    );
+  /* show only the border ring */
+  -webkit-mask: linear-gradient(#000 0 0) content-box,
+                 linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box,
+                linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; 
+          mask-composite: exclude;
+  opacity: 0; transition: opacity .2s ease;
+  pointer-events:none; z-index:1;
+}
+/* desktop hover/focus */
+.btnChoose:hover::before,
+.btnChoose:focus-visible::before{ opacity:1; animation:sweep-rotate 1.8s linear infinite; }
+/* mobile trigger */
+.btnChoose[data-animate="true"]::before{ opacity:1; animation:sweep-rotate 1.8s linear infinite; }
+/* touch rule: hide unless explicitly triggered */
+@media (hover:none){
+  .btnChoose::before{ display:none !important; }
+  .btnChoose[data-animate="true"]::before{ display:block !important; }
 }
 
 /* Hero */
