@@ -228,7 +228,7 @@ export default function HomePage() {
               <li>Autosync every 60 minutes with iCal</li>
             </ul>
             <img className={styles.priceImg} src="/basic.png" alt="" aria-hidden="true" />
-            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnText} ${styles.focusable}`}>
+            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>
               Choose Basic
             </Link>
           </div>
@@ -259,7 +259,7 @@ export default function HomePage() {
               <li>Delegate tasks with your team members</li>
             </ul>
             <img className={styles.priceImg} src="/premium.png" alt="" aria-hidden="true" />
-            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnText} ${styles.focusable}`}>
+            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>
               Choose Premium
             </Link>
           </div>
