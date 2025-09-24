@@ -1,23 +1,11 @@
 "use client";
 
 /**
- * ConsentManager.tsx
- * One-file Cookie Consent: Provider + Banner + Modal + Gate + Utils
- *
- * Categories:
- *  - Essential (always on)
- *  - Preferences (optional: theme `app_theme`)
- *
- * Cookie:
- *  - name: cookie_consent
- *  - value: JSON string { v:1, essential:true, preferences:boolean, updatedAt: ISO }
- *  - retention: 12 months
- *
- * Integration helpers:
- *  - <ConsentProvider> ... <CookieBanner/><CookieModal/> </ConsentProvider>
- *  - <ConsentGate category="preferences"> ... </ConsentGate>
- *  - Trigger modal from anywhere (e.g. Cookie Policy page) with elements having id:
- *      #open-cookie-settings or #open-cookie-settings-2
+ * ConsentManager.tsx — v2
+ * - Banner apare automat dacă nu există cookie_consent
+ * - Init sincron (lazy) ca să nu rateze primul paint
+ * - Cookie 'Secure' doar pe HTTPS (altfel nu se salvează pe localhost)
+ * - Z-index ridicat pentru banner
  */
 
 import React, {
@@ -31,19 +19,19 @@ import React, {
 } from "react";
 
 type ConsentState = {
-  essential: true; // always true
-  preferences: boolean; // toggle by user
-  updatedAt: string; // ISO timestamp
   v: 1;
+  essential: true;
+  preferences: boolean;
+  updatedAt: string;
 };
 
 type ConsentContextType = {
-  consent: ConsentState | null; // null = undecided (show banner)
+  consent: ConsentState | null;
   setPreferences: (value: boolean) => void;
   acceptAll: () => void;
   acceptEssentialOnly: () => void;
   rejectAllNonEssential: () => void;
-  save: () => void; // persist current toggles
+  save: () => void;
   openModal: () => void;
   closeModal: () => void;
   isModalOpen: boolean;
@@ -54,10 +42,8 @@ const ConsentContext = createContext<ConsentContextType | undefined>(undefined);
 const CONSENT_COOKIE = "cookie_consent";
 const CONSENT_MAX_AGE = 60 * 60 * 24 * 365; // 12 months
 
-// ---- Cookie helpers (client) ----
+// ---- Cookie helpers ----
 function getApexDomain(hostname: string): string | undefined {
-  // Share cookie between apex and www (e.g. plan4host.com & www.plan4host.com)
-  // Avoid domain attr for localhost or IPs
   if (hostname === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return undefined;
   const parts = hostname.split(".");
   if (parts.length >= 2) return `.${parts.slice(-2).join(".")}`;
@@ -84,36 +70,27 @@ function writeConsentCookie(consent: ConsentState) {
   if (typeof document === "undefined") return;
   const value = encodeURIComponent(JSON.stringify(consent));
   const domain = getApexDomain(window.location.hostname);
+  const isSecure = window.location.protocol === "https:"; // important pentru localhost
   const attrs = [
     `${CONSENT_COOKIE}=${value}`,
     "Path=/",
     `Max-Age=${CONSENT_MAX_AGE}`,
     "SameSite=Lax",
-    "Secure",
   ];
   if (domain) attrs.push(`Domain=${domain}`);
+  if (isSecure) attrs.push("Secure");
   document.cookie = attrs.join("; ");
 }
 
 // ---- Provider ----
 export function ConsentProvider({ children }: PropsWithChildren) {
-  const [consent, setConsent] = useState<ConsentState | null>(null);
-  const [pendingPrefs, setPendingPrefs] = useState<boolean>(false); // modal toggle live state
+  // Lazy init sincron: citim cookie imediat pe client
+  const initial = typeof window !== "undefined" ? readConsentFromCookie() : null;
+  const [consent, setConsent] = useState<ConsentState | null>(initial);
+  const [pendingPrefs, setPendingPrefs] = useState<boolean>(initial?.preferences ?? false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // On mount: read cookie
-  useEffect(() => {
-    const existing = readConsentFromCookie();
-    if (existing) {
-      setConsent(existing);
-      setPendingPrefs(existing.preferences);
-    } else {
-      setConsent(null); // undecided -> show banner
-      setPendingPrefs(false); // default off for non-essentials
-    }
-  }, []);
-
-  // Listen for clicks on "#open-cookie-settings" buttons (Cookie Policy page, footer link, etc.)
+  // Dacă userul schimbă tab-ul Cookie Settings (ID-uri globale)
   useEffect(() => {
     const clickHandler = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
@@ -156,13 +133,10 @@ export function ConsentProvider({ children }: PropsWithChildren) {
   }, []);
 
   const rejectAllNonEssential = useCallback(() => {
-    // same as "Only necessary"
     acceptEssentialOnly();
   }, [acceptEssentialOnly]);
 
-  const setPreferences = useCallback((value: boolean) => {
-    setPendingPrefs(value);
-  }, []);
+  const setPreferences = useCallback((value: boolean) => setPendingPrefs(value), []);
 
   const save = useCallback(() => {
     const base: ConsentState = {
@@ -204,19 +178,15 @@ export function useConsent() {
   return ctx;
 }
 
-// ---- Gate (for non-essential stuff like theme preferences, future analytics, etc.) ----
+// ---- Gate ----
 export function ConsentGate({
   category,
   children,
   fallback = null,
 }: PropsWithChildren<{ category: "essential" | "preferences"; fallback?: React.ReactNode }>) {
   const { consent } = useConsent();
-
   if (category === "essential") return <>{children}</>;
-  if (category === "preferences") {
-    if (consent?.preferences) return <>{children}</>;
-    return <>{fallback}</>;
-  }
+  if (category === "preferences") return consent?.preferences ? <>{children}</> : <>{fallback}</>;
   return <>{fallback}</>;
 }
 
@@ -224,14 +194,17 @@ export function ConsentGate({
 export function CookieBanner() {
   const { consent, acceptAll, acceptEssentialOnly, openModal } = useConsent();
 
-  if (consent !== null) return null; // already decided -> hide banner
+  // Dacă nu avem cookie => arătăm banner
+  if (consent !== null) return null;
 
   return (
     <div
+      data-cookie-banner
       role="region"
       aria-label="Cookie banner"
-      className="fixed inset-x-0 bottom-0 z-[1000] px-4 py-3"
+      className="fixed inset-x-0 bottom-0 px-4 py-3"
       style={{
+        zIndex: 10000, // peste orice
         background: "var(--panel)",
         color: "var(--text)",
         borderTop: "1px solid var(--border)",
@@ -291,7 +264,7 @@ export function CookieModal() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="cookie-modal-title"
-      className="fixed inset-0 z-[1100] flex items-center justify-center px-4"
+      className="fixed inset-0 z-[11000] flex items-center justify-center px-4"
     >
       {/* Backdrop */}
       <div
