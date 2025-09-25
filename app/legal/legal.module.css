@@ -26,7 +26,11 @@
 
 .page * { box-sizing: border-box; }
 
-:root[data-theme="light"] body{
+/* Ambient glow background */
+.page::before {
+  content: "";
+  position: fixed; inset: -20%;
+  pointer-events: none; z-index: 0;
   background:
     radial-gradient(60rem 60rem at 10% -5%,
       color-mix(in srgb, var(--accent1) 14%, transparent),
@@ -38,8 +42,9 @@
       color-mix(in srgb, var(--accent1) 8%, transparent),
       transparent 62%),
     var(--bg);
+  filter: blur(28px) saturate(120%);
+  opacity: .35;
 }
-
 
 /* Layout */
 .container { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 48px 20px 80px; }
