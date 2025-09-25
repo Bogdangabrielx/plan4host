@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import styles from "./home.module.css";
+import { createPortal } from "react-dom";
 
 /** CTA Link that triggers the sparkle animation on touch devices before navigating */
 function CtaLink({
@@ -61,230 +62,249 @@ function CtaLink({
    ────────────────────────────────────────────────────────────── */
 function CookieConsentLanding() {
   type ConsentShape = { necessary: true; preferences: boolean };
-  const LS_KEY = "p4h:consent:v2";   // bump față de variantele vechi
+  const LS_KEY = "p4h:consent:v2";
   const COOKIE_NAME = "p4h_consent";
   const EXPIRE_DAYS = 180;
 
+  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [showPrefs, setShowPrefs] = useState(false);
   const [preferences, setPreferences] = useState(false);
 
-  // citește consimțământ existent (localStorage sau cookie)
+  useEffect(() => { setMounted(true); }, []);
+
+  // citește consimțământ existent
   useEffect(() => {
     try {
       const now = Date.now();
 
-      const fromLS = (() => {
+      const ls = (() => {
         const raw = localStorage.getItem(LS_KEY);
         if (!raw) return null;
         const obj = JSON.parse(raw);
-        if (!obj?.exp || !obj?.consent) return null;
-        const expMs = Date.parse(obj.exp);
+        const expMs = Date.parse(obj?.exp || "");
         if (Number.isFinite(expMs) && expMs > now) return obj as { consent: ConsentShape };
         return null;
       })();
 
-      const fromCookie = (() => {
+      const ck = (() => {
         const m = document.cookie.match(new RegExp(`(?:^|; )${COOKIE_NAME}=([^;]*)`));
         if (!m) return null;
-        const raw = decodeURIComponent(m[1] || "");
         try {
-          const obj = JSON.parse(raw);
-          // Acceptăm atât payload-ul complet, cât și varianta doar cu consent
+          const obj = JSON.parse(decodeURIComponent(m[1] || ""));
           if (obj?.consent?.necessary) return obj as { consent: ConsentShape };
           if (obj?.necessary) return { consent: obj as ConsentShape };
         } catch {}
         return null;
       })();
 
-      const existing = fromLS ?? fromCookie;
+      const existing = ls ?? ck;
       if (existing?.consent) {
         setPreferences(!!existing.consent.preferences);
+        document.documentElement.setAttribute("data-consent-preferences", String(!!existing.consent.preferences));
         setOpen(false);
-        document.documentElement.setAttribute(
-          "data-consent-preferences",
-          String(!!existing.consent.preferences)
-        );
-        return;
+      } else {
+        setOpen(true);
       }
-
-      // nu există consimțământ valid ⇒ deschide modalul
-      setOpen(true);
     } catch {
       setOpen(true);
     }
   }, []);
 
-  // blochează scroll cât timp modalul e deschis
+  // blochează scroll & pune inert pe main când e deschis
   useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [open]);
+    if (!mounted) return;
+    const main = document.querySelector("main") as HTMLElement | null;
+
+    if (open) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      if (main) (main as any).inert = true; // inert nativ (suportat modern)
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        if (main) (main as any).inert = false;
+      };
+    } else {
+      if (main) (main as any).inert = false;
+    }
+  }, [open, mounted]);
 
   function persist(consent: ConsentShape) {
     const now = new Date();
     const exp = new Date(now.getTime() + EXPIRE_DAYS * 24 * 60 * 60 * 1000);
     const payload = { v: 2, ts: now.toISOString(), exp: exp.toISOString(), consent };
 
-    // localStorage
     try { localStorage.setItem(LS_KEY, JSON.stringify(payload)); } catch {}
 
-    // cookie (păstrăm payload-ul complet; e mic)
     try {
       const secure = location.protocol === "https:" ? "; Secure" : "";
       document.cookie =
         `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(payload))}; Max-Age=${EXPIRE_DAYS * 24 * 60 * 60}; Path=/; SameSite=Lax${secure}`;
     } catch {}
 
-    // flag pe <html> pentru CSS/JS
-    document.documentElement.setAttribute(
-      "data-consent-preferences",
-      String(!!consent.preferences)
-    );
-
-    // event (dacă ai listeneri)
+    document.documentElement.setAttribute("data-consent-preferences", String(!!consent.preferences));
     try { window.dispatchEvent(new CustomEvent("p4h:consent", { detail: payload })); } catch {}
   }
 
-  function acceptOnlyNecessary() {
-    persist({ necessary: true, preferences: false });
-    setOpen(false);
-  }
-  function acceptPreferences() {
-    persist({ necessary: true, preferences: true });
-    setOpen(false);
-  }
-  function savePrefs() {
-    persist({ necessary: true, preferences });
-    setOpen(false);
-  }
+  const acceptOnlyNecessary = () => { persist({ necessary: true, preferences: false }); setOpen(false); };
+  const acceptPreferences   = () => { persist({ necessary: true, preferences: true  }); setOpen(false); };
+  const savePrefs           = () => { persist({ necessary: true, preferences       }); setOpen(false); };
 
-  if (!open) return null;
+  if (!mounted || !open) return null;
 
-  return (
-    <div className="modalFlipWrapper" role="dialog" aria-modal="true" aria-label="Cookie consent">
-      <div className="modalFlip modalCard" style={{ width: "min(560px, calc(100vw - 32px))" }} data-animate="true">
-        <div style={{ display: "grid", gap: 12 }}>
-          {/* header */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div
-              aria-hidden
-              style={{
-                fontSize: 28,
-                lineHeight: 1,
-                width: 44,
-                height: 44,
-                display: "grid",
-                placeItems: "center",
-                borderRadius: 12,
-                background:
-                  "radial-gradient(60% 60% at 30% 20%, rgba(255,255,255,.16), transparent), color-mix(in srgb, var(--primary) 18%, var(--card))",
-                boxShadow: "0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent)",
-              }}
-            >
-              🍪
-            </div>
-            <div>
-              <h3 style={{ margin: 0 }}>We use cookies</h3>
-              <div style={{ color: "var(--muted)", fontSize: 13 }}>
-                Essential cookies keep the site working. Optionally, we can remember your <strong>theme</strong> (light/dark).
-              </div>
+  // 🔝 randăm ÎN BODY ca să scăpăm de stacking-context & gating
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Cookie consent"
+      // TOP of viewport: schimbi alignItems în "center" dacă vrei centrat
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 2147483646,
+        display: "grid",
+        alignItems: "start",
+        justifyItems: "center",
+        padding: "clamp(12px, 6vh, 40px) 12px",
+        background: "color-mix(in srgb, var(--bg, #0b1117) 55%, transparent)",
+        backdropFilter: "blur(2px)",
+        WebkitBackdropFilter: "blur(2px)",
+      }}
+      onClick={() => setShowPrefs(false)}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="modalCard"
+        data-animate="true"
+        style={{
+          width: "min(560px, calc(100vw - 32px))",
+          background: "var(--panel)",
+          border: "1px solid var(--border)",
+          borderRadius: 22,
+          padding: 20,
+          boxShadow: "0 14px 40px rgba(0,0,0,.35)",
+          display: "grid",
+          gap: 12,
+        }}
+      >
+        {/* header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            aria-hidden
+            style={{
+              fontSize: 28,
+              lineHeight: 1,
+              width: 44,
+              height: 44,
+              display: "grid",
+              placeItems: "center",
+              borderRadius: 12,
+              background:
+                "radial-gradient(60% 60% at 30% 20%, rgba(255,255,255,.16), transparent), color-mix(in srgb, var(--primary) 18%, var(--card))",
+              boxShadow: "0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent)",
+            }}
+          >
+            🍪
+          </div>
+          <div>
+            <h3 style={{ margin: 0 }}>We use cookies</h3>
+            <div style={{ color: "var(--muted)", fontSize: 13 }}>
+              Essential cookies keep the site working. Optionally, we can remember your <strong>theme</strong> (light/dark).
             </div>
           </div>
-
-          {/* actions */}
-          {!showPrefs ? (
-            <div style={{ display: "grid", gap: 8 }}>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  onClick={acceptPreferences}
-                  className="sb-btn sb-btn--primary"
-                  style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}
-                >
-                  Accept preferences
-                </button>
-                <button
-                  onClick={acceptOnlyNecessary}
-                  className="sb-btn"
-                  style={{ padding: "10px 14px", borderRadius: 12, background: "var(--card)", fontWeight: 900 }}
-                >
-                  Only necessary
-                </button>
-                <button
-                  onClick={() => setShowPrefs(true)}
-                  className="sb-btn"
-                  style={{ padding: "10px 14px", borderRadius: 12, background: "transparent", border: "1px solid var(--border)", fontWeight: 900 }}
-                >
-                  Customize
-                </button>
-              </div>
-              <small style={{ color: "var(--muted)" }}>
-                Read more in our{" "}
-                <Link href="/legal/cookies" style={{ color: "var(--primary)", textDecoration: "none" }}>
-                  Cookie Policy
-                </Link>.
-              </small>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gap: 12 }}>
-              <div
-                style={{
-                  border: "1px solid var(--border)",
-                  background: "var(--panel)",
-                  borderRadius: 12,
-                  padding: 12,
-                  display: "grid",
-                  gap: 10,
-                }}
-              >
-                <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                  <div>
-                    <strong>Essential</strong>
-                    <div style={{ color: "var(--muted)", fontSize: 12 }}>Required for the site to function</div>
-                  </div>
-                  <input type="checkbox" checked readOnly aria-label="Essential cookies required" />
-                </label>
-
-                <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                  <div>
-                    <strong>Preferences</strong>
-                    <div style={{ color: "var(--muted)", fontSize: 12 }}>Remembers your theme (light/dark)</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={preferences}
-                    onChange={(e) => setPreferences(e.currentTarget.checked)}
-                    aria-label="Preferences cookie"
-                  />
-                </label>
-              </div>
-
-              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
-                <button
-                  onClick={() => setShowPrefs(false)}
-                  className="sb-btn"
-                  style={{ padding: "10px 14px", borderRadius: 12 }}
-                >
-                  Back
-                </button>
-                <button
-                  onClick={savePrefs}
-                  className="sb-btn sb-btn--primary"
-                  style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}
-                >
-                  Save preferences
-                </button>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* actions */}
+        {!showPrefs ? (
+          <div style={{ display: "grid", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button
+                onClick={acceptPreferences}
+                className="sb-btn sb-btn--primary"
+                style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}
+              >
+                Accept preferences
+              </button>
+              <button
+                onClick={acceptOnlyNecessary}
+                className="sb-btn"
+                style={{ padding: "10px 14px", borderRadius: 12, background: "var(--card)", fontWeight: 900 }}
+              >
+                Only necessary
+              </button>
+              <button
+                onClick={() => setShowPrefs(true)}
+                className="sb-btn"
+                style={{ padding: "10px 14px", borderRadius: 12, background: "transparent", border: "1px solid var(--border)", fontWeight: 900 }}
+              >
+                Customize
+              </button>
+            </div>
+            <small style={{ color: "var(--muted)" }}>
+              Read more in our{" "}
+              <Link href="/legal/cookies" style={{ color: "var(--primary)", textDecoration: "none" }}>
+                Cookie Policy
+              </Link>.
+            </small>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gap: 12 }}>
+            <div
+              style={{
+                border: "1px solid var(--border)",
+                background: "var(--panel)",
+                borderRadius: 12,
+                padding: 12,
+                display: "grid",
+                gap: 10,
+              }}
+            >
+              <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <div>
+                  <strong>Essential</strong>
+                  <div style={{ color: "var(--muted)", fontSize: 12 }}>Required for the site to function</div>
+                </div>
+                <input type="checkbox" checked readOnly aria-label="Essential cookies required" />
+              </label>
+
+              <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <div>
+                  <strong>Preferences</strong>
+                  <div style={{ color: "var(--muted)", fontSize: 12 }}>Remembers your theme (light/dark)</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={preferences}
+                  onChange={(e) => setPreferences(e.currentTarget.checked)}
+                  aria-label="Preferences cookie"
+                />
+              </label>
+            </div>
+
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
+              <button
+                onClick={() => setShowPrefs(false)}
+                className="sb-btn"
+                style={{ padding: "10px 14px", borderRadius: 12 }}
+              >
+                Back
+              </button>
+              <button
+                onClick={savePrefs}
+                className="sb-btn sb-btn--primary"
+                style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}
+              >
+                Save preferences
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
-
 export default function HomePage() {
   const [navOpen, setNavOpen] = useState(false);
   const year = new Date().getFullYear();
