@@ -259,7 +259,7 @@ export default function CalendarClient({
           className="sb-select"
           value={propertyId ?? ""} // evităm undefined
           onChange={(e) => { setPropertyId(e.currentTarget.value); }}
-          style={{ minWidth: 220, maxWidth: 380, paddingInline: 12, height: 36, width: "auto" }}
+          style={{ minWidth: 220, maxWidth: 380, paddingInline: 12, height: 22, width: "auto" }}
         >
           {properties.map(p => (
             <option key={p.id} value={p.id}>{p.name}</option>
