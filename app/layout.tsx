@@ -158,14 +158,7 @@ html, body { background: var(--bg); color: var(--text); }
           {/* Modalul mic de setări — disponibil pe orice pagină */}
          <CookieModal />
          </ConsentProvider>
-          {/* Wrapper global (fără cookie UI global) */}
-         <ConsentProvider>
-          <div style={{ paddingTop: "var(--safe-top)", paddingBottom: "var(--safe-bottom)" }}>
-            {children}
-          </div>
-          {/* ❌ eliminat <CookieBanner /> și <CookieModal /> din layout
-              👉 pune <CookieConsent /> DOAR în app/page.tsx (landing) */}
-        </ConsentProvider>
+         
       </body>
     </html>
   );
