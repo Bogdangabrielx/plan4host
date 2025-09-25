@@ -437,3 +437,36 @@
 
 /* fallback iOS vechi – dacă setăm data-standalone pe <html> */
 html[data-standalone="true"] .skipLink { display: none !important; }
+
+
+
+
+
+/* Capă pentru notch-ul de SUS (deja ai ceva similar) */
+.landing::before{
+  content:"";
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--safe-top, env(safe-area-inset-top));
+  background: #0b1117;           /* culoarea landing-ului dark */
+  z-index: 10900;                /* sub cookie modal (11000), peste conținut */
+  pointer-events: none;
+}
+
+/* Capă pentru home-indicator (JOS) */
+.landing::after{
+  content:"";
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: var(--safe-bottom, env(safe-area-inset-bottom));
+  background: #0b1117;           /* aceeași culoare, ca să nu „sângereze” tema din altă pagină */
+  z-index: 10900;                /* sub cookie modal */
+  pointer-events: none;
+}
+
+/* (opțional) întărește fundalul landing-ului și previne flash-uri la overscroll */
+.landing{
+  background: #0b1117;
+  min-height: 100svh;
+  overscroll-behavior: contain;
+}
