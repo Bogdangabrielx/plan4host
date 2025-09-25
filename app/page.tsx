@@ -11,10 +11,6 @@ import AutoOpenOnLanding from "@/components/consent/AutoOpenOnLanding";
 
 <AutoOpenOnLanding delay={150} />
 
-export const metadata = {
-  appleWebApp: { statusBarStyle: "black" } // înlocuiește black-translucent pentru pagina asta
-};
-
 /** CTA Link that triggers the sparkle animation on touch devices before navigating */
 function CtaLink({
   href,
@@ -633,3 +629,6 @@ export default function HomePage() {
     </main>
   );
 }
+export const metadata = {
+  appleWebApp: { statusBarStyle: "black" } // înlocuiește black-translucent pentru pagina asta
+};
