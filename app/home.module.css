@@ -379,7 +379,7 @@
 /* 🔧 Mobile tweak: ascunde “Plan4host” + mărește puțin logo-ul */
 @media (max-width: 480px){
   .brand strong { display: none; }
-  .nav .brand img { width: 60px; height: 50px; }
+  .nav .brand img { weight: 50px; height: 50px; }
 }
 
 /* Responsive media: prevent lateral overflow (scoped) */
