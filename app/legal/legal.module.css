@@ -26,18 +26,20 @@
 
 .page * { box-sizing: border-box; }
 
-/* Ambient glow background */
-.page::before {
-  content: "";
-  position: fixed; inset: -20%;
-  pointer-events: none; z-index: 0;
+:root[data-theme="light"] body{
   background:
-    radial-gradient(60rem 60rem at 10% 0%, color-mix(in oklab, var(--accent1) 22%, transparent), transparent 60%),
-    radial-gradient(50rem 50rem at 95% 10%, color-mix(in oklab, var(--accent2) 22%, transparent), transparent 60%),
-    radial-gradient(70rem 60rem at 30% 100%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 60%);
-  filter: blur(28px) saturate(120%);
-  opacity: .35;
+    radial-gradient(60rem 60rem at 10% -5%,
+      color-mix(in srgb, var(--accent1) 14%, transparent),
+      transparent 72%),
+    radial-gradient(56rem 56rem at 100% 0%,
+      color-mix(in srgb, var(--primary) 10%, transparent),
+      transparent 65%),
+    radial-gradient(68rem 58rem at 30% 100%,
+      color-mix(in srgb, var(--accent1) 8%, transparent),
+      transparent 62%),
+    var(--bg);
 }
+
 
 /* Layout */
 .container { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 48px 20px 80px; }
