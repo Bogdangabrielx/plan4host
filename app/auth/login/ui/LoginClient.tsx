@@ -159,7 +159,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
 
   return (
     <div style={outerWrap}>
-      <h1 style={heroTitle}>Welcome to Plan4host</h1>
+      <h1 style={heroTitle}>Welcome to Plan4Host</h1>
 
       <div style={wrap(mounted ? theme : "dark")}>
         <div style={headRow}>
