@@ -1,6 +1,7 @@
 // /app/legal/cookies/page.tsx
 import type { Metadata } from "next";
 import s from "../legal.module.css";
+import OpenCookieSettingsButton from "@/components/consent/OpenCookieSettingsButton";
 
 export const metadata: Metadata = {
   title: "Cookie Policy — Plan4host",
@@ -65,9 +66,7 @@ export default function CookiePolicyPage() {
           <div className={s.card} style={{ margin: "16px 0 6px" }}>
             <p className={s.p} style={{ margin: 0 }}>
               You can review cookie information any time via{" "}
-              <button id="open-cookie-settings" className={`${s.btn} ${s.btnPrimary}`} aria-haspopup="dialog" type="button">
-                Cookie settings
-              </button>
+              <OpenCookieSettingsButton className={`${s.btn} ${s.btnPrimary}`} />
               . (This opens a small settings modal.)
             </p>
             <p className={`${s.p} ${s.muted}`} style={{ marginTop: 8 }}>
