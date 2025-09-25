@@ -422,5 +422,21 @@ function Switch({
         }}
       />
     </button>
-  );
-}
+      );
+     }
+      // un buton simplu care deschide modalul nou
+     export function OpenCookieSettingsButton(
+      props: React.ButtonHTMLAttributes<HTMLButtonElement> 
+     ) {
+     const { openModal } = useConsent();
+     return (
+      <button
+      type="button"
+      aria-haspopup="dialog"
+      onClick={(e) => { e.preventDefault(); openModal(); }}
+      {...props}
+      >
+      {props.children ?? "Cookie settings"}
+     </button>
+     );
+      }
