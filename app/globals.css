@@ -109,53 +109,30 @@ textarea:focus-visible {
 .sb-btn--icon { width: 36px; height: 36px; padding: 0; border-radius: 999px; }
 .sb-btn--small { padding: 6px 10px; border-radius: 8px; }
 
-/* Unificare completă pentru toate select-urile „noastre” */
-.sb-select,
-select:not([multiple]):not([size]) {
-  /* ascundem săgeata nativă și standardizăm metrica */
-  -webkit-appearance: none;
-          appearance: none;
-  background-color: var(--card);
+/* înlocuiește blocul .sb-select actual */
+.sb-select{
+  -webkit-appearance: menulist;
+  appearance: auto;
+  background: var(--card);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 8px 36px 8px 12px; /* loc pentru iconița de săgeți */
-  line-height: 1.2;
-  font: inherit;
+  padding: 8px 12px;
   font-weight: 700;
-  min-height: 36px;
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px 12px;
-
-  /* săgeți up/down în SVG (Safari-like) */
-  background-image:
-    url("data:image/svg+xml;utf8,<svg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'><path d='M3 5l3-3 3 3' fill='none' stroke='%23AAB2BD' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M3 7l3 3 3-3' fill='none' stroke='%23AAB2BD' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  font-family: inherit;
+  line-height: 1.2;
 }
 
-/* hover/focus consistente */
-.sb-select:hover,
-select:not([multiple]):not([size]):hover {
-  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
-}
-.sb-select:focus,
-select:not([multiple]):not([size]):focus {
-  outline: 2px solid color-mix(in srgb, var(--primary) 70%, white);
-  outline-offset: 2px;
-}
-
-/* IE legacy (inofensiv azi, dar sigur) */
-.sb-select::-ms-expand,
-select:not([multiple]):not([size])::-ms-expand { display: none; }
-
-/* mici diferențe vizuale pe teme */
-:root[data-theme="dark"] .sb-select,
-:root[data-theme="dark"] select:not([multiple]):not([size]) {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
-}
-:root[data-theme="light"] .sb-select,
-:root[data-theme="light"] select:not([multiple]):not([size]) {
-  box-shadow: inset 0 1px 0 rgba(0,0,0,.02);
+select:not(.sb-select){ /* opțional */
+  -webkit-appearance: menulist;
+  appearance: auto;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: 700;
+  font-family: inherit;
 }
 
 /* Segmented control */
