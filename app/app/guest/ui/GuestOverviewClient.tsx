@@ -6,28 +6,24 @@ import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import RoomDetailModal from "@/app/app/calendar/ui/RoomDetailModal";
 
-// ---- Types din pagina server (le folosim și aici) ----
+/* ───────────────── Types ───────────────── */
+
 type Property = {
   id: string;
   name: string;
   check_in_time: string | null;
   check_out_time: string | null;
-  regulation_pdf_url?: string | null; // opțional
+  regulation_pdf_url?: string | null;
 };
-
 type Room = { id: string; name: string; property_id: string; room_type_id?: string | null };
-type RoomType = { id: string; name: string; property_id: string };
 
-// ---- Forma pe care o întoarce /api/guest-overview (rows) ----
 type OverviewRow = {
-  id: string | null;             // booking_id
+  id: string | null;
   property_id: string;
   room_id: string | null;
-  start_date: string;            // yyyy-mm-dd
-  end_date: string;              // yyyy-mm-dd
+  start_date: string;
+  end_date: string;
   status: "green" | "yellow" | "red";
-
-  // meta opționale pentru UI
   _room_label?: string | null;
   _room_type_id?: string | null;
   _room_type_name?: string | null;
@@ -44,27 +40,40 @@ type OverviewRow = {
   _guest_last_name?: string | null;
 };
 
-// ---- Helpers dată/oră & text ----
+/* ───────────────── Helpers ───────────────── */
+
 function fmtDate(ymd: string): string {
   const [y, m, d] = ymd.split("-").map((n) => parseInt(n, 10));
-  const dd = String(d).padStart(2, "0");
-  const mm = String(m).padStart(2, "0");
-  return `${dd}.${mm}.${y}`;
+  return `${String(d).padStart(2, "0")}.${String(m).padStart(2, "0")}.${y}`;
 }
-function formatRange(startYMD: string, endYMD: string): string {
-  return `${fmtDate(startYMD)} → ${fmtDate(endYMD)}`;
+function formatRange(a: string, b: string) {
+  return `${fmtDate(a)} → ${fmtDate(b)}`;
 }
 function fullName(item: OverviewRow): string {
   const f = (item._guest_first_name ?? "").trim();
   const l = (item._guest_last_name ?? "").trim();
-  const combined = [f, l].filter(Boolean).join(" ").trim();
-  return combined || "—";
+  return [f, l].filter(Boolean).join(" ").trim() || "—";
 }
-function toBadge(kind: OverviewRow["status"]): "GREEN" | "YELLOW" | "RED" {
+function toBadge(kind: OverviewRow["status"]) {
   return kind === "green" ? "GREEN" : kind === "yellow" ? "YELLOW" : "RED";
 }
+function subcopyFor(row: OverviewRow): string | null {
+  if (row.status === "yellow") {
+    if (row._reason === "waiting_form")
+      return "Waiting for the guest to complete the check-in form (until 3 days before arrival).";
+    if (row._reason === "waiting_ical")
+      return "Waiting for a matching OTA iCal event (max 2 hours after form submission).";
+  }
+  if (row.status === "red") {
+    if (row._reason === "missing_form") return "No check-in form was received for this OTA reservation.";
+    if (row._reason === "no_ota_found") return "Form dates do not match any OTA reservation.";
+    if (row._reason === "type_conflict") return "Unmatched Room: OTA type and form type differ. Resolve in Calendar.";
+    if (row._reason === "room_required_auto_failed") return "No free room of the booked type was available for auto-assignment.";
+    return "Action required.";
+  }
+  return null;
+}
 
-// Link public /checkin pe proprietate
 function getCheckinBase(): string {
   const v1 = (process.env.NEXT_PUBLIC_CHECKIN_BASE || "").toString().trim();
   if (v1) return v1.replace(/\/+$/, "");
@@ -88,132 +97,110 @@ function buildPropertyCheckinLink(propertyId: string): string {
   }
 }
 
-// Subcopy pentru stări (folosește status + _reason din OverviewRow)
-function subcopyFor(row: OverviewRow): string | null {
-  if (row.status === "yellow") {
-    if (row._reason === "waiting_form") {
-      return "Waiting for the guest to complete the check-in form (until 3 days before arrival).";
-    }
-    if (row._reason === "waiting_ical") {
-      return "Waiting for a matching OTA iCal event (max 2 hours after form submission).";
-    }
-  }
-  if (row.status === "red") {
-    if (row._reason === "missing_form") return "No check-in form was received for this OTA reservation.";
-    if (row._reason === "no_ota_found") return "Form dates do not match any OTA reservation.";
-    if (row._reason === "type_conflict") return "Unmatched Room: OTA type and form type differ. Resolve in Calendar.";
-    if (row._reason === "room_required_auto_failed") return "No free room of the booked type was available for auto-assignment.";
-    return "Action required.";
-  }
-  return null;
-}
+/* ───────────────── Component ───────────────── */
 
-// ---- Componenta principală ----
 export default function GuestOverviewClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = createClient();
   const { setPill } = useHeader();
 
-  // Proprietăți + selecție
+  // Responsive
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.innerWidth < 560 : false
+  );
+  useEffect(() => {
+    const onR = () => setIsMobile(window.innerWidth < 560);
+    onR();
+    window.addEventListener("resize", onR);
+    return () => window.removeEventListener("resize", onR);
+  }, []);
+
+  // Properties & selection
   const [properties, setProperties] = useState<Property[]>(initialProperties || []);
   const [activePropertyId, setActivePropertyId] = useState<string | null>(initialProperties?.[0]?.id ?? null);
 
-  // Date auxiliare pentru UI (Rooms + Types)
+  // Data
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
-
-  // Items din API-ul nou (/api/guest-overview)
   const [items, setItems] = useState<OverviewRow[]>([]);
   const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
   const [hint, setHint] = useState<string>("");
 
-  // UX: feedback “Copied!”
+  // UX small bits
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const copyTimer = useRef<number | null>(null);
   useEffect(() => () => { if (copyTimer.current) window.clearTimeout(copyTimer.current); }, []);
 
-  // Modal — deschidem rezervarea (GREEN)
+  // Modals
   const [modal, setModal] = useState<null | { propertyId: string; dateStr: string; room: Room }>(null);
-  // Reservation Message modal (stub UI for now)
   const [rmModal, setRmModal] = useState<null | { propertyId: string; item: OverviewRow }>(null);
 
-  // Legend info popovers
-  const [legendInfo, setLegendInfo] = useState<null | 'green' | 'yellow' | 'red'>(null);
-  // Close legend on outside click
+  // Legend popovers
+  const [legendInfo, setLegendInfo] = useState<null | "green" | "yellow" | "red">(null);
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
       let el = e.target as HTMLElement | null;
       while (el) {
-        if ((el as HTMLElement).dataset && (el as HTMLElement).dataset.legend === 'keep') return;
+        if ((el as HTMLElement).dataset?.legend === "keep") return;
         el = el.parentElement as HTMLElement | null;
       }
       setLegendInfo(null);
     };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  // Permisiuni: editor/admin pot face acțiuni (viewer = read-only)
+  // Permissions
   const [canEditGuest, setCanEditGuest] = useState<boolean>(false);
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch('/api/me', { cache: 'no-store' });
+        const r = await fetch("/api/me", { cache: "no-store" });
         const j = await r.json().catch(() => ({}));
         const me = j?.me as { role?: string; disabled?: boolean } | undefined;
         if (!me || me.disabled) { setCanEditGuest(false); return; }
-        setCanEditGuest(me.role === 'admin' || me.role === 'editor');
-      } catch {
-        setCanEditGuest(false);
-      }
+        setCanEditGuest(me.role === "admin" || me.role === "editor");
+      } catch { setCanEditGuest(false); }
     })();
   }, []);
 
-  // Refresh (rooms + types + overview items)
+  // Loaders
   const refresh = useCallback(async () => {
     if (!activePropertyId) return;
     setLoading("loading");
+    setPill("Loading…");
     setHint("Loading…");
 
-    // 1) Rooms + Types
-    const [rRooms, rTypes] = await Promise.all([
+    const [rRooms] = await Promise.all([
       supabase
         .from("rooms")
         .select("id,name,property_id,room_type_id")
         .eq("property_id", activePropertyId)
         .order("name", { ascending: true }),
-      supabase
-        .from("room_types")
-        .select("id,name,property_id")
-        .eq("property_id", activePropertyId)
-        .order("name", { ascending: true }),
     ]);
 
-    if (rRooms.error || rTypes.error) {
+    if (rRooms.error) {
       setLoading("error");
-      setHint(rRooms.error?.message || rTypes.error?.message || "Failed to load rooms/types.");
+      setPill("Error");
+      setHint(rRooms.error?.message || "Failed to load rooms.");
       return;
     }
 
     setRooms((rRooms.data ?? []) as Room[]);
-    setRoomTypes((rTypes.data ?? []) as RoomType[]);
 
-    // 2) Overview items din API (no-store)
     try {
       const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(activePropertyId)}`, { cache: "no-store" });
-      if (!res.ok) {
-        const txt = await res.text().catch(() => "");
-        throw new Error(txt || `HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(await res.text());
       const j = await res.json();
       const arr: OverviewRow[] = Array.isArray(j?.items) ? j.items : [];
       setItems(arr);
       setLoading("idle");
+      setPill("Idle");
       setHint("");
     } catch (e: any) {
       setLoading("error");
+      setPill("Error");
       setHint(e?.message || "Failed to load guest overview.");
     }
-  }, [activePropertyId, supabase]);
+  }, [activePropertyId, supabase, setPill]);
 
   useEffect(() => {
     setProperties(initialProperties || []);
@@ -224,48 +211,72 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  // Reflect loading status in the AppHeader pill
-  useEffect(() => {
-    const label =
-      loading === "error" ? "Error" :
-      loading === "loading" ? "Loading…" : "Idle";
-    setPill(label);
-  }, [loading, setPill]);
-
-  // Mape utile
+  // Maps & sorted rows
   const roomById = useMemo(() => {
     const m = new Map<string, Room>();
     rooms.forEach((r) => m.set(String(r.id), r));
     return m;
   }, [rooms]);
 
-  // Sortare: după start_date, apoi după nume cameră (natural)
   const collator = useMemo(() => new Intl.Collator(undefined, { numeric: true, sensitivity: "base" }), []);
   const rows = useMemo(() => {
     return [...items].sort((a, b) => {
       const d = a.start_date.localeCompare(b.start_date);
       if (d !== 0) return d;
-      const rnA = a._room_label ?? "";
-      const rnB = b._room_label ?? "";
-      return collator.compare(rnA, rnB);
+      return collator.compare(a._room_label ?? "", b._room_label ?? "");
     });
   }, [items, collator]);
 
-  // Badge styling
-  function badgeStyle(kind: OverviewRow["status"]): React.CSSProperties {
-    const base: React.CSSProperties = {
-      display: "inline-block",
-      padding: "2px 10px",
-      fontSize: 12,
-      fontWeight: 800,
-      borderRadius: 999,
-      border: "1px solid transparent",
-      color: "#0c111b",
-    };
-    if (kind === "green") return { ...base, background: "transparent", borderColor: "var(--success)",color:"var(--success)" };
-    if (kind === "red") return { ...base, background: "transparent", borderColor: "var(--danger)", color:"var(--danger)" };
-    return { ...base, background: "transparent", borderColor: "var(--warning, #f59e0b)", color:"var(--warning, #f59e0b)" };
-  }
+  // Styles
+  const containerStyle: React.CSSProperties = {
+    margin: "0 auto",
+    width: "min(960px, 100%)",
+    padding: isMobile ? "10px 12px 16px" : "16px",
+    paddingBottom: "calc(16px + var(--safe-bottom))",
+  };
+  const controlsWrap: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+    justifyContent: isMobile ? "space-between" : "flex-end",
+  };
+  const selectStyle: React.CSSProperties = {
+    minWidth: isMobile ? "100%" : 220,
+    width: isMobile ? "100%" : undefined,
+    padding: "8px 10px",
+    background: "var(--card)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    fontWeight: 700,
+    fontFamily: "inherit",
+  };
+  const actionsRow = (wrap?: boolean): React.CSSProperties => ({
+    display: wrap ? "grid" : "flex",
+    gridTemplateColumns: wrap ? "1fr" : undefined,
+    alignItems: "center",
+    justifyContent: wrap ? "stretch" : "flex-end",
+    gap: 8,
+    flexWrap: wrap ? undefined : "wrap",
+  });
+  const badgeStyle = (kind: OverviewRow["status"]): React.CSSProperties => ({
+    display: "inline-block",
+    padding: "2px 10px",
+    fontSize: 12,
+    fontWeight: 800,
+    borderRadius: 999,
+    border: "1px solid",
+    background: "transparent",
+    color:
+      kind === "green" ? "var(--success)" :
+      kind === "red" ? "var(--danger)" :
+      "var(--warning, #f59e0b)",
+    borderColor:
+      kind === "green" ? "var(--success)" :
+      kind === "red" ? "var(--danger)" :
+      "var(--warning, #f59e0b)",
+  });
 
   // Actions
   const copyCheckinLink = useCallback(async (propertyId: string, key: string) => {
@@ -274,285 +285,322 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       await navigator.clipboard.writeText(link);
       setCopiedKey(key);
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
-      copyTimer.current = window.setTimeout(() => setCopiedKey(null), 2000);
-    } catch {
-      // fallback
-      prompt("Copy this link:", link);
-    }
+      copyTimer.current = window.setTimeout(() => setCopiedKey(null), 1500);
+    } catch { prompt("Copy this link:", link); }
   }, []);
 
-  function resolveInCalendar(item: OverviewRow, _propertyId: string) {
-    const url = `/app/calendar?date=${item.start_date}`;
-    if (typeof window !== "undefined") window.location.href = url;
+  function resolveInCalendar(item: OverviewRow) {
+    if (typeof window !== "undefined") window.location.href = `/app/calendar?date=${item.start_date}`;
   }
-
   function openReservation(item: OverviewRow, propertyId: string) {
-    if (!item.room_id) {
-      alert("This booking has no assigned room yet.");
-      return;
-    }
+    if (!item.room_id) { alert("This booking has no assigned room yet."); return; }
     const room = roomById.get(String(item.room_id));
-    if (!room) {
-      alert("Room not found locally. Try refreshing.");
-      return;
-    }
+    if (!room) { alert("Room not found locally. Try refreshing."); return; }
     setModal({ propertyId, dateStr: item.start_date, room });
   }
 
-  // ===== Reservation Message (UI stub) =====
-  type RMField = { key: string; label: string; required: boolean; multiline: boolean; placeholder?: string };
-  type RMTemplate = { status: 'draft'|'published'; fields: RMField[]; blocks: Array<{ id: string; type: 'heading'|'paragraph'|'divider'; text?: string }>; };
-  function tplLsKey(pid: string) { return `p4h:rm:template:${pid}`; }
-  function escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
-  function mdToHtml(src: string) {
-    let s = escapeHtml(src);
-    s = s.replace(/\[(.+?)\]\((https?:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
-    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/(^|\s)\*(.+?)\*(?=\s|$)/g, '$1<em>$2</em>');
-    s = s.replace(/\n/g, '<br/>');
-    return s;
-  }
-  function replaceVars(s: string, vars: Record<string,string>) {
-    if (!s) return "";
-    return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => (vars?.[k] ?? `{{${k}}}`));
-  }
-  function renderRM(tpl: RMTemplate, vars: Record<string,string>) {
-    const out: string[] = [];
-    for (const b of (tpl.blocks||[])) {
-      if (b.type === 'divider') out.push('<hr style="border:1px solid var(--border); opacity:.6;"/>');
-      else if (b.type === 'heading') out.push(`<h3 style="margin:8px 0 6px;">${escapeHtml(replaceVars(b.text||'', vars))}</h3>`);
-      else if (b.type === 'paragraph') out.push(`<p style=\"margin:6px 0; line-height:1.5;\">${mdToHtml(replaceVars(b.text||'', vars))}</p>`);
-    }
-    return out.join('\n');
-  }
+  // Header pill
+  useEffect(() => {
+    if (loading === "loading") setPill("Loading…");
+    else if (loading === "error") setPill("Error");
+    else setPill("Idle");
+  }, [loading, setPill]);
 
   return (
-    <div style={{ padding: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
-      {/* Put plan badge in AppHeader (right slot) and ensure title */}
+    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
       <PlanHeaderBadge title="Guest Overview" slot="header-right" />
-      <div style={{ margin: '0 auto', width: 'min(1200px, calc(100vw - 32px))' }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div />
 
-        {/* Property selector + Refresh */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Property</label>
-          <select
-            value={activePropertyId ?? ""}
-            onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value || null)}
-            style={{ padding: "8px 10px", background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 10, fontWeight: 700, fontFamily: 'inherit' }}
-          >
-            {properties.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-          <button
-            onClick={refresh}
-            style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 900, cursor: "pointer" }}
-            title="Refresh"
-          >
-            Refresh
-          </button>
-        </div>
-      </div>
-
-      {/* Legend */}
-      <div style={{ display: "flex", gap: 18, alignItems: "flex-start", marginBottom: 12 }}>
-        {/* GREEN */}
-        <div style={{ position: 'relative', display: 'inline-block' }} data-legend="keep"
-             onMouseEnter={() => setLegendInfo('green')} onMouseLeave={() => setLegendInfo(null)}>
-          <span style={badgeStyle('green')}>GREEN</span>
-          <button
-            type="button"
-            aria-label="What is GREEN?"
-            onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'green' ? null : 'green'); }}
-            style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', lineHeight: 0, fontSize: 10, cursor: 'pointer' }}
-          >
-            i
-          </button>
-          {legendInfo === 'green' && (
-            <div data-legend="keep" style={{ position: 'absolute', top: '50%', left: 'calc(100% + 8px)', transform: 'translateY(-50%)', zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220, maxWidth: 'min(300px, calc(100vw - 32px))' }}>
-              <div style={{ fontWeight: 800, marginBottom: 4 }}>GREEN</div>
-              <div style={{ fontSize: 12, color: 'var(--muted)' }}>Nothing to do</div>
-            </div>
-          )}
+      <div style={containerStyle}>
+        {/* Controls */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
+          <div style={{ fontWeight: 800, fontSize: isMobile ? 16 : 18, color: "var(--muted)" }}>
+            {loading === "loading" ? hint || "Loading…" : "Overview"}
+          </div>
+          <div style={controlsWrap}>
+            <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, width: isMobile ? "100%" : "auto" }}>
+              Property
+            </label>
+            <select
+              value={activePropertyId ?? ""}
+              onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value || null)}
+              style={selectStyle}
+            >
+              {properties.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <button
+              onClick={refresh}
+              className="sb-btn"
+              style={{ padding: "8px 12px", borderRadius: 10 }}
+              title="Refresh"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
 
-        {/* YELLOW */}
-        <div style={{ position: 'relative', display: 'inline-block' }} data-legend="keep"
-             onMouseEnter={() => setLegendInfo('yellow')} onMouseLeave={() => setLegendInfo(null)}>
-          <span style={badgeStyle('yellow')}>YELLOW</span>
-          <button
-            type="button"
-            aria-label="What is YELLOW?"
-            onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'yellow' ? null : 'yellow'); }}
-            style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', lineHeight: 0, fontSize: 10, cursor: 'pointer' }}
-          >
-            i
-          </button>
-          {legendInfo === 'yellow' && (
-            <div data-legend="keep" style={{ position: 'absolute', top: '50%', left: 'calc(100% + 8px)', transform: 'translateY(-50%)', zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 260, maxWidth: 'min(320px, calc(100vw - 32px))' }}>
-              <div style={{ fontWeight: 800, marginBottom: 4 }}>YELLOW </div>
-              <div style={{ fontSize: 12, color: 'var(--muted)', display: 'grid', gap: 2 }}>
-                <span>-Waiting window-</span>
-                <span>Only Form: max 2h</span>
-                <span>Only iCal: until 3 days before arrival</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* RED */}
-        <div style={{ position: 'relative', display: 'inline-block' }} data-legend="keep"
-             onMouseEnter={() => setLegendInfo('red')} onMouseLeave={() => setLegendInfo(null)}>
-          <span style={badgeStyle('red')}>RED</span>
-          <button
-            type="button"
-            aria-label="What is RED?"
-            onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === 'red' ? null : 'red'); }}
-            style={{ position:'absolute', top: -10, right: -10, width: 14, height: 14, borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', display: 'grid', placeItems: 'center', lineHeight: 0, fontSize: 10, cursor: 'pointer' }}
-          >
-            i
-          </button>
-          {legendInfo === 'red' && (
-            <div data-legend="keep" style={{ position: 'absolute', top: '50%', left: 'calc(100% + 8px)', transform: 'translateY(-50%)', zIndex: 5, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, boxShadow: '0 10px 30px rgba(0,0,0,0.25)', width: 220, maxWidth: 'min(300px, calc(100vw - 32px))' }}>
-              <div style={{ fontWeight: 800, marginBottom: 4 }}>RED</div>
-              <div style={{ fontSize: 12, color: 'var(--muted)' }}>Action required</div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Rows */}
-      <div style={{ display: "grid", gap: 10 }}>
-        {rows.map((it) => {
-          const name = fullName(it) || "Unknown guest";
-
-          // Fail-safe: dacă din greșeală vine GREEN fără room -> degradează local la YELLOW
-          const kind: OverviewRow["status"] =
-            it.status === "green" && !it.room_id ? "yellow" : it.status;
-
-          const roomLabel = it._room_label ?? "—";
-          const badge = toBadge(kind);
-          const typeName = it._room_type_name ?? "—";
-
-          const subcopy = kind === "green" ? null : subcopyFor(it);
-          const propertyId = activePropertyId!;
-
-          const key = `${it.id ?? "noid"}|${it.start_date}|${it.end_date}|${it._room_type_id ?? "null"}`;
-
-          const showCopy =
-            kind !== "green" &&
-            ((kind === "yellow" && it._reason === "waiting_form") || (kind === "red" && it._reason === "missing_form"));
-
-          return (
-            <div key={key} style={{ border: "1px solid var(--border)", background: "var(--panel)", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-                <em style={{ letterSpacing: 0.2, fontStyle: "italic", fontWeight: 400 }}>
-                  {name} · Room: {roomLabel} — Type: {typeName} — {formatRange(it.start_date, it.end_date)}
-                </em>
-                <span style={badgeStyle(kind)}>{badge}</span>
-              </div>
-
-              {subcopy && <small style={{ color: "var(--muted)" }}>{subcopy}</small>}
-
-              {/* Actions */}
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
-            {/* GREEN → Open reservation (RoomDetailModal) */}
-            {kind === "green" && canEditGuest && (
+        {/* Legend */}
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 12, flexWrap: "wrap" }}>
+          {(["green","yellow","red"] as const).map((k) => (
+            <div key={k} style={{ position: "relative" }} data-legend="keep">
+              <span style={badgeStyle(k)}>{toBadge(k)}</span>
               <button
-                onClick={() => openReservation(it, propertyId)}
-                    disabled={!it.room_id || !roomById.has(String(it.room_id))}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border)",
-                      background: it.room_id && roomById.has(String(it.room_id)) ? "var(--primary)" : "var(--card)",
-                      color: it.room_id && roomById.has(String(it.room_id)) ? "#0c111b" : "var(--text)",
-                      fontWeight: 900,
-                      cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
-                    }}
-                    title={it.room_id ? "Open reservation" : "No room assigned yet"}
-                >
-                  Open reservation
-                </button>
-            )}
-
-            {/* GREEN → Reservation message (UI stub) */}
-            {kind === "green" && (
-              <button
-                onClick={() => setRmModal({ propertyId, item: it })}
-                style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 900, cursor: "pointer" }}
-                title="Reservation message"
+                type="button"
+                aria-label={`What is ${toBadge(k)}?`}
+                onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === k ? null : k); }}
+                style={{ marginLeft: 6, width: 18, height: 18, borderRadius: 6, border: "1px solid var(--border)", background: "transparent", color: "var(--muted)", lineHeight: 1, fontSize: 12, cursor: "pointer" }}
               >
-                Reservation message
+                i
               </button>
-            )}
 
-                {/* YELLOW(iCal) / RED(missing_form) → Copy link */}
-                {showCopy && (
-                  <button
-                    onClick={() => copyCheckinLink(propertyId, key)}
-                    style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 900, cursor: "pointer" }}
-                    title="Copy check-in link"
+              {legendInfo === k && (
+                isMobile ? (
+                  <div data-legend="keep" style={{ marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Nothing to do.</div>}
+                    {k === "yellow" && (
+                      <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
+                        <span>-Waiting window-</span>
+                        <span>Only Form: max 2h</span>
+                        <span>Only iCal: until 3 days before arrival</span>
+                      </div>
+                    )}
+                    {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Action required.</div>}
+                  </div>
+                ) : (
+                  <div
+                    data-legend="keep"
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "calc(100% + 8px)",
+                      transform: "translateY(-50%)",
+                      zIndex: 5,
+                      background: "var(--panel)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 8,
+                      padding: 8,
+                      boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+                      width: 260,
+                      maxWidth: "min(320px, calc(100vw - 32px))",
+                    }}
                   >
-                    {copiedKey === key ? "Copied!" : "Copy check-in link"}
-                  </button>
-                )}
-
-                {/* RED → Resolve in Calendar (deschide pe luna corectă) */}
-                {kind === "red" && canEditGuest && (
-                  <button
-                    onClick={() => resolveInCalendar(it, propertyId)}
-                    style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--danger)", background: "transparent", color: "var(--text)", fontWeight: 900, cursor: "pointer" }}
-                    title="Resolve in Calendar"
-                  >
-                    Resolve in Calendar
-                  </button>
-                )}
-              </div>
+                    <div style={{ fontWeight: 800, marginBottom: 4 }}>{toBadge(k)}</div>
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Nothing to do.</div>}
+                    {k === "yellow" && (
+                      <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
+                        <span>-Waiting window-</span>
+                        <span>Only Form: max 2h</span>
+                        <span>Only iCal: until 3 days before arrival</span>
+                      </div>
+                    )}
+                    {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Action required.</div>}
+                  </div>
+                )
+              )}
             </div>
-          );
-        })}
+          ))}
+        </div>
 
-        {rows.length === 0 && (
-          <div style={{ border: "1px solid var(--border)", background: "var(--panel)", borderRadius: 12, padding: 16, color: "var(--muted)", textAlign: "center" }}>
-            No current or upcoming reservations.
+        {/* Rows */}
+        <div style={{ display: "grid", gap: 10 }}>
+          {rows.map((it) => {
+            const name = fullName(it) || "Unknown guest";
+            const kind: OverviewRow["status"] =
+              it.status === "green" && !it.room_id ? "yellow" : it.status;
+
+            const roomLabel = it._room_label ?? "—";
+            const badge = toBadge(kind);
+            const typeName = it._room_type_name ?? "—";
+            const subcopy = kind === "green" ? null : subcopyFor(it);
+            const propertyId = activePropertyId!;
+            const key = `${it.id ?? "noid"}|${it.start_date}|${it.end_date}|${it._room_type_id ?? "null"}`;
+
+            const showCopy =
+              kind !== "green" &&
+              ((kind === "yellow" && it._reason === "waiting_form") ||
+                (kind === "red" && it._reason === "missing_form"));
+
+            return (
+              <section
+                key={key}
+                className="sb-card"
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  padding: 12,
+                  background: "var(--panel)",
+                  display: "grid",
+                  gap: 8,
+                  overflow: "hidden",
+                }}
+              >
+                {/* Top line */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: isMobile ? "1fr" : "1fr auto",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <em
+                    style={{
+                      letterSpacing: 0.2,
+                      fontStyle: "italic",
+                      fontWeight: 400,
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {name} · Room: {roomLabel} — Type: {typeName}
+                    <br />
+                    {formatRange(it.start_date, it.end_date)}
+                  </em>
+                  <div style={{ justifySelf: isMobile ? "start" : "end" }}>
+                    <span style={badgeStyle(kind)}>{badge}</span>
+                  </div>
+                </div>
+
+                {/* Subcopy */}
+                {subcopy && <small style={{ color: "var(--muted)", display: "block" }}>{subcopy}</small>}
+
+                {/* Actions */}
+                <div style={actionsRow(isMobile)}>
+                  {kind === "green" && canEditGuest && (
+                    <button
+                      onClick={() => openReservation(it, propertyId)}
+                      disabled={!it.room_id || !roomById.has(String(it.room_id))}
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        border: "1px solid var(--border)",
+                        background: it.room_id && roomById.has(String(it.room_id)) ? "var(--primary)" : "var(--card)",
+                        color: it.room_id && roomById.has(String(it.room_id)) ? "#0c111b" : "var(--text)",
+                        fontWeight: 900,
+                        cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
+                        width: isMobile ? "100%" : undefined,
+                      }}
+                      title={it.room_id ? "Open reservation" : "No room assigned yet"}
+                    >
+                      Open reservation
+                    </button>
+                  )}
+
+                  {kind === "green" && (
+                    <button
+                      onClick={() => setRmModal({ propertyId, item: it })}
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        border: "1px solid var(--border)",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        fontWeight: 900,
+                        cursor: "pointer",
+                        width: isMobile ? "100%" : undefined,
+                      }}
+                      title="Reservation message"
+                    >
+                      Reservation message
+                    </button>
+                  )}
+
+                  {showCopy && (
+                    <button
+                      onClick={() => copyCheckinLink(propertyId, key)}
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        border: "1px solid var(--border)",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        fontWeight: 900,
+                        cursor: "pointer",
+                        width: isMobile ? "100%" : undefined,
+                      }}
+                      title="Copy check-in link"
+                    >
+                      {copiedKey === key ? "Copied!" : "Copy check-in link"}
+                    </button>
+                  )}
+
+                  {kind === "red" && canEditGuest && (
+                    <button
+                      onClick={() => resolveInCalendar(it)}
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        border: "1px solid var(--danger)",
+                        background: "transparent",
+                        color: "var(--text)",
+                        fontWeight: 900,
+                        cursor: "pointer",
+                        width: isMobile ? "100%" : undefined,
+                      }}
+                      title="Resolve in Calendar"
+                    >
+                      Resolve in Calendar
+                    </button>
+                  )}
+                </div>
+              </section>
+            );
+          })}
+
+          {rows.length === 0 && (
+            <div
+              style={{
+                border: "1px solid var(--border)",
+                background: "var(--panel)",
+                borderRadius: 12,
+                padding: 16,
+                color: "var(--muted)",
+                textAlign: "center",
+              }}
+            >
+              No current or upcoming reservations.
+            </div>
+          )}
+        </div>
+
+        {/* Modals */}
+        {modal && (
+          <RoomDetailModal
+            dateStr={modal.dateStr}
+            propertyId={modal.propertyId}
+            room={modal.room}
+            forceNew={false}
+            onClose={() => setModal(null)}
+            onChanged={() => { refresh(); }}
+          />
+        )}
+
+        {rmModal && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setRmModal(null)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 60, display: "grid", placeItems: "center", padding: 12 }}
+          >
+            <div
+              onClick={(e)=>e.stopPropagation()}
+              className="sb-card"
+              style={{ width: "min(860px, 100%)", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <strong>Reservation message</strong>
+                <button className="sb-btn" onClick={() => setRmModal(null)}>Close</button>
+              </div>
+              <RMContent propertyId={rmModal.propertyId} row={rmModal.item} />
+            </div>
           </div>
         )}
-      </div>
-
-      {/* Modal pentru “Open reservation” din GREEN */}
-      {modal && (
-        <RoomDetailModal
-          dateStr={modal.dateStr}
-          propertyId={modal.propertyId}
-          room={modal.room}
-          forceNew={false}
-          onClose={() => setModal(null)}
-          onChanged={() => {
-            refresh();
-          }}
-        />
-      )}
-
-      {rmModal && (
-        <div role="dialog" aria-modal="true" onClick={() => setRmModal(null)}
-             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 60, display: "grid", placeItems: "center", padding: 12 }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width: 'min(860px, calc(100vw - 32px))', maxHeight: 'calc(100vh - 32px)', overflow: 'auto', padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <strong>Reservation message</strong>
-              <button className="sb-btn" onClick={() => setRmModal(null)}>Close</button>
-            </div>
-            <RMContent propertyId={rmModal.propertyId} row={rmModal.item} />
-          </div>
-        </div>
-      )}
       </div>
     </div>
   );
 }
+
+/* ───────────────── Reservation Message (safe HTML build) ───────────────── */
 
 function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   const storageKey = `p4h:rm:template:${propertyId}`;
@@ -561,18 +609,16 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   const [preview, setPreview] = useState<string>("");
   const [copied, setCopied] = useState(false);
 
-  // Local render helpers (mirror of the builder's preview)
   function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
   function _replaceVarsHtml(html: string, vars: Record<string,string>) {
     if (!html) return "";
     const withVars = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => _escapeHtml(vars?.[k] ?? `{{${k}}}`));
-    return withVars.replace(/\r?\n/g, '<br/>' );
+    return withVars.replace(/\r?\n/g, "<br/>");
   }
   function _renderHeadingSafe(src: string, vars: Record<string,string>) {
-    const s = src || '';
+    const s = src || "";
     const re = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
-    let out: string[] = [];
-    let last = 0; let m: RegExpExecArray | null;
+    let out: string[] = []; let last = 0; let m: RegExpExecArray | null;
     while ((m = re.exec(s))) {
       out.push(_escapeHtml(s.slice(last, m.index)));
       const key = m[1];
@@ -580,16 +626,16 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
       last = m.index + m[0].length;
     }
     out.push(_escapeHtml(s.slice(last)));
-    return out.join('');
+    return out.join("");
   }
   function _renderRM(t: any, vars: Record<string,string>) {
     const out: string[] = [];
     for (const b of ((t?.blocks)||[])) {
-      if (b.type === 'divider') out.push('<hr style="border:1px solid var(--border); opacity:.6;"/>');
-      else if (b.type === 'heading') out.push(`<h3 style=\"margin:8px 0 6px;\">${_renderHeadingSafe(b.text||'', vars)}</h3>`);
-      else if (b.type === 'paragraph') out.push(`<div style=\"margin:6px 0; line-height:1.5;\">${_replaceVarsHtml(b.text||'', vars)}</div>`);
+      if (b.type === "divider") out.push('<hr style="border:1px solid var(--border); opacity:.6;"/>');
+      else if (b.type === "heading") out.push(`<h3 style="margin:8px 0 6px;">${_renderHeadingSafe(b.text||"", vars)}</h3>`);
+      else if (b.type === "paragraph") out.push(`<div style="margin:6px 0; line-height:1.5;">${_replaceVarsHtml(b.text||"", vars)}</div>`);
     }
-    return out.join('\n');
+    return out.join("\n");
   }
 
   useEffect(() => {
@@ -626,31 +672,36 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   }
 
   return (
-    <div style={{ display: 'grid', gap: 12 }}>
+    <div style={{ display: "grid", gap: 12 }}>
       {!tpl ? (
-        <div style={{ color: 'var(--muted)' }}>
-          No template configured for this property. <a href="/app/reservationMessage" style={{ color: 'var(--primary)' }}>Configure now</a>.
+        <div style={{ color: "var(--muted)" }}>
+          No template configured for this property. <a href="/app/reservationMessage" style={{ color: "var(--primary)" }}>Configure now</a>.
         </div>
       ) : (
         <>
           {(Array.isArray(tpl.fields) && tpl.fields.length > 0) && (
-            <div style={{ display: 'grid', gap: 8 }}>
+            <div style={{ display: "grid", gap: 8 }}>
               {tpl.fields.map((f: any) => (
-                <div key={f.key} style={{ display: 'grid', gap: 6 }}>
-                  <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>{f.label}</label>
-                  <input style={{ padding: 10, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--card)', color: 'var(--text)', fontFamily: 'inherit' }}
-                         value={values[f.key] || ''}
-                         onChange={(e)=>setValues(prev=>({ ...prev, [f.key]: e.currentTarget.value }))}
-                         placeholder={f.label}
+                <div key={f.key} style={{ display: "grid", gap: 6 }}>
+                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{f.label}</label>
+                  <input
+                    style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 8, background: "var(--card)", color: "var(--text)", fontFamily: "inherit" }}
+                    value={values[f.key] || ""}
+                    onChange={(e)=>setValues(prev=>({ ...prev, [f.key]: e.currentTarget.value }))}
+                    placeholder={f.label}
                   />
                 </div>
               ))}
             </div>
           )}
-          <div style={{ border: '1px solid var(--border)', borderRadius: 10, background: 'var(--panel)', padding: 12 }}
-               dangerouslySetInnerHTML={{ __html: preview }} />
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-            <button className="sb-btn" onClick={onCopyPreview}>{copied ? 'Copied!' : 'Copy preview'}</button>
+
+          <div
+            style={{ border: "1px solid var(--border)", borderRadius: 10, background: "var(--panel)", padding: 12 }}
+            dangerouslySetInnerHTML={{ __html: preview || "" }}
+          />
+
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
+            <button className="sb-btn" onClick={onCopyPreview}>{copied ? "Copied!" : "Copy preview"}</button>
             <GenerateLinkButton propertyId={propertyId} bookingId={row.id} values={values} />
           </div>
         </>
@@ -663,29 +714,30 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{ propertyId: stri
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   async function onClick() {
-    if (!bookingId) { alert('Missing booking id'); return; }
+    if (!bookingId) { alert("Missing booking id"); return; }
     setBusy(true);
     try {
-      const res = await fetch('/api/reservation-message/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/reservation-message/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ property_id: propertyId, booking_id: bookingId, values }),
       });
       const j = await res.json().catch(()=>({}));
-      if (!res.ok) { alert(j?.error || 'Failed to generate link'); setBusy(false); return; }
+      if (!res.ok) { alert(j?.error || "Failed to generate link"); setBusy(false); return; }
       const url = j?.url as string;
       if (url) {
-        try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(()=>setCopied(false), 1500); } catch { prompt('Copy link:', url); }
+        try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(()=>setCopied(false), 1500); }
+        catch { prompt("Copy link:", url); }
       }
     } catch (e:any) {
-      alert(e?.message || 'Network error');
+      alert(e?.message || "Network error");
     } finally {
       setBusy(false);
     }
   }
   return (
-    <button className="sb-btn sb-btn--primary" onClick={onClick} disabled={busy || !bookingId} title={bookingId ? 'Generate link' : 'No booking id'}>
-      {copied ? 'Copied!' : (busy ? 'Generating…' : 'Copy link')}
+    <button className="sb-btn sb-btn--primary" onClick={onClick} disabled={busy || !bookingId} title={bookingId ? "Generate link" : "No booking id"}>
+      {copied ? "Copied!" : (busy ? "Generating…" : "Copy link")}
     </button>
   );
 }
