@@ -629,6 +629,3 @@ export default function HomePage() {
     </main>
   );
 }
-export const metadata = {
-  appleWebApp: { statusBarStyle: "black" } // înlocuiește black-translucent pentru pagina asta
-};
