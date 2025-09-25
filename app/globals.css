@@ -109,16 +109,30 @@ textarea:focus-visible {
 .sb-btn--icon { width: 36px; height: 36px; padding: 0; border-radius: 999px; }
 .sb-btn--small { padding: 6px 10px; border-radius: 8px; }
 
-/* Select */
-.sb-select {
-  -webkit-appearance: none;
-  appearance: none;
-  background: color-mix(in srgb, var(--card) 88%, transparent);
+/* înlocuiește blocul .sb-select actual */
+.sb-select{
+  -webkit-appearance: menulist;
+  appearance: auto;
+  background: var(--card);
   color: var(--text);
-  border: 0;
-  border-radius: 999px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
   padding: 8px 12px;
   font-weight: 700;
+  font-family: inherit;
+  line-height: 1.2;
+}
+
+select:not(.sb-select){ /* opțional */
+  -webkit-appearance: menulist;
+  appearance: auto;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: 700;
+  font-family: inherit;
 }
 
 /* Segmented control */
