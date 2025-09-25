@@ -312,20 +312,5 @@ select:not(.sb-select){ /* opțional */
   }
   @keyframes modal-ring-rotate { to { transform: rotate(360deg); } }
 }
-   /* Force dark palette doar în interiorul modalei de cookies */
-.p4h-cookie-modal {
-  --bg:#0b1117;
-  --text:#e6edf3;
-  --muted:#9aa4af;
-  --panel:#0f1623;
-  --card:#0d1320;
-  --border:#1f2937;
-  --primary:#3ECF8E;
-  --danger:#ef4444;
-  --success:#22c55e;
-}
-
-/* (opțional) mici ajustări pentru butonul primar pe fond închis */
-.p4h-cookie-modal .sb-btn.sb-btn--primary { color: #0c111b; }
 
    
