@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useHeader } from "../_components/HeaderContext";
 
+/* ---------------- Navigation model ---------------- */
 const NAV_BASE = [
   { href: "/app", label: "Dashboard", emoji: "🏠", scope: "dashboard" },
   { href: "/app/calendar", label: "Calendar", emoji: "📅", scope: "calendar" },
@@ -22,18 +23,68 @@ type MeInfo = {
   plan?: string;
 };
 
+/* ---------------- Typography helpers ---------------- */
+const TITLE_FAMILY =
+  "'Switzer', ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Roboto, Helvetica, Arial, sans-serif";
+
+function titleStyle(isSmall: boolean): React.CSSProperties {
+  return {
+    margin: 0,
+    fontFamily: TITLE_FAMILY,
+    fontSize: isSmall ? 18 : 20,         // micșorat față de 22/26
+    lineHeight: isSmall ? "26px" : "28px",
+    fontWeight: 600,                      // mai „subțire” (poți coborî la 500)
+    letterSpacing: "-0.01em",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    maxWidth: "min(60vw, 520px)",
+  };
+}
+
+function drawerTitleStyle(): React.CSSProperties {
+  return {
+    fontFamily: TITLE_FAMILY,
+    fontSize: 18,                         // micșorat față de 21
+    fontWeight: 600,                      // mai fin
+    margin: 0,
+  };
+}
+
+/* ---------------- Component ---------------- */
 export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const { title, pill, right } = useHeader();
-  const [open, setOpen] = useState(false);        // left drawer (Navigation)
-  const [openRight, setOpenRight] = useState(false); // right drawer (Management)
-  const [navLeft, setNavLeft] = useState(NAV_BASE.filter(n => ["/app/calendar","/app/cleaning","/app/guest"].includes(n.href)));
-  const [navRight, setNavRight] = useState(NAV_BASE.filter(n => !["/app/calendar","/app/cleaning","/app/guest"].includes(n.href)));
-  const [me, setMe] = useState<MeInfo | null>(null);
+
+  // UI state
+  const [open, setOpen] = useState(false);             // left drawer (Navigation)
+  const [openRight, setOpenRight] = useState(false);   // right drawer (Management)
   const [isSmall, setIsSmall] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
   const [aboutFailed, setAboutFailed] = useState(false);
 
+  // Theme
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+
+  // Nav lists
+  const [navLeft, setNavLeft] = useState(
+    NAV_BASE.filter((n) => ["/app/calendar", "/app/cleaning", "/app/guest"].includes(n.href)),
+  );
+  const [navRight, setNavRight] = useState(
+    NAV_BASE.filter((n) => !["/app/calendar", "/app/cleaning", "/app/guest"].includes(n.href)),
+  );
+
+  // Inbox badge
+  const [inboxCount, setInboxCount] = useState<number>(() => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("p4h:inboxCount") : null;
+      const parsed = raw ? JSON.parse(raw) : null;
+      return parsed?.count ?? 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  // Responsiveness
   useEffect(() => {
     const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
     detect();
@@ -41,11 +92,12 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     return () => window.removeEventListener("resize", detect);
   }, []);
 
+  // Theme init + listen
   useEffect(() => {
     setMounted(true);
     try {
-      const fromHtml = (document.documentElement.getAttribute("data-theme") as "light" | "dark" | null);
-      const fromLS = (localStorage.getItem("theme_v1") as "light" | "dark" | null);
+      const fromHtml = document.documentElement.getAttribute("data-theme") as "light" | "dark" | null;
+      const fromLS = localStorage.getItem("theme_v1") as "light" | "dark" | null;
       setTheme(fromHtml ?? fromLS ?? "dark");
     } catch {}
     function onThemeChange(e: Event) {
@@ -56,6 +108,96 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     return () => window.removeEventListener("themechange" as any, onThemeChange);
   }, []);
 
+  // Escape closes drawers
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        setOpenRight(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Inbox badge events
+  useEffect(() => {
+    const onInbox = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { count?: number };
+      if (typeof detail?.count === "number") setInboxCount(detail.count);
+    };
+    window.addEventListener("p4h:inboxCount", onInbox as EventListener);
+    return () => window.removeEventListener("p4h:inboxCount", onInbox as EventListener);
+  }, []);
+
+  // Build base origin
+  const BASE =
+    (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
+    (typeof window !== "undefined" ? window.location.origin : "");
+
+  function hardNavigate(href: string) {
+    try {
+      setOpen(false);
+      const u = href.startsWith("http") ? href : `${BASE}${href}`;
+      window.location.assign(u);
+    } catch {
+      window.location.href = href;
+    }
+  }
+
+  // Load /api/me to filter nav by scopes/plan
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/me", { cache: "no-store" });
+        if (!res.ok) return;
+        const j = await res.json();
+        if (!j?.me) return;
+
+        const info = j.me as MeInfo;
+
+        if (info.disabled) {
+          setNavLeft([]);
+          setNavRight(NAV_BASE.filter((it) => it.scope === "logout"));
+          return;
+        }
+
+        const allowAll = info.role === "admin";
+        const sc = new Set((info.scopes || []) as string[]);
+        const plan = (info.plan || "basic").toLowerCase();
+
+        let filtered = NAV_BASE.filter((it) => {
+          if (it.scope === "logout") return true;
+          if (it.href === "/app/team") return info.role === "admin" && plan === "premium";
+          if (allowAll) return true;
+          return sc.has(it.scope);
+        });
+
+        if (info.role === "admin") {
+          const exists = filtered.some((x) => x.href === "/app/subscription");
+          if (!exists) {
+            filtered = [
+              { href: "/app/subscription", label: "Subscription", emoji: "💳", scope: "subscription" },
+              ...filtered,
+            ];
+          }
+        }
+
+        const left = filtered.filter((it) =>
+          ["/app/calendar", "/app/cleaning", "/app/guest"].includes(it.href),
+        );
+        const right = filtered.filter(
+          (it) => !["/app/calendar", "/app/cleaning", "/app/guest"].includes(it.href),
+        );
+        setNavLeft(left);
+        setNavRight(right);
+      } catch {
+        // fallback: NAV_BASE rămâne
+      }
+    })();
+  }, []);
+
+  /* ----- Themed icons ----- */
   const THEME_ICONS: Record<string, { light: string; dark: string }> = {
     "/app": { light: "/dashboard_forlight.png", dark: "/dashboard_fordark.png" },
     "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
@@ -88,104 +230,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     );
   }
 
-  const BASE =
-    (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
-    (typeof window !== "undefined" ? window.location.origin : "");
-
-  const [inboxCount, setInboxCount] = useState<number>(() => {
-    try {
-      const raw = typeof window !== "undefined" ? localStorage.getItem("p4h:inboxCount") : null;
-      const parsed = raw ? JSON.parse(raw) : null;
-      return parsed?.count ?? 0;
-    } catch {
-      return 0;
-    }
-  });
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setOpen(false); setOpenRight(false); }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  useEffect(() => {
-    const onInbox = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { count?: number };
-      if (typeof detail?.count === "number") setInboxCount(detail.count);
-    };
-    window.addEventListener("p4h:inboxCount", onInbox as EventListener);
-    return () => window.removeEventListener("p4h:inboxCount", onInbox as EventListener);
-  }, []);
-
-  function hardNavigate(href: string) {
-    try {
-      setOpen(false);
-      const u = href.startsWith("http") ? href : `${BASE}${href}`;
-      window.location.assign(u);
-    } catch {
-      window.location.href = href;
-    }
-  }
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/me", { cache: "no-store" });
-        if (!res.ok) return;
-        const j = await res.json();
-        if (!j?.me) return;
-
-        const info = j.me as MeInfo;
-        setMe(info);
-
-        // dacă e dezactivat, arată doar Logout (în Management)
-        if (info.disabled) {
-          setNavLeft([]);
-          setNavRight(NAV_BASE.filter((it) => it.scope === "logout"));
-          return;
-        }
-
-        const allowAll = info.role === "admin";
-        const sc = new Set((info.scopes || []) as string[]);
-        const plan = (info.plan || "basic").toLowerCase();
-
-        let filtered = NAV_BASE.filter((it) => {
-          if (it.scope === "logout") return true;
-
-          // Team doar pentru admin + Premium
-          if (it.href === "/app/team") return info.role === "admin" && plan === "premium";
-
-          // Admin vede restul; altfel pe baza scopes
-          if (allowAll) return true;
-          return sc.has(it.scope);
-        });
-
-        // Admin vede și Subscription (upgrade/downgrade)
-        if (info.role === "admin") {
-          const exists = filtered.some((x) => x.href === "/app/subscription");
-          if (!exists) {
-            filtered = [
-              { href: "/app/subscription", label: "Subscription", emoji: "💳", scope: "subscription" },
-              ...filtered,
-            ];
-          }
-        }
-
-        // Împarte în Navigation (stânga) și Management (dreapta)
-        const left = filtered.filter((it) => ["/app/calendar","/app/cleaning","/app/guest"].includes(it.href));
-        const right = filtered.filter((it) => !["/app/calendar","/app/cleaning","/app/guest"].includes(it.href));
-        setNavLeft(left);
-        setNavRight(right);
-      } catch {
-        // fallback: lăsăm NAV_BASE dacă /api/me eșuează
-      }
-    })();
-  }, []);
-
   return (
     <>
+      {/* Top App Bar */}
       <header
         style={{
           position: "sticky",
@@ -201,9 +248,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           borderBottom: "1px solid var(--border)",
         }}
       >
+        {/* Left: menu + title */}
         <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
           <button
-            onClick={() => { setOpen(true); setOpenRight(false); }}
+            onClick={() => {
+              setOpen(true);
+              setOpenRight(false);
+            }}
             aria-label="Open menu"
             style={{
               padding: isSmall ? 4 : 6,
@@ -229,12 +280,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             )}
           </button>
 
-            <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
-            <div style={{ margin: 0, fontSize: isSmall ? 22 : 26, lineHeight: (isSmall ? 32 : 36) + "px", fontWeight: 800 }}>{title}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
+            <h1 style={titleStyle(isSmall)}>{title}</h1>
             {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
           </div>
         </div>
 
+        {/* Right: actions + profile */}
         <div
           style={{
             display: "flex",
@@ -248,7 +300,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         >
           {right}
           <button
-            onClick={() => { setOpenRight(true); setOpen(false); }}
+            onClick={() => {
+              setOpenRight(true);
+              setOpen(false);
+            }}
             aria-label="Open management menu"
             style={{
               padding: isSmall ? 4 : 6,
@@ -276,6 +331,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         </div>
       </header>
 
+      {/* Left Drawer — Navigation */}
       {open && (
         <>
           <div
@@ -303,7 +359,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           >
             <div
               style={{
-                fontSize: 21,
                 padding: 16,
                 borderBottom: "1px solid var(--border)",
                 display: "flex",
@@ -311,7 +366,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 alignItems: "center",
               }}
             >
-              <strong>Navigation</strong>
+              <h2 style={drawerTitleStyle()}>Navigation</h2>
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close"
@@ -333,17 +388,20 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
                 {navLeft.map((it) => {
                   const active = currentPath
-                    ? (it.href === "/app"
-                        ? currentPath === "/app"
-                        : (currentPath === it.href || currentPath.startsWith(it.href + "/")))
+                    ? it.href === "/app"
+                      ? currentPath === "/app"
+                      : currentPath === it.href || currentPath.startsWith(it.href + "/")
                     : false;
+
                   const isInbox = it.href === "/app/guest";
+
                   const ICON_SIZE_DEFAULT = 36;
                   const ICON_SIZE_PER_ROUTE: Record<string, number> = {
                     "/app/calendar": 32,
                     "/app/team": 32,
                   };
                   const ICON_SIZE = ICON_SIZE_PER_ROUTE[it.href] ?? ICON_SIZE_DEFAULT;
+
                   return (
                     <li key={it.href}>
                       <button
@@ -381,6 +439,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         </>
       )}
 
+      {/* Right Drawer — Management */}
       {openRight && (
         <>
           <div
@@ -408,7 +467,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           >
             <div
               style={{
-                fontSize: 21,
                 padding: 16,
                 borderBottom: "1px solid var(--border)",
                 display: "flex",
@@ -416,7 +474,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 alignItems: "center",
               }}
             >
-              <strong>Management</strong>
+              <h2 style={drawerTitleStyle()}>Management</h2>
               <button
                 onClick={() => setOpenRight(false)}
                 aria-label="Close"
@@ -438,21 +496,27 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
                 {navRight.map((it) => {
                   const active = currentPath
-                    ? (it.href === "/app"
-                        ? currentPath === "/app"
-                        : (currentPath === it.href || currentPath.startsWith(it.href + "/")))
+                    ? it.href === "/app"
+                      ? currentPath === "/app"
+                      : currentPath === it.href || currentPath.startsWith(it.href + "/")
                     : false;
+
                   const isInbox = it.href === "/app/guest";
+
                   const ICON_SIZE_DEFAULT = 36;
                   const ICON_SIZE_PER_ROUTE: Record<string, number> = {
                     "/app/calendar": 32,
                     "/app/team": 32,
                   };
                   const ICON_SIZE = ICON_SIZE_PER_ROUTE[it.href] ?? ICON_SIZE_DEFAULT;
+
                   return (
                     <li key={it.href}>
                       <button
-                        onClick={() => { setOpenRight(false); hardNavigate(it.href); }}
+                        onClick={() => {
+                          setOpenRight(false);
+                          hardNavigate(it.href);
+                        }}
                         style={{
                           width: "100%",
                           textAlign: "left",
@@ -489,6 +553,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   );
 }
 
+/* ---------------- Tiny style helpers ---------------- */
 function pillStyle(pill: React.ReactNode): React.CSSProperties {
   const txt = typeof pill === "string" ? pill : "";
   const isError = /error/i.test(txt);
