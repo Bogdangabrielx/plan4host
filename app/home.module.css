@@ -34,14 +34,16 @@
 /* Focus util */
 .focusable:focus-visible { outline: var(--focus-ring) solid var(--focus-color); outline-offset: 3px; border-radius: 10px; }
 
-/* Ambient glow background */
+/* Ambient glow background (Safari-safe: SRGB + compositing hint) */
 .landing::before {
   content: ""; position: fixed; inset: -20%; pointer-events: none; z-index: 0;
   background:
-    radial-gradient(60rem 60rem at 10% 0%, color-mix(in oklab, var(--accent1) 22%, transparent), transparent 60%),
-    radial-gradient(50rem 50rem at 95% 10%, color-mix(in oklab, var(--accent2) 22%, transparent), transparent 60%),
-    radial-gradient(70rem 60rem at 30% 100%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 60%);
+    radial-gradient(60rem 60rem at 10% 0%, color-mix(in srgb, var(--accent1) 22%, transparent), transparent 60%),
+    radial-gradient(50rem 50rem at 95% 10%, color-mix(in srgb, var(--accent2) 22%, transparent), transparent 60%),
+    radial-gradient(70rem 60rem at 30% 100%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 60%);
   filter: blur(28px) saturate(120%); opacity: .35;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 .landing * { box-sizing: border-box; }
 
@@ -70,7 +72,10 @@
   line-height: 1.1; white-space: nowrap; min-width: max-content;
 }
 .btn:active { transform: scale(0.99); }
-.btnPrimary { background: var(--card); color: #ffffff; border-color: var(--border); box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 35%, transparent); }
+.btnPrimary {
+  background: var(--card); color: #ffffff; border-color: var(--border);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 35%, transparent);
+}
 .btnPrimary:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); }
 .btnGhost { background: transparent; color: var(--text); }
 
@@ -100,7 +105,7 @@
   color: #ffffff;
   border-color: rgba(255,255,255,.9);
   position: relative;
-  overflow: clip;
+  overflow: hidden; /* Safari-safe */
 }
 
 /* subtle morphable shape */
@@ -114,8 +119,8 @@
 .btnText:focus-visible,
 .btnText[data-animate="true"] {
   box-shadow:
-    0 8px 24px color-mix(in oklab, var(--primary) 35%, transparent),
-    0 0 0 1px color-mix(in oklab, #3ECF8E 22%, transparent);
+    0 8px 24px color-mix(in srgb, var(--primary) 35%, transparent),
+    0 0 0 1px color-mix(in srgb, #3ECF8E 22%, transparent);
 }
 
 /* rotating border highlight */
@@ -134,7 +139,11 @@
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
+          mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
   opacity: 0; transition: opacity .2s ease;
   pointer-events: none; z-index: 1;
 }
@@ -150,7 +159,7 @@
     var(--star) 82% 70%/10px 10px no-repeat;
   filter:
     drop-shadow(0 0 6px rgba(255,255,255,.7))
-    drop-shadow(0 0 18px color-mix(in oklab, var(--primary) 65%, transparent));
+    drop-shadow(0 0 18px color-mix(in srgb, var(--primary) 65%, transparent));
   z-index: 2;
 }
 
@@ -178,8 +187,16 @@
 
 @keyframes sweep-rotate { to { --sweep-angle: 360deg; } }
 @keyframes stars-twinkle {
-  0%,100% { filter: drop-shadow(0 0 6px rgba(255,255,255,.7)) drop-shadow(0 0 18px color-mix(in oklab, var(--primary) 65%, transparent)); transform: translateY(0) rotate(0deg); }
-  50%     { filter: drop-shadow(0 0 10px rgba(255,255,255,1)) drop-shadow(0 0 26px color-mix(in oklab, var(--primary) 75%, transparent)); transform: translateY(-1px) rotate(6deg); }
+  0%,100% {
+    filter: drop-shadow(0 0 6px rgba(255,255,255,.7))
+            drop-shadow(0 0 18px color-mix(in srgb, var(--primary) 65%, transparent));
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(255,255,255,1))
+            drop-shadow(0 0 26px color-mix(in srgb, var(--primary) 75%, transparent));
+    transform: translateY(-1px) rotate(6deg);
+  }
 }
 
 /* ───────────────
@@ -191,7 +208,7 @@
   color: #ffffff;
   border-color: rgba(255,255,255,.9);
   position: relative;
-  overflow: clip;
+  overflow: hidden; /* Safari-safe */
 }
 .btnChoose{ border-radius: 28px; }
 .btnChoose:hover,
@@ -199,8 +216,8 @@
 .btnChoose[data-animate="true"]{
   border-radius: 22px;
   box-shadow:
-    0 8px 24px color-mix(in oklab, var(--primary) 35%, transparent),
-    0 0 0 1px color-mix(in oklab, #3ECF8E 22%, transparent);
+    0 8px 24px color-mix(in srgb, var(--primary) 35%, transparent),
+    0 0 0 1px color-mix(in srgb, #3ECF8E 22%, transparent);
 }
 .btnChoose::before{
   content:"";
@@ -214,10 +231,8 @@
       transparent 345deg
     );
   /* show only the border ring */
-  -webkit-mask: linear-gradient(#000 0 0) content-box,
-                 linear-gradient(#000 0 0);
-          mask: linear-gradient(#000 0 0) content-box,
-                linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; 
           mask-composite: exclude;
   opacity: 0; transition: opacity .2s ease;
@@ -240,12 +255,12 @@
 .heroText p { color: var(--muted); margin: 0 0 20px; max-width: 58ch; }
 .accent { color: var(--primary); }
 
-/* Gradient text pentru "Better" */
+/* Gradient text pentru "Better" (SRGB) */
 .betterGrad {
   color: var(--primary);
   background: linear-gradient(90deg,
-    color-mix(in oklab, var(--primary) 98%, white 72%),
-    color-mix(in oklab, var(--primary) 80%, rgb(13, 80, 24) 30%)
+    color-mix(in srgb, var(--primary) 98%, white 72%),
+    color-mix(in srgb, var(--primary) 80%, rgb(13, 80, 24) 30%)
   );
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -272,14 +287,16 @@
   content: ""; position: absolute; inset: 0; padding: var(--ring); border-radius: inherit;
   background: conic-gradient(
     from var(--ring-angle),
-    color-mix(in oklab, var(--accent2) 75%, transparent) 0%,
-    color-mix(in oklab, var(--accent2) 75%, transparent) 25%,
-    color-mix(in oklab, var(--primary) 75%, transparent) 50%,
-    color-mix(in oklab, var(--accent2) 75%, transparent) 75%,
-    color-mix(in oklab, var(--accent2) 75%, transparent) 100%
+    color-mix(in srgb, var(--accent2) 75%, transparent) 0%,
+    color-mix(in srgb, var(--accent2) 75%, transparent) 25%,
+    color-mix(in srgb, var(--primary) 75%, transparent) 50%,
+    color-mix(in srgb, var(--accent2) 75%, transparent) 75%,
+    color-mix(in srgb, var(--accent2) 75%, transparent) 100%
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; 
+          mask-composite: exclude;
   pointer-events: none; z-index: 1; opacity: 0;
   animation: ring-spin var(--ring-speed) linear infinite paused; will-change: transform;
 }
@@ -335,7 +352,7 @@
 .contactCard a {
   color: var(--primary);
   text-decoration: underline;
-  text-decoration-color: color-mix(in oklab, var(--primary) 40%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--primary) 40%, transparent);
   font-weight: 700;
 }
 .contactCard a:hover { font-weight: 400 ; text-decoration-color: var(--primary); }
