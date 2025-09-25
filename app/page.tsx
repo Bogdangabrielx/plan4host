@@ -53,112 +53,66 @@ function CtaLink({
 }
 
 /* ──────────────────────────────────────────────────────────────
-   CookieConsentLanding — doar Necessary + Preferences (tema)
-   - persistă 180 zile în localStorage + cookie
-   - blochează pagina până se alege o opțiune
-   - UI: Accept preferences / Only necessary / Customize (+ Save)
-   - folosește .modalFlipWrapper / .modalCard din globals.css
+   CookieConsentLanding — modal central doar pe landing
+   - Persistă în localStorage (p4h:consent:v1) + cookie (p4h_consent)
+   - Expiră după 180 zile
+   - 3 butoane: Accept all / Reject optional / Customize (+ Save)
+   - Folosește stilurile globale .modalFlipWrapper / .modalCard din globals.css
    ────────────────────────────────────────────────────────────── */
 function CookieConsentLanding() {
-  type ConsentShape = { necessary: true; preferences: boolean };
-  const LS_KEY = "p4h:consent:v2";   // bump ca să invalidăm vechiul format
+  const LS_KEY = "p4h:consent:v1";
   const COOKIE_NAME = "p4h_consent";
   const EXPIRE_DAYS = 180;
 
   const [open, setOpen] = useState(false);
   const [showPrefs, setShowPrefs] = useState(false);
-  const [preferences, setPreferences] = useState(false);
+  const [analytics, setAnalytics] = useState(true);
+  const [marketing, setMarketing] = useState(false);
 
-  // citește consimțământ existent (localStorage sau cookie)
+  // read existing consent once
   useEffect(() => {
     try {
-      const now = Date.now();
-
-      const fromLS = (() => {
-        const raw = localStorage.getItem(LS_KEY);
-        if (!raw) return null;
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
         const obj = JSON.parse(raw);
-        if (!obj?.exp || !obj?.consent) return null;
-        const expMs = Date.parse(obj.exp);
-        if (Number.isFinite(expMs) && expMs > now) return obj as { consent: ConsentShape };
-        return null;
-      })();
-
-      const fromCookie = (() => {
-        const m = document.cookie.match(new RegExp(`(?:^|; )${COOKIE_NAME}=([^;]*)`));
-        if (!m) return null;
-        const raw = decodeURIComponent(m[1] || "");
-        try {
-          const obj = JSON.parse(raw);
-          // Acceptăm atât payload-ul complet, cât și varianta doar cu consent
-          if (obj?.consent?.necessary) return obj as { consent: ConsentShape };
-          if (obj?.necessary) return { consent: obj as ConsentShape };
-        } catch {}
-        return null;
-      })();
-
-      const existing = fromLS ?? fromCookie;
-      if (existing?.consent) {
-        setPreferences(!!existing.consent.preferences);
-        setOpen(false);
-        // flag util pentru CSS/JS (ex: doar dacă e permis să memorezi tema)
-        document.documentElement.setAttribute(
-          "data-consent-preferences",
-          String(!!existing.consent.preferences)
-        );
-        return;
+        const exp = obj?.exp ? new Date(obj.exp) : null;
+        if (exp && exp > new Date()) {
+          // already consented and not expired
+          return;
+        }
       }
-
-      // nu există consimțământ valid ⇒ deschide modalul
-      setOpen(true);
-    } catch {
-      setOpen(true);
-    }
+    } catch {}
+    setOpen(true);
   }, []);
 
-  // blochează scroll cât timp modalul e deschis
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [open]);
-
-  function persist(consent: ConsentShape) {
+  function persist(consent: { necessary: true; analytics: boolean; marketing: boolean }) {
     const now = new Date();
     const exp = new Date(now.getTime() + EXPIRE_DAYS * 24 * 60 * 60 * 1000);
-    const payload = { v: 2, ts: now.toISOString(), exp: exp.toISOString(), consent };
-
-    // localStorage
-    try { localStorage.setItem(LS_KEY, JSON.stringify(payload)); } catch {}
-
-    // cookie (păstrăm payload-ul complet; e mic)
+    const payload = { v: 1, ts: now.toISOString(), exp: exp.toISOString(), consent };
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(payload));
+    } catch {}
     try {
       const secure = location.protocol === "https:" ? "; Secure" : "";
       document.cookie =
-        `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(payload))}; Max-Age=${EXPIRE_DAYS * 24 * 60 * 60}; Path=/; SameSite=Lax${secure}`;
+        `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(consent))}; Max-Age=${EXPIRE_DAYS * 24 * 60 * 60}; Path=/; SameSite=Lax${secure}`;
     } catch {}
-
-    // flag pe <html> pentru CSS/JS
-    document.documentElement.setAttribute(
-      "data-consent-preferences",
-      String(!!consent.preferences)
-    );
-
-    // notifica eventualii listeneri
-    try { window.dispatchEvent(new CustomEvent("p4h:consent", { detail: payload })); } catch {}
+    // broadcast (în caz că ai alți listeneri în app)
+    try {
+      window.dispatchEvent(new CustomEvent("p4h:consent", { detail: payload }));
+    } catch {}
   }
 
-  function acceptOnlyNecessary() {
-    persist({ necessary: true, preferences: false });
+  function acceptAll() {
+    persist({ necessary: true, analytics: true, marketing: true });
     setOpen(false);
   }
-  function acceptPreferences() {
-    persist({ necessary: true, preferences: true });
+  function rejectOptional() {
+    persist({ necessary: true, analytics: false, marketing: false });
     setOpen(false);
   }
   function savePrefs() {
-    persist({ necessary: true, preferences });
+    persist({ necessary: true, analytics, marketing });
     setOpen(false);
   }
 
@@ -166,7 +120,7 @@ function CookieConsentLanding() {
 
   return (
     <div className="modalFlipWrapper" role="dialog" aria-modal="true" aria-label="Cookie consent">
-      <div className="modalFlip modalCard" style={{ width: "min(560px, calc(100vw - 32px))" }} data-animate="true">
+      <div className="modalFlip modalCard" style={{ width: "min(560px, calc(100vw - 32px))" }}>
         <div style={{ display: "grid", gap: 12 }}>
           {/* header */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -181,7 +135,7 @@ function CookieConsentLanding() {
                 placeItems: "center",
                 borderRadius: 12,
                 background:
-                  "radial-gradient(60% 60% at 30% 20%, rgba(255,255,255,.16), transparent), color-mix(in srgb, var(--primary) 18%, var(--card))",
+                  "radial-gradient(60% 60% at 30% 20%, rgba(255,255,255,.16), transparent) , color-mix(in srgb, var(--primary) 18%, var(--card))",
                 boxShadow: "0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent)",
               }}
             >
@@ -190,7 +144,7 @@ function CookieConsentLanding() {
             <div>
               <h3 style={{ margin: 0 }}>We use cookies</h3>
               <div style={{ color: "var(--muted)", fontSize: 13 }}>
-                Essential cookies keep the site working. Optionally, we can remember your <strong>theme</strong> (light/dark).
+                We use essential cookies to make this site work, and optional ones for performance.
               </div>
             </div>
           </div>
@@ -200,18 +154,18 @@ function CookieConsentLanding() {
             <div style={{ display: "grid", gap: 8 }}>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button
-                  onClick={acceptPreferences}
+                  onClick={acceptAll}
                   className="sb-btn sb-btn--primary"
                   style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}
                 >
-                  Accept preferences
+                  Accept all
                 </button>
                 <button
-                  onClick={acceptOnlyNecessary}
+                  onClick={rejectOptional}
                   className="sb-btn"
                   style={{ padding: "10px 14px", borderRadius: 12, background: "var(--card)", fontWeight: 900 }}
                 >
-                  Only necessary
+                  Reject optional
                 </button>
                 <button
                   onClick={() => setShowPrefs(true)}
@@ -250,14 +204,27 @@ function CookieConsentLanding() {
 
                 <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                   <div>
-                    <strong>Preferences</strong>
-                    <div style={{ color: "var(--muted)", fontSize: 12 }}>Remembers your theme (light/dark)</div>
+                    <strong>Analytics</strong>
+                    <div style={{ color: "var(--muted)", fontSize: 12 }}>Anonymous usage statistics</div>
                   </div>
                   <input
                     type="checkbox"
-                    checked={preferences}
-                    onChange={(e) => setPreferences(e.currentTarget.checked)}
-                    aria-label="Preferences cookie"
+                    checked={analytics}
+                    onChange={(e) => setAnalytics(e.currentTarget.checked)}
+                    aria-label="Analytics cookies"
+                  />
+                </label>
+
+                <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <div>
+                    <strong>Marketing</strong>
+                    <div style={{ color: "var(--muted)", fontSize: 12 }}>Personalized offers and content</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={marketing}
+                    onChange={(e) => setMarketing(e.currentTarget.checked)}
+                    aria-label="Marketing cookies"
                   />
                 </label>
               </div>
