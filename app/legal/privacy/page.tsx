@@ -1,171 +1,171 @@
-// /app/legal/privacy/page.tsx
+// /app/legal/cookies/page.tsx
 import type { Metadata } from "next";
 import s from "../legal.module.css";
-import Link from "next/link";
+import OpenCookieSettingsButton from "@/components/consent/OpenCookieSettingsButton";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Plan4host",
+  title: "Cookie Policy — Plan4host",
   description:
-    "Privacy Policy for plan4host.com operated by BOA DIGITAL SOLUTIONS SRL. Learn what data we collect, why, and how to exercise your rights under GDPR.",
+    "Cookie Policy for plan4host.com operated by BOA DIGITAL SOLUTIONS SRL. Learn how we use cookies and how you can control your preferences.",
 };
 
-export default function PrivacyPolicyPage() {
+export default function CookiePolicyPage() {
   const lastUpdated = "25 September 2025";
 
   return (
     <main className={s.page}>
       <div className={s.container}>
         <header className={s.header}>
-          <h1 className={s.h1}>Privacy Policy</h1>
+          <h1 className={s.h1}>Cookie Policy</h1>
           <p className={s.meta}>Last updated: {lastUpdated}</p>
         </header>
 
         <section>
           <p className={s.p}>
-            This Privacy Policy explains how <strong>Plan4host</strong> (operated by{" "}
-            <strong>BOA DIGITAL SOLUTIONS SRL</strong>) (“we”, “us”) collects and uses your
-            personal data on <strong>plan4host.com</strong> and <strong>www.plan4host.com</strong>
-            (the “Website”) and within our application (after login). We comply with the EU General
-            Data Protection Regulation (GDPR).
+            This Cookie Policy explains how <strong>Plan4host</strong> (operated by{" "}
+            <strong>BOA DIGITAL SOLUTIONS SRL</strong>) uses cookies and similar technologies on{" "}
+            <strong>plan4host.com</strong> and <strong>www.plan4host.com</strong> (the “Website”).
+            This policy is aligned with EU/GDPR requirements.
           </p>
 
-          <h2 className={s.h2}>1. Controller & contact</h2>
+          <h2 className={s.h2}>1. Who we are</h2>
           <p className={s.p}>
-            Data controller: <strong>BOA DIGITAL SOLUTIONS SRL</strong>. For privacy questions or
-            rights requests, contact{" "}
+            The data controller for the Website is <strong>BOA DIGITAL SOLUTIONS SRL</strong>. For
+            privacy questions, contact:{" "}
             <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
             We do not display a postal address on this page.
           </p>
 
-          <h2 className={s.h2}>2. What data we collect</h2>
-          <ul className={s.list}>
-            <li className={s.p}><strong>Account data</strong>: email address, password (hash only, never plaintext), profile details you provide (e.g., display name), organization/property information.</li>
-            <li className={s.p}><strong>Authentication/session data</strong>: session tokens handled by Supabase (HTTP-only cookies), login timestamps, basic security logs.</li>
-            <li className={s.p}><strong>Billing & subscription data</strong>: plan, subscription status, invoices and payment identifiers. Card data is processed by <em>Stripe</em>; we do not store full card numbers.</li>
-            <li className={s.p}><strong>Usage & logs</strong>: server logs (IP address, timestamps, user agent), application events (e.g., iCal import/export jobs) for security and troubleshooting.</li>
-            <li className={s.p}><strong>Communications</strong>: messages you send to <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.</li>
-            <li className={s.p}><strong>Cookies & similar</strong>: see our <Link className={s.link} href="/legal/cookies">Cookie Policy</Link> for details.</li>
-          </ul>
+          <h2 className={s.h2}>2. What are cookies?</h2>
+          <p className={s.p}>
+            Cookies are small text files placed on your device to store information. They are widely
+            used to make websites work or function more efficiently, as well as to provide information
+            to the site owners. Cookies may be “first-party” (set by us) or “third-party” (set by external providers).
+          </p>
 
-          <h2 className={s.h2}>3. Why we process your data (purposes)</h2>
-          <ul className={s.list}>
-            <li className={s.p}><strong>Provide and operate the service</strong> (accounts, calendar, iCal sync, billing).</li>
-            <li className={s.p}><strong>Authenticate and secure access</strong>, prevent fraud/abuse, maintain reliability.</li>
-            <li className={s.p}><strong>Customer support & communications</strong> you initiate.</li>
-            <li className={s.p}><strong>Legal compliance</strong> (tax/accounting, regulatory obligations).</li>
-            <li className={s.p}><strong>Improvements</strong> (troubleshooting, quality, performance). We currently do <em>not</em> use analytics or advertising cookies.</li>
-          </ul>
+          <h2 className={s.h2}>3. Scope and where cookies apply</h2>
+          <p className={s.p}>
+            This policy applies to the public marketing pages (e.g., homepage, pricing, features, contact,
+            and legal pages) and to the application area (after login). Payments are processed in the app’s billing area.
+          </p>
 
-          <h2 className={s.h2}>4. Legal bases (GDPR Art. 6)</h2>
+          <h2 className={s.h2}>4. Categories of cookies we use</h2>
           <ul className={s.list}>
-            <li className={s.p}><strong>Contract</strong> — to provide the service you requested (Art. 6(1)(b)).</li>
-            <li className={s.p}><strong>Legitimate interests</strong> — security, fraud prevention, service reliability and improvement (Art. 6(1)(f)).</li>
-            <li className={s.p}><strong>Legal obligation</strong> — e.g., tax and accounting records (Art. 6(1)(c)).</li>
-            <li className={s.p}><strong>Consent</strong> — for any future non-essential cookies or optional communications (Art. 6(1)(a)).</li>
+            <li className={s.p}>
+              <strong>Essential (always on)</strong> — Required for core functionality such as session,
+              security, consent storage, <em>and theme selection</em>. These cookies are necessary for
+              the Website to function and cannot be switched off.
+            </li>
           </ul>
+          <p className={`${s.p} ${s.muted}`}>
+            We currently do <strong>not</strong> use any non-essential cookies (such as Preferences,
+            Analytics, or Marketing). If this changes, this page will be updated and you will be asked
+            for consent where required.
+          </p>
 
-          <h2 className={s.h2}>5. Sharing & processors</h2>
-          <p className={s.p}>We use vetted service providers (“processors”) to run Plan4host:</p>
+          <div className={s.card} style={{ margin: "16px 0 6px" }}>
+            <p className={s.p} style={{ margin: 0 }}>
+              You can review cookie information any time via{" "}
+              <OpenCookieSettingsButton className={`${s.btn} ${s.btnPrimary}`} />
+              . (This opens a small settings modal.)
+            </p>
+            <p className={`${s.p} ${s.muted}`} style={{ marginTop: 8 }}>
+              At this time we only use essential cookies, so there is nothing to opt in/out of. If we introduce
+              non-essential categories in the future, you will be able to manage your choices here.
+            </p>
+          </div>
+
+          <h2 className={s.h2}>5. Details: cookies and similar technologies</h2>
+          <p className={s.p}>
+            Below is a non-exhaustive list of the key cookies and storage we use. Some cookies may be set only
+            when you access specific features (e.g., billing/checkout).
+          </p>
+
           <div className={s.tableWrap}>
             <table>
               <thead>
                 <tr>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Purpose</th>
                   <th>Provider</th>
-                  <th>Role</th>
-                  <th>Data categories</th>
-                  <th>Location/Transfer</th>
+                  <th>Type</th>
+                  <th>Retention</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Supabase</td>
-                  <td>Authentication, database, storage</td>
-                  <td>Account data, session tokens, app data</td>
-                  <td>EU/EEA regions where available; may involve transfers with safeguards (SCCs)</td>
+                  <td><code>cookie_consent</code></td>
+                  <td>Essential</td>
+                  <td>Stores your cookie choices and proof of consent.</td>
+                  <td>First-party (Plan4host)</td>
+                  <td>Cookie</td>
+                  <td>12 months</td>
                 </tr>
                 <tr>
-                  <td>Vercel</td>
-                  <td>Hosting and edge delivery</td>
-                  <td>Usage logs (IP, UA), content delivery</td>
-                  <td>Global infrastructure; transfers protected by SCCs</td>
+                  <td><code>sb-access-token</code></td>
+                  <td>Essential</td>
+                  <td>Keeps you signed in to your account (HTTP-only).</td>
+                  <td>First-party (Supabase/Auth)</td>
+                  <td>Cookie</td>
+                  <td>~30 days</td>
                 </tr>
                 <tr>
-                  <td>Stripe</td>
-                  <td>Payments & subscriptions</td>
-                  <td>Billing identifiers, invoices; card data processed by Stripe</td>
-                  <td>Global infrastructure; transfers protected by SCCs and other safeguards</td>
+                  <td><code>sb-refresh-token</code></td>
+                  <td>Essential</td>
+                  <td>Renews your session securely (HTTP-only).</td>
+                  <td>First-party (Supabase/Auth)</td>
+                  <td>Cookie</td>
+                  <td>~30 days</td>
                 </tr>
                 <tr>
-                  <td>Microsoft 365 (via GoDaddy)</td>
-                  <td>Email service</td>
-                  <td>Support communications</td>
-                  <td>Global infrastructure; transfers protected by SCCs</td>
+                  <td><code>app_theme</code></td>
+                  <td>Essential</td>
+                  <td>Remembers your selected theme (light/dark).</td>
+                  <td>First-party (Plan4host)</td>
+                  <td>Cookie</td>
+                  <td>12 months</td>
+                </tr>
+                <tr>
+                  <td><em>Stripe cookies</em></td>
+                  <td>Essential (when paying)</td>
+                  <td>Enable secure payment and fraud prevention. Only set in the app’s billing/checkout flow.</td>
+                  <td>Third-party (stripe.com)</td>
+                  <td>Cookies</td>
+                  <td>Varies per Stripe policy</td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p className={`${s.p} ${s.muted}`}>
-            We do not sell your personal data. We currently do not use analytics or advertising networks.
+
+          <h2 className={s.h2}>6. Your choices</h2>
+          <p className={s.p}>
+            On your first visit, you may see a small banner. At this time we only use essential cookies,
+            so there is nothing to opt in/out of. If we introduce non-essential categories in the future,
+            we will ask for your consent and you will be able to manage your choices here.
           </p>
 
-          <h2 className={s.h2}>6. International transfers</h2>
+          <h2 className={s.h2}>7. Legal basis</h2>
           <p className={s.p}>
-            When data is transferred outside the EU/EEA by our processors, we rely on appropriate safeguards
-            such as the European Commission’s Standard Contractual Clauses (SCCs) and complementary measures where necessary.
+            Essential cookies are used based on our legitimate interest in providing a secure and functional
+            service. If we add non-essential cookies in the future, they will be used only with your consent.
           </p>
 
-          <h2 className={s.h2}>7. Retention</h2>
-          <ul className={s.list}>
-            <li className={s.p}><strong>Account data</strong>: for the life of your account and up to 24 months after closure, unless we must retain it to meet legal obligations or resolve disputes.</li>
-            <li className={s.p}><strong>Billing records</strong>: retained for statutory periods required by tax/accounting laws (typically 5–10 years).</li>
-            <li className={s.p}><strong>Support communications</strong>: typically up to 24 months.</li>
-            <li className={s.p}><strong>Routine server logs</strong>: typically up to 90 days unless needed for security investigations.</li>
-          </ul>
-
-          <h2 className={s.h2}>8. Security</h2>
+          <h2 className={s.h2}>8. International transfers</h2>
           <p className={s.p}>
-            We implement technical and organizational measures including TLS encryption in transit, encryption at rest provided by our cloud providers, access controls, and least-privilege practices. No method of transmission or storage is 100% secure, but we work to protect your data.
+            Some providers (e.g., Stripe) may process data outside the EU/EEA. When applicable, we rely on
+            appropriate safeguards (e.g., standard contractual clauses) as provided by those processors.
           </p>
 
-          <h2 className={s.h2}>9. Your rights</h2>
-          <ul className={s.list}>
-            <li className={s.p}>Access your data and obtain a copy.</li>
-            <li className={s.p}>Rectify inaccurate or incomplete data.</li>
-            <li className={s.p}>Erase your data (“right to be forgotten”).</li>
-            <li className={s.p}>Restrict or object to processing in certain cases.</li>
-            <li className={s.p}>Data portability.</li>
-            <li className={s.p}>Withdraw consent at any time for processing based on consent.</li>
-            <li className={s.p}>Lodge a complaint with your local supervisory authority (EU/EEA).</li>
-          </ul>
-          <div className={s.card} style={{ marginTop: 8 }}>
-            <p className={s.p} style={{ margin: 0 }}>
-              To exercise your rights, contact{" "}
-              <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
-              We may need to verify your identity before fulfilling your request.
-            </p>
-          </div>
-
-          <h2 className={s.h2}>10. Children</h2>
-          <p className={s.p}>The service is not directed to children under 16. If you believe a child provided us with personal data, contact us and we will take appropriate steps.</p>
-
-          <h2 className={s.h2}>11. Automated decision-making</h2>
-          <p className={s.p}>We do not perform automated decision-making or profiling that produces legal effects about you.</p>
-
-          <h2 className={s.h2}>12. Cookies</h2>
+          <h2 className={s.h2}>9. Changes to this policy</h2>
           <p className={s.p}>
-            For details about cookies we use, see our{" "}
-            <Link className={s.link} href="/legal/cookies">Cookie Policy</Link>. You can open the cookie preferences modal here:{" "}
-            <button id="open-cookie-settings" className={`${s.btn} ${s.btnPrimary}`} type="button" aria-haspopup="dialog">
-              Cookie settings
-            </button>.
+            We may update this Cookie Policy from time to time to reflect operational or legal changes.
+            We encourage you to review it periodically.
           </p>
 
-          <h2 className={s.h2}>13. Changes to this policy</h2>
-          <p className={s.p}>We may update this Privacy Policy to reflect operational, legal, or regulatory changes. We encourage you to review it periodically.</p>
-
-          <h2 className={s.h2}>14. Contact</h2>
+          <h2 className={s.h2}>10. Contact</h2>
           <p className={s.p}>
-            For questions about this policy or your privacy rights, contact{" "}
+            For questions about this policy or your privacy choices, contact us at{" "}
             <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
           </p>
         </section>
