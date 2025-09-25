@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" data-theme={theme} data-accent={accent}>
       <body style={{ margin: 0 }}>
-        {/* UA flags -> <html data-browser|data-os> */}
+        {/* UA flags -> <html data-browser|data-os|data-standalone> */}
         <Script id="ua-flags" strategy="beforeInteractive">
           {`(function(){
             try{
@@ -55,6 +55,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               var el = document.documentElement;
               el.setAttribute('data-os', os);
               el.setAttribute('data-browser', br);
+
+              // PWA/Standalone detect (pentru a ascunde Skip to content în aplicația instalată)
+              var isStandalone = false;
+              if (window.matchMedia) {
+                isStandalone =
+                  window.matchMedia('(display-mode: standalone)').matches ||
+                  window.matchMedia('(display-mode: fullscreen)').matches;
+              }
+              // iOS legacy
+              if (!isStandalone && 'standalone' in navigator && (navigator as any).standalone) {
+                isStandalone = true;
+              }
+              if (isStandalone) {
+                el.setAttribute('data-standalone', 'true');
+              }
             }catch(e){}
           })();`}
         </Script>
@@ -76,6 +91,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --accent1:#22d3ee; --accent2:#0d1323;
 }
 html, body { background: var(--bg); color: var(--text); }
+
 :root[data-theme="dark"] body{
   background:
     radial-gradient(60rem 60rem at 10% 0%,
@@ -87,8 +103,11 @@ html, body { background: var(--bg); color: var(--text); }
     var(--bg);
   background-attachment: fixed, fixed, fixed, fixed;
 }
-:root[data-os="ios"][data-theme="dark"] body{ background-attachment: scroll, scroll, scroll, scroll; }
+:root[data-os="ios"][data-theme="dark"] body{
+  background-attachment: scroll, scroll, scroll, scroll;
+}
 
+/* accents */
 :root[data-theme="dark"][data-accent="base"]   { --primary:#3ECF8E; }
 :root[data-theme="dark"][data-accent="blue"]   { --primary:#3b82f6; }
 :root[data-theme="dark"][data-accent="indigo"] { --primary:#6366f1; }
@@ -136,7 +155,7 @@ html, body { background: var(--bg); color: var(--text); }
           {children}
         </div>
 
-        {/* Host global pentru modalul “emoji” (nu afișează nimic până nu-l chemăm) */}
+        {/* Host global pentru modalul “emoji” (deschis din OpenCookieSettingsButton / AutoOpenOnLanding) */}
         <ConsentOverlayHost />
       </body>
     </html>
