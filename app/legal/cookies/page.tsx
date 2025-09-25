@@ -1,6 +1,7 @@
 // /app/legal/cookies/page.tsx
 import type { Metadata } from "next";
-import s from "..legal.module.css";
+import s from "../legal.module.css";
+import OpenCookieSettingsButton from "@/components/consent/OpenCookieSettingsButton";
 
 export const metadata: Metadata = {
   title: "Cookie Policy — Plan4host",
@@ -31,33 +32,29 @@ export default function CookiePolicyPage() {
           <p className={s.p}>
             The data controller for the Website is <strong>BOA DIGITAL SOLUTIONS SRL</strong>. For
             privacy questions, contact:{" "}
-            <a className={s.link} href="mailto:office@plan4host.com">
-              office@plan4host.com
-            </a>
-            . We do not display a postal address on this page.
+            <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
+            We do not display a postal address on this page.
           </p>
 
           <h2 className={s.h2}>2. What are cookies?</h2>
           <p className={s.p}>
-            Cookies are small text files placed on your device to store information. They are
-            widely used to make websites work or function more efficiently, as well as to provide
-            information to the site owners. Cookies may be “first-party” (set by us) or
-            “third-party” (set by external providers).
+            Cookies are small text files placed on your device to store information. They are widely
+            used to make websites work or function more efficiently, as well as to provide information
+            to the site owners. Cookies may be “first-party” (set by us) or “third-party” (set by external providers).
           </p>
 
           <h2 className={s.h2}>3. Scope and where cookies apply</h2>
           <p className={s.p}>
-            This policy applies to the public marketing pages (e.g., homepage, pricing, features,
-            contact, and legal pages) and to the application area (after login). Payments are
-            processed in the app’s billing area.
+            This policy applies to the public marketing pages (e.g., homepage, pricing, features, contact,
+            and legal pages) and to the application area (after login). Payments are processed in the app’s billing area.
           </p>
 
           <h2 className={s.h2}>4. Categories of cookies we use</h2>
           <ul className={s.list}>
             <li className={s.p}>
-              <strong>Essential (always on)</strong> — Required for core functionality such as
-              session, security, consent storage, <em>and theme selection</em>. These cookies are
-              necessary for the Website to function and cannot be switched off.
+              <strong>Essential (always on)</strong> — Required for core functionality such as session,
+              security, consent storage, <em>and theme selection</em>. These cookies are necessary for
+              the Website to function and cannot be switched off.
             </li>
           </ul>
           <p className={`${s.p} ${s.muted}`}>
@@ -69,30 +66,22 @@ export default function CookiePolicyPage() {
           <div className={s.card} style={{ margin: "16px 0 6px" }}>
             <p className={s.p} style={{ margin: 0 }}>
               You can review cookie information any time via{" "}
-              <button
-                id="open-cookie-settings"
-                className={`${s.btn} ${s.btnPrimary}`}
-                aria-haspopup="dialog"
-                type="button"
-              >
-                Cookie settings
-              </button>
+              <OpenCookieSettingsButton className={`${s.btn} ${s.btnPrimary}`} />
               . (This opens a small settings modal.)
             </p>
             <p className={`${s.p} ${s.muted}`} style={{ marginTop: 8 }}>
-              At this time we only use essential cookies, so there is nothing to opt in/out of.
-              If we introduce non-essential categories in the future, you will be able to manage your
-              choices here.
+              At this time we only use essential cookies, so there is nothing to opt in/out of. If we introduce
+              non-essential categories in the future, you will be able to manage your choices here.
             </p>
           </div>
 
           <h2 className={s.h2}>5. Details: cookies and similar technologies</h2>
           <p className={s.p}>
-            Below is a non-exhaustive list of the key cookies and storage we use. Some cookies may be
-            set only when you access specific features (e.g., billing/checkout).
+            Below is a non-exhaustive list of the key cookies and storage we use. Some cookies may be set only
+            when you access specific features (e.g., billing/checkout).
           </p>
 
-          <div className={s.cookieTable}>
+          <div className={s.tableWrap}>
             <table>
               <thead>
                 <tr>
@@ -158,15 +147,14 @@ export default function CookiePolicyPage() {
 
           <h2 className={s.h2}>7. Legal basis</h2>
           <p className={s.p}>
-            Essential cookies are used based on our legitimate interest in providing a secure and
-            functional service. If we add non-essential cookies in the future, they will be used only
-            with your consent.
+            Essential cookies are used based on our legitimate interest in providing a secure and functional
+            service. If we add non-essential cookies in the future, they will be used only with your consent.
           </p>
 
           <h2 className={s.h2}>8. International transfers</h2>
           <p className={s.p}>
-            Some providers (e.g., Stripe) may process data outside the EU/EEA. When applicable, we rely
-            on appropriate safeguards (e.g., standard contractual clauses) as provided by those processors.
+            Some providers (e.g., Stripe) may process data outside the EU/EEA. When applicable, we rely on
+            appropriate safeguards (e.g., standard contractual clauses) as provided by those processors.
           </p>
 
           <h2 className={s.h2}>9. Changes to this policy</h2>
@@ -178,9 +166,7 @@ export default function CookiePolicyPage() {
           <h2 className={s.h2}>10. Contact</h2>
           <p className={s.p}>
             For questions about this policy or your privacy choices, contact us at{" "}
-            <a className={s.link} href="mailto:office@plan4host.com">
-              office@plan4host.com
-            </a>.
+            <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
           </p>
         </section>
       </div>
