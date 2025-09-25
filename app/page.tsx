@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import styles from "./home.module.css";
 import { createPortal } from "react-dom";
 import AutoOpenOnLanding from "@/components/consent/AutoOpenOnLanding";
+// ...
 
 <AutoOpenOnLanding delay={150} />
 

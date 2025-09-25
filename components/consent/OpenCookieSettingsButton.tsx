@@ -1,31 +1,22 @@
 // /components/consent/OpenCookieSettingsButton.tsx
 "use client";
 
-type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  label?: string;
-};
+import { openCookieConsent } from "./openCookieConsent";
 
 export default function OpenCookieSettingsButton({
-  label = "Cookie settings",
-  className,
-  ...props
-}: Props) {
-  function open(e?: React.MouseEvent) {
-    e?.preventDefault();
-    try {
-      window.dispatchEvent(new CustomEvent("p4h:open-cookie-settings"));
-    } catch {}
-  }
-
+  children = "Cookie settings",
+  className = "",
+  id,
+}: { children?: React.ReactNode; className?: string; id?: string }) {
   return (
     <button
       type="button"
+      id={id}
       aria-haspopup="dialog"
-      onClick={open}
+      onClick={() => openCookieConsent()}
       className={className}
-      {...props}
     >
-      {label}
+      {children}
     </button>
   );
 }

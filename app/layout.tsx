@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { cookies } from "next/headers";
 import Script from "next/script";
-import ModernCookieModal from "@/components/consent/ModernCookieModal";
+import ConsentOverlayHost from "@/components/consent/ConsentOverlayHost";
 
 export const metadata: Metadata = {
   title: "plan4host",
@@ -18,11 +18,7 @@ export const metadata: Metadata = {
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
     shortcut: ["/favicon.ico"],
   },
-  appleWebApp: {
-    capable: true,
-    title: "plan4host",
-    statusBarStyle: "black-translucent",
-  },
+  appleWebApp: { capable: true, title: "plan4host", statusBarStyle: "black-translucent" },
   formatDetection: { telephone: false },
 };
 
@@ -44,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" data-theme={theme} data-accent={accent}>
       <body style={{ margin: 0 }}>
-        {/* UA flags -> <html data-browser|data-os> (rulează înainte de React) */}
+        {/* UA flags -> <html data-browser|data-os> */}
         <Script id="ua-flags" strategy="beforeInteractive">
           {`(function(){
             try{
@@ -63,7 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           })();`}
         </Script>
 
-        {/* ——— CSS global (teme + palete + gradient) ——— */}
+        {/* ——— Palete + gradient global ——— */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
@@ -71,41 +67,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --bg:#0b1117; --text:#e6edf3; --muted:#9aa4af;
   --panel:#0f1623; --card:#0d1320; --border:#1f2937;
   --primary:#3ECF8E; --danger:#ef4444; --success:#22c55e;
-  --accent1:#22d3ee; 
-  --accent2:#0d1323;
+  --accent1:#22d3ee; --accent2:#0d1323;
 }
 :root[data-theme="light"]{
   --bg:#f7faf9; --text:#0f172a; --muted:#64748b;
   --panel:#ffffff; --card:#ffffff; --border:#e2e8f0;
   --primary:#16b981; --danger:#dc2626; --success:#16a34a;
-  --accent1:#22d3ee;
-  --accent2:#0d1323;
+  --accent1:#22d3ee; --accent2:#0d1323;
 }
-
-/* fallback comun */
 html, body { background: var(--bg); color: var(--text); }
-
-/* ✅ Dark-only ambient gradient pe tot app-ul */
 :root[data-theme="dark"] body{
   background:
     radial-gradient(60rem 60rem at 10% 0%,
-      color-mix(in oklab, var(--accent1) 22%, transparent),
-      transparent 60%),
+      color-mix(in oklab, var(--accent1) 22%, transparent), transparent 60%),
     radial-gradient(50rem 50rem at 95% 10%,
-      color-mix(in oklab, var(--accent2) 22%, transparent),
-      transparent 60%),
+      color-mix(in oklab, var(--accent2) 22%, transparent), transparent 60%),
     radial-gradient(70rem 60rem at 30% 100%,
-      color-mix(in oklab, var(--primary) 14%, transparent),
-      transparent 60%),
+      color-mix(in oklab, var(--primary) 14%, transparent), transparent 60%),
     var(--bg);
   background-attachment: fixed, fixed, fixed, fixed;
 }
-/* iOS: evită bug-ul cu background-attachment: fixed */
-:root[data-os="ios"][data-theme="dark"] body{
-  background-attachment: scroll, scroll, scroll, scroll;
-}
+:root[data-os="ios"][data-theme="dark"] body{ background-attachment: scroll, scroll, scroll, scroll; }
 
-/* accents */
 :root[data-theme="dark"][data-accent="base"]   { --primary:#3ECF8E; }
 :root[data-theme="dark"][data-accent="blue"]   { --primary:#3b82f6; }
 :root[data-theme="dark"][data-accent="indigo"] { --primary:#6366f1; }
@@ -121,14 +104,12 @@ html, body { background: var(--bg); color: var(--text); }
 
 .config-grid { display:grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
 @media (min-width: 1025px) { .config-grid { grid-template-columns: 280px 1fr; } }
-
 .room-row { display: grid; gap: 10px; grid-template-columns: 1fr auto; grid-template-areas: "name name" "type actions"; align-items: center; }
 @media (max-width: 480px) { .room-row { grid-template-columns: 1fr; grid-template-areas: "name" "type" "actions"; } }
-
 .rd-row { display: grid; grid-template-columns: 1fr 160px 90px 90px; gap: 8px; align-items: center; }
 @media (max-width: 480px) { .rd-row { grid-template-columns: 1fr; } }
 
-/* ---------- iOS notch safe-area ---------- */
+/* Safe areas */
 :root{
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -151,13 +132,12 @@ html, body { background: var(--bg); color: var(--text); }
           }}
         />
 
-        {/* Conținut */}
         <div style={{ paddingTop: "var(--safe-top)", paddingBottom: "var(--safe-bottom)" }}>
           {children}
         </div>
 
-        {/* 🍪 Unicul cookie modal modern (emoji) — global */}
-        <ModernCookieModal />
+        {/* Host global pentru modalul “emoji” (nu afișează nimic până nu-l chemăm) */}
+        <ConsentOverlayHost />
       </body>
     </html>
   );

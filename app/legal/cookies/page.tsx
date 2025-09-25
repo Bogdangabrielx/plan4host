@@ -2,7 +2,10 @@
 import type { Metadata } from "next";
 import s from "../legal.module.css";
 import OpenCookieSettingsButton from "@/components/consent/OpenCookieSettingsButton";
-
+// ...
+<OpenCookieSettingsButton className={`${s.btn} ${s.btnPrimary}`}>
+  Cookie settings
+</OpenCookieSettingsButton>
 
 export const metadata: Metadata = {
   title: "Cookie Policy — Plan4host",
