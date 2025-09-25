@@ -37,6 +37,8 @@ type BookingDoc = {
   url: string | null; // signed URL
 };
 
+/* ───── Helpers ───── */
+
 function toDateTime(dateStr: string, timeStr: string | null | undefined, fallbackTime: string) {
   const t = timeStr && /^\d\d:\d\d$/.test(timeStr) ? timeStr : fallbackTime;
   return new Date(`${dateStr}T${t}:00`);
@@ -59,6 +61,8 @@ function fmtDocType(t: string | null | undefined) {
   return t === "id_card" ? "ID card" : t === "passport" ? "Passport" : t.replace(/_/g, " ");
 }
 
+/* ───── Component ───── */
+
 export default function RoomDetailModal({
   dateStr,
   propertyId,
@@ -80,6 +84,18 @@ export default function RoomDetailModal({
 }) {
   const supabase = createClient();
   const PID = room.property_id || propertyId;
+
+  // Responsive
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.innerWidth < 720 : false
+  );
+  useEffect(() => {
+    const onR = () => setIsMobile(window.innerWidth < 720);
+    onR();
+    window.addEventListener("resize", onR);
+    return () => window.removeEventListener("resize", onR);
+  }, []);
+
   // Data
   const [property, setProperty] = useState<Property | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -89,17 +105,17 @@ export default function RoomDetailModal({
   const [on, setOn] = useState<boolean>(false);
   const userTouchedToggleRef = useRef(false);
 
-  // Reservation fields
+  // Times
   const [startDate, setStartDate] = useState<string>("");
   const [startTime, setStartTime] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
 
-  // Guest name (bookings)
+  // Guest name
   const [guestFirst, setGuestFirst] = useState<string>("");
   const [guestLast, setGuestLast]   = useState<string>("");
 
-  // Contact (booking_contacts)
+  // Contact
   const [guestEmail, setGuestEmail]     = useState<string>("");
   const [guestPhone, setGuestPhone]     = useState<string>("");
   const [guestAddr, setGuestAddr]       = useState<string>("");
@@ -108,36 +124,38 @@ export default function RoomDetailModal({
 
   const [showGuest, setShowGuest] = useState<boolean>(false);
 
-  // Custom room detail fields
+  // Custom fields
   const [checkDefs, setCheckDefs] = useState<CheckDef[]>([]);
   const [textDefs,  setTextDefs]  = useState<TextDef[]>([]);
   const [checkValues, setCheckValues] = useState<Record<string, boolean>>({});
   const [textValues,  setTextValues]  = useState<Record<string, string>>({});
-  const [detailsDirty, setDetailsDirty] = useState(false); // only for custom fields
+  const [detailsDirty, setDetailsDirty] = useState(false);
 
-  // Documents (from guest check-in)
+  // Docs
   const [docs, setDocs] = useState<BookingDoc[]>([]);
 
-  // Dirty tracking (names + contacts + times)
+  // Dirty tracking
   const initialGuestRef   = useRef<{ first: string; last: string }>({ first: "", last: "" });
   const initialContactRef = useRef<BookingContact>({ email: "", phone: "", address: "", city: "", country: "" });
   const initialTimesRef   = useRef<{ sd: string; st: string; ed: string; et: string }>({ sd: "", st: "", ed: "", et: "" });
 
   const [saving, setSaving] = useState<false | "creating" | "updating" | "times" | "extending" | "releasing">(false);
-  const [status, setStatus] = useState<"Idle" | "Saving…" | "Saved" | "Error">("Idle");
+  const [status, setStatus] = useState<"Idle" | "Saving..." | "Saved" | "Error">("Idle");
   const [statusHint, setStatusHint] = useState<string>("");
 
   const CI = property?.check_in_time || "14:00";
   const CO = property?.check_out_time || "11:00";
 
-  // ——— Booking contact API ———
+  // API: contact
   async function fetchContact(bookingId: string): Promise<BookingContact | null> {
     try {
       const res = await fetch(`/api/bookings/${bookingId}/contact`, { cache: "no-store" });
       if (!res.ok) return null;
       const j = await res.json();
       return (j?.contact ?? null) as BookingContact | null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
   async function saveContact(bookingId: string, payload: Partial<BookingContact>) {
     try {
@@ -147,9 +165,12 @@ export default function RoomDetailModal({
         body: JSON.stringify(payload),
       });
       return res.ok;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   }
 
+  // API: documents
   async function fetchDocuments(bookingId: string) {
     try {
       const r = await fetch(`/api/bookings/${bookingId}/documents`, { cache: "no-store" });
@@ -160,40 +181,38 @@ export default function RoomDetailModal({
     }
   }
 
-  // Alege documentul „principal”: ID card / Passport, altfel cel mai recent
   const primaryDoc: BookingDoc | null = useMemo(() => {
     if (!docs.length) return null;
-    const pref = docs.find(d => d.doc_type === "id_card" || d.doc_type === "passport");
+    const pref = docs.find((d) => d.doc_type === "id_card" || d.doc_type === "passport");
     if (pref) return pref;
-    return [...docs].sort((a,b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime())[0];
+    return [...docs].sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime())[0];
   }, [docs]);
 
-  // Load everything (property, bookings, field definitions, existing values/defaults)
+  // Load everything
   useEffect(() => {
     (async () => {
-      const [p1, p2, p4, p5] = await Promise.all([
+      const [p1, p2, pText, pChecks] = await Promise.all([
         supabase
           .from("properties")
           .select("id,name,check_in_time,check_out_time")
-          .eq("id", propertyId)
+          .eq("id", PID)
           .maybeSingle(),
         supabase
           .from("bookings")
           .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status,guest_first_name,guest_last_name")
-          .eq("property_id", propertyId)
+          .eq("property_id", PID)
           .eq("room_id", room.id)
           .neq("status", "cancelled")
           .order("start_date", { ascending: true }),
         supabase
           .from("room_detail_text_fields")
           .select("id,label,placeholder,sort_index,property_id")
-          .eq("property_id", propertyId)
+          .eq("property_id", PID)
           .order("sort_index", { ascending: true }),
-        // NEW: unified checks table (optional, if present)
         supabase
           .from("room_detail_checks")
           .select("id,label,default_value,sort_index,property_id")
-          .eq("property_id", propertyId)
+          .eq("property_id", PID)
           .order("sort_index", { ascending: true }),
       ]);
 
@@ -203,7 +222,7 @@ export default function RoomDetailModal({
       const allBookings = (p2.error ? [] : (p2.data ?? [])) as Booking[];
       setBookings(allBookings);
 
-      // Determine active booking if not creating
+      // Active booking (only if not forced create)
       let act: Booking | null = null;
       if (!forceNew) {
         for (const b of allBookings) {
@@ -212,22 +231,17 @@ export default function RoomDetailModal({
       }
       setActive(act);
 
-      // Use unified checks table exclusively (avoid legacy table 404)
-      const unifiedChecks = (p5.error ? [] : ((p5.data ?? []) as CheckDef[]));
-      const checksSorted = [...unifiedChecks].sort((a,b) => a.sort_index - b.sort_index);
+      const checksSorted = (pChecks.error ? [] : ((pChecks.data ?? []) as CheckDef[])).sort((a,b)=>a.sort_index-b.sort_index);
+      const textsSorted  = (pText.error ? [] : ((pText.data ?? [])  as TextDef[])).sort((a,b)=>a.sort_index-b.sort_index);
       setCheckDefs(checksSorted);
+      setTextDefs(textsSorted);
 
-      const defsTexts  = (p4.error ? [] : ((p4.data ?? []) as TextDef[]));
-      setTextDefs(defsTexts);
-
-      // Init start/end
+      // Init times
       const CIlocal = prop?.check_in_time || "14:00";
       const COlocal = prop?.check_out_time || "11:00";
 
       const _sDate = defaultStart?.date ?? (act ? act.start_date : dateStr);
       const _sTime = defaultStart?.time ?? (act ? (act.start_time || CIlocal) : CIlocal);
-
-      // IMPORTANT: for create, default End = Start + 1 day
       const _eDate = defaultEnd?.date   ?? (act ? act.end_date : addDaysYMD(_sDate, 1));
       const _eTime = defaultEnd?.time   ?? (act ? (act.end_time || COlocal) : COlocal);
 
@@ -236,7 +250,7 @@ export default function RoomDetailModal({
       setEndDate(_eDate);
       setEndTime(_eTime || "");
 
-      // Names + contact
+      // Names + contact + docs
       let contact: BookingContact | null = null;
       if (act) {
         setGuestFirst(act.guest_first_name ?? "");
@@ -247,52 +261,41 @@ export default function RoomDetailModal({
         setGuestAddr(contact?.address ?? "");
         setGuestCity(contact?.city ?? "");
         setGuestCountry(contact?.country ?? "");
-        await fetchDocuments(act.id); // signed URLs
+        await fetchDocuments(act.id);
       } else {
         setGuestFirst(""); setGuestLast("");
         setGuestEmail(""); setGuestPhone(""); setGuestAddr(""); setGuestCity(""); setGuestCountry("");
         setDocs([]);
       }
 
-      // ---------- Saved values / defaults ----------
-      const defaultCheckValues: Record<string, boolean> = Object.fromEntries(
-        checksSorted.map((d) => [d.id, !!d.default_value])
-      );
-      const defaultTextValues: Record<string, string> = Object.fromEntries(
-        defsTexts.map((d) => [d.id, ""])
-      );
+      // Saved values / defaults
+      const defaultCheckValues: Record<string, boolean> = Object.fromEntries(checksSorted.map(d => [d.id, !!d.default_value]));
+      const defaultTextValues:  Record<string, string>  = Object.fromEntries(textsSorted.map(d => [d.id, ""]));
 
       let initCheckValues = { ...defaultCheckValues };
       let initTextValues  = { ...defaultTextValues };
 
       if (act) {
         const [vc, vt] = await Promise.all([
-          supabase
-            .from("booking_check_values")
-            .select("check_id,value")
-            .eq("booking_id", act.id),
-          supabase
-            .from("booking_text_values")
-            .select("field_id,value")
-            .eq("booking_id", act.id),
+          supabase.from("booking_check_values").select("check_id,value").eq("booking_id", act.id),
+          supabase.from("booking_text_values").select("field_id,value").eq("booking_id", act.id),
         ]);
 
         if (!vc.error && Array.isArray(vc.data)) {
           for (const row of vc.data as Array<{ check_id: string; value: boolean | null }>) {
-            if (row && row.check_id) initCheckValues[row.check_id] = !!row.value;
+            if (row?.check_id) initCheckValues[row.check_id] = !!row.value;
           }
         }
         if (!vt.error && Array.isArray(vt.data)) {
           for (const row of vt.data as Array<{ field_id: string; value: string | null }>) {
-            if (row && row.field_id) initTextValues[row.field_id] = row.value ?? "";
+            if (row?.field_id) initTextValues[row.field_id] = row.value ?? "";
           }
         }
       }
       setCheckValues(initCheckValues);
       setTextValues(initTextValues);
-      // --------------------------------------------
 
-      // Dirty tracking initial refs
+      // Dirty baselines
       initialGuestRef.current = { first: act?.guest_first_name ?? "", last: act?.guest_last_name ?? "" };
       initialContactRef.current = {
         email:   contact?.email   ?? "",
@@ -308,21 +311,19 @@ export default function RoomDetailModal({
         et: act ? (act.end_time || COlocal) : _eTime,
       };
 
-      // Set ON only when editing an existing booking; preserve user's manual toggle
+      // Toggle
       if (!userTouchedToggleRef.current) setOn(!!act);
       setShowGuest(!act || !((act?.guest_first_name ?? "").trim() || (act?.guest_last_name ?? "").trim()));
       setDetailsDirty(false);
       setStatus("Idle"); setStatusHint("");
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propertyId, room.id, dateStr, forceNew]);
+  }, [PID, room.id, dateStr, forceNew]);
 
-  const others = useMemo(
-    () => bookings.filter((b) => b.room_id === room.id),
-    [bookings, room.id]
-  );
+  // Others in same room
+  const others = useMemo(() => bookings.filter((b) => b.room_id === room.id), [bookings, room.id]);
 
-  // Derived dirty flags
+  // Dirty flags
   const guestDirty =
     guestFirst !== initialGuestRef.current.first ||
     guestLast  !== initialGuestRef.current.last;
@@ -355,11 +356,11 @@ export default function RoomDetailModal({
 
   const anyDetailsDirty = guestDirty || contactDirty || detailsDirty;
 
-  // --- Save flows ------------------------------------------------------------
+  /* ───── Save flows ───── */
 
   async function saveCreated() {
     if (!on) { setStatus("Error"); setStatusHint("Turn reservation ON first."); return; }
-    setSaving("creating"); setStatus("Saving…"); setStatusHint("Creating…");
+    setSaving("creating"); setStatus("Saving..."); setStatusHint("Creating…");
 
     const s = toDateTime(startDate, startTime, CI);
     const e = toDateTime(endDate, endTime, CO);
@@ -377,14 +378,14 @@ export default function RoomDetailModal({
     }
 
     const ins = await supabase.from("bookings").insert({
-      property_id: propertyId,
+      property_id: PID,
       room_id: room.id,
       start_date: startDate,
       end_date: endDate,
       start_time: startTime || null,
       end_time: endTime || null,
       status: "confirmed",
-      source: "manual",                 // ← IMPORTANT pentru Guest Overview
+      source: "manual",
       guest_first_name: guestFirst || null,
       guest_last_name:  guestLast  || null,
     }).select("id").maybeSingle();
@@ -417,7 +418,7 @@ export default function RoomDetailModal({
   async function saveDetails() {
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
     if (!anyDetailsDirty) return;
-    setSaving("updating"); setStatus("Saving…"); setStatusHint("Updating details…");
+    setSaving("updating"); setStatus("Saving..."); setStatusHint("Updating details…");
 
     if (guestDirty) {
       const upd = await supabase.from("bookings").update({
@@ -457,7 +458,7 @@ export default function RoomDetailModal({
     if (!on)     { setStatus("Error"); setStatusHint("Turn reservation ON to change times."); return; }
     if (!timesDirty) return;
 
-    setSaving("times"); setStatus("Saving…"); setStatusHint("Saving dates & times…");
+    setSaving("times"); setStatus("Saving..."); setStatusHint("Saving dates & times…");
 
     const s = toDateTime(startDate, startTime, CI);
     const e = toDateTime(endDate, endTime, CO);
@@ -493,7 +494,7 @@ export default function RoomDetailModal({
     if (!on)     { setStatus("Error"); setStatusHint("Use 'Confirm release' when OFF."); return; }
     if (!canExtend) return;
 
-    setSaving("extending"); setStatus("Saving…"); setStatusHint("Extending…");
+    setSaving("extending"); setStatus("Saving..."); setStatusHint("Extending…");
 
     const res = await fetch(`/api/bookings/${active.id}`, {
       method: "PATCH",
@@ -513,7 +514,7 @@ export default function RoomDetailModal({
 
   async function releaseBooking() {
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
-    setSaving("releasing"); setStatus("Saving…"); setStatusHint("Releasing…");
+    setSaving("releasing"); setStatus("Saving..."); setStatusHint("Releasing…");
 
     try {
       const res = await fetch(`/api/bookings/${active.id}`, { method: "DELETE" });
@@ -528,7 +529,14 @@ export default function RoomDetailModal({
     }
   }
 
-  // --- UI --------------------------------------------------------------------
+  // Close on Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  /* ───── UI ───── */
 
   const baseBtn: React.CSSProperties = {
     padding: "10px 14px",
@@ -571,13 +579,14 @@ export default function RoomDetailModal({
         display: "grid",
         placeItems: "center",
         fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+        padding: "12px",
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(1000px, calc(100vw - 32px))",
-          maxHeight: "calc(100vh - 32px)",
+          width: "min(1000px, 100%)",
+          maxHeight: "calc(100vh - 24px)",
           overflow: "auto",
           background: "var(--panel)",
           color: "var(--text)",
@@ -587,7 +596,7 @@ export default function RoomDetailModal({
         }}
       >
         {/* Header + status */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
           <strong>{room.name} — {dateStr} — Reservation</strong>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span
@@ -596,10 +605,10 @@ export default function RoomDetailModal({
                 padding: "4px 8px",
                 borderRadius: 999,
                 background:
-                  status === "Saving…" ? "var(--primary)" :
-                  status === "Error"    ? "var(--danger)"  :
-                  status === "Saved"    ? "var(--success, #22c55e)" : "#2a2f3a",
-                color: status === "Saving…" ? "#0c111b" : "#fff",
+                  status === "Saving..." ? "var(--primary)" :
+                  status === "Error"     ? "var(--danger)"  :
+                  status === "Saved"     ? "var(--success, #22c55e)" : "#2a2f3a",
+                color: status === "Saving..." ? "#0c111b" : "#fff",
                 fontWeight: 700,
               }}
             >
@@ -609,7 +618,7 @@ export default function RoomDetailModal({
           </div>
         </div>
 
-        {/* Reservation toggle + Dates */}
+        {/* Reservation toggle + dates */}
         <div style={{ display: "grid", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <label style={{ fontWeight: 800, fontSize: 14, letterSpacing: 0.2 }}>Reservation</label>
@@ -634,7 +643,7 @@ export default function RoomDetailModal({
           </div>
 
           {/* Dates row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
             {/* Start */}
             <div style={{ display: "grid", gap: 6 }}>
               <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Start (date & time)</label>
@@ -714,7 +723,7 @@ export default function RoomDetailModal({
             </div>
           </div>
 
-          {/* Guest details (name + contact + document from check-in) */}
+          {/* Guest details */}
           {showGuest && (
             <div
               style={{
@@ -728,7 +737,7 @@ export default function RoomDetailModal({
               }}
             >
               <strong style={{ letterSpacing: 0.3 }}>Guest details</strong>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
                 {/* Names */}
                 <div style={{ display: "grid", gap: 6 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>First name</label>
@@ -808,7 +817,7 @@ export default function RoomDetailModal({
                 </div>
 
                 {/* Address */}
-                <div style={{ gridColumn: "1 / -1", display: "grid", gap: 6 }}>
+                <div style={{ gridColumn: isMobile ? "auto" : "1 / -1", display: "grid", gap: 6 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Address (street & number)</label>
                   <input
                     type="text"
@@ -869,7 +878,7 @@ export default function RoomDetailModal({
               {/* Document (read-only, from check-in) */}
               <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
                 <strong style={{ letterSpacing: 0.3 }}>Guest ID document</strong>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
                   {/* Type + link */}
                   <div style={{ display: "grid", gap: 6 }}>
                     <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Document type</label>
@@ -890,12 +899,7 @@ export default function RoomDetailModal({
                       }}
                     />
                     {primaryDoc?.url ? (
-                      <a
-                        href={primaryDoc.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ textDecoration: "underline", fontWeight: 800 }}
-                      >
+                      <a href={primaryDoc.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline", fontWeight: 800 }}>
                         View file
                       </a>
                     ) : (
@@ -981,7 +985,7 @@ export default function RoomDetailModal({
 
               {checkDefs.length > 0 && (
                 <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
-                  {checkDefs.sort((a,b) => a.sort_index - b.sort_index).map(c => (
+                  {checkDefs.map(c => (
                     <li key={c.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <input
                         type="checkbox"
@@ -1000,7 +1004,7 @@ export default function RoomDetailModal({
 
               {textDefs.length > 0 && (
                 <div style={{ display: "grid", gap: 10 }}>
-                  {textDefs.sort((a,b) => a.sort_index - b.sort_index).map(t => (
+                  {textDefs.map(t => (
                     <div key={t.id} style={{ display: "grid", gap: 6 }}>
                       <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.label}</label>
                       <input
@@ -1057,7 +1061,7 @@ export default function RoomDetailModal({
                   </button>
                 )}
 
-                {!on && (
+                {!on && active && (
                   <button onClick={releaseBooking} style={dangerBtn} disabled={saving !== false && saving !== "releasing"}>
                     Confirm release
                   </button>
