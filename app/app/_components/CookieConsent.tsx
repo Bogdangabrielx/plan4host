@@ -3,15 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 
 type ConsentState = {
-  necessary: true;            // mereu true
-  analytics: boolean;
-  marketing: boolean;
+  necessary: true;      // mereu true
+  preferences: boolean; // doar pentru tema (light/dark)
 };
 
 const LS_KEY = "p4h:consent:v1";
 const CK_NAME = "p4h_consent";
 const CK_MAX_AGE_DAYS = 180;
 
+/* ─── Cookie & storage helpers ─── */
 function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
   const m = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
@@ -37,22 +37,23 @@ function persist(state: ConsentState) {
   const str = JSON.stringify(state);
   try { localStorage.setItem(LS_KEY, str); } catch {}
   setCookie(CK_NAME, str, CK_MAX_AGE_DAYS);
-  // opțional: expune un flag pe <html> pt. CSS/JS care au nevoie
+
+  // flag pe <html> pentru CSS/JS care au nevoie
   if (typeof document !== "undefined") {
     document.documentElement.dataset.consent = [
       "necessary",
-      state.analytics && "analytics",
-      state.marketing && "marketing",
+      state.preferences && "preferences",
     ].filter(Boolean).join(",");
   }
 }
 
+/* ─── Componenta modal ─── */
 export default function CookieConsent() {
   const existing = useMemo(readStored, []);
   const [open, setOpen] = useState(!existing); // apare doar dacă nu există consimțământ
   const [showCustomize, setShowCustomize] = useState(false);
   const [state, setState] = useState<ConsentState>(
-    existing || { necessary: true, analytics: false, marketing: false }
+    existing || { necessary: true, preferences: false }
   );
 
   // lock scroll când e deschis
@@ -109,7 +110,7 @@ export default function CookieConsent() {
           <div>
             <h2 id="cookie-title" style={{ margin: 0 }}>Cookies & Privacy</h2>
             <p style={{ margin: "6px 0 0", color: "var(--muted)" }}>
-              We use cookies to improve your experience. Choose what’s OK for you.
+              We use the minimum cookies needed. Choose what’s OK for you.
             </p>
           </div>
         </div>
@@ -118,9 +119,8 @@ export default function CookieConsent() {
         {!showCustomize ? (
           <div style={{ marginTop: 16, color: "var(--muted)" }}>
             <ul style={{ margin: 0, paddingLeft: 18 }}>
-              <li><strong>Necessary</strong> – required for basic site functionality.</li>
-              <li><strong>Analytics</strong> – helps us understand usage.</li>
-              <li><strong>Marketing</strong> – personalized offers.</li>
+              <li><strong>Necessary</strong> — required for basic site functionality.</li>
+              <li><strong>Preferences</strong> — remembers your theme (light/dark).</li>
             </ul>
           </div>
         ) : (
@@ -133,31 +133,22 @@ export default function CookieConsent() {
             <label style={rowStyle()}>
               <input
                 type="checkbox"
-                checked={state.analytics}
-                onChange={(e) => setState(s => ({ ...s, analytics: e.currentTarget.checked }))}
+                checked={state.preferences}
+                onChange={(e) => setState(s => ({ ...s, preferences: e.currentTarget.checked }))}
               />
-              <span style={{ fontWeight: 800 }}>Analytics</span>
-              <small style={{ color: "var(--muted)" }}>Helps us improve</small>
-            </label>
-            <label style={rowStyle()}>
-              <input
-                type="checkbox"
-                checked={state.marketing}
-                onChange={(e) => setState(s => ({ ...s, marketing: e.currentTarget.checked }))}
-              />
-              <span style={{ fontWeight: 800 }}>Marketing</span>
-              <small style={{ color: "var(--muted)" }}>More relevant messages</small>
+              <span style={{ fontWeight: 800 }}>Preferences</span>
+              <small style={{ color: "var(--muted)" }}>Theme (light/dark)</small>
             </label>
           </div>
         )}
 
         {/* Actions */}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap", marginTop: 16 }}>
-          {!showCustomize && (
+          {!showCustomize ? (
             <>
               <button
                 className="sb-btn"
-                onClick={() => saveAndClose({ necessary: true, analytics: false, marketing: false })}
+                onClick={() => saveAndClose({ necessary: true, preferences: false })}
                 title="Only necessary"
               >
                 Only necessary
@@ -171,14 +162,13 @@ export default function CookieConsent() {
               </button>
               <button
                 className="sb-btn sb-btn--primary"
-                onClick={() => saveAndClose({ necessary: true, analytics: true, marketing: true })}
+                onClick={() => saveAndClose({ necessary: true, preferences: true })}
                 title="Accept all"
               >
                 Accept all
               </button>
             </>
-          )}
-          {showCustomize && (
+          ) : (
             <>
               <button className="sb-btn" onClick={() => setShowCustomize(false)}>Back</button>
               <button className="sb-btn sb-btn--primary" onClick={() => saveAndClose(state)}>Save preferences</button>
@@ -188,7 +178,7 @@ export default function CookieConsent() {
 
         {/* Legal links */}
         <div style={{ marginTop: 10, display: "flex", gap: 12, flexWrap: "wrap", fontSize: 12, color: "var(--muted)" }}>
-          <a href="/legal/cookie-policy" style={{ color: "var(--primary)", textDecoration: "none" }}>Cookie Policy</a>
+          <a href="/legal/cookies" style={{ color: "var(--primary)", textDecoration: "none" }}>Cookie Policy</a>
           <span>•</span>
           <a href="/legal/privacy" style={{ color: "var(--primary)", textDecoration: "none" }}>Privacy</a>
         </div>
