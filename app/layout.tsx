@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { cookies } from "next/headers";
 import Script from "next/script";
-import { ConsentProvider,CookieModal, } from "@/components/consent/ConsentManager";
+import ModernCookieModal from "@/components/consent/ModernCookieModal";
 
 export const metadata: Metadata = {
   title: "plan4host",
@@ -150,15 +150,14 @@ html, body { background: var(--bg); color: var(--text); }
 `,
           }}
         />
-         <ConsentProvider>
-         <div style={{ paddingTop: "var(--safe-top)", paddingBottom: "var(--safe-bottom)" }}>
-         {children}
-         </div>
 
-          {/* Modalul mic de setări — disponibil pe orice pagină */}
-         <CookieModal />
-         </ConsentProvider>
-         
+        {/* Conținut */}
+        <div style={{ paddingTop: "var(--safe-top)", paddingBottom: "var(--safe-bottom)" }}>
+          {children}
+        </div>
+
+        {/* 🍪 Unicul cookie modal modern (emoji) — global */}
+        <ModernCookieModal />
       </body>
     </html>
   );
