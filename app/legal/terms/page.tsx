@@ -2,11 +2,11 @@
 import type { Metadata } from "next";
 import s from "../legal.module.css";
 import Link from "next/link";
+import OpenCookieSettingsButton from "@/components/consent/OpenCookieSettingsButton";
 
 export const metadata: Metadata = {
   title: "Terms of Service — Plan4host",
-  description:
-    "Terms of Service for plan4host.com operated by BOA DIGITAL SOLUTIONS SRL.",
+  description: "Terms of Service for plan4host.com operated by BOA DIGITAL SOLUTIONS SRL.",
 };
 
 export default function TermsOfServicePage() {
@@ -178,9 +178,9 @@ export default function TermsOfServicePage() {
           <div className={s.card} style={{ marginTop: 16 }}>
             <p className={s.p} style={{ margin: 0 }}>
               You can manage cookie preferences anytime via{" "}
-              <button id="open-cookie-settings" className={`${s.btn} ${s.btnPrimary}`} type="button" aria-haspopup="dialog">
+              <OpenCookieSettingsButton className={`${s.btn} ${s.btnPrimary}`}>
                 Cookie settings
-              </button>.
+              </OpenCookieSettingsButton>.
             </p>
           </div>
         </section>
