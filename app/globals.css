@@ -109,32 +109,78 @@ textarea:focus-visible {
 .sb-btn--icon { width: 36px; height: 36px; padding: 0; border-radius: 999px; }
 .sb-btn--small { padding: 6px 10px; border-radius: 8px; }
 
-/* înlocuiește blocul .sb-select actual */
-.sb-select{
-  -webkit-appearance: menulist;
-  appearance: auto;
-  background: var(--card);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 12px;
+/* ====== SELECT: Safari = nativ (appearance:auto) ====== */
+:root[data-browser="safari"] select:not([multiple]):not([size]),
+:root[data-browser="safari"] select.sb-select:not([multiple]):not([size]) {
+  -webkit-appearance: menulist !important;
+          appearance: auto !important;
+  /* anulăm eventualele inline styles ca să nu stricăm nativul */
+  background: initial !important;
+  border: 0 !important;
+  padding: 6px 8px !important;
+  border-radius: 10px !important;
+  font: inherit;
   font-weight: 700;
-  font-family: inherit;
+  color: var(--text);
+}
+
+/* ====== SELECT: Chrome/alte browsere = custom 3D fără săgeți ====== */
+:root:not([data-browser="safari"]) select:not([multiple]):not([size]),
+:root:not([data-browser="safari"]) select.sb-select:not([multiple]):not([size]) {
+  -webkit-appearance: none;
+          appearance: none;
+
+  /* metrici */
+  font: inherit;
+  font-weight: 700;
   line-height: 1.2;
-}
-
-select:not(.sb-select){ /* opțional */
-  -webkit-appearance: menulist;
-  appearance: auto;
-  background: var(--card);
   color: var(--text);
-  border: 1px solid var(--border);
+  min-height: 36px;
+  padding: 8px 12px;             /* fără spațiu de icon: nu avem săgeți */
   border-radius: 10px;
-  padding: 8px 12px;
-  font-weight: 700;
-  font-family: inherit;
+
+  /* paleta pentru efect 3D */
+  --sel-top:   #56606d;
+  --sel-bot:   #1a1f26;
+  --sel-edge:  #0b0f14;
+  --sel-hi:    rgba(255,255,255,.28);
+  --sel-hi2:   rgba(255,255,255,.10);
+  --sel-low:   rgba(0,0,0,.38);
+  --sel-deep:  rgba(0,0,0,.55);
+
+  /* contur + “pictură” a barei (trough) */
+  border: 1px solid var(--sel-edge);
+  background-image:
+    /* luciu sus */
+    linear-gradient(to bottom, var(--sel-hi), transparent 40%),
+    /* umbră jos pentru concavitate */
+    linear-gradient(to top, var(--sel-low), transparent 55%),
+    /* stratul de bază */
+    linear-gradient(to bottom, var(--sel-top), var(--sel-bot));
+  background-repeat: no-repeat;
+  background-size: 100% 35%, 100% 70%, 100% 100%;
+  background-position: 0 0, 0 100%, 0 0;
+
+  box-shadow:
+    inset 0 1px 0 var(--sel-hi2),
+    inset 0 -1px 0 var(--sel-deep),
+    0 1px 0 rgba(255,255,255,.05);
+  background-color: transparent;
 }
 
+:root:not([data-browser="safari"]) select:not([multiple]):not([size]):hover,
+:root:not([data-browser="safari"]) select.sb-select:not([multiple]):not([size]):hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--sel-edge));
+}
+
+:root:not([data-browser="safari"]) select:not([multiple]):not([size]):focus,
+:root:not([data-browser="safari"]) select.sb-select:not([multiple]):not([size]):focus {
+  outline: 2px solid color-mix(in srgb, var(--primary) 70%, white);
+  outline-offset: 2px;
+}
+
+/* ieșire curată pe disabled */
+select:disabled { opacity: .7; cursor: not-allowed; }
 /* Segmented control */
 .sb-seg {
   display: inline-flex;

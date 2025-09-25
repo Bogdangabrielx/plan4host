@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { cookies } from "next/headers";
+import Script from "next/script";
 import {
   ConsentProvider,
   CookieBanner,
@@ -49,7 +50,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" data-theme={theme} data-accent={accent}>
       <body style={{ margin: 0 }}>
-        {/* ——— CSS global (teme + palete) ——— */}
+        {/* UA flags -> <html data-browser|data-os> (rulează înainte de React) */}
+        <Script id="ua-flags" strategy="beforeInteractive">
+          {`(function(){
+            try{
+              var ua = navigator.userAgent;
+              var isIOS = /iP(hone|ad|od)/.test(ua);
+              var isAndroid = /Android/i.test(ua);
+              var isMac = !isIOS && /Mac OS X/.test(ua);
+              var isSafari = /Safari/i.test(ua) && !/(Chrome|Chromium|CriOS|Edg|OPR)/i.test(ua);
+              var isChrome = /Chrome|Chromium|CriOS/i.test(ua) && !/Edg|OPR/i.test(ua);
+              var os = isIOS ? 'ios' : (isAndroid ? 'android' : (isMac ? 'mac' : 'other'));
+              var br = isSafari ? 'safari' : (isChrome ? 'chrome' : 'other');
+              var el = document.documentElement;
+              el.setAttribute('data-os', os);
+              el.setAttribute('data-browser', br);
+            }catch(e){}
+          })();`}
+        </Script>
+
+        {/* ——— CSS global (teme + palete + gradient) ——— */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
@@ -67,7 +87,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --bg:#f7faf9; --text:#0f172a; --muted:#64748b;
   --panel:#ffffff; --card:#ffffff; --border:#e2e8f0;
   --primary:#16b981; --danger:#dc2626; --success:#16a34a;
-  /* accent vars nefolosite pe light (doar pt consistență) */
   --accent1:#22d3ee;
   --accent2:#0d1323;
 }
@@ -88,8 +107,11 @@ html, body { background: var(--bg); color: var(--text); }
       color-mix(in oklab, var(--primary) 14%, transparent),
       transparent 60%),
     var(--bg);
-  /* păstrează gradientul “lipit” de viewport */
   background-attachment: fixed, fixed, fixed, fixed;
+}
+/* iOS: evită bug-ul cu background-attachment: fixed */
+:root[data-os="ios"][data-theme="dark"] body{
+  background-attachment: scroll, scroll, scroll, scroll;
 }
 
 /* accents */
