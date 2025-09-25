@@ -1,20 +1,20 @@
 "use client";
 
 /**
- * ConsentManager.tsx — v2
- * - Banner apare automat dacă nu există cookie_consent
- * - Init sincron (lazy) ca să nu rateze primul paint
- * - Cookie 'Secure' doar pe HTTPS (altfel nu se salvează pe localhost)
- * - Z-index ridicat pentru banner
+ * ConsentManager.tsx — v3
+ * FIX:
+ *  1) Banner se închide imediat după click (pe state), chiar dacă cookie-ul nu se poate seta.
+ *  2) Setăm `Domain=` DOAR pentru rădăcina ta reală (plan4host.com). Pentru localhost/vercel/etc NU setăm `Domain`.
+ *  3) `Secure` doar pe HTTPS (ca să funcționeze pe localhost).
  */
 
 import React, {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
+  useEffect,
   PropsWithChildren,
 } from "react";
 
@@ -42,35 +42,42 @@ const ConsentContext = createContext<ConsentContextType | undefined>(undefined);
 const CONSENT_COOKIE = "cookie_consent";
 const CONSENT_MAX_AGE = 60 * 60 * 24 * 365; // 12 months
 
-// ---- Cookie helpers ----
-function getApexDomain(hostname: string): string | undefined {
-  if (hostname === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return undefined;
-  const parts = hostname.split(".");
-  if (parts.length >= 2) return `.${parts.slice(-2).join(".")}`;
-  return undefined;
-}
+/* ───────────────── Cookie helpers ───────────────── */
 
 function readConsentFromCookie(): ConsentState | null {
   if (typeof document === "undefined") return null;
-  const match = document.cookie.split("; ").find((row) => row.startsWith(CONSENT_COOKIE + "="));
-  if (!match) return null;
+  const part = document.cookie.split("; ").find((r) => r.startsWith(CONSENT_COOKIE + "="));
+  if (!part) return null;
   try {
-    const value = decodeURIComponent(match.split("=")[1]);
+    const value = decodeURIComponent(part.split("=")[1]);
     const parsed = JSON.parse(value);
-    if (parsed && parsed.v === 1 && parsed.essential === true && typeof parsed.preferences === "boolean") {
+    if (parsed?.v === 1 && parsed?.essential === true && typeof parsed?.preferences === "boolean") {
       return parsed as ConsentState;
     }
-  } catch {
-    // ignore parse errors
-  }
+  } catch {}
   return null;
+}
+
+/** Returnează domeniul pentru care e sigur să setăm `Domain=`. */
+function resolveCookieDomain(hostname: string): string | undefined {
+  // Nu setăm Domain pe localhost sau IP
+  if (hostname === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return undefined;
+
+  // ✅ Permit doar domeniul de brand (plan4host.com) și subdomeniile lui
+  const root = "plan4host.com";
+  if (hostname === root || hostname.endsWith("." + root)) return "." + root;
+
+  // ❌ NU setăm Domain pe domenii de tip *.vercel.app / staging / etc. Browserul ar ignora oricum cookie-ul.
+  return undefined;
 }
 
 function writeConsentCookie(consent: ConsentState) {
   if (typeof document === "undefined") return;
+
   const value = encodeURIComponent(JSON.stringify(consent));
-  const domain = getApexDomain(window.location.hostname);
-  const isSecure = window.location.protocol === "https:"; // important pentru localhost
+  const isSecure = window.location.protocol === "https:";
+  const domain = resolveCookieDomain(window.location.hostname);
+
   const attrs = [
     `${CONSENT_COOKIE}=${value}`,
     "Path=/",
@@ -79,76 +86,67 @@ function writeConsentCookie(consent: ConsentState) {
   ];
   if (domain) attrs.push(`Domain=${domain}`);
   if (isSecure) attrs.push("Secure");
+
   document.cookie = attrs.join("; ");
 }
 
-// ---- Provider ----
+/* ───────────────── Provider ───────────────── */
+
 export function ConsentProvider({ children }: PropsWithChildren) {
-  // Lazy init sincron: citim cookie imediat pe client
+  // Init sincron pe client
   const initial = typeof window !== "undefined" ? readConsentFromCookie() : null;
+
   const [consent, setConsent] = useState<ConsentState | null>(initial);
   const [pendingPrefs, setPendingPrefs] = useState<boolean>(initial?.preferences ?? false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Dacă userul schimbă tab-ul Cookie Settings (ID-uri globale)
+  // Dacă alt cod setează cookie-ul între timp, sincronizăm o singură dată după mount
   useEffect(() => {
-    const clickHandler = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      const match =
-        target.closest("#open-cookie-settings") || target.closest("#open-cookie-settings-2");
-      if (match) {
+    if (consent === null) {
+      const current = readConsentFromCookie();
+      if (current) {
+        setConsent(current);
+        setPendingPrefs(current.preferences);
+      }
+    }
+  }, []); // o singură dată
+
+  // Hook global pentru butoanele din pagini cu id #open-cookie-settings
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      const btn = t.closest("#open-cookie-settings") || t.closest("#open-cookie-settings-2");
+      if (btn) {
         e.preventDefault();
         setIsModalOpen(true);
       }
     };
-    document.addEventListener("click", clickHandler, true);
-    return () => document.removeEventListener("click", clickHandler, true);
+    document.addEventListener("click", handler, true);
+    return () => document.removeEventListener("click", handler, true);
   }, []);
 
-  const acceptAll = useCallback(() => {
+  const applyConsent = useCallback((prefs: boolean) => {
     const newConsent: ConsentState = {
       v: 1,
       essential: true,
-      preferences: true,
+      preferences: prefs,
       updatedAt: new Date().toISOString(),
     };
+    // 1) salvăm cookie (dacă se poate)
     writeConsentCookie(newConsent);
+    // 2) actualizăm imediat state-ul ca să se închidă bannerul fără întârziere
     setConsent(newConsent);
-    setPendingPrefs(true);
+    setPendingPrefs(prefs);
     setIsModalOpen(false);
   }, []);
 
-  const acceptEssentialOnly = useCallback(() => {
-    const newConsent: ConsentState = {
-      v: 1,
-      essential: true,
-      preferences: false,
-      updatedAt: new Date().toISOString(),
-    };
-    writeConsentCookie(newConsent);
-    setConsent(newConsent);
-    setPendingPrefs(false);
-    setIsModalOpen(false);
-  }, []);
+  const acceptAll = useCallback(() => applyConsent(true), [applyConsent]);
+  const acceptEssentialOnly = useCallback(() => applyConsent(false), [applyConsent]);
+  const rejectAllNonEssential = useCallback(() => applyConsent(false), [applyConsent]);
 
-  const rejectAllNonEssential = useCallback(() => {
-    acceptEssentialOnly();
-  }, [acceptEssentialOnly]);
-
-  const setPreferences = useCallback((value: boolean) => setPendingPrefs(value), []);
-
-  const save = useCallback(() => {
-    const base: ConsentState = {
-      v: 1,
-      essential: true,
-      preferences: pendingPrefs,
-      updatedAt: new Date().toISOString(),
-    };
-    writeConsentCookie(base);
-    setConsent(base);
-    setIsModalOpen(false);
-  }, [pendingPrefs]);
+  const setPreferences = useCallback((v: boolean) => setPendingPrefs(v), []);
+  const save = useCallback(() => applyConsent(pendingPrefs), [applyConsent, pendingPrefs]);
 
   const openModal = useCallback(() => setIsModalOpen(true), []);
   const closeModal = useCallback(() => setIsModalOpen(false), []);
@@ -165,20 +163,30 @@ export function ConsentProvider({ children }: PropsWithChildren) {
       closeModal,
       isModalOpen,
     }),
-    [consent, setPreferences, acceptAll, acceptEssentialOnly, rejectAllNonEssential, save, openModal, closeModal, isModalOpen]
+    [
+      consent,
+      setPreferences,
+      acceptAll,
+      acceptEssentialOnly,
+      rejectAllNonEssential,
+      save,
+      openModal,
+      closeModal,
+      isModalOpen,
+    ]
   );
 
   return <ConsentContext.Provider value={value}>{children}</ConsentContext.Provider>;
 }
 
-// ---- Hook ----
+/* ───────────────── Hook & Gate ───────────────── */
+
 export function useConsent() {
   const ctx = useContext(ConsentContext);
   if (!ctx) throw new Error("useConsent must be used within <ConsentProvider>");
   return ctx;
 }
 
-// ---- Gate ----
 export function ConsentGate({
   category,
   children,
@@ -190,12 +198,13 @@ export function ConsentGate({
   return <>{fallback}</>;
 }
 
-// ---- Banner ----
+/* ───────────────── Banner ───────────────── */
+
 export function CookieBanner() {
   const { consent, acceptAll, acceptEssentialOnly, openModal } = useConsent();
 
-  // Dacă nu avem cookie => arătăm banner
-  if (consent !== null) return null;
+  // dacă avem deja consimțământ în state, nu mai afișăm
+  if (consent) return null;
 
   return (
     <div
@@ -204,7 +213,7 @@ export function CookieBanner() {
       aria-label="Cookie banner"
       className="fixed inset-x-0 bottom-0 px-4 py-3"
       style={{
-        zIndex: 10000, // peste orice
+        zIndex: 10000,
         background: "var(--panel)",
         color: "var(--text)",
         borderTop: "1px solid var(--border)",
@@ -212,8 +221,8 @@ export function CookieBanner() {
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
         <p className="text-sm" style={{ color: "var(--text)" }}>
-          We use cookies to run essential features and remember your preferences. You can change
-          your choices anytime.
+          We use cookies to run essential features and remember your preferences. You can change your
+          choices anytime.
         </p>
 
         <div className="flex items-center gap-2">
@@ -245,7 +254,8 @@ export function CookieBanner() {
   );
 }
 
-// ---- Modal ----
+/* ───────────────── Modal ───────────────── */
+
 export function CookieModal() {
   const {
     isModalOpen,
@@ -255,6 +265,7 @@ export function CookieModal() {
     rejectAllNonEssential,
     acceptEssentialOnly,
     save,
+    consent,
   } = useConsent();
 
   if (!isModalOpen) return null;
@@ -267,11 +278,7 @@ export function CookieModal() {
       className="fixed inset-0 z-[11000] flex items-center justify-center px-4"
     >
       {/* Backdrop */}
-      <div
-        className="absolute inset-0"
-        style={{ background: "rgba(0,0,0,0.5)" }}
-        onClick={closeModal}
-      />
+      <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.5)" }} onClick={closeModal} />
       {/* Panel */}
       <div
         className="relative w-full max-w-lg rounded-2xl p-6"
@@ -288,13 +295,8 @@ export function CookieModal() {
 
         {/* Toggles */}
         <div className="space-y-3">
-          <RowToggle
-            label="Essential"
-            description="Required for security, session, and consent."
-            checked
-            disabled
-          />
-          <PreferencesToggle onChange={setPreferences} />
+          <RowToggle label="Essential" description="Required for security, session, and consent." checked disabled />
+          <PreferencesToggle defaultValue={!!consent?.preferences} onChange={setPreferences} />
         </div>
 
         {/* Actions */}
@@ -335,7 +337,7 @@ export function CookieModal() {
   );
 }
 
-// ---- UI bits ----
+/* ───────────────── UI bits ───────────────── */
 
 function RowToggle({
   label,
@@ -351,10 +353,7 @@ function RowToggle({
   onChange?: (v: boolean) => void;
 }) {
   return (
-    <div
-      className="flex items-center justify-between rounded-xl p-3"
-      style={{ border: "1px solid var(--border)", background: "var(--panel)" }}
-    >
+    <div className="flex items-center justify-between rounded-xl p-3" style={{ border: "1px solid var(--border)", background: "var(--panel)" }}>
       <div className="pr-3">
         <div className="text-sm font-medium">{label}</div>
         {description ? (
@@ -368,28 +367,26 @@ function RowToggle({
   );
 }
 
-function PreferencesToggle({ onChange }: { onChange: (v: boolean) => void }) {
-  const { consent } = useConsent();
-  const [local, setLocal] = useState<boolean>(!!consent?.preferences);
+function PreferencesToggle({
+  defaultValue,
+  onChange,
+}: {
+  defaultValue: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  const [local, setLocal] = useState<boolean>(defaultValue);
 
-  useEffect(() => {
-    setLocal(!!consent?.preferences);
-  }, [consent?.preferences]);
-
-  const toggle = () => {
-    setLocal((v) => {
-      const nv = !v;
-      onChange(nv);
-      return nv;
-    });
-  };
+  useEffect(() => setLocal(defaultValue), [defaultValue]);
 
   return (
     <RowToggle
       label="Preferences"
       description="Remember your theme (light/dark)."
       checked={local}
-      onChange={() => toggle()}
+      onChange={(v) => {
+        setLocal(v);
+        onChange(v);
+      }}
     />
   );
 }
