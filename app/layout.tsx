@@ -4,6 +4,9 @@ import "./globals.css";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import { ConsentProvider } from "@/components/consent/ConsentManager";
+import {
+  CookieModal, // ✅ adăugat
+} from "@/components/consent/ConsentManager";
 
 export const metadata: Metadata = {
   title: "plan4host",
@@ -150,6 +153,15 @@ html, body { background: var(--bg); color: var(--text); }
 `,
           }}
         />
+
+        <ConsentProvider>
+       <div style={{ paddingTop: "var(--safe-top)", paddingBottom: "var(--safe-bottom)" }}>
+        {children}
+       </div>
+
+        {/* Modalul mic de setări — disponibil pe orice pagină */}
+        <CookieModal />
+      </ConsentProvider>
 
         {/* Wrapper global (fără cookie UI global) */}
         <ConsentProvider>
