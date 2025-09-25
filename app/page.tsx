@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import styles from "./home.module.css";
 
+
 /** CTA Link that triggers the sparkle animation on touch devices before navigating */
 function CtaLink({
   href,

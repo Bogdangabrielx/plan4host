@@ -3,18 +3,12 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { cookies } from "next/headers";
 import Script from "next/script";
-import {
-  ConsentProvider,
-  CookieBanner,
-  CookieModal,
-} from "@/components/consent/ConsentManager";
+import { ConsentProvider } from "@/components/consent/ConsentManager";
 
 export const metadata: Metadata = {
   title: "plan4host",
   description: "Property ops",
   applicationName: "plan4host",
-
-  // PWA
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -74,16 +68,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
 :root[data-theme="dark"]{
-  /* Supabase-like dark palette (green brand) */
   --bg:#0b1117; --text:#e6edf3; --muted:#9aa4af;
   --panel:#0f1623; --card:#0d1320; --border:#1f2937;
   --primary:#3ECF8E; --danger:#ef4444; --success:#22c55e;
-  /* extras pentru gradient */
   --accent1:#22d3ee; 
   --accent2:#0d1323;
 }
 :root[data-theme="light"]{
-  /* Supabase-like light palette (green brand) */
   --bg:#f7faf9; --text:#0f172a; --muted:#64748b;
   --panel:#ffffff; --card:#ffffff; --border:#e2e8f0;
   --primary:#16b981; --danger:#dc2626; --success:#16a34a;
@@ -152,7 +143,6 @@ html, body { background: var(--bg); color: var(--text); }
     --safe-right: constant(safe-area-inset-right);
   }
 }
-/* utilitare pe care le poți folosi oriunde */
 .safe-top-pad{ padding-top: calc(var(--safe-top) + 8px); }
 .safe-bottom-pad{ padding-bottom: var(--safe-bottom); }
 .safe-top-sticky{ position: sticky; top: 0; }
@@ -161,15 +151,13 @@ html, body { background: var(--bg); color: var(--text); }
           }}
         />
 
-        {/* Wrapper global + Consent UI */}
+        {/* Wrapper global (fără cookie UI global) */}
         <ConsentProvider>
           <div style={{ paddingTop: "var(--safe-top)", paddingBottom: "var(--safe-bottom)" }}>
             {children}
           </div>
-
-          {/* Global cookie controls */}
-          <CookieBanner />
-          <CookieModal />
+          {/* ❌ eliminat <CookieBanner /> și <CookieModal /> din layout
+              👉 pune <CookieConsent /> DOAR în app/page.tsx (landing) */}
         </ConsentProvider>
       </body>
     </html>
