@@ -32,9 +32,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ✅ Dark-only ambient gradient (Safari-safe)
-   - SRGB (nu OKLAB)
-   - fără background-attachment: fixed (iOS Safari bug) */
+/* ✅ Dark-only ambient gradient (Safari-safe) */
 :root[data-theme="dark"] body{
   background:
     radial-gradient(60rem 60rem at 10% 0%,
@@ -62,7 +60,6 @@ textarea:focus-visible {
 }
 
 /* ---------------- Supabase-style UI primitives (for the app) ---------------- */
-/* Card / Panel */
 .sb-card {
   background: var(--panel);
   border: 0;
@@ -70,7 +67,6 @@ textarea:focus-visible {
   box-shadow: 0 4px 16px rgba(0,0,0,0.10);
 }
 
-/* Toolbar container */
 .sb-toolbar {
   display: flex;
   align-items: center;
@@ -82,10 +78,9 @@ textarea:focus-visible {
   border-radius: 0;
 }
 
-/* Buttons */
 .sb-btn {
   -webkit-appearance: none;
-  appearance: none;
+          appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -100,26 +95,12 @@ textarea:focus-visible {
   transition: background-color .15s ease, border-color .15s ease, transform .05s ease;
 }
 .sb-btn:active { transform: scale(0.99); }
-.sb-btn--primary {
-  border: 0;
-  background: var(--primary);
-  color: #0c111b;
-}
-.sb-btn--ghost { background: transparent; }
-.sb-btn--icon { width: 36px; height: 36px; padding: 0; border-radius: 999px; }
-.sb-btn--small { padding: 6px 10px; border-radius: 8px; }
+.sb-btn--primary { border: 0; background: var(--primary); color: #0c111b; }
+.sb-btn--ghost   { background: transparent; }
+.sb-btn--icon    { width: 36px; height: 36px; padding: 0; border-radius: 999px; }
+.sb-btn--small   { padding: 6px 10px; border-radius: 8px; }
 
-/* Select */
-.sb-select {
-  -webkit-appearance: none;
-  appearance: none;
-  background: color-mix(in srgb, var(--card) 88%, transparent);
-  color: var(--text);
-  border: 0;
-  border-radius: 999px;
-  padding: 8px 12px;
-  font-weight: 700;
-}
+/* (fostul “.sb-select” capsulă) — eliminat. Lăsăm look nativ. */
 
 /* Segmented control */
 .sb-seg {
@@ -165,7 +146,7 @@ textarea:focus-visible {
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
 }
 
-/* ---------------- Grid helpers used in the app ---------------- */
+/* ---------------- Grid helpers ---------------- */
 .config-grid { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
 @media (min-width: 1025px) { .config-grid { grid-template-columns: 280px 1fr; } }
 
@@ -177,7 +158,6 @@ textarea:focus-visible {
 
 /* ---------------- Utilities ---------------- */
 .break-anywhere { overflow-wrap: anywhere; word-break: break-word; }
-
 .sr-only {
   position: absolute !important;
   width: 1px; height: 1px;
@@ -185,24 +165,12 @@ textarea:focus-visible {
   clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
-
-
-
-
 /* ──────────────────────────────────────────────────────────
    .modalCard — animated gradient ring (global)
-   Replică .featureCard: hover/focus border ring + fallback
    ────────────────────────────────────────────────────────── */
-
-/* Angle animabil pentru conic-gradient (unde e suportat) */
-@property --modal-ring-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
+@property --modal-ring-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
 
 .modalCard{
-  /* fallback-uri locale în caz că nu există variabilele temei */
   --modal-card:   var(--card, rgba(12,19,35,.9));
   --modal-border: var(--border, rgba(148,163,184,.18));
   --modal-prim:   var(--primary, #3ECF8E);
@@ -220,13 +188,8 @@ textarea:focus-visible {
   will-change: transform;
 }
 .modalCard > *{ position: relative; z-index: 2; }
+.modalCard:hover{ transform: translateY(-2px); }
 
-.modalCard:hover{
-  transform: translateY(-2px);
-  /* box-shadow: 0 12px 28px color-mix(in srgb, var(--modal-prim) 45%, transparent); */
-}
-
-/* Ineaua animată pe margine (tehnica cu mask) */
 .modalCard::before{
   content:"";
   position: absolute;
@@ -241,85 +204,86 @@ textarea:focus-visible {
     color-mix(in srgb, var(--bg) 75%, transparent) 75%,
     color-mix(in srgb, var(--bg) 75%, transparent) 100%
   );
-  /* arată doar “inelul” (borderul), nu umplutura */
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-          mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0;                                /* ascuns by default */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none; z-index: 1; opacity: 0;
   animation: modal-ring-spin var(--modal-speed) linear infinite paused;
 }
-
-/* Rulează animația la hover/focus (și când containerul are focus înăuntru) */
-.modalCard:is(:hover, :focus-within)::before{
-  opacity: 1;
-  animation-play-state: running;
-}
-
+.modalCard:is(:hover, :focus-within)::before{ opacity: 1; animation-play-state: running; }
 @keyframes modal-ring-spin { to { --modal-ring-angle: 360deg; } }
 
-/* ✅ Trigger manual (mobil sau când vrei să forțezi efectul) */
-.modalCard[data-animate="true"]::before{
-  opacity: 1;
-  animation-play-state: running;
-}
-
-/* Fallback pentru browsere fără mask-composite */
 @supports not (mask-composite: exclude){
   .modalCard::before{
-    inset: calc(-1 * var(--modal-ring));     /* desenează în afara cardului pentru a simula borderul */
+    inset: calc(-1 * var(--modal-ring));
     padding: 0;
-    -webkit-mask: none;
-            mask: none;
+    -webkit-mask: none; mask: none;
     z-index: 0;
     animation: modal-ring-rotate var(--modal-speed) linear infinite paused;
   }
   .modalCard:is(:hover, :focus-within)::before,
-  .modalCard[data-animate="true"]::before{
-    animation-play-state: running;
-    opacity: 1;
-  }
-  /* “Capac” interior ca să lase un inel subțire vizibil */
+  .modalCard[data-animate="true"]::before{ animation-play-state: running; opacity: 1; }
   .modalCard::after{
-    content:"";
-    position:absolute;
-    inset: var(--modal-ring);
-    border-radius: inherit;
-    background: var(--modal-card);
-    z-index: 1;
-    pointer-events: none;
+    content:""; position:absolute; inset: var(--modal-ring);
+    border-radius: inherit; background: var(--modal-card); z-index: 1; pointer-events: none;
   }
   @keyframes modal-ring-rotate { to { transform: rotate(360deg); } }
 }
 
 /* ==== Flip-in modal (card) ================================== */
 .modalFlipWrapper{
-  position: fixed;
-  inset: 0;
-  z-index: 240;
-  display: grid;
-  place-items: center;
+  position: fixed; inset: 0; z-index: 240; display: grid; place-items: center;
   padding: 12px;
   background: color-mix(in srgb, var(--bg) 55%, transparent);
-  -webkit-backdrop-filter: blur(2px);
-          backdrop-filter: blur(2px);
-  perspective: 1200px; /* 3D space */
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  perspective: 1200px;
 }
-
 .modalFlip{
-  transform-style: preserve-3d;
-  -webkit-transform-style: preserve-3d;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-origin: 50% 0%; /* flip din „muchia” de sus */
+  transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  transform-origin: 50% 0%;
   animation: modal-flip-in .55s cubic-bezier(.22,1,.36,1) forwards;
   will-change: transform, opacity;
 }
+@keyframes modal-flip-in{
+  0%{ transform: rotateX(-88deg) scale(.92); opacity: 0; filter: blur(1px); }
+  60%{ transform: rotateX(14deg)  scale(1.01); opacity: 1; filter: blur(0); }
+  100%{ transform: rotateX(0deg) scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce){
+  .modalFlip{ animation: none !important; transform: none !important; }
+  .modalFlipWrapper{ -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
 
+/* ──────────────────────────────────────────────────────────
+   NATIVE CONTROLS PATCH
+   — Toate <select> și inputurile “select-like” revin la UI nativ.
+   — Bate și stilurile inline, deci nu trebuie să modifici paginile.
+   — Păstrăm fontul și culoarea textului din temă.
+   ────────────────────────────────────────────────────────── */
+
+/* Select nativ (Safari-like arrows), inclusiv când are stil inline sau .sb-select */
+select,
+select.sb-select{
+  all: revert !important;                 /* revine la UA styles, bate inline */
+  -webkit-appearance: menulist-button !important;
+          appearance: auto !important;
+  font: inherit !important;
+  color: var(--text) !important;          /* păstrăm culoarea temei */
+}
+
+/* Date/Time/Datetime/Month — nativ, fără “capsulă” */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="date"].sb-select,
+input[type="time"].sb-select,
+input[type="datetime-local"].sb-select,
+input[type="month"].sb-select{
+  all: revert !important;
+  -webkit-appearance: auto !important;
+          appearance: auto !important;
+  font: inherit !important;
+  color: var(--text) !important;
+}
