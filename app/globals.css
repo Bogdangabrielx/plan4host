@@ -32,6 +32,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ✅ Dark-only ambient gradient (Safari-safe)
+   - SRGB (nu OKLAB)
+   - fără background-attachment: fixed (iOS Safari bug) */
+:root[data-theme="dark"] body{
+  background:
+    radial-gradient(60rem 60rem at 10% 0%,
+      color-mix(in srgb, #22d3ee 22%, transparent),
+      transparent 60%),
+    radial-gradient(50rem 50rem at 95% 10%,
+      color-mix(in srgb, #0d1323 22%, transparent),
+      transparent 60%),
+    radial-gradient(70rem 60rem at 30% 100%,
+      color-mix(in srgb, var(--primary) 14%, transparent),
+      transparent 60%),
+    var(--bg);
+}
+
 /* Focus (global fallback) */
 a:focus-visible,
 button:focus-visible,
@@ -205,8 +222,8 @@ textarea:focus-visible {
 .modalCard > *{ position: relative; z-index: 2; }
 
 .modalCard:hover{
-  transform: translateY(-2px);}
-  /*box-shadow: 0 12px 28px color-mix(in srgb, var(--modal-prim) 45%, transparent);
+  transform: translateY(-2px);
+  /* box-shadow: 0 12px 28px color-mix(in srgb, var(--modal-prim) 45%, transparent); */
 }
 
 /* Ineaua animată pe margine (tehnica cu mask) */
@@ -218,18 +235,21 @@ textarea:focus-visible {
   border-radius: inherit;
   background: conic-gradient(
     from var(--modal-ring-angle),
-    color-mix(in oklab, var(--bg) 75%, transparent) 0%,
-    color-mix(in oklab, var(--bg) 75%, transparent) 25%,
-    color-mix(in oklab, var(--modal-prim) 75%, transparent) 50%,
-    color-mix(in oklab, var(--bg) 75%, transparent) 75%,
-    color-mix(in oklab, var(--bg) 75%, transparent) 100%
+    color-mix(in srgb, var(--bg) 75%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 75%, transparent) 25%,
+    color-mix(in srgb, var(--modal-prim) 75%, transparent) 50%,
+    color-mix(in srgb, var(--bg) 75%, transparent) 75%,
+    color-mix(in srgb, var(--bg) 75%, transparent) 100%
   );
   /* arată doar “inelul” (borderul), nu umplutura */
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
+          mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
-  mask-composite: exclude;
+          mask-composite: exclude;
 
   pointer-events: none;
   z-index: 1;
@@ -257,7 +277,7 @@ textarea:focus-visible {
     inset: calc(-1 * var(--modal-ring));     /* desenează în afara cardului pentru a simula borderul */
     padding: 0;
     -webkit-mask: none;
-    mask: none;
+            mask: none;
     z-index: 0;
     animation: modal-ring-rotate var(--modal-speed) linear infinite paused;
   }
@@ -287,8 +307,9 @@ textarea:focus-visible {
   display: grid;
   place-items: center;
   padding: 12px;
-  background: color-mix(in oklab, var(--bg) 55%, transparent);
-  backdrop-filter: blur(2px);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  -webkit-backdrop-filter: blur(2px);
+          backdrop-filter: blur(2px);
   perspective: 1200px; /* 3D space */
 }
 
@@ -302,29 +323,3 @@ textarea:focus-visible {
   will-change: transform, opacity;
 }
 
-/* dacă vrei și umbră + ring din .modalCard, poți combina clasele */
-.modalFlip.modalCard{
-  /* nimic în plus aici — doar le combini în markup */
-}
-
-@keyframes modal-flip-in{
-  0%{
-    transform: rotateX(-88deg) scale(.92);
-    opacity: 0;
-    filter: blur(1px);
-  }
-  60%{
-    transform: rotateX(14deg) scale(1.01);
-    opacity: 1;
-    filter: blur(0);
-  }
-  100%{
-    transform: rotateX(0deg) scale(1);
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce){
-  .modalFlip{ animation: none !important; transform: none !important; }
-  .modalFlipWrapper{ backdrop-filter: none; }
-}
