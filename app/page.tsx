@@ -6,6 +6,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import styles from "./home.module.css";
 import { createPortal } from "react-dom";
+import AutoOpenOnLanding from "@/components/consent/AutoOpenOnLanding";
+
+<AutoOpenOnLanding delay={150} />
 
 /** CTA Link that triggers the sparkle animation on touch devices before navigating */
 function CtaLink({

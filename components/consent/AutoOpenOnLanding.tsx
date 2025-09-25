@@ -1,3 +1,4 @@
+// /components/consent/AutoOpenOnLanding.tsx
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -6,7 +7,8 @@ import { useConsent } from "@/components/consent/ConsentManager";
 
 /**
  * Deschide CookieModal automat pe landing ("/") dacă nu există consimțământ.
- * Poți forța deschiderea cu `force`, sau întârzia cu `delay` (ms).
+ * - force: deschide oricum (utile pentru test)
+ * - delay: întârzie deschiderea în ms
  */
 export default function AutoOpenOnLanding({
   force = false,
@@ -15,17 +17,36 @@ export default function AutoOpenOnLanding({
   const { consent, openModal } = useConsent();
   const pathname = usePathname();
   const openedRef = useRef(false);
+  const timerRef = useRef<number | null>(null);
 
+  // 1) Auto-open pe landing dacă nu avem consimțământ (sau dacă e force)
   useEffect(() => {
     const isLanding = pathname === "/" || pathname?.startsWith("/?");
     if (openedRef.current) return;
     if (!isLanding) return;
-    if (!force && consent) return; // avem deja consimțământ -> nu mai deschidem
+    if (!force && consent) return;
 
     openedRef.current = true;
-    const t = window.setTimeout(() => openModal(), delay);
-    return () => window.clearTimeout(t);
+    timerRef.current = window.setTimeout(() => openModal(), Math.max(0, delay));
+    return () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    };
   }, [pathname, consent, force, delay, openModal]);
+
+  // 2) Fallback: deschidere la evenimentul global (folosit de OpenCookieSettingsButton)
+  useEffect(() => {
+    const onOpen = () => openModal();
+    window.addEventListener("p4h:open-cookie-settings", onOpen);
+    return () => window.removeEventListener("p4h:open-cookie-settings", onOpen);
+  }, [openModal]);
+
+  // 3) Sincronizează atributul pt. gating CSS (dacă îl folosești)
+  useEffect(() => {
+    document.documentElement.setAttribute(
+      "data-consent-preferences",
+      consent ? String(!!consent.preferences) : "false"
+    );
+  }, [consent]);
 
   return null;
 }
