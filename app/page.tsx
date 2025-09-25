@@ -144,7 +144,7 @@ function CookieConsentLanding() {
             <div>
               <h3 style={{ margin: 0 }}>We use cookies</h3>
               <div style={{ color: "var(--muted)", fontSize: 13 }}>
-                We use essential cookies to make this site work, and optional ones for analytics and marketing.
+                We use essential cookies to make this site work, and optional ones for performance.
               </div>
             </div>
           </div>
