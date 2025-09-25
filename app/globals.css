@@ -33,7 +33,7 @@ body {
 }
 
 /* ✅ Dark-only ambient gradient (Safari-safe)
-   - SRGB (nu OKLAB)
+   - sRGB (nu OKLAB)
    - fără background-attachment: fixed (iOS Safari bug) */
 :root[data-theme="dark"] body{
   background:
@@ -46,6 +46,22 @@ body {
     radial-gradient(70rem 60rem at 30% 100%,
       color-mix(in srgb, var(--primary) 14%, transparent),
       transparent 60%),
+    var(--bg);
+}
+
+/* ✅ Light theme ambient gradient (subtil, “airy”, sRGB, Safari-safe)
+   - folosește accentul curent și primary, dar cu intensități mici */
+:root[data-theme="light"] body{
+  background:
+    radial-gradient(60rem 60rem at 10% -5%,
+      color-mix(in srgb, var(--accent1) 14%, transparent),
+      transparent 60%),
+    radial-gradient(56rem 56rem at 100% 0%,
+      color-mix(in srgb, var(--primary) 10%, transparent),
+      transparent 65%),
+    radial-gradient(68rem 58rem at 30% 100%,
+      color-mix(in srgb, var(--accent1) 8%, transparent),
+      transparent 62%),
     var(--bg);
 }
 
@@ -199,10 +215,6 @@ select:not(.sb-select){ /* opțional */
   clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
-
-
-
-
 /* ──────────────────────────────────────────────────────────
    .modalCard — animated gradient ring (global)
    Replică .featureCard: hover/focus border ring + fallback
@@ -312,5 +324,3 @@ select:not(.sb-select){ /* opțional */
   }
   @keyframes modal-ring-rotate { to { transform: rotate(360deg); } }
 }
-
-   
