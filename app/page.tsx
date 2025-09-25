@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import styles from "./home.module.css";
-
 
 /** CTA Link that triggers the sparkle animation on touch devices before navigating */
 function CtaLink({
@@ -50,6 +49,207 @@ function CtaLink({
     <Link href={href} ref={ref} className={className} onClick={handleClick}>
       {children}
     </Link>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────
+   CookieConsentLanding — modal central doar pe landing
+   - Persistă în localStorage (p4h:consent:v1) + cookie (p4h_consent)
+   - Expiră după 180 zile
+   - 3 butoane: Accept all / Reject optional / Customize (+ Save)
+   - Folosește stilurile globale .modalFlipWrapper / .modalCard din globals.css
+   ────────────────────────────────────────────────────────────── */
+function CookieConsentLanding() {
+  const LS_KEY = "p4h:consent:v1";
+  const COOKIE_NAME = "p4h_consent";
+  const EXPIRE_DAYS = 180;
+
+  const [open, setOpen] = useState(false);
+  const [showPrefs, setShowPrefs] = useState(false);
+  const [analytics, setAnalytics] = useState(true);
+  const [marketing, setMarketing] = useState(false);
+
+  // read existing consent once
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
+        const obj = JSON.parse(raw);
+        const exp = obj?.exp ? new Date(obj.exp) : null;
+        if (exp && exp > new Date()) {
+          // already consented and not expired
+          return;
+        }
+      }
+    } catch {}
+    setOpen(true);
+  }, []);
+
+  function persist(consent: { necessary: true; analytics: boolean; marketing: boolean }) {
+    const now = new Date();
+    const exp = new Date(now.getTime() + EXPIRE_DAYS * 24 * 60 * 60 * 1000);
+    const payload = { v: 1, ts: now.toISOString(), exp: exp.toISOString(), consent };
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(payload));
+    } catch {}
+    try {
+      const secure = location.protocol === "https:" ? "; Secure" : "";
+      document.cookie =
+        `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(consent))}; Max-Age=${EXPIRE_DAYS * 24 * 60 * 60}; Path=/; SameSite=Lax${secure}`;
+    } catch {}
+    // broadcast (în caz că ai alți listeneri în app)
+    try {
+      window.dispatchEvent(new CustomEvent("p4h:consent", { detail: payload }));
+    } catch {}
+  }
+
+  function acceptAll() {
+    persist({ necessary: true, analytics: true, marketing: true });
+    setOpen(false);
+  }
+  function rejectOptional() {
+    persist({ necessary: true, analytics: false, marketing: false });
+    setOpen(false);
+  }
+  function savePrefs() {
+    persist({ necessary: true, analytics, marketing });
+    setOpen(false);
+  }
+
+  if (!open) return null;
+
+  return (
+    <div className="modalFlipWrapper" role="dialog" aria-modal="true" aria-label="Cookie consent">
+      <div className="modalFlip modalCard" style={{ width: "min(560px, calc(100vw - 32px))" }}>
+        <div style={{ display: "grid", gap: 12 }}>
+          {/* header */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              aria-hidden
+              style={{
+                fontSize: 28,
+                lineHeight: 1,
+                width: 44,
+                height: 44,
+                display: "grid",
+                placeItems: "center",
+                borderRadius: 12,
+                background:
+                  "radial-gradient(60% 60% at 30% 20%, rgba(255,255,255,.16), transparent) , color-mix(in srgb, var(--primary) 18%, var(--card))",
+                boxShadow: "0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent)",
+              }}
+            >
+              🍪
+            </div>
+            <div>
+              <h3 style={{ margin: 0 }}>We use cookies</h3>
+              <div style={{ color: "var(--muted)", fontSize: 13 }}>
+                We use essential cookies to make this site work, and optional ones for analytics and marketing.
+              </div>
+            </div>
+          </div>
+
+          {/* actions */}
+          {!showPrefs ? (
+            <div style={{ display: "grid", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  onClick={acceptAll}
+                  className="sb-btn sb-btn--primary"
+                  style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}
+                >
+                  Accept all
+                </button>
+                <button
+                  onClick={rejectOptional}
+                  className="sb-btn"
+                  style={{ padding: "10px 14px", borderRadius: 12, background: "var(--card)", fontWeight: 900 }}
+                >
+                  Reject optional
+                </button>
+                <button
+                  onClick={() => setShowPrefs(true)}
+                  className="sb-btn"
+                  style={{ padding: "10px 14px", borderRadius: 12, background: "transparent", border: "1px solid var(--border)", fontWeight: 900 }}
+                >
+                  Customize
+                </button>
+              </div>
+              <small style={{ color: "var(--muted)" }}>
+                Read more in our{" "}
+                <Link href="/legal/cookies" style={{ color: "var(--primary)", textDecoration: "none" }}>
+                  Cookie Policy
+                </Link>.
+              </small>
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: 12 }}>
+              <div
+                style={{
+                  border: "1px solid var(--border)",
+                  background: "var(--panel)",
+                  borderRadius: 12,
+                  padding: 12,
+                  display: "grid",
+                  gap: 10,
+                }}
+              >
+                <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <div>
+                    <strong>Essential</strong>
+                    <div style={{ color: "var(--muted)", fontSize: 12 }}>Required for the site to function</div>
+                  </div>
+                  <input type="checkbox" checked readOnly aria-label="Essential cookies required" />
+                </label>
+
+                <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <div>
+                    <strong>Analytics</strong>
+                    <div style={{ color: "var(--muted)", fontSize: 12 }}>Anonymous usage statistics</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={analytics}
+                    onChange={(e) => setAnalytics(e.currentTarget.checked)}
+                    aria-label="Analytics cookies"
+                  />
+                </label>
+
+                <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <div>
+                    <strong>Marketing</strong>
+                    <div style={{ color: "var(--muted)", fontSize: 12 }}>Personalized offers and content</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={marketing}
+                    onChange={(e) => setMarketing(e.currentTarget.checked)}
+                    aria-label="Marketing cookies"
+                  />
+                </label>
+              </div>
+
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
+                <button
+                  onClick={() => setShowPrefs(false)}
+                  className="sb-btn"
+                  style={{ padding: "10px 14px", borderRadius: 12 }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={savePrefs}
+                  className="sb-btn sb-btn--primary"
+                  style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}
+                >
+                  Save preferences
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -367,6 +567,9 @@ export default function HomePage() {
           </p>
         </div>
       </footer>
+
+      {/* 🍪 Cookie consent — doar pe landing */}
+      <CookieConsentLanding />
     </main>
   );
 }
