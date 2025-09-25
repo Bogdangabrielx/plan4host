@@ -439,34 +439,35 @@
 html[data-standalone="true"] .skipLink { display: none !important; }
 
 
+/* Doar în PWA (iOS/Android standalone) */
+@media (display-mode: standalone) {
+  .landing{
+    background: #0b1117;          /* culoarea landing-ului */
+    min-height: 100svh;
+  }
 
+  /* Notch-top */
+  .landing::before{
+    content:"";
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--safe-top, env(safe-area-inset-top));
+    background: #0b1117;
+    z-index: 10900;               /* sub cookie modal (11000), peste conținut */
+    pointer-events: none;
+  }
 
+  /* Home-indicator bottom */
+  .landing::after{
+    content:"";
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: var(--safe-bottom, env(safe-area-inset-bottom));
+    background: #0b1117;
+    z-index: 10900;
+    pointer-events: none;
+  }
 
-/* Capă pentru notch-ul de SUS (deja ai ceva similar) */
-.landing::before{
-  content:"";
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: var(--safe-top, env(safe-area-inset-top));
-  background: #0b1117;           /* culoarea landing-ului dark */
-  z-index: 10900;                /* sub cookie modal (11000), peste conținut */
-  pointer-events: none;
-}
-
-/* Capă pentru home-indicator (JOS) */
-.landing::after{
-  content:"";
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  height: var(--safe-bottom, env(safe-area-inset-bottom));
-  background: #0b1117;           /* aceeași culoare, ca să nu „sângereze” tema din altă pagină */
-  z-index: 10900;                /* sub cookie modal */
-  pointer-events: none;
-}
-
-/* (opțional) întărește fundalul landing-ului și previne flash-uri la overscroll */
-.landing{
-  background: #0b1117;
-  min-height: 100svh;
-  overscroll-behavior: contain;
+  /* Ca să nu „intre” footerul în zona acoperită */
+  .footer{ padding-bottom: max(16px, var(--safe-bottom, env(safe-area-inset-bottom))); }
 }
