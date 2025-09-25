@@ -109,20 +109,16 @@ textarea:focus-visible {
 .sb-btn--icon { width: 36px; height: 36px; padding: 0; border-radius: 999px; }
 .sb-btn--small { padding: 6px 10px; border-radius: 8px; }
 
-/* Select (stil “capsulă” de app input) */
+/* Select */
 .sb-select {
   -webkit-appearance: none;
-          appearance: none;
-  background: var(--card);
+  appearance: none;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
   color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 999px;
   padding: 8px 12px;
-  height: 40px;
-  line-height: 24px;
   font-weight: 700;
-  font-family: inherit;
-  box-shadow: none;
 }
 
 /* Segmented control */
@@ -327,105 +323,3 @@ textarea:focus-visible {
   will-change: transform, opacity;
 }
 
-
-/* ──────────────────────────────────────────────────────────
-   UNIFORM SELECTS (CLOSED STATE) — identic pe Chrome & Safari
-   NOTE:
-   - Forțăm override chiar și peste stiluri inline (folosim !important).
-   - Lista deschisă rămâne nativă OS (OK).
-   - Stilăm și <input type="date|time|datetime-local"> pentru coerență vizuală.
-   ────────────────────────────────────────────────────────── */
-
-/* Toate <select>-urile din app (inclusiv cele cu stil inline) */
-select{
-  -webkit-appearance: none !important;
-          appearance: none !important;
-  background-color: var(--card) !important;
-  color: var(--text) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
-  padding: 8px 12px !important;
-  padding-right: 36px !important; /* spațiu pt. chevron */
-  height: 40px !important;
-  line-height: 24px !important;
-  font-weight: 700 !important;
-  font-family: inherit !important;
-  box-shadow: none !important;
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat !important;
-  background-position: right 10px center !important;
-  background-size: 12px 12px !important;
-  background-clip: padding-box !important;
-}
-
-/* Păstrăm compatibil și varianta cu clasă (folosită în Cleaning etc.) */
-select.sb-select{
-  /* redundante, dar explicite */
-  -webkit-appearance: none !important;
-          appearance: none !important;
-  background-color: var(--card) !important;
-  color: var(--text) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
-  padding: 8px 12px !important;
-  padding-right: 36px !important;
-  height: 40px !important;
-  line-height: 24px !important;
-  font-weight: 700 !important;
-  font-family: inherit !important;
-  box-shadow: none !important;
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat !important;
-  background-position: right 10px center !important;
-  background-size: 12px 12px !important;
-  background-clip: padding-box !important;
-}
-
-/* Ascunde săgeata veche (Edge legacy/IE) */
-select::-ms-expand{ display: none; }
-
-/* Disabled look */
-select:disabled{
-  opacity: .6 !important;
-  cursor: not-allowed !important;
-}
-
-/* Inputuri “select-like” (date/time) — capsule coerente */
-input[type="date"],
-input[type="time"],
-input[type="datetime-local"],
-input[type="month"]{
-  -webkit-appearance: none !important;
-          appearance: none !important;
-  background-color: var(--card) !important;
-  color: var(--text) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
-  padding: 8px 12px !important;
-  height: 40px !important;
-  line-height: 24px !important;
-  font-weight: 700 !important;
-  font-family: inherit !important;
-  box-shadow: none !important;
-}
-
-/* Variante cu .sb-select rămân coerente vizual */
-input[type="date"].sb-select,
-input[type="time"].sb-select,
-input[type="datetime-local"].sb-select,
-input[type="month"].sb-select{
-  -webkit-appearance: none !important;
-          appearance: none !important;
-  background-color: var(--card) !important;
-  color: var(--text) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
-  padding: 8px 12px !important;
-  height: 40px !important;
-  line-height: 24px !important;
-  font-weight: 700 !important;
-  font-family: inherit !important;
-  box-shadow: none !important;
-}
