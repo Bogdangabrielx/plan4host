@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import s from "../legal.module.css";
 import OpenCookieSettingsButton from "@/components/consent/OpenCookieSettingsButton";
 
+
 export const metadata: Metadata = {
   title: "Cookie Policy — Plan4host",
   description:
