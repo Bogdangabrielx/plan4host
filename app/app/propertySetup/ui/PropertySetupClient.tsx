@@ -275,7 +275,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                     const next = checks.length;
                     const { data, error } = await supabase
                       .from("room_detail_checks")
-                      .insert({ property_id: selected.id, label: `Check ${next + 1}`, default_value: false, sort_index: next })
+                      .insert({ property_id: selected.id, label: `Checklist item ${next + 1}`, default_value: false, sort_index: next })
                       .select("id,property_id,label,default_value,sort_index")
                       .single();
                     if (!error && data) setChecks(prev => [...prev, data as CheckDef]);
