@@ -313,9 +313,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       <div style={containerStyle}>
         {/* Controls */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
-          <div style={{ fontWeight: 800, fontSize: isMobile ? 16 : 18, color: "var(--muted)" }}>
-            {loading === "loading" ? hint || "Loading…" : "Overview"}
-          </div>
           <div style={controlsWrap}>
             <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, width: isMobile ? "100%" : "auto" }}>
               Property
