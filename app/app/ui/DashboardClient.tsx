@@ -26,7 +26,7 @@ const card: React.CSSProperties = {
 };
 
 const COUNTRY_NAMES: Record<string, string> = Object.fromEntries(
-  TZ_COUNTRIES.map(c => [c.code, c.name])
+  TZ_COUNTRIES.map((c) => [c.code, c.name])
 );
 
 function flagEmoji(cc: string | null | undefined): string {
@@ -59,7 +59,7 @@ export default function DashboardClient({
   const [list, setList] = useState<Property[]>(initialProperties);
 
   const [toDelete, setToDelete] = useState<Property | null>(null);
-  const [plan, setPlan] = useState<"basic"|"standard"|"premium"|null>(null);
+  const [plan, setPlan] = useState<"basic" | "standard" | "premium" | null>(null);
 
   // Copied! state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -76,14 +76,12 @@ export default function DashboardClient({
     };
   }, []);
 
-  useEffect(() => { setTitle("Dashboard"); }, [setTitle]);
+  useEffect(() => {
+    setTitle("Dashboard");
+  }, [setTitle]);
 
   useEffect(() => {
-    setPill(
-      status === "Saving…" ? "Saving…" :
-      status === "Error"    ? "Error"    :
-      status === "Synced"   ? "Synced"   : "Idle"
-    );
+    setPill(status === "Saving…" ? "Saving…" : status === "Error" ? "Error" : status === "Synced" ? "Synced" : "Idle");
   }, [status, setPill]);
 
   // Refresh client-side: INCLUDE regulation_* (fix pentru „PDF dispare după refresh”)
@@ -91,7 +89,9 @@ export default function DashboardClient({
     (async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
+        .select(
+          "id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at"
+        )
         .order("created_at", { ascending: true });
       if (!error && data) setList(data as Property[]);
     })();
@@ -100,22 +100,19 @@ export default function DashboardClient({
   // Load plan
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("accounts")
-        .select("plan, valid_until")
-        .order("created_at", { ascending: true });
+      const { data } = await supabase.from("accounts").select("plan, valid_until").order("created_at", { ascending: true });
       if (data && data.length) {
         const a = (data as any[])[0];
         const active = !a.valid_until || new Date(a.valid_until) > new Date();
-        setPlan((active ? (a.plan as any) : 'basic') as any);
+        setPlan((active ? (a.plan as any) : "basic") as any);
       }
     })();
   }, [supabase]);
 
-function guessTZ(cc: string) {
-  const c = findCountry(cc);
-  return c?.tz || "Europe/Bucharest";
-}
+  function guessTZ(cc: string) {
+    const c = findCountry(cc);
+    return c?.tz || "Europe/Bucharest";
+  }
 
   async function addProperty() {
     if (!name || !country) return;
@@ -138,7 +135,9 @@ function guessTZ(cc: string) {
 
     const { data: refreshed } = await supabase
       .from("properties")
-      .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
+      .select(
+        "id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at"
+      )
       .order("created_at", { ascending: true });
 
     setList((refreshed ?? []) as Property[]);
@@ -220,7 +219,9 @@ function guessTZ(cc: string) {
       }
       const { data } = await supabase
         .from("properties")
-        .select("id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at")
+        .select(
+          "id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at"
+        )
         .order("created_at", { ascending: true });
       if (data) setList(data as Property[]);
       setStatus("Synced");
@@ -250,8 +251,11 @@ function guessTZ(cc: string) {
     if (!toDelete) return;
     setStatus("Saving…");
     const { error } = await supabase.rpc("account_delete_property_self", { p_property_id: toDelete.id });
-    if (error) { setStatus("Error"); return; }
-    setList(prev => prev.filter(p => p.id !== toDelete.id));
+    if (error) {
+      setStatus("Error");
+      return;
+    }
+    setList((prev) => prev.filter((p) => p.id !== toDelete.id));
     setToDelete(null);
     setStatus("Synced");
     setTimeout(() => setStatus("Idle"), 800);
@@ -266,11 +270,17 @@ function guessTZ(cc: string) {
     color: "var(--text)",
     border: "1px solid var(--border)",
     borderRadius: 8,
-    fontFamily: 'inherit',
+    fontFamily: "inherit",
   };
 
   return (
-    <div style={{ display: "grid", gap: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+    <div
+      style={{
+        display: "grid",
+        gap: 16,
+        fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
+      }}
+    >
       <PlanHeaderBadge title="Dashboard" slot="header-right" />
 
       {/* Add property */}
@@ -290,17 +300,14 @@ function guessTZ(cc: string) {
 
           <div style={FIELD_WRAPPER}>
             <label style={{ display: "block", marginBottom: 6 }}>Country Location*</label>
-            <select
-              value={country}
-              onChange={(e) => setCountry(e.currentTarget.value)}
-              style={FIELD_STYLE}
-            >
+            <select value={country} onChange={(e) => setCountry(e.currentTarget.value)} style={FIELD_STYLE}>
               <option value="">— select —</option>
-              {TZ_COUNTRIES
-                .slice()
+              {TZ_COUNTRIES.slice()
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map((c) => (
-                  <option key={c.code} value={c.code}>{countryLabel(c.code)}</option>
+                  <option key={c.code} value={c.code}>
+                    {countryLabel(c.code)}
+                  </option>
                 ))}
             </select>
           </div>
@@ -343,9 +350,10 @@ function guessTZ(cc: string) {
               return (
                 <li
                   key={p.id}
+                  className="propItem"
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr auto",
+                    gridTemplateColumns: "1fr auto", // desktop
                     gap: 10,
                     alignItems: "center",
                     background: "var(--card)",
@@ -354,18 +362,26 @@ function guessTZ(cc: string) {
                     padding: 12,
                   }}
                 >
+                  {/* Info */}
                   <div>
                     <strong>{p.name}</strong>
                     <div style={{ color: "var(--muted)", fontSize: 12 }}>
-                      {p.country_code ? `${flagEmoji(p.country_code)} ${COUNTRY_NAMES[p.country_code] ?? p.country_code}` : "—"}
-                      {" • "}{p.timezone ?? "—"}
+                      {p.country_code
+                        ? `${flagEmoji(p.country_code)} ${COUNTRY_NAMES[p.country_code] ?? p.country_code}`
+                        : "—"}
+                      {" • "}
+                      {p.timezone ?? "—"}
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {/* Copy property check-in link (ABSOLUT + ?property=<ID>) */}
+
+                  {/* Actions */}
+                  <div className="propActions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {/* Copy property check-in link */}
                     <button
                       onClick={() => copyPropertyCheckinLink(p)}
-                      title={p.regulation_pdf_url ? "Copy property check-in link" : "Upload House Rules PDF first"}
+                      title={
+                        p.regulation_pdf_url ? "Copy property check-in link" : "Upload House Rules PDF first"
+                      }
                       data-checkin-link={buildPropertyCheckinLink(p)}
                       style={{
                         padding: "8px 12px",
@@ -374,10 +390,10 @@ function guessTZ(cc: string) {
                         background: isWarn ? "var(--danger)" : "var(--panel)",
                         color: isWarn ? "#0c111b" : "var(--text)",
                         fontWeight: 800,
-                        cursor: "pointer"
+                        cursor: "pointer",
                       }}
                     >
-                      {isWarn ? "Upload rules first" : (isCopied ? "Copied!" : "Copy check-in link")}
+                      {isWarn ? "Upload rules first" : isCopied ? "Copied!" : "Copy check-in link"}
                     </button>
 
                     <button
@@ -389,7 +405,7 @@ function guessTZ(cc: string) {
                         background: "var(--panel)",
                         color: "var(--text)",
                         fontWeight: 800,
-                        cursor: "pointer"
+                        cursor: "pointer",
                       }}
                     >
                       Property Setup
@@ -404,19 +420,28 @@ function guessTZ(cc: string) {
                         background: "transparent",
                         color: "var(--text)",
                         fontWeight: 800,
-                        cursor: "pointer"
+                        cursor: "pointer",
                       }}
                     >
                       Delete
                     </button>
                   </div>
 
-                  {/* Footer line with tiny links: Open + Change/Upload */}
-                  <div style={{ gridColumn: "1 / -1", color: "var(--muted)", fontSize: 12, marginTop: 6 }}>
+                  {/* Footer line */}
+                  <div
+                    style={{
+                      gridColumn: "1 / -1",
+                      color: "var(--muted)",
+                      fontSize: 12,
+                      marginTop: 6,
+                    }}
+                  >
                     {p.regulation_pdf_url ? (
                       <span>
                         Regulations PDF uploaded
-                        {p.regulation_pdf_uploaded_at ? ` • ${new Date(p.regulation_pdf_uploaded_at).toLocaleString()}` : ""}
+                        {p.regulation_pdf_uploaded_at
+                          ? ` • ${new Date(p.regulation_pdf_uploaded_at).toLocaleString()}`
+                          : ""}
                         {" • "}
                         <a
                           href={p.regulation_pdf_url}
@@ -429,7 +454,10 @@ function guessTZ(cc: string) {
                         {" • "}
                         <a
                           href="#"
-                          onClick={(e) => { e.preventDefault(); triggerHouseRulesUpload(p.id); }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            triggerHouseRulesUpload(p.id);
+                          }}
                           style={{ color: "var(--primary)", textDecoration: "none" }}
                           title="Change / re-upload House Rules PDF"
                         >
@@ -442,7 +470,10 @@ function guessTZ(cc: string) {
                         {" • "}
                         <a
                           href="#"
-                          onClick={(e) => { e.preventDefault(); triggerHouseRulesUpload(p.id); }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            triggerHouseRulesUpload(p.id);
+                          }}
                           style={{ color: "var(--primary)", textDecoration: "none" }}
                           title="Upload House Rules PDF"
                         >
@@ -485,17 +516,17 @@ function guessTZ(cc: string) {
                 border: "1px solid var(--border)",
                 borderRadius: 12,
                 padding: 16,
-                boxShadow: "0 10px 30px rgba(0,0,0,0.45)"
+                boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
               }}
             >
               <h3 style={{ marginTop: 0 }}>Delete property?</h3>
               <p style={{ color: "var(--muted)" }}>
-                You are about to permanently delete <strong>{toDelete.name}</strong>.
-                This action is <strong>irreversible</strong>.
+                You are about to permanently delete <strong>{toDelete.name}</strong>. This action is{" "}
+                <strong>irreversible</strong>.
               </p>
               <p style={{ color: "var(--muted)" }}>
-                All related data may be removed as well (rooms, bookings, room details,
-                cleaning tasks/progress, iCal integrations, etc.).
+                All related data may be removed as well (rooms, bookings, room details, cleaning tasks/progress,
+                iCal integrations, etc.).
               </p>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12 }}>
                 <button
@@ -507,7 +538,7 @@ function guessTZ(cc: string) {
                     background: "transparent",
                     color: "var(--text)",
                     fontWeight: 800,
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   Cancel
@@ -521,7 +552,7 @@ function guessTZ(cc: string) {
                     background: "var(--danger)",
                     color: "#0c111b",
                     fontWeight: 800,
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   Delete permanently
@@ -531,6 +562,26 @@ function guessTZ(cc: string) {
           </div>
         </>
       )}
+
+      {/* ⬇️ CSS pentru layout-ul pe mobil */}
+      <style jsx>{`
+        @media (max-width: 720px) {
+          .propItem {
+            grid-template-columns: 1fr; /* totul pe o coloană */
+            align-items: start;
+          }
+          .propActions {
+            grid-column: 1 / -1; /* mută acțiunile sub meta */
+            display: grid !important; /* suprascrie inline flex */
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 4px;
+          }
+          .propActions > button {
+            width: 100%; /* fiecare buton umple coloana */
+          }
+        }
+      `}</style>
     </div>
   );
 }
