@@ -17,9 +17,11 @@ type PlanRow = {
 export default function SubscriptionClient({
   initialAccount,
   initialPlans,
+  variant = "glass", // "glass" | "gradient"
 }: {
   initialAccount: any;
   initialPlans: PlanRow[];
+  variant?: "glass" | "gradient";
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [plans] = useState<PlanRow[]>(initialPlans);
@@ -90,6 +92,7 @@ export default function SubscriptionClient({
   }
 
   const validUntil = account?.valid_until ? new Date(account.valid_until).toLocaleString() : null;
+
   const ORDER = new Map([
     ["basic", 0],
     ["standard", 1],
@@ -98,18 +101,14 @@ export default function SubscriptionClient({
   const sorted = [...plans].sort((a, b) => (ORDER.get(a.slug) ?? 99) - (ORDER.get(b.slug) ?? 99));
 
   return (
-    <section className="subscr">
-      {/* Painter over background so glass cards read well on both themes */}
-      <div className="canvas" aria-hidden />
-
-      {/* Header */}
+    <section className="subscr" data-variant={variant}>
+      {/* fundalul – dacă nu vrei poza, scoate background-image din CSS */}
       <header className="topbar">
         <span className="sb-badge">Current: {planLabel(currentPlanSlug)}</span>
         <small className="until">until {validUntil || "—"}</small>
         {role !== "admin" && <small className="readonly">(read-only)</small>}
       </header>
 
-      {/* Plans */}
       <div className="grid">
         {sorted.map((p) => {
           const isCurrent = currentPlanSlug === p.slug;
@@ -123,6 +122,7 @@ export default function SubscriptionClient({
           const nowStr = p.allow_sync_now
             ? "Instant Sync (Sync now) included"
             : "Instant Sync (Sync now) not included";
+
           const featureLines: string[] = [];
           try {
             if (Array.isArray(p.features)) {
@@ -133,7 +133,12 @@ export default function SubscriptionClient({
           } catch {}
 
           return (
-            <article key={p.slug} className="glass-card" data-current={isCurrent ? "true" : "false"}>
+            <article
+              key={p.slug}
+              className="plan-card"
+              data-current={isCurrent ? "true" : "false"}
+              data-variant={variant}
+            >
               <div className="plan-head">
                 <h3 className="plan-title">{p.name}</h3>
                 {isCurrent ? (
@@ -163,7 +168,6 @@ export default function SubscriptionClient({
         })}
       </div>
 
-      {/* Styles (scoped) */}
       <style jsx>{`
         .subscr {
           position: relative;
@@ -172,29 +176,12 @@ export default function SubscriptionClient({
           padding: clamp(10px, 2vw, 16px);
           font-family: Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 
-          /* Backdrop image (stays behind painter) */
+          /* fundal – poți elimina dacă vrei flat */
           background-image: url("/hotel_room_1456x816");
           background-size: cover;
           background-position: center;
           background-attachment: fixed;
           min-height: 60vh;
-        }
-        .canvas {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          /* Painter: soft gradient + a little vignette; adapts via CSS vars */
-          background:
-            radial-gradient(80% 60% at 50% 10%, color-mix(in srgb, var(--panel) 30%, transparent), transparent 55%),
-            linear-gradient(
-              to bottom,
-              color-mix(in srgb, var(--panel) 55%, transparent) 0%,
-              color-mix(in srgb, var(--panel) 35%, transparent) 40%,
-              color-mix(in srgb, var(--panel) 45%, transparent) 100%
-            );
-          z-index: 0;
-          backdrop-filter: saturate(110%) blur(1px);
-          -webkit-backdrop-filter: saturate(110%) blur(1px);
         }
 
         .topbar {
@@ -220,41 +207,62 @@ export default function SubscriptionClient({
           grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
         }
 
-        .glass-card {
-          --glass-bg: color-mix(in srgb, var(--panel) 62%, transparent);
-          --glass-stroke: color-mix(in srgb, var(--border) 80%, transparent);
-          --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+        /* ===== CARD – 2 VARIANTE ===== */
+
+        .plan-card {
           position: relative;
           padding: 16px;
           border-radius: 14px;
-          background: var(--glass-bg);
-          border: 1px solid var(--glass-stroke);
           color: var(--text);
-          box-shadow: var(--glass-shadow);
           transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease,
-            background 0.2s ease;
-          backdrop-filter: saturate(120%) blur(8px);
-          -webkit-backdrop-filter: saturate(120%) blur(8px);
+            background 0.2s ease, opacity 0.2s ease;
+          will-change: transform;
+          isolation: isolate; /* highlight layer stays inside */
         }
-        .glass-card::before {
-          /* subtle highlight */
+
+        /* VARIANTA: GLASS TRANSPARENT */
+        .plan-card[data-variant="glass"] {
+          /* un “sticlos” real: transparent + blur, se vede fundalul */
+          background: color-mix(in srgb, var(--panel) 52%, transparent);
+          border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+          backdrop-filter: saturate(120%) blur(10px);
+          -webkit-backdrop-filter: saturate(120%) blur(10px);
+        }
+        .plan-card[data-variant="glass"]::before {
           content: "";
           position: absolute;
           inset: 0;
           border-radius: inherit;
           background: linear-gradient(
             to bottom right,
-            color-mix(in srgb, #fff 7%, transparent),
+            color-mix(in srgb, #fff 10%, transparent),
             transparent 45%
           );
           pointer-events: none;
+          z-index: -1;
         }
-        .glass-card:hover {
+
+        /* VARIANTA: GRADIENT PE CARD */
+        .plan-card[data-variant="gradient"] {
+          background: linear-gradient(
+              180deg,
+              color-mix(in srgb, var(--primary) 14%, var(--panel)) 0%,
+              color-mix(in srgb, var(--primary) 6%, var(--panel)) 100%
+            ),
+            color-mix(in srgb, var(--panel) 92%, transparent);
+          border: 1px solid color-mix(in srgb, var(--primary) 40%, var(--border));
+          box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22),
+            0 0 0 1px color-mix(in srgb, var(--primary) 18%, transparent) inset;
+        }
+
+        .plan-card:hover {
           transform: translateY(-2px);
           box-shadow: 0 14px 36px rgba(0, 0, 0, 0.34);
         }
-        .glass-card[data-current="true"] {
-          /* ring for the active plan */
+
+        /* ring/halo pentru planul curent */
+        .plan-card[data-current="true"] {
           box-shadow: 0 14px 36px rgba(0, 0, 0, 0.34),
             0 0 0 1px color-mix(in srgb, var(--primary) 60%, transparent),
             0 0 0 6px color-mix(in srgb, var(--primary) 16%, transparent);
@@ -313,12 +321,12 @@ export default function SubscriptionClient({
           color: color-mix(in srgb, var(--primary) 85%, #00d4ff);
         }
 
-        /* Small screens spacing tweak */
+        /* Small screens */
         @media (max-width: 520px) {
           .subscr {
             border-radius: 12px;
           }
-          .glass-card {
+          .plan-card {
             padding: 14px;
           }
           .plan-title {
