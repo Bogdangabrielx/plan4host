@@ -25,8 +25,8 @@ export default function RoomDetailsTab({
     <div style={{ display: "grid", gap: 16 }}>
       {/* Checks */}
       <section className="sb-card" style={{ padding: 12 }}>
-        <header style={head}><h3 style={{ margin: 0 }}>Checks</h3><button onClick={onAddCheck} className="sb-btn sb-btn--primary">+ Add</button></header>
-        {checks.length === 0 && <p style={{ color: "var(--muted)" }}>No checks defined yet.</p>}
+        <header style={head}><h3 style={{ margin: 0 }}>Checkslist Item</h3><button onClick={onAddCheck} className="sb-btn sb-btn--primary">+ Add</button></header>
+        {checks.length === 0 && <p style={{ color: "var(--muted)" }}>No checkslist item defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...checks].sort((a,b) => a.sort_index - b.sort_index).map((c, idx) => (
             <li key={c.id} style={rowBase} className="rd-row">
@@ -55,8 +55,8 @@ export default function RoomDetailsTab({
 
       {/* Text fields */}
       <section className="sb-card" style={{ padding: 12 }}>
-        <header style={head}><h3 style={{ margin: 0 }}>Notes Tabs</h3><button onClick={onAddText} className="sb-btn sb-btn--primary">+ Add</button></header>
-        {texts.length === 0 && <p style={{ color: "var(--muted)" }}>No notes tabs defined yet.</p>}
+        <header style={head}><h3 style={{ margin: 0 }}>Notes Tab</h3><button onClick={onAddText} className="sb-btn sb-btn--primary">+ Add</button></header>
+        {texts.length === 0 && <p style={{ color: "var(--muted)" }}>No notes tab defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...texts].sort((a,b) => a.sort_index - b.sort_index).map((t, idx) => (
             <li key={t.id} style={rowBase} className="rd-row">
