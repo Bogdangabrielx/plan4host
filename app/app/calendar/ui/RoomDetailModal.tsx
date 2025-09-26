@@ -1,3 +1,4 @@
+// app/app/calendar/ui/RoomDetailModal.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -578,7 +579,6 @@ export default function RoomDetailModal({
         display: "grid",
         placeItems: "center",
         fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-        // ✅ Safe-area padding (nu mai urcă sub notch / home indicator în PWA)
         paddingTop: "calc(var(--safe-top) + 12px)",
         paddingBottom: "calc(var(--safe-bottom) + 12px)",
         paddingLeft: "12px",
@@ -589,7 +589,6 @@ export default function RoomDetailModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "min(1000px, 100%)",
-          // ✅ Înălțime limitată ținând cont de safe areas + margini
           maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 24px + 24px))",
           overflow: "auto",
           background: "var(--panel)",
@@ -599,8 +598,43 @@ export default function RoomDetailModal({
           padding: 16,
         }}
       >
+        {/* ── Sticky TOP painter (maschează spațiul de deasupra headerului la scroll) ── */}
+        <div
+          aria-hidden
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 2,
+            height: 0,
+            pointerEvents: "none",
+          }}
+        >
+          <div
+            style={{
+              height: 14,                     // grosimea „painter”-ului
+              transform: "translateY(-14px)", // urcă peste marginea superioară
+              background: "var(--panel)",     // aceeași culoare ca fundalul modalului
+            }}
+          />
+        </div>
+
         {/* Header + status */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8, flexWrap: "wrap", position: "sticky", top: 0, background: "var(--panel)", zIndex: 1, paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 3,                        // peste painter
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+            flexWrap: "wrap",
+            background: "var(--panel)",       // opac peste conținutul din spate
+            paddingBottom: 8,
+            marginBottom: 12,
+            borderBottom: "1px solid var(--border)",
+          }}
+        >
           <strong>{room.name} — {dateStr} — Reservation</strong>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span
