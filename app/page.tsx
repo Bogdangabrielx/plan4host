@@ -7,11 +7,8 @@ import { useRouter } from "next/navigation";
 import styles from "./home.module.css";
 import { createPortal } from "react-dom";
 import AutoOpenOnLanding from "@/components/consent/AutoOpenOnLanding";
-// ...
 
-<AutoOpenOnLanding delay={150} />
-
-/** CTA Link that triggers the sparkle animation on touch devices before navigating */
+/** CTA Link care declanșează animația pe touch înainte de navigare */
 function CtaLink({
   href,
   className,
@@ -27,7 +24,7 @@ function CtaLink({
   const ref = useRef<HTMLAnchorElement>(null);
 
   const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
-    // Allow new tab / middle click / modified clicks to behave normally
+    // Permite middle click / tab nou / click cu modificatori
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
 
     const isTouch =
@@ -38,16 +35,16 @@ function CtaLink({
     if (isTouch) {
       e.preventDefault();
       const el = ref.current;
-      // Start animation
+      // Pornim animația
       el?.setAttribute("data-animate", "true");
-      // Let the animation play a bit, then navigate
+      // Lăsăm animația puțin, apoi navigăm
       window.setTimeout(() => {
         el?.removeAttribute("data-animate");
         router.push(href);
         onNavigate?.();
       }, 280);
     }
-    // On non-touch devices we let normal navigation happen (hover already animates)
+    // Pe non-touch lăsăm navigarea standard (hover-ul deja animă)
   };
 
   return (
@@ -58,11 +55,11 @@ function CtaLink({
 }
 
 /* ──────────────────────────────────────────────────────────────
-   CookieConsentLanding — doar Necessary + Preferences (tema)
+   CookieConsentLanding — Necessary + Preferences (tema)
    - persistă 180 zile în localStorage + cookie
    - blochează pagina până se alege o opțiune
    - UI: Accept preferences / Only necessary / Customize (+ Save)
-   - folosește .modalFlipWrapper / .modalCard din globals.css
+   - folosește .modalCard din globals.css
    ────────────────────────────────────────────────────────────── */
 function CookieConsentLanding() {
   type ConsentShape = { necessary: true; preferences: boolean };
@@ -75,7 +72,9 @@ function CookieConsentLanding() {
   const [showPrefs, setShowPrefs] = useState(false);
   const [preferences, setPreferences] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // citește consimțământ existent
   useEffect(() => {
@@ -123,7 +122,7 @@ function CookieConsentLanding() {
     if (open) {
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
-      if (main) (main as any).inert = true; // inert nativ (suportat modern)
+      if (main) (main as any).inert = true;
       return () => {
         document.body.style.overflow = prevOverflow;
         if (main) (main as any).inert = false;
@@ -138,31 +137,44 @@ function CookieConsentLanding() {
     const exp = new Date(now.getTime() + EXPIRE_DAYS * 24 * 60 * 60 * 1000);
     const payload = { v: 2, ts: now.toISOString(), exp: exp.toISOString(), consent };
 
-    try { localStorage.setItem(LS_KEY, JSON.stringify(payload)); } catch {}
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(payload));
+    } catch {}
 
     try {
       const secure = location.protocol === "https:" ? "; Secure" : "";
-      document.cookie =
-        `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(payload))}; Max-Age=${EXPIRE_DAYS * 24 * 60 * 60}; Path=/; SameSite=Lax${secure}`;
+      document.cookie = `${COOKIE_NAME}=${encodeURIComponent(
+        JSON.stringify(payload),
+      )}; Max-Age=${EXPIRE_DAYS * 24 * 60 * 60}; Path=/; SameSite=Lax${secure}`;
     } catch {}
 
     document.documentElement.setAttribute("data-consent-preferences", String(!!consent.preferences));
-    try { window.dispatchEvent(new CustomEvent("p4h:consent", { detail: payload })); } catch {}
+    try {
+      window.dispatchEvent(new CustomEvent("p4h:consent", { detail: payload }));
+    } catch {}
   }
 
-  const acceptOnlyNecessary = () => { persist({ necessary: true, preferences: false }); setOpen(false); };
-  const acceptPreferences   = () => { persist({ necessary: true, preferences: true  }); setOpen(false); };
-  const savePrefs           = () => { persist({ necessary: true, preferences       }); setOpen(false); };
+  const acceptOnlyNecessary = () => {
+    persist({ necessary: true, preferences: false });
+    setOpen(false);
+  };
+  const acceptPreferences = () => {
+    persist({ necessary: true, preferences: true });
+    setOpen(false);
+  };
+  const savePrefs = () => {
+    persist({ necessary: true, preferences });
+    setOpen(false);
+  };
 
   if (!mounted || !open) return null;
 
-  // 🔝 randăm ÎN BODY ca să scăpăm de stacking-context & gating
+  // 🔝 randăm ÎN BODY ca să scăpăm de stacking-context
   return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Cookie consent"
-      // TOP of viewport: schimbi alignItems în "center" dacă vrei centrat
       style={{
         position: "fixed",
         inset: 0,
@@ -206,7 +218,8 @@ function CookieConsentLanding() {
               borderRadius: 12,
               background:
                 "radial-gradient(60% 60% at 30% 20%, rgba(255,255,255,.16), transparent), color-mix(in srgb, var(--primary) 18%, var(--card))",
-              boxShadow: "0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent)",
+              boxShadow:
+                "0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent)",
             }}
           >
             🍪
@@ -240,7 +253,13 @@ function CookieConsentLanding() {
               <button
                 onClick={() => setShowPrefs(true)}
                 className="sb-btn"
-                style={{ padding: "10px 14px", borderRadius: 12, background: "transparent", border: "1px solid var(--border)", fontWeight: 900 }}
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 12,
+                  background: "transparent",
+                  border: "1px solid var(--border)",
+                  fontWeight: 900,
+                }}
               >
                 Customize
               </button>
@@ -249,7 +268,8 @@ function CookieConsentLanding() {
               Read more in our{" "}
               <Link href="/legal/cookies" style={{ color: "var(--primary)", textDecoration: "none" }}>
                 Cookie Policy
-              </Link>.
+              </Link>
+              .
             </small>
           </div>
         ) : (
@@ -287,11 +307,7 @@ function CookieConsentLanding() {
             </div>
 
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
-              <button
-                onClick={() => setShowPrefs(false)}
-                className="sb-btn"
-                style={{ padding: "10px 14px", borderRadius: 12 }}
-              >
+              <button onClick={() => setShowPrefs(false)} className="sb-btn" style={{ padding: "10px 14px", borderRadius: 12 }}>
                 Back
               </button>
               <button
@@ -306,25 +322,55 @@ function CookieConsentLanding() {
         )}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
+
 export default function HomePage() {
   const [navOpen, setNavOpen] = useState(false);
   const year = new Date().getFullYear();
 
   return (
     <main className={styles.landing}>
-      {/* Accessible skip link */}
+      {/* Painter top — acoperă safe-area/notch și maschează conținutul din spate la scroll */}
+      <div
+        aria-hidden
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "var(--safe-top, 0px)",
+          background:
+            "linear-gradient(to bottom, color-mix(in srgb, var(--panel) 96%, transparent) 0%, color-mix(in srgb, var(--panel) 88%, transparent) 70%, transparent 100%)",
+          pointerEvents: "none",
+          zIndex: 50,
+        }}
+      />
+
+      {/* Auto-open consent UI (dacă încă nu există consimțământ) */}
+      <AutoOpenOnLanding delay={150} />
+
+      {/* Skip link accesibil */}
       <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>
         Skip to content
       </a>
 
-      {/* Top Nav */}
+      {/* Top Nav (împins sub notch cu padding-top) */}
       <nav
         className={styles.nav}
         data-open={navOpen ? "true" : "false"}
         aria-label="Primary"
+        style={{
+          position: "sticky",
+          top: 0,
+          paddingTop: "var(--safe-top, 0px)",
+          zIndex: 51, // peste painter
+          // opțional: un pic de sticlă pe nav (comentează dacă nu-ți place)
+          // backdropFilter: "saturate(180%) blur(8px)",
+          // WebkitBackdropFilter: "saturate(180%) blur(8px)",
+          // background: "color-mix(in srgb, var(--panel) 92%, transparent)",
+        }}
       >
         <Link href="/" className={`${styles.brand} ${styles.focusable}`}>
           <img src="/logo_fordark.png" alt="Plan4host" className={styles.logoDark} />
@@ -333,10 +379,18 @@ export default function HomePage() {
 
         {/* Desktop menu */}
         <div className={styles.menu} id="nav-menu">
-          <a href="#features" className={`${styles.menuLink} ${styles.focusable}`}>Features</a>
-          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
-          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
-          <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
+          <a href="#features" className={`${styles.menuLink} ${styles.focusable}`}>
+            Features
+          </a>
+          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>
+            Pricing
+          </a>
+          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>
+            About
+          </a>
+          <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>
+            Contact
+          </a>
         </div>
 
         {/* Actions + Mobile toggle */}
@@ -345,11 +399,8 @@ export default function HomePage() {
             Sign in
           </Link>
 
-          {/* Get started -> login in signup mode (animated) */}
-          <CtaLink
-            href="/auth/login?mode=signup"
-            className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
-          >
+          {/* Get started -> login în modul signup (animat) */}
+          <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}>
             Get started
           </CtaLink>
 
@@ -367,32 +418,16 @@ export default function HomePage() {
 
       {/* Mobile menu panel */}
       <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
-        <a
-          href="#features"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={() => setNavOpen(false)}
-        >
+        <a href="#features" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>
           Features
         </a>
-        <a
-          href="#pricing"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={() => setNavOpen(false)}
-        >
+        <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>
           Pricing
         </a>
-        <a
-          href="#about"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={() => setNavOpen(false)}
-        >
+        <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>
           About
         </a>
-        <a
-          href="#contact"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={() => setNavOpen(false)}
-        >
+        <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>
           Contact
         </a>
       </div>
@@ -408,11 +443,8 @@ export default function HomePage() {
             and sync calendars across channels with ease.
           </p>
           <div className={styles.heroCta}>
-            {/* Start free -> login in signup mode (animated) */}
-            <CtaLink
-              href="/auth/login?mode=signup"
-              className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
-            >
+            {/* Start free -> login în modul signup (animat) */}
+            <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}>
               Start free
             </CtaLink>
             <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
@@ -443,7 +475,9 @@ export default function HomePage() {
               <img src="/dashboard_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
               <h3>Easy-to-use Dashboard</h3>
             </div>
-            <p>Bring all your properties into one simple dashboard and shape it your way, with flexibility to customize every detail.</p>
+            <p>
+              Bring all your properties into one simple dashboard and shape it your way, with flexibility to customize every detail.
+            </p>
           </article>
 
           <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
@@ -451,7 +485,10 @@ export default function HomePage() {
               <img src="/configurator_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
               <h3>Property Setup</h3>
             </div>
-            <p>Quickly configure each property to match your needs—add rooms, adjust details, and personalize settings for a smooth workflow.</p>
+            <p>
+              Quickly configure each property to match your needs—add rooms, adjust details, and personalize settings for a smooth
+              workflow.
+            </p>
           </article>
 
           <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
@@ -467,7 +504,10 @@ export default function HomePage() {
               <img src="/ical_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
               <h3>Automatic Sync</h3>
             </div>
-            <p>Sync reservations with Airbnb, Booking.com and more; according to your subscription plan—keeping calendars always up to date, effortlessly.</p>
+            <p>
+              Sync reservations with Airbnb, Booking.com and more; according to your subscription plan—keeping calendars always up to
+              date, effortlessly.
+            </p>
           </article>
         </div>
       </section>
@@ -549,7 +589,8 @@ export default function HomePage() {
             We’re just an email away:{" "}
             <a className={styles.focusable} href="mailto:office@plan4host.com">
               office@plan4host.com
-            </a>.
+            </a>
+            .
           </p>
         </div>
       </section>
@@ -566,48 +607,110 @@ export default function HomePage() {
               <img src="/logo_fordark.png" alt="" aria-hidden="true" className={styles.logoDark} />
               <strong>Plan4host</strong>
             </div>
-            <p className={styles.footerCopy}>
-              Lightweight booking calendar &amp; channel sync for small accommodations.
-            </p>
+            <p className={styles.footerCopy}>Lightweight booking calendar &amp; channel sync for small accommodations.</p>
           </div>
 
           <div className={styles.footerCol}>
             <div className={styles.footerTitle}>Product</div>
             <ul className={styles.footerList}>
-              <li><a className={styles.footerLink} href="#features">Features</a></li>
-              <li><a className={styles.footerLink} href="#pricing">Pricing</a></li>
-              <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Start free</Link></li>
-              <li><Link className={styles.footerLink} href="/auth/login">Sign in</Link></li>
+              <li>
+                <a className={styles.footerLink} href="#features">
+                  Features
+                </a>
+              </li>
+              <li>
+                <a className={styles.footerLink} href="#pricing">
+                  Pricing
+                </a>
+              </li>
+              <li>
+                <Link className={styles.footerLink} href="/auth/login?mode=signup">
+                  Start free
+                </Link>
+              </li>
+              <li>
+                <Link className={styles.footerLink} href="/auth/login">
+                  Sign in
+                </Link>
+              </li>
             </ul>
           </div>
 
           <div className={styles.footerCol}>
             <div className={styles.footerTitle}>Resources</div>
             <ul className={styles.footerList}>
-              <li><Link className={styles.footerLink} href="/docs">Docs</Link></li>
-              <li><Link className={styles.footerLink} href="/changelog">Changelog</Link></li>
-              <li><Link className={styles.footerLink} href="/status">Status</Link></li>
-              <li><a className={styles.footerLink} href="mailto:office@plan4host.com">Support</a></li>
+              <li>
+                <Link className={styles.footerLink} href="/docs">
+                  Docs
+                </Link>
+              </li>
+              <li>
+                <Link className={styles.footerLink} href="/changelog">
+                  Changelog
+                </Link>
+              </li>
+              <li>
+                <Link className={styles.footerLink} href="/status">
+                  Status
+                </Link>
+              </li>
+              <li>
+                <a className={styles.footerLink} href="mailto:office@plan4host.com">
+                  Support
+                </a>
+              </li>
             </ul>
           </div>
 
           <div className={styles.footerCol}>
             <div className={styles.footerTitle}>Company</div>
             <ul className={styles.footerList}>
-              <li><Link className={styles.footerLink} href="/about">About us</Link></li>
-              <li><Link className={styles.footerLink} href="#contact">Contact</Link></li>
-              <li><Link className={styles.footerLink} href="/careers">Careers</Link></li>
-              <li><Link className={styles.footerLink} href="/partners">Partners</Link></li>
+              <li>
+                <Link className={styles.footerLink} href="/about">
+                  About us
+                </Link>
+              </li>
+              <li>
+                <Link className={styles.footerLink} href="#contact">
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link className={styles.footerLink} href="/careers">
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link className={styles.footerLink} href="/partners">
+                  Partners
+                </Link>
+              </li>
             </ul>
           </div>
 
           <div className={styles.footerCol}>
             <div className={styles.footerTitle}>Legal</div>
             <ul className={styles.footerList}>
-              <li><Link className={styles.footerLink} href="/legal/terms">Terms &amp; Conditions</Link></li>
-              <li><Link className={styles.footerLink} href="/legal/privacy">Privacy Policy</Link></li>
-              <li><Link className={styles.footerLink} href="/legal/dpa">Data Processing Addendum</Link></li>
-              <li><Link className={styles.footerLink} href="/legal/cookies">Cookie Policy</Link></li>
+              <li>
+                <Link className={styles.footerLink} href="/legal/terms">
+                  Terms &amp; Conditions
+                </Link>
+              </li>
+              <li>
+                <Link className={styles.footerLink} href="/legal/privacy">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link className={styles.footerLink} href="/legal/dpa">
+                  Data Processing Addendum
+                </Link>
+              </li>
+              <li>
+                <Link className={styles.footerLink} href="/legal/cookies">
+                  Cookie Policy
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -615,8 +718,14 @@ export default function HomePage() {
         <div className={styles.legalBar}>
           <p>
             © {year} Plan4host. All rights reserved. By using Plan4host you agree to our{" "}
-            <Link className={styles.footerLink} href="/legal/terms">Terms &amp; Conditions</Link> and{" "}
-            <Link className={styles.footerLink} href="/legal/privacy">Privacy Policy</Link>.
+            <Link className={styles.footerLink} href="/legal/terms">
+              Terms &amp; Conditions
+            </Link>{" "}
+            and{" "}
+            <Link className={styles.footerLink} href="/legal/privacy">
+              Privacy Policy
+            </Link>
+            .
           </p>
           <p className={styles.legalMeta}>
             Plan4host is not affiliated with Airbnb or Booking.com. Trademarks belong to their respective owners.

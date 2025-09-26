@@ -471,3 +471,35 @@ html[data-standalone="true"] .skipLink { display: none !important; }
   /* Ca să nu „intre” footerul în zona acoperită */
   .footer{ padding-bottom: max(16px, var(--safe-bottom, env(safe-area-inset-bottom))); }
 }
+
+/* Pictorul de sus (acoperă notch-ul + un fade în pagină) */
+.topPainter {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--safe-top, 0px);
+  /* fade ușor în jos ca să nu vezi conținutul din spate când faci scroll */
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--panel) 96%, transparent) 0%,
+      color-mix(in srgb, var(--panel) 88%, transparent) 70%,
+      transparent 100%
+    );
+  pointer-events: none;
+  z-index: 50; /* sub nav, peste conținut */
+}
+
+/* Asigură-te că nav-ul nu intră sub notch */
+.nav {
+  position: sticky;
+  top: 0;                        /* lipit de partea de sus a viewport-ului */
+  padding-top: var(--safe-top);  /* împingem conținutul nav sub safe-area */
+  z-index: 51;                   /* peste painter */
+  /* opțional, dacă vrei un look mai “sticlă”:
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  */
+}
