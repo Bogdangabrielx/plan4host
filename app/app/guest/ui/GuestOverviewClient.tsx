@@ -320,7 +320,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     background: "var(--card)",
     color: "var(--text)",
     border: "1px solid var(--border)",
-    borderRadius: 10,
+    borderRadius: 29,
     fontWeight: 700,
     fontFamily: "inherit",
     outline: "none",
@@ -456,7 +456,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   onClick={() => { setQuery(""); searchRef.current?.focus(); }}
                   style={clearBtn}
                 >
-                  ×
+
                 </button>
               )}
             </div>
