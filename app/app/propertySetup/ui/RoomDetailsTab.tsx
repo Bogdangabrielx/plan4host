@@ -55,8 +55,8 @@ export default function RoomDetailsTab({
 
       {/* Text fields */}
       <section className="sb-card" style={{ padding: 12 }}>
-        <header style={head}><h3 style={{ margin: 0 }}>Text fields</h3><button onClick={onAddText} className="sb-btn sb-btn--primary">+ Add</button></header>
-        {texts.length === 0 && <p style={{ color: "var(--muted)" }}>No text fields defined yet.</p>}
+        <header style={head}><h3 style={{ margin: 0 }}>Notes tabs</h3><button onClick={onAddText} className="sb-btn sb-btn--primary">+ Add</button></header>
+        {texts.length === 0 && <p style={{ color: "var(--muted)" }}>No notes tabs defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...texts].sort((a,b) => a.sort_index - b.sort_index).map((t, idx) => (
             <li key={t.id} style={rowBase} className="rd-row">
