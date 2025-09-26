@@ -391,7 +391,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
                         <span>-Waiting window-</span>
                         <span>Only Form existing: Wait up to 2h for iCal event to arive</span>
-                        <span>Only iCal existing: Wait until 3 days before arrival <br></br>              Or resend the check-in form manually</span>
+                        <span>Only iCal existing: Wait until 3 days before arrival OR resend the check-in form manually</span>
                       </div>
                     )}
                     {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Action required.</div>}
