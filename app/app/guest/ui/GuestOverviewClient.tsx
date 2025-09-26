@@ -73,7 +73,6 @@ function subcopyFor(row: OverviewRow): string | null {
   }
   return null;
 }
-
 function getCheckinBase(): string {
   const v1 = (process.env.NEXT_PUBLIC_CHECKIN_BASE || "").toString().trim();
   if (v1) return v1.replace(/\/+$/, "");
@@ -95,6 +94,46 @@ function buildPropertyCheckinLink(propertyId: string): string {
   } catch {
     return `${base.replace(/\/+$/, "")}/checkin?property=${encodeURIComponent(propertyId)}`;
   }
+}
+// normalizează pentru căutare (remove diacritics + lowercase)
+function norm(s: string) {
+  return (s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+function escapeRegExp(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function highlight(text: string, query: string): React.ReactNode {
+  if (!query) return text;
+  const nText = norm(text);
+  const nQ = norm(query);
+  if (!nQ) return text;
+  const raw = text;
+  // map indices by walking both strings
+  const parts: React.ReactNode[] = [];
+  let i = 0;
+  let idx = nText.indexOf(nQ);
+  if (idx === -1) return text;
+  // simplu: folosim regex pe text original, case-insensitive, fără diacritice (aproximăm)
+  const rx = new RegExp(escapeRegExp(query), "ig");
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = rx.exec(raw))) {
+    const start = m.index;
+    const end = m.index + m[0].length;
+    if (start > last) parts.push(raw.slice(last, start));
+    parts.push(
+      <mark key={start} style={{ background: "color-mix(in srgb, var(--primary) 25%, transparent)", padding: "0 2px", borderRadius: 4 }}>
+        {raw.slice(start, end)}
+      </mark>
+    );
+    last = end;
+  }
+  if (last < raw.length) parts.push(raw.slice(last));
+  return parts;
 }
 
 /* ───────────────── Component ───────────────── */
@@ -123,6 +162,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [items, setItems] = useState<OverviewRow[]>([]);
   const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
   const [hint, setHint] = useState<string>("");
+
+  // Search (guest name)
+  const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement | null>(null);
 
   // UX small bits
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -227,6 +270,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     });
   }, [items, collator]);
 
+  // Apply search filter
+  const visibleRows = useMemo(() => {
+    const q = norm(query);
+    if (!q) return rows;
+    return rows.filter((r) => {
+      const name = norm(fullName(r));
+      return name.includes(q);
+    });
+  }, [rows, query]);
+
   // Styles
   const containerStyle: React.CSSProperties = {
     margin: "0 auto",
@@ -234,12 +287,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     padding: isMobile ? "10px 12px 16px" : "16px",
     paddingBottom: "calc(16px + var(--safe-bottom))",
   };
-  const controlsWrap: React.CSSProperties = {
+  const controlsLeft: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
     gap: 8,
     flexWrap: "wrap",
-    justifyContent: isMobile ? "space-between" : "flex-end",
+  };
+  const controlsRight: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
   };
   const selectStyle: React.CSSProperties = {
     minWidth: isMobile ? "100%" : 220,
@@ -251,6 +309,44 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     borderRadius: 10,
     fontWeight: 700,
     fontFamily: "inherit",
+  };
+  const searchWrap: React.CSSProperties = {
+    position: "relative",
+    width: isMobile ? "100%" : 280,
+  };
+  const searchInput: React.CSSProperties = {
+    width: "100%",
+    padding: "10px 12px 10px 36px",
+    background: "var(--card)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    fontWeight: 700,
+    fontFamily: "inherit",
+    outline: "none",
+  };
+  const searchIcon: React.CSSProperties = {
+    position: "absolute",
+    left: 10,
+    top: "50%",
+    transform: "translateY(-50%)",
+    width: 18,
+    height: 18,
+    opacity: 0.7,
+    pointerEvents: "none",
+  };
+  const clearBtn: React.CSSProperties = {
+    position: "absolute",
+    right: 6,
+    top: "50%",
+    transform: "translateY(-50%)",
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    border: "1px solid var(--border)",
+    background: "transparent",
+    color: "var(--muted)",
+    cursor: "pointer",
   };
   const actionsRow = (wrap?: boolean): React.CSSProperties => ({
     display: wrap ? "grid" : "flex",
@@ -311,9 +407,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       <PlanHeaderBadge title="Guest Overview" slot="header-right" />
 
       <div style={containerStyle}>
-        {/* Controls */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
-          <div style={controlsWrap}>
+        {/* Controls (Property, Refresh, Search) */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "auto 1fr",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 12,
+          }}
+        >
+          <div style={controlsLeft}>
             <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, width: isMobile ? "100%" : "auto" }}>
               Property
             </label>
@@ -326,14 +430,36 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <button
-              onClick={refresh}
-              className="sb-btn"
-              style={{ padding: "8px 12px", borderRadius: 10 }}
-              title="Refresh"
-            >
+            <button onClick={refresh} className="sb-btn" style={{ padding: "8px 12px", borderRadius: 10 }} title="Refresh">
               Refresh
             </button>
+          </div>
+
+          <div style={{ ...controlsRight, justifyContent: isMobile ? "stretch" : "flex-end" }}>
+            <div style={searchWrap}>
+              <svg viewBox="0 0 24 24" aria-hidden="true" style={searchIcon}>
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor" />
+              </svg>
+              <input
+                ref={searchRef}
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.currentTarget.value)}
+                placeholder="Search guest name…"
+                aria-label="Search guest name"
+                style={searchInput}
+              />
+              {query && (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => { setQuery(""); searchRef.current?.focus(); }}
+                  style={clearBtn}
+                >
+                  ×
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -358,7 +484,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
                         <span>-Waiting window-</span>
-                        <span>Only Form existing: Wait up to 2h for iCal event to arive</span>
+                        <span>Only Form existing: Wait up to 2h for iCal event to arrive</span>
                         <span>Only iCal existing: Wait until 3 days before arrival OR resend the check-in form manually</span>
                       </div>
                     )}
@@ -383,11 +509,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     }}
                   >
                     <div style={{ fontWeight: 800, marginBottom: 4 }}>{toBadge(k)}</div>
-                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>No action requierd.</div>}
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>No action required.</div>}
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
                         <span>-Waiting window-</span>
-                        <span>Only Form existing: Wait up to 2h for iCal event to arive</span>
+                        <span>Only Form existing: Wait up to 2h for iCal event to arrive</span>
                         <span>Only iCal existing: Wait until 3 days before arrival OR resend the check-in form manually</span>
                       </div>
                     )}
@@ -401,8 +527,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
         {/* Rows */}
         <div style={{ display: "grid", gap: 10 }}>
-          {rows.map((it) => {
-            const name = fullName(it) || "Unknown guest";
+          {visibleRows.map((it) => {
+            const rawName = fullName(it) || "Unknown guest";
             const kind: OverviewRow["status"] =
               it.status === "green" && !it.room_id ? "yellow" : it.status;
 
@@ -449,7 +575,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       wordBreak: "break-word",
                     }}
                   >
-                    {name} · Room: {roomLabel} — Type: {typeName}
+                    {/* numele are highlight după query */}
+                    <span>{highlight(rawName, query)}</span> · Room: {roomLabel} — Type: {typeName}
                     <br />
                     {formatRange(it.start_date, it.end_date)}
                   </em>
@@ -544,7 +671,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             );
           })}
 
-          {rows.length === 0 && (
+          {visibleRows.length === 0 && (
             <div
               style={{
                 border: "1px solid var(--border)",
@@ -555,7 +682,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 textAlign: "center",
               }}
             >
-              No current or upcoming reservations.
+              {query ? "No guests match your search." : "No current or upcoming reservations."}
             </div>
           )}
         </div>
