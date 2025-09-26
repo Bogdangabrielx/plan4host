@@ -319,7 +319,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     padding: "10px 12px 10px 36px",
     background: "var(--card)",
     color: "var(--text)",
-    border: "1px solid var(--border)",
+    border: "1px solid var(--text)",
     borderRadius: 29,
     fontWeight: 700,
     fontFamily: "inherit",
