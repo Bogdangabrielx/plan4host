@@ -275,7 +275,7 @@ function guessTZ(cc: string) {
 
       {/* Add property */}
       <section style={card}>
-        <h2 style={{ marginTop: 0 }}>Add Property</h2>
+        <h2 style={{ marginTop: 0 }}>List New Property</h2>
 
         <div style={{ display: "grid", gap: 12 }}>
           <div style={FIELD_WRAPPER}>
