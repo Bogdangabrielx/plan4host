@@ -550,7 +550,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 className="sb-card"
                 style={{
                   border: "1px solid var(--border)",
-                  borderRadius: 29,
+                  borderRadius: 12,
                   padding: 12,
                   background: "var(--panel)",
                   display: "grid",
