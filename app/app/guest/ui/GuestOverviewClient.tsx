@@ -357,12 +357,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               {legendInfo === k && (
                 isMobile ? (
                   <div data-legend="keep" style={{ marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
-                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Nothing to do.</div>}
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>No action required.</div>}
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
                         <span>-Waiting window-</span>
-                        <span>Only Form: max 2h</span>
-                        <span>Only iCal: until 3 days before arrival</span>
+                        <span>Only Form existing: wait up to 2h for iCal event to araive</span>
+                        <span>Only iCal existing: wait until 3 days before arrival <br></br> Or resend the check-in form manually</span>
                       </div>
                     )}
                     {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Action required.</div>}
