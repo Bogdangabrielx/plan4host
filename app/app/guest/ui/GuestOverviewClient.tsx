@@ -361,8 +361,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
                         <span>-Waiting window-</span>
-                        <span>Only Form existing: wait up to 2h for iCal event to araive</span>
-                        <span>Only iCal existing: wait until 3 days before arrival <br></br> Or resend the check-in form manually</span>
+                        <span>Only Form existing: Wait up to 2h for iCal event to arive</span>
+                        <span>Only iCal existing: Wait until 3 days before arrival <br></br>              Or resend the check-in form manually</span>
                       </div>
                     )}
                     {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Action required.</div>}
@@ -386,12 +386,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     }}
                   >
                     <div style={{ fontWeight: 800, marginBottom: 4 }}>{toBadge(k)}</div>
-                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Nothing to do.</div>}
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>No action requierd.</div>}
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
                         <span>-Waiting window-</span>
-                        <span>Only Form: max 2h</span>
-                        <span>Only iCal: until 3 days before arrival</span>
+                        <span>Only Form existing: Wait up to 2h for iCal event to arive</span>
+                        <span>Only iCal existing: Wait until 3 days before arrival <br></br>              Or resend the check-in form manually</span>
                       </div>
                     )}
                     {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Action required.</div>}
