@@ -52,14 +52,6 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   }, []);
 
 
-  // Header pill mirrors page status
-  useEffect(() => {
-    setPill(
-      status === "Saving…" ? "Saving…" :
-      status === "Synced"  ? "Synced"  :
-      status === "Error"   ? "Error"   : "Idle"
-    );
-  }, [status, setPill]);
 
   // Load effective plan for current membership (used for gating Cleaning tab)
   useEffect(() => {
