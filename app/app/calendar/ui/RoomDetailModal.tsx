@@ -688,9 +688,13 @@ export default function RoomDetailModal({
               {on ? "ON" : "OFF"}
             </button>
 
-            <button onClick={() => setShowGuest(v => !v)} style={baseBtnGuest}  title="Add guest details">
-              {showGuest ? "Hide guest details" : "Guest details"}
-            </button>
+            <button
+  onClick={() => setShowGuest(v => !v)}
+  style={showGuest ? baseBtn : baseBtnGuest}
+  title={showGuest ? "Hide guest details" : "Add guest details"}
+>
+  {showGuest ? "Hide guest details" : "Guest details"}
+</button>
           </div>
 
           {/* Dates row */}
