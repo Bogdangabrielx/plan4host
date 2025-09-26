@@ -373,7 +373,7 @@
 @media (max-width: 560px) { .footerGrid { grid-template-columns: 1fr; } }
 
 /* ✅ Logo sizing (nav & footer) */
-.nav .brand img { height: 45px; width: auto; display: inline-block; }
+.nav .brand img { height: 54px; width: auto; display: inline-block; }
 .footer .footerBrand img { height: 22px; width: auto; display: inline-block; }
 
 /* 🔧 Mobile tweak: ascunde “Plan4host” + mărește puțin logo-ul */
@@ -451,7 +451,7 @@ html[data-standalone="true"] .skipLink { display: none !important; }
     content:"";
     position: fixed;
     top: 0; left: 0; right: 0;
-    height: var(--safe-top, env(safe-area-inset-top));
+    height: 14px;
     background: #0b1117;
     z-index: 10900;               /* sub cookie modal (11000), peste conținut */
     pointer-events: none;
