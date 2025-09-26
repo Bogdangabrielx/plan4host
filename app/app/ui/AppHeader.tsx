@@ -31,9 +31,9 @@ function titleStyle(isSmall: boolean): React.CSSProperties {
   return {
     margin: 0,
     fontFamily: TITLE_FAMILY,
-    fontSize: isSmall ? 18 : 20,         // micșorat față de 22/26
+    fontSize: isSmall ? 18 : 20,
     lineHeight: isSmall ? "26px" : "28px",
-    fontWeight: 600,                      // mai „subțire” (poți coborî la 500)
+    fontWeight: 600,
     letterSpacing: "-0.01em",
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -45,8 +45,8 @@ function titleStyle(isSmall: boolean): React.CSSProperties {
 function drawerTitleStyle(): React.CSSProperties {
   return {
     fontFamily: TITLE_FAMILY,
-    fontSize: 18,                         // micșorat față de 21
-    fontWeight: 600,                      // mai fin
+    fontSize: 18,
+    fontWeight: 600,
     margin: 0,
   };
 }
@@ -232,17 +232,36 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
   return (
     <>
+      {/* Paint safe-area notch so it never looks transparent */}
+      <div
+        aria-hidden
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "var(--safe-top)",
+          background: "var(--panel)",
+          zIndex: 99,             // sub header, peste conținut
+          pointerEvents: "none",
+        }}
+      />
+
       {/* Top App Bar */}
       <header
         style={{
           position: "sticky",
-          top: "var(--safe-top)",
-          zIndex: 30,
+          top: 0,                  // lipit de viewport; safe-area e în paddingTop
+          zIndex: 100,             // peste conținut, sub drawer-uri/modale
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: isSmall ? 8 : 12,
-          padding: isSmall ? "8px 10px 16px" : "12px 16px 20px",
+          // padding include safe-area top
+          paddingTop: `calc(${isSmall ? 8 : 12}px + var(--safe-top))`,
+          paddingRight: isSmall ? 10 : 16,
+          paddingBottom: isSmall ? 16 : 20,
+          paddingLeft: isSmall ? 10 : 16,
           flexWrap: "nowrap",
           background: "var(--panel)",
           borderBottom: "1px solid var(--border)",
@@ -336,7 +355,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         <>
           <div
             onClick={() => setOpen(false)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 40 }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 120 }}
           />
           <aside
             role="dialog"
@@ -351,7 +370,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               color: "var(--primary)",
               borderRight: "1px solid var(--border)",
               boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
-              zIndex: 41,
+              zIndex: 121, // peste header
               display: "grid",
               gridTemplateRows: "auto 1fr",
               paddingTop: "var(--safe-top)",
@@ -444,7 +463,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         <>
           <div
             onClick={() => setOpenRight(false)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 40 }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 120 }}
           />
           <aside
             role="dialog"
@@ -459,7 +478,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               color: "var(--text)",
               borderLeft: "1px solid var(--border)",
               boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
-              zIndex: 41,
+              zIndex: 121, // peste header
               display: "grid",
               gridTemplateRows: "auto 1fr",
               paddingTop: "var(--safe-top)",
