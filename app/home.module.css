@@ -373,7 +373,7 @@
 @media (max-width: 560px) { .footerGrid { grid-template-columns: 1fr; } }
 
 /* ✅ Logo sizing (nav & footer) */
-.nav .brand img { height: 54px; width: auto; display: inline-block; }
+.nav .brand img { height: 63px; width: auto; display: inline-block; }
 .footer .footerBrand img { height: 22px; width: auto; display: inline-block; }
 
 /* 🔧 Mobile tweak: ascunde “Plan4host” + mărește puțin logo-ul */
@@ -446,16 +446,32 @@ html[data-standalone="true"] .skipLink { display: none !important; }
     min-height: 100svh;
   }
 
-  /* Notch-top */
-  .landing::before{
-    content:"";
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 14px;
-    background: #0b1117;
-    z-index: 10900;               /* sub cookie modal (11000), peste conținut */
-    pointer-events: none;
-  }
+  /* Safe-areas (ai nevoie și de <meta viewport-fit=cover>) */
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --panel: #0b1117;      /* culoarea ta de fundal din nav/landing */
+}
+
+/* Painter pentru notch – stă deasupra conținutului, dar sub cookie modal */
+:root::before{
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--safe-top);
+  /* fallback solid + gradient fin spre transparență */
+  background: var(--panel);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--panel) 98%, transparent) 0%,
+    color-mix(in srgb, var(--panel) 90%, transparent) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2147483000; /* sub cookie modalul tău (2147483646), peste orice altceva */
+}
+
+/* Asigură fond consistent în spate */
+html, body { background: var(--panel); }
 
   /* Home-indicator bottom */
   .landing::after{
