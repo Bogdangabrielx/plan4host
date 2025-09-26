@@ -548,7 +548,7 @@ export default function RoomDetailModal({
     cursor: "pointer",
   };
   const baseBtnGuest: React.CSSProperties = {
-    padding: "10px 14px",
+    padding: "8px 14px",
     borderRadius: 10,
     border: "1px solid var(--border)",
     background: "var(--primary)",
