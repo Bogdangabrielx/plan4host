@@ -7,13 +7,9 @@ import { useRouter } from "next/navigation";
 import styles from "./home.module.css";
 import { createPortal } from "react-dom";
 import AutoOpenOnLanding from "@/components/consent/AutoOpenOnLanding";
+// ...
 
-/** Let env(safe-area-inset-*) work just on this page */
-export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
-};
+<AutoOpenOnLanding delay={150} />
 
 /** CTA Link that triggers the sparkle animation on touch devices before navigating */
 function CtaLink({
@@ -31,6 +27,7 @@ function CtaLink({
   const ref = useRef<HTMLAnchorElement>(null);
 
   const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
+    // Allow new tab / middle click / modified clicks to behave normally
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
 
     const isTouch =
@@ -41,13 +38,16 @@ function CtaLink({
     if (isTouch) {
       e.preventDefault();
       const el = ref.current;
+      // Start animation
       el?.setAttribute("data-animate", "true");
+      // Let the animation play a bit, then navigate
       window.setTimeout(() => {
         el?.removeAttribute("data-animate");
         router.push(href);
         onNavigate?.();
       }, 280);
     }
+    // On non-touch devices we let normal navigation happen (hover already animates)
   };
 
   return (
@@ -58,9 +58,11 @@ function CtaLink({
 }
 
 /* ──────────────────────────────────────────────────────────────
-   CookieConsentLanding — Necessary + Preferences (theme)
-   Blocks page until a choice is made; persists 180 days
-   Renders via portal to <body> to avoid stacking issues
+   CookieConsentLanding — doar Necessary + Preferences (tema)
+   - persistă 180 zile în localStorage + cookie
+   - blochează pagina până se alege o opțiune
+   - UI: Accept preferences / Only necessary / Customize (+ Save)
+   - folosește .modalFlipWrapper / .modalCard din globals.css
    ────────────────────────────────────────────────────────────── */
 function CookieConsentLanding() {
   type ConsentShape = { necessary: true; preferences: boolean };
@@ -75,6 +77,7 @@ function CookieConsentLanding() {
 
   useEffect(() => { setMounted(true); }, []);
 
+  // citește consimțământ existent
   useEffect(() => {
     try {
       const now = Date.now();
@@ -102,10 +105,7 @@ function CookieConsentLanding() {
       const existing = ls ?? ck;
       if (existing?.consent) {
         setPreferences(!!existing.consent.preferences);
-        document.documentElement.setAttribute(
-          "data-consent-preferences",
-          String(!!existing.consent.preferences)
-        );
+        document.documentElement.setAttribute("data-consent-preferences", String(!!existing.consent.preferences));
         setOpen(false);
       } else {
         setOpen(true);
@@ -115,6 +115,7 @@ function CookieConsentLanding() {
     }
   }, []);
 
+  // blochează scroll & pune inert pe main când e deschis
   useEffect(() => {
     if (!mounted) return;
     const main = document.querySelector("main") as HTMLElement | null;
@@ -122,7 +123,7 @@ function CookieConsentLanding() {
     if (open) {
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
-      if (main) (main as any).inert = true;
+      if (main) (main as any).inert = true; // inert nativ (suportat modern)
       return () => {
         document.body.style.overflow = prevOverflow;
         if (main) (main as any).inert = false;
@@ -138,16 +139,14 @@ function CookieConsentLanding() {
     const payload = { v: 2, ts: now.toISOString(), exp: exp.toISOString(), consent };
 
     try { localStorage.setItem(LS_KEY, JSON.stringify(payload)); } catch {}
+
     try {
       const secure = location.protocol === "https:" ? "; Secure" : "";
       document.cookie =
         `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(payload))}; Max-Age=${EXPIRE_DAYS * 24 * 60 * 60}; Path=/; SameSite=Lax${secure}`;
     } catch {}
 
-    document.documentElement.setAttribute(
-      "data-consent-preferences",
-      String(!!consent.preferences)
-    );
+    document.documentElement.setAttribute("data-consent-preferences", String(!!consent.preferences));
     try { window.dispatchEvent(new CustomEvent("p4h:consent", { detail: payload })); } catch {}
   }
 
@@ -157,17 +156,19 @@ function CookieConsentLanding() {
 
   if (!mounted || !open) return null;
 
+  // 🔝 randăm ÎN BODY ca să scăpăm de stacking-context & gating
   return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Cookie consent"
+      // TOP of viewport: schimbi alignItems în "center" dacă vrei centrat
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 2147483646,
         display: "grid",
-        alignItems: "start",    // top of viewport
+        alignItems: "start",
         justifyItems: "center",
         padding: "clamp(12px, 6vh, 40px) 12px",
         background: "color-mix(in srgb, var(--bg, #0b1117) 55%, transparent)",
@@ -308,39 +309,13 @@ function CookieConsentLanding() {
     document.body
   );
 }
-
 export default function HomePage() {
   const [navOpen, setNavOpen] = useState(false);
   const year = new Date().getFullYear();
 
   return (
     <main className={styles.landing}>
-      {/* Painter for the notch – only on landing (no CSS module needed) */}
-      <div
-        aria-hidden
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "env(safe-area-inset-top, 0px)",
-          background: "var(--panel, #0b1117)",
-          zIndex: 10900,
-          pointerEvents: "none",
-          WebkitTransform: "translateZ(0)",
-          transform: "translateZ(0)",
-        }}
-      />
-
-      {/* (optional) painter for home indicator bottom */}
-      {/* <div aria-hidden style={{
-        position:'fixed', left:0, right:0, bottom:0,
-        height:'env(safe-area-inset-bottom, 0px)',
-        background:'var(--panel, #0b1117)', zIndex:10900, pointerEvents:'none'
-      }}/> */}
-
-      <AutoOpenOnLanding delay={150} />
-
+      
       {/* Accessible skip link */}
       <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>
         Skip to content
@@ -351,8 +326,6 @@ export default function HomePage() {
         className={styles.nav}
         data-open={navOpen ? "true" : "false"}
         aria-label="Primary"
-        // ensure content never hides under the notch
-        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
         <Link href="/" className={`${styles.brand} ${styles.focusable}`}>
           <img src="/logo_fordark.png" alt="Plan4host" className={styles.logoDark} />
@@ -373,6 +346,7 @@ export default function HomePage() {
             Sign in
           </Link>
 
+          {/* Get started -> login in signup mode (animated) */}
           <CtaLink
             href="/auth/login?mode=signup"
             className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
@@ -394,16 +368,32 @@ export default function HomePage() {
 
       {/* Mobile menu panel */}
       <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
-        <a href="#features" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>
+        <a
+          href="#features"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={() => setNavOpen(false)}
+        >
           Features
         </a>
-        <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>
+        <a
+          href="#pricing"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={() => setNavOpen(false)}
+        >
           Pricing
         </a>
-        <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>
+        <a
+          href="#about"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={() => setNavOpen(false)}
+        >
           About
         </a>
-        <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>
+        <a
+          href="#contact"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={() => setNavOpen(false)}
+        >
           Contact
         </a>
       </div>
@@ -419,6 +409,7 @@ export default function HomePage() {
             and sync calendars across channels with ease.
           </p>
           <div className={styles.heroCta}>
+            {/* Start free -> login in signup mode (animated) */}
             <CtaLink
               href="/auth/login?mode=signup"
               className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
@@ -564,9 +555,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer (expanded) */}
       <footer className={styles.footer} aria-labelledby="footer-title">
-        <h2 id="footer-title" className={styles.srOnly}>Footer</h2>
+        <h2 id="footer-title" className={styles.srOnly}>
+          Footer
+        </h2>
 
         <div className={styles.footerGrid}>
           <div className={styles.footerCol}>
@@ -632,7 +625,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* 🍪 Cookie consent — only on landing */}
+      {/* 🍪 Cookie consent — doar pe landing */}
       <CookieConsentLanding />
     </main>
   );

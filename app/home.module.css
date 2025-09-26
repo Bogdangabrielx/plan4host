@@ -477,33 +477,3 @@ html[data-standalone="true"] .skipLink { display: none !important; }
   .footer{ padding-bottom: max(16px, var(--safe-bottom, env(safe-area-inset-bottom))); }
 }
 
-/* Pictorul de notch – doar pe landing (CSS Modules) */
-.notchPainter {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top, 0px);
-  background: #0b1117;          /* potrivește cu fundalul nav/hero */
-  z-index: 10900;               /* sub cookie modal, peste conținut */
-  pointer-events: none;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-}
-
-/* (opțional) Maschează și home-indicator-ul jos pe iPhone */
-.homeIndicatorPainter {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: env(safe-area-inset-bottom, 0px);
-  background: #0b1117;
-  z-index: 10900;
-  pointer-events: none;
-}
-
-/* Asigură-te că nav nu intră sub notch */
-.nav {
-  padding-top: env(safe-area-inset-top, 0px);
-}
