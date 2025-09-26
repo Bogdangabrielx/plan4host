@@ -617,25 +617,29 @@ export default function RoomDetailModal({
             }}
           />
         </div>
-
-        {/* Header + status */}
-        <div
+         
+          {/* Header + status (flushed to container top, no gap while scrolling) */}
+          <div
           style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 3,                        // peste painter
+         position: "sticky",
+          // lipim headerul de muchia containerului care are padding: 16
+          top: -16,
+          marginTop: -16,
+            paddingTop: 16,
+           zIndex: 3,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 8,
+           gap: 8,
             flexWrap: "wrap",
-            background: "var(--panel)",       // opac peste conținutul din spate
+            background: "var(--panel)",
             paddingBottom: 8,
             marginBottom: 12,
-            borderBottom: "1px solid var(--border)",
-          }}
-        >
-          <strong>{room.name} — {dateStr} — Reservation</strong>
+            // înlocuiește borderBottom pentru o linie curată fără artefacte
+            boxShadow: "0 1px 0 var(--border)",
+           }}
+            > 
+           <strong>{room.name} — {dateStr} — Reservation</strong>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span
               style={{
