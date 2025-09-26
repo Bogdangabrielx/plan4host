@@ -164,42 +164,29 @@ export default function SubscriptionClient({
         {PLANS.map((p) => {
           const isCurrent = currentPlan === p.slug;
           return (
-            <article
-              key={p.slug}
-              className={styles.card}
-              data-current={isCurrent ? "true" : "false"}
-            >
-              {/* 1) Tier header */}
-              <div className={styles.tierRow}>
-                <div className={styles.tier}>{p.name}</div>
-                {isCurrent && <span className={styles.currentPill}>Current</span>}
-              </div>
+            <article key={p.slug} className={styles.card} aria-current={isCurrent ? "true" : undefined}>
+              <div className={styles.tier}>{p.name}</div>
 
-              {/* 2) Price/visual image — înălțime fixă (aliniere perfectă) */}
-              <div className={styles.imgWrap} aria-hidden>
-                <Image
-                  src={p.image}
-                  alt={`${p.name} price`}
-                  width={240}
-                  height={120}
-                  className={styles.priceImg}
-                  priority={false}
-                />
-              </div>
-
-              {/* 3) Bullets — zona elastică (1fr) */}
               <ul className={styles.list}>
                 {p.bullets.map((b, i) => (
                   <li key={i}>{b}</li>
                 ))}
               </ul>
 
-              {/* 4) CTA — jos, aceeași înălțime între carduri */}
+              {/* price image from landing */}
+              <div className={styles.imgWrap}>
+                <Image
+                  src={p.image}
+                  alt={`${p.name} price`}
+                  width={380}
+                  height={220}
+                  className={styles.priceImg}
+                />
+              </div>
+
               <div className={styles.cardActions}>
                 {isCurrent ? (
-                  <button className={`${styles.btn} ${styles.btnDisabled}`} disabled>
-                    Selected
-                  </button>
+                  <span className={styles.currentBadge}>Current</span>
                 ) : (
                   <button
                     className={`${styles.btn} ${styles.btnPrimary}`}
