@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import styles from "../subscription.module.css";
 import { createClient } from "@/lib/supabase/client";
+import styles from "../subscription.module.css";
 
 /** Plan definition sourced from landing (NOT from DB) */
 type Plan = {
@@ -80,11 +80,11 @@ export default function SubscriptionClient({
   const [saving, setSaving] = useState<string | null>(null);
   const [role, setRole] = useState<"admin"|"member">("admin");
 
-  // load current plan + validity from Supabase (doar pentru statusul userului curent)
+  // Load current plan / validity / role from Supabase (doar pentru status)
   useEffect(() => {
     (async () => {
       try {
-        // rol
+        // rol pentru userul curent
         const { data: auth } = await supabase.auth.getUser();
         const uid = auth?.user?.id as string | undefined;
         if (uid) {
@@ -97,20 +97,17 @@ export default function SubscriptionClient({
           if (au?.role) setRole((au as any).role === "admin" ? "admin" : "member");
         }
 
-        // plan curent (RPC account_current_plan -> slug)
+        // plan curent (RPC)
         const r = await supabase.rpc("account_current_plan");
         const pl = (r.data as string | null)?.toLowerCase?.() || "basic";
-        if (pl === "basic" || pl === "standard" || pl === "premium") {
-          setCurrentPlan(pl);
-        }
+        if (pl === "basic" || pl === "standard" || pl === "premium") setCurrentPlan(pl);
 
-        // valid_until (din accounts; ia primul rând al contului curent)
+        // valid_until (din accounts)
         const { data: acc } = await supabase
           .from("accounts")
           .select("valid_until")
           .order("created_at", { ascending: true })
           .limit(1);
-
         const vu = acc && acc.length ? acc[0].valid_until : null;
         setValidUntil(vu ? new Date(vu).toLocaleString() : null);
       } catch {
@@ -148,45 +145,49 @@ export default function SubscriptionClient({
 
   return (
     <div className={styles.container}>
-      {/* Header bar: current plan */}
+      {/* Header: current plan + validity */}
       <div className={styles.headerRow}>
-        <span className={styles.badge}>
-          Current: {planLabel(currentPlan)}
-        </span>
-        <span className={styles.muted}>
-          {validUntil ? `until ${validUntil}` : "—"}
-        </span>
+        <span className={styles.badge}>Current: {planLabel(currentPlan)}</span>
+        <span className={styles.muted}>{validUntil ? `until ${validUntil}` : "—"}</span>
         {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
       </div>
 
-      {/* Plan cards grid */}
+      {/* Cards */}
       <div className={styles.grid}>
         {PLANS.map((p) => {
           const isCurrent = currentPlan === p.slug;
           return (
-            <article key={p.slug} className={styles.card} aria-current={isCurrent ? "true" : undefined}>
+            <article
+              key={p.slug}
+              className={styles.card}
+              aria-current={isCurrent ? "true" : undefined}
+            >
+              {/* Header (tier) */}
               <div className={styles.tier}>{p.name}</div>
 
+              {/* PNG price – micșorat și încadrat */}
+              <div className={styles.imgWrap}>
+                <Image
+                  src={p.image}
+                  alt={`${p.name} price`}
+                  width={240}
+                  height={120}
+                  className={styles.priceImg}
+                  priority={isCurrent}
+                />
+              </div>
+
+              {/* Bullets (elastic, 1fr) */}
               <ul className={styles.list}>
                 {p.bullets.map((b, i) => (
                   <li key={i}>{b}</li>
                 ))}
               </ul>
 
-              {/* price image from landing */}
-              <div className={styles.imgWrap}>
-                <Image
-                  src={p.image}
-                  alt={`${p.name} price`}
-                  width={380}
-                  height={220}
-                  className={styles.priceImg}
-                />
-              </div>
-
+              {/* CTA cu înălțime fixă (aliniere perfectă) */}
               <div className={styles.cardActions}>
                 {isCurrent ? (
-                  <span className={styles.currentBadge}>Current</span>
+                  <span className={`${styles.currentPill} ${styles.btnDisabled}`}>Current</span>
                 ) : (
                   <button
                     className={`${styles.btn} ${styles.btnPrimary}`}

@@ -1,120 +1,81 @@
-.container{
-  display:grid;
-  gap:16px;
-  font-family:Switzer,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-}
-
-.headerRow{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 10px;
-  border-radius:999px;
-  font-weight:800;
-  font-size:12px;
-  color:#0c111b;
-  background:var(--primary);
-  border:1px solid var(--primary);
-}
-
-.muted{ color:var(--muted); font-size:12px; }
-
-.grid{
-  display:grid;
-  gap:12px;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-}
-
-/* card look similar to landing pricing cards */
+/* card: păstrăm grila pe 4 rânduri: header / img (fix) / list (1fr) / CTA */
 .card{
+  --img-h: 84px; /* mai mic (≈ 3x vs PNG mare) */
   display:grid;
-  grid-auto-rows: max-content;
-  gap:12px;
+  grid-template-rows: auto var(--img-h) 1fr minmax(48px,auto);
+  height:100%;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.15);
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-}
-.card:hover{
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
-  box-shadow: 0 16px 36px rgba(0,0,0,.22);
-}
-.card[aria-current="true"]{
-  outline: none;
-  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
-  box-shadow: 0 12px 34px rgba(0,0,0,.26), inset 0 0 0 1px color-mix(in srgb, var(--primary) 25%, transparent);
+  padding: 14px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.08);
 }
 
-.tier{
-  font-weight:900;
-  letter-spacing:.12em;
-  font-size:12px;
-  color: var(--text);
-  opacity:.9;
+.tierRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height: 28px;           /* header stabil */
+  margin-bottom: 8px;
 }
 
-.list{
-  margin:0;
-  padding-left:18px;
-  display:grid;
-  gap:6px;
-  color:var(--text);
-  font-weight:600;
-  line-height:1.5;
-}
-
+/* imaginea: container cu border, padding, înălțime fixă => aliniere perfectă */
 .imgWrap{
-  display:grid;
-  place-items:center;
+  height: var(--img-h);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: transparent;
 }
 .priceImg{
-  width:100%;
-  height:auto;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background: var(--card);
+  max-height: calc(var(--img-h) - 16px);
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display:block;
 }
 
+/* lista „elastică” — nu mai împinge CTA-ul */
+.list{
+  list-style: disc;
+  padding-left: 18px;
+  margin: 0;
+  line-height: 1.45;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--text) 92%, transparent);
+}
+.list li{ margin: 6px 0; }
+
+/* CTA jos, cu înălțime uniformă (buton vs “Current”) */
 .cardActions{
   display:flex;
-  justify-content:flex-end;
-  align-items:center;
+  align-items:flex-end;
+  justify-content:flex-start;
+  margin-top: 10px;
+  min-height: 48px;           /* același “slot” pe toate cardurile */
 }
-
-.currentBadge{
+.btn,
+.currentPill{
+  min-height: 40px;           /* înălțime identică vizual */
   display:inline-flex;
   align-items:center;
-  padding:6px 10px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:var(--card);
-  color:var(--text);
-  font-weight:800;
+  justify-content:center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 900;
+  border: 1px solid var(--border);
 }
-
-.btn{
-  appearance:none;
-  border:none;
-  cursor:pointer;
-  padding:10px 14px;
-  border-radius:10px;
-  font-weight:900;
-  transition: transform .12s ease, box-shadow .12s ease, opacity .12s;
-}
-.btn:disabled{ opacity:.65; cursor:not-allowed; }
 .btnPrimary{
-  color:#0c111b;
-  background:var(--primary);
-  border:1px solid var(--primary);
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #0c111b;
 }
-.btnPrimary:active{ transform: translateY(1px); }
+.btnDisabled{
+  background: var(--card);
+  color: var(--text);
+  opacity: .9;
+}
