@@ -17,11 +17,9 @@ type PlanRow = {
 export default function SubscriptionClient({
   initialAccount,
   initialPlans,
-  variant = "gradient", // "glass" | "gradient"
 }: {
   initialAccount: any;
   initialPlans: PlanRow[];
-  variant?: "glass" | "gradient";
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [plans] = useState<PlanRow[]>(initialPlans);
@@ -91,29 +89,51 @@ export default function SubscriptionClient({
     setSaving(null);
   }
 
-  const validUntil = account?.valid_until ? new Date(account.valid_until).toLocaleString() : null;
+  const validUntil = account?.valid_until
+    ? new Date(account.valid_until).toLocaleString()
+    : null;
 
+  // BASIC → STANDARD → PREMIUM
   const ORDER = new Map([
     ["basic", 0],
     ["standard", 1],
     ["premium", 2],
   ]);
-  const sorted = [...plans].sort((a, b) => (ORDER.get(a.slug) ?? 99) - (ORDER.get(b.slug) ?? 99));
+  const sorted = [...plans].sort(
+    (a, b) => (ORDER.get(a.slug) ?? 99) - (ORDER.get(b.slug) ?? 99)
+  );
 
   return (
-    <section className="subscr" data-variant={variant}>
-      {/* fundalul – dacă nu vrei poza, scoate background-image din CSS */}
-      <header className="topbar">
-        <span className="sb-badge">Current: {planLabel(currentPlanSlug)}</span>
-        <small className="until">until {validUntil || "—"}</small>
-        {role !== "admin" && <small className="readonly">(read-only)</small>}
+    <section className="subs">
+      <header className="subs__head">
+        <div className="subs__title">
+          <h2>Subscription</h2>
+          <p className="subs__hint">
+            Pick the plan that fits your workflow. You can switch anytime.
+          </p>
+        </div>
+
+        <div className="subs__meta">
+          <span className="badge">
+            Current: {planLabel(currentPlanSlug)}
+          </span>
+          <small className="muted">
+            until {validUntil || "—"}
+          </small>
+          {role !== "admin" && (
+            <small className="muted">· read-only</small>
+          )}
+        </div>
       </header>
 
-      <div className="grid">
+      <div className="subs__grid">
         {sorted.map((p) => {
           const isCurrent = currentPlanSlug === p.slug;
+
           const propsStr =
-            p.max_properties == null ? "Unlimited properties" : `Up to ${p.max_properties} properties`;
+            p.max_properties == null
+              ? "Unlimited properties"
+              : `Up to ${p.max_properties} properties`;
           const roomsStr =
             p.max_rooms_per_property == null
               ? "Unlimited rooms per property"
@@ -124,37 +144,45 @@ export default function SubscriptionClient({
             : "Instant Sync (Sync now) not included";
 
           const featureLines: string[] = [];
-          try {
-            if (Array.isArray(p.features)) {
-              for (const f of p.features as any[]) {
-                if (typeof f === "string" && f.trim()) featureLines.push(f.trim());
-              }
+          if (Array.isArray(p.features)) {
+            for (const f of p.features as any[]) {
+              if (typeof f === "string" && f.trim()) featureLines.push(f.trim());
             }
-          } catch {}
+          }
 
           return (
             <article
               key={p.slug}
-              className="plan-card"
+              className="plan"
               data-current={isCurrent ? "true" : "false"}
-              data-variant={variant}
+              data-accent={p.slug}
             >
-              <div className="plan-head">
-                <h3 className="plan-title">{p.name}</h3>
+              <header className="plan__head">
+                <div>
+                  <h3 className="plan__title">{p.name}</h3>
+                  {p.description ? (
+                    <p className="plan__desc">{p.description}</p>
+                  ) : null}
+                </div>
+
                 {isCurrent ? (
-                  <span className="sb-badge badge-current">Current</span>
+                  <span className="badge badge--current">Current</span>
                 ) : (
                   <button
-                    className="sb-btn sb-btn--primary choose-btn"
-                    disabled={saving !== null || role !== "admin"}
+                    className="btn btn--primary"
                     onClick={() => setPlan(p.slug)}
+                    disabled={saving !== null || role !== "admin"}
+                    aria-disabled={saving !== null || role !== "admin"}
                   >
+                    {saving === p.slug ? (
+                      <span className="btn__spinner" aria-hidden />
+                    ) : null}
                     {saving === p.slug ? "Applying…" : "Choose plan"}
                   </button>
                 )}
-              </div>
+              </header>
 
-              <ul className="features">
+              <ul className="plan__list">
                 <li>{propsStr}</li>
                 <li>{roomsStr}</li>
                 <li>{autoStr}</li>
@@ -169,136 +197,128 @@ export default function SubscriptionClient({
       </div>
 
       <style jsx>{`
-        .subscr {
-          position: relative;
-          overflow: hidden;
-          border-radius: 16px;
-          padding: clamp(10px, 2vw, 16px);
-          font-family: Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-
-          /* fundal – poți elimina dacă vrei flat */
-          background-image: url("/hotel_room_1456x816");
-          background-size: cover;
-          background-position: center;
-          background-attachment: fixed;
-          min-height: 60vh;
+        /* Layout */
+        .subs {
+          display: grid;
+          gap: 16px;
+          padding: clamp(8px, 1.6vw, 16px);
+          font-family: Switzer, system-ui, -apple-system, Segoe UI, Roboto,
+            Helvetica, Arial, sans-serif;
+          color: var(--text);
         }
 
-        .topbar {
-          position: relative;
-          z-index: 1;
+        .subs__head {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+          padding-bottom: 8px;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .subs__title h2 {
+          margin: 0 0 4px 0;
+          font-size: clamp(18px, 2.2vw, 22px);
+          line-height: 1.2;
+          letter-spacing: -0.01em;
+        }
+        .subs__hint {
+          margin: 0;
+          color: var(--muted);
+          font-size: 13px;
+        }
+
+        .subs__meta {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           flex-wrap: wrap;
-          margin-bottom: 12px;
         }
-        .topbar .until,
-        .topbar .readonly {
+        .muted {
           color: var(--muted);
           font-weight: 600;
         }
 
-        .grid {
-          position: relative;
-          z-index: 1;
+        /* Grid */
+        .subs__grid {
           display: grid;
           gap: 12px;
-          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+          align-items: stretch;
         }
 
-        /* ===== CARD – 2 VARIANTE ===== */
-
-        .plan-card {
+        /* Card */
+        .plan {
+          --accent: var(--primary);
           position: relative;
-          padding: 16px;
+          display: grid;
+          gap: 12px;
+          padding: clamp(14px, 2vw, 18px);
+          background: var(--card);
+          border: 1px solid var(--border);
           border-radius: 14px;
-          color: var(--text);
-          transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease,
-            background 0.2s ease, opacity 0.2s ease;
-          will-change: transform;
-          isolation: isolate; /* highlight layer stays inside */
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+          transition: transform 0.18s ease, box-shadow 0.18s ease,
+            border-color 0.18s ease;
+        }
+        .plan[data-accent="basic"] {
+          --accent: color-mix(in srgb, var(--primary) 60%, #8abf7f);
+        }
+        .plan[data-accent="standard"] {
+          --accent: color-mix(in srgb, var(--primary) 80%, #5aa8ff);
+        }
+        .plan[data-accent="premium"] {
+          --accent: color-mix(in srgb, var(--primary) 80%, #f1c759);
         }
 
-        /* VARIANTA: GLASS TRANSPARENT */
-        .plan-card[data-variant="glass"] {
-          /* un “sticlos” real: transparent + blur, se vede fundalul */
-          background: color-mix(in srgb, var(--panel) 52%, transparent);
-          border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
-          backdrop-filter: saturate(120%) blur(10px);
-          -webkit-backdrop-filter: saturate(120%) blur(10px);
-        }
-        .plan-card[data-variant="glass"]::before {
+        .plan::after {
           content: "";
           position: absolute;
           inset: 0;
-          border-radius: inherit;
-          background: linear-gradient(
-            to bottom right,
-            color-mix(in srgb, #fff 10%, transparent),
-            transparent 45%
-          );
+          border-radius: 14px;
           pointer-events: none;
-          z-index: -1;
+          box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent) inset;
+          opacity: 0.9;
         }
 
-        /* VARIANTA: GRADIENT PE CARD */
-        .plan-card[data-variant="gradient"] {
-          background: linear-gradient(
-              180deg,
-              color-mix(in srgb, var(--primary) 14%, var(--panel)) 0%,
-              color-mix(in srgb, var(--primary) 6%, var(--panel)) 100%
-            ),
-            color-mix(in srgb, var(--panel) 92%, transparent);
-          border: 1px solid color-mix(in srgb, var(--primary) 40%, var(--border));
-          box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22),
-            0 0 0 1px color-mix(in srgb, var(--primary) 18%, transparent) inset;
-        }
-
-        .plan-card:hover {
+        .plan:hover {
           transform: translateY(-2px);
-          box-shadow: 0 14px 36px rgba(0, 0, 0, 0.34);
+          box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+          border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+        }
+        .plan:focus-within {
+          border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+          box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
         }
 
-        /* ring/halo pentru planul curent */
-        .plan-card[data-current="true"] {
-          box-shadow: 0 14px 36px rgba(0, 0, 0, 0.34),
-            0 0 0 1px color-mix(in srgb, var(--primary) 60%, transparent),
-            0 0 0 6px color-mix(in srgb, var(--primary) 16%, transparent);
+        .plan[data-current="true"] {
+          border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+          box-shadow:
+            0 10px 26px rgba(0,0,0,0.18),
+            0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
         }
 
-        .plan-head {
+        .plan__head {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: space-between;
-          gap: 8px;
-          margin-bottom: 10px;
+          gap: 10px;
         }
-        .plan-title {
+        .plan__title {
           margin: 0;
           font-size: 16px;
-          line-height: 1.25;
           font-weight: 800;
           letter-spacing: 0.1px;
         }
-        .badge-current {
-          background: var(--primary);
-          color: #0c111b;
-          border: 1px solid var(--primary);
-          font-weight: 900;
-        }
-        .choose-btn {
-          padding: 10px 14px;
-          border-radius: 10px;
-          font-weight: 900;
-        }
-        .choose-btn[disabled] {
-          opacity: 0.7;
-          cursor: not-allowed;
+        .plan__desc {
+          margin: 6px 0 0 0;
+          color: var(--muted);
+          font-size: 13px;
+          max-width: 42ch;
         }
 
-        .features {
+        .plan__list {
           list-style: none;
           margin: 0;
           padding: 0;
@@ -307,30 +327,93 @@ export default function SubscriptionClient({
           font-weight: 600;
           line-height: 1.5;
         }
-        .features li {
+        .plan__list li {
           display: grid;
           grid-template-columns: 18px 1fr;
-          align-items: start;
           gap: 8px;
+          align-items: start;
         }
-        .features li::before {
+        .plan__list li::before {
           content: "✓";
           font-weight: 900;
           line-height: 1;
           transform: translateY(1px);
-          color: color-mix(in srgb, var(--primary) 85%, #00d4ff);
+          color: color-mix(in srgb, var(--accent) 85%, #00d4ff);
         }
 
-        /* Small screens */
-        @media (max-width: 520px) {
-          .subscr {
-            border-radius: 12px;
+        /* Buttons & badges */
+        .btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 14px;
+          border-radius: 10px;
+          border: 1px solid var(--border);
+          background: var(--card);
+          color: var(--text);
+          font-weight: 900;
+          cursor: pointer;
+          transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease,
+            background 0.12s ease;
+        }
+        .btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+        }
+        .btn:active {
+          transform: translateY(0);
+          box-shadow: none;
+        }
+        .btn[disabled],
+        .btn[aria-disabled="true"] {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+
+        .btn--primary {
+          border-color: var(--primary);
+          background: var(--primary);
+          color: #0c111b;
+        }
+
+        .btn__spinner {
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          border: 2px solid #0c111b;
+          border-right-color: transparent;
+          display: inline-block;
+          animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
           }
-          .plan-card {
-            padding: 14px;
-          }
-          .plan-title {
-            font-size: 15px;
+        }
+
+        .badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 10px;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--card);
+          color: var(--text);
+          font-size: 12px;
+          font-weight: 800;
+        }
+        .badge--current {
+          background: var(--primary);
+          color: #0c111b;
+          border-color: var(--primary);
+        }
+
+        /* Motion safety */
+        @media (prefers-reduced-motion: reduce) {
+          .plan,
+          .btn {
+            transition: none;
           }
         }
       `}</style>
