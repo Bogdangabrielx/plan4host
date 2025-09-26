@@ -247,8 +247,13 @@ export default function SubscriptionClient({
         .plan-card[data-variant="gradient"] {
           background: linear-gradient(
               180deg,
-              color-mix(in srgb, var(--primary) 14%, var(--panel)) 0%,
-              color-mix(in srgb, var(--primary) 6%, var(--panel)) 100%
+              radial-gradient(60rem 60rem at 10% 0%,
+      color-mix(in oklab, var(--accent1) 22%, transparent), transparent 60%),
+    radial-gradient(50rem 50rem at 95% 10%,
+      color-mix(in oklab, var(--accent2) 22%, transparent), transparent 60%),
+    radial-gradient(70rem 60rem at 30% 100%,
+      color-mix(in oklab, var(--primary) 14%, transparent), transparent 60%),
+    var(--bg);
             ),
             color-mix(in srgb, var(--panel) 92%, transparent);
           border: 1px solid color-mix(in srgb, var(--primary) 40%, var(--border));
