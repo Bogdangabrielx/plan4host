@@ -348,6 +348,9 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
       <PlanHeaderBadge title="Cleaning Board" slot="header-right" />
       {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: 12 }}>
+        <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800,}}>
+              Property
+            </label>
         <select
           className="sb-select"
           value={propertyId}
