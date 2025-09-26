@@ -230,37 +230,24 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     );
   }
 
+  const basePad = isSmall ? 10 : 12; // padding „normal” al headerului
+
   return (
     <>
-      {/* Paint safe-area notch so it never looks transparent */}
-      <div
-        aria-hidden
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "var(--safe-top)",
-          background: "var(--panel)",
-          zIndex: 99,             // sub header, peste conținut
-          pointerEvents: "none",
-        }}
-      />
-
       {/* Top App Bar */}
       <header
         style={{
           position: "sticky",
-          top: 0,                  // lipit de viewport; safe-area e în paddingTop
-          zIndex: 100,             // peste conținut, sub drawer-uri/modale
+          top: 0,                             // lipit de viewport
+          zIndex: 100,                        // peste conținut, sub drawer/modale
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: isSmall ? 8 : 8,
-          // padding include safe-area top
-          paddingTop: `calc(${isSmall ? 8 : 12}px + var(--safe-top))`,
+          gap: isSmall ? 8 : 12,
+          // folosește DOAR max(safe-top, basePad) ca padding top — nu „dublăm”
+          paddingTop: `max(var(--safe-top), ${basePad}px)`,
           paddingRight: isSmall ? 10 : 16,
-          paddingBottom: isSmall ? 16 : 20,
+          paddingBottom: isSmall ? 14 : 18,   // puțin mai mic ca înainte
           paddingLeft: isSmall ? 10 : 16,
           flexWrap: "nowrap",
           background: "var(--panel)",
@@ -370,10 +357,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               color: "var(--text)",
               borderRight: "1px solid var(--border)",
               boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
-              zIndex: 121, // peste header
+              zIndex: 121,
               display: "grid",
               gridTemplateRows: "auto 1fr",
-              paddingTop: "var(--safe-top)",
+              paddingTop: "var(--safe-top)", // respectă notch în interiorul drawer-ului
             }}
           >
             <div
@@ -478,7 +465,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               color: "var(--text)",
               borderLeft: "1px solid var(--border)",
               boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
-              zIndex: 121, // peste header
+              zIndex: 121,
               display: "grid",
               gridTemplateRows: "auto 1fr",
               paddingTop: "var(--safe-top)",
