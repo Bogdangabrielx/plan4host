@@ -1,4 +1,3 @@
-// app/app/calendar/ui/RoomDetailModal.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -579,14 +578,19 @@ export default function RoomDetailModal({
         display: "grid",
         placeItems: "center",
         fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-        padding: "12px",
+        // ✅ Safe-area padding (nu mai urcă sub notch / home indicator în PWA)
+        paddingTop: "calc(var(--safe-top) + 12px)",
+        paddingBottom: "calc(var(--safe-bottom) + 12px)",
+        paddingLeft: "12px",
+        paddingRight: "12px",
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "min(1000px, 100%)",
-          maxHeight: "calc(100vh - 24px)",
+          // ✅ Înălțime limitată ținând cont de safe areas + margini
+          maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 24px + 24px))",
           overflow: "auto",
           background: "var(--panel)",
           color: "var(--text)",
@@ -596,7 +600,7 @@ export default function RoomDetailModal({
         }}
       >
         {/* Header + status */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8, flexWrap: "wrap", position: "sticky", top: 0, background: "var(--panel)", zIndex: 1, paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
           <strong>{room.name} — {dateStr} — Reservation</strong>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span
