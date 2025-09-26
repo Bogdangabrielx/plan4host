@@ -373,7 +373,7 @@
 @media (max-width: 560px) { .footerGrid { grid-template-columns: 1fr; } }
 
 /* ✅ Logo sizing (nav & footer) */
-.nav .brand img { height: 24px; width: auto; display: inline-block; }
+.nav .brand img { height: 36px; width: auto; display: inline-block; }
 .footer .footerBrand img { height: 22px; width: auto; display: inline-block; }
 
 /* 🔧 Mobile tweak: ascunde “Plan4host” + mărește puțin logo-ul */
