@@ -33,7 +33,7 @@ function titleStyle(isSmall: boolean): React.CSSProperties {
     fontFamily: TITLE_FAMILY,
     fontSize: isSmall ? 18 : 20,         // micșorat față de 22/26
     lineHeight: isSmall ? "26px" : "28px",
-    fontWeight: 300,                      // mai „subțire” (poți coborî la 500)
+    fontWeight: 600,                      // mai „subțire” (poți coborî la 500)
     letterSpacing: "-0.01em",
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -399,6 +399,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   const ICON_SIZE_PER_ROUTE: Record<string, number> = {
                     "/app/calendar": 32,
                     "/app/team": 32,
+                    "/app/reservationMessage":38,
                   };
                   const ICON_SIZE = ICON_SIZE_PER_ROUTE[it.href] ?? ICON_SIZE_DEFAULT;
 
@@ -507,6 +508,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   const ICON_SIZE_PER_ROUTE: Record<string, number> = {
                     "/app/calendar": 32,
                     "/app/team": 32,
+                    "/app/reservationMessage":38,
                   };
                   const ICON_SIZE = ICON_SIZE_PER_ROUTE[it.href] ?? ICON_SIZE_DEFAULT;
 
