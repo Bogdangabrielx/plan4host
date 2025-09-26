@@ -128,7 +128,7 @@ export default function SubscriptionClient({
 
       <div className="subs__grid">
         {sorted.map((p) => {
-          const isCurrent = currentPlanSlug === p.slug;
+          const isCurrent = currentPlanSlug;
 
           const propsStr =
             p.max_properties == null
