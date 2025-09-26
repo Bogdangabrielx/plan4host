@@ -320,7 +320,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     background: "var(--card)",
     color: "var(--text)",
     border: "1px solid var(--border)",
-    borderRadius: 10,
+    borderRadius: 29,
     fontWeight: 700,
     fontFamily: "inherit",
     outline: "none",
@@ -435,32 +435,32 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             </button>
           </div>
 
-          <div style={{ ...controlsRight, justifyContent: isMobile ? "stretch" : "flex-end" }}>
-            <div style={searchWrap}>
-              <svg viewBox="0 0 24 24" aria-hidden="true" style={searchIcon}>
-                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor" />
-              </svg>
-              <input
-                ref={searchRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.currentTarget.value)}
-                placeholder="Search guest name…"
-                aria-label="Search guest name"
-                style={searchInput}
-              />
-              {query && (
-                <button
-                  type="button"
-                  aria-label="Clear search"
-                  onClick={() => { setQuery(""); searchRef.current?.focus(); }}
-                  style={clearBtn}
-                >
-                  ×
-                </button>
-              )}
-            </div>
-          </div>
+          <div style={{ ...controlsRight, justifyContent: "stretch", gridColumn: "1 / -1" }}>
+  <div style={{ ...searchWrap, width: "100%" }}>
+    <svg viewBox="0 0 24 24" aria-hidden="true" style={searchIcon}>
+      <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor" />
+    </svg>
+    <input
+      ref={searchRef}
+      type="text"
+      value={query}
+      onChange={(e) => setQuery(e.currentTarget.value)}
+      placeholder="Search guest name…"
+      aria-label="Search guest name"
+      style={{ ...searchInput, width: "100%" }}
+    />
+    {query && (
+      <button
+        type="button"
+        aria-label="Clear search"
+        onClick={() => { setQuery(""); searchRef.current?.focus(); }}
+        style={clearBtn}
+      >
+        ×
+      </button>
+    )}
+  </div>
+</div>
         </div>
 
         {/* Legend */}
