@@ -5,6 +5,8 @@ import { cookies } from "next/headers";
 import Script from "next/script";
 import ConsentOverlayHost from "@/components/consent/ConsentOverlayHost";
 
+
+
 export const metadata: Metadata = {
   title: "plan4host",
   description: "Property ops",

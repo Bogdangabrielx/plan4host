@@ -448,36 +448,16 @@ html[data-standalone="true"] .skipLink { display: none !important; }
 
 
 
-  /* home.module.css */
-
-
-/* 2) painter pentru notch – pe body, ca să nu fie afectat de stacking/transform din .landing */
-:global(body)::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: var(--safe-top);
-  /* solid + mic gradient spre transparență ca să “sudeze” cu conținutul */
-  background:
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--landing-panel) 98%, transparent) 0%,
-      color-mix(in srgb, var(--landing-panel) 90%, transparent) 70%,
-      transparent 100%
-    );
-  pointer-events: none;
-  /* sub cookie modal (care are un z-index uriaș), peste restul */
-  z-index: 2147483000;
-}
-
-/* 3) asigură un fond solid sub tot (evită transparențe când nu e gradientul vizibil) */
-:global(html),
-:global(body) {
-  background: var(--landing-panel);
-}
-
-/* (opțional) dacă aveai vechiul painter, dezactivează-l ca să nu se bată cap în cap */
-.landing::before { content: none; }
+  /* Notch-top */
+  .landing::before{
+    content:"";
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 14px;
+    background: #0b1117;
+    z-index: 10900;               /* sub cookie modal (11000), peste conținut */
+    pointer-events: none;
+  }
 
 
 

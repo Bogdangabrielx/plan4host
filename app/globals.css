@@ -332,10 +332,4 @@ select:not(.sb-select){ /* opțional */
   --safe-right: env(safe-area-inset-right, 0px);
 }
 
-/* 1) expune variabilele safe-area global */
-:global(:root) {
-  --safe-top: env(safe-area-inset-top, 0px);
-  /* culoarea de fundal de sub notch (ajusteaz-o dacă e altă nuanță) */
-  --landing-panel: #0b1117;
-}
 
