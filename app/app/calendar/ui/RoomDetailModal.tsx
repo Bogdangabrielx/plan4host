@@ -547,6 +547,15 @@ export default function RoomDetailModal({
     fontWeight: 900,
     cursor: "pointer",
   };
+  const baseBtnGuest: React.CSSProperties = {
+    padding: "10px 14px",
+    borderRadius: 10,
+    border: "1px solid var(--border)",
+    background: "var(--primary)",
+    color: "#0c111b",
+    fontWeight: 900,
+    cursor: "pointer",
+  };
   const primaryBtn: React.CSSProperties = {
     padding: "10px 14px",
     borderRadius: 10,
@@ -679,7 +688,7 @@ export default function RoomDetailModal({
               {on ? "ON" : "OFF"}
             </button>
 
-            <button onClick={() => setShowGuest(v => !v)} style={primaryBtn}  title="Add guest details">
+            <button onClick={() => setShowGuest(v => !v)} style={baseBtnGuest}  title="Add guest details">
               {showGuest ? "Hide guest details" : "Guest details"}
             </button>
           </div>
