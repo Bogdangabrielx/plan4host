@@ -1,186 +1,199 @@
-// app/app/SubscriptionClient.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import styles from "./subscription.module.css";
 import { createClient } from "@/lib/supabase/client";
 
-type PlanSlug = "basic" | "standard" | "premium";
-type PlanUI = {
-  slug: PlanSlug;
+/** Plan definition sourced from landing (NOT from DB) */
+type Plan = {
+  slug: "basic" | "standard" | "premium";
   name: string;
+  image: string;           // png used on landing for price/visual
   bullets: string[];
   syncIntervalMinutes: number;
-  allowInstantSync: boolean;
-  imgSrc: string; // /public/*.png
-  ctaLabel: string;
+  allowSyncNow: boolean;
 };
 
-const PLANS: PlanUI[] = [
+const PLANS: Plan[] = [
   {
     slug: "basic",
     name: "BASIC",
+    image: "/basic.png",
+    syncIntervalMinutes: 60,
+    allowSyncNow: false,
     bullets: [
       "Adaptive calendar",
       "Online check-in form",
-      "Unlimited properties and rooms",
-      "Autosync every 60 minutes (iCal)",
+      "Unlimited properties and rooms listed",
+      "Autosync every 60 minutes with iCal",
     ],
-    syncIntervalMinutes: 60,
-    allowInstantSync: false,
-    imgSrc: "/basic.png",
-    ctaLabel: "Choose Basic",
   },
   {
     slug: "standard",
     name: "STANDARD",
+    image: "/standard.png",
+    syncIntervalMinutes: 30,
+    allowSyncNow: false,
     bullets: [
       "Adaptive calendar",
       "Online check-in form",
-      "Unlimited properties and rooms",
-      "Autosync every 30 minutes (iCal)",
-      "Smart cleaning board (Next-Check-In Priority)",
+      "Unlimited properties and rooms listed",
+      "Autosync every 30 minutes with iCal",
+      "Smart cleaning board (Advanced Next-Check-In Priority)",
     ],
-    syncIntervalMinutes: 30,
-    allowInstantSync: false,
-    imgSrc: "/standard.png",
-    ctaLabel: "Choose Standard",
   },
   {
     slug: "premium",
     name: "PREMIUM",
+    image: "/premium.png",
+    syncIntervalMinutes: 10,
+    allowSyncNow: true,
     bullets: [
       "Adaptive calendar",
       "Online check-in form",
-      "Unlimited properties and rooms",
-      "Autosync every 10 minutes (iCal) + Sync Now",
-      "Smart cleaning board (Advanced Priority)",
-      "Team members & task delegation",
+      "Unlimited properties and rooms listed",
+      "Autosync every 10 minutes with iCal + Sync Now Function",
+      "Smart cleaning board - Advanced Next-Check-In Priority",
+      "Delegate tasks with your team members",
     ],
-    syncIntervalMinutes: 10,
-    allowInstantSync: true,
-    imgSrc: "/premium.png",
-    ctaLabel: "Choose Premium",
   },
 ];
 
-export default function SubscriptionClient() {
-  const supabase = useMemo(() => createClient(), []);
-  const [currentPlan, setCurrentPlan] = useState<PlanSlug>("basic");
-  const [validUntil, setValidUntil] = useState<string | null>(null);
-  const [role, setRole] = useState<"admin" | "member" | "viewer">("admin");
-  const [saving, setSaving] = useState<PlanSlug | null>(null);
+function planLabel(slug: string) {
+  const s = slug.toLowerCase();
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
+export default function SubscriptionClient({
+  /** kept optional for backward-compat; ignored on purpose */
+  initialAccount: _a,
+  initialPlans: _p,
+}: {
+  initialAccount?: any;
+  initialPlans?: any[];
+}) {
+  const supabase = useMemo(() => createClient(), []);
+
+  const [currentPlan, setCurrentPlan] = useState<"basic"|"standard"|"premium">("basic");
+  const [validUntil, setValidUntil] = useState<string | null>(null);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [role, setRole] = useState<"admin"|"member">("admin");
+
+  // load current plan + validity from Supabase (doar pentru statusul userului curent)
   useEffect(() => {
     (async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      const uid = auth?.user?.id as string | undefined;
+      try {
+        // rol
+        const { data: auth } = await supabase.auth.getUser();
+        const uid = auth?.user?.id as string | undefined;
+        if (uid) {
+          const { data: au } = await supabase
+            .from("account_users")
+            .select("role,disabled")
+            .eq("account_id", uid)
+            .eq("user_id", uid)
+            .maybeSingle();
+          if (au?.role) setRole((au as any).role === "admin" ? "admin" : "member");
+        }
 
-      if (uid) {
-        const { data: au } = await supabase
-          .from("account_users")
-          .select("role")
-          .eq("user_id", uid)
-          .maybeSingle();
-        if (au?.role) setRole((au.role as any) || "admin");
+        // plan curent (RPC account_current_plan -> slug)
+        const r = await supabase.rpc("account_current_plan");
+        const pl = (r.data as string | null)?.toLowerCase?.() || "basic";
+        if (pl === "basic" || pl === "standard" || pl === "premium") {
+          setCurrentPlan(pl);
+        }
+
+        // valid_until (din accounts; ia primul rând al contului curent)
+        const { data: acc } = await supabase
+          .from("accounts")
+          .select("valid_until")
+          .order("created_at", { ascending: true })
+          .limit(1);
+
+        const vu = acc && acc.length ? acc[0].valid_until : null;
+        setValidUntil(vu ? new Date(vu).toLocaleString() : null);
+      } catch {
+        /* noop */
       }
-
-      const r = await supabase.rpc("account_current_plan");
-      const pl = (r.data as string | null)?.toLowerCase?.() || "basic";
-      if (pl === "basic" || pl === "standard" || pl === "premium") setCurrentPlan(pl);
-
-      const { data: acc } = await supabase.from("accounts").select("valid_until").limit(1);
-      const vu = acc?.[0]?.valid_until ? new Date(acc[0].valid_until).toLocaleString() : null;
-      setValidUntil(vu);
     })();
   }, [supabase]);
 
-  async function choosePlan(slug: PlanSlug) {
+  async function choosePlan(slug: Plan["slug"]) {
     if (role !== "admin") return;
     setSaving(slug);
-    const validDays = slug === "basic" ? null : 30;
-
-    const { error } = await supabase.rpc("account_set_plan_self", {
-      p_plan_slug: slug,
-      p_valid_days: validDays,
-      p_trial_days: null,
-    });
-
-    if (!error) {
-      const r = await supabase.rpc("account_current_plan");
-      const pl = (r.data as string | null)?.toLowerCase?.() || "basic";
-      if (pl === "basic" || pl === "standard" || pl === "premium") setCurrentPlan(pl);
-
-      const { data: acc } = await supabase.from("accounts").select("valid_until").limit(1);
-      const vu = acc?.[0]?.valid_until ? new Date(acc[0].valid_until).toLocaleString() : null;
-      setValidUntil(vu);
+    try {
+      // BASIC = nelimitat (null); altfel 30 zile
+      const validDays = slug === "basic" ? null : 30;
+      const { error } = await supabase.rpc("account_set_plan_self", {
+        p_plan_slug: slug,
+        p_valid_days: validDays,
+        p_trial_days: null,
+      });
+      if (!error) {
+        setCurrentPlan(slug);
+        // refresh valid_until
+        const { data: acc } = await supabase
+          .from("accounts")
+          .select("valid_until")
+          .order("created_at", { ascending: true })
+          .limit(1);
+        const vu = acc && acc.length ? acc[0].valid_until : null;
+        setValidUntil(vu ? new Date(vu).toLocaleString() : null);
+      }
+    } finally {
+      setSaving(null);
     }
-    setSaving(null);
   }
 
-  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
   return (
-    <section className="subWrap" aria-labelledby="sub-title">
-      <header className="head">
-        <div className="titleCol">
-          <h2 id="sub-title">Subscription</h2>
-          <p className="meta">
-            Current: <strong>{cap(currentPlan)}</strong>
-            {validUntil && <span className="muted"> • valid until {validUntil}</span>}
-            {role !== "admin" && <span className="muted"> • read-only</span>}
-          </p>
-        </div>
-      </header>
+    <div className={styles.container}>
+      {/* Header bar: current plan */}
+      <div className={styles.headerRow}>
+        <span className={styles.badge}>
+          Current: {planLabel(currentPlan)}
+        </span>
+        <span className={styles.muted}>
+          {validUntil ? `until ${validUntil}` : "—"}
+        </span>
+        {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
+      </div>
 
-      <div className="grid">
+      {/* Plan cards grid */}
+      <div className={styles.grid}>
         {PLANS.map((p) => {
           const isCurrent = currentPlan === p.slug;
           return (
-            <article key={p.slug} className="card" data-current={isCurrent ? "true" : "false"}>
-              {/* Accent header bar */}
-              <div className="accent">
-                <span className="tier">{p.name}</span>
-                {isCurrent && <span className="badge">Current</span>}
+            <article key={p.slug} className={styles.card} aria-current={isCurrent ? "true" : undefined}>
+              <div className={styles.tier}>{p.name}</div>
+
+              <ul className={styles.list}>
+                {p.bullets.map((b, i) => (
+                  <li key={i}>{b}</li>
+                ))}
+              </ul>
+
+              {/* price image from landing */}
+              <div className={styles.imgWrap}>
+                <Image
+                  src={p.image}
+                  alt={`${p.name} price`}
+                  width={380}
+                  height={220}
+                  className={styles.priceImg}
+                />
               </div>
 
-              {/* Body */}
-              <div className="body">
-                <ul className="list">
-                  {p.bullets.map((b, i) => (
-                    <li key={i}>{b}</li>
-                  ))}
-                  <li>Auto-sync every {p.syncIntervalMinutes} minutes</li>
-                  <li>{p.allowInstantSync ? "Instant Sync (Sync now) included" : "Instant Sync (Sync now) not included"}</li>
-                </ul>
-
-                <div className="imgWrap" aria-hidden="true">
-                  <Image
-                    src={p.imgSrc}
-                    alt=""
-                    width={640}
-                    height={380}
-                    sizes="(max-width: 960px) 100vw, 33vw"
-                    className="img"
-                    priority={p.slug === "premium"}
-                  />
-                </div>
-              </div>
-
-              {/* Footer / CTA */}
-              <div className="cta">
+              <div className={styles.cardActions}>
                 {isCurrent ? (
-                  <button className="btn ghost" disabled aria-pressed="true">
-                    Current plan
-                  </button>
+                  <span className={styles.currentBadge}>Current</span>
                 ) : (
                   <button
-                    className="btn primary"
-                    onClick={() => choosePlan(p.slug)}
+                    className={`${styles.btn} ${styles.btnPrimary}`}
                     disabled={!!saving || role !== "admin"}
-                    aria-label={`Choose ${p.name}`}
+                    onClick={() => choosePlan(p.slug)}
                   >
-                    {saving === p.slug ? "Applying…" : p.ctaLabel}
+                    {saving === p.slug ? "Applying…" : `Choose ${planLabel(p.slug)}`}
                   </button>
                 )}
               </div>
@@ -188,166 +201,6 @@ export default function SubscriptionClient() {
           );
         })}
       </div>
-
-      <style jsx>{`
-        .subWrap {
-          display: grid;
-          gap: 18px;
-          max-width: 1100px;
-          margin: 0 auto;
-          padding-bottom: 8px;
-          font-family: Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        .head {
-          display: flex;
-          align-items: end;
-          justify-content: space-between;
-        }
-        .titleCol h2 {
-          margin: 0;
-          letter-spacing: 0.2px;
-        }
-        .meta {
-          margin: 6px 0 0;
-          color: var(--muted);
-        }
-        .muted {
-          color: var(--muted);
-        }
-
-        .grid {
-          display: grid;
-          gap: 14px;
-          grid-template-columns: repeat(12, 1fr);
-        }
-        @media (max-width: 960px) {
-          .grid {
-            grid-template-columns: repeat(6, 1fr);
-          }
-        }
-        @media (max-width: 720px) {
-          .grid {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        .card {
-          grid-column: span 4;
-          display: grid;
-          background: var(--panel);
-          border: 1px solid var(--border);
-          border-radius: 14px;
-          overflow: clip;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-          transition: box-shadow 0.2s ease, transform 0.12s ease, border-color 0.2s ease;
-        }
-        .card:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
-        }
-        .card[data-current="true"] {
-          border-color: color-mix(in srgb, var(--primary) 70%, transparent);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.24), 0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent) inset;
-        }
-
-        /* Accent bar sus — altă formă, clar boxed */
-        .accent {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 10px 12px;
-          background:
-            linear-gradient(90deg,
-              color-mix(in srgb, var(--primary) 22%, transparent),
-              transparent 60%);
-          border-bottom: 1px solid var(--border);
-        }
-        .tier {
-          font-weight: 900;
-          letter-spacing: 1px;
-          font-size: 12.5px;
-          padding: 6px 10px;
-          border-radius: 999px;
-          color: #0c111b;
-          background: var(--primary);
-          border: 1px solid var(--primary);
-        }
-        .badge {
-          font-size: 12px;
-          font-weight: 800;
-          color: var(--text);
-          padding: 4px 8px;
-          border-radius: 999px;
-          border: 1px solid color-mix(in srgb, var(--primary) 60%, var(--border));
-          background: color-mix(in srgb, var(--primary) 18%, var(--panel));
-        }
-
-        .body {
-          display: grid;
-          gap: 12px;
-          padding: 14px;
-        }
-        .list {
-          margin: 0;
-          padding-left: 18px;
-          list-style: disc;
-          display: grid;
-          gap: 8px;
-          color: var(--text);
-        }
-
-        .imgWrap {
-          display: grid;
-          place-items: center;
-          padding: 4px 0 2px;
-        }
-        .img {
-          width: 100%;
-          height: auto;
-          border-radius: 10px;
-          border: 1px solid var(--border);
-          background: var(--card);
-        }
-
-        .cta {
-          display: flex;
-          justify-content: flex-end;
-          gap: 8px;
-          padding: 12px 14px;
-          border-top: 1px solid var(--border);
-          background: color-mix(in srgb, var(--panel) 90%, transparent);
-        }
-
-        .btn {
-          padding: 10px 14px;
-          border-radius: 10px;
-          font-weight: 900;
-          cursor: pointer;
-          border: 1px solid var(--border);
-          background: var(--card);
-          color: var(--text);
-          transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
-        }
-        .btn:hover {
-          transform: translateY(-0.5px);
-          box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
-        }
-        .btn:disabled {
-          opacity: 0.6;
-          cursor: default;
-          transform: none;
-        }
-        .btn.primary {
-          border-color: var(--primary);
-          background: var(--primary);
-          color: #0c111b;
-        }
-        .btn.ghost {
-          background: transparent;
-        }
-      `}</style>
-    </section>
+    </div>
   );
 }
