@@ -175,9 +175,6 @@ export default function DayModal({
     await refresh();
   }, [refresh]);
 
-  const PANEL_PAD = 16;
-  const RADIUS = 12;
-
   return (
     <div
       role="dialog"
@@ -190,11 +187,12 @@ export default function DayModal({
         background: "rgba(0,0,0,0.5)",
         display: "grid",
         placeItems: "center",
-        // Safe-areas pentru iOS
-        paddingTop: "calc(var(--safe-top))",
+        // ↓↓↓ SAFE-AREA padding pentru PWA pe iPhone (notch + home indicator)
+        paddingTop: "calc(var(--safe-top) + 12px)",
         paddingBottom: "calc(var(--safe-bottom) + 12px)",
         paddingLeft: "12px",
         paddingRight: "12px",
+        // UI fonts / colors
         fontFamily:
           "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
       }}
@@ -203,35 +201,18 @@ export default function DayModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "min(1100px, 100%)",
-          maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 48px))",
+          // ↓↓↓ limitează înălțimea în funcție de safe areas + margini
+          maxHeight:
+            "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 24px + 24px))",
           overflow: "auto",
-          WebkitOverflowScrolling: "touch" as any,
-          overscrollBehavior: "contain",
           background: "var(--panel)",
           color: "var(--text)",
           border: "1px solid var(--border)",
-          borderRadius: RADIUS,
-          padding: PANEL_PAD,
-          position: "relative",
+          borderRadius: 12,
+          padding: 16,
         }}
       >
-        {/* 🔹 STICKY PAINTER: acoperă mereu marginea de sus a containerului scrollabil */}
-        <div
-          aria-hidden
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 0,                      // sub header, peste conținut
-            margin: `-${PANEL_PAD}px -${PANEL_PAD}px 0`,
-            height: PANEL_PAD,              // exact cât padding-ul de sus
-            background: "var(--panel)",
-            borderTopLeftRadius: RADIUS,
-            borderTopRightRadius: RADIUS,
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* Header (sticky) */}
+        {/* Header */}
         <div
           style={{
             display: "flex",
@@ -239,9 +220,9 @@ export default function DayModal({
             justifyContent: "space-between",
             marginBottom: 12,
             position: "sticky",
-            top: 0,
+            top: 0, // rămâne lipit de top-ul containerului scrollabil (care e deja sub notch)
             background: "var(--panel)",
-            zIndex: 3,                      // peste painter
+            zIndex: 1,
             paddingBottom: 8,
             borderBottom: "1px solid var(--border)",
           }}

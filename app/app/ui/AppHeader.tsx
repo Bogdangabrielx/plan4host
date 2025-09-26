@@ -256,7 +256,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: isSmall ? 12 : 12,
+          gap: isSmall ? 6 : 6,
           // padding include safe-area top
           paddingRight: isSmall ? 10 : 16,
           paddingBottom: isSmall ? 16 : 20,
