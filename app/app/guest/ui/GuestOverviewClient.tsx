@@ -320,7 +320,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     background: "var(--card)",
     color: "var(--text)",
     border: "1px solid var(--border)",
-    borderRadius: 29,
+    borderRadius: 10,
     fontWeight: 700,
     fontFamily: "inherit",
     outline: "none",
@@ -442,7 +442,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               </svg>
               <input
                 ref={searchRef}
-                type="search"
+                type="text"
                 value={query}
                 onChange={(e) => setQuery(e.currentTarget.value)}
                 placeholder="Search guest name…"
@@ -454,7 +454,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   type="button"
                   aria-label="Clear search"
                   onClick={() => { setQuery(""); searchRef.current?.focus(); }}
+                  style={clearBtn}
                 >
+                  ×
                 </button>
               )}
             </div>
