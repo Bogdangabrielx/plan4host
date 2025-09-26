@@ -302,7 +302,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const selectStyle: React.CSSProperties = {
     minWidth: isMobile ? "100%" : 220,
     width: isMobile ? "100%" : undefined,
-    padding: "8px 8px",
+    padding: "8px 6px",
     background: "var(--card)",
     color: "var(--text)",
     border: "1px solid var(--border)",
