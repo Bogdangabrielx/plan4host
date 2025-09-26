@@ -1,124 +1,120 @@
-.wrapper{
-  display: grid;
-  gap: 16px;
-  font-family: Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+.container{
+  display:grid;
+  gap:16px;
+  font-family:Switzer,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
 }
 
-.topbar{
+.headerRow{
   display:flex;
   align-items:center;
-  justify-content:flex-start;
+  gap:10px;
+  flex-wrap:wrap;
 }
 
-.status{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .badge{
-  background: color-mix(in srgb, var(--primary) 18%, var(--card));
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-weight: 800;
-  padding: 4px 10px;
-  font-size: 12px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+  color:#0c111b;
+  background:var(--primary);
+  border:1px solid var(--primary);
 }
-.valid{ color: var(--muted); font-size: 12px; }
-.readonly{ color: var(--muted); font-size: 12px; }
+
+.muted{ color:var(--muted); font-size:12px; }
 
 .grid{
-  --plan-min: 260px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--plan-min), 1fr));
-  gap: 14px;
-  align-items: stretch; /* cardurile se întind pe rândul grilei = aceeași înălțime pe rând */
+  display:grid;
+  gap:12px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
 
-/* Card layout cu rânduri fixe: header / img (fix) / features (1fr) / CTA (auto) */
-.planCard{
-  --img-h: 96px;          /* ~ de 3x mai mic decât varianta anterioară */
-  display: grid;
-  grid-template-rows: auto var(--img-h) 1fr auto;
-  height: 100%;
+/* card look similar to landing pricing cards */
+.card{
+  display:grid;
+  grid-auto-rows: max-content;
+  gap:12px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 14px;
-  box-shadow: 0 10px 24px rgba(0,0,0,.08);
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.15);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.card:hover{
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  box-shadow: 0 16px 36px rgba(0,0,0,.22);
+}
+.card[aria-current="true"]{
+  outline: none;
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+  box-shadow: 0 12px 34px rgba(0,0,0,.26), inset 0 0 0 1px color-mix(in srgb, var(--primary) 25%, transparent);
 }
 
-.planCard[data-current="true"]{
-  outline: 1.5px solid color-mix(in srgb, var(--primary) 40%, transparent);
-  box-shadow: 0 12px 28px rgba(0,0,0,.14);
-}
-
-.cardHead{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom: 8px;
-}
 .tier{
-  font-weight: 900;
-  letter-spacing: .06em;
-}
-.pill{
-  font-size: 12px;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 999px;
-  color: #0c111b;
-  background: var(--primary);
-  border: 1px solid var(--primary);
+  font-weight:900;
+  letter-spacing:.12em;
+  font-size:12px;
+  color: var(--text);
+  opacity:.9;
 }
 
-.planImage{
-  height: var(--img-h);
+.list{
+  margin:0;
+  padding-left:18px;
+  display:grid;
+  gap:6px;
+  color:var(--text);
+  font-weight:600;
+  line-height:1.5;
+}
+
+.imgWrap{
   display:grid;
   place-items:center;
-  margin-bottom: 8px;
 }
-.planImage img{
-  max-height: calc(var(--img-h) - 8px);
-  width: auto;
-  display:block;
-  image-rendering: -webkit-optimize-contrast;
-}
-
-.features{
-  list-style: disc;
-  padding-left: 18px;
-  margin: 0;
-  color: var(--text);
-  line-height: 1.45;
-  font-weight: 600;
-  /* Înălțime flexibilă: ocupă 1fr, împinge CTA la bază, menține alinierea între carduri */
+.priceImg{
+  width:100%;
+  height:auto;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background: var(--card);
 }
 
-.features li{
-  margin: 6px 0;
-  color: color-mix(in srgb, var(--text) 90%, transparent);
-}
-
-.ctaRow{
+.cardActions{
   display:flex;
-  justify-content:flex-start;
+  justify-content:flex-end;
   align-items:center;
-  margin-top: 10px;
+}
+
+.currentBadge{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+  font-weight:800;
 }
 
 .btn{
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-weight: 900;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
+  appearance:none;
+  border:none;
+  cursor:pointer;
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:900;
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s;
 }
+.btn:disabled{ opacity:.65; cursor:not-allowed; }
 .btnPrimary{
-  border-color: var(--primary);
-  background: var(--primary);
-  color: #0c111b;
+  color:#0c111b;
+  background:var(--primary);
+  border:1px solid var(--primary);
 }
-.btnDisabled{
-  opacity: .7;
-  cursor: default;
-}
+.btnPrimary:active{ transform: translateY(1px); }
