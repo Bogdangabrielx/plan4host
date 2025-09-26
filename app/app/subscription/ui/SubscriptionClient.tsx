@@ -17,7 +17,7 @@ type PlanRow = {
 export default function SubscriptionClient({
   initialAccount,
   initialPlans,
-  variant = "glass", // "glass" | "gradient"
+  variant = "gradient", // "glass" | "gradient"
 }: {
   initialAccount: any;
   initialPlans: PlanRow[];
