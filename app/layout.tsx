@@ -89,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 :root[data-theme="light"]{
   --bg:#f7faf9; --text:#0f172a; --muted:#64748b;
   --panel:#ffffff; --card:#ffffff; --border:#e2e8f0;
-  --primary:#16b981; --danger:#dc2626; --success:#16a34a;
+  --primary:#3ECF8E; --danger:#dc2626; --success:#16a34a;
   --accent1:#22d3ee; --accent2:#0d1323;
 }
 html, body { background: var(--bg); color: var(--text); }
