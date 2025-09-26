@@ -25,18 +25,6 @@ export default function PropertySidebar({
     >
       {/* status pill */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <span
-          style={{
-            fontSize: 12,
-            padding: "4px 8px",
-            borderRadius: 999,
-            background:
-              status === "Error" ? "var(--danger)" : status === "Saving…" ? "var(--primary)" : "#2a2f3a",
-            color: status === "Saving…" ? "#0c111b" : "white"
-          }}
-        >
-          {status}
-        </span>
         <strong>Properties</strong>
       </div>
 
