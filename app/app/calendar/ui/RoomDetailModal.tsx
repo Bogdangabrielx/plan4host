@@ -313,7 +313,7 @@ export default function RoomDetailModal({
 
       // Toggle
       if (!userTouchedToggleRef.current) setOn(!!act);
-      setShowGuest(!act || !((act?.guest_first_name ?? "").trim() || (act?.guest_last_name ?? "").trim()));
+      setShowGuest(false);
       setDetailsDirty(false);
       setStatus("Idle"); setStatusHint("");
     })();
@@ -688,14 +688,14 @@ export default function RoomDetailModal({
               {on ? "ON" : "OFF"}
             </button>
 
-            <button
+             <button
   onClick={() => setShowGuest(v => !v)}
   style={showGuest ? baseBtn : baseBtnGuest}
   title={showGuest ? "Hide guest details" : "Add guest details"}
 >
   {showGuest ? "Hide guest details" : "Guest details"}
 </button>
-          </div>
+             </div>
 
           {/* Dates row */}
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
