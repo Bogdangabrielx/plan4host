@@ -175,6 +175,8 @@ export default function DayModal({
     await refresh();
   }, [refresh]);
 
+  const RADIUS = 12;
+
   return (
     <div
       role="dialog"
@@ -187,12 +189,10 @@ export default function DayModal({
         background: "rgba(0,0,0,0.5)",
         display: "grid",
         placeItems: "center",
-        // ↓↓↓ SAFE-AREA padding pentru PWA pe iPhone (notch + home indicator)
         paddingTop: "calc(var(--safe-top) + 12px)",
         paddingBottom: "calc(var(--safe-bottom) + 12px)",
         paddingLeft: "12px",
         paddingRight: "12px",
-        // UI fonts / colors
         fontFamily:
           "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
       }}
@@ -201,35 +201,44 @@ export default function DayModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "min(1100px, 100%)",
-          // ↓↓↓ limitează înălțimea în funcție de safe areas + margini
-          maxHeight:
-            "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 24px + 24px))",
+          maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 48px))",
           overflow: "auto",
+          WebkitOverflowScrolling: "touch" as any,
+          overscrollBehavior: "contain",
           background: "var(--panel)",
           color: "var(--text)",
           border: "1px solid var(--border)",
-          borderRadius: 12,
-          padding: 16,
+          borderRadius: RADIUS,
+          position: "relative",
         }}
       >
-        {/* Header */}
+        {/* HEADER — STICKY, FĂRĂ GAP SUS (pictăm chiar până în colțurile rotunjite) */}
         <div
           style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 3,
+            background: "var(--panel)",
+            // colțurile top, ca să nu se vadă „din spate” la scrol
+            borderTopLeftRadius: RADIUS,
+            borderTopRightRadius: RADIUS,
+            // „pictăm” și linia de jos
+            borderBottom: "1px solid var(--border)",
+            // spațiere internă
+            padding: 16,
+            paddingBottom: 8,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            marginBottom: 12,
-            position: "sticky",
-            top: 0, // rămâne lipit de top-ul containerului scrollabil (care e deja sub notch)
-            background: "var(--panel)",
-            zIndex: 1,
-            paddingBottom: 8,
-            borderBottom: "1px solid var(--border)",
+            // truc anti-hairline la Safari (evită o linie de 1px transparentă)
+            transform: "translateZ(0)",
+            willChange: "transform",
           }}
         >
           <strong style={{ letterSpacing: 0.2, fontSize: 16 }}>
             {dateStr} — Rooms
           </strong>
+
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {loading === "loading" && (
               <span
@@ -292,115 +301,117 @@ export default function DayModal({
           </div>
         </div>
 
-        {/* Grid rooms */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-            gap: 12,
-          }}
-        >
-          {roomsSorted.map((room) => {
-            const b = activeByRoom.get(room.id) || null;
-            const isReserved = !!b && b.status !== "cancelled";
-            const fullName = guestFullName(b);
-            const endsToday = isReserved && b!.end_date === dateStr;
+        {/* CONȚINUT — padding separat, ca să nu mai existe spațiu „deasupra” header-ului */}
+        <div style={{ padding: 16, paddingTop: 12 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+              gap: 12,
+            }}
+          >
+            {roomsSorted.map((room) => {
+              const b = activeByRoom.get(room.id) || null;
+              const isReserved = !!b && b.status !== "cancelled";
+              const fullName = guestFullName(b);
+              const endsToday = isReserved && b!.end_date === dateStr;
 
-            return (
-              <div
-                key={room.id}
-                onClick={() => setOpenRoom(room)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => (e.key === "Enter" ? setOpenRoom(room) : null)}
-                style={{
-                  position: "relative",
-                  padding: 14,
-                  border: "1px solid var(--border)",
-                  borderRadius: 12,
-                  background: "var(--card)",
-                  cursor: "pointer",
-                  minHeight: 140,
-                  display: "grid",
-                  gridTemplateRows: "auto 1fr auto",
-                  userSelect: "none",
-                }}
-                title="Open reservation"
-              >
-                {isReserved && (
-                  <div
-                    aria-hidden
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      borderRadius: 12,
-                      background: otaFill(b?.source),
-                      pointerEvents: "none",
-                    }}
-                  />
-                )}
-
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <strong style={{ fontSize: 15 }}>{room.name}</strong>
-                  <span
-                    style={{
-                      padding: "2px 10px",
-                      borderRadius: 999,
-                      fontSize: 12,
-                      fontWeight: 800,
-                      background: isReserved ? "var(--danger)" : "var(--success)",
-                      border: `1px solid ${isReserved ? "var(--danger)" : "var(--success)"}`,
-                      color: "#fff",
-                    }}
-                  >
-                    {isReserved ? "Reserved" : "Available"}
-                  </span>
-                </div>
-
-                <div style={{ display: "grid", placeItems: "center", textAlign: "center", padding: "6px 4px" }}>
-                  {isReserved && fullName && (
-                    <div style={{ fontWeight: 900, fontSize: 16, letterSpacing: 0.2 }}>
-                      {fullName}
-                    </div>
-                  )}
-                  {isReserved && !fullName && (
-                    <div style={{ fontWeight: 700, fontSize: 13, color: "var(--muted)" }}>
-                      (Guest name not set)
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                  <small style={{ color: "var(--muted)" }}>
-                    {isReserved ? formatReservedUntil(b!) : formatAvailableUntil(room.id)}
-                  </small>
-
-                  {endsToday && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCreateRoom(room);
-                      }}
+              return (
+                <div
+                  key={room.id}
+                  onClick={() => setOpenRoom(room)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === "Enter" ? setOpenRoom(room) : null)}
+                  style={{
+                    position: "relative",
+                    padding: 14,
+                    border: "1px solid var(--border)",
+                    borderRadius: 12,
+                    background: "var(--card)",
+                    cursor: "pointer",
+                    minHeight: 140,
+                    display: "grid",
+                    gridTemplateRows: "auto 1fr auto",
+                    userSelect: "none",
+                  }}
+                  title="Open reservation"
+                >
+                  {isReserved && (
+                    <div
+                      aria-hidden
                       style={{
-                        padding: "6px 10px",
-                        borderRadius: 10,
-                        border: "1px solid var(--primary)",
-                        background: "var(--primary)",
-                        color: "#0c111b",
-                        fontWeight: 900,
-                        cursor: "pointer",
+                        position: "absolute",
+                        inset: 0,
+                        borderRadius: 12,
+                        background: otaFill(b?.source),
+                        pointerEvents: "none",
                       }}
-                      title={`Add reservation starting today ${CI}`}
-                    >
-                      Add reservation
-                    </button>
+                    />
                   )}
 
-                  <small style={{ color: "var(--muted)" }}>Open ▸</small>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <strong style={{ fontSize: 15 }}>{room.name}</strong>
+                    <span
+                      style={{
+                        padding: "2px 10px",
+                        borderRadius: 999,
+                        fontSize: 12,
+                        fontWeight: 800,
+                        background: isReserved ? "var(--danger)" : "var(--success)",
+                        border: `1px solid ${isReserved ? "var(--danger)" : "var(--success)"}`,
+                        color: "#fff",
+                      }}
+                    >
+                      {isReserved ? "Reserved" : "Available"}
+                    </span>
+                  </div>
+
+                  <div style={{ display: "grid", placeItems: "center", textAlign: "center", padding: "6px 4px" }}>
+                    {isReserved && fullName && (
+                      <div style={{ fontWeight: 900, fontSize: 16, letterSpacing: 0.2 }}>
+                        {fullName}
+                      </div>
+                    )}
+                    {isReserved && !fullName && (
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--muted)" }}>
+                        (Guest name not set)
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                    <small style={{ color: "var(--muted)" }}>
+                      {isReserved ? formatReservedUntil(b!) : formatAvailableUntil(room.id)}
+                    </small>
+
+                    {endsToday && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCreateRoom(room);
+                        }}
+                        style={{
+                          padding: "6px 10px",
+                          borderRadius: 10,
+                          border: "1px solid var(--primary)",
+                          background: "var(--primary)",
+                          color: "#0c111b",
+                          fontWeight: 900,
+                          cursor: "pointer",
+                        }}
+                        title={`Add reservation starting today ${CI}`}
+                      >
+                        Add reservation
+                      </button>
+                    )}
+
+                    <small style={{ color: "var(--muted)" }}>Open ▸</small>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
