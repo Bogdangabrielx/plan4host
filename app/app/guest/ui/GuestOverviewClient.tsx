@@ -430,7 +430,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <button onClick={refresh} className="sb-btn" style={{ padding: "8px 8px", borderRadius: 10,background:"transparent", }} title="Refresh">
+            <button onClick={refresh} className="sb-btn" style={{ padding: "8px 8px", borderRadius: 10, }} title="Refresh">
               Refresh
             </button>
           </div>
@@ -550,7 +550,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 className="sb-card"
                 style={{
                   border: "1px solid var(--border)",
-                  borderRadius: 12,
+                  borderRadius: 29,
                   padding: 12,
                   background: "var(--panel)",
                   display: "grid",
