@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -315,7 +316,6 @@ export default function HomePage() {
 
   return (
     <main className={styles.landing}>
-      
       {/* Accessible skip link */}
       <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>
         Skip to content

@@ -94,7 +94,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
       <div
         key={p.slug}
         className="glass-card"
-        style={{ padding: 21, borderRadius: 12, display: 'grid', gap: 10, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}
+        style={{ padding: 16, borderRadius: 12, display: 'grid', gap: 10, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h3 style={{ margin: 0 }}>{p.name}</h3>
@@ -111,7 +111,7 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
           )}
         </div>
 
-        <div style={{ color: '#51a349ba', display: 'grid', gap: 8, fontWeight: 600, lineHeight: 1.5 }}>
+        <div style={{ color: '#16622fff', display: 'grid', gap: 8, fontWeight: 600, lineHeight: 1.5 }}>
           {/* Description intentionally hidden per request */}
           <ul style={{ margin: 0, paddingLeft: 18, listStyle: 'disc' }}>
             <li>{propsStr}</li>
@@ -143,7 +143,6 @@ export default function SubscriptionClient({ initialAccount, initialPlans }:{ in
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed',
       borderRadius: 12,
-      border:"var(--muted)",
       padding: 4,
     }}>
       {/* Minimal current plan header */}
