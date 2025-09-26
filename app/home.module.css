@@ -450,12 +450,6 @@ html[data-standalone="true"] .skipLink { display: none !important; }
 
   /* home.module.css */
 
-/* 1) expune variabilele safe-area global */
-:global(:root) {
-  --safe-top: env(safe-area-inset-top, 0px);
-  /* culoarea de fundal de sub notch (ajusteaz-o dacă e altă nuanță) */
-  --landing-panel: #0b1117;
-}
 
 /* 2) painter pentru notch – pe body, ca să nu fie afectat de stacking/transform din .landing */
 :global(body)::before {
