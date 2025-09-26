@@ -1,133 +1,145 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 import styles from "../subscription.module.css";
+import { createClient } from "@/lib/supabase/client";
 
-type PlanRow = {
+/** Plan definition sourced from landing (NOT from DB) */
+type Plan = {
   slug: "basic" | "standard" | "premium";
   name: string;
-  image: string;
-  features: string[];
-  sync_interval_minutes: number;
-  allow_sync_now: boolean;
-  max_properties: number | null;
-  max_rooms_per_property: number | null;
+  image: string;           // png used on landing for price/visual
+  bullets: string[];
+  syncIntervalMinutes: number;
+  allowSyncNow: boolean;
 };
 
-const PLANS: PlanRow[] = [
+const PLANS: Plan[] = [
   {
     slug: "basic",
     name: "BASIC",
     image: "/basic.png",
-    features: [
+    syncIntervalMinutes: 60,
+    allowSyncNow: false,
+    bullets: [
       "Adaptive calendar",
       "Online check-in form",
-      "Unlimited properties & rooms",
+      "Unlimited properties and rooms listed",
       "Autosync every 60 minutes with iCal",
     ],
-    sync_interval_minutes: 60,
-    allow_sync_now: false,
-    max_properties: null,
-    max_rooms_per_property: null,
   },
   {
     slug: "standard",
     name: "STANDARD",
     image: "/standard.png",
-    features: [
+    syncIntervalMinutes: 30,
+    allowSyncNow: false,
+    bullets: [
       "Adaptive calendar",
       "Online check-in form",
-      "Unlimited properties & rooms",
+      "Unlimited properties and rooms listed",
       "Autosync every 30 minutes with iCal",
       "Smart cleaning board (Advanced Next-Check-In Priority)",
     ],
-    sync_interval_minutes: 30,
-    allow_sync_now: false,
-    max_properties: null,
-    max_rooms_per_property: null,
   },
   {
     slug: "premium",
     name: "PREMIUM",
     image: "/premium.png",
-    features: [
+    syncIntervalMinutes: 10,
+    allowSyncNow: true,
+    bullets: [
       "Adaptive calendar",
       "Online check-in form",
-      "Unlimited properties & rooms",
+      "Unlimited properties and rooms listed",
       "Autosync every 10 minutes with iCal + Sync Now Function",
       "Smart cleaning board - Advanced Next-Check-In Priority",
       "Delegate tasks with your team members",
     ],
-    sync_interval_minutes: 10,
-    allow_sync_now: true,
-    max_properties: null,
-    max_rooms_per_property: null,
   },
 ];
 
-export default function SubscriptionClient() {
-  const supabase = useMemo(() => createClient(), []);
-  const [currentPlanSlug, setCurrentPlanSlug] = useState<PlanRow["slug"]>("basic");
-  const [validUntil, setValidUntil] = useState<string | null>(null);
-  const [role, setRole] = useState<"admin" | "member">("admin");
-  const [saving, setSaving] = useState<PlanRow["slug"] | null>(null);
+function planLabel(slug: string) {
+  const s = slug.toLowerCase();
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
+export default function SubscriptionClient({
+  /** kept optional for backward-compat; ignored on purpose */
+  initialAccount: _a,
+  initialPlans: _p,
+}: {
+  initialAccount?: any;
+  initialPlans?: any[];
+}) {
+  const supabase = useMemo(() => createClient(), []);
+
+  const [currentPlan, setCurrentPlan] = useState<"basic"|"standard"|"premium">("basic");
+  const [validUntil, setValidUntil] = useState<string | null>(null);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [role, setRole] = useState<"admin"|"member">("admin");
+
+  // load current plan + validity from Supabase (doar pentru statusul userului curent)
   useEffect(() => {
     (async () => {
       try {
-        // role (fallback admin)
+        // rol
         const { data: auth } = await supabase.auth.getUser();
-        const uid = auth?.user?.id;
+        const uid = auth?.user?.id as string | undefined;
         if (uid) {
-          // dacă ai tabelul account_users, poți rafina aici
-          setRole("admin");
+          const { data: au } = await supabase
+            .from("account_users")
+            .select("role,disabled")
+            .eq("account_id", uid)
+            .eq("user_id", uid)
+            .maybeSingle();
+          if (au?.role) setRole((au as any).role === "admin" ? "admin" : "member");
         }
 
-        // plan curent (din rpc simplă, dacă o ai; altfel poți păstra "basic")
+        // plan curent (RPC account_current_plan -> slug)
         const r = await supabase.rpc("account_current_plan");
-        const pl = (r?.data as string | null)?.toLowerCase() as PlanRow["slug"] | null;
-        if (pl) setCurrentPlanSlug(pl);
+        const pl = (r.data as string | null)?.toLowerCase?.() || "basic";
+        if (pl === "basic" || pl === "standard" || pl === "premium") {
+          setCurrentPlan(pl);
+        }
 
-        const acc = await supabase
+        // valid_until (din accounts; ia primul rând al contului curent)
+        const { data: acc } = await supabase
           .from("accounts")
           .select("valid_until")
           .order("created_at", { ascending: true })
-          .limit(1)
-          .maybeSingle();
-        if (acc?.data?.valid_until) {
-          setValidUntil(new Date(acc.data.valid_until as any).toLocaleString());
-        }
+          .limit(1);
+
+        const vu = acc && acc.length ? acc[0].valid_until : null;
+        setValidUntil(vu ? new Date(vu).toLocaleString() : null);
       } catch {
         /* noop */
       }
     })();
   }, [supabase]);
 
-  async function applyPlan(slug: PlanRow["slug"]) {
+  async function choosePlan(slug: Plan["slug"]) {
     if (role !== "admin") return;
     setSaving(slug);
     try {
-      // dacă nu ai RPC-ul, comentează apelul și doar setează local:
-      await supabase.rpc("account_set_plan_self", {
+      // BASIC = nelimitat (null); altfel 30 zile
+      const validDays = slug === "basic" ? null : 30;
+      const { error } = await supabase.rpc("account_set_plan_self", {
         p_plan_slug: slug,
-        p_valid_days: slug === "basic" ? null : 30,
+        p_valid_days: validDays,
         p_trial_days: null,
       });
-
-      // refresh
-      const r = await supabase.rpc("account_current_plan");
-      const pl = (r?.data as string | null)?.toLowerCase() as PlanRow["slug"] | null;
-      if (pl) setCurrentPlanSlug(pl);
-
-      const acc = await supabase
-        .from("accounts")
-        .select("valid_until")
-        .order("created_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      if (acc?.data?.valid_until) {
-        setValidUntil(new Date(acc.data.valid_until as any).toLocaleString());
+      if (!error) {
+        setCurrentPlan(slug);
+        // refresh valid_until
+        const { data: acc } = await supabase
+          .from("accounts")
+          .select("valid_until")
+          .order("created_at", { ascending: true })
+          .limit(1);
+        const vu = acc && acc.length ? acc[0].valid_until : null;
+        setValidUntil(vu ? new Date(vu).toLocaleString() : null);
       }
     } finally {
       setSaving(null);
@@ -135,63 +147,60 @@ export default function SubscriptionClient() {
   }
 
   return (
-    <div className={styles.wrapper}>
-      <header className={styles.topbar}>
-        <div className={styles.status}>
-          <span className={styles.badge}>
-            Current: {currentPlanSlug.toUpperCase()}
-          </span>
-          <small className={styles.valid}>
-            {validUntil ? `until ${validUntil}` : "—"}
-          </small>
-          {role !== "admin" && <small className={styles.readonly}>(read-only)</small>}
-        </div>
-      </header>
+    <div className={styles.container}>
+      {/* Header bar: current plan */}
+      <div className={styles.headerRow}>
+        <span className={styles.badge}>
+          Current: {planLabel(currentPlan)}
+        </span>
+        <span className={styles.muted}>
+          {validUntil ? `until ${validUntil}` : "—"}
+        </span>
+        {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
+      </div>
 
-      <section className={styles.grid}>
+      {/* Plan cards grid */}
+      <div className={styles.grid}>
         {PLANS.map((p) => {
-          const isCurrent = p.slug === currentPlanSlug;
+          const isCurrent = currentPlan === p.slug;
           return (
-            <article key={p.slug} className={styles.planCard} data-current={isCurrent ? "true" : "false"}>
-              {/* 1) Header */}
-              <div className={styles.cardHead}>
-                <div className={styles.tier}>{p.name}</div>
-                {isCurrent && <span className={styles.pill}>Current</span>}
-              </div>
+            <article key={p.slug} className={styles.card} aria-current={isCurrent ? "true" : undefined}>
+              <div className={styles.tier}>{p.name}</div>
 
-              {/* 2) Image (înălțime fixă → aliniere perfectă între carduri) */}
-              <div className={styles.planImage} aria-hidden>
-                <img src={p.image} alt="" />
-              </div>
-
-              {/* 3) Feature list (flex 1fr) */}
-              <ul className={styles.features}>
-                {p.features.map((f, i) => (
-                  <li key={i}>{f}</li>
+              <ul className={styles.list}>
+                {p.bullets.map((b, i) => (
+                  <li key={i}>{b}</li>
                 ))}
               </ul>
 
-              {/* 4) CTA jos (aliniat între carduri) */}
-              <div className={styles.ctaRow}>
+              {/* price image from landing */}
+              <div className={styles.imgWrap}>
+                <Image
+                  src={p.image}
+                  alt={`${p.name} price`}
+                  width={380}
+                  height={220}
+                  className={styles.priceImg}
+                />
+              </div>
+
+              <div className={styles.cardActions}>
                 {isCurrent ? (
-                  <button className={`${styles.btn} ${styles.btnDisabled}`} disabled>
-                    Selected
-                  </button>
+                  <span className={styles.currentBadge}>Current</span>
                 ) : (
                   <button
                     className={`${styles.btn} ${styles.btnPrimary}`}
-                    onClick={() => applyPlan(p.slug)}
-                    disabled={!!saving}
-                    title="Apply this plan"
+                    disabled={!!saving || role !== "admin"}
+                    onClick={() => choosePlan(p.slug)}
                   >
-                    {saving === p.slug ? "Applying…" : "Choose plan"}
+                    {saving === p.slug ? "Applying…" : `Choose ${planLabel(p.slug)}`}
                   </button>
                 )}
               </div>
             </article>
           );
         })}
-      </section>
+      </div>
     </div>
   );
 }
