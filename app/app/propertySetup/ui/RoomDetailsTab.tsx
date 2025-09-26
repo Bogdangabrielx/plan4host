@@ -71,7 +71,7 @@ export default function RoomDetailsTab({
               />
               <input
                 defaultValue={t.placeholder || ""}
-                placeholder="Personal Notes"
+                placeholder="ex: #Personal Notes"
                 onBlur={(e) => {
                   const v = e.currentTarget.value;
                   if (v !== (t.placeholder || "")) onPlaceholderText(t.id, v);
