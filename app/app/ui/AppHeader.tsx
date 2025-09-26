@@ -256,7 +256,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: isSmall ? 8 : 12,
+          gap: isSmall ? 8 : 8,
           // padding include safe-area top
           paddingTop: `calc(${isSmall ? 8 : 12}px + var(--safe-top))`,
           paddingRight: isSmall ? 10 : 16,
@@ -367,7 +367,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               height: "100%",
               width: 300,
               background: "var(--panel)",
-              color: "var(--primary)",
+              color: "var(--text)",
               borderRight: "1px solid var(--border)",
               boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
               zIndex: 121, // peste header
