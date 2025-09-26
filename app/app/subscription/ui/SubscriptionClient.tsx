@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import styles from "./subscription.module.css";
+import styles from "../subscription.module.css";
 import { createClient } from "@/lib/supabase/client";
 
 /** Plan definition sourced from landing (NOT from DB) */
