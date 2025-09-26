@@ -446,33 +446,48 @@ html[data-standalone="true"] .skipLink { display: none !important; }
     min-height: 100svh;
   }
 
-  /* Safe-areas (ai nevoie și de <meta viewport-fit=cover>) */
-:root{
+
+
+  /* home.module.css */
+
+/* 1) expune variabilele safe-area global */
+:global(:root) {
   --safe-top: env(safe-area-inset-top, 0px);
-  --panel: #0b1117;      /* culoarea ta de fundal din nav/landing */
+  /* culoarea de fundal de sub notch (ajusteaz-o dacă e altă nuanță) */
+  --landing-panel: #0b1117;
 }
 
-/* Painter pentru notch – stă deasupra conținutului, dar sub cookie modal */
-:root::before{
+/* 2) painter pentru notch – pe body, ca să nu fie afectat de stacking/transform din .landing */
+:global(body)::before {
   content: "";
   position: fixed;
   top: 0; left: 0; right: 0;
   height: var(--safe-top);
-  /* fallback solid + gradient fin spre transparență */
-  background: var(--panel);
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--panel) 98%, transparent) 0%,
-    color-mix(in srgb, var(--panel) 90%, transparent) 70%,
-    transparent 100%
-  );
+  /* solid + mic gradient spre transparență ca să “sudeze” cu conținutul */
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--landing-panel) 98%, transparent) 0%,
+      color-mix(in srgb, var(--landing-panel) 90%, transparent) 70%,
+      transparent 100%
+    );
   pointer-events: none;
-  z-index: 2147483000; /* sub cookie modalul tău (2147483646), peste orice altceva */
+  /* sub cookie modal (care are un z-index uriaș), peste restul */
+  z-index: 2147483000;
 }
 
-/* Asigură fond consistent în spate */
-html, body { background: var(--panel); }
+/* 3) asigură un fond solid sub tot (evită transparențe când nu e gradientul vizibil) */
+:global(html),
+:global(body) {
+  background: var(--landing-panel);
+}
 
+/* (opțional) dacă aveai vechiul painter, dezactivează-l ca să nu se bată cap în cap */
+.landing::before { content: none; }
+
+
+
+  
   /* Home-indicator bottom */
   .landing::after{
     content:"";
