@@ -255,6 +255,9 @@ export default function CalendarClient({
       <PlanHeaderBadge title="Calendar" slot="header-right" />
       {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20 }}>
+        <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800,}}>
+              Property
+            </label>
         <select
           className="sb-select"
           value={propertyId ?? ""} // evităm undefined
