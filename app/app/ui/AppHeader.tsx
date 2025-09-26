@@ -33,7 +33,7 @@ function titleStyle(isSmall: boolean): React.CSSProperties {
     fontFamily: TITLE_FAMILY,
     fontSize: isSmall ? 18 : 20,         // micșorat față de 22/26
     lineHeight: isSmall ? "26px" : "28px",
-    fontWeight: 600,                      // mai „subțire” (poți coborî la 500)
+    fontWeight: 300,                      // mai „subțire” (poți coborî la 500)
     letterSpacing: "-0.01em",
     whiteSpace: "nowrap",
     overflow: "hidden",
