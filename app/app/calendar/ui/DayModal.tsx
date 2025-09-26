@@ -191,7 +191,7 @@ export default function DayModal({
         display: "grid",
         placeItems: "center",
         // Safe-areas pentru iOS
-        paddingTop: "calc(var(--safe-top) + 12px)",
+        paddingTop: "calc(var(--safe-top))",
         paddingBottom: "calc(var(--safe-bottom) + 12px)",
         paddingLeft: "12px",
         paddingRight: "12px",
@@ -221,7 +221,7 @@ export default function DayModal({
           style={{
             position: "sticky",
             top: 0,
-            zIndex: 2,                      // sub header, peste conținut
+            zIndex: 0,                      // sub header, peste conținut
             margin: `-${PANEL_PAD}px -${PANEL_PAD}px 0`,
             height: PANEL_PAD,              // exact cât padding-ul de sus
             background: "var(--panel)",
