@@ -4,19 +4,16 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import RoomDetailModal from "./RoomDetailModal";
 
-/** Exported so RoomDetailModal can import the base shape */
 export type Booking = {
   id: string;
   property_id: string;
   room_id: string;
-  start_date: string; // "YYYY-MM-DD"
-  end_date: string;   // "YYYY-MM-DD"
-  start_time: string | null; // "HH:mm" or null
-  end_time: string | null;   // "HH:mm" or null
+  start_date: string;
+  end_date: string;
+  start_time: string | null;
+  end_time: string | null;
   status: "pending" | "confirmed" | "cancelled" | string;
   source?: string | null;
-
-  // Guest fields
   guest_first_name?: string | null;
   guest_last_name?: string | null;
   guest_email?: string | null;
@@ -55,11 +52,9 @@ export default function DayModal({
   const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
   const [statusHint, setStatusHint] = useState<string>("");
 
-  // Modale
-  const [openRoom, setOpenRoom] = useState<Room | null>(null);   // view/edit existentă
-  const [createRoom, setCreateRoom] = useState<Room | null>(null); // creare nouă (forceNew)
+  const [openRoom, setOpenRoom] = useState<Room | null>(null);
+  const [createRoom, setCreateRoom] = useState<Room | null>(null);
 
-  // ---------- Data load & refresh ----------
   const refresh = useCallback(async () => {
     setLoading("loading");
     setStatusHint("Loading rooms and bookings…");
@@ -81,7 +76,6 @@ export default function DayModal({
           "id,property_id,room_id,start_date,end_date,start_time,end_time,status,source,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address"
         )
         .eq("property_id", propertyId)
-        // overlap with the selected day
         .lte("start_date", dateStr)
         .gte("end_date", dateStr)
         .neq("status", "cancelled")
@@ -116,14 +110,11 @@ export default function DayModal({
     setStatusHint("");
   }, [supabase, propertyId, dateStr]);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const CI = property?.check_in_time || "14:00";
   const CO = property?.check_out_time || "11:00";
 
-  // map: room_id -> active booking (if any) pentru ziua selectată
   const activeByRoom = useMemo(() => {
     const map = new Map<string, Booking>();
     for (const b of bookingsToday) {
@@ -134,22 +125,20 @@ export default function DayModal({
     return map;
   }, [bookingsToday, dateStr]);
 
-  // map: room_id -> earliest future booking start (>= dateStr)
   const nextStartByRoom = useMemo(() => {
     const map = new Map<string, { start_date: string; start_time: string | null }>();
     for (const b of futureBookings) {
-      if (!map.has(b.room_id)) {
-        map.set(b.room_id, { start_date: b.start_date, start_time: b.start_time ?? null });
-      }
+      if (!map.has(b.room_id)) map.set(b.room_id, { start_date: b.start_date, start_time: b.start_time ?? null });
     }
     return map;
   }, [futureBookings]);
 
-  // ✅ sortare numeric-aware (ex: "Room 2" înainte de "Room 10")
   const collator = useMemo(() => new Intl.Collator(undefined, { numeric: true, sensitivity: "base" }), []);
-  const roomsSorted = useMemo(() => [...rooms].sort((a, b) => collator.compare(a.name, b.name)), [rooms, collator]);
+  const roomsSorted = useMemo(
+    () => [...rooms].sort((a, b) => collator.compare(a.name, b.name)),
+    [rooms, collator]
+  );
 
-  // ------------- UI helpers --------------
   function formatReservedUntil(b: Booking) {
     const dt = b.end_date + (b.end_time ? ` ${b.end_time}` : "");
     return `Reserved until ${dt.trim()}`;
@@ -167,32 +156,25 @@ export default function DayModal({
     const full = [f, l].filter(Boolean).join(" ");
     return full || "";
   }
-
-  // OTA color (soft/pastel) underlay mapping
   function otaFill(src: any) {
-    const s = (src || '').toLowerCase();
-    if (s.includes('airbnb')) return 'rgba(255,90,95,0.18)';      // Airbnb red (soft)
-    if (s.includes('booking')) return 'rgba(30,144,255,0.18)';    // Booking blue (soft)
-    if (s.includes('expedia')) return 'rgba(254,203,46,0.22)';    // Expedia yellow (soft)
-    if (s.includes('ota') || s.includes('ical')) return 'transparent'; // OTA/iCal violet (soft)
-    return 'transparent'; // default violet
+    const s = (src || "").toLowerCase();
+    if (s.includes("airbnb")) return "rgba(255,90,95,0.18)";
+    if (s.includes("booking")) return "rgba(30,144,255,0.18)";
+    if (s.includes("expedia")) return "rgba(254,203,46,0.22)";
+    if (s.includes("ota") || s.includes("ical")) return "transparent";
+    return "transparent";
   }
 
-  // Refresh automat la închiderea modalei
   const handleRoomModalClose = useCallback(async () => {
     setOpenRoom(null);
     await refresh();
   }, [refresh]);
-  const handleRoomModalChanged = useCallback(async () => {
-    await refresh();
-  }, [refresh]);
-
+  const handleRoomModalChanged = useCallback(async () => { await refresh(); }, [refresh]);
   const handleCreateModalClose = useCallback(async () => {
     setCreateRoom(null);
     await refresh();
   }, [refresh]);
 
-  // ------------- Render ------------------
   return (
     <div
       role="dialog"
@@ -205,14 +187,23 @@ export default function DayModal({
         background: "rgba(0,0,0,0.5)",
         display: "grid",
         placeItems: "center",
-        fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+        // ↓↓↓ SAFE-AREA padding pentru PWA pe iPhone (notch + home indicator)
+        paddingTop: "calc(var(--safe-top) + 12px)",
+        paddingBottom: "calc(var(--safe-bottom) + 12px)",
+        paddingLeft: "12px",
+        paddingRight: "12px",
+        // UI fonts / colors
+        fontFamily:
+          "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(1100px, calc(100vw - 32px))",
-          maxHeight: "calc(100dvh - 32px)",
+          width: "min(1100px, 100%)",
+          // ↓↓↓ limitează înălțimea în funcție de safe areas + margini
+          maxHeight:
+            "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 24px + 24px))",
           overflow: "auto",
           background: "var(--panel)",
           color: "var(--text)",
@@ -222,7 +213,20 @@ export default function DayModal({
         }}
       >
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, position: "sticky", top: 0, background: "var(--panel)", zIndex: 1, paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
+            position: "sticky",
+            top: 0, // rămâne lipit de top-ul containerului scrollabil (care e deja sub notch)
+            background: "var(--panel)",
+            zIndex: 1,
+            paddingBottom: 8,
+            borderBottom: "1px solid var(--border)",
+          }}
+        >
           <strong style={{ letterSpacing: 0.2, fontSize: 16 }}>
             {dateStr} — Rooms
           </strong>
@@ -300,7 +304,7 @@ export default function DayModal({
             const b = activeByRoom.get(room.id) || null;
             const isReserved = !!b && b.status !== "cancelled";
             const fullName = guestFullName(b);
-            const endsToday = isReserved && b!.end_date === dateStr; // checkout în ziua selectată
+            const endsToday = isReserved && b!.end_date === dateStr;
 
             return (
               <div
@@ -324,9 +328,18 @@ export default function DayModal({
                 title="Open reservation"
               >
                 {isReserved && (
-                  <div aria-hidden style={{ position: 'absolute', inset: 0, borderRadius: 12, background: otaFill(b?.source), pointerEvents: 'none' }} />
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      borderRadius: 12,
+                      background: otaFill(b?.source),
+                      pointerEvents: "none",
+                    }}
+                  />
                 )}
-                {/* Room name + status badge */}
+
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <strong style={{ fontSize: 15 }}>{room.name}</strong>
                   <span
@@ -344,51 +357,28 @@ export default function DayModal({
                   </span>
                 </div>
 
-                {/* CENTER: Guest name (if reserved) */}
-                <div
-                  style={{
-                    display: "grid",
-                    placeItems: "center",
-                    textAlign: "center",
-                    padding: "6px 4px",
-                  }}
-                >
+                <div style={{ display: "grid", placeItems: "center", textAlign: "center", padding: "6px 4px" }}>
                   {isReserved && fullName && (
-                    <div
-                      style={{
-                        fontWeight: 900,
-                        fontSize: 16,
-                        letterSpacing: 0.2,
-                      }}
-                    >
+                    <div style={{ fontWeight: 900, fontSize: 16, letterSpacing: 0.2 }}>
                       {fullName}
                     </div>
                   )}
-
                   {isReserved && !fullName && (
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        fontSize: 13,
-                        color: "var(--muted)",
-                      }}
-                    >
+                    <div style={{ fontWeight: 700, fontSize: 13, color: "var(--muted)" }}>
                       (Guest name not set)
                     </div>
                   )}
                 </div>
 
-                {/* Footer: until text + Add reservation on checkout-day */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
                   <small style={{ color: "var(--muted)" }}>
                     {isReserved ? formatReservedUntil(b!) : formatAvailableUntil(room.id)}
                   </small>
 
-                  {/* ✅ Buton special: dacă rezervarea se termină azi, permite creare imediată de rezervare nouă */}
                   {endsToday && (
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // nu deschide modalul de vizualizare
+                        e.stopPropagation();
                         setCreateRoom(room);
                       }}
                       style={{
@@ -414,28 +404,26 @@ export default function DayModal({
         </div>
       </div>
 
-      {/* Details modal (view/edit existent) */}
       {openRoom && (
         <RoomDetailModal
           dateStr={dateStr}
           propertyId={propertyId}
           room={openRoom}
-          onClose={handleRoomModalClose}     // auto refresh on return
-          onChanged={handleRoomModalChanged} // refresh on save
+          onClose={handleRoomModalClose}
+          onChanged={handleRoomModalChanged}
         />
       )}
 
-      {/* Create modal (forceNew) pentru camere cu checkout în aceeași zi */}
       {createRoom && (
         <RoomDetailModal
           dateStr={dateStr}
           propertyId={propertyId}
           room={createRoom}
           forceNew={true}
-          defaultStart={{ date: dateStr, time: CI }}             // începe azi, la check-in time (ex: 14:00)
-          defaultEnd={{ date: nextDate(dateStr), time: null }}   // mâine, time implicit (salvezi în modal)
-          onClose={handleCreateModalClose}       // auto refresh on return
-          onChanged={handleRoomModalChanged}     // refresh on save
+          defaultStart={{ date: dateStr, time: CI }}
+          defaultEnd={{ date: nextDate(dateStr), time: null }}
+          onClose={handleCreateModalClose}
+          onChanged={handleRoomModalChanged}
         />
       )}
     </div>
