@@ -454,9 +454,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   type="button"
                   aria-label="Clear search"
                   onClick={() => { setQuery(""); searchRef.current?.focus(); }}
-                  style={clearBtn}
                 >
-
+                 x
                 </button>
               )}
             </div>
