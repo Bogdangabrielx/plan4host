@@ -151,8 +151,6 @@
 .priceImg{
   width:auto;
   height:auto;
-  max-width: 160px;        /* mică (≈ de 3x mai mică decât pe landing) */
-  border-radius:10px;
-  border:1px solid var(--border);
+  max-width: 120px;        /* mică (≈ de 3x mai mică decât pe landing) */
   background:var(--card);
 }

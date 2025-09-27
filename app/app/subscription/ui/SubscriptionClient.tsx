@@ -233,7 +233,7 @@ export default function SubscriptionClient({
                     disabled={!!saving || role !== "admin"}
                     onClick={() => choosePlan(p.slug)}
                   >
-                    {saving === p.slug ? "Applying…" : `Choose ${planLabel(p.slug)}`}
+                    {saving === p.slug ? "Applying…" : `I want ${planLabel(p.slug)}`}
                   </button>
                 )}
               </div>
