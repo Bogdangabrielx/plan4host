@@ -130,6 +130,9 @@
   gap:4px;                 /* fix, fără „aerisire” suplimentară */
   color:var(--text);
   font-weight:300;
+  list-style: disc;
+  list-style-position: inside; /* sau 'inside' dacă preferi bullet în interior */
+  padding-left: 18px;
 }
 
 .liItem{
