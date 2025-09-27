@@ -66,10 +66,10 @@ function planLabel(slug: string) {
 }
 
 export default function SubscriptionClient({
+  /** kept optional for backward-compat; ignored on purpose */
   initialAccount: _a,
   initialPlans: _p,
 }: {
-  /** kept optional; ignored on purpose */
   initialAccount?: any;
   initialPlans?: any[];
 }) {
@@ -184,8 +184,8 @@ export default function SubscriptionClient({
         {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
       </div>
 
-      {/* Plan cards */}
-      <div className={styles.grid}>
+      {/* Equal-height rows; image row lines up without changing bullet spacing */}
+      <div className={styles.grid} style={{ gridAutoRows: "1fr" }}>
         {PLANS.map((p) => {
           const isCurrent = currentPlan === p.slug;
 
@@ -200,7 +200,11 @@ export default function SubscriptionClient({
               key={p.slug}
               className={styles.card}
               aria-current={isCurrent ? "true" : undefined}
-              style={{ gridTemplateRows: "auto 1fr auto auto" }} // equalize heights across cards
+              style={{
+                height: "100%",                 // make card fill the row height
+                display: "grid",
+                gridTemplateRows: "auto 1fr auto auto", // bullets take flexible space
+              }}
             >
               <div className={styles.tier}>{p.name}</div>
 
@@ -210,19 +214,8 @@ export default function SubscriptionClient({
                 ))}
               </ul>
 
-              {/* price image from landing — smaller & centered, same visual height for all */}
-              <div
-                className={styles.imgWrap}
-                style={{
-                  minHeight: 88, // keeps image band uniform
-                  display: "grid",
-                  placeItems: "center",
-                  padding: 6,
-                  border: "1px solid var(--border)",
-                  borderRadius: 10,
-                  background: "var(--card)",
-                }}
-              >
+              {/* price image (small), aligned across cards because list row is 1fr */}
+              <div className={styles.imgWrap} style={{ display: "grid", placeItems: "center", padding: 6 }}>
                 <Image
                   src={src}
                   alt={`${p.name} price`}
