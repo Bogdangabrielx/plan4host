@@ -146,6 +146,12 @@
   font-family: Arial, Helvetica, sans-serif;
   font-size: small;
 }
+.liItem{
+  display: -webkit-box;
+  -webkit-line-clamp: 2;              /* max 2 linii */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 .empty{
   list-style:none;         /* fără bullet pe rândurile goale */
