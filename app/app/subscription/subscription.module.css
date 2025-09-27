@@ -92,11 +92,11 @@
   display:inline-flex;
   align-items:center;
   padding:6px 10px;
-  border-radius:10px;
+  border-radius:22px;
   border:1px solid var(--border);
   background:var(--card);
   color:var(--text);
-  font-weight:800;
+  font-weight:300;
 }
 
 .btn{
@@ -166,6 +166,7 @@
   border-color: rgba(58, 169, 104, 0.9);
   position: relative;
   overflow: hidden; /* Safari-safe */
+  border:1px solid var(--border);
 }
 .btnChoose{ border-radius: 28px; }
 .btnChoose:hover,

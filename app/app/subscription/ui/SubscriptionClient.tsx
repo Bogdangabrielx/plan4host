@@ -226,7 +226,7 @@ export default function SubscriptionClient({
 
               <div className={styles.cardActions}>
                 {isCurrent ? (
-                  <span className={styles.currentBadge}>Current</span>
+                  <span className={styles.currentBadge}>Active plan</span>
                 ) : (
                   <button
                     className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
