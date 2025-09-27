@@ -58,7 +58,7 @@
 .tier{
   font-weight:900;
   letter-spacing:.12em;
-  font-size:12px;
+  font-size:21px;
   color: var(--text);
   opacity:.9;
   /* center the title */
