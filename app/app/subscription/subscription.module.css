@@ -160,7 +160,7 @@
 .btnChoose,
 .btnPrimary.btnChoose{
   background: transparent;
-  color: #ffffff;
+  color: "var(--text)";
   border-color: rgba(255,255,255,.9);
   position: relative;
   overflow: hidden; /* Safari-safe */
