@@ -176,7 +176,7 @@ export default function SubscriptionClient({
     <div className={styles.container}>
       {/* Header bar: current plan */}
       <div className={styles.headerRow}>
-        <span className={styles.badge}>Current: {planLabel(currentPlan)}</span>
+        <span className={styles.badge}>Active plan: {planLabel(currentPlan)}</span>
         <span className={styles.muted}>{validUntil ? `until ${validUntil}` : "—"}</span>
         {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
       </div>
@@ -229,7 +229,7 @@ export default function SubscriptionClient({
                   <span className={styles.currentBadge}>Current</span>
                 ) : (
                   <button
-                    className={`${styles.btn} ${styles.btnPrimary}`}
+                    className={`${styles.btnChoose}`}
                     disabled={!!saving || role !== "admin"}
                     onClick={() => choosePlan(p.slug)}
                   >

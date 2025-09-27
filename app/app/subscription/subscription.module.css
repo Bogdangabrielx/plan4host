@@ -151,3 +151,55 @@
   max-width: 120px;        /* mică (≈ de 3x mai mică decât pe landing) */
   background:var(--card);
 }
+
+
+
+/* ───────────────
+   .btnChoose — same sparkle, NO stars
+   ─────────────── */
+.btnChoose,
+.btnPrimary.btnChoose{
+  background: transparent;
+  color: #ffffff;
+  border-color: rgba(255,255,255,.9);
+  position: relative;
+  overflow: hidden; /* Safari-safe */
+}
+.btnChoose{ border-radius: 28px; }
+.btnChoose:hover,
+.btnChoose:focus-visible,
+.btnChoose[data-animate="true"]{
+  border-radius: 22px;
+  box-shadow:
+    0 8px 24px color-mix(in srgb, var(--primary) 35%, transparent),
+    0 0 0 1px color-mix(in srgb, #3ECF8E 22%, transparent);
+}
+.btnChoose::before{
+  content:"";
+  position:absolute; inset:0; border-radius: inherit; padding: 1.5px;
+  background:
+    conic-gradient(from var(--sweep-angle),
+      transparent 0deg,
+      transparent 300deg,
+      rgba(25,189,99,.95) 315deg,
+      rgba(25,189,99,.8) 330deg,
+      transparent 345deg
+    );
+  /* show only the border ring */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; 
+          mask-composite: exclude;
+  opacity: 0; transition: opacity .2s ease;
+  pointer-events:none; z-index:1;
+}
+/* desktop hover/focus */
+.btnChoose:hover::before,
+.btnChoose:focus-visible::before{ opacity:1; animation:sweep-rotate 1.8s linear infinite; }
+/* mobile trigger */
+.btnChoose[data-animate="true"]::before{ opacity:1; animation:sweep-rotate 1.8s linear infinite; }
+/* touch rule: hide unless explicitly triggered */
+@media (hover:none){
+  .btnChoose::before{ display:none !important; }
+  .btnChoose[data-animate="true"]::before{ display:block !important; }
+}
