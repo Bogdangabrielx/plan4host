@@ -118,3 +118,41 @@
   border:1px solid var(--primary);
 }
 .btnPrimary:active{ transform: translateY(1px); }
+
+.list{
+  margin:0;
+  padding-left:18px;       /* ca pe landing */
+  display:grid;
+  /* EXACT 15 rânduri egale înainte de imagine */
+  grid-template-rows: repeat(var(--rows, 15), var(--benefit-row-h, 1.65em));
+  gap:6px;                 /* fix, fără „aerisire” suplimentară */
+  color:var(--text);
+  font-weight:600;
+}
+
+.liItem{
+  line-height:1.4;
+  overflow:hidden;
+  white-space:nowrap;      /* nu lăsăm să rupă linia, păstrăm înălțimea uniformă */
+  text-overflow:ellipsis;
+}
+
+.empty{
+  list-style:none;         /* fără bullet pe rândurile goale */
+  color:transparent;       /* ascunde textul de umplere */
+}
+
+/* imagine + acțiuni — deja aliniate deoarece lista are înălțime fixă */
+.imgWrap{
+  display:grid;
+  place-items:center;
+  padding:6px 0;
+}
+.priceImg{
+  width:auto;
+  height:auto;
+  max-width: 160px;        /* mică (≈ de 3x mai mică decât pe landing) */
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--card);
+}

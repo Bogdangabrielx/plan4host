@@ -65,8 +65,9 @@ function planLabel(slug: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+const BENEFIT_ROWS = 15; // exact 15 rânduri înainte de imagine
+
 export default function SubscriptionClient({
-  /** kept optional for backward-compat; ignored on purpose */
   initialAccount: _a,
   initialPlans: _p,
 }: {
@@ -75,10 +76,10 @@ export default function SubscriptionClient({
 }) {
   const supabase = useMemo(() => createClient(), []);
 
-  const [currentPlan, setCurrentPlan] = useState<"basic" | "standard" | "premium">("basic");
+  const [currentPlan, setCurrentPlan] = useState<"basic"|"standard"|"premium">("basic");
   const [validUntil, setValidUntil] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
-  const [role, setRole] = useState<"admin" | "member">("admin");
+  const [role, setRole] = useState<"admin"|"member">("admin");
 
   // theme detection + per-plan light-image fallback
   const [isLight, setIsLight] = useState(false);
@@ -90,14 +91,12 @@ export default function SubscriptionClient({
 
   useEffect(() => {
     const root = document.documentElement;
-
     const getIsLight = () => {
       const attr = root.getAttribute("data-theme") || (root as any).dataset?.theme;
       if (attr === "light") return true;
       if (attr === "dark") return false;
       return window.matchMedia?.("(prefers-color-scheme: light)").matches ?? false;
     };
-
     setIsLight(getIsLight());
 
     const onSys = () => setIsLight(getIsLight());
@@ -113,7 +112,7 @@ export default function SubscriptionClient({
     };
   }, []);
 
-  // load current plan + validity (doar status)
+  // load current plan + validity
   useEffect(() => {
     (async () => {
       try {
@@ -144,9 +143,7 @@ export default function SubscriptionClient({
 
         const vu = acc && acc.length ? acc[0].valid_until : null;
         setValidUntil(vu ? new Date(vu).toLocaleString() : null);
-      } catch {
-        /* noop */
-      }
+      } catch {}
     })();
   }, [supabase]);
 
@@ -184,38 +181,39 @@ export default function SubscriptionClient({
         {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
       </div>
 
-      {/* Equal-height rows; image row lines up without changing bullet spacing */}
-      <div className={styles.grid} style={{ gridAutoRows: "1fr" }}>
+      {/* Cards */}
+      <div className={styles.grid}>
         {PLANS.map((p) => {
           const isCurrent = currentPlan === p.slug;
 
-          // choose image based on theme (+ fallback)
+          // theme-aware image (+ fallback)
           const base = p.image.replace(/\.png$/i, "");
           const lightCandidate = `${base}_forlight.png`;
           const useLight = isLight && !imgFallback[p.slug];
           const src = useLight ? lightCandidate : p.image;
 
+          // pad bullets to exactly BENEFIT_ROWS
+          const padded = Array.from({ length: BENEFIT_ROWS }, (_, i) => p.bullets[i] ?? "");
+
           return (
-            <article
-              key={p.slug}
-              className={styles.card}
-              aria-current={isCurrent ? "true" : undefined}
-              style={{
-                height: "100%",                 // make card fill the row height
-                display: "grid",
-                gridTemplateRows: "auto 1fr auto auto", // bullets take flexible space
-              }}
-            >
+            <article key={p.slug} className={styles.card} aria-current={isCurrent ? "true" : undefined}>
               <div className={styles.tier}>{p.name}</div>
 
-              <ul className={styles.list}>
-                {p.bullets.map((b, i) => (
-                  <li key={i}>{b}</li>
-                ))}
+              <ul className={styles.list} style={{ ["--rows" as any]: BENEFIT_ROWS }}>
+                {padded.map((txt, i) =>
+                  txt ? (
+                    <li key={i} className={styles.liItem} title={txt}>{txt}</li>
+                  ) : (
+                    <li key={i} className={`${styles.liItem} ${styles.empty}`} aria-hidden="true">
+                      {/* spațiu rezervat rând gol */}
+                      &nbsp;
+                    </li>
+                  )
+                )}
               </ul>
 
-              {/* price image (small), aligned across cards because list row is 1fr */}
-              <div className={styles.imgWrap} style={{ display: "grid", placeItems: "center", padding: 6 }}>
+              {/* imaginea începe la rândul 16 pentru toate cardurile */}
+              <div className={styles.imgWrap}>
                 <Image
                   src={src}
                   alt={`${p.name} price`}
