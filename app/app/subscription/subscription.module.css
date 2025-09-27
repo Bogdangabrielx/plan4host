@@ -128,8 +128,7 @@
 }
 
 .liItem{
-  font-weight:900;
-  letter-spacing:.12em;
+  font-weight:200;
   line-height:1;
   overflow:hidden;
   white-space:nowrap;      /* nu lăsăm să rupă linia, păstrăm înălțimea uniformă */
