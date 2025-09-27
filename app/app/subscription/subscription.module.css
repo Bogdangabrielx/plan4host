@@ -124,7 +124,7 @@
   padding-left:18px;       /* ca pe landing */
   display:grid;
   /* EXACT 15 rânduri egale înainte de imagine */
-  grid-template-rows: repeat(var(--rows, 9), var(--benefit-row-h, 1.65em));
+  grid-template-rows: repeat(var(--rows, 9), var(--benefit-row-h, 1.35em));
   gap:6px;                 /* fix, fără „aerisire” suplimentară */
   color:var(--text);
   font-weight:600;
