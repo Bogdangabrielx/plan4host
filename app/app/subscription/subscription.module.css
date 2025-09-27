@@ -122,29 +122,28 @@
 .btnPrimary:active{ transform: translateY(1px); }
 
 .list{
-  margin:0;
-  padding-left:18px;       /* ca pe landing */
-  display:grid;
-  /* EXACT 15 rânduri egale înainte de imagine */
-  grid-template-rows: repeat(var(--rows, 9), var(--benefit-row-h, 1.35em));
-  gap:4px;                 /* fix, fără „aerisire” suplimentară */
-  color:var(--text);
-  font-weight:300;
-  list-style: disc;
-  list-style-position: inside; /* sau 'inside' dacă preferi bullet în interior */
-  padding-left: 18px;
+  margin: 0;
+  padding-left: 18px;                 /* indent pentru bullets */
+  display: grid;
+  grid-template-rows: repeat(var(--rows, 15), auto);
+  row-gap: 4px;
+  color: var(--text);
+  font-weight: 300;
+  list-style: dot;
+  list-style-position: outside;       /* wrap-ul păstrează indentarea corectă */
+  min-width: 0;                       /* important când părintele e grid/flex */
 }
 
+/* fiecare beneficiu poate rupe linia pe rândul următor */
 .liItem{
-  white-space: normal;          /* permite rânduri multiple */
-  overflow-wrap: anywhere;      /* rupe și cuvinte foarte lungi / URL-uri */
-  word-break: break-word;       /* fallback pentru browsere mai vechi */
-  hyphens: auto;                /* despărțire silabică (necesită lang pe <html>) */
-  min-width: 0;                 /* important dacă părintele e flex/grid îngust */
-  font-weight:200;
-  line-height:1;
-  white-space:nowrap;      /* nu lăsăm să rupă linia, păstrăm înălțimea uniformă */
-  text-overflow:ellipsis;
+  white-space: normal;                /* permite mai multe linii */
+  overflow-wrap: anywhere;            /* rupe cuvinte foarte lungi/URL-uri */
+  word-break: break-word;             /* fallback */
+  hyphens: auto;                      /* despărțire silabică (setați lang pe <html>) */
+  min-width: 0;
+  font-weight: 300;
+  line-height: 1.35;                  /* înălțime lizibilă pe wrap */
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .empty{
