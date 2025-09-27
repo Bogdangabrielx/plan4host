@@ -129,7 +129,7 @@
   row-gap: 4px;
   color: var(--text);
   font-weight: 300;
-  list-style: dot;
+  list-style: none;
   list-style-position: outside;       /* wrap-ul păstrează indentarea corectă */
   min-width: 0;                       /* important când părintele e grid/flex */
 }
