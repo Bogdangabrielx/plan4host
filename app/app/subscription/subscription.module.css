@@ -133,9 +133,13 @@
 }
 
 .liItem{
+  white-space: normal;          /* permite rânduri multiple */
+  overflow-wrap: anywhere;      /* rupe și cuvinte foarte lungi / URL-uri */
+  word-break: break-word;       /* fallback pentru browsere mai vechi */
+  hyphens: auto;                /* despărțire silabică (necesită lang pe <html>) */
+  min-width: 0;                 /* important dacă părintele e flex/grid îngust */
   font-weight:200;
   line-height:1;
-  overflow:hidden;
   white-space:nowrap;      /* nu lăsăm să rupă linia, păstrăm înălțimea uniformă */
   text-overflow:ellipsis;
 }

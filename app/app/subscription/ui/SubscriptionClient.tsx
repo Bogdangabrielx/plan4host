@@ -204,7 +204,7 @@ export default function SubscriptionClient({
                   txt ? (
                     <li key={i} className={styles.liItem} title={txt}>{txt}</li>
                   ) : (
-                    <li key={i} className={`${styles.liItem} ${styles.empty}`} aria-hidden="false">
+                    <li key={i} className={`${styles.liItem} ${styles.empty}`} aria-hidden="true">
                       {/* spațiu rezervat rând gol */}
                       &nbsp;
                     </li>
