@@ -229,7 +229,7 @@ export default function SubscriptionClient({
                   <span className={styles.currentBadge}>Current</span>
                 ) : (
                   <button
-                    className={`${styles.btnChoose}`}
+                    className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
                     disabled={!!saving || role !== "admin"}
                     onClick={() => choosePlan(p.slug)}
                   >

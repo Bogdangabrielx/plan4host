@@ -122,7 +122,7 @@
   display:grid;
   /* EXACT 15 rânduri egale înainte de imagine */
   grid-template-rows: repeat(var(--rows, 9), var(--benefit-row-h, 1.35em));
-  gap:6px;                 /* fix, fără „aerisire” suplimentară */
+  gap:4px;                 /* fix, fără „aerisire” suplimentară */
   color:var(--text);
   font-weight:300;
 }
@@ -160,8 +160,8 @@
 .btnChoose,
 .btnPrimary.btnChoose{
   background: transparent;
-  color: "var(--text)";
-  border-color: rgba(255,255,255,.9);
+  color: var(--text);
+  border-color: rgba(58, 169, 104, 0.9);
   position: relative;
   overflow: hidden; /* Safari-safe */
 }
@@ -202,4 +202,113 @@
 @media (hover:none){
   .btnChoose::before{ display:none !important; }
   .btnChoose[data-animate="true"]::before{ display:block !important; }
+}
+
+
+/* ──────────────────────────────────────────────────────────
+   CTA sparkle like in the video (desktop hover) + mobile trigger
+   ────────────────────────────────────────────────────────── */
+
+/* Let conic-angle animate smoothly */
+@property --sweep-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+
+/* base ghost look */
+.btnText,
+.btnPrimary.btnText {
+  background: transparent;
+  color: #ffffff;
+  border-color: rgba(255,255,255,.9);
+  position: relative;
+  overflow: hidden; /* Safari-safe */
+}
+
+/* subtle morphable shape */
+.btnText { border-radius: 28px; }
+.btnText:hover,
+.btnText:focus-visible,
+.btnText[data-animate="true"] { border-radius: 22px; }
+
+/* shadow on hover/trigger */
+.btnText:hover,
+.btnText:focus-visible,
+.btnText[data-animate="true"] {
+  box-shadow:
+    0 8px 24px color-mix(in srgb, var(--primary) 35%, transparent),
+    0 0 0 1px color-mix(in srgb, #3ECF8E 22%, transparent);
+}
+
+/* rotating border highlight */
+.btnText::before{
+  content:"";
+  position:absolute; inset:0; border-radius: inherit; padding: 1.5px; /* thickness of “animated” border */
+  background:
+    conic-gradient(from var(--sweep-angle),
+      transparent 0deg,
+      transparent 300deg,
+      rgba(25, 189, 99, .95) 315deg,
+      rgba(25, 189, 99,.8) 330deg,
+      transparent 345deg
+    );
+  /* show only the border, not the fill */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+          mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0; transition: opacity .2s ease;
+  pointer-events: none; z-index: 1;
+}
+
+/* 3 concave-diamond stars în colțul stânga-sus */
+.btnText::after{
+  content:"";
+  position:absolute; top:8px; left:10px; width:44px; height:22px; pointer-events:none; opacity:0; transition: opacity .2s ease;
+  --star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='white' d='M50 0 Q 68 30 100 50 Q 70 68 50 100 Q 32 70 0 50 Q 30 32 50 0 Z'/%3E%3C/svg%3E");
+  background:
+    var(--star) 0% 50%/12px 12px no-repeat,
+    var(--star) 40% 10%/9px 9px no-repeat,
+    var(--star) 82% 70%/10px 10px no-repeat;
+  filter:
+    drop-shadow(0 0 6px rgba(255,255,255,.7))
+    drop-shadow(0 0 18px color-mix(in srgb, var(--primary) 65%, transparent));
+  z-index: 2;
+}
+
+/* Play the effects (desktop focus/hover) */
+.btnText:hover::before,
+.btnText:focus-visible::before { opacity: 1; animation: sweep-rotate 1.8s linear infinite; }
+.btnText:hover::after,
+.btnText:focus-visible::after  { opacity: 1; animation: stars-twinkle 1.8s ease-in-out infinite; }
+
+/* ✅ Mobile support: rulează când TS pune [data-animate="true"] */
+.btnText[data-animate="true"]::before{
+  opacity:1; animation:sweep-rotate 1.8s linear infinite;
+}
+.btnText[data-animate="true"]::after{
+  opacity:1; animation:stars-twinkle 1.8s ease-in-out infinite;
+}
+
+/* No heavy effects on touch unless explicit trigger */
+@media (hover:none){
+  .btnText::before, .btnText::after { display: none !important; }
+  .btnText[data-animate="true"]::before,
+  .btnText[data-animate="true"]::after { display: block !important; } /* override hide */
+  .landing :global(a), .landing :global(button){ -webkit-tap-highlight-color: transparent; }
+}
+
+@keyframes sweep-rotate { to { --sweep-angle: 360deg; } }
+@keyframes stars-twinkle {
+  0%,100% {
+    filter: drop-shadow(0 0 6px rgba(255,255,255,.7))
+            drop-shadow(0 0 18px color-mix(in srgb, var(--primary) 65%, transparent));
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(255,255,255,1))
+            drop-shadow(0 0 26px color-mix(in srgb, var(--primary) 75%, transparent));
+    transform: translateY(-1px) rotate(6deg);
+  }
 }
