@@ -128,7 +128,6 @@
   gap:6px;                 /* fix, fără „aerisire” suplimentară */
   color:var(--text);
   font-weight:300;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 .liItem{
