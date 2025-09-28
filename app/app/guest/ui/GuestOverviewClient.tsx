@@ -24,6 +24,8 @@ type OverviewRow = {
   room_id: string | null;
   start_date: string;
   end_date: string;
+  check_in_time: string;
+  check_out_time: string;
   status: "green" | "yellow" | "red";
   _room_label?: string | null;
   _room_type_id?: string | null;
@@ -864,9 +866,9 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
       guest_first_name: (row._guest_first_name || "").toString(),
       guest_last_name: (row._guest_last_name || "").toString(),
       check_in_date: row.start_date,
-      check_in_time: "14:00",
+      check_in_time: row.check_in_time,
       check_out_date: row.end_date,
-      check_out_time: "11:00",
+      check_out_time: row.check_out_time,
       room_name: row._room_label || "",
       room_type: row._room_type_name || "",
       property_name: "",
