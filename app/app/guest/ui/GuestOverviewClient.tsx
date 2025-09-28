@@ -445,7 +445,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (hasOta) return { provider: it._ota_provider, color: it._ota_color as any, logo: it._ota_logo_url as any };
     // TEMP test: manual reservation badge — show only for manual-green (no reason, no OTA)
     if (!it._reason && kind === 'green') {
-      return { provider: 'Manual', color: '#6CCC4C', logo: '/trivago.png' };
+      return { provider: 'Airbnb', color: '#cc4c4cff', logo: '/airbnb.png' };
     }
     return null;
   }
