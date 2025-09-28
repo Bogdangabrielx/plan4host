@@ -64,7 +64,7 @@ const STATUS_LABEL: Record<OverviewRow["status"], string> = {
 
 const STATUS_COLOR: Record<OverviewRow["status"], string> = {
   green: "#6CCC4C",
-  yellow: "#F1D82C",
+  yellow: "#ead028ff",
   red: "#ED4337",
 };
 
