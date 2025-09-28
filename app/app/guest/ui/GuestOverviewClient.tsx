@@ -155,6 +155,38 @@ function highlight(text: string, query: string): React.ReactNode {
   return parts;
 }
 
+/* ───────────────── Clipboard mobile-safe ───────────────── */
+
+async function copyTextMobileSafe(text: string) {
+  try {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // trecem pe fallback
+  }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.top = "0";
+    ta.style.left = "0";
+    ta.style.opacity = "0";
+    ta.setAttribute("readonly", "");
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    if (ok) return true;
+  } catch {
+    // ultim fallback
+  }
+  window.prompt?.("Copy this text:", text);
+  return false;
+}
+
 /* ───────────────── Component ───────────────── */
 
 export default function GuestOverviewClient({ initialProperties }: { initialProperties: Property[] }) {
@@ -355,12 +387,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   // Actions
   const copyCheckinLink = useCallback(async (propertyId: string, key: string) => {
     const link = buildPropertyCheckinLink(propertyId);
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopiedKey(key);
+    const ok = await copyTextMobileSafe(link);
+    setCopiedKey(ok ? key : null);
+    if (ok) {
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       copyTimer.current = window.setTimeout(() => setCopiedKey(null), 1500);
-    } catch { prompt("Copy this link:", link); }
+    }
   }, []);
 
   function resolveInCalendar(item: OverviewRow) {
@@ -408,7 +440,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <button onClick={refresh} className="sb-btn" style={{ padding: "8px 8px", borderRadius: 10 }} title="Refresh">
+            <button type="button" onClick={refresh} className="sb-btn" style={{ padding: "8px 8px", borderRadius: 10, touchAction: "manipulation" }} title="Refresh">
               Refresh
             </button>
           </div>
@@ -455,6 +487,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     background: "transparent",
                     color: "var(--muted)",
                     cursor: "pointer",
+                    touchAction: "manipulation",
                   }}
                 >
                   ×
@@ -476,7 +509,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 style={{
                   marginLeft: 6, width: 18, height: 18, borderRadius: 6,
                   border: "1px solid var(--border)", background: "transparent",
-                  color: "var(--muted)", lineHeight: 1, fontSize: 12, cursor: "pointer"
+                  color: "var(--muted)", lineHeight: 1, fontSize: 12, cursor: "pointer", touchAction: "manipulation"
                 }}
               >
                 i
@@ -484,7 +517,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
               {legendInfo === k && (
                 isMobile ? (
-                  <div data-legend="keep" style={{ fontSize:10, marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
+                  <div data-legend="keep" style={{ marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
                     {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>New booking — no action required.</div>}
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
@@ -572,13 +605,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   <div style={{ display: "grid", gap: 4, lineHeight: 1.25, minWidth: 0 }}>
                     {/* Badge first on mobile */}
                     {isMobile && (
-                      <span style={{ ...badgeStyle(kind), marginBottom: 2,justifySelf: "start",   // <— nu se mai întinde pe orizontală
-                             width: "max-content",    // <— păstrează lățimea după conținut
-                     }}
-                     title={statusTooltip(it)}
-                 >
-                       {STATUS_LABEL[kind]}
-                         </span>
+                      <span
+                        style={{
+                          ...badgeStyle(kind),
+                          marginBottom: 2,
+                          justifySelf: "start",
+                          width: "max-content",
+                        }}
+                        title={statusTooltip(it)}
+                      >
+                        {STATUS_LABEL[kind]}
+                      </span>
                     )}
 
                     {/* 1) Guest name */}
@@ -631,6 +668,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   {kind === "green" && (
                     <>
                       <button
+                        type="button"
                         onClick={() => setRmModal({ propertyId, item: it })}
                         style={{
                           padding: "10px 12px",
@@ -641,6 +679,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           fontWeight: 600,
                           cursor: "pointer",
                           width: isMobile ? "100%" : undefined,
+                          touchAction: "manipulation",
                         }}
                         title="Reservation message"
                       >
@@ -648,6 +687,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       </button>
 
                       <button
+                        type="button"
                         onClick={() => openReservation(it, propertyId)}
                         disabled={!it.room_id || !roomById.has(String(it.room_id))}
                         style={{
@@ -659,6 +699,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           fontWeight: 600,
                           cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
                           width: isMobile ? "100%" : undefined,
+                          touchAction: "manipulation",
                         }}
                         title={it.room_id ? "Open reservation" : "No room assigned yet"}
                       >
@@ -669,6 +710,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
                   {showCopy && (
                     <button
+                      type="button"
                       onClick={() => copyCheckinLink(propertyId, key)}
                       style={{
                         padding: "10px 12px",
@@ -679,6 +721,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         fontWeight: 600,
                         cursor: "pointer",
                         width: isMobile ? "100%" : undefined,
+                        touchAction: "manipulation",
                       }}
                       title="Copy check-in link"
                     >
@@ -688,6 +731,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
                   {kind === "red" && (
                     <button
+                      type="button"
                       onClick={() => resolveInCalendar(it)}
                       style={{
                         padding: "10px 12px",
@@ -698,6 +742,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         fontWeight: 600,
                         cursor: "pointer",
                         width: isMobile ? "100%" : undefined,
+                        touchAction: "manipulation",
                       }}
                       title="Resolve in Calendar"
                     >
@@ -741,17 +786,24 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           <div
             role="dialog"
             aria-modal="true"
-            onClick={() => setRmModal(null)}
+            // close on background press (touch + mouse)
+            onMouseDown={() => setRmModal(null)}
+            onTouchStart={() => setRmModal(null)}
             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 60, display: "grid", placeItems: "center", padding: 12 }}
           >
             <div
+              // stop background closing when interacting inside
               onClick={(e)=>e.stopPropagation()}
+              onMouseDown={(e)=>e.stopPropagation()}
+              onTouchStart={(e)=>e.stopPropagation()}
               className="sb-card"
-              style={{ width: "min(860px, 100%)", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 }}
+              style={{ width: "min(860px, 100%)", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16, pointerEvents: "auto", position: "relative" }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <strong>Reservation message</strong>
-                <button className="sb-btn" onClick={() => setRmModal(null)}>Close</button>
+                <button type="button" className="sb-btn" onClick={() => setRmModal(null)} style={{ touchAction: "manipulation" }}>
+                  Close
+                </button>
               </div>
               <RMContent propertyId={rmModal.propertyId} row={rmModal.item} />
             </div>
@@ -825,12 +877,10 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   }, [tpl, values, row]);
 
   async function onCopyPreview() {
-    try {
-      const text = preview.replace(/<br\/>/g, "\n").replace(/<[^>]+>/g, "");
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(()=>setCopied(false), 1500);
-    } catch {}
+    const text = preview.replace(/<br\/>/g, "\n").replace(/<[^>]+>/g, "");
+    const ok = await copyTextMobileSafe(text);
+    setCopied(ok);
+    if (ok) setTimeout(()=>setCopied(false), 1500);
   }
 
   return (
@@ -863,7 +913,9 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
           />
 
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
-            <button className="sb-btn" onClick={onCopyPreview}>{copied ? "Copied!" : "Copy preview"}</button>
+            <button type="button" className="sb-btn" onClick={onCopyPreview} style={{ touchAction: "manipulation" }}>
+              {copied ? "Copied!" : "Copy preview"}
+            </button>
             <GenerateLinkButton propertyId={propertyId} bookingId={row.id} values={values} />
           </div>
         </>
@@ -875,6 +927,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
 function GenerateLinkButton({ propertyId, bookingId, values }:{ propertyId: string; bookingId: string|null; values: Record<string,string> }) {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+
   async function onClick() {
     if (!bookingId) { alert("Missing booking id"); return; }
     setBusy(true);
@@ -888,8 +941,10 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{ propertyId: stri
       if (!res.ok) { alert(j?.error || "Failed to generate link"); setBusy(false); return; }
       const url = j?.url as string;
       if (url) {
-        try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(()=>setCopied(false), 1500); }
-        catch { prompt("Copy link:", url); }
+        const ok = await copyTextMobileSafe(url);
+        setCopied(ok);
+        if (!ok) return;
+        setTimeout(()=>setCopied(false), 1500);
       }
     } catch (e:any) {
       alert(e?.message || "Network error");
@@ -897,8 +952,16 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{ propertyId: stri
       setBusy(false);
     }
   }
+
   return (
-    <button className="sb-btn sb-btn--primary" onClick={onClick} disabled={busy || !bookingId} title={bookingId ? "Generate link" : "No booking id"}>
+    <button
+      type="button"
+      className="sb-btn sb-btn--primary"
+      onClick={onClick}
+      disabled={busy || !bookingId}
+      title={bookingId ? "Generate link" : "No booking id"}
+      style={{ touchAction: "manipulation" }}
+    >
       {copied ? "Copied!" : (busy ? "Generating…" : "Copy link")}
     </button>
   );
