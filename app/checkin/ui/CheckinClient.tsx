@@ -292,7 +292,7 @@ export default function CheckinClient() {
       address: "address",
       city: "city",
       country: "country",
-      id: "ID",
+      id: "id",
     }[key];
     return `/formular_${token}_${isDark ? "fordark" : "forlight"}.png`;
   };
