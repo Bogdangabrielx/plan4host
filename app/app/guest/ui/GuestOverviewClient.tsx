@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useDeferredValue } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
@@ -159,13 +159,11 @@ function highlight(text: string, query: string): React.ReactNode {
 
 async function copyTextMobileSafe(text: string) {
   try {
-    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+    if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);
       return true;
     }
-  } catch {
-    // trecem pe fallback
-  }
+  } catch {}
   try {
     const ta = document.createElement("textarea");
     ta.value = text;
@@ -180,9 +178,7 @@ async function copyTextMobileSafe(text: string) {
     const ok = document.execCommand("copy");
     document.body.removeChild(ta);
     if (ok) return true;
-  } catch {
-    // ultim fallback
-  }
+  } catch {}
   window.prompt?.("Copy this text:", text);
   return false;
 }
@@ -247,6 +243,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   // Search (guest name)
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query); // mai fluent în timp ce tastezi
   const searchRef = useRef<HTMLInputElement | null>(null);
 
   // UX small bits
@@ -309,7 +306,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setRooms((rRooms.data ?? []) as Room[]);
 
     try {
-      const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(activePropertyId)}`, { cache: "no-store" });
+      const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(activePropertyId)}`, { cache: "no-store", keepalive: true });
       if (!res.ok) throw new Error(await res.text());
       const j = await res.json();
       const arr: OverviewRow[] = Array.isArray(j?.items) ? j.items : [];
@@ -347,12 +344,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     });
   }, [items, collator]);
 
-  // Filter by name
+  // Filter by name (folosește deferredQuery pentru a nu întrerupe UI-ul)
   const visibleRows = useMemo(() => {
-    const q = norm(query);
+    const q = norm(deferredQuery);
     if (!q) return rows;
     return rows.filter((r) => norm(fullName(r)).includes(q));
-  }, [rows, query]);
+  }, [rows, deferredQuery]);
 
   // Styles
   const containerStyle: React.CSSProperties = {
@@ -388,11 +385,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const copyCheckinLink = useCallback(async (propertyId: string, key: string) => {
     const link = buildPropertyCheckinLink(propertyId);
     const ok = await copyTextMobileSafe(link);
-    setCopiedKey(ok ? key : null);
-    if (ok) {
-      if (copyTimer.current) window.clearTimeout(copyTimer.current);
-      copyTimer.current = window.setTimeout(() => setCopiedKey(null), 1500);
-    }
+    if (!ok) return;
+    setCopiedKey(key);
+    if (copyTimer.current) window.clearTimeout(copyTimer.current);
+    copyTimer.current = window.setTimeout(() => setCopiedKey(null), 1200);
   }, []);
 
   function resolveInCalendar(item: OverviewRow) {
@@ -440,7 +436,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <button type="button" onClick={refresh} className="sb-btn" style={{ padding: "8px 8px", borderRadius: 10, touchAction: "manipulation" }} title="Refresh">
+            <button type="button" onClick={refresh} className="sb-btn" style={{ padding: "8px 8px", borderRadius: 10, touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }} title="Refresh">
               Refresh
             </button>
           </div>
@@ -488,6 +484,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     color: "var(--muted)",
                     cursor: "pointer",
                     touchAction: "manipulation",
+                    WebkitTapHighlightColor: "transparent",
                   }}
                 >
                   ×
@@ -509,7 +506,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 style={{
                   marginLeft: 6, width: 18, height: 18, borderRadius: 6,
                   border: "1px solid var(--border)", background: "transparent",
-                  color: "var(--muted)", lineHeight: 1, fontSize: 12, cursor: "pointer", touchAction: "manipulation"
+                  color: "var(--muted)", lineHeight: 1, fontSize: 12, cursor: "pointer",
+                  touchAction: "manipulation", WebkitTapHighlightColor: "transparent"
                 }}
               >
                 i
@@ -622,7 +620,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     <div style={lineWrap}>
                       <Image src={iconSrc("logoguest")} alt="" width={16} height={16} style={iconStyle} />
                       <div style={{ fontWeight: 700, wordBreak: "break-word", minWidth: 0 }}>
-                        {highlight(rawName, query)}
+                        {highlight(rawName, deferredQuery)}
                       </div>
                     </div>
 
@@ -680,6 +678,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           cursor: "pointer",
                           width: isMobile ? "100%" : undefined,
                           touchAction: "manipulation",
+                          WebkitTapHighlightColor: "transparent",
                         }}
                         title="Reservation message"
                       >
@@ -700,6 +699,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
                           width: isMobile ? "100%" : undefined,
                           touchAction: "manipulation",
+                          WebkitTapHighlightColor: "transparent",
                         }}
                         title={it.room_id ? "Open reservation" : "No room assigned yet"}
                       >
@@ -722,6 +722,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         cursor: "pointer",
                         width: isMobile ? "100%" : undefined,
                         touchAction: "manipulation",
+                        WebkitTapHighlightColor: "transparent",
                       }}
                       title="Copy check-in link"
                     >
@@ -743,6 +744,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         cursor: "pointer",
                         width: isMobile ? "100%" : undefined,
                         touchAction: "manipulation",
+                        WebkitTapHighlightColor: "transparent",
                       }}
                       title="Resolve in Calendar"
                     >
@@ -765,7 +767,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 textAlign: "center",
               }}
             >
-              {query ? "No guests match your search." : "No current or upcoming reservations."}
+              {deferredQuery ? "No guests match your search." : "No current or upcoming reservations."}
             </div>
           )}
         </div>
@@ -786,13 +788,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           <div
             role="dialog"
             aria-modal="true"
-            // close on background press (touch + mouse)
             onMouseDown={() => setRmModal(null)}
             onTouchStart={() => setRmModal(null)}
             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 60, display: "grid", placeItems: "center", padding: 12 }}
           >
             <div
-              // stop background closing when interacting inside
               onClick={(e)=>e.stopPropagation()}
               onMouseDown={(e)=>e.stopPropagation()}
               onTouchStart={(e)=>e.stopPropagation()}
@@ -821,7 +821,6 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   const [tpl, setTpl] = useState<any>(null);
   const [values, setValues] = useState<Record<string,string>>({});
   const [preview, setPreview] = useState<string>("");
-  const [copied, setCopied] = useState(false);
 
   function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
   function _replaceVarsHtml(html: string, vars: Record<string,string>) {
@@ -876,11 +875,11 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
     setPreview(_renderRM(tpl, merged));
   }, [tpl, values, row]);
 
+  // Copiază PREVIEW direct, fără toggle “Copied!”
   async function onCopyPreview() {
     const text = preview.replace(/<br\/>/g, "\n").replace(/<[^>]+>/g, "");
     const ok = await copyTextMobileSafe(text);
-    setCopied(ok);
-    if (ok) setTimeout(()=>setCopied(false), 1500);
+    if (!ok) alert("Could not copy preview.");
   }
 
   return (
@@ -913,8 +912,8 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
           />
 
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
-            <button type="button" className="sb-btn" onClick={onCopyPreview} style={{ touchAction: "manipulation" }}>
-              {copied ? "Copied!" : "Copy preview"}
+            <button type="button" className="sb-btn" onClick={onCopyPreview} style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}>
+              Copy preview
             </button>
             <GenerateLinkButton propertyId={propertyId} bookingId={row.id} values={values} />
           </div>
@@ -924,28 +923,27 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   );
 }
 
+/* ───────────────── Copy link — silent & instant ───────────────── */
+
 function GenerateLinkButton({ propertyId, bookingId, values }:{ propertyId: string; bookingId: string|null; values: Record<string,string> }) {
   const [busy, setBusy] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   async function onClick() {
-    if (!bookingId) { alert("Missing booking id"); return; }
+    if (!bookingId || busy) return;
     setBusy(true);
     try {
       const res = await fetch("/api/reservation-message/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ property_id: propertyId, booking_id: bookingId, values }),
+        keepalive: true,
       });
       const j = await res.json().catch(()=>({}));
-      if (!res.ok) { alert(j?.error || "Failed to generate link"); setBusy(false); return; }
-      const url = j?.url as string;
-      if (url) {
-        const ok = await copyTextMobileSafe(url);
-        setCopied(ok);
-        if (!ok) return;
-        setTimeout(()=>setCopied(false), 1500);
-      }
+      if (!res.ok || !j?.url) { alert(j?.error || "Failed to generate link"); return; }
+      const url = String(j.url);
+      const ok = await copyTextMobileSafe(url);
+      if (!ok) alert("Could not copy link.");
+      // nimic de afisat dacă a mers — e deja în clipboard
     } catch (e:any) {
       alert(e?.message || "Network error");
     } finally {
@@ -959,10 +957,10 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{ propertyId: stri
       className="sb-btn sb-btn--primary"
       onClick={onClick}
       disabled={busy || !bookingId}
-      title={bookingId ? "Generate link" : "No booking id"}
-      style={{ touchAction: "manipulation" }}
+      title={bookingId ? "Copy generated link" : "No booking id"}
+      style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
     >
-      {copied ? "Copied!" : (busy ? "Generating…" : "Copy link")}
+      Copy link
     </button>
   );
 }
