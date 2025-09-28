@@ -437,6 +437,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       </span>
     );
   }
+
+  // Derive OTA badge meta (including temporary manual fallback for testing)
+  function otaMetaForRow(it: OverviewRow, kind: OverviewRow["status"]): { provider?: string | null; color?: string | null; logo?: string | null } | null {
+    const hasOta = !!(it._ota_provider || it._ota_color || it._ota_logo_url);
+    if (hasOta) return { provider: it._ota_provider, color: it._ota_color as any, logo: it._ota_logo_url as any };
+    // TEMP test: manual reservation badge — show only for manual-green (no reason, no OTA)
+    if (!it._reason && kind === 'green') {
+      return { provider: 'Manual', color: '#6CCC4C', logo: '/trivago.png' };
+    }
+    return null;
+  }
   const BTN_TOUCH_STYLE: React.CSSProperties = {
     padding: "12px 14px",
     minHeight: 44,
@@ -682,11 +693,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         {STATUS_LABEL[kind]}
                       </span>
                     )}
-                    {isSmall && (
+                    {isSmall && (() => { const meta = otaMetaForRow(it, kind); return meta ? (
                       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                        <OtaBadge provider={it._ota_provider} color={it._ota_color as any} logo={it._ota_logo_url as any} />
+                        <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} />
                       </div>
-                    )}
+                    ) : null; })()}
 
                     {/* 1) Guest name */}
                     <div style={lineWrap}>
@@ -719,7 +730,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       <span style={badgeStyle(kind)} title={statusTooltip(it)}>
                         {STATUS_LABEL[kind]}
                       </span>
-                      <OtaBadge provider={it._ota_provider} color={it._ota_color as any} logo={it._ota_logo_url as any} />
+                      {(() => { const meta = otaMetaForRow(it, kind); return meta ? (
+                        <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} />
+                      ) : null; })()}
                     </div>
                   )}
                 </div>
