@@ -731,10 +731,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   )}
                 </div>
 
-                {/* OTA badge under the Dates row — on mobile only (full width) */}
-                {isSmall && (() => { const meta = otaMetaForRow(it, kind); return meta ? (
-                  <div style={{ marginTop: 6 }}>
-                    <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} fullWidth={true} />
+                {/* OTA badge under the Dates row (desktop and mobile). */}
+                {(() => { const meta = otaMetaForRow(it, kind); return meta ? (
+                  <div style={{ marginTop: 6, width: isSmall ? '100%' : '26ch' }}>
+                    <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} fullWidth={isSmall} />
                   </div>
                 ) : null; })()}
 
@@ -749,12 +749,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     flexWrap: isSmall ? undefined : "wrap",
                   }}
                 >
-                  {/* Desktop: OTA badge on the same line with action buttons; approx width of date range */}
-                  {!isSmall && (() => { const meta = otaMetaForRow(it, kind); return meta ? (
-                    <div style={{ minWidth: '26ch' }}>
-                      <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} />
-                    </div>
-                  ) : null; })()}
+                  {/* Desktop: (no badge here; shown under dates above) */}
                   {kind === "green" && (
                     <>
                       <button
