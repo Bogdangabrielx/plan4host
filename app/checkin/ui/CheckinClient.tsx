@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState, useImperativeHandle } from "react";
+import Image from "next/image";
 
 type PropertyInfo = {
   id: string;
@@ -258,6 +259,44 @@ export default function CheckinClient() {
     return () => { if (docFilePreview) URL.revokeObjectURL(docFilePreview); };
   }, [docFilePreview]);
 
+  // ---------- THEME & ICONS ----------
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const attr = document.documentElement.getAttribute("data-theme");
+    if (attr === "dark") return true;
+    if (attr === "light") return false;
+    return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false;
+  });
+  useEffect(() => {
+    const m = window.matchMedia?.("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    try { m?.addEventListener("change", onChange); } catch { m?.addListener?.(onChange); }
+    return () => {
+      try { m?.removeEventListener("change", onChange); } catch { m?.removeListener?.(onChange); }
+    };
+  }, []);
+  useEffect(() => {
+    const root = document.documentElement;
+    const ob = new MutationObserver(() => {
+      const t = root.getAttribute("data-theme");
+      if (t === "dark") setIsDark(true);
+      if (t === "light") setIsDark(false);
+    });
+    ob.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => ob.disconnect();
+  }, []);
+  const formIcon = (key: "email"|"phone"|"address"|"city"|"country"|"id") => {
+    const token = {
+      email: "email",
+      phone: "phone",
+      address: "address",
+      city: "city",
+      country: "country",
+      id: "ID",
+    }[key];
+    return `/formular_${token}_${isDark ? "fordark" : "forlight"}.png`;
+  };
+
   // ---------- STYLES ----------
   const CARD: React.CSSProperties = useMemo(() => ({
     background: "var(--panel)",
@@ -286,6 +325,12 @@ export default function CheckinClient() {
   const LABEL: React.CSSProperties = useMemo(() => ({
     fontSize: 12, fontWeight: 800, color: "var(--muted)", marginBottom: 6, display: "block",
   }), []);
+  const LABEL_ROW: React.CSSProperties = useMemo(() => ({
+    ...LABEL,
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+  }), [LABEL]);
   const BTN_PRIMARY: React.CSSProperties = useMemo(() => ({
     padding: "12px 16px", borderRadius: 12, border: "1px solid var(--primary)",
     background: "var(--primary)", color: "#0c111b", fontWeight: 900, cursor: "pointer",
@@ -641,30 +686,45 @@ export default function CheckinClient() {
             {/* Contact */}
             <div style={ROW_2}>
               <div>
-                <label style={LABEL}>Email*</label>
-                <input style={INPUT} type="email" value={email} onChange={e => setEmail(e.currentTarget.value)} placeholder="***@example.com" />
+                <label htmlFor="checkin-email" style={LABEL_ROW}>
+                  <Image src={formIcon("email")} alt="" width={16} height={16} />
+                  <span>Email*</span>
+                </label>
+                <input id="checkin-email" style={INPUT} type="email" value={email} onChange={e => setEmail(e.currentTarget.value)} placeholder="***@example.com" />
               </div>
               <div>
-                <label style={LABEL}>Phone*</label>
-                <input style={INPUT} value={phone} onChange={e => setPhone(e.currentTarget.value)} placeholder="+40 700 000 000" />
+                <label htmlFor="checkin-phone" style={LABEL_ROW}>
+                  <Image src={formIcon("phone")} alt="" width={16} height={16} />
+                  <span>Phone*</span>
+                </label>
+                <input id="checkin-phone" style={INPUT} value={phone} onChange={e => setPhone(e.currentTarget.value)} placeholder="+40 700 000 000" />
               </div>
             </div>
 
             {/* Address */}
             <div style={ROW_1}>
               <div>
-                <label style={LABEL}>Address</label>
-                <input style={INPUT} value={address} onChange={e => setAddress(e.currentTarget.value)} placeholder="Street, number, apt." />
+                <label htmlFor="checkin-address" style={LABEL_ROW}>
+                  <Image src={formIcon("address")} alt="" width={16} height={16} />
+                  <span>Address</span>
+                </label>
+                <input id="checkin-address" style={INPUT} value={address} onChange={e => setAddress(e.currentTarget.value)} placeholder="Street, number, apt." />
               </div>
 
               <div style={ROW_2}>
                 <div>
-                  <label style={LABEL}>City</label>
-                  <input style={INPUT} value={city} onChange={e => setCity(e.currentTarget.value)} placeholder="Bucharest" />
+                  <label htmlFor="checkin-city" style={LABEL_ROW}>
+                    <Image src={formIcon("city")} alt="" width={16} height={16} />
+                    <span>City</span>
+                  </label>
+                  <input id="checkin-city" style={INPUT} value={city} onChange={e => setCity(e.currentTarget.value)} placeholder="Bucharest" />
                 </div>
 
                 <div>
-                  <label style={LABEL}>Country*</label>
+                  <label htmlFor="checkin-country" style={LABEL_ROW}>
+                    <Image src={formIcon("country")} alt="" width={16} height={16} />
+                    <span>Country*</span>
+                  </label>
                   <Combobox
                     ref={countryRef}
                     id="checkin-country"
@@ -683,8 +743,12 @@ export default function CheckinClient() {
             {/* Identity document */}
             <div style={{ ...ROW_1, marginTop: 6 }}>
               <div>
-                <label style={LABEL}>Document type*</label>
+                <label htmlFor="checkin-doc-type" style={LABEL_ROW}>
+                  <Image src={formIcon("id")} alt="" width={16} height={16} />
+                  <span>Document type*</span>
+                </label>
                 <select
+                  id="checkin-doc-type"
                   style={SELECT}
                   value={docType}
                   onChange={(e) => {
