@@ -19,7 +19,7 @@ type Property = {
 type Room = { id: string; name: string; property_id: string; room_type_id?: string | null };
 
 type OverviewRow = {
-  id: string | null;
+  id: string | null;               // ← booking id
   property_id: string;
   room_id: string | null;
   start_date: string;
@@ -275,13 +275,14 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   }, []);
 
   // Refresh client-side
+  const supabaseClient = useMemo(() => createClient(), []);
   const refresh = useCallback(async () => {
     if (!activePropertyId) return;
     setLoading("loading");
     setPill("Loading…");
 
     const [rRooms] = await Promise.all([
-      supabase
+      supabaseClient
         .from("rooms")
         .select("id,name,property_id,room_type_id")
         .eq("property_id", activePropertyId)
@@ -307,7 +308,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       setLoading("error");
       setPill("Error");
     }
-  }, [activePropertyId, supabase, setPill]);
+  }, [activePropertyId, supabaseClient, setPill]);
 
   useEffect(() => {
     setProperties(initialProperties || []);
@@ -380,7 +381,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       copyTimer.current = window.setTimeout(() => setCopiedKey(null), 1500);
     } catch {
-      // ultima plasă de siguranță:
       prompt("Copy this link:", link);
     }
   }, []);
@@ -801,12 +801,52 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 /* ───────────────── Reservation Message (safe HTML build) ───────────────── */
 
 function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
+  const supabase = useMemo(() => createClient(), []);
   const storageKey = `p4h:rm:template:${propertyId}`;
+
   const [tpl, setTpl] = useState<any>(null);
   const [values, setValues] = useState<Record<string,string>>({});
   const [preview, setPreview] = useState<string>("");
-  const [copied, setCopied] = useState(false);
 
+  // timpi/interval actuali, LIVE din DB bookings
+  const [ciTime, setCiTime] = useState<string | null>(null);
+  const [coTime, setCoTime] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string>(row.start_date);
+  const [endDate, setEndDate] = useState<string>(row.end_date);
+  const [loadingTimes, setLoadingTimes] = useState<boolean>(false);
+
+  // aduce template-ul local
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      setTpl(raw ? JSON.parse(raw) : null);
+    } catch { setTpl(null); }
+  }, [storageKey]);
+
+  // ── FETCH live start_time / end_time (și date, în caz că s-au schimbat) ──
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!row?.id) return;
+      setLoadingTimes(true);
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("start_time,end_time,start_date,end_date")
+        .eq("id", row.id)
+        .single();
+      if (!alive) return;
+      if (!error && data) {
+        setCiTime(data.start_time ?? null);
+        setCoTime(data.end_time ?? null);
+        if (data.start_date) setStartDate(data.start_date);
+        if (data.end_date) setEndDate(data.end_date);
+      }
+      setLoadingTimes(false);
+    })();
+    return () => { alive = false; };
+  }, [supabase, row?.id]);
+
+  // escape helpers
   function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
   function _replaceVarsHtml(html: string, vars: Record<string,string>) {
     if (!html) return "";
@@ -836,38 +876,51 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
     return out.join("\n");
   }
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      setTpl(raw ? JSON.parse(raw) : null);
-    } catch { setTpl(null); }
-  }, [storageKey]);
-
+  // rebuild preview când se schimbă template/valori/ciTime/coTime/date
   useEffect(() => {
     if (!tpl) { setPreview(""); return; }
+
     const builtins: Record<string,string> = {
       guest_first_name: (row._guest_first_name || "").toString(),
-      guest_last_name: (row._guest_last_name || "").toString(),
-      check_in_date: row.start_date,
-      check_in_time: "14:00",
-      check_out_date: row.end_date,
-      check_out_time: "11:00",
-      room_name: row._room_label || "",
-      room_type: row._room_type_name || "",
-      property_name: "",
+      guest_last_name:  (row._guest_last_name  || "").toString(),
+
+      check_in_date:  startDate,
+      check_out_date: endDate,
+      check_in_time:  ciTime || "",
+      check_out_time: coTime || "",
+
+      // aliasuri pentru șabloane mai vechi
+      checkin_date:   startDate,
+      checkout_date:  endDate,
+      checkin_time:   ciTime || "",
+      checkout_time:  coTime || "",
+
+      room_name:      row._room_label || "",
+      room_type:      row._room_type_name || "",
+      property_name:  "",
     };
+
     const merged = { ...builtins, ...values };
     setPreview(_renderRM(tpl, merged));
-  }, [tpl, values, row]);
+  }, [tpl, values, row, ciTime, coTime, startDate, endDate]);
 
   async function onCopyPreview() {
     try {
       const text = preview.replace(/<br\/>/g, "\n").replace(/<[^>]+>/g, "");
       await copyTextMobileSafe(text);
-      setCopied(true);
-      setTimeout(()=>setCopied(false), 1500);
+      // feedback vizual – ui standard „Copied!” e suficient
     } catch {}
   }
+
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!preview) return;
+    // reset label după 1.5s când copiem
+    if (copied) {
+      const t = setTimeout(() => setCopied(false), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [copied, preview]);
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -894,7 +947,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
           )}
 
           <div
-            style={{ border: "1px solid var(--border)", borderRadius: 10, background: "var(--panel)", padding: 12 }}
+            style={{ border: "1px solid var(--border)", borderRadius: 10, background: "var(--panel)", padding: 12, opacity: loadingTimes ? .7 : 1 }}
             dangerouslySetInnerHTML={{ __html: preview || "" }}
           />
 
@@ -902,7 +955,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
             <button
               type="button"
               className="sb-btn"
-              onClick={onCopyPreview}
+              onClick={async () => { await onCopyPreview(); setCopied(true); }}
               onTouchStart={() => {}}
               style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
@@ -916,7 +969,11 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   );
 }
 
-function GenerateLinkButton({ propertyId, bookingId, values }:{ propertyId: string; bookingId: string|null; values: Record<string,string> }) {
+function GenerateLinkButton({ propertyId, bookingId, values }:{
+  propertyId: string;
+  bookingId: string|null;
+  values: Record<string,string>;
+}) {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -935,7 +992,7 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{ propertyId: stri
         alert(j?.error || "Failed to generate link");
         return;
       }
-      await copyTextMobileSafe(String(j.url));   // copiază imediat link-ul generat (mobil + desktop)
+      await copyTextMobileSafe(String(j.url));   // copiază imediat link-ul generat
       setCopied(true);
       setTimeout(()=>setCopied(false), 1500);
     } catch (e:any) {
