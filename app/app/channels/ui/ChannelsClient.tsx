@@ -560,7 +560,7 @@ function ManageTypeModal({
   function defaultColor(p?: string | null) {
     const s = norm(p);
     if (s.includes('airbnb')) return 'rgba(255, 90, 96, 0.81)';
-    if (s.includes('booking')) return 'rgba(30, 143, 255, 0.81)';
+    if (s.includes('booking')) return 'rgba(30, 143, 255, 0.9)';
     if (s.includes('expedia')) return 'rgba(254,203,46,0.81)';
     return 'rgba(139,92,246,0.81)';
   }
@@ -693,7 +693,7 @@ function ManageTypeModal({
                     alt=""
                     width={24}
                     height={24}
-                    style={{ borderRadius: 6, }}
+                    style={{ borderRadius: 6, border: "1px solid var(--border)" }}
                   />
                 ) : (
                   <span className="sb-badge" title="No logo yet">No logo</span>
@@ -705,7 +705,7 @@ function ManageTypeModal({
                     const targ = (customProvider || "other").trim() || "other";
                     triggerLogoPick(targ);
                   }}
-                  style={{ color: "var(--primary)", textDecoration: "underline", cursor: "pointer" }}
+                  style={{ fontSize:6 ,color: "var(--primary)", textDecoration: "underline", cursor: "pointer" }}
                 >
                   Upload PNG (512×512)
                 </a>
@@ -789,7 +789,7 @@ function ManageTypeModal({
                 <div style={{ display: "grid", gap: 4, minWidth: 260 }}>
                   <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                     {logoSrc ? (
-                      <img src={logoSrc} alt="" width={18} height={18} style={{ borderRadius: 5, border: "1px solid var(--border)" }} />
+                      <img src={logoSrc} alt="" width={18} height={18} style={{ borderRadius: 5, }} />
                     ) : (
                       <span title="Provider color" style={{ width: 14, height: 14, borderRadius: 999, border: '1px solid var(--border)', display:'inline-block', background: (colorMap[np] || defaultColor(ii.provider)) }} />
                     )}
