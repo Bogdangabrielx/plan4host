@@ -397,13 +397,14 @@ export async function POST(req: Request) {
           end_time,
           payload: icsText ? ev.summary || "" : "",
           resolved: false,
+          integration_id: I.id,
         });
         // create/update mapping without booking
         const nowIso = new Date().toISOString();
         if (mm) {
           await supa
             .from("ical_uid_map")
-            .update({ start_date, end_date, start_time, end_time, last_seen: nowIso })
+            .update({ start_date, end_date, start_time, end_time, last_seen: nowIso, integration_id: I.id })
             .eq("id", mm.id);
         } else {
           await supa.from("ical_uid_map").insert({
@@ -419,6 +420,7 @@ export async function POST(req: Request) {
             start_time,
             end_time,
             last_seen: nowIso,
+            integration_id: I.id,
           });
         }
         unassigned++;
@@ -439,6 +441,8 @@ export async function POST(req: Request) {
           end_time,
           guest_name: guest,
           source: I.provider || "ical",
+          ota_integration_id: I.id,
+          ota_provider: I.provider || null,
           status: "confirmed",
         })
         .select("id")
@@ -457,6 +461,7 @@ export async function POST(req: Request) {
           end_time,
           payload: icsText ? ev.summary || "" : "",
           resolved: false,
+          integration_id: I.id,
         });
         unassigned++;
         continue;
@@ -475,6 +480,7 @@ export async function POST(req: Request) {
             start_time,
             end_time,
             last_seen: nowIso,
+            integration_id: I.id,
           })
           .eq("id", mm.id);
       } else {
@@ -491,6 +497,7 @@ export async function POST(req: Request) {
           start_time,
           end_time,
           last_seen: nowIso,
+          integration_id: I.id,
         });
       }
       added++;

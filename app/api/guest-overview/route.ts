@@ -19,6 +19,8 @@ type BRow = {
   status: string | null;
   source: string | null;
   ical_uid: string | null;
+  ota_integration_id?: string | null;
+  ota_provider?: string | null;
   guest_first_name: string | null;
   guest_last_name: string | null;
   guest_name: string | null;
@@ -91,7 +93,7 @@ export async function GET(req: Request) {
       .from("bookings")
       .select(`
         id, property_id, room_id, room_type_id,
-        start_date, end_date, status, source, ical_uid,
+        start_date, end_date, status, source, ical_uid, ota_integration_id, ota_provider,
         guest_first_name, guest_last_name, guest_name,
         is_soft_hold, form_submitted_at, created_at,
         hold_status, hold_expires_at
@@ -105,6 +107,42 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: rBookings.error.message }, { status: 500 });
     }
     const bookings: BRow[] = (rBookings.data ?? []) as any[];
+
+    // Resolve missing integration linkage via uid_map (fallback)
+    const needMapFor = bookings.filter(b => !b.ota_integration_id && !!b.id).map(b => b.id);
+    const integByBooking = new Map<string, string>();
+    if (needMapFor.length > 0) {
+      const { data: maps } = await admin
+        .from("ical_uid_map")
+        .select("booking_id,integration_id")
+        .in("booking_id", needMapFor);
+      for (const m of (maps ?? [])) {
+        if (m && (m as any).booking_id && (m as any).integration_id) {
+          integByBooking.set(String((m as any).booking_id), String((m as any).integration_id));
+        }
+      }
+    }
+
+    // Load integration metadata for all linked bookings
+    const integrationIds = new Set<string>();
+    for (const b of bookings) {
+      if (b.ota_integration_id) integrationIds.add(String(b.ota_integration_id));
+      else if (integByBooking.has(String(b.id))) integrationIds.add(String(integByBooking.get(String(b.id))));
+    }
+    const integMeta = new Map<string, { provider: string | null; color: string | null; logo_url: string | null }>();
+    if (integrationIds.size > 0) {
+      const { data: ints } = await admin
+        .from("ical_type_integrations")
+        .select("id,provider,color,logo_url")
+        .in("id", Array.from(integrationIds));
+      for (const i of (ints ?? [])) {
+        integMeta.set(String((i as any).id), {
+          provider: (i as any).provider ?? null,
+          color: (i as any).color ?? null,
+          logo_url: (i as any).logo_url ?? null,
+        });
+      }
+    }
 
     // ——— Rooms & types ———
     const [rRooms, rTypes] = await Promise.all([
@@ -164,6 +202,9 @@ export async function GET(req: Request) {
       room_type_id: string | null;
       room_type_name: string | null;
       booking_id: string | null;
+      ota_provider?: string | null;
+      ota_color?: string | null;
+      ota_logo_url?: string | null;
       guest_first_name?: string | null;
       guest_last_name?: string | null;
       cutoff_ts?: string;
@@ -197,9 +238,21 @@ export async function GET(req: Request) {
           ? new Date(pk.form.hold_expires_at)
           : (pk.form?.form_submitted_at ? new Date(new Date(pk.form.form_submitted_at).getTime() + 2*60*60*1000) : null);
 
+      // Helper: resolve OTA meta for the primary booking in this pack (prefer iCal booking)
+      function pickMeta(b: BRow | null | undefined): { provider: string | null; color: string | null; logo_url: string | null } {
+        if (!b) return { provider: null, color: null, logo_url: null };
+        const intId = b.ota_integration_id || integByBooking.get(String(b.id)) || null;
+        if (intId && integMeta.has(String(intId))) {
+          const m = integMeta.get(String(intId))!;
+          return { provider: m.provider, color: m.color, logo_url: m.logo_url };
+        }
+        return { provider: b.ota_provider ?? null, color: null, logo_url: null };
+      }
+
       // A) iCal + Form — ok dacă avem ori nume ori cameră
       if (hasIcal && hasForm) {
         if (roomId || nameKnown) {
+          const meta = pickMeta(pk.ical!);
           items.push({
             kind: "green",
             start_date: pk.start_date,
@@ -209,10 +262,14 @@ export async function GET(req: Request) {
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
             booking_id: pk.ical?.id ?? pk.form?.id ?? null,
+            ota_provider: meta.provider,
+            ota_color: meta.color,
+            ota_logo_url: meta.logo_url,
             guest_first_name: pk.form?.guest_first_name ?? pk.ical?.guest_first_name ?? null,
             guest_last_name:  pk.form?.guest_last_name  ?? pk.ical?.guest_last_name  ?? null,
           });
         } else {
+          const meta = pickMeta(pk.ical!);
           items.push({
             kind: "red",
             reason: "room_required_auto_failed",
@@ -223,6 +280,9 @@ export async function GET(req: Request) {
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
             booking_id: pk.ical?.id ?? pk.form?.id ?? null,
+            ota_provider: meta.provider,
+            ota_color: meta.color,
+            ota_logo_url: meta.logo_url,
             guest_first_name: pk.form?.guest_first_name ?? pk.ical?.guest_first_name ?? null,
             guest_last_name:  pk.form?.guest_last_name  ?? pk.ical?.guest_last_name  ?? null,
           });
@@ -232,6 +292,7 @@ export async function GET(req: Request) {
 
       // B) doar iCal
       if (hasIcal && !hasForm) {
+        const meta = pickMeta(pk.ical!);
         if (nameKnown) {
           items.push({
             kind: "green",
@@ -242,6 +303,9 @@ export async function GET(req: Request) {
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
             booking_id: pk.ical?.id ?? null,
+            ota_provider: meta.provider,
+            ota_color: meta.color,
+            ota_logo_url: meta.logo_url,
             guest_first_name: pk.ical?.guest_first_name ?? null,
             guest_last_name:  pk.ical?.guest_last_name  ?? null,
           });
@@ -256,6 +320,9 @@ export async function GET(req: Request) {
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
             booking_id: pk.ical?.id ?? null,
+            ota_provider: meta.provider,
+            ota_color: meta.color,
+            ota_logo_url: meta.logo_url,
             guest_first_name: null,
             guest_last_name: null,
             cutoff_ts: cutoffIcal.toISOString(),
@@ -271,6 +338,9 @@ export async function GET(req: Request) {
             room_type_id: pk.type_id,
             room_type_name: pk.type_name,
             booking_id: pk.ical?.id ?? null,
+            ota_provider: meta.provider,
+            ota_color: meta.color,
+            ota_logo_url: meta.logo_url,
           });
         }
         continue;
@@ -402,6 +472,9 @@ export async function GET(req: Request) {
       _room_type_name: it.room_type_name ?? null,
       _reason: it.reason ?? null,
       _cutoff_ts: it.cutoff_ts ?? null,
+      _ota_provider: it.ota_provider ?? null,
+      _ota_color: it.ota_color ?? null,
+      _ota_logo_url: it.ota_logo_url ?? null,
       _guest_first_name: it.guest_first_name ?? null,
       _guest_last_name: it.guest_last_name ?? null,
     }));

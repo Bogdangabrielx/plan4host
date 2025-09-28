@@ -19,6 +19,9 @@ type TypeIntegration = {
   url: string;
   is_active: boolean | null;
   last_sync: string | null;
+  // optional metadata persisted in DB (migration adds these)
+  color?: string | null;
+  logo_url?: string | null;
 };
 
 /** Mic buton reutilizabil pentru copiere cu feedback */
@@ -171,7 +174,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           .eq("property_id", propertyId)
           .order("name", { ascending: true }),
         supabase.from("ical_type_integrations")
-          .select("id,property_id,room_type_id,provider,url,is_active,last_sync")
+          .select("id,property_id,room_type_id,provider,url,is_active,last_sync,color,logo_url")
           .eq("property_id", propertyId)
           .order("created_at", { ascending: true }),
       ]);
@@ -483,6 +486,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               onAdd={(provider, url) => addIntegration(manageTypeId!, provider, url)}
               onDelete={(id) => deleteIntegration(id)}
               onToggle={(ii) => toggleActive(ii)}
+              onUpdate={(id, patch) => setIntegrations(prev => prev.map(x => x.id === id ? ({ ...x, ...patch }) as TypeIntegration : x))}
             />
           )}
         </Modal>
@@ -538,19 +542,21 @@ function InnerModal({ title, children, onClose }:{
 }
 
 function ManageTypeModal({
-  timezone, typeId, integrations, onClose, onAdd, onDelete, onToggle
+  timezone, typeId, integrations, onClose, onAdd, onDelete, onToggle, onUpdate
 }:{
   timezone: string | null;
   typeId: string;
-  integrations: { id: string; provider: string | null; url: string; is_active: boolean | null; last_sync: string | null; }[];
+  integrations: { id: string; provider: string | null; url: string; is_active: boolean | null; last_sync: string | null; color?: string | null; logo_url?: string | null; }[];
   onClose: () => void;
   onAdd: (provider: string, url: string) => void;
   onDelete: (id: string) => void;
   onToggle: (ii: any) => void;
+  onUpdate: (id: string, patch: Partial<TypeIntegration>) => void;
 }) {
   const [provider, setProvider] = useState("Booking");
   const [url, setUrl] = useState("");
   const [customProvider, setCustomProvider] = useState("");
+  const supa = useMemo(() => createClient(), []);
 
   // OTA color map (UI-only), persisted per room type
   const [colorMap, setColorMap] = useState<Record<string,string>>({});
@@ -608,6 +614,7 @@ function ManageTypeModal({
   // Single hidden input for picking logos (used for "Other" + per-row change)
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const logoTargetProviderRef = useRef<string>("other");
+  const logoTargetIntegrationIdRef = useRef<string | null>(null);
   async function validateAndReadPNG(file: File): Promise<string> {
     if (file.type !== "image/png") throw new Error("PNG required");
     const dataUrl: string = await new Promise((resolve, reject) => {
@@ -632,19 +639,52 @@ function ManageTypeModal({
   }
   async function onPickLogo(files: FileList | null) {
     const target = logoTargetProviderRef.current || "other";
+    const targetIntegration = logoTargetIntegrationIdRef.current;
     if (!files || !files[0]) return;
     try {
       const dataUrl = await validateAndReadPNG(files[0]);
-      saveLogo(target, dataUrl);
+      // If we target a concrete integration row, upload via API and update DB logo_url
+      if (targetIntegration) {
+        const fd = new FormData();
+        fd.append("integrationId", targetIntegration);
+        // Reconstruct a File from dataUrl to preserve PNG type, or send original file
+        // We already validated PNG; we can send the original file directly
+        fd.append("file", files[0]);
+        const res = await fetch("/api/ical/logo/upload", { method: "POST", body: fd });
+        if (!res.ok) {
+          const txt = await res.text().catch(() => "");
+          throw new Error(txt || `Upload failed (${res.status})`);
+        }
+        const j = await res.json().catch(() => ({}));
+        const url: string | undefined = j?.url;
+        if (url) onUpdate(targetIntegration, { logo_url: url });
+      } else {
+        // Fallback: store per-provider logo in localStorage for header preview
+        saveLogo(target, dataUrl);
+      }
     } catch (e:any) {
       alert(e?.message || "Upload failed. PNG 512×512 required.");
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
+      logoTargetIntegrationIdRef.current = null;
     }
   }
-  function triggerLogoPick(targetProviderName: string) {
+  function triggerLogoPick(targetProviderName: string, integrationId?: string) {
     logoTargetProviderRef.current = targetProviderName;
+    logoTargetIntegrationIdRef.current = integrationId || null;
     fileInputRef.current?.click();
+  }
+
+  async function persistColor(integrationId: string, c: string) {
+    try {
+      const { data, error } = await supa
+        .from("ical_type_integrations")
+        .update({ color: c })
+        .eq("id", integrationId)
+        .select("id,color,logo_url")
+        .single();
+      if (!error && data) onUpdate(integrationId, { color: data.color ?? c });
+    } catch { /* noop */ }
   }
 
   return (
@@ -781,8 +821,9 @@ function ManageTypeModal({
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {integrations.map(ii => {
             const np = norm(ii.provider);
-            const logoSrc = logoSrcFor(ii.provider);
-            const showLogoButton = !providerBuiltinLogo(ii.provider); // show "Logo" only for non-presets
+            const builtin = providerBuiltinLogo(ii.provider);
+            const logoSrc = ii.logo_url || builtin || null;
+            const showLogoButton = !builtin; // allow custom upload only for non-presets
 
             return (
               <li key={ii.id} className="sb-card" style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -791,7 +832,7 @@ function ManageTypeModal({
                     {logoSrc ? (
                       <img src={logoSrc} alt="" width={18} height={18} style={{ borderRadius: 5, }} />
                     ) : (
-                      <span title="Provider color" style={{ width: 14, height: 14, borderRadius: 999, border: '1px solid var(--border)', display:'inline-block', background: (colorMap[np] || defaultColor(ii.provider)) }} />
+                      <span title="Provider color" style={{ width: 14, height: 14, borderRadius: 999, border: '1px solid var(--border)', display:'inline-block', background: (ii.color || colorMap[np] || defaultColor(ii.provider)) }} />
                     )}
                     <strong>{ii.provider || "Unknown"}</strong>
                   </div>
@@ -807,7 +848,7 @@ function ManageTypeModal({
                         'rgba(139,92,246,0.81)','rgba(13,148,136,0.81)','rgba(148,163,184,0.81)','rgba(59,130,246,0.81)',
                         'rgba(251,146,60,0.81)','rgba(244,114,182,0.81)'
                       ].map((c,i)=>(
-                        <button key={i} onClick={()=>{ saveColor(ii.provider || 'other', c); setPickerFor(null); }}
+                        <button key={i} onClick={async ()=>{ saveColor(ii.provider || 'other', c); await persistColor(ii.id, c); setPickerFor(null); }}
                           title="Pick color" style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
                       ))}
                     </div>
@@ -817,7 +858,7 @@ function ManageTypeModal({
                     <>
                       <button
                         className="sb-btn"
-                        onClick={() => triggerLogoPick(ii.provider || "other")}
+                        onClick={() => triggerLogoPick(ii.provider || "other", ii.id)}
                         title="Upload logo (PNG 512×512)"
                       >
                         Logo

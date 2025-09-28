@@ -9,13 +9,26 @@ export async function POST(req: Request) {
   const ev = await supabase.from("ical_unassigned_events").select("*").eq("id", eventId).maybeSingle();
   if (ev.error || !ev.data) return NextResponse.json({ error: "Event not found" }, { status: 404 });
 
+  // find provider for this integration (if present)
+  let provider: string | null = null;
+  if (ev.data.integration_id) {
+    const rI = await supabase
+      .from("ical_type_integrations")
+      .select("provider")
+      .eq("id", ev.data.integration_id)
+      .maybeSingle();
+    if (!rI.error && rI.data) provider = (rI.data as any).provider ?? null;
+  }
+
   // creează booking
   const ins = await supabase.from("bookings").insert({
     property_id: ev.data.property_id,
     room_id: roomId,
     start_date: ev.data.start_date, end_date: ev.data.end_date,
     start_time: ev.data.start_time ?? null, end_time: ev.data.end_time ?? null,
-    status: "confirmed"
+    status: "confirmed",
+    ota_integration_id: ev.data.integration_id ?? null,
+    ota_provider: provider ?? null,
   }).select().maybeSingle();
 
   if (ins.error || !ins.data) return NextResponse.json({ error: "Failed to create booking" }, { status: 500 });
@@ -29,9 +42,10 @@ export async function POST(req: Request) {
       room_id: roomId,
       booking_id: ins.data.id,
       uid: ev.data.uid,
-      source: "ManualAssign",
+      source: provider || "ManualAssign",
       start_date: ev.data.start_date, end_date: ev.data.end_date,
-      start_time: ev.data.start_time ?? null, end_time: ev.data.end_time ?? null
+      start_time: ev.data.start_time ?? null, end_time: ev.data.end_time ?? null,
+      integration_id: ev.data.integration_id ?? null,
     });
   }
 

@@ -29,6 +29,9 @@ type OverviewRow = {
   _room_label?: string | null;
   _room_type_id?: string | null;
   _room_type_name?: string | null;
+  _ota_provider?: string | null;
+  _ota_color?: string | null;
+  _ota_logo_url?: string | null;
   _reason?:
     | "waiting_form"
     | "waiting_ical"
@@ -396,6 +399,44 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     color: "#ffffff",
     letterSpacing: 0.0,
   });
+  // OTA badge helpers
+  function builtinLogo(provider?: string | null): string | null {
+    const p = (provider || "").toLowerCase();
+    if (p.includes("booking")) return "/booking.png";
+    if (p.includes("airbnb")) return "/airbnb.png";
+    if (p.includes("expedia")) return "/expedia.png";
+    return null;
+  }
+  function defaultOtaColor(provider?: string | null): string {
+    const s = (provider || "").toLowerCase();
+    if (s.includes("airbnb")) return "rgba(255, 90, 96, 0.81)";
+    if (s.includes("booking")) return "rgba(30, 143, 255, 0.90)";
+    if (s.includes("expedia")) return "rgba(254,203,46,0.81)";
+    return "rgba(139,92,246,0.81)"; // violet fallback
+  }
+  function OtaBadge({ provider, color, logo }: { provider?: string | null; color?: string | null; logo?: string | null }) {
+    const show = !!(provider || logo);
+    if (!show) return null;
+    const bg = (color && color.trim()) || defaultOtaColor(provider || "");
+    const src = (logo && logo.trim()) || builtinLogo(provider) || null;
+    return (
+      <span style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "4px 10px",
+        borderRadius: 21,
+        background: bg,
+        color: "#0c111b",
+        border: "1px solid var(--border)",
+        fontSize: 12,
+        fontWeight: 800,
+      }} title={provider || undefined}>
+        {src ? <img src={src} alt="" width={16} height={16} style={{ borderRadius: 4 }} /> : <span style={{ width: 12, height: 12, borderRadius: 999, background: "#fff", display: "inline-block" }} />}
+        <span>{provider || "OTA"}</span>
+      </span>
+    );
+  }
   const BTN_TOUCH_STYLE: React.CSSProperties = {
     padding: "12px 14px",
     minHeight: 44,
@@ -641,6 +682,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         {STATUS_LABEL[kind]}
                       </span>
                     )}
+                    {isSmall && (
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                        <OtaBadge provider={it._ota_provider} color={it._ota_color as any} logo={it._ota_logo_url as any} />
+                      </div>
+                    )}
 
                     {/* 1) Guest name */}
                     <div style={lineWrap}>
@@ -669,10 +715,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   </div>
 
                   {!isSmall && (
-                    <div style={{ justifySelf: "end" }}>
+                    <div style={{ justifySelf: "end", display: "grid", gap: 6, justifyItems: "end" }}>
                       <span style={badgeStyle(kind)} title={statusTooltip(it)}>
                         {STATUS_LABEL[kind]}
                       </span>
+                      <OtaBadge provider={it._ota_provider} color={it._ota_color as any} logo={it._ota_logo_url as any} />
                     </div>
                   )}
                 </div>

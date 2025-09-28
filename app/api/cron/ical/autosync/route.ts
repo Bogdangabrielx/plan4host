@@ -107,9 +107,10 @@ async function upsertUnassigned(
     room_type_id: string;
     ev: ParsedEvent;
     propTZ: string;
+    integration_id?: string;
   }
 ) {
-  const { property_id, room_type_id, ev, propTZ } = params;
+  const { property_id, room_type_id, ev, propTZ, integration_id } = params;
 
   // Normalizare date/time în timezone-ul proprietății
   let startDateStr = ev.start.date;
@@ -151,6 +152,7 @@ async function upsertUnassigned(
           end_date: endDateStr,
           start_time: startTimeStr,
           end_time: endTimeStr,
+          integration_id: integration_id ?? null,
         })
         .eq("id" as any, id as any); // forțăm tipul pentru a evita bugul de d.ts
       if (updErr) throw updErr;
@@ -167,6 +169,7 @@ async function upsertUnassigned(
           end_date: endDateStr,
           start_time: startTimeStr,
           end_time: endTimeStr,
+          integration_id: integration_id ?? null,
         })
         .select("id")
         .single();
@@ -196,6 +199,7 @@ async function upsertUnassigned(
       .update({
         start_time: startTimeStr,
         end_time: endTimeStr,
+        integration_id: integration_id ?? null,
       })
       .eq("id" as any, id as any);
     if (updErr) throw updErr;
@@ -212,6 +216,7 @@ async function upsertUnassigned(
         end_date: endDateStr,
         start_time: startTimeStr,
         end_time: endTimeStr,
+        integration_id: integration_id ?? null,
       })
       .select("id")
       .single();
@@ -364,6 +369,7 @@ async function runAutosync(req: Request) {
               room_type_id: feed.room_type_id,
               ev,
               propTZ,
+              integration_id: feed.id,
             });
             imported++;
           }
