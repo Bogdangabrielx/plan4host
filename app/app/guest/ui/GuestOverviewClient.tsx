@@ -414,7 +414,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (s.includes("expedia")) return "rgba(254,203,46,0.81)";
     return "rgba(139,92,246,0.81)"; // violet fallback
   }
-  function OtaBadge({ provider, color, logo }: { provider?: string | null; color?: string | null; logo?: string | null }) {
+  function OtaBadge({ provider, color, logo, fullWidth }: { provider?: string | null; color?: string | null; logo?: string | null; fullWidth?: boolean }) {
     const show = !!(provider || logo);
     if (!show) return null;
     const bg = (color && color.trim()) || defaultOtaColor(provider || "");
@@ -431,6 +431,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         border: "1px solid var(--border)",
         fontSize: 12,
         fontWeight: 800,
+        width: fullWidth ? "100%" : undefined,
       }} title={provider || undefined}>
         {src ? <img src={src} alt="" width={16} height={16} style={{ borderRadius: 4 }} /> : <span style={{ width: 12, height: 12, borderRadius: 999, background: "#fff", display: "inline-block" }} />}
         <span>{provider || "OTA"}</span>
@@ -693,11 +694,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         {STATUS_LABEL[kind]}
                       </span>
                     )}
-                    {isSmall && (() => { const meta = otaMetaForRow(it, kind); return meta ? (
-                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                        <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} />
-                      </div>
-                    ) : null; })()}
+                    {/* OTA badge will be rendered under the dates (see below) */}
 
                     {/* 1) Guest name */}
                     <div style={lineWrap}>
@@ -730,12 +727,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       <span style={badgeStyle(kind)} title={statusTooltip(it)}>
                         {STATUS_LABEL[kind]}
                       </span>
-                      {(() => { const meta = otaMetaForRow(it, kind); return meta ? (
-                        <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} />
-                      ) : null; })()}
                     </div>
                   )}
                 </div>
+
+                {/* OTA badge under the Dates row (desktop and mobile). On mobile it spans full width like buttons. */}
+                {(() => { const meta = otaMetaForRow(it, kind); return meta ? (
+                  <div style={{ marginTop: 6 }}>
+                    <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} fullWidth={isSmall} />
+                  </div>
+                ) : null; })()}
 
                 {/* Actions */}
                 <div
