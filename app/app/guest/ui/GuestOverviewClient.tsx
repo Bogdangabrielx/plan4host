@@ -29,8 +29,11 @@ type OverviewRow = {
   _room_label?: string | null;
   _room_type_id?: string | null;
   _room_type_name?: string | null;
-  _ota_provider?: string | null;   // booking|airbnb|expedia|other (if available from API)
-  _source?: string | null;         // fallback source string, free-form
+
+  // optional — dacă API-ul o expune; folosit pt. badge-ul OTA
+  _ota_provider?: string | null;   // ex. "Booking", "Airbnb", "Expedia", "Vrbo", etc.
+  _source?: string | null;         // fallback, string liber
+
   _reason?:
     | "waiting_form"
     | "waiting_ical"
@@ -196,6 +199,7 @@ function useIsSmall() {
 }
 
 function useTap(handler: () => void) {
+  // pointer-up = fără delay pe mobil, funcționează și pe desktop
   return {
     onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => {
       if (e.pointerType === "mouse" && (e.button ?? 0) !== 0) return;
@@ -205,7 +209,7 @@ function useTap(handler: () => void) {
   };
 }
 
-/* ───────────────── Provider helpers (badge color + icon) ───────────────── */
+/* ───────────────── OTA badge helpers ───────────────── */
 
 function normProvider(p?: string | null) {
   return (p || "").toLowerCase().trim();
@@ -215,33 +219,46 @@ function defaultProviderColor(provider?: string | null) {
   if (s.includes("airbnb")) return "rgba(255, 90, 96, 0.81)";
   if (s.includes("booking")) return "rgba(30, 144, 255, 0.81)";
   if (s.includes("expedia")) return "rgba(254,203,46,0.81)";
-  return "rgba(139,92,246,0.81)"; // generic
+  return "rgba(139,92,246,0.81)";
 }
 function providerIconPath(provider?: string | null) {
   const s = normProvider(provider);
   if (s.includes("airbnb")) return "/airbnb.png";
   if (s.includes("booking")) return "/booking.png";
   if (s.includes("expedia")) return "/expedia.png";
-  return "/ota.png"; // generic
+  return "/ota.png"; // generic fallback în public/
 }
-function resolveProvider(row: OverviewRow): string | null {
-  return row._ota_provider || (row._source ?? null);
-}
-function providerBadgeInfo(row: OverviewRow) {
-  const provider = resolveProvider(row);
+
+/**
+ * Caută culoarea (din Channels → Import) și un logo custom (dacă a fost încărcat la "Other"):
+ *  - culoarea: localStorage key `p4h:otaColors:type:${roomTypeId}` = Record<providerKey,color>
+ *  - logo custom: localStorage key `p4h:otaLogos:type:${roomTypeId}` = Record<providerKey,logoUrl>
+ * Dacă nu sunt găsite, folosește culoare/drawing implicită pe baza provider-ului.
+ */
+function getProviderBadgeInfo(row: OverviewRow) {
+  const provider = row._ota_provider || row._source || null;
   if (!provider) return null;
 
   const typeId = row._room_type_id || "";
-  const LS_KEY = `p4h:otaColors:type:${typeId}`;
+  const colorKey = `p4h:otaColors:type:${typeId}`;
+  const logoKey  = `p4h:otaLogos:type:${typeId}`;
+
   let colorMap: Record<string, string> = {};
+  let logoMap: Record<string, string> = {};
   try {
-    const raw = localStorage.getItem(LS_KEY);
+    const raw = localStorage.getItem(colorKey);
     colorMap = raw ? (JSON.parse(raw) as Record<string, string>) : {};
   } catch {}
+  try {
+    const raw = localStorage.getItem(logoKey);
+    logoMap = raw ? (JSON.parse(raw) as Record<string, string>) : {};
+  } catch {}
 
-  const key = normProvider(provider);
-  const color = colorMap[key] || defaultProviderColor(provider);
-  const icon = providerIconPath(provider);
+  const provKey = normProvider(provider);
+  const color = colorMap[provKey] || defaultProviderColor(provider);
+  const customLogo = (logoMap[provKey] || "").trim();
+  const icon = customLogo || providerIconPath(provider);
+
   return { color, icon, provider };
 }
 
@@ -251,7 +268,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const supabase = createClient();
   const { setPill } = useHeader();
 
-  // Theme-aware icons (for light/dark) — only for internal pictos (guest/room/night)
+  // Theme-aware icons (for light/dark) — doar pentru pictogramele interne (_forlight/_fordark)
   const [isDark, setIsDark] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     const attr = document.documentElement.getAttribute("data-theme");
@@ -649,7 +666,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               ((kind === "yellow" && it._reason === "waiting_form") ||
                 (kind === "red" && it._reason === "missing_form"));
 
-            const pInfo = providerBadgeInfo(it); // {color, icon, provider} | null
+            // OTA badge (culoare + logo)
+            const pInfo = getProviderBadgeInfo(it); // {color, icon, provider} | null
 
             return (
               <section
@@ -665,7 +683,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   overflow: "hidden",
                 }}
               >
-                {/* Header: Badge on small above name; on desktop on the right */}
+                {/* Header: Badge pe small sus; pe desktop în dreapta */}
                 <div
                   style={{
                     display: "grid",
@@ -701,33 +719,51 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       </div>
                     </div>
 
-                    {/* 3) Dates + Provider badge under dates */}
-                    <div style={{ display: "grid", gap: 6 }}>
-                      <div style={lineWrap}>
-                        <Image src={iconSrc("night")} alt="" width={16} height={16} style={iconStyle} />
-                        <div style={{ color: "var(--muted)" }}>
-                          {formatRange(it.start_date, it.end_date)}
-                        </div>
+                    {/* 3) Dates */}
+                    <div style={lineWrap}>
+                      <Image src={iconSrc("night")} alt="" width={16} height={16} style={iconStyle} />
+                      <div style={{ color: "var(--muted)" }}>
+                        {formatRange(it.start_date, it.end_date)}
                       </div>
+                    </div>
 
-                      {pInfo && (
-                        <div style={{ display: "flex" }}>
-                          {/* badge fără label, doar fundal + icon în colțul stâng */}
-                          <span
-                            title={pInfo.provider || undefined}
-                            style={{
-                              position: "relative",
-                              display: "inline-block",
-                              background: pInfo.color,
-                              borderRadius: 21,
-                              height: 28,
-                              minWidth: 48,
-                              paddingLeft: 28,
-                              paddingRight: 10,
-                              border: "1px solid var(--border)",
-                              boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
-                            }}
-                          >
+                    {/* 4) OTA badge sub linia de „night” */}
+                    {pInfo && (
+                      <div style={{ display: "flex" }}>
+                        <span
+                          title={pInfo.provider || undefined}
+                          style={{
+                            position: "relative",
+                            display: "inline-block",
+                            background: pInfo.color,
+                            borderRadius: 21,
+                            height: 28,
+                            minWidth: 48,
+                            paddingLeft: 28,
+                            paddingRight: 10,
+                            border: "1px solid var(--border)",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+                          }}
+                        >
+                          {/* Logo „lipit” în colțul stâng (fără label textual) */}
+                          {pInfo.icon.startsWith("http") ? (
+                            // Dacă e un URL extern încărcat de utilizator -> <img> simplu (evită next/image domain config)
+                            <img
+                              src={pInfo.icon}
+                              alt=""
+                              width={18}
+                              height={18}
+                              style={{
+                                position: "absolute",
+                                left: 6,
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                borderRadius: 6,
+                                pointerEvents: "none",
+                                opacity: 0.95,
+                              }}
+                            />
+                          ) : (
                             <Image
                               src={pInfo.icon}
                               alt=""
@@ -743,17 +779,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                                 opacity: 0.95,
                               }}
                             />
-                            {/* Fără label vizibil. Pentru accesibilitate adăugăm text ascuns */}
-                            <span style={{
-                              position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden",
-                              clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0
-                            }}>
-                              {pInfo.provider}
-                            </span>
+                          )}
+                          {/* text ascuns pt. accesibilitate, fără label vizibil */}
+                          <span style={{
+                            position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden",
+                            clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0
+                          }}>
+                            {pInfo.provider}
                           </span>
-                        </div>
-                      )}
-                    </div>
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {!isSmall && (
@@ -963,7 +999,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   }, [supabase, row?.id]);
 
   // escape helpers
-  function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;"," >":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
+  function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
   function _replaceVarsHtml(html: string, vars: Record<string,string>) {
     if (!html) return "";
     const withVars = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\}\}/g, (_m, k) => _escapeHtml(vars?.[k] ?? `{{${k}}}`));
