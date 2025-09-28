@@ -445,7 +445,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (hasOta) return { provider: it._ota_provider, color: it._ota_color as any, logo: it._ota_logo_url as any };
     // TEMP test: manual reservation badge — show only for manual-green (no reason, no OTA)
     if (!it._reason && kind === 'green') {
-      return { provider: 'Airbnb', color: '#cc4c4cff', logo: '/airbnb.png' };
+      return { provider: 'Manual', color: '#6CCC4C', logo: '/trivago.png' };
     }
     return null;
   }
@@ -731,10 +731,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   )}
                 </div>
 
-                {/* OTA badge under the Dates row (desktop and mobile). On mobile it spans full width like buttons. */}
-                {(() => { const meta = otaMetaForRow(it, kind); return meta ? (
+                {/* OTA badge under the Dates row — on mobile only (full width) */}
+                {isSmall && (() => { const meta = otaMetaForRow(it, kind); return meta ? (
                   <div style={{ marginTop: 6 }}>
-                    <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} fullWidth={isSmall} />
+                    <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} fullWidth={true} />
                   </div>
                 ) : null; })()}
 
@@ -749,6 +749,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     flexWrap: isSmall ? undefined : "wrap",
                   }}
                 >
+                  {/* Desktop: OTA badge on the same line with action buttons; approx width of date range */}
+                  {!isSmall && (() => { const meta = otaMetaForRow(it, kind); return meta ? (
+                    <div style={{ minWidth: '26ch' }}>
+                      <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} />
+                    </div>
+                  ) : null; })()}
                   {kind === "green" && (
                     <>
                       <button
