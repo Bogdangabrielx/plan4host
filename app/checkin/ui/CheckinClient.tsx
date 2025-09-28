@@ -285,17 +285,24 @@ export default function CheckinClient() {
     ob.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
     return () => ob.disconnect();
   }, []);
-  const formIcon = (key: "email"|"phone"|"address"|"city"|"country"|"id") => {
+
+  // formular_* icons (themed)
+  const formIcon = (key: "email"|"phone"|"address"|"city"|"country"|"id"|"firstname"|"lastname") => {
     const token = {
       email: "email",
       phone: "phone",
       address: "address",
       city: "city",
       country: "country",
-      id: "id",
+      id: "ID",
+      firstname: "firstname",
+      lastname: "lastname",
     }[key];
     return `/formular_${token}_${isDark ? "fordark" : "forlight"}.png`;
   };
+
+  // generic themed icons (e.g. /room_forlight.png)
+  const themedIcon = (base: "room") => `/${base}_${isDark ? "fordark" : "forlight"}.png`;
 
   // ---------- STYLES ----------
   const CARD: React.CSSProperties = useMemo(() => ({
@@ -640,8 +647,12 @@ export default function CheckinClient() {
             {types.length > 0 ? (
               <div style={ROW_1}>
                 <div>
-                  <label style={LABEL}>Booked room type*</label>
+                  <label htmlFor="checkin-room-type" style={LABEL_ROW}>
+                    <Image src={themedIcon("room")} alt="" width={16} height={16} />
+                    <span>Booked room type*</span>
+                  </label>
                   <select
+                    id="checkin-room-type"
                     style={SELECT}
                     value={selectedTypeId}
                     onChange={(e) => setSelectedTypeId(e.currentTarget.value)}
@@ -674,12 +685,18 @@ export default function CheckinClient() {
             {/* Name */}
             <div style={ROW_2}>
               <div>
-                <label style={LABEL}>First name*</label>
-                <input style={INPUT} value={firstName} onChange={e => setFirstName(e.currentTarget.value)} placeholder="First Name" />
+                <label htmlFor="checkin-first-name" style={LABEL_ROW}>
+                  <Image src={formIcon("firstname")} alt="" width={16} height={16} />
+                  <span>First name*</span>
+                </label>
+                <input id="checkin-first-name" style={INPUT} value={firstName} onChange={e => setFirstName(e.currentTarget.value)} placeholder="First Name" />
               </div>
               <div>
-                <label style={LABEL}>Last name*</label>
-                <input style={INPUT} value={lastName} onChange={e => setLastName(e.currentTarget.value)} placeholder="Last Name" />
+                <label htmlFor="checkin-last-name" style={LABEL_ROW}>
+                  <Image src={formIcon("lastname")} alt="" width={16} height={16} />
+                  <span>Last name*</span>
+                </label>
+                <input id="checkin-last-name" style={INPUT} value={lastName} onChange={e => setLastName(e.currentTarget.value)} placeholder="Last Name" />
               </div>
             </div>
 
