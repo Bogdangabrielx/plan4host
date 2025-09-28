@@ -484,10 +484,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
               {legendInfo === k && (
                 isMobile ? (
-                  <div data-legend="keep" style={{ marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
+                  <div data-legend="keep" style={{ fontSize:10,marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
                     {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>New booking — no action required.</div>}
                     {k === "yellow" && (
-                      <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
+                      <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap:  }}>
                         <strong>Awaiting</strong>
                         <span>If form only: wait up to 2h for OTA iCal.</span>
                         <span>If iCal only: wait until 3 days before arrival or resend the form.</span>
