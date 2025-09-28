@@ -678,7 +678,7 @@ function ManageTypeModal({
                 {(() => {
                   const src = logoSrcFor(provider);
                   return src ? (
-                    <img src={src} alt="" width={24} height={24} style={{ borderRadius: 6, border: "1px solid var(--border)" }} />
+                    <img src={src} alt="" width={24} height={24} style={{ borderRadius: 6, }} />
                   ) : (
                     <span style={{ fontSize: 12, color: "var(--muted)" }}>Preset</span>
                   );
