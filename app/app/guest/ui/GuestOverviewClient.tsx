@@ -15,7 +15,6 @@ type Property = {
   check_out_time: string | null;
   regulation_pdf_url?: string | null;
 };
-
 type Room = { id: string; name: string; property_id: string; room_type_id?: string | null };
 
 type OverviewRow = {
@@ -56,33 +55,38 @@ function fullName(item: OverviewRow): string {
   return [f, l].filter(Boolean).join(" ").trim() || "—";
 }
 
+/** UI labels for statuses */
 const STATUS_LABEL: Record<OverviewRow["status"], string> = {
   green: "New booking",
   yellow: "Awaiting",
   red: "Mismatched booking",
 };
 
+/** Solid badge colors (same on light/dark) */
 const STATUS_COLOR: Record<OverviewRow["status"], string> = {
   green: "#6CCC4C",
-  yellow: "#ead028ff",
+  yellow: "#FFDE21",
   red: "#ED4337",
 };
 
 function statusTooltip(row: OverviewRow): string | undefined {
-  if (row.status === "yellow") {
+  // For hover on the badge per-row
+  const s = row.status === "green" && !row.room_id ? "yellow" : row.status;
+  if (s === "yellow") {
     if (row._reason === "waiting_form") {
-      return "Awaiting OTA iCal event. Wait up to ~2h after the form submission.";
+      return "Awaiting guest check-in form (until 3 days before arrival).";
     }
     if (row._reason === "waiting_ical") {
-      return "Awaiting guest check-in form. Up to 3 days before arrival.";
+      return "Awaiting matching OTA iCal event (up to ~2h after form submission).";
     }
-    return "Awaiting additional info.";
+    return "Awaiting additional information.";
   }
-  if (row.status === "red") {
-    if (row._reason === "missing_form") return "No check-in form was received for this OTA reservation.";
-    if (row._reason === "no_ota_found") return "Form dates do not match any OTA reservation.";
-    if (row._reason === "type_conflict") return "Room type conflict between OTA and check-in form.";
-    if (row._reason === "room_required_auto_failed") return "No free room of the booked type for auto-assignment.";
+  if (s === "red") {
+    if (row._reason === "missing_form") return "No check-in form received for this OTA reservation.";
+    if (row._reason === "no_ota_found") return "Form dates don’t match any OTA reservation.";
+    if (row._reason === "type_conflict") return "Unmatched Room: OTA type and form type differ. Resolve in Calendar.";
+    if (row._reason === "room_required_auto_failed")
+      return "Auto-assignment failed: no free room of the booked type.";
     return "Action required.";
   }
   return undefined;
@@ -111,7 +115,7 @@ function buildPropertyCheckinLink(propertyId: string): string {
   }
 }
 
-// normalizează pentru căutare (remove diacritics + lowercase)
+// normalize pentru căutare (fără diacritice)
 function norm(s: string) {
   return (s || "")
     .normalize("NFD")
@@ -124,20 +128,15 @@ function escapeRegExp(s: string) {
 }
 function highlight(text: string, query: string): React.ReactNode {
   if (!query) return text;
-  const nText = norm(text);
-  const nQ = norm(query);
-  if (!nQ) return text;
-  if (!nText.includes(nQ)) return text;
-
   const raw = text;
-  const parts: React.ReactNode[] = [];
   const rx = new RegExp(escapeRegExp(query), "ig");
+  const parts: React.ReactNode[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = rx.exec(raw))) {
     const start = m.index;
     const end = m.index + m[0].length;
-    if (start > last) parts.push(raw.slice(last, start)); // ✅ () not []
+    if (start > last) parts.push(raw.slice(last, start));
     parts.push(
       <mark
         key={start}
@@ -147,12 +146,12 @@ function highlight(text: string, query: string): React.ReactNode {
           borderRadius: 4,
         }}
       >
-        {raw.slice(start, end)} {/* ✅ () not [] */}
+        {raw.slice(start, end)}
       </mark>
     );
     last = end;
   }
-  if (last < raw.length) parts.push(raw.slice(last)); // ✅ () not []
+  if (last < raw.length) parts.push(raw.slice(last));
   return parts;
 }
 
@@ -181,7 +180,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [rooms, setRooms] = useState<Room[]>([]);
   const [items, setItems] = useState<OverviewRow[]>([]);
   const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
-  const [hint, setHint] = useState<string>("");
 
   // Search (guest name)
   const [query, setQuery] = useState("");
@@ -195,6 +193,21 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   // Modals
   const [modal, setModal] = useState<null | { propertyId: string; dateStr: string; room: Room }>(null);
   const [rmModal, setRmModal] = useState<null | { propertyId: string; item: OverviewRow }>(null);
+
+  // Legend popovers
+  const [legendInfo, setLegendInfo] = useState<null | "green" | "yellow" | "red">(null);
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      let el = e.target as HTMLElement | null;
+      while (el) {
+        if ((el as HTMLElement).dataset?.legend === "keep") return;
+        el = el.parentElement as HTMLElement | null;
+      }
+      setLegendInfo(null);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
 
   // Permissions
   const [canEditGuest, setCanEditGuest] = useState<boolean>(false);
@@ -210,12 +223,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     })();
   }, []);
 
-  // Loaders
+  // Refresh client-side
   const refresh = useCallback(async () => {
     if (!activePropertyId) return;
     setLoading("loading");
     setPill("Loading…");
-    setHint("Loading…");
 
     const [rRooms] = await Promise.all([
       supabase
@@ -228,10 +240,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (rRooms.error) {
       setLoading("error");
       setPill("Error");
-      setHint(rRooms.error?.message || "Failed to load rooms.");
       return;
     }
-
     setRooms((rRooms.data ?? []) as Room[]);
 
     try {
@@ -242,11 +252,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       setItems(arr);
       setLoading("idle");
       setPill("Idle");
-      setHint("");
-    } catch (e: any) {
+    } catch {
       setLoading("error");
       setPill("Error");
-      setHint(e?.message || "Failed to load guest overview.");
     }
   }, [activePropertyId, supabase, setPill]);
 
@@ -259,7 +267,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  // Maps & sorted rows
+  // Maps & sorting
   const roomById = useMemo(() => {
     const m = new Map<string, Room>();
     rooms.forEach((r) => m.set(String(r.id), r));
@@ -275,14 +283,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     });
   }, [items, collator]);
 
-  // Apply search filter
+  // Filter by name
   const visibleRows = useMemo(() => {
     const q = norm(query);
     if (!q) return rows;
-    return rows.filter((r) => {
-      const name = norm(fullName(r));
-      return name.includes(q);
-    });
+    return rows.filter((r) => norm(fullName(r)).includes(q));
   }, [rows, query]);
 
   // Styles
@@ -292,13 +297,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     padding: isMobile ? "10px 12px 16px" : "16px",
     paddingBottom: "calc(16px + var(--safe-bottom))",
   };
-  const controlsLeft: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    flexWrap: "wrap",
-  };
-  const selectStyle: React.CSSProperties = {
+  const FIELD_STYLE: React.CSSProperties = {
     minWidth: isMobile ? "100%" : 220,
     width: isMobile ? "100%" : undefined,
     padding: "8px 10px",
@@ -309,62 +308,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     fontWeight: 700,
     fontFamily: "inherit",
   };
-  const searchWrap: React.CSSProperties = { position: "relative", width: "100%" };
-  const searchInput: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 12px 10px 36px",
-    background: "var(--card)",
-    color: "var(--text)",
-    border: "1px solid var(--border)",
-    borderRadius: 29,
-    fontWeight: 700,
-    fontFamily: "inherit",
-    outline: "none",
-  };
-  const searchIcon: React.CSSProperties = {
-    position: "absolute",
-    left: 10,
-    top: "50%",
-    transform: "translateY(-50%)",
-    width: 18,
-    height: 18,
-    opacity: 0.7,
-    pointerEvents: "none",
-  };
-  const clearBtn: React.CSSProperties = {
-    position: "absolute",
-    right: 6,
-    top: "50%",
-    transform: "translateY(-50%)",
-    width: 24,
-    height: 24,
-    borderRadius: 8,
-    border: "1px solid var(--border)",
-    background: "transparent",
-    color: "var(--muted)",
-    cursor: "pointer",
-  };
-  const actionsRow = (wrap?: boolean): React.CSSProperties => ({
-    display: wrap ? "grid" : "flex",
-    gridTemplateColumns: wrap ? "1fr" : undefined,
-    alignItems: "center",
-    justifyContent: wrap ? "stretch" : "flex-end",
-    gap: 8,
-    flexWrap: wrap ? undefined : "wrap",
-  });
 
   const badgeStyle = (kind: OverviewRow["status"]): React.CSSProperties => ({
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 8,
-    padding: "2px 10px",
+    display: "inline-block",
+    padding: "3px 10px",
     fontSize: 12,
-    fontWeight: 400,
+    fontWeight: 400,             // text alb, “subțire” comparativ cu 900
     borderRadius: 999,
-    border: `1px solid ${STATUS_COLOR[kind]}`,
-    background: STATUS_COLOR[kind], // solid fill
-    color: "#fff", // white text on both themes
-    letterSpacing: 0.1,
+    border: "1px solid " + STATUS_COLOR[kind],
+    background: STATUS_COLOR[kind], // plin
+    color: "#ffffff",
+    letterSpacing: 0.0,
   });
 
   // Actions
@@ -410,14 +364,14 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             marginBottom: 12,
           }}
         >
-          <div style={controlsLeft}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, width: isMobile ? "100%" : "auto" }}>
               Property
             </label>
             <select
               value={activePropertyId ?? ""}
               onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value || null)}
-              style={selectStyle}
+              style={FIELD_STYLE}
             >
               {properties.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
@@ -429,9 +383,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           </div>
 
           {/* Search */}
-          <div style={{ gridColumn: "1 / -1" }}>
-            <div style={searchWrap}>
-              <svg viewBox="0 0 24 24" aria-hidden="true" style={searchIcon}>
+          <div style={{ display: "flex", justifyContent: "stretch", gridColumn: "1 / -1" }}>
+            <div style={{ position: "relative", width: "100%" }}>
+              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 18, height: 18, opacity: 0.7 }}>
                 <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor" />
               </svg>
               <input
@@ -441,14 +395,36 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 onChange={(e) => setQuery(e.currentTarget.value)}
                 placeholder="Search guest name…"
                 aria-label="Search guest name"
-                style={searchInput}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px 10px 36px",
+                  background: "var(--card)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 29,
+                  fontWeight: 700,
+                  fontFamily: "inherit",
+                  outline: "none",
+                }}
               />
               {query && (
                 <button
                   type="button"
                   aria-label="Clear search"
                   onClick={() => { setQuery(""); searchRef.current?.focus(); }}
-                  style={clearBtn}
+                  style={{
+                    position: "absolute",
+                    right: 6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: 24,
+                    height: 24,
+                    borderRadius: 8,
+                    border: "1px solid var(--border)",
+                    background: "transparent",
+                    color: "var(--muted)",
+                    cursor: "pointer",
+                  }}
                 >
                   ×
                 </button>
@@ -457,10 +433,68 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           </div>
         </div>
 
-        {/* Legend */}
-        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+        {/* Legend with popovers (legendInfo) */}
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 12, flexWrap: "wrap" }}>
           {(["green","yellow","red"] as const).map((k) => (
-            <span key={k} style={badgeStyle(k)}>{STATUS_LABEL[k]}</span>
+            <div key={k} style={{ position: "relative" }} data-legend="keep">
+              <span style={badgeStyle(k)}>{STATUS_LABEL[k]}</span>
+              <button
+                type="button"
+                aria-label={`What is ${STATUS_LABEL[k]}?`}
+                onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === k ? null : k); }}
+                style={{
+                  marginLeft: 6, width: 18, height: 18, borderRadius: 6,
+                  border: "1px solid var(--border)", background: "transparent",
+                  color: "var(--muted)", lineHeight: 1, fontSize: 12, cursor: "pointer"
+                }}
+              >
+                i
+              </button>
+
+              {legendInfo === k && (
+                isMobile ? (
+                  <div data-legend="keep" style={{ marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>New booking — no action required.</div>}
+                    {k === "yellow" && (
+                      <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
+                        <strong>Awaiting</strong>
+                        <span>If form only: wait up to 2h for OTA iCal.</span>
+                        <span>If iCal only: wait until 3 days before arrival or resend the form.</span>
+                      </div>
+                    )}
+                    {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Mismatched booking — action required.</div>}
+                  </div>
+                ) : (
+                  <div
+                    data-legend="keep"
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "calc(100% + 8px)",
+                      transform: "translateY(-50%)",
+                      zIndex: 5,
+                      background: "var(--panel)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 8,
+                      padding: 8,
+                      boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+                      width: 260,
+                      maxWidth: "min(320px, calc(100vw - 32px))",
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, marginBottom: 4 }}>{STATUS_LABEL[k]}</div>
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>New booking — no action required.</div>}
+                    {k === "yellow" && (
+                      <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
+                        <span>If form only: wait up to 2h for OTA iCal.</span>
+                        <span>If iCal only: wait until 3 days before arrival or resend the form.</span>
+                      </div>
+                    )}
+                    {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Mismatched booking — action required.</div>}
+                  </div>
+                )
+              )}
+            </div>
           ))}
         </div>
 
@@ -468,16 +502,18 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         <div style={{ display: "grid", gap: 10 }}>
           {visibleRows.map((it) => {
             const rawName = fullName(it) || "Unknown guest";
-            // if green but no room yet, treat as yellow "awaiting"
-            const effectiveStatus: OverviewRow["status"] = it.status === "green" && !it.room_id ? "yellow" : it.status;
+            const kind: OverviewRow["status"] =
+              it.status === "green" && !it.room_id ? "yellow" : it.status;
+
             const roomLabel = it._room_label ?? "—";
             const typeName = it._room_type_name ?? "—";
             const propertyId = activePropertyId!;
             const key = `${it.id ?? "noid"}|${it.start_date}|${it.end_date}|${it._room_type_id ?? "null"}`;
+
             const showCopy =
-              effectiveStatus !== "green" &&
-              ((effectiveStatus === "yellow" && it._reason === "waiting_form") ||
-                (effectiveStatus === "red" && it._reason === "missing_form"));
+              kind !== "green" &&
+              ((kind === "yellow" && it._reason === "waiting_form") ||
+                (kind === "red" && it._reason === "missing_form"));
 
             return (
               <section
@@ -515,55 +551,60 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     {formatRange(it.start_date, it.end_date)}
                   </em>
                   <div style={{ justifySelf: isMobile ? "start" : "end" }}>
-                    <span
-                      style={badgeStyle(effectiveStatus)}
-                      title={statusTooltip(it)}
-                      aria-label={statusTooltip(it)}
-                    >
-                      {STATUS_LABEL[effectiveStatus]}
+                    <span style={badgeStyle(kind)} title={statusTooltip(it)}>
+                      {STATUS_LABEL[kind]}
                     </span>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div style={actionsRow(isMobile)}>
-                  {effectiveStatus === "green" && canEditGuest && (
-                    <button
-                      onClick={() => openReservation(it, propertyId)}
-                      disabled={!it.room_id || !roomById.has(String(it.room_id))}
-                      style={{
-                        padding: "10px 12px",
-                        borderRadius: 10,
-                        border: "1px solid var(--border)",
-                        background: it.room_id && roomById.has(String(it.room_id)) ? "var(--primary)" : "var(--card)",
-                        color: it.room_id && roomById.has(String(it.room_id)) ? "#0c111b" : "var(--text)",
-                        fontWeight: 900,
-                        cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
-                        width: isMobile ? "100%" : undefined,
-                      }}
-                      title={it.room_id ? "Open reservation" : "No room assigned yet"}
-                    >
-                      Open reservation
-                    </button>
-                  )}
+                <div
+                  style={{
+                    display: isMobile ? "grid" : "flex",
+                    gridTemplateColumns: isMobile ? "1fr" : undefined,
+                    alignItems: "center",
+                    justifyContent: isMobile ? "stretch" : "flex-end",
+                    gap: 8,
+                    flexWrap: isMobile ? undefined : "wrap",
+                  }}
+                >
+                  {kind === "green" && (
+                    <>
+                      <button
+                        onClick={() => setRmModal({ propertyId, item: it })}
+                        style={{
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border)",
+                          background: "var(--card)",
+                          color: "var(--text)",
+                          fontWeight: 900,
+                          cursor: "pointer",
+                          width: isMobile ? "100%" : undefined,
+                        }}
+                        title="Reservation message"
+                      >
+                        Reservation message
+                      </button>
 
-                  {effectiveStatus === "green" && (
-                    <button
-                      onClick={() => setRmModal({ propertyId, item: it })}
-                      style={{
-                        padding: "10px 12px",
-                        borderRadius: 10,
-                        border: "1px solid var(--border)",
-                        background: "var(--card)",
-                        color: "var(--text)",
-                        fontWeight: 900,
-                        cursor: "pointer",
-                        width: isMobile ? "100%" : undefined,
-                      }}
-                      title="Reservation message"
-                    >
-                      Reservation message
-                    </button>
+                      <button
+                        onClick={() => openReservation(it, propertyId)}
+                        disabled={!it.room_id || !roomById.has(String(it.room_id))}
+                        style={{
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border)",
+                          background: it.room_id && roomById.has(String(it.room_id)) ? "var(--primary)" : "var(--card)",
+                          color: it.room_id && roomById.has(String(it.room_id)) ? "#0c111b" : "var(--text)",
+                          fontWeight: 900,
+                          cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
+                          width: isMobile ? "100%" : undefined,
+                        }}
+                        title={it.room_id ? "Open reservation" : "No room assigned yet"}
+                      >
+                        Open reservation
+                      </button>
+                    </>
                   )}
 
                   {showCopy && (
@@ -585,7 +626,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     </button>
                   )}
 
-                  {effectiveStatus === "red" && canEditGuest && (
+                  {kind === "red" && (
                     <button
                       onClick={() => resolveInCalendar(it)}
                       style={{
@@ -678,15 +719,15 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   }
   function _renderHeadingSafe(src: string, vars: Record<string,string>) {
     const s = src || "";
-    const re = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
+    const re = /\{\{\s*([a-zA-Z0-9_]+)\}\}/g;
     let out: string[] = []; let last = 0; let m: RegExpExecArray | null;
     while ((m = re.exec(s))) {
-      out.push(_escapeHtml(s.slice(last, m.index))); // ✅ () not []
+      out.push(_escapeHtml(s.slice(last, m.index)));
       const key = m[1];
       out.push(_escapeHtml(vars?.[key] ?? `{{${key}}}`));
       last = m.index + m[0].length;
     }
-    out.push(_escapeHtml(s.slice(last))); // ✅ () not []
+    out.push(_escapeHtml(s.slice(last)));
     return out.join("");
   }
   function _renderRM(t: any, vars: Record<string,string>) {
