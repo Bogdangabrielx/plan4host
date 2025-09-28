@@ -572,9 +572,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   <div style={{ display: "grid", gap: 4, lineHeight: 1.25, minWidth: 0 }}>
                     {/* Badge first on mobile */}
                     {isMobile && (
-                      <span style={{ ...badgeStyle(kind), marginBottom: 2 }} title={statusTooltip(it)}>
-                        {STATUS_LABEL[kind]}
-                      </span>
+                      <span style={{ ...badgeStyle(kind), marginBottom: 2,justifySelf: "start",   // <— nu se mai întinde pe orizontală
+                             width: "max-content",    // <— păstrează lățimea după conținut
+                     }}
+                     title={statusTooltip(it)}
+                 >
+                       {STATUS_LABEL[kind]}
+                         </span>
                     )}
 
                     {/* 1) Guest name */}
@@ -634,7 +638,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           border: "1px solid var(--border)",
                           background: "var(--card)",
                           color: "var(--text)",
-                          fontWeight: 900,
+                          fontWeight: 600,
                           cursor: "pointer",
                           width: isMobile ? "100%" : undefined,
                         }}
