@@ -433,8 +433,8 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                   <Image
                     src={roomIconSrc}
                     alt=""
-                    width={18}
-                    height={18}
+                    width={29}
+                    height={29}
                     style={{ margin: "0 auto", opacity: 0.95, pointerEvents: "none" }}
                   />
 
