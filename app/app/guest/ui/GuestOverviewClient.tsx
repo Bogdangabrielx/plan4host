@@ -42,16 +42,6 @@ type OverviewRow = {
   _guest_last_name?: string | null;
 };
 
-type TypeIntegration = {
-  id: string;
-  property_id: string;
-  room_type_id: string;
-  provider: string | null;
-  url: string;
-  is_active: boolean | null;
-  last_sync: string | null;
-};
-
 /* ───────────────── Helpers ───────────────── */
 
 function fmtDate(ymd: string): string {
@@ -207,59 +197,12 @@ function useTap(handler: () => void) {
   // pointer-up = fără delay pe mobil, funcționează și pe desktop
   return {
     onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => {
+      // ignoră clickul non-primar la mouse
       if (e.pointerType === "mouse" && (e.button ?? 0) !== 0) return;
       e.preventDefault();
       handler();
     },
   };
-}
-
-/* ───────────────── Provider color/logo helpers ───────────────── */
-
-function defaultProviderColor(p?: string | null) {
-  const s = norm(p || "");
-  if (s.includes("airbnb"))  return "rgba(255, 90, 96, 0.81)";
-  if (s.includes("booking")) return "rgba(30, 144, 255, 0.81)";
-  if (s.includes("expedia")) return "rgba(254, 203, 46, 0.81)";
-  return "rgba(139, 92, 246, 0.81)"; // Other
-}
-
-function providerLogoBase(p?: string | null) {
-  const s = norm(p || "");
-  if (s.includes("booking")) return "/booking";
-  if (s.includes("airbnb"))  return "/airbnb";
-  if (s.includes("expedia")) return "/expedia";
-  return "/other";
-}
-
-/** candidați în ordinea preferată, cu fallback dacă lipsesc fișierele */
-function providerLogoCandidates(p?: string | null, isDark?: boolean): string[] {
-  const base = providerLogoBase(p);
-  const light = `${base}.png`;
-  const dark  = `${base}.png`;
-  const plain = `${base}.png`;
-  return isDark ? [dark, plain, light] : [light, plain, dark];
-}
-
-function providerLabel(p?: string | null) {
-  const s = (p || "").trim();
-  if (!s) return "Other";
-  const n = norm(s);
-  if (n.includes("booking")) return "Booking";
-  if (n.includes("airbnb"))  return "Airbnb";
-  if (n.includes("expedia")) return "Expedia";
-  return s[0].toUpperCase() + s.slice(1);
-}
-
-/** preferință: booking > airbnb > expedia > orice altceva */
-function choosePreferredProvider(arr: string[]): string | null {
-  if (!arr.length) return null;
-  const nset = arr.map((x) => norm(x));
-  for (const p of ["booking","airbnb","expedia"]) {
-    const hit = nset.find((s) => s.includes(p));
-    if (hit) return hit;
-  }
-  return arr[0] || null;
 }
 
 /* ───────────────── Component ───────────────── */
@@ -312,10 +255,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [items, setItems] = useState<OverviewRow[]>([]);
   const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
 
-  // OTA integrations (for room_type badges)
-  const [integrations, setIntegrations] = useState<TypeIntegration[]>([]);
-  const [provByType, setProvByType] = useState<Record<string, { provider: string; label: string; color: string }>>({});
-
   // Search (guest name)
   const [query, setQuery] = useState("");
   const searchRef = useRef<HTMLInputElement | null>(null);
@@ -364,26 +303,20 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setLoading("loading");
     setPill("Loading…");
 
-    const [rRooms, rInteg] = await Promise.all([
+    const [rRooms] = await Promise.all([
       supabase
         .from("rooms")
         .select("id,name,property_id,room_type_id")
         .eq("property_id", activePropertyId)
         .order("name", { ascending: true }),
-      supabase
-        .from("ical_type_integrations")
-        .select("id,property_id,room_type_id,provider,url,is_active,last_sync")
-        .eq("property_id", activePropertyId)
-        .order("created_at", { ascending: true }),
     ]);
 
-    if (rRooms.error || rInteg.error) {
+    if (rRooms.error) {
       setLoading("error");
       setPill("Error");
       return;
     }
     setRooms((rRooms.data ?? []) as Room[]);
-    setIntegrations((rInteg.data ?? []) as TypeIntegration[]);
 
     try {
       const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(activePropertyId)}`, { cache: "no-store", keepalive: true });
@@ -407,40 +340,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   }, [initialProperties, activePropertyId]);
 
   useEffect(() => { refresh(); }, [refresh]);
-
-  // Build provider-by-type map (uses LocalStorage color, default otherwise)
-  useEffect(() => {
-    const byType: Record<string, { provider: string; label: string; color: string }> = {};
-    const grouped = new Map<string, string[]>();
-    integrations.forEach((ii) => {
-      if (!ii.is_active) return;
-      if (!ii.room_type_id) return;
-      const list = grouped.get(ii.room_type_id) || [];
-      list.push(ii.provider || "Other");
-      grouped.set(ii.room_type_id, list);
-    });
-    for (const [typeId, provs] of grouped.entries()) {
-      const chosen = choosePreferredProvider(provs) || "Other";
-
-      // color din LS (salvat în pagina Channels) + fallback implicit
-      let color = defaultProviderColor(chosen);
-      try {
-        const raw = localStorage.getItem(`p4h:otaColors:type:${typeId}`);
-        if (raw) {
-          const map = JSON.parse(raw) as Record<string, string>;
-          const c = map[norm(chosen)];
-          if (c) color = c;
-        }
-      } catch {}
-
-      byType[typeId] = {
-        provider: chosen,
-        label: providerLabel(chosen),
-        color,
-      };
-    }
-    setProvByType(byType);
-  }, [integrations]);
 
   // Maps & sorting
   const roomById = useMemo(() => {
@@ -763,12 +662,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     {/* 3) Dates */}
                     <div style={lineWrap}>
                       <Image src={iconSrc("night")} alt="" width={16} height={16} style={iconStyle} />
-                      <div>
-                        <div style={{ color: "var(--muted)" }}>
-                          {formatRange(it.start_date, it.end_date)}
-                        </div>
-                        {/* OTA badge under dates */}
-                        <OtaBadge row={it} provByType={provByType} isDark={isDark} />
+                      <div style={{ color: "var(--muted)" }}>
+                        {formatRange(it.start_date, it.end_date)}
                       </div>
                     </div>
                   </div>
@@ -932,71 +827,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   );
 }
 
-/* ───────────────── OTA Badge (logo + color) ───────────────── */
-
-function ThemedLogo({ provider, alt, isDark, size = 20 }:{
-  provider: string | null | undefined;
-  alt: string;
-  isDark: boolean;
-  size?: number;
-}) {
-  const cands = useMemo(() => providerLogoCandidates(provider, isDark), [provider, isDark]);
-  const [idx, setIdx] = useState(0);
-  const src = cands[Math.min(idx, cands.length - 1)];
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      width={size}
-      height={size}
-      onError={() => setIdx((i) => Math.min(i + 1, cands.length - 1))}
-      style={{ borderRadius: 6, background: "rgba(255,255,255,0.9)" }}
-    />
-  );
-}
-
-function OtaBadge({
-  row,
-  provByType,
-  isDark,
-}: {
-  row: OverviewRow;
-  provByType: Record<string, { provider: string; label: string; color: string }>;
-  isDark: boolean;
-}) {
-  const typeId = row._room_type_id || "";
-  const meta = (typeId && provByType[typeId]) ? provByType[typeId] : null;
-  if (!meta) return null;
-  return (
-    <div style={{ marginTop: 6 }}>
-      <span
-        title={meta.label}
-        style={{
-          position: "relative",
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "6px 10px 6px 36px",
-          borderRadius: 21,
-          background: meta.color,
-          border: "1px solid var(--border)",
-          color: "#0c111b",
-          fontWeight: 800,
-          fontSize: 12,
-          lineHeight: 1,
-          width: "max-content",
-          overflow: "hidden",
-        }}
-      >
-        <span style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)" }}>
-          <ThemedLogo provider={meta.provider} alt={meta.label} isDark={isDark} size={20} />
-        </span>
-        {meta.label}
-      </span>
-    </div>
-  );
-}
-
 /* ───────────────── Reservation Message (safe HTML build, cu times live din bookings) ───────────────── */
 
 function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
@@ -1045,7 +875,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   }, [supabase, row?.id]);
 
   // escape helpers
-  function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;","~":"~","\"":"&quot;","'":"&#39;"}[c] as string)).replace("~","&gt;"); } // tiny safety
+  function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
   function _replaceVarsHtml(html: string, vars: Record<string,string>) {
     if (!html) return "";
     const withVars = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\}\}/g, (_m, k) => _escapeHtml(vars?.[k] ?? `{{${k}}}`));
