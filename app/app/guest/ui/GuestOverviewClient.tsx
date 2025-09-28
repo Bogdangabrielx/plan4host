@@ -227,9 +227,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [properties, setProperties] = useState<Property[]>(initialProperties || []);
   const [activePropertyId, setActivePropertyId] = useState<string | null>(initialProperties?.[0]?.id ?? null);
 
-  // NEW: obiectul proprietății active (pentru CI/CO live din DB)
-  const [activeProperty, setActiveProperty] = useState<Property | null>(initialProperties?.[0] ?? null);
-
   // Data
   const [rooms, setRooms] = useState<Room[]>([]);
   const [items, setItems] = useState<OverviewRow[]>([]);
@@ -277,29 +274,19 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     })();
   }, []);
 
-  // Refresh client-side (rooms + property cu CI/CO) 
+  // Refresh client-side
   const refresh = useCallback(async () => {
     if (!activePropertyId) return;
     setLoading("loading");
     setPill("Loading…");
 
-    const [rRooms, rProp] = await Promise.all([
+    const [rRooms] = await Promise.all([
       supabase
         .from("rooms")
         .select("id,name,property_id,room_type_id")
         .eq("property_id", activePropertyId)
         .order("name", { ascending: true }),
-
-      supabase
-        .from("properties")
-        .select("id,name,check_in_time,check_out_time,regulation_pdf_url")
-        .eq("id", activePropertyId)
-        .single(),
     ]);
-
-    if (!rProp.error && rProp.data) {
-      setActiveProperty(rProp.data as Property);
-    }
 
     if (rRooms.error) {
       setLoading("error");
@@ -327,11 +314,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (!activePropertyId && initialProperties?.[0]?.id) {
       setActivePropertyId(initialProperties[0].id);
     }
-    // fallback inițial pentru obiectul proprietății
-    if (!activeProperty && initialProperties?.[0]) {
-      setActiveProperty(initialProperties[0]);
-    }
-  }, [initialProperties, activePropertyId]); // intenționat
+  }, [initialProperties, activePropertyId]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -397,6 +380,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       copyTimer.current = window.setTimeout(() => setCopiedKey(null), 1500);
     } catch {
+      // ultima plasă de siguranță:
       prompt("Copy this link:", link);
     }
   }, []);
@@ -597,7 +581,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   overflow: "hidden",
                 }}
               >
-                {/* Header */}
+                {/* Header: Badge on mobile above name; on desktop on the right */}
                 <div
                   style={{
                     display: "grid",
@@ -607,7 +591,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   }}
                 >
                   <div style={{ display: "grid", gap: 4, lineHeight: 1.25, minWidth: 0 }}>
-                    {/* badge pe mobil */}
+                    {/* Badge first on mobile (compact) */}
                     {isMobile && (
                       <span
                         style={{ ...badgeStyle(kind), marginBottom: 2, justifySelf: "start", width: "max-content" }}
@@ -643,7 +627,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     </div>
                   </div>
 
-                  {/* Badge pe desktop (dreapta) */}
+                  {/* Badge on desktop (right side) */}
                   {!isMobile && (
                     <div style={{ justifySelf: "end" }}>
                       <span style={badgeStyle(kind)} title={statusTooltip(it)}>
@@ -669,6 +653,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       <button
                         type="button"
                         onClick={() => setRmModal({ propertyId, item: it })}
+                        onTouchStart={() => {}}
                         style={{
                           padding: "10px 12px",
                           borderRadius: 10,
@@ -678,6 +663,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           fontWeight: 600,
                           cursor: "pointer",
                           width: isMobile ? "100%" : undefined,
+                          touchAction: "manipulation",
+                          WebkitTapHighlightColor: "transparent",
                         }}
                         title="Reservation message"
                       >
@@ -687,6 +674,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       <button
                         type="button"
                         onClick={() => openReservation(it, propertyId)}
+                        onTouchStart={() => {}}
                         disabled={!it.room_id || !roomById.has(String(it.room_id))}
                         style={{
                           padding: "10px 12px",
@@ -697,6 +685,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           fontWeight: 600,
                           cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
                           width: isMobile ? "100%" : undefined,
+                          touchAction: "manipulation",
+                          WebkitTapHighlightColor: "transparent",
                         }}
                         title={it.room_id ? "Open reservation" : "No room assigned yet"}
                       >
@@ -709,6 +699,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     <button
                       type="button"
                       onClick={() => copyCheckinLink(propertyId, key)}
+                      onTouchStart={() => {}}
                       style={{
                         padding: "10px 12px",
                         borderRadius: 21,
@@ -718,6 +709,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         fontWeight: 600,
                         cursor: "pointer",
                         width: isMobile ? "100%" : undefined,
+                        touchAction: "manipulation",
+                        WebkitTapHighlightColor: "transparent",
                       }}
                       title="Copy check-in link"
                     >
@@ -729,6 +722,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     <button
                       type="button"
                       onClick={() => resolveInCalendar(it)}
+                      onTouchStart={() => {}}
                       style={{
                         padding: "10px 12px",
                         borderRadius: 21,
@@ -738,6 +732,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         fontWeight: 600,
                         cursor: "pointer",
                         width: isMobile ? "100%" : undefined,
+                        touchAction: "manipulation",
+                        WebkitTapHighlightColor: "transparent",
                       }}
                       title="Resolve in Calendar"
                     >
@@ -793,13 +789,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 <strong>Reservation message</strong>
                 <button className="sb-btn" onClick={() => setRmModal(null)}>Close</button>
               </div>
-              <RMContent
-                propertyId={rmModal.propertyId}
-                row={rmModal.item}
-                ciTime={activeProperty?.check_in_time ?? null}
-                coTime={activeProperty?.check_out_time ?? null}
-                propertyName={activeProperty?.name ?? ""}
-              />
+              <RMContent propertyId={rmModal.propertyId} row={rmModal.item} />
             </div>
           </div>
         )}
@@ -810,19 +800,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
 /* ───────────────── Reservation Message (safe HTML build) ───────────────── */
 
-function RMContent({
-  propertyId,
-  row,
-  ciTime,
-  coTime,
-  propertyName,
-}: {
-  propertyId: string;
-  row: any;
-  ciTime: string | null;
-  coTime: string | null;
-  propertyName?: string;
-}) {
+function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   const storageKey = `p4h:rm:template:${propertyId}`;
   const [tpl, setTpl] = useState<any>(null);
   const [values, setValues] = useState<Record<string,string>>({});
@@ -871,16 +849,16 @@ function RMContent({
       guest_first_name: (row._guest_first_name || "").toString(),
       guest_last_name: (row._guest_last_name || "").toString(),
       check_in_date: row.start_date,
-      check_in_time: ciTime || "14:00",   // din DB, fallback 14:00
+      check_in_time: "14:00",
       check_out_date: row.end_date,
-      check_out_time: coTime || "11:00",  // din DB, fallback 11:00
+      check_out_time: "11:00",
       room_name: row._room_label || "",
       room_type: row._room_type_name || "",
-      property_name: propertyName || "",
+      property_name: "",
     };
     const merged = { ...builtins, ...values };
     setPreview(_renderRM(tpl, merged));
-  }, [tpl, values, row, ciTime, coTime, propertyName]);
+  }, [tpl, values, row]);
 
   async function onCopyPreview() {
     try {
@@ -925,6 +903,8 @@ function RMContent({
               type="button"
               className="sb-btn"
               onClick={onCopyPreview}
+              onTouchStart={() => {}}
+              style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
               {copied ? "Copied!" : "Copy preview"}
             </button>
@@ -970,8 +950,10 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{ propertyId: stri
       type="button"
       className="sb-btn sb-btn--primary"
       onClick={onClick}
+      onTouchStart={() => {}}
       disabled={busy || !bookingId}
       title={bookingId ? "Copy generated link" : "No booking id"}
+      style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
       aria-busy={busy}
     >
       {busy ? "Generating…" : (copied ? "Copied!" : "Copy link")}
