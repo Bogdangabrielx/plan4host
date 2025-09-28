@@ -1,3 +1,4 @@
+// app/app/guestOverview/ui/GuestOverviewClient.tsx
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -19,7 +20,7 @@ type Property = {
 type Room = { id: string; name: string; property_id: string; room_type_id?: string | null };
 
 type OverviewRow = {
-  id: string | null;               // ← booking id
+  id: string | null;               // booking id
   property_id: string;
   room_id: string | null;
   start_date: string;
@@ -174,6 +175,36 @@ async function copyTextMobileSafe(text: string): Promise<boolean> {
   }
 }
 
+/* ───────────────── Small/Mobile detection + tap helper ───────────────── */
+
+function useIsSmall() {
+  const [isSmall, setIsSmall] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia?.("(max-width: 560px), (pointer: coarse)")?.matches ?? false;
+  });
+  useEffect(() => {
+    const mq = window.matchMedia?.("(max-width: 560px), (pointer: coarse)");
+    const on = (e: MediaQueryListEvent) => setIsSmall(e.matches);
+    try { mq?.addEventListener("change", on); } catch { mq?.addListener?.(on); }
+    return () => {
+      try { mq?.removeEventListener("change", on); } catch { mq?.removeListener?.(on); }
+    };
+  }, []);
+  return isSmall;
+}
+
+function useTap(handler: () => void) {
+  // pointer-up = fără delay pe mobil, funcționează și pe desktop
+  return {
+    onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => {
+      // ignoră clickul non-primar la mouse
+      if (e.pointerType === "mouse" && (e.button ?? 0) !== 0) return;
+      e.preventDefault();
+      handler();
+    },
+  };
+}
+
 /* ───────────────── Component ───────────────── */
 
 export default function GuestOverviewClient({ initialProperties }: { initialProperties: Property[] }) {
@@ -212,16 +243,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const iconStyle: React.CSSProperties = { width: 16, height: 16, flex: "0 0 auto", opacity: 0.95 };
   const lineWrap: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, minWidth: 0 };
 
-  // Responsive
-  const [isMobile, setIsMobile] = useState<boolean>(() =>
-    typeof window !== "undefined" ? window.innerWidth < 560 : false
-  );
-  useEffect(() => {
-    const onR = () => setIsMobile(window.innerWidth < 560);
-    onR();
-    window.addEventListener("resize", onR);
-    return () => window.removeEventListener("resize", onR);
-  }, []);
+  // Responsive (small/mobile)
+  const isSmall = useIsSmall();
 
   // Properties & selection
   const [properties, setProperties] = useState<Property[]>(initialProperties || []);
@@ -275,14 +298,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   }, []);
 
   // Refresh client-side
-  const supabaseClient = useMemo(() => createClient(), []);
   const refresh = useCallback(async () => {
     if (!activePropertyId) return;
     setLoading("loading");
     setPill("Loading…");
 
     const [rRooms] = await Promise.all([
-      supabaseClient
+      supabase
         .from("rooms")
         .select("id,name,property_id,room_type_id")
         .eq("property_id", activePropertyId)
@@ -308,7 +330,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       setLoading("error");
       setPill("Error");
     }
-  }, [activePropertyId, supabaseClient, setPill]);
+  }, [activePropertyId, supabase, setPill]);
 
   useEffect(() => {
     setProperties(initialProperties || []);
@@ -346,19 +368,22 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const containerStyle: React.CSSProperties = {
     margin: "0 auto",
     width: "min(960px, 100%)",
-    padding: isMobile ? "10px 12px 16px" : "16px",
+    padding: isSmall ? "10px 12px 16px" : "16px",
     paddingBottom: "calc(16px + var(--safe-bottom))",
   };
   const FIELD_STYLE: React.CSSProperties = {
-    minWidth: isMobile ? "100%" : 220,
-    width: isMobile ? "100%" : undefined,
-    padding: "8px 10px",
+    minWidth: isSmall ? "100%" : 220,
+    width: isSmall ? "100%" : undefined,
+    padding: "10px 12px",
     background: "var(--card)",
     color: "var(--text)",
     border: "1px solid var(--border)",
     borderRadius: 10,
     fontWeight: 700,
     fontFamily: "inherit",
+    minHeight: 44,
+    touchAction: "manipulation",
+    WebkitTapHighlightColor: "transparent",
   };
   const badgeStyle = (kind: OverviewRow["status"]): React.CSSProperties => ({
     display: "inline-block",
@@ -371,6 +396,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     color: "#ffffff",
     letterSpacing: 0.0,
   });
+  const BTN_TOUCH_STYLE: React.CSSProperties = {
+    padding: "12px 14px",
+    minHeight: 44,
+    touchAction: "manipulation",
+    WebkitTapHighlightColor: "transparent",
+  };
 
   // Actions
   const copyCheckinLink = useCallback(async (propertyId: string, key: string) => {
@@ -411,14 +442,14 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "auto 1fr",
+            gridTemplateColumns: isSmall ? "1fr" : "auto 1fr",
             alignItems: "center",
             gap: 12,
             marginBottom: 12,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, width: isMobile ? "100%" : "auto" }}>
+            <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, width: isSmall ? "100%" : "auto" }}>
               Property
             </label>
             <select
@@ -430,7 +461,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <button onClick={refresh} className="sb-btn" style={{ padding: "8px 8px", borderRadius: 10 }} title="Refresh">
+            <button
+              className="sb-btn"
+              {...useTap(refresh)}
+              style={{ ...BTN_TOUCH_STYLE, borderRadius: 10 }}
+              title="Refresh"
+              type="button"
+            >
               Refresh
             </button>
           </div>
@@ -458,25 +495,28 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   fontWeight: 700,
                   fontFamily: "inherit",
                   outline: "none",
+                  minHeight: 44,
                 }}
               />
               {query && (
                 <button
                   type="button"
                   aria-label="Clear search"
-                  onClick={() => { setQuery(""); searchRef.current?.focus(); }}
+                  {...useTap(() => { setQuery(""); searchRef.current?.focus(); })}
                   style={{
                     position: "absolute",
                     right: 6,
                     top: "50%",
                     transform: "translateY(-50%)",
-                    width: 24,
-                    height: 24,
+                    width: 28,
+                    height: 28,
                     borderRadius: 8,
                     border: "1px solid var(--border)",
                     background: "transparent",
                     color: "var(--muted)",
                     cursor: "pointer",
+                    touchAction: "manipulation",
+                    WebkitTapHighlightColor: "transparent",
                   }}
                 >
                   ×
@@ -493,19 +533,21 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               <span style={badgeStyle(k)}>{STATUS_LABEL[k]}</span>
               <button
                 type="button"
+                {...useTap(() => setLegendInfo(legendInfo === k ? null : k))}
                 aria-label={`What is ${STATUS_LABEL[k]}?`}
-                onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === k ? null : k); }}
                 style={{
-                  marginLeft: 6, width: 18, height: 18, borderRadius: 6,
+                  marginLeft: 6, width: 24, height: 24, borderRadius: 6,
                   border: "1px solid var(--border)", background: "transparent",
-                  color: "var(--muted)", lineHeight: 1, fontSize: 12, cursor: "pointer"
+                  color: "var(--muted)", lineHeight: 1, fontSize: 12, cursor: "pointer",
+                  ...BTN_TOUCH_STYLE,
+                  padding: 0, minHeight: 24,
                 }}
               >
                 i
               </button>
 
               {legendInfo === k && (
-                isMobile ? (
+                isSmall ? (
                   <div data-legend="keep" style={{ marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
                     {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>New booking — no action required.</div>}
                     {k === "yellow" && (
@@ -581,18 +623,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   overflow: "hidden",
                 }}
               >
-                {/* Header: Badge on mobile above name; on desktop on the right */}
+                {/* Header: Badge on small above name; on desktop on the right */}
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: isMobile ? "1fr" : "1fr auto",
+                    gridTemplateColumns: isSmall ? "1fr" : "1fr auto",
                     alignItems: "center",
                     gap: 8,
                   }}
                 >
                   <div style={{ display: "grid", gap: 4, lineHeight: 1.25, minWidth: 0 }}>
-                    {/* Badge first on mobile (compact) */}
-                    {isMobile && (
+                    {isSmall && (
                       <span
                         style={{ ...badgeStyle(kind), marginBottom: 2, justifySelf: "start", width: "max-content" }}
                         title={statusTooltip(it)}
@@ -627,8 +668,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     </div>
                   </div>
 
-                  {/* Badge on desktop (right side) */}
-                  {!isMobile && (
+                  {!isSmall && (
                     <div style={{ justifySelf: "end" }}>
                       <span style={badgeStyle(kind)} title={statusTooltip(it)}>
                         {STATUS_LABEL[kind]}
@@ -640,31 +680,28 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 {/* Actions */}
                 <div
                   style={{
-                    display: isMobile ? "grid" : "flex",
-                    gridTemplateColumns: isMobile ? "1fr" : undefined,
+                    display: isSmall ? "grid" : "flex",
+                    gridTemplateColumns: isSmall ? "1fr" : undefined,
                     alignItems: "center",
-                    justifyContent: isMobile ? "stretch" : "flex-end",
+                    justifyContent: isSmall ? "stretch" : "flex-end",
                     gap: 8,
-                    flexWrap: isMobile ? undefined : "wrap",
+                    flexWrap: isSmall ? undefined : "wrap",
                   }}
                 >
                   {kind === "green" && (
                     <>
                       <button
                         type="button"
-                        onClick={() => setRmModal({ propertyId, item: it })}
-                        onTouchStart={() => {}}
+                        {...useTap(() => setRmModal({ propertyId, item: it }))}
                         style={{
-                          padding: "10px 12px",
+                          ...BTN_TOUCH_STYLE,
                           borderRadius: 10,
                           border: "1px solid var(--border)",
                           background: "var(--card)",
                           color: "var(--text)",
                           fontWeight: 600,
                           cursor: "pointer",
-                          width: isMobile ? "100%" : undefined,
-                          touchAction: "manipulation",
-                          WebkitTapHighlightColor: "transparent",
+                          width: isSmall ? "100%" : undefined,
                         }}
                         title="Reservation message"
                       >
@@ -673,20 +710,18 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
                       <button
                         type="button"
-                        onClick={() => openReservation(it, propertyId)}
-                        onTouchStart={() => {}}
+                        {...useTap(() => openReservation(it, propertyId))}
                         disabled={!it.room_id || !roomById.has(String(it.room_id))}
+                        aria-disabled={!it.room_id || !roomById.has(String(it.room_id))}
                         style={{
-                          padding: "10px 12px",
+                          ...BTN_TOUCH_STYLE,
                           borderRadius: 21,
                           border: "1px solid var(--border)",
                           background: it.room_id && roomById.has(String(it.room_id)) ? "var(--primary)" : "var(--card)",
                           color: it.room_id && roomById.has(String(it.room_id)) ? "#0c111b" : "var(--text)",
                           fontWeight: 600,
                           cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
-                          width: isMobile ? "100%" : undefined,
-                          touchAction: "manipulation",
-                          WebkitTapHighlightColor: "transparent",
+                          width: isSmall ? "100%" : undefined,
                         }}
                         title={it.room_id ? "Open reservation" : "No room assigned yet"}
                       >
@@ -698,19 +733,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   {showCopy && (
                     <button
                       type="button"
-                      onClick={() => copyCheckinLink(propertyId, key)}
-                      onTouchStart={() => {}}
+                      {...useTap(() => copyCheckinLink(propertyId, key))}
                       style={{
-                        padding: "10px 12px",
+                        ...BTN_TOUCH_STYLE,
                         borderRadius: 21,
                         border: "1px solid var(--border)",
                         background: "var(--card)",
                         color: "var(--text)",
                         fontWeight: 600,
                         cursor: "pointer",
-                        width: isMobile ? "100%" : undefined,
-                        touchAction: "manipulation",
-                        WebkitTapHighlightColor: "transparent",
+                        width: isSmall ? "100%" : undefined,
                       }}
                       title="Copy check-in link"
                     >
@@ -721,19 +753,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   {kind === "red" && (
                     <button
                       type="button"
-                      onClick={() => resolveInCalendar(it)}
-                      onTouchStart={() => {}}
+                      {...useTap(() => resolveInCalendar(it))}
                       style={{
-                        padding: "10px 12px",
+                        ...BTN_TOUCH_STYLE,
                         borderRadius: 21,
                         border: "1px solid var(--danger)",
                         background: "transparent",
                         color: "var(--text)",
                         fontWeight: 600,
                         cursor: "pointer",
-                        width: isMobile ? "100%" : undefined,
-                        touchAction: "manipulation",
-                        WebkitTapHighlightColor: "transparent",
+                        width: isSmall ? "100%" : undefined,
                       }}
                       title="Resolve in Calendar"
                     >
@@ -787,7 +816,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <strong>Reservation message</strong>
-                <button className="sb-btn" onClick={() => setRmModal(null)}>Close</button>
+                <button className="sb-btn" {...useTap(()=>setRmModal(null))} style={BTN_TOUCH_STYLE}>Close</button>
               </div>
               <RMContent propertyId={rmModal.propertyId} row={rmModal.item} />
             </div>
@@ -798,7 +827,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   );
 }
 
-/* ───────────────── Reservation Message (safe HTML build) ───────────────── */
+/* ───────────────── Reservation Message (safe HTML build, cu times live din bookings) ───────────────── */
 
 function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   const supabase = useMemo(() => createClient(), []);
@@ -815,7 +844,6 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   const [endDate, setEndDate] = useState<string>(row.end_date);
   const [loadingTimes, setLoadingTimes] = useState<boolean>(false);
 
-  // aduce template-ul local
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
@@ -823,7 +851,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
     } catch { setTpl(null); }
   }, [storageKey]);
 
-  // ── FETCH live start_time / end_time (și date, în caz că s-au schimbat) ──
+  // FETCH live start_time / end_time / dates
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -876,7 +904,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
     return out.join("\n");
   }
 
-  // rebuild preview când se schimbă template/valori/ciTime/coTime/date
+  // rebuild preview on tpl/values/time/date change
   useEffect(() => {
     if (!tpl) { setPreview(""); return; }
 
@@ -904,23 +932,15 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
     setPreview(_renderRM(tpl, merged));
   }, [tpl, values, row, ciTime, coTime, startDate, endDate]);
 
+  const [copied, setCopied] = useState(false);
   async function onCopyPreview() {
     try {
       const text = preview.replace(/<br\/>/g, "\n").replace(/<[^>]+>/g, "");
       await copyTextMobileSafe(text);
-      // feedback vizual – ui standard „Copied!” e suficient
+      setCopied(true);
+      setTimeout(()=>setCopied(false), 1500);
     } catch {}
   }
-
-  const [copied, setCopied] = useState(false);
-  useEffect(() => {
-    if (!preview) return;
-    // reset label după 1.5s când copiem
-    if (copied) {
-      const t = setTimeout(() => setCopied(false), 1500);
-      return () => clearTimeout(t);
-    }
-  }, [copied, preview]);
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -936,7 +956,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
                 <div key={f.key} style={{ display: "grid", gap: 6 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{f.label}</label>
                   <input
-                    style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 8, background: "var(--card)", color: "var(--text)", fontFamily: "inherit" }}
+                    style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 8, background: "var(--card)", color: "var(--text)", fontFamily: "inherit", minHeight: 44 }}
                     value={values[f.key] || ""}
                     onChange={(e)=>setValues(prev=>({ ...prev, [f.key]: e.currentTarget.value }))}
                     placeholder={f.label}
@@ -955,9 +975,8 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
             <button
               type="button"
               className="sb-btn"
-              onClick={async () => { await onCopyPreview(); setCopied(true); }}
-              onTouchStart={() => {}}
-              style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+              {...useTap(onCopyPreview)}
+              style={{ padding: "12px 14px", minHeight: 44, touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
               {copied ? "Copied!" : "Copy preview"}
             </button>
@@ -977,7 +996,7 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  async function onClick() {
+  async function onGenerateAndCopy() {
     if (!bookingId || busy) return;
     setBusy(true);
     try {
@@ -992,7 +1011,7 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{
         alert(j?.error || "Failed to generate link");
         return;
       }
-      await copyTextMobileSafe(String(j.url));   // copiază imediat link-ul generat
+      await copyTextMobileSafe(String(j.url));
       setCopied(true);
       setTimeout(()=>setCopied(false), 1500);
     } catch (e:any) {
@@ -1006,12 +1025,11 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{
     <button
       type="button"
       className="sb-btn sb-btn--primary"
-      onClick={onClick}
-      onTouchStart={() => {}}
+      {...useTap(onGenerateAndCopy)}
       disabled={busy || !bookingId}
-      title={bookingId ? "Copy generated link" : "No booking id"}
-      style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
       aria-busy={busy}
+      title={bookingId ? "Copy generated link" : "No booking id"}
+      style={{ padding: "12px 14px", minHeight: 44, touchAction: "manipulation", WebkitTapHighlightColor: "transparent", borderRadius: 10 }}
     >
       {busy ? "Generating…" : (copied ? "Copied!" : "Copy link")}
     </button>
