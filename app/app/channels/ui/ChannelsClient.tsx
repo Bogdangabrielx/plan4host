@@ -192,17 +192,22 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   function typeIcsUrl(id: string) { return `${origin}/api/ical/types/${id}.ics`; }
 
   /* Integrations CRUD (Import per TYPE) */
-  async function addIntegration(roomTypeId: string, provider: string, url: string) {
+  async function addIntegration(roomTypeId: string, provider: string, url: string): Promise<string | null> {
     if (!canWrite) return;
     if (!propertyId || !roomTypeId || !url.trim()) return;
     setStatus("Saving…");
     const { data, error } = await supabase
       .from("ical_type_integrations")
       .insert({ property_id: propertyId, room_type_id: roomTypeId, provider: provider || null, url: url.trim(), is_active: true })
-      .select("id,property_id,room_type_id,provider,url,is_active,last_sync")
+      .select("id,property_id,room_type_id,provider,url,is_active,last_sync,color,logo_url")
       .single();
-    if (!error && data) setIntegrations(prev => [...prev, data as TypeIntegration]);
-    setStatus(error ? "Error" : "Idle");
+    if (!error && data) {
+      setIntegrations(prev => [...prev, data as TypeIntegration]);
+      setStatus("Idle");
+      return String((data as any).id);
+    }
+    setStatus("Error");
+    return null;
   }
   async function deleteIntegration(id: string) {
     if (!canWrite) return;
@@ -548,7 +553,7 @@ function ManageTypeModal({
   typeId: string;
   integrations: { id: string; provider: string | null; url: string; is_active: boolean | null; last_sync: string | null; color?: string | null; logo_url?: string | null; }[];
   onClose: () => void;
-  onAdd: (provider: string, url: string) => void;
+  onAdd: (provider: string, url: string) => Promise<string | null>;
   onDelete: (id: string) => void;
   onToggle: (ii: any) => void;
   onUpdate: (id: string, patch: Partial<TypeIntegration>) => void;
@@ -673,6 +678,16 @@ function ManageTypeModal({
     logoTargetProviderRef.current = targetProviderName;
     logoTargetIntegrationIdRef.current = integrationId || null;
     fileInputRef.current?.click();
+  }
+  function dataUrlToBlob(dataUrl: string): Blob {
+    const parts = dataUrl.split(',');
+    const byteString = atob(parts[1] || '');
+    const mimeMatch = parts[0]?.match(/data:([^;]+);base64/);
+    const mime = (mimeMatch ? mimeMatch[1] : 'image/png');
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+    return new Blob([ab], { type: mime });
   }
 
   async function persistColor(integrationId: string, c: string) {
@@ -800,10 +815,32 @@ function ManageTypeModal({
           <div>
             <button
               className="sb-btn sb-btn--primary"
-              onClick={() => {
+              onClick={async () => {
                 const prov = provider === 'Other' ? customProvider.trim() : provider;
                 if (!prov || !url.trim()) return;
-                onAdd(prov, url);
+                const newId = await onAdd(prov, url);
+                if (newId) {
+                  // Persist initial color preset
+                  const key = norm(prov);
+                  const chosen = colorMap[key] || defaultColor(prov);
+                  await persistColor(newId, chosen);
+                  // If custom provider has a pre-picked logo (stored locally), upload now
+                  if (provider === 'Other') {
+                    const dataUrl = logoMap[norm(customProvider || 'other')];
+                    if (dataUrl) {
+                      try {
+                        const blob = dataUrlToBlob(dataUrl);
+                        const file = new File([blob], 'logo.png', { type: 'image/png' });
+                        const fd = new FormData();
+                        fd.append('integrationId', newId);
+                        fd.append('file', file);
+                        const res = await fetch('/api/ical/logo/upload', { method: 'POST', body: fd });
+                        const j = await res.json().catch(()=>({}));
+                        if (res.ok && j?.url) onUpdate(newId, { logo_url: j.url });
+                      } catch { /* ignore */ }
+                    }
+                  }
+                }
                 setUrl("");
                 setCustomProvider("");
               }}
