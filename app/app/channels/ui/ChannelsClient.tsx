@@ -760,7 +760,7 @@ function ManageTypeModal({
                     const targ = (customProvider || "other").trim() || "other";
                     triggerLogoPick(targ);
                   }}
-                  style={{ fontSize: 11 ,color: "var(--primary)", textDecoration: "underline", cursor: "pointer" }}
+                  style={{ fontSize: 11 ,color: "var(--primary)", textDecoration: "none", cursor: "pointer" }}
                 >
                   Upload PNG (512×512)
                 </a>
