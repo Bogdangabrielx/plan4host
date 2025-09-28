@@ -15,6 +15,7 @@ type Property = {
   check_out_time: string | null;
   regulation_pdf_url?: string | null;
 };
+
 type Room = { id: string; name: string; property_id: string; room_type_id?: string | null };
 
 type OverviewRow = {
@@ -54,25 +55,39 @@ function fullName(item: OverviewRow): string {
   const l = (item._guest_last_name ?? "").trim();
   return [f, l].filter(Boolean).join(" ").trim() || "—";
 }
-function toBadge(kind: OverviewRow["status"]) {
-  return kind === "green" ? "GREEN" : kind === "yellow" ? "YELLOW" : "RED";
-}
-function subcopyFor(row: OverviewRow): string | null {
+
+const STATUS_LABEL: Record<OverviewRow["status"], string> = {
+  green: "New booking",
+  yellow: "Awaiting",
+  red: "Mismatched booking",
+};
+
+const STATUS_COLOR: Record<OverviewRow["status"], string> = {
+  green: "#6CCC4C",
+  yellow: "#F1D82C",
+  red: "#ED4337",
+};
+
+function statusTooltip(row: OverviewRow): string | undefined {
   if (row.status === "yellow") {
-    if (row._reason === "waiting_form")
-      return "Waiting for the guest to complete the check-in form (until 3 days before arrival).";
-    if (row._reason === "waiting_ical")
-      return "Waiting for a matching OTA iCal event (max 2 hours after form submission).";
+    if (row._reason === "waiting_form") {
+      return "Awaiting OTA iCal event. Wait up to ~2h after the form submission.";
+    }
+    if (row._reason === "waiting_ical") {
+      return "Awaiting guest check-in form. Up to 3 days before arrival.";
+    }
+    return "Awaiting additional info.";
   }
   if (row.status === "red") {
     if (row._reason === "missing_form") return "No check-in form was received for this OTA reservation.";
     if (row._reason === "no_ota_found") return "Form dates do not match any OTA reservation.";
-    if (row._reason === "type_conflict") return "Unmatched Room: OTA type and form type differ. Resolve in Calendar.";
-    if (row._reason === "room_required_auto_failed") return "No free room of the booked type was available for auto-assignment.";
+    if (row._reason === "type_conflict") return "Room type conflict between OTA and check-in form.";
+    if (row._reason === "room_required_auto_failed") return "No free room of the booked type for auto-assignment.";
     return "Action required.";
   }
-  return null;
+  return undefined;
 }
+
 function getCheckinBase(): string {
   const v1 = (process.env.NEXT_PUBLIC_CHECKIN_BASE || "").toString().trim();
   if (v1) return v1.replace(/\/+$/, "");
@@ -95,6 +110,7 @@ function buildPropertyCheckinLink(propertyId: string): string {
     return `${base.replace(/\/+$/, "")}/checkin?property=${encodeURIComponent(propertyId)}`;
   }
 }
+
 // normalizează pentru căutare (remove diacritics + lowercase)
 function norm(s: string) {
   return (s || "")
@@ -111,28 +127,32 @@ function highlight(text: string, query: string): React.ReactNode {
   const nText = norm(text);
   const nQ = norm(query);
   if (!nQ) return text;
+  if (!nText.includes(nQ)) return text;
+
   const raw = text;
-  // map indices by walking both strings
   const parts: React.ReactNode[] = [];
-  let i = 0;
-  let idx = nText.indexOf(nQ);
-  if (idx === -1) return text;
-  // simplu: folosim regex pe text original, case-insensitive, fără diacritice (aproximăm)
   const rx = new RegExp(escapeRegExp(query), "ig");
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = rx.exec(raw))) {
     const start = m.index;
     const end = m.index + m[0].length;
-    if (start > last) parts.push(raw.slice(last, start));
+    if (start > last) parts.push(raw.slice(last, start)); // ✅ () not []
     parts.push(
-      <mark key={start} style={{ background: "color-mix(in srgb, var(--primary) 25%, transparent)", padding: "0 2px", borderRadius: 4 }}>
-        {raw.slice(start, end)}
+      <mark
+        key={start}
+        style={{
+          background: "color-mix(in srgb, var(--primary) 25%, transparent)",
+          padding: "0 2px",
+          borderRadius: 4,
+        }}
+      >
+        {raw.slice(start, end)} {/* ✅ () not [] */}
       </mark>
     );
     last = end;
   }
-  if (last < raw.length) parts.push(raw.slice(last));
+  if (last < raw.length) parts.push(raw.slice(last)); // ✅ () not []
   return parts;
 }
 
@@ -175,21 +195,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   // Modals
   const [modal, setModal] = useState<null | { propertyId: string; dateStr: string; room: Room }>(null);
   const [rmModal, setRmModal] = useState<null | { propertyId: string; item: OverviewRow }>(null);
-
-  // Legend popovers
-  const [legendInfo, setLegendInfo] = useState<null | "green" | "yellow" | "red">(null);
-  useEffect(() => {
-    const onDoc = (e: MouseEvent) => {
-      let el = e.target as HTMLElement | null;
-      while (el) {
-        if ((el as HTMLElement).dataset?.legend === "keep") return;
-        el = el.parentElement as HTMLElement | null;
-      }
-      setLegendInfo(null);
-    };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
 
   // Permissions
   const [canEditGuest, setCanEditGuest] = useState<boolean>(false);
@@ -293,12 +298,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     gap: 8,
     flexWrap: "wrap",
   };
-  const controlsRight: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    flexWrap: "wrap",
-  };
   const selectStyle: React.CSSProperties = {
     minWidth: isMobile ? "100%" : 220,
     width: isMobile ? "100%" : undefined,
@@ -310,10 +309,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     fontWeight: 700,
     fontFamily: "inherit",
   };
-  const searchWrap: React.CSSProperties = {
-    position: "relative",
-    width: isMobile ? "100%" : 280,
-  };
+  const searchWrap: React.CSSProperties = { position: "relative", width: "100%" };
   const searchInput: React.CSSProperties = {
     width: "100%",
     padding: "10px 12px 10px 36px",
@@ -356,22 +352,19 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     gap: 8,
     flexWrap: wrap ? undefined : "wrap",
   });
+
   const badgeStyle = (kind: OverviewRow["status"]): React.CSSProperties => ({
-    display: "inline-block",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
     padding: "2px 10px",
     fontSize: 12,
-    fontWeight: 800,
+    fontWeight: 700,
     borderRadius: 999,
-    border: "1px solid",
-    background: "transparent",
-    color:
-      kind === "green" ? "var(--success)" :
-      kind === "red" ? "var(--danger)" :
-      "var(--warning, #f59e0b)",
-    borderColor:
-      kind === "green" ? "var(--success)" :
-      kind === "red" ? "var(--danger)" :
-      "var(--warning, #f59e0b)",
+    border: `1px solid ${STATUS_COLOR[kind]}`,
+    background: STATUS_COLOR[kind], // solid fill
+    color: "#fff", // white text on both themes
+    letterSpacing: 0.2,
   });
 
   // Actions
@@ -407,7 +400,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       <PlanHeaderBadge title="Guest Overview" slot="header-right" />
 
       <div style={containerStyle}>
-        {/* Controls (Property, Refresh, Search) */}
+        {/* Controls */}
         <div
           style={{
             display: "grid",
@@ -430,98 +423,44 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <button onClick={refresh} className="sb-btn" style={{ padding: "8px 8px", borderRadius: 10, }} title="Refresh">
+            <button onClick={refresh} className="sb-btn" style={{ padding: "8px 8px", borderRadius: 10 }} title="Refresh">
               Refresh
             </button>
           </div>
 
-          <div style={{ ...controlsRight, justifyContent: "stretch", gridColumn: "1 / -1" }}>
-  <div style={{ ...searchWrap, width: "100%" }}>
-    <svg viewBox="0 0 24 24" aria-hidden="true" style={searchIcon}>
-      <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor" />
-    </svg>
-    <input
-      ref={searchRef}
-      type="text"
-      value={query}
-      onChange={(e) => setQuery(e.currentTarget.value)}
-      placeholder="Search guest name…"
-      aria-label="Search guest name"
-      style={{ ...searchInput, width: "100%" }}
-    />
-    {query && (
-      <button
-        type="button"
-        aria-label="Clear search"
-        onClick={() => { setQuery(""); searchRef.current?.focus(); }}
-        style={clearBtn}
-      >
-        ×
-      </button>
-    )}
-  </div>
-</div>
+          {/* Search */}
+          <div style={{ gridColumn: "1 / -1" }}>
+            <div style={searchWrap}>
+              <svg viewBox="0 0 24 24" aria-hidden="true" style={searchIcon}>
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor" />
+              </svg>
+              <input
+                ref={searchRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.currentTarget.value)}
+                placeholder="Search guest name…"
+                aria-label="Search guest name"
+                style={searchInput}
+              />
+              {query && (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => { setQuery(""); searchRef.current?.focus(); }}
+                  style={clearBtn}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Legend */}
-        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 12, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
           {(["green","yellow","red"] as const).map((k) => (
-            <div key={k} style={{ position: "relative" }} data-legend="keep">
-              <span style={badgeStyle(k)}>{toBadge(k)}</span>
-              <button
-                type="button"
-                aria-label={`What is ${toBadge(k)}?`}
-                onClick={(e) => { e.stopPropagation(); setLegendInfo(legendInfo === k ? null : k); }}
-                style={{ marginLeft: 6, width: 18, height: 18, borderRadius: 6, border: "1px solid var(--border)", background: "transparent", color: "var(--muted)", lineHeight: 1, fontSize: 12, cursor: "pointer" }}
-              >
-                i
-              </button>
-
-              {legendInfo === k && (
-                isMobile ? (
-                  <div data-legend="keep" style={{ marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
-                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>No action required.</div>}
-                    {k === "yellow" && (
-                      <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
-                        <span>-Waiting window-</span>
-                        <span>Only Form existing: Wait up to 2h for iCal event to arrive</span>
-                        <span>Only iCal existing: Wait until 3 days before arrival OR resend the check-in form manually</span>
-                      </div>
-                    )}
-                    {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Action required.</div>}
-                  </div>
-                ) : (
-                  <div
-                    data-legend="keep"
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "calc(100% + 8px)",
-                      transform: "translateY(-50%)",
-                      zIndex: 5,
-                      background: "var(--panel)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 8,
-                      padding: 8,
-                      boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
-                      width: 260,
-                      maxWidth: "min(320px, calc(100vw - 32px))",
-                    }}
-                  >
-                    <div style={{ fontWeight: 800, marginBottom: 4 }}>{toBadge(k)}</div>
-                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>No action required.</div>}
-                    {k === "yellow" && (
-                      <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
-                        <span>-Waiting window-</span>
-                        <span>Only Form existing: Wait up to 2h for iCal event to arrive</span>
-                        <span>Only iCal existing: Wait until 3 days before arrival OR resend the check-in form manually</span>
-                      </div>
-                    )}
-                    {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Action required.</div>}
-                  </div>
-                )
-              )}
-            </div>
+            <span key={k} style={badgeStyle(k)}>{STATUS_LABEL[k]}</span>
           ))}
         </div>
 
@@ -529,20 +468,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         <div style={{ display: "grid", gap: 10 }}>
           {visibleRows.map((it) => {
             const rawName = fullName(it) || "Unknown guest";
-            const kind: OverviewRow["status"] =
-              it.status === "green" && !it.room_id ? "yellow" : it.status;
-
+            // if green but no room yet, treat as yellow "awaiting"
+            const effectiveStatus: OverviewRow["status"] = it.status === "green" && !it.room_id ? "yellow" : it.status;
             const roomLabel = it._room_label ?? "—";
-            const badge = toBadge(kind);
             const typeName = it._room_type_name ?? "—";
-            const subcopy = kind === "green" ? null : subcopyFor(it);
             const propertyId = activePropertyId!;
             const key = `${it.id ?? "noid"}|${it.start_date}|${it.end_date}|${it._room_type_id ?? "null"}`;
-
             const showCopy =
-              kind !== "green" &&
-              ((kind === "yellow" && it._reason === "waiting_form") ||
-                (kind === "red" && it._reason === "missing_form"));
+              effectiveStatus !== "green" &&
+              ((effectiveStatus === "yellow" && it._reason === "waiting_form") ||
+                (effectiveStatus === "red" && it._reason === "missing_form"));
 
             return (
               <section
@@ -575,22 +510,24 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       wordBreak: "break-word",
                     }}
                   >
-                    {/* numele are highlight după query */}
                     <span>{highlight(rawName, query)}</span> · Room: {roomLabel} — Type: {typeName}
                     <br />
                     {formatRange(it.start_date, it.end_date)}
                   </em>
                   <div style={{ justifySelf: isMobile ? "start" : "end" }}>
-                    <span style={badgeStyle(kind)}>{badge}</span>
+                    <span
+                      style={badgeStyle(effectiveStatus)}
+                      title={statusTooltip(it)}
+                      aria-label={statusTooltip(it)}
+                    >
+                      {STATUS_LABEL[effectiveStatus]}
+                    </span>
                   </div>
                 </div>
 
-                {/* Subcopy */}
-                {subcopy && <small style={{ color: "var(--muted)", display: "block" }}>{subcopy}</small>}
-
                 {/* Actions */}
                 <div style={actionsRow(isMobile)}>
-                  {kind === "green" && canEditGuest && (
+                  {effectiveStatus === "green" && canEditGuest && (
                     <button
                       onClick={() => openReservation(it, propertyId)}
                       disabled={!it.room_id || !roomById.has(String(it.room_id))}
@@ -610,7 +547,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     </button>
                   )}
 
-                  {kind === "green" && (
+                  {effectiveStatus === "green" && (
                     <button
                       onClick={() => setRmModal({ propertyId, item: it })}
                       style={{
@@ -648,7 +585,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     </button>
                   )}
 
-                  {kind === "red" && canEditGuest && (
+                  {effectiveStatus === "red" && canEditGuest && (
                     <button
                       onClick={() => resolveInCalendar(it)}
                       style={{
@@ -744,12 +681,12 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
     const re = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
     let out: string[] = []; let last = 0; let m: RegExpExecArray | null;
     while ((m = re.exec(s))) {
-      out.push(_escapeHtml(s.slice(last, m.index)));
+      out.push(_escapeHtml(s.slice(last, m.index))); // ✅ () not []
       const key = m[1];
       out.push(_escapeHtml(vars?.[key] ?? `{{${key}}}`));
       last = m.index + m[0].length;
     }
-    out.push(_escapeHtml(s.slice(last)));
+    out.push(_escapeHtml(s.slice(last))); // ✅ () not []
     return out.join("");
   }
   function _renderRM(t: any, vars: Record<string,string>) {
