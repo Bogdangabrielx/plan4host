@@ -727,6 +727,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       <span style={badgeStyle(kind)} title={statusTooltip(it)}>
                         {STATUS_LABEL[kind]}
                       </span>
+                      {(() => { const meta = otaMetaForRow(it, kind); return meta ? (
+                        <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} />
+                      ) : null; })()}
                     </div>
                   )}
                 </div>
@@ -749,12 +752,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     flexWrap: isSmall ? undefined : "wrap",
                   }}
                 >
-                  {/* Desktop: OTA badge on same line with buttons (placed before them), visually below the dates */}
-                  {!isSmall && (() => { const meta = otaMetaForRow(it, kind); return meta ? (
-                    <div style={{ minWidth: '26ch' }}>
-                      <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} />
-                    </div>
-                  ) : null; })()}
+                  {/* Desktop: badge shown above (under status) */}
                   {kind === "green" && (
                     <>
                       <button
