@@ -693,7 +693,7 @@ function ManageTypeModal({
                     alt=""
                     width={24}
                     height={24}
-                    style={{ borderRadius: 6, border: "1px solid var(--border)" }}
+                    style={{ borderRadius: 6, }}
                   />
                 ) : (
                   <span className="sb-badge" title="No logo yet">No logo</span>
