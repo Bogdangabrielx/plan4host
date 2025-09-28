@@ -560,7 +560,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   overflow: "hidden",
                 }}
               >
-                {/* Header: 3 lines (name / room+type / dates) + badge */}
+                {/* Header: Badge on mobile above name; on desktop on the right */}
                 <div
                   style={{
                     display: "grid",
@@ -570,6 +570,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   }}
                 >
                   <div style={{ display: "grid", gap: 4, lineHeight: 1.25, minWidth: 0 }}>
+                    {/* Badge first on mobile */}
+                    {isMobile && (
+                      <span style={{ ...badgeStyle(kind), marginBottom: 2 }} title={statusTooltip(it)}>
+                        {STATUS_LABEL[kind]}
+                      </span>
+                    )}
+
                     {/* 1) Guest name */}
                     <div style={lineWrap}>
                       <Image src={iconSrc("logoguest")} alt="" width={16} height={16} style={iconStyle} />
@@ -577,6 +584,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         {highlight(rawName, query)}
                       </div>
                     </div>
+
                     {/* 2) Room + optional type */}
                     <div style={lineWrap}>
                       <Image src={iconSrc("room")} alt="" width={16} height={16} style={iconStyle} />
@@ -585,6 +593,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         {typeName && typeName !== "—" ? ` — Type: ${typeName}` : ""}
                       </div>
                     </div>
+
                     {/* 3) Dates */}
                     <div style={lineWrap}>
                       <Image src={iconSrc("night")} alt="" width={16} height={16} style={iconStyle} />
@@ -594,12 +603,14 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     </div>
                   </div>
 
-                  {/* Badge */}
-                  <div style={{ justifySelf: isMobile ? "start" : "end" }}>
-                    <span style={badgeStyle(kind)} title={statusTooltip(it)}>
-                      {STATUS_LABEL[kind]}
-                    </span>
-                  </div>
+                  {/* Badge on desktop (right side) */}
+                  {!isMobile && (
+                    <div style={{ justifySelf: "end" }}>
+                      <span style={badgeStyle(kind)} title={statusTooltip(it)}>
+                        {STATUS_LABEL[kind]}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}
@@ -637,7 +648,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         disabled={!it.room_id || !roomById.has(String(it.room_id))}
                         style={{
                           padding: "10px 12px",
-                          borderRadius: 10,
+                          borderRadius: 21,
                           border: "1px solid var(--border)",
                           background: it.room_id && roomById.has(String(it.room_id)) ? "var(--primary)" : "var(--card)",
                           color: it.room_id && roomById.has(String(it.room_id)) ? "#0c111b" : "var(--text)",
@@ -657,11 +668,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       onClick={() => copyCheckinLink(propertyId, key)}
                       style={{
                         padding: "10px 12px",
-                        borderRadius: 10,
+                        borderRadius: 21,
                         border: "1px solid var(--border)",
                         background: "var(--card)",
                         color: "var(--text)",
-                        fontWeight: 900,
+                        fontWeight: 600,
                         cursor: "pointer",
                         width: isMobile ? "100%" : undefined,
                       }}
@@ -676,11 +687,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       onClick={() => resolveInCalendar(it)}
                       style={{
                         padding: "10px 12px",
-                        borderRadius: 10,
+                        borderRadius: 21,
                         border: "1px solid var(--danger)",
                         background: "transparent",
                         color: "var(--text)",
-                        fontWeight: 900,
+                        fontWeight: 600,
                         cursor: "pointer",
                         width: isMobile ? "100%" : undefined,
                       }}
@@ -759,7 +770,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
   function _replaceVarsHtml(html: string, vars: Record<string,string>) {
     if (!html) return "";
-    const withVars = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => _escapeHtml(vars?.[k] ?? `{{${k}}}`));
+    const withVars = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\}\}/g, (_m, k) => _escapeHtml(vars?.[k] ?? `{{${k}}}`));
     return withVars.replace(/\r?\n/g, "<br/>");
   }
   function _renderHeadingSafe(src: string, vars: Record<string,string>) {
