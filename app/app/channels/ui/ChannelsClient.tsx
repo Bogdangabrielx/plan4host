@@ -212,6 +212,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   async function deleteIntegration(id: string) {
     if (!canWrite) return;
     setStatus("Saving…");
+    // Best-effort: delete associated logo from Storage (if present)
+    try {
+      await fetch('/api/ical/logo/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ integrationId: id }),
+      });
+    } catch { /* ignore */ }
     const { error } = await supabase.from("ical_type_integrations").delete().eq("id", id);
     if (!error) setIntegrations(prev => prev.filter(x => x.id !== id));
     setStatus(error ? "Error" : "Idle");
