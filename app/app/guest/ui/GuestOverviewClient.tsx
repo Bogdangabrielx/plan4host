@@ -187,7 +187,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     ob.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
     return () => ob.disconnect();
   }, []);
-  const iconSrc = useCallback((base: "guestlogo" | "room" | "night") => {
+  const iconSrc = useCallback((base: "logoguest" | "room" | "night") => {
     return isDark ? `/${base}_fordark.png` : `/${base}_forlight.png`;
   }, [isDark]);
   const iconStyle: React.CSSProperties = { width: 16, height: 16, flex: "0 0 auto", opacity: 0.95 };
@@ -572,7 +572,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   <div style={{ display: "grid", gap: 4, lineHeight: 1.25, minWidth: 0 }}>
                     {/* 1) Guest name */}
                     <div style={lineWrap}>
-                      <Image src={iconSrc("guestlogo")} alt="" width={16} height={16} style={iconStyle} />
+                      <Image src={iconSrc("logoguest")} alt="" width={16} height={16} style={iconStyle} />
                       <div style={{ fontWeight: 700, wordBreak: "break-word", minWidth: 0 }}>
                         {highlight(rawName, query)}
                       </div>
