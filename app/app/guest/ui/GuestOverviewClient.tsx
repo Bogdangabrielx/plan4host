@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
@@ -65,12 +66,11 @@ const STATUS_LABEL: Record<OverviewRow["status"], string> = {
 /** Solid badge colors (same on light/dark) */
 const STATUS_COLOR: Record<OverviewRow["status"], string> = {
   green: "#6CCC4C",
-  yellow: "#FFDE21",
+  yellow: "#F1D82C",
   red: "#ED4337",
 };
 
 function statusTooltip(row: OverviewRow): string | undefined {
-  // For hover on the badge per-row
   const s = row.status === "green" && !row.room_id ? "yellow" : row.status;
   if (s === "yellow") {
     if (row._reason === "waiting_form") {
@@ -160,6 +160,38 @@ function highlight(text: string, query: string): React.ReactNode {
 export default function GuestOverviewClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = createClient();
   const { setPill } = useHeader();
+
+  // Theme-aware icons (for light/dark)
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const attr = document.documentElement.getAttribute("data-theme");
+    if (attr === "dark") return true;
+    if (attr === "light") return false;
+    return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false;
+  });
+  useEffect(() => {
+    const m = window.matchMedia?.("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    try { m?.addEventListener("change", onChange); } catch { m?.addListener?.(onChange); }
+    return () => {
+      try { m?.removeEventListener("change", onChange); } catch { m?.removeListener?.(onChange); }
+    };
+  }, []);
+  useEffect(() => {
+    const root = document.documentElement;
+    const ob = new MutationObserver(() => {
+      const t = root.getAttribute("data-theme");
+      if (t === "dark") setIsDark(true);
+      if (t === "light") setIsDark(false);
+    });
+    ob.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => ob.disconnect();
+  }, []);
+  const iconSrc = useCallback((base: "guestlogo" | "room" | "night") => {
+    return isDark ? `/${base}_fordark.png` : `/${base}_forlight.png`;
+  }, [isDark]);
+  const iconStyle: React.CSSProperties = { width: 16, height: 16, flex: "0 0 auto", opacity: 0.95 };
+  const lineWrap: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, minWidth: 0 };
 
   // Responsive
   const [isMobile, setIsMobile] = useState<boolean>(() =>
@@ -308,15 +340,14 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     fontWeight: 700,
     fontFamily: "inherit",
   };
-
   const badgeStyle = (kind: OverviewRow["status"]): React.CSSProperties => ({
     display: "inline-block",
     padding: "3px 10px",
     fontSize: 12,
-    fontWeight: 400,             // text alb, “subțire” comparativ cu 900
+    fontWeight: 500,
     borderRadius: 999,
     border: "1px solid " + STATUS_COLOR[kind],
-    background: STATUS_COLOR[kind], // plin
+    background: STATUS_COLOR[kind],
     color: "#ffffff",
     letterSpacing: 0.0,
   });
@@ -529,7 +560,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   overflow: "hidden",
                 }}
               >
-                {/* Top line */}
+                {/* Header: 3 lines (name / room+type / dates) + badge */}
                 <div
                   style={{
                     display: "grid",
@@ -538,18 +569,32 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     gap: 8,
                   }}
                 >
-                  <em
-                    style={{
-                      letterSpacing: 0.2,
-                      fontStyle: "italic",
-                      fontWeight: 400,
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    <span>{highlight(rawName, query)}</span> · Room: {roomLabel} — Type: {typeName}
-                    <br />
-                    {formatRange(it.start_date, it.end_date)}
-                  </em>
+                  <div style={{ display: "grid", gap: 4, lineHeight: 1.25, minWidth: 0 }}>
+                    {/* 1) Guest name */}
+                    <div style={lineWrap}>
+                      <Image src={iconSrc("guestlogo")} alt="" width={16} height={16} style={iconStyle} />
+                      <div style={{ fontWeight: 700, wordBreak: "break-word", minWidth: 0 }}>
+                        {highlight(rawName, query)}
+                      </div>
+                    </div>
+                    {/* 2) Room + optional type */}
+                    <div style={lineWrap}>
+                      <Image src={iconSrc("room")} alt="" width={16} height={16} style={iconStyle} />
+                      <div style={{ color: "var(--muted)", minWidth: 0, overflowWrap: "anywhere" }}>
+                        Room: {roomLabel}
+                        {typeName && typeName !== "—" ? ` — Type: ${typeName}` : ""}
+                      </div>
+                    </div>
+                    {/* 3) Dates */}
+                    <div style={lineWrap}>
+                      <Image src={iconSrc("night")} alt="" width={16} height={16} style={iconStyle} />
+                      <div style={{ color: "var(--muted)" }}>
+                        {formatRange(it.start_date, it.end_date)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Badge */}
                   <div style={{ justifySelf: isMobile ? "start" : "end" }}>
                     <span style={badgeStyle(kind)} title={statusTooltip(it)}>
                       {STATUS_LABEL[kind]}
