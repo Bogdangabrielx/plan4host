@@ -42,8 +42,6 @@ type OverviewRow = {
   _guest_last_name?: string | null;
 };
 
-type ProviderMeta = { provider: string; label: string; color: string; logo: string };
-
 /* ───────────────── Helpers ───────────────── */
 
 function fmtDate(ymd: string): string {
@@ -199,43 +197,12 @@ function useTap(handler: () => void) {
   // pointer-up = fără delay pe mobil, funcționează și pe desktop
   return {
     onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => {
+      // ignoră clickul non-primar la mouse
       if (e.pointerType === "mouse" && (e.button ?? 0) !== 0) return;
       e.preventDefault();
       handler();
     },
   };
-}
-
-/* ───────────────── Provider color/logo helpers ───────────────── */
-
-function defaultProviderColor(p?: string | null) {
-  const s = norm(p || "");
-  if (s.includes("airbnb")) return "rgba(255, 90, 96, 0.81)";
-  if (s.includes("booking")) return "rgba(30, 144, 255, 0.81)";
-  if (s.includes("expedia")) return "rgba(254, 203, 46, 0.81)";
-  return "rgba(139, 92, 246, 0.81)"; // Other
-}
-function providerLogoSrc(p?: string | null) {
-  const s = norm(p || "");
-  if (s.includes("booking")) return "/booking.png";
-  if (s.includes("airbnb")) return "/airbnb.png";
-  if (s.includes("expedia")) return "/expedia.png";
-  return "/other.png";
-}
-function providerLabel(p?: string | null) {
-  const s = (p || "").trim();
-  if (!s) return "Other";
-  const n = norm(s);
-  if (n.includes("booking")) return "Booking.com";
-  if (n.includes("airbnb")) return "Airbnb";
-  if (n.includes("expedia")) return "Expedia";
-  return s.length > 1 ? s[0].toUpperCase() + s.slice(1) : s;
-}
-function choosePreferredProvider(arr: string[]): string | null {
-  const prio = ["booking", "airbnb", "expedia"];
-  const nset = arr.map((x) => norm(x));
-  for (const p of prio) if (nset.some((s) => s.includes(p))) return p;
-  return arr[0] || null;
 }
 
 /* ───────────────── Component ───────────────── */
@@ -288,9 +255,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [items, setItems] = useState<OverviewRow[]>([]);
   const [loading, setLoading] = useState<"idle" | "loading" | "error">("idle");
 
-  // Provider meta by TYPE
-  const [provByType, setProvByType] = useState<Record<string, ProviderMeta>>({});
-
   // Search (guest name)
   const [query, setQuery] = useState("");
   const searchRef = useRef<HTMLInputElement | null>(null);
@@ -339,17 +303,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setLoading("loading");
     setPill("Loading…");
 
-    const [rRooms, rInteg] = await Promise.all([
+    const [rRooms] = await Promise.all([
       supabase
         .from("rooms")
         .select("id,name,property_id,room_type_id")
         .eq("property_id", activePropertyId)
         .order("name", { ascending: true }),
-      supabase
-        .from("ical_type_integrations")
-        .select("room_type_id,provider,is_active")
-        .eq("property_id", activePropertyId)
-        .eq("is_active", true),
     ]);
 
     if (rRooms.error) {
@@ -358,39 +317,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       return;
     }
     setRooms((rRooms.data ?? []) as Room[]);
-
-    // Build provider meta per TYPE using active integrations + LS colors
-    const tmpByType: Record<string, ProviderMeta> = {};
-    try {
-      const all = (rInteg.data ?? []) as Array<{ room_type_id: string; provider: string | null; is_active: boolean | null }>;
-      const group = new Map<string, string[]>();
-      for (const row of all) {
-        if (!row.room_type_id) continue;
-        const arr = group.get(row.room_type_id) || [];
-        if (row.provider) arr.push(row.provider);
-        group.set(row.room_type_id, arr);
-      }
-      for (const [typeId, provs] of group.entries()) {
-        const chosen = choosePreferredProvider(provs) || "other";
-        // read color from LS saved in Import modal
-        let color = defaultProviderColor(chosen);
-        try {
-          const raw = localStorage.getItem(`p4h:otaColors:type:${typeId}`);
-          if (raw) {
-            const cmap = JSON.parse(raw || "{}") as Record<string, string>;
-            const fromLs = cmap[norm(chosen)];
-            if (fromLs) color = fromLs;
-          }
-        } catch {}
-        tmpByType[typeId] = {
-          provider: chosen,
-          label: providerLabel(chosen),
-          color,
-          logo: providerLogoSrc(chosen),
-        };
-      }
-    } catch { /* noop */ }
-    setProvByType(tmpByType);
 
     try {
       const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(activePropertyId)}`, { cache: "no-store", keepalive: true });
@@ -506,48 +432,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     else if (loading === "error") setPill("Error");
     else setPill("Idle");
   }, [loading, setPill]);
-
-  // OTA Badge renderer
-  function OtaBadge({ row }: { row: OverviewRow }) {
-    const typeId = row._room_type_id || "";
-    const meta = typeId ? provByType[typeId] : undefined;
-    if (!meta) return null;
-    return (
-      <div style={{ marginTop: 4 }}>
-        <span
-          title={meta.label}
-          style={{
-            position: "relative",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "6px 10px 6px 36px",
-            borderRadius: 21,
-            background: meta.color,
-            border: "1px solid var(--border)",
-            color: "#0c111b",
-            fontWeight: 700,
-            fontSize: 12,
-            lineHeight: 1,
-            width: "max-content",
-            overflow: "hidden",
-          }}
-        >
-          {/* small logo at left in the badge */}
-          <span style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)" }}>
-            <Image
-              src={meta.logo}
-              alt={meta.label}
-              width={20}
-              height={20}
-              style={{ borderRadius: 6, background: "rgba(255,255,255,0.9)" }}
-            />
-          </span>
-          {meta.label}
-        </span>
-      </div>
-    );
-  }
 
   return (
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
@@ -782,9 +666,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         {formatRange(it.start_date, it.end_date)}
                       </div>
                     </div>
-
-                    {/* 4) OTA badge under dates (if we have meta for this room type) */}
-                    <OtaBadge row={it} />
                   </div>
 
                   {!isSmall && (
@@ -994,7 +875,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   }, [supabase, row?.id]);
 
   // escape helpers
-  function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;"," >":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
+  function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
   function _replaceVarsHtml(html: string, vars: Record<string,string>) {
     if (!html) return "";
     const withVars = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\}\}/g, (_m, k) => _escapeHtml(vars?.[k] ?? `{{${k}}}`));
