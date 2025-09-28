@@ -641,7 +641,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           border: "1px solid var(--border)",
                           background: it.room_id && roomById.has(String(it.room_id)) ? "var(--primary)" : "var(--card)",
                           color: it.room_id && roomById.has(String(it.room_id)) ? "#0c111b" : "var(--text)",
-                          fontWeight: 900,
+                          fontWeight: 600,
                           cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
                           width: isMobile ? "100%" : undefined,
                         }}
