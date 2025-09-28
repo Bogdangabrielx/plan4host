@@ -1,6 +1,7 @@
+// app/app/channels/ui/ChannelsClient.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
@@ -44,6 +45,13 @@ function fmtCountdown(total: number) {
   const m = Math.floor(s / 60);
   const rs = s % 60;
   return `${m}m${rs ? ` ${rs}s` : ""}`;
+}
+function providerBuiltinLogo(provider?: string | null): string | null {
+  const p = (provider || "").toLowerCase();
+  if (p.includes("booking")) return "/booking.png";
+  if (p.includes("airbnb")) return "/airbnb.png";
+  if (p.includes("expedia")) return "/expedia.png";
+  return null;
 }
 
 type HintVariant = "muted" | "warning" | "danger" | "success" | "info";
@@ -115,8 +123,6 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   // Recalculăm textul când countdown-ul se schimbă
   useEffect(() => {
     if (countdownSec === null) return;
-    // păstrăm același variant; doar updatăm textul
-    // (textul inițial e setat în syncAllNow în funcție de motiv)
     setHintText((old) => {
       if (/Hourly limit/.test(old)) {
         return `Hourly limit — next in ${fmtCountdown(countdownSec)}`;
@@ -124,20 +130,17 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       if (/Wait /.test(old) || /Please wait/.test(old)) {
         return `Wait ${fmtCountdown(countdownSec)}`;
       }
-      // fallback generic
       return `Wait ${fmtCountdown(countdownSec)}`;
     });
   }, [countdownSec]);
 
-  // Load plan for the CURRENT PROPERTY (so gating is accurate per property admin)
+  // Load plan for the CURRENT PROPERTY
   useEffect(() => {
     (async () => {
       if (!propertyId) { setIsPremium(null); return; }
-      // 1) admin/account of selected property
       const rProp = await supabase.from("properties").select("admin_id").eq("id", propertyId).single();
       const accId = (rProp.data as any)?.admin_id as string | undefined;
       if (!accId) { setIsPremium(false); setHintText(""); setHintVariant("muted"); return; }
-      // 2) plan for that account
       const rPlan = await supabase.from("accounts").select("plan").eq("id", accId).maybeSingle();
       const p = ((rPlan.data as any)?.plan as string | null)?.toLowerCase?.() ?? "basic";
       const premium = p === "premium";
@@ -224,17 +227,12 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     const active = integrations.filter(i => !!i.is_active);
     if (!propertyId) return;
 
-    // Gate instant pentru non-Premium (fără să lovim API-ul)
     if (isPremium === false) {
-      // show feedback directly on button
       setSyncBtnText("Premium only");
       setTimeout(() => setSyncBtnText("Sync now"), 1400);
-      // nu arătăm status pill sub buton pentru non‑premium
       setCountdownSec(null);
       return;
     }
-
-    // dacă nu există feed-uri active
     if (active.length === 0) {
       setHintText("No active feeds");
       setHintVariant("muted");
@@ -256,7 +254,6 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         const cool = (j?.cooldown_remaining_sec ?? 0) as number;
         const retryAfter = (j?.retry_after_sec ?? 0) as number;
 
-        // Premium-only gating coming from server
         if (reason === "sync_now_only_on_premium") {
           setHintText("Premium only");
           setHintVariant("danger");
@@ -264,7 +261,6 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           setStatus("Idle");
           return;
         }
-
         if (reason === "cooldown" && cool > 0) {
           const sec = Math.max(retryAfter || cool, 0);
           setHintText(`Wait ${fmtCountdown(sec)}`);
@@ -281,8 +277,6 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           setStatus("Idle");
           return;
         }
-
-        // alt 429 generic
         setHintText("Rate limited");
         setHintVariant("warning");
         setCountdownSec(null);
@@ -291,9 +285,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       }
 
       if (!res.ok) {
-        // 4xx/5xx generic
         const j = await res.json().catch(() => ({} as any));
-        // premium-only, indiferent dacă vine ca error sau reason
         if (j?.error === "Premium only" || j?.reason === "sync_now_only_on_premium") {
           setHintText("Premium only");
           setHintVariant("danger");
@@ -306,7 +298,6 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         return;
       }
 
-      // OK
       const nowIso = new Date().toISOString();
       setIntegrations(prev => prev.map(x => x.is_active ? { ...x, last_sync: nowIso } : x));
       setHintText("Synced just now");
@@ -321,14 +312,12 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     }
   }
 
-  /* UI */
   const pillLabel =
     status === "Error" ? "Error" :
     status === "Loading" || status === "Saving…" ? "Syncing…" : "Idle";
 
   const activeCount = integrations.filter(i => !!i.is_active).length;
 
-  // Header status pill next to title
   useEffect(() => {
     setPill(pillLabel);
   }, [pillLabel, setPill]);
@@ -591,6 +580,73 @@ function ManageTypeModal({
     });
   }
 
+  /* ===== Logo map (preset or custom uploaded for "Other") ===== */
+  const LS_LOGO_KEY = `p4h:otaLogos:type:${typeId}`;
+  const [logoMap, setLogoMap] = useState<Record<string, string>>({});
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_LOGO_KEY);
+      const parsed = raw ? (JSON.parse(raw) as Record<string,string>) : {};
+      setLogoMap(parsed || {});
+    } catch { setLogoMap({}); }
+  }, [LS_LOGO_KEY]);
+  function saveLogo(providerName: string, dataUrl: string) {
+    const key = norm(providerName);
+    setLogoMap(prev => {
+      const next = { ...prev, [key]: dataUrl };
+      try { localStorage.setItem(LS_LOGO_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }
+  function logoSrcFor(p?: string | null): string | null {
+    const builtin = providerBuiltinLogo(p);
+    if (builtin) return builtin;
+    const custom = logoMap[norm(p)];
+    return custom || null;
+  }
+
+  // Single hidden input for picking logos (used for "Other" + per-row change)
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const logoTargetProviderRef = useRef<string>("other");
+  async function validateAndReadPNG(file: File): Promise<string> {
+    if (file.type !== "image/png") throw new Error("PNG required");
+    const dataUrl: string = await new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onerror = () => reject(new Error("Read error"));
+      fr.onload = () => resolve(String(fr.result));
+      fr.readAsDataURL(file);
+    });
+    await new Promise<void>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        if (img.width !== 512 || img.height !== 512) {
+          reject(new Error("Image must be exactly 512×512 px"));
+        } else {
+          resolve();
+        }
+      };
+      img.onerror = () => reject(new Error("Invalid image"));
+      img.src = dataUrl;
+    });
+    return dataUrl;
+  }
+  async function onPickLogo(files: FileList | null) {
+    const target = logoTargetProviderRef.current || "other";
+    if (!files || !files[0]) return;
+    try {
+      const dataUrl = await validateAndReadPNG(files[0]);
+      saveLogo(target, dataUrl);
+    } catch (e:any) {
+      alert(e?.message || "Upload failed. PNG 512×512 required.");
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+  function triggerLogoPick(targetProviderName: string) {
+    logoTargetProviderRef.current = targetProviderName;
+    fileInputRef.current?.click();
+  }
+
   return (
     <InnerModal title="Manage imports for room type" onClose={onClose}>
       <p style={{ color: "var(--muted)", marginTop: 0 }}>
@@ -601,13 +657,69 @@ function ManageTypeModal({
         <div style={{ display: "grid", gap: 8 }}>
           <div style={{ display: "grid", gap: 6 }}>
             <label style={label}>Provider</label>
-            <select className="sb-select" value={provider} onChange={(e) => setProvider((e.target as HTMLSelectElement).value)} style={{ fontFamily: 'inherit' }}>
+            <select
+              className="sb-select"
+              value={provider}
+              onChange={(e) => setProvider((e.target as HTMLSelectElement).value)}
+              style={{ fontFamily: 'inherit' }}
+            >
               <option>Booking</option>
               <option>Airbnb</option>
               <option>Expedia</option>
               <option>Other</option>
             </select>
           </div>
+
+          {/* Logo selector / preview */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <label style={label}>Logo</label>
+            {provider !== "Other" ? (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                {(() => {
+                  const src = logoSrcFor(provider);
+                  return src ? (
+                    <img src={src} alt="" width={24} height={24} style={{ borderRadius: 6, border: "1px solid var(--border)" }} />
+                  ) : (
+                    <span style={{ fontSize: 12, color: "var(--muted)" }}>Preset</span>
+                  );
+                })()}
+                <small style={{ color: "var(--muted)" }}>(preset)</small>
+              </span>
+            ) : (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                {logoSrcFor(customProvider || "other") ? (
+                  <img
+                    src={logoSrcFor(customProvider || "other")!}
+                    alt=""
+                    width={24}
+                    height={24}
+                    style={{ borderRadius: 6, border: "1px solid var(--border)" }}
+                  />
+                ) : (
+                  <span className="sb-badge" title="No logo yet">No logo</span>
+                )}
+                <a
+                  href="#upload-logo"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const targ = (customProvider || "other").trim() || "other";
+                    triggerLogoPick(targ);
+                  }}
+                  style={{ color: "var(--primary)", textDecoration: "underline", cursor: "pointer" }}
+                >
+                  Upload PNG (512×512)
+                </a>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png"
+                  hidden
+                  onChange={(e) => onPickLogo(e.currentTarget.files)}
+                />
+              </span>
+            )}
+          </div>
+
           {/* color selector for current provider */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <label style={label}>Color</label>
@@ -632,16 +744,19 @@ function ManageTypeModal({
               </div>
             )}
           </div>
+
           {provider === 'Other' && (
             <div style={{ display: "grid", gap: 6 }}>
               <label style={label}>Custom provider name</label>
               <input style={input} value={customProvider} onChange={(e) => setCustomProvider((e.target as HTMLInputElement).value)} placeholder="e.g., Vrbo, Agoda" />
             </div>
           )}
+
           <div style={{ display: "grid", gap: 6 }}>
             <label style={label}>iCal URL</label>
             <input style={input} value={url} onChange={(e) => setUrl((e.target as HTMLInputElement).value)} placeholder="https://..." />
           </div>
+
           <div>
             <button
               className="sb-btn sb-btn--primary"
@@ -664,38 +779,68 @@ function ManageTypeModal({
         <p style={{ color: "var(--muted)" }}>No feeds added yet.</p>
       ) : (
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
-          {integrations.map(ii => (
-            <li key={ii.id} className="sb-card" style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <div style={{ display: "grid", gap: 4, minWidth: 260 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <span title="Provider color" style={{ width: 14, height: 14, borderRadius: 999, border: '1px solid var(--border)', display:'inline-block', background: (colorMap[norm(ii.provider)] || defaultColor(ii.provider)) }} />
-                  <strong>{ii.provider || "Unknown"}</strong>
-                </div>
-                <small style={{ color: "var(--muted)", wordBreak: "break-all" }}>{ii.url}</small>
-                {ii.last_sync && <small style={{ color: "var(--muted)" }}>Last sync: {new Date(ii.last_sync).toLocaleString()}</small>}
-              </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <button className="sb-btn" data-picker="keep" onClick={()=> setPickerFor(ii.id)}>Color</button>
-                {pickerFor === ii.id && (
-                  <div data-picker="keep" onMouseLeave={() => setPickerFor(null)} style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
-                    {[
-                      'rgba(30,144,255,0.81)','rgba(255,90,95,0.81)','rgba(254,203,46,0.81)','rgba(34,197,94,0.81)',
-                      'rgba(139,92,246,0.81)','rgba(13,148,136,0.81)','rgba(148,163,184,0.81)','rgba(59,130,246,0.81)',
-                      'rgba(251,146,60,0.81)','rgba(244,114,182,0.81)'
-                    ].map((c,i)=>(
-                      <button key={i} onClick={()=>{ saveColor(ii.provider || 'other', c); setPickerFor(null); }}
-                        title="Pick color" style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
-                    ))}
+          {integrations.map(ii => {
+            const np = norm(ii.provider);
+            const logoSrc = logoSrcFor(ii.provider);
+            const showLogoButton = !providerBuiltinLogo(ii.provider); // show "Logo" only for non-presets
+
+            return (
+              <li key={ii.id} className="sb-card" style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ display: "grid", gap: 4, minWidth: 260 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    {logoSrc ? (
+                      <img src={logoSrc} alt="" width={18} height={18} style={{ borderRadius: 5, border: "1px solid var(--border)" }} />
+                    ) : (
+                      <span title="Provider color" style={{ width: 14, height: 14, borderRadius: 999, border: '1px solid var(--border)', display:'inline-block', background: (colorMap[np] || defaultColor(ii.provider)) }} />
+                    )}
+                    <strong>{ii.provider || "Unknown"}</strong>
                   </div>
-                )}
-                <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontSize: 12 }}>
-                  <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> active
-                </label>
-                {/* Per-feed Sync now a fost eliminat intenționat */}
-                <button className="sb-btn" onClick={() => onDelete(ii.id)}>Delete</button>
-              </div>
-            </li>
-          ))}
+                  <small style={{ color: "var(--muted)", wordBreak: "break-all" }}>{ii.url}</small>
+                  {ii.last_sync && <small style={{ color: "var(--muted)" }}>Last sync: {new Date(ii.last_sync).toLocaleString()}</small>}
+                </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  <button className="sb-btn" data-picker="keep" onClick={()=> setPickerFor(ii.id)}>Color</button>
+                  {pickerFor === ii.id && (
+                    <div data-picker="keep" onMouseLeave={() => setPickerFor(null)} style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
+                      {[
+                        'rgba(30,144,255,0.81)','rgba(255,90,95,0.81)','rgba(254,203,46,0.81)','rgba(34,197,94,0.81)',
+                        'rgba(139,92,246,0.81)','rgba(13,148,136,0.81)','rgba(148,163,184,0.81)','rgba(59,130,246,0.81)',
+                        'rgba(251,146,60,0.81)','rgba(244,114,182,0.81)'
+                      ].map((c,i)=>(
+                        <button key={i} onClick={()=>{ saveColor(ii.provider || 'other', c); setPickerFor(null); }}
+                          title="Pick color" style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
+                      ))}
+                    </div>
+                  )}
+
+                  {showLogoButton && (
+                    <>
+                      <button
+                        className="sb-btn"
+                        onClick={() => triggerLogoPick(ii.provider || "other")}
+                        title="Upload logo (PNG 512×512)"
+                      >
+                        Logo
+                      </button>
+                      {/* shared hidden input is already in the form header; reuse it */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/png"
+                        hidden
+                        onChange={(e) => onPickLogo(e.currentTarget.files)}
+                      />
+                    </>
+                  )}
+
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontSize: 12 }}>
+                    <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> active
+                  </label>
+                  <button className="sb-btn" onClick={() => onDelete(ii.id)}>Delete</button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </InnerModal>
@@ -755,13 +900,7 @@ const input: React.CSSProperties = {
   fontFamily: 'inherit',
 };
 
-// select now uses sb-select
-
-// buttons now use sb-btn classes
-
-// mini pill replaced by sb-badge
-
-// Status pill fix sub buton (culoare după variant)
+// Status pill (unused here, kept in case you want it)
 function statusPill(variant: HintVariant): React.CSSProperties {
   const base: React.CSSProperties = {
     display: "inline-block",
