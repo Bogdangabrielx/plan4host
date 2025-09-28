@@ -193,8 +193,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
   /* Integrations CRUD (Import per TYPE) */
   async function addIntegration(roomTypeId: string, provider: string, url: string): Promise<string | null> {
-    if (!canWrite) return;
-    if (!propertyId || !roomTypeId || !url.trim()) return;
+    if (!canWrite) return null;
+    if (!propertyId || !roomTypeId || !url.trim()) return null;
     setStatus("Saving…");
     const { data, error } = await supabase
       .from("ical_type_integrations")
