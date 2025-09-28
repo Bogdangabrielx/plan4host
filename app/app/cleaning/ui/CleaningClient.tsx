@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
@@ -82,6 +83,34 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   const [cleaningMap, setCleaningMap] = useState<Record<string, Record<string, boolean>>>({});
 
   const [openItem, setOpenItem] = useState<RoomItem | null>(null);
+
+  /* Theme-aware icon (light/dark) */
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const attr = document.documentElement.getAttribute("data-theme");
+    if (attr === "dark") return true;
+    if (attr === "light") return false;
+    return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false;
+  });
+  useEffect(() => {
+    const m = window.matchMedia?.("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    try { m?.addEventListener("change", onChange); } catch { m?.addListener?.(onChange); }
+    return () => {
+      try { m?.removeEventListener("change", onChange); } catch { m?.removeListener?.(onChange); }
+    };
+  }, []);
+  useEffect(() => {
+    const root = document.documentElement;
+    const ob = new MutationObserver(() => {
+      const t = root.getAttribute("data-theme");
+      if (t === "dark") setIsDark(true);
+      if (t === "light") setIsDark(false);
+    });
+    ob.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => ob.disconnect();
+  }, []);
+  const roomIconSrc = isDark ? "/room_fordark.png" : "/room_forlight.png";
 
   /* Header title + pill */
   useEffect(() => { setTitle("Cleaning Board"); }, [setTitle]);
@@ -348,9 +377,9 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
       <PlanHeaderBadge title="Cleaning Board" slot="header-right" />
       {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: 12 }}>
-        <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800,}}>
-              Property
-            </label>
+        <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
+          Property
+        </label>
         <select
           className="sb-select"
           value={propertyId}
@@ -400,8 +429,23 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                 title={cleaned ? "Cleaned" : "Open cleaning tasks"}
               >
                 <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
-                  <strong style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.room.name}</strong>
-                  <small style={{ color: "var(--muted)" }}>{it.mode === "carry" ? `carry-over • ${it.cleanDate}` : it.statusLine}</small>
+                  {/* Icon above room name, theme-aware */}
+                  <Image
+                    src={roomIconSrc}
+                    alt=""
+                    width={18}
+                    height={18}
+                    style={{ margin: "0 auto", opacity: 0.95, pointerEvents: "none" }}
+                  />
+
+                  <strong style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {it.room.name}
+                  </strong>
+
+                  <small style={{ color: "var(--muted)" }}>
+                    {it.mode === "carry" ? `carry-over • ${it.cleanDate}` : it.statusLine}
+                  </small>
+
                   {cleaned ? (
                     <span className="sb-badge">Cleaned</span>
                   ) : (
