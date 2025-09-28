@@ -29,6 +29,8 @@ type OverviewRow = {
   _room_label?: string | null;
   _room_type_id?: string | null;
   _room_type_name?: string | null;
+  _ota_provider?: string | null;   // booking|airbnb|expedia|other (if available from API)
+  _source?: string | null;         // fallback source string, free-form
   _reason?:
     | "waiting_form"
     | "waiting_ical"
@@ -194,15 +196,53 @@ function useIsSmall() {
 }
 
 function useTap(handler: () => void) {
-  // pointer-up = fără delay pe mobil, funcționează și pe desktop
   return {
     onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => {
-      // ignoră clickul non-primar la mouse
       if (e.pointerType === "mouse" && (e.button ?? 0) !== 0) return;
       e.preventDefault();
       handler();
     },
   };
+}
+
+/* ───────────────── Provider helpers (badge color + icon) ───────────────── */
+
+function normProvider(p?: string | null) {
+  return (p || "").toLowerCase().trim();
+}
+function defaultProviderColor(provider?: string | null) {
+  const s = normProvider(provider);
+  if (s.includes("airbnb")) return "rgba(255, 90, 96, 0.81)";
+  if (s.includes("booking")) return "rgba(30, 144, 255, 0.81)";
+  if (s.includes("expedia")) return "rgba(254,203,46,0.81)";
+  return "rgba(139,92,246,0.81)"; // generic
+}
+function providerIconPath(provider?: string | null) {
+  const s = normProvider(provider);
+  if (s.includes("airbnb")) return "/airbnb.png";
+  if (s.includes("booking")) return "/booking.png";
+  if (s.includes("expedia")) return "/expedia.png";
+  return "/ota.png"; // generic
+}
+function resolveProvider(row: OverviewRow): string | null {
+  return row._ota_provider || (row._source ?? null);
+}
+function providerBadgeInfo(row: OverviewRow) {
+  const provider = resolveProvider(row);
+  if (!provider) return null;
+
+  const typeId = row._room_type_id || "";
+  const LS_KEY = `p4h:otaColors:type:${typeId}`;
+  let colorMap: Record<string, string> = {};
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    colorMap = raw ? (JSON.parse(raw) as Record<string, string>) : {};
+  } catch {}
+
+  const key = normProvider(provider);
+  const color = colorMap[key] || defaultProviderColor(provider);
+  const icon = providerIconPath(provider);
+  return { color, icon, provider };
 }
 
 /* ───────────────── Component ───────────────── */
@@ -211,7 +251,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const supabase = createClient();
   const { setPill } = useHeader();
 
-  // Theme-aware icons (for light/dark)
+  // Theme-aware icons (for light/dark) — only for internal pictos (guest/room/night)
   const [isDark, setIsDark] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     const attr = document.documentElement.getAttribute("data-theme");
@@ -609,6 +649,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               ((kind === "yellow" && it._reason === "waiting_form") ||
                 (kind === "red" && it._reason === "missing_form"));
 
+            const pInfo = providerBadgeInfo(it); // {color, icon, provider} | null
+
             return (
               <section
                 key={key}
@@ -632,7 +674,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     gap: 8,
                   }}
                 >
-                  <div style={{ display: "grid", gap: 4, lineHeight: 1.25, minWidth: 0 }}>
+                  <div style={{ display: "grid", gap: 6, lineHeight: 1.25, minWidth: 0 }}>
                     {isSmall && (
                       <span
                         style={{ ...badgeStyle(kind), marginBottom: 2, justifySelf: "start", width: "max-content" }}
@@ -659,12 +701,58 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       </div>
                     </div>
 
-                    {/* 3) Dates */}
-                    <div style={lineWrap}>
-                      <Image src={iconSrc("night")} alt="" width={16} height={16} style={iconStyle} />
-                      <div style={{ color: "var(--muted)" }}>
-                        {formatRange(it.start_date, it.end_date)}
+                    {/* 3) Dates + Provider badge under dates */}
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <div style={lineWrap}>
+                        <Image src={iconSrc("night")} alt="" width={16} height={16} style={iconStyle} />
+                        <div style={{ color: "var(--muted)" }}>
+                          {formatRange(it.start_date, it.end_date)}
+                        </div>
                       </div>
+
+                      {pInfo && (
+                        <div style={{ display: "flex" }}>
+                          {/* badge fără label, doar fundal + icon în colțul stâng */}
+                          <span
+                            title={pInfo.provider || undefined}
+                            style={{
+                              position: "relative",
+                              display: "inline-block",
+                              background: pInfo.color,
+                              borderRadius: 21,
+                              height: 28,
+                              minWidth: 48,
+                              paddingLeft: 28,
+                              paddingRight: 10,
+                              border: "1px solid var(--border)",
+                              boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+                            }}
+                          >
+                            <Image
+                              src={pInfo.icon}
+                              alt=""
+                              width={18}
+                              height={18}
+                              style={{
+                                position: "absolute",
+                                left: 6,
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                borderRadius: 6,
+                                pointerEvents: "none",
+                                opacity: 0.95,
+                              }}
+                            />
+                            {/* Fără label vizibil. Pentru accesibilitate adăugăm text ascuns */}
+                            <span style={{
+                              position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden",
+                              clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0
+                            }}>
+                              {pInfo.provider}
+                            </span>
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -875,7 +963,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   }, [supabase, row?.id]);
 
   // escape helpers
-  function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
+  function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;"," >":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
   function _replaceVarsHtml(html: string, vars: Record<string,string>) {
     if (!html) return "";
     const withVars = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\}\}/g, (_m, k) => _escapeHtml(vars?.[k] ?? `{{${k}}}`));
