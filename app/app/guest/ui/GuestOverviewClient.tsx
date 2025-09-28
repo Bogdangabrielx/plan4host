@@ -235,8 +235,8 @@ function providerLogoBase(p?: string | null) {
 /** candidați în ordinea preferată, cu fallback dacă lipsesc fișierele */
 function providerLogoCandidates(p?: string | null, isDark?: boolean): string[] {
   const base = providerLogoBase(p);
-  const light = `${base}_forlight.png`;
-  const dark  = `${base}_fordark.png`;
+  const light = `${base}.png`;
+  const dark  = `${base}.png`;
   const plain = `${base}.png`;
   return isDark ? [dark, plain, light] : [light, plain, dark];
 }
@@ -245,7 +245,7 @@ function providerLabel(p?: string | null) {
   const s = (p || "").trim();
   if (!s) return "Other";
   const n = norm(s);
-  if (n.includes("booking")) return "Booking.com";
+  if (n.includes("booking")) return "Booking";
   if (n.includes("airbnb"))  return "Airbnb";
   if (n.includes("expedia")) return "Expedia";
   return s[0].toUpperCase() + s.slice(1);
