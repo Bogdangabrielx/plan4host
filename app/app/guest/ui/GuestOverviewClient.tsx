@@ -359,12 +359,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     gap: 8,
     padding: "2px 10px",
     fontSize: 12,
-    fontWeight: 700,
+    fontWeight: 400,
     borderRadius: 999,
     border: `1px solid ${STATUS_COLOR[kind]}`,
     background: STATUS_COLOR[kind], // solid fill
     color: "#fff", // white text on both themes
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   });
 
   // Actions
