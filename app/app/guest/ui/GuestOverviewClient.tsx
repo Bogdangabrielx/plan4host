@@ -304,6 +304,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   // Refresh client-side
   const refresh = useCallback(async () => {
     if (!activePropertyId) return;
+    const pid = activePropertyId; // snapshot pentru a preveni race după schimbarea proprietății
+    // secvență pentru ignorarea răspunsurilor vechi
+    (refresh as any)._seq = ((refresh as any)._seq || 0) + 1;
+    const seq: number = (refresh as any)._seq;
     setLoading("loading");
     setPill("Loading…");
 
@@ -311,9 +315,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       supabase
         .from("rooms")
         .select("id,name,property_id,room_type_id")
-        .eq("property_id", activePropertyId)
+        .eq("property_id", pid)
         .order("name", { ascending: true }),
     ]);
+
+    // dacă între timp s-a schimbat proprietatea sau există un refresh mai nou, ignoră
+    if (pid !== activePropertyId || seq !== (refresh as any)._seq) return;
 
     if (rRooms.error) {
       setLoading("error");
@@ -323,14 +330,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setRooms((rRooms.data ?? []) as Room[]);
 
     try {
-      const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(activePropertyId)}`, { cache: "no-store", keepalive: true });
+      const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(pid)}`, { cache: "no-store", keepalive: true });
       if (!res.ok) throw new Error(await res.text());
       const j = await res.json();
       const arr: OverviewRow[] = Array.isArray(j?.items) ? j.items : [];
+      if (pid !== activePropertyId || seq !== (refresh as any)._seq) return;
       setItems(arr);
       setLoading("idle");
       setPill("Idle");
     } catch {
+      if (pid !== activePropertyId || seq !== (refresh as any)._seq) return;
       setLoading("error");
       setPill("Error");
     }
