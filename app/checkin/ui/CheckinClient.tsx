@@ -304,6 +304,8 @@ export default function CheckinClient() {
   // generic themed icons (e.g. /room_forlight.png)
   const themedIcon = (base: "room") => `/${base}_${isDark ? "fordark" : "forlight"}.png`;
 
+
+  
   // ---------- STYLES ----------
   const CARD: React.CSSProperties = useMemo(() => ({
     background: "var(--panel)",
