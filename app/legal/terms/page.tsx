@@ -31,8 +31,9 @@ export default function TermsOfServicePage() {
 
           <h2 className={s.h2}>1. Who we are</h2>
           <p className={s.p}>
-            The Service is provided by <strong>BOA DIGITAL SOLUTIONS SRL</strong> (“Plan4host”,
-            “we”, “us”). For questions, contact{" "}
+            The Service is provided by <strong>BOA DIGITAL SOLUTIONS S.R.L.</strong> (“Plan4host”,
+            “we”, “us”), CIF/CUI <strong>51680505</strong>. Registered office: <strong>BUZĂU, Mun. Buzău,
+            Str. Pietroasele 24, Romania</strong>. For questions, contact{" "}
             <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
           </p>
 
@@ -48,6 +49,11 @@ export default function TermsOfServicePage() {
             <li className={s.p}>
               <strong>Free trial:</strong> New accounts typically receive a <strong>7-day</strong> free trial. We may
               modify or discontinue trial offers at any time.
+            </li>
+            <li className={s.p}>
+              <strong>Trial outcome:</strong> At the end of the free trial, your account will <u>not</u> be charged
+              unless you explicitly subscribe to a paid plan. If you do not subscribe, your access continues on the
+              <strong> Basic</strong> plan (reduced features).
             </li>
             <li className={s.p}>
               <strong>Subscriptions:</strong> Paid plans are billed via <em>Stripe</em> inside the app’s billing
@@ -113,6 +119,12 @@ export default function TermsOfServicePage() {
             <li className={s.p}>Feedback is voluntary and may be used without obligation to you.</li>
           </ul>
 
+          <h2 className={s.h2}>7.1. Trademarks</h2>
+          <p className={s.p}>
+            Airbnb®, Booking.com®, Expedia® and other names/logos are trademarks of their respective owners.
+            Their use in the Service is for identification only and does not imply endorsement.
+          </p>
+
           <h2 className={s.h2}>8. Privacy & Data Protection</h2>
           <p className={s.p}>
             We process personal data in accordance with our{" "}
@@ -131,6 +143,11 @@ export default function TermsOfServicePage() {
             <li className={s.p}>
               Upon termination, your right to use the Service ceases. We may retain and/or delete data per our policies and legal obligations.
             </li>
+            <li className={s.p}>
+              <strong>Account deletion:</strong> You can request account deletion from within the app. Operational data is
+              removed promptly; residual backups may persist for up to <strong>30 days</strong> before being overwritten.
+              We may retain billing records for statutory periods.
+            </li>
           </ul>
 
           <h2 className={s.h2}>10. Disclaimers</h2>
@@ -138,6 +155,11 @@ export default function TermsOfServicePage() {
             The Service is provided on an “as is” and “as available” basis. To the fullest extent permitted by law,
             we disclaim all warranties, express or implied, including merchantability, fitness for a particular purpose,
             and non-infringement. We do not warrant uninterrupted, secure, or error-free operation.
+          </p>
+          <p className={s.p}>
+            <strong>Third‑party calendar data (iCal) & OTAs:</strong> the Service imports/exports calendar data via
+            third‑party feeds (e.g., OTAs). We are not responsible for the accuracy, completeness, or timeliness of
+            external data or delivery delays. Syncs may be subject to quotas and rate limits.
           </p>
 
           <h2 className={s.h2}>11. Limitation of Liability</h2>

@@ -34,10 +34,9 @@ export default function CookiePolicyPage() {
 
           <h2 className={s.h2}>1. Who we are</h2>
           <p className={s.p}>
-            The data controller for the Website is <strong>BOA DIGITAL SOLUTIONS SRL</strong>. For
-            privacy questions, contact:{" "}
-            <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
-            We do not display a postal address on this page.
+            The data controller for the Website is <strong>BOA DIGITAL SOLUTIONS S.R.L.</strong>, CIF/CUI <strong>51680505</strong>.
+            Registered office: <strong>BUZĂU, Mun. Buzău, Str. Pietroasele 24, Romania</strong>. For privacy questions,
+            contact <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
           </p>
 
           <h2 className={s.h2}>2. What are cookies?</h2>
@@ -99,7 +98,7 @@ export default function CookiePolicyPage() {
               </thead>
               <tbody>
                 <tr>
-                  <td><code>cookie_consent</code></td>
+                  <td><code>p4h_consent</code></td>
                   <td>Essential</td>
                   <td>Stores your cookie choices and proof of consent.</td>
                   <td>First-party (Plan4host)</td>
@@ -142,11 +141,27 @@ export default function CookiePolicyPage() {
             </table>
           </div>
 
+          <h2 className={s.h2}>5.1. Similar technologies (localStorage)</h2>
+          <p className={s.p}>
+            We also use <em>localStorage</em> for interface preferences and draft content. This storage stays on your
+            device and can be cleared any time from your browser settings. We do not use localStorage for analytics
+            or advertising.
+          </p>
+          <ul className={s.list}>
+            <li className={s.p}><code>theme_v1</code> — remembers theme (light/dark). Retention: until cleared.</li>
+            <li className={s.p}><code>p4h:selectedPropertyId</code> — last selected property in the app. Retention: until cleared.</li>
+            <li className={s.p}><code>p4h:rm:template:&lt;propertyId&gt;</code> — draft reservation message template. Retention: until cleared.</li>
+            <li className={s.p}><code>p4h:otaColors:type:&lt;id&gt;</code>, <code>p4h:otaColors:room:&lt;id&gt;</code> — per‑provider color preferences. Retention: until cleared.</li>
+            <li className={s.p}><code>p4h:otaLogos:type:&lt;id&gt;</code>, <code>p4h:otaLogos:room:&lt;id&gt;</code> — custom OTA logos (data URLs). Retention: until cleared.</li>
+            <li className={s.p}><code>p4h:inboxCount</code> — UI badge cache. Retention: until cleared.</li>
+          </ul>
+
           <h2 className={s.h2}>6. Your choices</h2>
           <p className={s.p}>
-            On your first visit, you may see a small banner. At this time we only use essential cookies,
-            so there is nothing to opt in/out of. If we introduce non-essential categories in the future,
-            we will ask for your consent and you will be able to manage your choices here.
+            On your first visit, you may see a small banner. At this time we only use essential cookies.
+            Some UI preferences are stored in localStorage (see above) and are not used for tracking. If we
+            introduce non‑essential cookies in the future, we will ask for your consent and you will be able to
+            manage your choices here.
           </p>
 
           <h2 className={s.h2}>7. Legal basis</h2>

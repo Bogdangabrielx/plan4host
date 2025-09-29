@@ -31,10 +31,10 @@ export default function PrivacyPolicyPage() {
 
           <h2 className={s.h2}>1. Controller & contact</h2>
           <p className={s.p}>
-            Data controller: <strong>BOA DIGITAL SOLUTIONS SRL</strong>. For privacy questions or
-            rights requests, contact{" "}
+            Data controller: <strong>BOA DIGITAL SOLUTIONS S.R.L.</strong>, CIF/CUI <strong>51680505</strong>.
+            Registered office: <strong>BUZĂU, Mun. Buzău, Str. Pietroasele 24, Romania</strong>. For privacy
+            questions or rights requests, contact{" "}
             <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
-            We do not display a postal address on this page.
           </p>
 
           <h2 className={s.h2}>2. What data we collect</h2>
