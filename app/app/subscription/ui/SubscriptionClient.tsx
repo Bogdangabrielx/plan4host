@@ -258,7 +258,7 @@ export default function SubscriptionClient({
       <div className={styles.headerRow}>
         {cancelled ? (
           <>
-            <span className={styles.badge}>Until Cancel:</span>
+            <span className={styles.badge}>Still active until:</span>
             <span className={styles.muted}>{validUntil ? `${validUntil}` : "—"}</span>
           </>
         ) : (
