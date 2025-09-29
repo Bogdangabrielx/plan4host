@@ -123,8 +123,6 @@ export default function RoomDetailModal({
   const [guestCountry, setGuestCountry] = useState<string>("");
 
   const [showGuest, setShowGuest] = useState<boolean>(false);
-  // Visual cue to prompt entering guest details before confirming
-  const [needGuestAttention, setNeedGuestAttention] = useState<boolean>(false);
 
   // Custom fields
   const [checkDefs, setCheckDefs] = useState<CheckDef[]>([]);
@@ -358,25 +356,10 @@ export default function RoomDetailModal({
 
   const anyDetailsDirty = guestDirty || contactDirty || detailsDirty;
 
-  // When guest names are completed, clear the attention pulse
-  useEffect(() => {
-    const missing = !(guestFirst.trim() && guestLast.trim());
-    if (!missing && needGuestAttention) setNeedGuestAttention(false);
-  }, [guestFirst, guestLast, needGuestAttention]);
-
   /* ───── Save flows ───── */
 
   async function saveCreated() {
     if (!on) { setStatus("Error"); setStatusHint("Turn reservation ON first."); return; }
-    // Require basic guest details (first & last name) prior to confirm
-    if (!(guestFirst.trim() && guestLast.trim())) {
-      setStatus("Error");
-      setStatusHint("Please complete guest details before confirming.");
-      setShowGuest(true);
-      setNeedGuestAttention(true);
-      setSaving(false);
-      return;
-    }
     setSaving("creating"); setStatus("Saving..."); setStatusHint("Creating…");
 
     const s = toDateTime(startDate, startTime, CI);
@@ -710,14 +693,8 @@ export default function RoomDetailModal({
             </button>
 
              <button
-  onClick={() => { setShowGuest(v => !v); setNeedGuestAttention(false); }}
-  style={{
-    ...(showGuest ? baseBtn : baseBtnGuest),
-    ...(needGuestAttention && !showGuest ? {
-      boxShadow: "0 0 0 0 color-mix(in srgb, var(--danger) 40%, transparent)",
-      animation: "p4h-pulse 1.2s ease-in-out infinite",
-    } : null),
-  } as React.CSSProperties}
+  onClick={() => setShowGuest(v => !v)}
+  style={showGuest ? baseBtn : baseBtnGuest}
   title={showGuest ? "Hide guest details" : "Add guest details"}
 >
   {showGuest ? "Hide guest details" : "Guest details"}
@@ -801,17 +778,9 @@ export default function RoomDetailModal({
                     width: 160,
                   }}
                 />
-      </div>
-    </div>
-    {/* Local keyframes for attention pulse */}
-    <style jsx>{`
-      @keyframes p4h-pulse {
-        0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 40%, transparent); transform: scale(1); }
-        50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--danger) 0%, transparent); transform: scale(1.035); }
-        100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 40%, transparent); transform: scale(1); }
-      }
-    `}</style>
-  </div>
+              </div>
+            </div>
+          </div>
 
           {/* Guest details */}
           {showGuest && (
