@@ -24,9 +24,9 @@ const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: 
 function hasIcalOrHintClause() {
   return [
     "has_ical.eq.true",
-    "not.ical_uid.is.null",
-    "not.ota_event_id.is.null",
-    "not.ota_reservation_id.is.null",
+    "ical_uid.not.is.null",
+    "ota_event_id.not.is.null",
+    "ota_reservation_id.not.is.null",
     "source.eq.ical",
   ].join(",");
 }
