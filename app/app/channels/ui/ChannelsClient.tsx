@@ -484,7 +484,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       <section className="sb-card" style={{ padding: 16, marginTop: 8 }}>
         <h3 style={{ marginTop: 0 }}>Channels & iCal</h3>
         {!timezone && (
-          <p style={{ color: "var(--danger)", marginTop: 0 }}>
+          <p style={{ fontSize:8, color: "var(--danger)", marginTop: 0 }}>
             Set Country (timezone) in Dashboard to produce valid .ics files.
           </p>
         )}
