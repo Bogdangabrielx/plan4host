@@ -330,6 +330,10 @@ export default function HomePage() {
           pointerEvents: 'none',
         }}
       />
+      {/* Left/right/bottom safe-area covers to avoid see-through on iOS bounce/edges */}
+      <div aria-hidden style={{ position:'fixed', bottom:0, left:0, right:0, height:'var(--safe-bottom)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
+      <div aria-hidden style={{ position:'fixed', top:0, bottom:0, left:0, width:'var(--safe-left)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
+      <div aria-hidden style={{ position:'fixed', top:0, bottom:0, right:0, width:'var(--safe-right)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
 
       {/* Accessible skip link */}
       <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>
