@@ -53,7 +53,9 @@ function CopyUrlButton({ url }: { url: string }) {
   }
   return (
     <button className="sb-btn" onClick={onCopy} aria-live="polite" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-      <img src={isDark ? '/copy_fordark.png' : '/copy_forlight.png'} alt="" width={14} height={14} style={{ opacity:.95 }} />
+      {!copied && (
+        <img src={isDark ? '/copy_fordark.png' : '/copy_forlight.png'} alt="" width={14} height={14} style={{ opacity:.95 }} />
+      )}
       <span>{copied ? "Copied!" : "Copy link"}</span>
     </button>
   );
