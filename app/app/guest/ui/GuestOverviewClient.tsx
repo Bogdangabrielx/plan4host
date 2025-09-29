@@ -504,8 +504,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               Property
             </label>
             <select
-              value={activePropertyId ?? ""}
-              onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value || null)}
+              value={activePropertyId}
+              onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value)}
               style={FIELD_STYLE}
             >
               {properties.map((p) => (

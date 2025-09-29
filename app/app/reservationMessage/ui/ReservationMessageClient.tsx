@@ -109,6 +109,11 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   // Load from LS on property change
   useEffect(() => {
     if (!propertyId) return;
+    // Clear current UI immediately to avoid showing previous property's message
+    setTpl(EMPTY);
+    setTitleText("");
+    if (titleRef.current) tokensTextToChips(titleRef.current, "");
+    if (bodyRef.current) bodyRef.current.innerHTML = '';
     try {
       const raw = localStorage.getItem(storageKey);
       const parsed: TemplateState | null = raw ? JSON.parse(raw) : null;

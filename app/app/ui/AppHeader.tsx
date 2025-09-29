@@ -576,8 +576,9 @@ function pillStyle(pill: React.ReactNode): React.CSSProperties {
   const txt = typeof pill === "string" ? pill : "";
   const isError = /error/i.test(txt);
   const isBusy = /(sync|saving|loading|sign|creat)/i.test(txt);
+  const isIdle = /^\s*idle\s*$/i.test(txt);
   const bg = isError ? "var(--danger)" : isBusy ? "var(--primary)" : "var(--card)";
-  const col = isError || isBusy ? "#0c111b" : "var(--muted)";
+  const col = isIdle ? "transparent" : (isError || isBusy ? "#0c111b" : "var(--muted)");
   return {
     padding: "4px 10px",
     borderRadius: 999,
