@@ -88,6 +88,7 @@ export default function SubscriptionClient({
   const [saving, setSaving] = useState<string | null>(null);
   const [role, setRole] = useState<"admin"|"member">("admin");
   const [highlightPlan, setHighlightPlan] = useState<null | Plan["slug"]>(null);
+  const [pendingSelect, setPendingSelect] = useState<null | Plan["slug"]>(null);
 
   // theme detection + per-plan light-image fallback
   const [isLight, setIsLight] = useState(false);
@@ -204,15 +205,22 @@ export default function SubscriptionClient({
     } catch { setTrialActive(false); }
   }, [currentPlan, basePlan, validUntil]);
 
-  async function choosePlan(slug: Plan["slug"]) {
+  // Lock scroll when modal open
+  useEffect(() => {
+    if (!pendingSelect) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [pendingSelect]);
+
+  function choosePlan(slug: Plan["slug"]) {
     if (role !== "admin") return;
-    if (trialActive) {
-      const name = planLabel(slug);
-      const ok = window.confirm(
-        `You are currently on a free 7-day STANDARD trial.\n\nAre you sure you want to activate ${name} now?`
-      );
-      if (!ok) return;
-    }
+    if (trialActive) { setPendingSelect(slug); return; }
+    applyPlan(slug);
+  }
+
+  async function applyPlan(slug: Plan["slug"]) {
+    if (role !== "admin") return;
     setSaving(slug);
     try {
       const validDays = slug === "basic" ? null : 30;
@@ -313,6 +321,74 @@ export default function SubscriptionClient({
           );
         })}
       </div>
+
+      {/* Confirm dialog while on STANDARD free trial */}
+      {pendingSelect && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-title"
+          onClick={() => setPendingSelect(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            display: "grid", placeItems: "center",
+            padding: 12,
+            background: "color-mix(in srgb, var(--bg) 55%, transparent)",
+            backdropFilter: "blur(2px)", WebkitBackdropFilter: "blur(2px)",
+          }}
+        >
+          <div
+            className="modalCard"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(560px, 100%)",
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 16,
+              padding: 16,
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 id="confirm-title" style={{ margin: 0 }}>Confirm plan change</h3>
+              <button
+                className={styles.btn}
+                onClick={() => setPendingSelect(null)}
+                style={{ padding: '6px 10px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ color: 'var(--muted)' }}>
+              <p style={{ margin: 0 }}>
+                You are currently on a free 7-day <strong>STANDARD</strong> trial{validUntil ? ` (active until ${validUntil})` : ''}.
+              </p>
+              <p style={{ margin: '6px 0 0' }}>
+                Are you sure you want to activate <strong>{planLabel(pendingSelect)}</strong> now?
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 4 }}>
+              <button
+                className={styles.btn}
+                onClick={() => setPendingSelect(null)}
+                style={{ border: '1px solid var(--border)', background: 'transparent' }}
+              >
+                Keep trial
+              </button>
+              <button
+                className={`${styles.btn} ${styles.btnPrimary}`}
+                onClick={() => { const slug = pendingSelect; setPendingSelect(null); if (slug) applyPlan(slug); }}
+                disabled={!!saving}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
