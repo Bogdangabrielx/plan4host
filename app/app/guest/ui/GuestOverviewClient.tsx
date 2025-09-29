@@ -253,6 +253,29 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   // Properties & selection
   const [properties, setProperties] = useState<Property[]>(initialProperties || []);
   const [activePropertyId, setActivePropertyId] = usePersistentProperty(properties);
+  const [prefReady, setPrefReady] = useState(false);
+
+  // Ensure the selected property matches URL/localStorage before first load
+  useEffect(() => {
+    try {
+      const ids = new Set((properties || []).map(p => p.id));
+      let desired: string | null = null;
+      if (typeof window !== 'undefined') {
+        try {
+          const u = new URL(window.location.href);
+          desired = u.searchParams.get('property');
+        } catch {}
+        if (!desired) {
+          try { desired = localStorage.getItem('p4h:selectedPropertyId'); } catch { desired = null; }
+        }
+      }
+      if (desired && ids.has(desired) && desired !== activePropertyId) {
+        setActivePropertyId(desired);
+      }
+    } finally {
+      setPrefReady(true);
+    }
+  }, [properties.map(p=>p.id).join('|')]);
 
   // Data
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -361,7 +384,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setPill("Loading…");
   }, [activePropertyId, setPill]);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { if (prefReady) refresh(); }, [prefReady, refresh]);
 
   // Maps & sorting
   const roomById = useMemo(() => {
