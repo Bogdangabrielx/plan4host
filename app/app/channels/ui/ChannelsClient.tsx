@@ -86,6 +86,20 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [activeTypeId, setActiveTypeId] = useState<string | null>(null);
   const [manageTypeId, setManageTypeId] = useState<string | null>(null);
   const [manageRoomId, setManageRoomId] = useState<string | null>(null);
+  const [showRoomImport, setShowRoomImport] = useState<boolean>(false);
+  const [roomImportInfo, setRoomImportInfo] = useState<boolean>(false);
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      let el = e.target as HTMLElement | null;
+      while (el) {
+        if ((el as HTMLElement).dataset?.legend === 'keep') return;
+        el = el.parentElement as HTMLElement | null;
+      }
+      setRoomImportInfo(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
 
   // PLAN gate (pentru Sync now)
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
@@ -500,29 +514,45 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <button
                   className="sb-btn sb-btn--primary"
-                  onClick={() => { /* reveal per-room list below */ }}
+                  onClick={() => setShowRoomImport(v => !v)}
                   title="Use this only when the property has no Room Types"
                 >
-                  Import per room
+                  Import Room Only
                 </button>
-                <span title="This import mode is intended only when the property has no Room Types.">?</span>
+                <button
+                  type="button"
+                  className="sb-btn sb-btn--ghost sb-btn--small"
+                  onClick={() => setRoomImportInfo(v => !v)}
+                  aria-label="Info"
+                  data-legend="keep"
+                  title="Info"
+                >
+                  i
+                </button>
+                {roomImportInfo && (
+                  <div data-legend="keep" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, padding: 10, color: 'var(--text)' }}>
+                    Use this mode only if the property has no Room Types. If you add Room Types later, prefer per‑type imports for better auto‑assignment.
+                  </div>
+                )}
               </div>
-              <div style={tileGrid}>
-                {rooms.length === 0 ? (
-                  <p style={{ color: "var(--text)", gridColumn: "1 / -1" }}>No rooms in this property.</p>
-                ) : rooms.map(r => (
-                  <button
-                    key={r.id}
-                    onClick={() => setManageRoomId(r.id)}
-                    className="sb-card"
-                    style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
-                    title={`Manage ${r.name}`}
-                  >
-                    <span style={tileTitle}>{r.name}</span>
-                    <span style={tileSub}>Manage feeds</span>
-                  </button>
-                ))}
-              </div>
+              {showRoomImport && (
+                <div style={tileGrid}>
+                  {rooms.length === 0 ? (
+                    <p style={{ color: "var(--text)", gridColumn: "1 / -1" }}>No rooms in this property.</p>
+                  ) : rooms.map(r => (
+                    <button
+                      key={r.id}
+                      onClick={() => setManageRoomId(r.id)}
+                      className="sb-card"
+                      style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
+                      title={`Manage ${r.name}`}
+                    >
+                      <span style={tileTitle}>{r.name}</span>
+                      <span style={tileSub}>Manage feeds</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div style={tileGrid}>

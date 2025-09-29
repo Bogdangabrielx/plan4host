@@ -105,12 +105,13 @@ async function upsertUnassigned(
   params: {
     property_id: string;
     room_type_id: string;
+    room_id?: string | null;
     ev: ParsedEvent;
     propTZ: string;
     integration_id?: string;
   }
 ) {
-  const { property_id, room_type_id, ev, propTZ, integration_id } = params;
+  const { property_id, room_type_id, room_id, ev, propTZ, integration_id } = params;
 
   // Normalizare date/time în timezone-ul proprietății
   let startDateStr = ev.start.date;
@@ -137,7 +138,7 @@ async function upsertUnassigned(
       .from("ical_unassigned_events")
       .select("id")
       .eq("property_id", property_id)
-      .eq("room_type_id", room_type_id)
+      .eq(room_id ? "room_id" : "room_type_id", room_id ? room_id : room_type_id)
       .eq("uid", ev.uid)
       .limit(1);
     if (selErr) throw selErr;
@@ -153,6 +154,7 @@ async function upsertUnassigned(
           start_time: startTimeStr,
           end_time: endTimeStr,
           integration_id: integration_id ?? null,
+          room_id: room_id ?? null,
         })
         .eq("id" as any, id as any); // forțăm tipul pentru a evita bugul de d.ts
       if (updErr) throw updErr;
@@ -163,6 +165,7 @@ async function upsertUnassigned(
         .insert({
           property_id,
           room_type_id,
+          room_id: room_id ?? null,
           uid: ev.uid,
           summary: ev.summary ?? null,
           start_date: startDateStr,
@@ -185,7 +188,7 @@ async function upsertUnassigned(
     .from("ical_unassigned_events")
     .select("id")
     .eq("property_id", property_id)
-    .eq("room_type_id", room_type_id)
+    .eq(room_id ? "room_id" : "room_type_id", room_id ? room_id : room_type_id)
     .eq("start_date", startDateStr)
     .eq("end_date", endDateStr)
     .eq("summary", ev.summary ?? null)
@@ -200,6 +203,7 @@ async function upsertUnassigned(
         start_time: startTimeStr,
         end_time: endTimeStr,
         integration_id: integration_id ?? null,
+        room_id: room_id ?? null,
       })
       .eq("id" as any, id as any);
     if (updErr) throw updErr;
@@ -210,6 +214,7 @@ async function upsertUnassigned(
       .insert({
         property_id,
         room_type_id,
+        room_id: room_id ?? null,
         uid: null,
         summary: ev.summary ?? null,
         start_date: startDateStr,
@@ -257,6 +262,7 @@ async function runAutosync(req: Request) {
         id,
         property_id,
         room_type_id,
+        room_id,
         provider,
         url,
         is_active,
@@ -280,7 +286,8 @@ async function runAutosync(req: Request) {
     type FeedRow = {
       id: string;
       property_id: string;
-      room_type_id: string;
+      room_type_id: string | null;
+      room_id: string | null;
       provider: string | null;
       url: string;
       is_active: boolean | null;
@@ -366,7 +373,8 @@ async function runAutosync(req: Request) {
             if (!ev.start) continue;
             await upsertUnassigned(supabase, {
               property_id: feed.property_id,
-              room_type_id: feed.room_type_id,
+              room_type_id: feed.room_type_id as any,
+              room_id: feed.room_id as any,
               ev,
               propTZ,
               integration_id: feed.id,
