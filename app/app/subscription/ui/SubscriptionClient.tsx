@@ -356,7 +356,10 @@ export default function SubscriptionClient({
             </div>
 
             <div style={{ color:'var(--muted)' }}>
-              <p style={{ margin:0 }}>Current: <strong>{planLabel(currentPlan)}</strong>{validUntil ? ` — valid until ${validUntil}` : ''}</p>
+              <p style={{ margin:0 }}>Current: <strong>{planLabel(currentPlan)}</strong></p>
+              <p style={{ margin:'4px 0 0' }}>
+                {trialActive ? 'Trial ends at ' : 'Current period ends at '}<strong>{validUntil ?? '—'}</strong>
+              </p>
             </div>
 
             <div style={{ display:'grid', gap:10, marginTop:4 }}>
