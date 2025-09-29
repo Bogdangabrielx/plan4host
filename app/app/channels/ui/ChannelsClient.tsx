@@ -1,7 +1,7 @@
 // app/app/channels/ui/ChannelsClient.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
@@ -86,7 +86,34 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
-  const [timezone, setTimezone] = useState<string>(initialProperties[0]?.timezone ?? "");
+  const [timezone, setTimezone] = useState<string>("");
+  const [prefReady, setPrefReady] = useState(false);
+
+  // Ensure the selected property matches URL/localStorage before first load
+  useEffect(() => {
+    try {
+      const ids = new Set((properties || []).map((p) => p.id));
+      let desired: string | null = null;
+      if (typeof window !== "undefined") {
+        try {
+          const u = new URL(window.location.href);
+          desired = u.searchParams.get("property");
+        } catch {}
+        if (!desired) {
+          try {
+            desired = localStorage.getItem("p4h:selectedPropertyId");
+          } catch {
+            desired = null;
+          }
+        }
+      }
+      if (desired && ids.has(desired) && desired !== propertyId) {
+        setPropertyId(desired);
+      }
+    } finally {
+      setPrefReady(true);
+    }
+  }, [properties.map((p) => p.id).join("|")]);
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [types, setTypes] = useState<RoomType[]>([]);
@@ -172,26 +199,83 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     });
   }, [countdownSec]);
 
-  // Load plan for the CURRENT PROPERTY
-  useEffect(() => {
-    (async () => {
-      if (!propertyId) { setIsPremium(null); return; }
-      const rProp = await supabase.from("properties").select("admin_id").eq("id", propertyId).single();
-      const accId = (rProp.data as any)?.admin_id as string | undefined;
-      if (!accId) { setIsPremium(false); setHintText(""); setHintVariant("muted"); return; }
-      const rPlan = await supabase.from("accounts").select("plan").eq("id", accId).maybeSingle();
-      const p = ((rPlan.data as any)?.plan as string | null)?.toLowerCase?.() ?? "basic";
-      const premium = p === "premium";
-      setIsPremium(premium);
-      if (premium) {
-        setHintText("Ready");
-        setHintVariant("success");
-      } else {
-        setHintText("");
-        setHintVariant("muted");
+  // Refresh all data for current property with race-guard
+  const refresh = useCallback(async () => {
+    if (!propertyId) { setStatus("Idle"); return; }
+    const pid = propertyId; // snapshot pentru a preveni race
+    (refresh as any)._seq = ((refresh as any)._seq || 0) + 1;
+    const seq: number = (refresh as any)._seq;
+      setStatus("Loading");
+
+      // Fetch property + lists in parallel
+      const [rProp, rRooms, rTypes, rInteg] = await Promise.all([
+        supabase
+          .from("properties")
+          .select("id,timezone,admin_id")
+          .eq("id", pid)
+          .single(),
+        supabase
+          .from("rooms")
+          .select("id,name,property_id,room_type_id")
+          .eq("property_id", pid)
+          .order("sort_index", { ascending: true })
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("room_types")
+          .select("id,name,property_id")
+          .eq("property_id", pid)
+          .order("name", { ascending: true }),
+        supabase
+          .from("ical_type_integrations")
+          .select("id,property_id,room_type_id,room_id,provider,url,is_active,last_sync,color,logo_url")
+          .eq("property_id", pid)
+          .order("created_at", { ascending: true }),
+      ]);
+
+      // If property changed or another refresh started, ignore results
+      if (pid !== propertyId || seq !== (refresh as any)._seq) return;
+
+      if (rProp.error || rRooms.error || rTypes.error || rInteg.error) {
+        setStatus("Error");
+        return;
       }
-    })();
-  }, [supabase, propertyId]);
+
+      setTimezone((rProp.data as any)?.timezone || "");
+      setRooms((rRooms.data ?? []) as Room[]);
+      setTypes((rTypes.data ?? []) as RoomType[]);
+      setIntegrations((rInteg.data ?? []) as TypeIntegration[]);
+
+      // Load plan to gate Sync button
+      try {
+        const accId = (rProp.data as any)?.admin_id as string | undefined;
+        if (!accId) {
+          if (pid !== propertyId || seq !== (refresh as any)._seq) return;
+          setIsPremium(false);
+          setHintText("");
+          setHintVariant("muted");
+          setStatus("Idle");
+          return;
+        }
+        const rPlan = await supabase
+          .from("accounts")
+          .select("plan")
+          .eq("id", accId)
+          .maybeSingle();
+        if (pid !== propertyId || seq !== (refresh as any)._seq) return;
+        const p = ((rPlan.data as any)?.plan as string | null)?.toLowerCase?.() ?? "basic";
+        const premium = p === "premium";
+        setIsPremium(premium);
+        if (premium) {
+          setHintText("Ready");
+          setHintVariant("success");
+        } else {
+          setHintText("");
+          setHintVariant("muted");
+        }
+      } finally {
+        if (pid === propertyId && seq === (refresh as any)._seq) setStatus("Idle");
+      }
+  }, [propertyId, supabase]);
 
   // Reset view immediately on property change to avoid showing stale configs
   useEffect(() => {
@@ -208,34 +292,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     setTimezone("");
   }, [propertyId]);
 
-  useEffect(() => {
-    if (!propertyId) return;
-    setStatus("Loading");
-    (async () => {
-      const [rProp, rRooms, rTypes, rInteg] = await Promise.all([
-        supabase.from("properties").select("id,timezone").eq("id", propertyId).single(),
-        supabase.from("rooms")
-          .select("id,name,property_id,room_type_id")
-          .eq("property_id", propertyId)
-          .order("sort_index", { ascending: true })
-          .order("created_at", { ascending: true }),
-        supabase.from("room_types")
-          .select("id,name,property_id")
-          .eq("property_id", propertyId)
-          .order("name", { ascending: true }),
-        supabase.from("ical_type_integrations")
-          .select("id,property_id,room_type_id,room_id,provider,url,is_active,last_sync,color,logo_url")
-          .eq("property_id", propertyId)
-          .order("created_at", { ascending: true }),
-      ]);
-      if (rProp.error || rRooms.error || rTypes.error || rInteg.error) { setStatus("Error"); return; }
-      setTimezone(rProp.data?.timezone || "");
-      setRooms((rRooms.data ?? []) as Room[]);
-      setTypes((rTypes.data ?? []) as RoomType[]);
-      setIntegrations((rInteg.data ?? []) as TypeIntegration[]);
-      setStatus("Idle");
-    })();
-  }, [propertyId, supabase]);
+  // Trigger refresh when ready and when property changes
+  useEffect(() => { if (prefReady) refresh(); }, [prefReady, refresh]);
+  useEffect(() => { if (prefReady) refresh(); }, [propertyId]);
 
   /* URLs & helpers */
   function roomIcsUrl(id: string) { return `${origin}/api/ical/rooms/${id}.ics`; }
