@@ -397,7 +397,7 @@ export default function DashboardClient({
                         {(!isWarn && !isCopied) && (
                           <picture>
                             <source srcSet="/copy_fordark.png" media="(prefers-color-scheme: dark)" />
-                            <img src="/copy_forlight.png" alt="" width={14} height={14} style={{ opacity:.95 }} />
+                            <img src="/copy_fordark.png" alt="" width={14} height={14} style={{ opacity:.95 }} />
                           </picture>
                         )}
                         {isWarn ? "Upload rules first" : isCopied ? "Copied!" : "Copy check-in link"}
