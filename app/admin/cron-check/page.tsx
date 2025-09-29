@@ -10,7 +10,7 @@ export default function CronCheckPage() {
       <p style={{ color: 'var(--muted)' }}>
         Quick checks for cron endpoints. Auth check is non-destructive; Run now will execute the job.
       </p>
-      <CronCheckClient />
+      <CronCheckClient/>
     </main>
   );
 }
