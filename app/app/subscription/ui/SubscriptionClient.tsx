@@ -256,13 +256,6 @@ export default function SubscriptionClient({
     <div className={styles.container}>
       {/* Header bar: current plan */}
       <div className={styles.headerRow}>
-        <button
-          className={styles.btn}
-          onClick={() => setManageOpen(true)}
-          style={{ border: '1px solid var(--border)', background: 'transparent' }}
-        >
-          Manage Account
-        </button>
         {cancelled ? (
           <>
             <span className={styles.badge}>Until Cancel:</span>
@@ -322,7 +315,16 @@ export default function SubscriptionClient({
 
               <div className={styles.cardActions}>
                 {isCurrent ? (
-                  <span className={styles.currentBadge}>Active plan</span>
+                  <div style={{ display:'flex', alignItems:'center', gap: 10 }}>
+                    <button
+                      className={styles.btn}
+                      onClick={() => setManageOpen(true)}
+                      style={{ border:'1px solid var(--border)', background:'transparent' }}
+                    >
+                      Manage Account
+                    </button>
+                    <span className={styles.currentBadge}>Active plan</span>
+                  </div>
                 ) : (
                   <button
                     className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
