@@ -372,7 +372,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               zIndex: 121, // peste header
               display: "grid",
               gridTemplateRows: "auto 1fr",
-              paddingTop: "var(--safe-top)",
+              paddingTop: isSmall ? "var(--safe-top)" : "calc(var(--safe-top) + 8px)",
             }}
           >
             <div
@@ -480,7 +480,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               zIndex: 121, // peste header
               display: "grid",
               gridTemplateRows: "auto 1fr",
-              paddingTop: "var(--safe-top)",
+              paddingTop: isSmall ? "var(--safe-top)" : "calc(var(--safe-top) + 8px)",
             }}
           >
             <div
