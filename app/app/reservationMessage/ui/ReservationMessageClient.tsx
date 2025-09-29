@@ -106,29 +106,38 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
 
   const storageKey = propertyId ? lsKey(propertyId) : "";
 
-  // Load from LS on property change
+  // Load from LS on property change (with race-guard against stale async updates)
   useEffect(() => {
     if (!propertyId) return;
+    const keySnapshot = storageKey; // capture current key for this run
+    let cancelled = false;
+
     // Clear current UI immediately to avoid showing previous property's message
     setTpl(EMPTY);
     setTitleText("");
     if (titleRef.current) tokensTextToChips(titleRef.current, "");
     if (bodyRef.current) bodyRef.current.innerHTML = '';
+
+    // Load from LocalStorage for this property
     try {
-      const raw = localStorage.getItem(storageKey);
+      const raw = localStorage.getItem(keySnapshot);
       const parsed: TemplateState | null = raw ? JSON.parse(raw) : null;
       const base = parsed || EMPTY;
-      setTpl(base);
-      // derive simple editor fields from blocks
-      const { title, body } = deriveFromBlocks(base.blocks);
-      if (titleRef.current) tokensTextToChips(titleRef.current, title);
-      if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
+      if (!cancelled && keySnapshot === storageKey) {
+        setTpl(base);
+        const { title, body } = deriveFromBlocks(base.blocks);
+        if (titleRef.current) tokensTextToChips(titleRef.current, title);
+        if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
+      }
     } catch {
-      setTpl(EMPTY);
-      setTitleText("");
-      if (bodyRef.current) bodyRef.current.innerHTML = '';
+      if (!cancelled && keySnapshot === storageKey) {
+        setTpl(EMPTY);
+        setTitleText("");
+        if (bodyRef.current) bodyRef.current.innerHTML = '';
+      }
     }
-    // also try to load from server (overrides LS if available)
+
+    // Also try to load from server (overrides LS if available)
     (async () => {
       try {
         const res = await fetch(`/api/reservation-message/template?property=${encodeURIComponent(propertyId)}`, { cache: 'no-store' });
@@ -139,13 +148,17 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         const blocks: Block[] = (t.blocks as any[]).map((b) => ({ id: uid(), type: b.type, text: b.text ?? '' }));
         const fields: ManualField[] = (t.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label }));
         const next: TemplateState = { status: (t.status || 'draft') as any, blocks, fields };
-        setTpl(next);
-        try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
-        const { title, body } = deriveFromBlocks(blocks);
-        if (titleRef.current) tokensTextToChips(titleRef.current, title);
-        if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
-      } catch {}
+        if (!cancelled && keySnapshot === storageKey) {
+          setTpl(next);
+          try { localStorage.setItem(keySnapshot, JSON.stringify(next)); } catch {}
+          const { title, body } = deriveFromBlocks(blocks);
+          if (titleRef.current) tokensTextToChips(titleRef.current, title);
+          if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
+        }
+      } catch { /* ignore */ }
     })();
+
+    return () => { cancelled = true; };
   }, [storageKey, propertyId]);
 
   // Check if property has room types to expose room_type_name variable chip
