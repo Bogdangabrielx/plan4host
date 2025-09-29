@@ -108,6 +108,27 @@ export async function GET(req: Request) {
     }
     const bookings: BRow[] = (rBookings.data ?? []) as any[];
 
+    // ——— Unassigned iCal events (pending import) ———
+    const rUnassigned = await admin
+      .from("ical_unassigned_events")
+      .select("id,property_id,room_type_id,uid,summary,start_date,end_date,start_time,end_time,created_at,integration_id,resolved")
+      .eq("property_id", property_id)
+      .eq("resolved", false)
+      .order("created_at", { ascending: false });
+    const unassigned: Array<{
+      id: string;
+      property_id: string;
+      room_type_id: string | null;
+      uid: string | null;
+      summary: string | null;
+      start_date: string;
+      end_date: string;
+      start_time: string | null;
+      end_time: string | null;
+      created_at: string | null;
+      integration_id: string | null;
+    }> = (rUnassigned.data ?? []) as any[];
+
     // Resolve missing integration linkage via uid_map (fallback)
     const needMapFor = bookings.filter(b => !b.ota_integration_id && !!b.id).map(b => b.id);
     const integByBooking = new Map<string, string>();
@@ -128,6 +149,9 @@ export async function GET(req: Request) {
     for (const b of bookings) {
       if (b.ota_integration_id) integrationIds.add(String(b.ota_integration_id));
       else if (integByBooking.has(String(b.id))) integrationIds.add(String(integByBooking.get(String(b.id))));
+    }
+    for (const ev of unassigned) {
+      if (ev.integration_id) integrationIds.add(String(ev.integration_id));
     }
     const integMeta = new Map<string, { provider: string | null; color: string | null; logo_url: string | null }>();
     if (integrationIds.size > 0) {
@@ -448,6 +472,38 @@ export async function GET(req: Request) {
           booking_id: pk.others[0]?.id ?? null,
         });
       }
+    }
+
+    // ——— Add UNASSIGNED events as items (yellow < 2h, red >= 2h) ———
+    const nowTs = now.getTime();
+    const twoHoursMs = 2 * 60 * 60 * 1000;
+    for (const ev of unassigned) {
+      // type/name
+      const tId = ev.room_type_id ? String(ev.room_type_id) : null;
+      const tName = tId ? (typeNameById.get(tId) ?? "Type") : null;
+      // meta
+      const im = ev.integration_id && integMeta.has(String(ev.integration_id)) ? integMeta.get(String(ev.integration_id))! : { provider: null, color: null, logo_url: null };
+      // times
+      const created = ev.created_at ? new Date(ev.created_at).getTime() : nowTs;
+      const isYellow = (nowTs - created) < twoHoursMs;
+
+      items.push({
+        kind: isYellow ? "yellow" : "red",
+        reason: isYellow ? "waiting_form" : "missing_form",
+        start_date: ev.start_date,
+        end_date: ev.end_date,
+        room_id: null,
+        room_label: null,
+        room_type_id: tId,
+        room_type_name: tName,
+        booking_id: null,
+        ota_provider: im.provider,
+        ota_color: im.color,
+        ota_logo_url: im.logo_url,
+        guest_first_name: null,
+        guest_last_name: null,
+        cutoff_ts: isYellow ? new Date(created + twoHoursMs).toISOString() : undefined,
+      });
     }
 
     // Sortare: GREEN → YELLOW → RED, apoi cronologic & nume tip
