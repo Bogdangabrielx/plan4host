@@ -76,6 +76,25 @@ export default function DashboardClient({
     };
   }, []);
 
+  // Theme-aware assets (light/dark)
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const el = document.documentElement;
+    const detect = () => {
+      const t = el.getAttribute('data-theme');
+      if (t === 'dark') setIsDark(true);
+      else if (t === 'light') setIsDark(false);
+      else setIsDark(window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false);
+    };
+    detect();
+    const mo = new MutationObserver(detect);
+    mo.observe(el, { attributes: true, attributeFilter: ['data-theme'] });
+    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
+    const onMq = () => detect();
+    try { mq?.addEventListener('change', onMq); } catch { mq?.addListener?.(onMq); }
+    return () => { try { mq?.removeEventListener('change', onMq); } catch { mq?.removeListener?.(onMq); } mo.disconnect(); };
+  }, []);
+
   useEffect(() => {
     setTitle("Dashboard");
   }, [setTitle]);
@@ -395,10 +414,13 @@ export default function DashboardClient({
                     >
                       <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
                         {(!isWarn && !isCopied) && (
-                          <picture>
-                            <source srcSet="/copy_fordark.png" media="(prefers-color-scheme: dark)" />
-                            <img src="/copy_fordark.png" alt="" width={14} height={14} style={{ opacity:.95 }} />
-                          </picture>
+                          <img
+                            src={isDark ? '/copy_fordark.png' : '/copy_forlight.png'}
+                            alt=""
+                            width={14}
+                            height={14}
+                            style={{ opacity: .95 }}
+                          />
                         )}
                         {isWarn ? "Upload rules first" : isCopied ? "Copied!" : "Copy check-in link"}
                       </span>
