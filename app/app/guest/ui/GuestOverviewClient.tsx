@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
+import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import RoomDetailModal from "@/app/app/calendar/ui/RoomDetailModal";
 
@@ -251,7 +252,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   // Properties & selection
   const [properties, setProperties] = useState<Property[]>(initialProperties || []);
-  const [activePropertyId, setActivePropertyId] = useState<string | null>(initialProperties?.[0]?.id ?? null);
+  const [activePropertyId, setActivePropertyId] = usePersistentProperty(properties);
 
   // Data
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -337,10 +338,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   useEffect(() => {
     setProperties(initialProperties || []);
-    if (!activePropertyId && initialProperties?.[0]?.id) {
-      setActivePropertyId(initialProperties[0].id);
-    }
-  }, [initialProperties, activePropertyId]);
+  }, [initialProperties]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
