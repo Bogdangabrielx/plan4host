@@ -32,7 +32,7 @@ function titleStyle(isSmall: boolean): React.CSSProperties {
     margin: 0,
     fontFamily: TITLE_FAMILY,
     fontSize: isSmall ? 18 : 20,
-    lineHeight: isSmall ? "26px" : "28px",
+    lineHeight: isSmall ? "26px" : "26px",
     fontWeight: 600,
     letterSpacing: "-0.01em",
     whiteSpace: "nowrap",
@@ -258,9 +258,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           justifyContent: "space-between",
           gap: isSmall ? 6 : 6,
           // padding include safe-area top
-          paddingRight: isSmall ? 10 : 16,
-          paddingBottom: isSmall ? 16 : 20,
-          paddingLeft: isSmall ? 10 : 16,
+          paddingRight: isSmall ? 10 : 14,
+          paddingBottom: isSmall ? 16 : 10,
+          paddingLeft: isSmall ? 10 : 14,
           flexWrap: "nowrap",
           background: "var(--panel)",
           borderBottom: "1px solid var(--border)",
@@ -275,7 +275,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             }}
             aria-label="Open menu"
             style={{
-              padding: isSmall ? 4 : 6,
+              padding: isSmall ? 4 : 4,
               borderRadius: 10,
               border: "1px solid var(--border)",
               background: "var(--card)",
@@ -324,7 +324,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             }}
             aria-label="Open management menu"
             style={{
-              padding: isSmall ? 4 : 6,
+              padding: isSmall ? 4 : 4,
               borderRadius: 10,
               border: "1px solid var(--border)",
               background: "var(--card)",
