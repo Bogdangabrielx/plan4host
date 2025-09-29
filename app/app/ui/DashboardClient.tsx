@@ -393,7 +393,13 @@ export default function DashboardClient({
                         cursor: "pointer",
                       }}
                     >
-                      {isWarn ? "Upload rules first" : isCopied ? "Copied!" : "Copy check-in link"}
+                      <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+                        <picture>
+                          <source srcSet="/copy_fordark.png" media="(prefers-color-scheme: dark)" />
+                          <img src="/copy_forlight.png" alt="" width={14} height={14} style={{ opacity:.95 }} />
+                        </picture>
+                        {isWarn ? "Upload rules first" : isCopied ? "Copied!" : "Copy check-in link"}
+                      </span>
                     </button>
 
                     <button

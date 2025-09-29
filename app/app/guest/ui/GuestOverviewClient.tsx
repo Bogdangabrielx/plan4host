@@ -1088,7 +1088,10 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
               {...useTap(onCopyPreview)}
               style={{ padding: "12px 14px", minHeight: 44, touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
-              {copied ? "Copied!" : "Copy preview"}
+              <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+                <img src={iconSrc('copy')} alt="" width={14} height={14} style={{ opacity:.95 }} />
+                {copied ? "Copied!" : "Copy preview"}
+              </span>
             </button>
             <GenerateLinkButton propertyId={propertyId} bookingId={row.id} values={values} />
           </div>
@@ -1141,7 +1144,10 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{
       title={bookingId ? "Copy generated link" : "No booking id"}
       style={{ padding: "12px 14px", minHeight: 44, touchAction: "manipulation", WebkitTapHighlightColor: "transparent", borderRadius: 10 }}
     >
-      {busy ? "Generating…" : (copied ? "Copied!" : "Copy link")}
+      <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+        <img src={iconSrc('copy')} alt="" width={14} height={14} style={{ opacity:.95 }} />
+        {busy ? "Generating…" : (copied ? "Copied!" : "Copy link")}
+      </span>
     </button>
   );
 }
