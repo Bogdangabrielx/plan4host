@@ -294,7 +294,7 @@ export default function CheckinClient() {
       address: "address",
       city: "city",
       country: "country",
-      id: "ID",
+      id: "id",
       firstname: "firstname",
       lastname: "lastname",
     }[key];

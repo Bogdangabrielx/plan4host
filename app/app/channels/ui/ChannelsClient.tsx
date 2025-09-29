@@ -174,6 +174,21 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     })();
   }, [supabase, propertyId]);
 
+  // Reset view immediately on property change to avoid showing stale configs
+  useEffect(() => {
+    // close any open modals tied to previous property
+    setActiveRoomId(null);
+    setActiveTypeId(null);
+    setManageTypeId(null);
+    setManageRoomId(null);
+    setShowRoomImport(false);
+    // clear lists to avoid showing stale items while loading
+    setRooms([]);
+    setTypes([]);
+    setIntegrations([]);
+    setTimezone("");
+  }, [propertyId]);
+
   useEffect(() => {
     if (!propertyId) return;
     setStatus("Loading");
