@@ -340,6 +340,18 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setProperties(initialProperties || []);
   }, [initialProperties]);
 
+  // Clear UI immediately when property changes to avoid showing previous property's data
+  useEffect(() => {
+    // close modals tied to previous property
+    setModal(null);
+    setRmModal(null);
+    // clear lists
+    setRooms([]);
+    setItems([]);
+    setLoading("loading");
+    setPill("Loading…");
+  }, [activePropertyId, setPill]);
+
   useEffect(() => { refresh(); }, [refresh]);
 
   // Maps & sorting
