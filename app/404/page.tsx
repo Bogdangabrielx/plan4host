@@ -1,7 +1,5 @@
-"use client";
-
 import type { Metadata } from "next";
-import { useState } from "react";
+import NotFoundImage from "./ui/NotFoundImage";
 
 export const metadata: Metadata = {
   title: "404 Not Found — Plan4host",
@@ -9,7 +7,6 @@ export const metadata: Metadata = {
 };
 
 export default function NotFoundLanding() {
-  const [src, setSrc] = useState<string>("/404.gif"); // Place your GIF at public/404.gif
   return (
     <main
       style={{
@@ -28,12 +25,7 @@ export default function NotFoundLanding() {
           The page you were looking for doesn’t exist or was moved.
         </p>
         <div style={{ marginTop: 10 }}>
-          <img
-            src={src}
-            alt="404 — Not found"
-            onError={() => setSrc("/status.png")}
-            style={{ maxWidth: "100%", height: "auto", borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,.15)" }}
-          />
+          <NotFoundImage />
         </div>
         <div style={{ marginTop: 16 }}>
           <a
@@ -56,4 +48,3 @@ export default function NotFoundLanding() {
     </main>
   );
 }
-
