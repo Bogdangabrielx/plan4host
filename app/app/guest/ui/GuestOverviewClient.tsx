@@ -1089,7 +1089,10 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
               style={{ padding: "12px 14px", minHeight: 44, touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
               <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-                <img src={iconSrc('copy')} alt="" width={14} height={14} style={{ opacity:.95 }} />
+                <picture>
+                  <source srcSet="/copy_fordark.png" media="(prefers-color-scheme: dark)" />
+                  <img src="/copy_forlight.png" alt="" width={14} height={14} style={{ opacity:.95 }} />
+                </picture>
                 {copied ? "Copied!" : "Copy preview"}
               </span>
             </button>
@@ -1145,7 +1148,10 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{
       style={{ padding: "12px 14px", minHeight: 44, touchAction: "manipulation", WebkitTapHighlightColor: "transparent", borderRadius: 10 }}
     >
       <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-        <img src={iconSrc('copy')} alt="" width={14} height={14} style={{ opacity:.95 }} />
+        <picture>
+          <source srcSet="/copy_fordark.png" media="(prefers-color-scheme: dark)" />
+          <img src="/copy_forlight.png" alt="" width={14} height={14} style={{ opacity:.95 }} />
+        </picture>
         {busy ? "Generating…" : (copied ? "Copied!" : "Copy link")}
       </span>
     </button>
