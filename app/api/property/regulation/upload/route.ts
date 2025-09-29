@@ -64,10 +64,9 @@ export async function POST(req: Request) {
     // Sigurăm bucket-ul (creează dacă lipsește; face public dacă e privat)
     await ensureBucketPublic();
 
-    // Upload (first-time friendly) to a timestamped key, then clean older PDFs under this property
-    const fname = slugify(file.name || "house_rules") || "house_rules";
-    const keyName = `${Date.now()}-${fname}.pdf`;
-    const key = `${propertyId}/${keyName}`;
+    // Upload
+    const fname = slugify(file.name || "regulations") || "regulations";
+    const key = `${propertyId}/${Date.now()}-${fname}.pdf`;
 
     const upload = await admin.storage.from(BUCKET).upload(key, file, {
       contentType: "application/pdf",
@@ -98,27 +97,13 @@ export async function POST(req: Request) {
     // Scriem în DB
     const upd = await admin
       .from("properties")
-      .update({
-        regulation_pdf_path: key,
-        regulation_pdf_url: publicUrl,
-        regulation_pdf_uploaded_at: new Date().toISOString(),
-      })
+      .update({ regulation_pdf_url: publicUrl, regulation_pdf_uploaded_at: new Date().toISOString() })
       .eq("id", propertyId)
       .select("id")
       .maybeSingle();
     if (upd.error) {
       return NextResponse.json({ error: upd.error.message }, { status: 500 });
     }
-
-    // Cleanup older PDFs (best-effort), keep only the newest one
-    try {
-      const listed = await admin.storage.from(BUCKET).list(propertyId, { limit: 1000 });
-      const files = (listed.data ?? []).map((it: any) => String(it.name || ""));
-      const toRemove = files
-        .filter((name: string) => name !== keyName && /\.pdf$/i.test(name))
-        .map((name: string) => `${propertyId}/${name}`);
-      if (toRemove.length) await admin.storage.from(BUCKET).remove(toRemove);
-    } catch { /* ignore cleanup */ }
 
     return NextResponse.json({ ok: true, url: publicUrl, key });
   } catch (err: any) {
