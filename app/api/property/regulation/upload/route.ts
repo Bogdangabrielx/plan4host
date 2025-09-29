@@ -64,9 +64,8 @@ export async function POST(req: Request) {
     // Sigurăm bucket-ul (creează dacă lipsește; face public dacă e privat)
     await ensureBucketPublic();
 
-    // Upload
-    const fname = slugify(file.name || "regulations") || "regulations";
-    const key = `${propertyId}/${Date.now()}-${fname}.pdf`;
+    // Upload to a deterministic path to replace the previous file (no duplicates kept)
+    const key = `${propertyId}/house_rules.pdf`;
 
     const upload = await admin.storage.from(BUCKET).upload(key, file, {
       contentType: "application/pdf",
@@ -97,7 +96,11 @@ export async function POST(req: Request) {
     // Scriem în DB
     const upd = await admin
       .from("properties")
-      .update({ regulation_pdf_url: publicUrl, regulation_pdf_uploaded_at: new Date().toISOString() })
+      .update({
+        regulation_pdf_path: key,
+        regulation_pdf_url: publicUrl,
+        regulation_pdf_uploaded_at: new Date().toISOString(),
+      })
       .eq("id", propertyId)
       .select("id")
       .maybeSingle();
