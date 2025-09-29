@@ -81,7 +81,10 @@ export default function SubscriptionClient({
   const supabase = useMemo(() => createClient(), []);
 
   const [currentPlan, setCurrentPlan] = useState<"basic"|"standard"|"premium">("basic");
-  const [validUntil, setValidUntil] = useState<string | null>(null);
+  const [validUntil, setValidUntil] = useState<string | null>(null);        // localized display
+  const [validUntilISO, setValidUntilISO] = useState<string | null>(null);  // raw ISO for comparisons
+  const [basePlan, setBasePlan] = useState<"basic"|"standard"|"premium"|null>(null); // accounts.plan from server
+  const [trialActive, setTrialActive] = useState<boolean>(false);
   const [saving, setSaving] = useState<string | null>(null);
   const [role, setRole] = useState<"admin"|"member">("admin");
   const [highlightPlan, setHighlightPlan] = useState<null | Plan["slug"]>(null);
@@ -116,6 +119,19 @@ export default function SubscriptionClient({
       mo.disconnect();
     };
   }, []);
+
+  // Seed base plan and validity from SSR (fast paint)
+  useEffect(() => {
+    try {
+      const acc = _a as { plan?: string | null; valid_until?: string | null } | undefined;
+      if (acc) {
+        const bp = (acc.plan || "basic").toLowerCase();
+        if (bp === "basic" || bp === "standard" || bp === "premium") setBasePlan(bp as any);
+        setValidUntilISO(acc.valid_until ?? null);
+        setValidUntil(acc.valid_until ? new Date(acc.valid_until).toLocaleString() : null);
+      }
+    } catch {}
+  }, [_a]);
 
   // Read highlight from URL (plan=<slug>&hl=1)
   useEffect(() => {
@@ -159,18 +175,44 @@ export default function SubscriptionClient({
 
         const { data: acc } = await supabase
           .from("accounts")
-          .select("valid_until")
+          .select("plan, valid_until")
           .order("created_at", { ascending: true })
           .limit(1);
 
         const vu = acc && acc.length ? acc[0].valid_until : null;
+        setValidUntilISO(vu ?? null);
         setValidUntil(vu ? new Date(vu).toLocaleString() : null);
+        const bp = acc && acc.length ? (acc[0].plan as string | null) : null;
+        if (bp) {
+          const s = bp.toLowerCase();
+          if (s === "basic" || s === "standard" || s === "premium") setBasePlan(s as any);
+        }
       } catch {}
     })();
   }, [supabase]);
 
+  // Determine if free STANDARD trial is currently active
+  useEffect(() => {
+    try {
+      const now = Date.now();
+      const vu = validUntilISO ? Date.parse(validUntilISO) : NaN;
+      const hasFutureValidity = Number.isFinite(vu) ? vu > now : false;
+      // Heuristic: effective plan is STANDARD, but base (accounts.plan) is not STANDARD
+      // and validity is in the future → most likely the free trial is active.
+      const active = currentPlan === "standard" && basePlan !== "standard" && hasFutureValidity;
+      setTrialActive(!!active);
+    } catch { setTrialActive(false); }
+  }, [currentPlan, basePlan, validUntil]);
+
   async function choosePlan(slug: Plan["slug"]) {
     if (role !== "admin") return;
+    if (trialActive) {
+      const name = planLabel(slug);
+      const ok = window.confirm(
+        `You are currently on a free 7-day STANDARD trial.\n\nAre you sure you want to activate ${name} now?`
+      );
+      if (!ok) return;
+    }
     setSaving(slug);
     try {
       const validDays = slug === "basic" ? null : 30;
@@ -183,11 +225,17 @@ export default function SubscriptionClient({
         setCurrentPlan(slug);
         const { data: acc } = await supabase
           .from("accounts")
-          .select("valid_until")
+          .select("plan, valid_until")
           .order("created_at", { ascending: true })
           .limit(1);
         const vu = acc && acc.length ? acc[0].valid_until : null;
+        setValidUntilISO(vu ?? null);
         setValidUntil(vu ? new Date(vu).toLocaleString() : null);
+        const bp = acc && acc.length ? (acc[0].plan as string | null) : null;
+        if (bp) {
+          const s = bp.toLowerCase();
+          if (s === "basic" || s === "standard" || s === "premium") setBasePlan(s as any);
+        }
       }
     } finally {
       setSaving(null);
