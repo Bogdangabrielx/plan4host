@@ -13,6 +13,8 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   const [status, setStatus] = useState<"Idle"|"Loading"|"Error">("Idle");
   const [err, setErr] = useState<string>("");
   const [failCount, setFailCount] = useState<number>(0);
+  const [desiredPlan, setDesiredPlan] = useState<"basic"|"standard"|"premium"|null>(null);
+  const [nextParam, setNextParam] = useState<string | null>(null);
 
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [mounted, setMounted] = useState(false);
@@ -58,6 +60,12 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     if (["signup", "create", "register", "1", "true", "yes"].includes(val)) {
       setMode("signup");
     }
+
+    // Capture desired plan + next redirection target from URL
+    const p = (u.searchParams.get("plan") || "").toLowerCase();
+    if (p === "basic" || p === "standard" || p === "premium") setDesiredPlan(p as any);
+    const nx = u.searchParams.get("next");
+    if (nx && /^\//.test(nx)) setNextParam(nx);
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
@@ -107,15 +115,14 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
           return;
         }
 
-        // Dacă API setează un redirect în header (de ex 'x-redirect'), respectă-l
+        // Prefer explicit 'next' (from URL), else header, else default
         const hdrNext = res.headers.get("x-redirect");
-        if (hdrNext && /^\/|^https?:\/\//i.test(hdrNext)) {
-          location.assign(hdrNext);
-          return;
-        }
-
-        // fallback implicit
-        location.assign("/app");
+        const preferred =
+          nextParam ||
+          (desiredPlan ? `/app/subscription?plan=${desiredPlan}&hl=1` : null) ||
+          (hdrNext && (/^\//.test(hdrNext) || /^https?:\/\//i.test(hdrNext)) ? hdrNext : null) ||
+          "/app";
+        location.assign(preferred);
         return;
       }
 
@@ -141,14 +148,15 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     const APP_URL =
       (typeof process !== "undefined" && (process as any).env?.NEXT_PUBLIC_APP_URL) ||
       (typeof window !== "undefined" ? window.location.origin : "https://plan4host.com");
-    const next = "/app";
+    const next = nextParam || (desiredPlan ? `/app/subscription?plan=${desiredPlan}&hl=1` : "/app");
     try {
       const intent = mode === "login" ? "signin" : "signup";
       window.location.href = `${APP_URL}/auth/oauth/google?next=${encodeURIComponent(next)}&intent=${intent}`;
     } catch {
       // fallback sigur
       const intent = mode === "login" ? "signin" : "signup";
-      location.assign(`/auth/oauth/google?next=%2Fapp&intent=${intent}`);
+      const nx = encodeURIComponent(next);
+      location.assign(`/auth/oauth/google?next=${nx}&intent=${intent}`);
     }
   }
 

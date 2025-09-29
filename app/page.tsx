@@ -505,7 +505,10 @@ export default function HomePage() {
               <li>Autosync every 60 minutes with iCal</li>
             </ul>
             <img className={styles.priceImg} src="/basic.png" alt="" aria-hidden="true" />
-            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>
+            <Link
+              href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1"
+              className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+            >
               Choose Basic
             </Link>
           </div>
@@ -520,7 +523,10 @@ export default function HomePage() {
               <li>Smart cleaning board (Advanced Next-Check-In Priority)</li>
             </ul>
             <img className={styles.priceImg} src="/standard.png" alt="" aria-hidden="true" />
-            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>
+            <Link
+              href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1"
+              className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+            >
               Choose Standard
             </Link>
           </div>
@@ -536,7 +542,10 @@ export default function HomePage() {
               <li>Delegate tasks with your team members</li>
             </ul>
             <img className={styles.priceImg} src="/premium.png" alt="" aria-hidden="true" />
-            <Link href="/auth/signup" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>
+            <Link
+              href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1"
+              className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+            >
               Choose Premium
             </Link>
           </div>

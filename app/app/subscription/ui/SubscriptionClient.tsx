@@ -84,6 +84,7 @@ export default function SubscriptionClient({
   const [validUntil, setValidUntil] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [role, setRole] = useState<"admin"|"member">("admin");
+  const [highlightPlan, setHighlightPlan] = useState<null | Plan["slug"]>(null);
 
   // theme detection + per-plan light-image fallback
   const [isLight, setIsLight] = useState(false);
@@ -114,6 +115,23 @@ export default function SubscriptionClient({
       mql?.removeEventListener?.("change", onSys);
       mo.disconnect();
     };
+  }, []);
+
+  // Read highlight from URL (plan=<slug>&hl=1)
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href);
+      const p = (u.searchParams.get("plan") || "").toLowerCase();
+      const hl = u.searchParams.get("hl") || u.searchParams.get("highlight");
+      if ((p === "basic" || p === "standard" || p === "premium") && (hl === "1" || /^(true|yes)$/i.test(String(hl)))) {
+        setHighlightPlan(p as any);
+        // Scroll the target into view on mount for visibility
+        setTimeout(() => {
+          const el = document.querySelector<HTMLButtonElement>(`button[data-plan="${p}"]`);
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 50);
+      }
+    } catch {}
   }, []);
 
   // load current plan + validity
@@ -236,6 +254,8 @@ export default function SubscriptionClient({
                     className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
                     disabled={!!saving || role !== "admin"}
                     onClick={() => choosePlan(p.slug)}
+                    data-animate={highlightPlan === p.slug ? true : undefined}
+                    data-plan={p.slug}
                   >
                     {saving === p.slug ? "Applying…" : `I want ${planLabel(p.slug)}`}
                   </button>
