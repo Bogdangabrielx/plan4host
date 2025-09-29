@@ -105,6 +105,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: upd.error.message }, { status: 500 });
     }
 
+    // Best-effort cleanup: remove older PDF files under <propertyId>/, keep only the newly uploaded one
+    try {
+      const keyName = key.split('/').pop() || '';
+      const listed = await admin.storage.from(BUCKET).list(propertyId, { limit: 1000 });
+      const files = (listed.data ?? []).map((it: any) => String(it.name || ""));
+      const toRemove = files
+        .filter((name: string) => name !== keyName && /\.pdf$/i.test(name))
+        .map((name: string) => `${propertyId}/${name}`);
+      if (toRemove.length) {
+        await admin.storage.from(BUCKET).remove(toRemove);
+      }
+    } catch { /* ignore cleanup errors */ }
+
     return NextResponse.json({ ok: true, url: publicUrl, key });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Upload failed" }, { status: 500 });
