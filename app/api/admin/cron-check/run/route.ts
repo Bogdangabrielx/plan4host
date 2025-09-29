@@ -1,5 +1,6 @@
 // app/api/admin/cron-check/run/route.ts
 import { NextResponse } from "next/server";
+import { createClient as createSb } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,6 +24,29 @@ export async function GET(req: Request) {
     let init: RequestInit = { headers: {}, cache: "no-store" as any };
 
     if (task === "autosync") {
+      if (mode === "status") {
+        const u = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const k = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+        const svc = createSb(u, k, { auth: { persistSession: false } });
+        const sinceIso = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        const totalFeeds = await svc.from("ical_type_integrations").select("id", { count: "exact", head: true });
+        const lastLog = await svc
+          .from("ical_type_sync_logs")
+          .select("status,started_at,finished_at,added_count")
+          .order("started_at", { ascending: false })
+          .limit(1);
+        const succ = await svc
+          .from("ical_type_sync_logs")
+          .select("id", { count: "exact", head: true })
+          .gte("started_at", sinceIso)
+          .eq("status", "success");
+        const err = await svc
+          .from("ical_type_sync_logs")
+          .select("id", { count: "exact", head: true })
+          .gte("started_at", sinceIso)
+          .eq("status", "error");
+        return NextResponse.json({ ok: true, status: 200, endpoint: "autosync:status", data: { totalFeeds: totalFeeds.count ?? null, lastRun: lastLog.data?.[0] ?? null, lastHour: { success: succ.count ?? 0, error: err.count ?? 0 } } });
+      }
       endpoint = `${base}/api/cron/ical/autosync`;
       const key = process.env.CRON_ICAL_KEY || "";
       if (mode === "auth") {
@@ -36,11 +60,30 @@ export async function GET(req: Request) {
         (init.headers as any)["x-cron-key"] = key;
       }
     } else if (task === "cleanup") {
+      if (mode === "status") {
+        const u = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const k = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+        const svc = createSb(u, k, { auth: { persistSession: false } });
+        const unresolved = await svc.from("ical_unassigned_events").select("id", { count: "exact", head: true }).eq("resolved", false);
+        return NextResponse.json({ ok: true, status: 200, endpoint: "cleanup:status", data: { unresolved: unresolved.count ?? 0 } });
+      }
       const key = process.env.CRON_ICAL_KEY || "";
       // Use GET with query key; avoid headers to keep it simple
       endpoint = `${base}/api/cron/ical/cleanup?key=${encodeURIComponent(key)}`;
       init.method = "GET";
     } else if (task === "holds" || task === "soft-holds") {
+      if (mode === "status") {
+        const u = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const k = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+        const svc = createSb(u, k, { auth: { persistSession: false } });
+        const nowIso = new Date().toISOString();
+        const pending = await svc
+          .from("roomtype_soft_holds")
+          .select("id", { count: "exact", head: true })
+          .lte("expires_at", nowIso)
+          .neq("status", "cancelled");
+        return NextResponse.json({ ok: true, status: 200, endpoint: "holds:status", data: { expiredPending: pending.count ?? 0 } });
+      }
       const secret = process.env.CRON_SECRET || "";
       endpoint = `${base}/api/cron/cancel-expired-holds?token=${encodeURIComponent(secret)}`;
       init.method = "GET";
@@ -66,4 +109,3 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: e?.message || String(e) }, { status: 500 });
   }
 }
-
