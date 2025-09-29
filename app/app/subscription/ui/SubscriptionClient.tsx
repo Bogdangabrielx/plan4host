@@ -319,7 +319,7 @@ export default function SubscriptionClient({
                     <button
                       className={styles.btn}
                       onClick={() => setManageOpen(true)}
-                      style={{ border:'1px solid var(--border)', background:'transparent',borderRadius:21, }}
+                      style={{ color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21, }}
                     >
                       Manage Account
                     </button>
