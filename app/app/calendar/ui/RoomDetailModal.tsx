@@ -656,10 +656,14 @@ export default function RoomDetailModal({
                 padding: "4px 8px",
                 borderRadius: 999,
                 background:
-                  status === "Saving..." ? "var(--primary)" :
-                  status === "Error"     ? "var(--danger)"  :
+                  status === "Idle"      ? "transparent"      :
+                  status === "Saving..." ? "var(--primary)"   :
+                  status === "Error"     ? "var(--danger)"    :
                   status === "Saved"     ? "var(--success, #22c55e)" : "#2a2f3a",
-                color: status === "Saving..." ? "#0c111b" : "#fff",
+                color:
+                  status === "Idle"      ? "transparent"      :
+                  status === "Saving..." ? "#0c111b"          : "#fff",
+                border: status === "Idle" ? "1px solid transparent" : undefined,
                 fontWeight: 700,
               }}
             >
