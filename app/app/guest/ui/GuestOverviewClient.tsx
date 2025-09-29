@@ -241,7 +241,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     ob.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
     return () => ob.disconnect();
   }, []);
-  const iconSrc = useCallback((base: "logoguest" | "room" | "night") => {
+  const iconSrc = useCallback((base: "logoguest" | "room" | "night" | "copy") => {
     return isDark ? `/${base}_fordark.png` : `/${base}_forlight.png`;
   }, [isDark]);
   const iconStyle: React.CSSProperties = { width: 16, height: 16, flex: "0 0 auto", opacity: 0.95 };
