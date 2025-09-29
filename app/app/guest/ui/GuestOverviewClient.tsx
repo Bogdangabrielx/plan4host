@@ -853,7 +853,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       }}
                       title="Copy check-in link"
                     >
-                      {copiedKey === key ? "Copied!" : "Copy check-in link"}
+                      <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+                        <img src={iconSrc('copy')} alt="" width={14} height={14} style={{ opacity:.95 }} />
+                        {copiedKey === key ? "Copied!" : "Copy check-in link"}
+                      </span>
                     </button>
                   )}
 

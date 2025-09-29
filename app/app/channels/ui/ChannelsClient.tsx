@@ -28,6 +28,22 @@ type TypeIntegration = {
 /** Mic buton reutilizabil pentru copiere cu feedback */
 function CopyUrlButton({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const el = document.documentElement;
+    const detect = () => {
+      const t = el.getAttribute('data-theme');
+      if (t === 'dark') setIsDark(true); else if (t === 'light') setIsDark(false);
+      else setIsDark(window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false);
+    };
+    detect();
+    const mo = new MutationObserver(detect);
+    mo.observe(el, { attributes: true, attributeFilter: ['data-theme'] });
+    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
+    const onMq = () => detect();
+    try { mq?.addEventListener('change', onMq); } catch { mq?.addListener?.(onMq); }
+    return () => { try { mq?.removeEventListener('change', onMq); } catch { mq?.removeListener?.(onMq); } mo.disconnect(); };
+  }, []);
   async function onCopy() {
     try {
       await navigator.clipboard.writeText(url);
@@ -36,8 +52,9 @@ function CopyUrlButton({ url }: { url: string }) {
     } catch {}
   }
   return (
-    <button className="sb-btn" onClick={onCopy} aria-live="polite">
-      {copied ? "Copied!" : "Copy link"}
+    <button className="sb-btn" onClick={onCopy} aria-live="polite" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+      <img src={isDark ? '/copy_fordark.png' : '/copy_forlight.png'} alt="" width={14} height={14} style={{ opacity:.95 }} />
+      <span>{copied ? "Copied!" : "Copy link"}</span>
     </button>
   );
 }
