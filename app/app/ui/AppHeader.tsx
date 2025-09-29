@@ -579,12 +579,13 @@ function pillStyle(pill: React.ReactNode): React.CSSProperties {
   const isIdle = /^\s*idle\s*$/i.test(txt);
   const bg = isError ? "var(--danger)" : isBusy ? "var(--primary)" : "var(--card)";
   const col = isIdle ? "transparent" : (isError || isBusy ? "#0c111b" : "var(--muted)");
+  const borderCol = isIdle ? "transparent" : "var(--border)";
   return {
     padding: "4px 10px",
     borderRadius: 999,
     background: bg,
     color: col,
-    border: "1px solid var(--border)",
+    border: `1px solid ${borderCol}`,
     fontWeight: 800,
     fontSize: 12,
   };
