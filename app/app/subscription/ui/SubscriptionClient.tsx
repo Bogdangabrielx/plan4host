@@ -317,7 +317,7 @@ export default function SubscriptionClient({
                 {isCurrent ? (
                   <div style={{ display:'flex', alignItems:'center', gap: 10 }}>
                     <button
-                      className={styles.btn}
+                      className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
                       onClick={() => setManageOpen(true)}
                       style={{ color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21, }}
                     >
