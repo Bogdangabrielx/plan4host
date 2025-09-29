@@ -123,8 +123,6 @@ export default function RoomDetailModal({
   const [guestCountry, setGuestCountry] = useState<string>("");
 
   const [showGuest, setShowGuest] = useState<boolean>(false);
-  // Attention pulse for Guest details button when trying to confirm without names
-  const [needGuestAttention, setNeedGuestAttention] = useState<boolean>(false);
 
   // Custom fields
   const [checkDefs, setCheckDefs] = useState<CheckDef[]>([]);
@@ -358,25 +356,10 @@ export default function RoomDetailModal({
 
   const anyDetailsDirty = guestDirty || contactDirty || detailsDirty;
 
-  // Stop pulsing once both names are present
-  useEffect(() => {
-    if (guestFirst.trim() && guestLast.trim() && needGuestAttention) {
-      setNeedGuestAttention(false);
-    }
-  }, [guestFirst, guestLast, needGuestAttention]);
-
   /* ───── Save flows ───── */
 
   async function saveCreated() {
     if (!on) { setStatus("Error"); setStatusHint("Turn reservation ON first."); return; }
-    // Require guest first and last name before confirming
-    if (!(guestFirst.trim() && guestLast.trim())) {
-      setStatus("Error");
-      setStatusHint("Please complete guest details before confirming.");
-      setShowGuest(true);
-      setNeedGuestAttention(true);
-      return;
-    }
     setSaving("creating"); setStatus("Saving..."); setStatusHint("Creating…");
 
     const s = toDateTime(startDate, startTime, CI);
@@ -709,14 +692,13 @@ export default function RoomDetailModal({
               {on ? "ON" : "OFF"}
             </button>
 
-            <button
-              onClick={() => { setShowGuest(v => !v); setNeedGuestAttention(false); }}
-              className={needGuestAttention && !showGuest ? "p4h-guest-pulse" : undefined}
-              style={showGuest ? baseBtn : baseBtnGuest}
-              title={showGuest ? "Hide guest details" : "Add guest details"}
-            >
-              {showGuest ? "Hide guest details" : "Guest details"}
-            </button>
+             <button
+  onClick={() => setShowGuest(v => !v)}
+  style={showGuest ? baseBtn : baseBtnGuest}
+  title={showGuest ? "Hide guest details" : "Add guest details"}
+>
+  {showGuest ? "Hide guest details" : "Guest details"}
+</button>
              </div>
 
           {/* Dates row */}
@@ -796,38 +778,9 @@ export default function RoomDetailModal({
                     width: 160,
                   }}
                 />
-      </div>
-    </div>
-    {/* Strong pulsation effect for Guest details button (CSS-only) */}
-    <style jsx>{`
-      .p4h-guest-pulse {
-        position: relative;
-        animation: p4h-pulse-scale 1.25s ease-in-out infinite;
-      }
-      .p4h-guest-pulse::before,
-      .p4h-guest-pulse::after {
-        content: "";
-        position: absolute;
-        inset: -3px;
-        border-radius: 12px;
-        border: 2px solid color-mix(in srgb, var(--danger) 60%, transparent);
-        opacity: 0;
-        pointer-events: none;
-      }
-      .p4h-guest-pulse::before { animation: p4h-pulse-ring 1.25s ease-out infinite; }
-      .p4h-guest-pulse::after  { animation: p4h-pulse-ring 1.25s ease-out infinite; animation-delay: .42s; }
-
-      @keyframes p4h-pulse-scale {
-        0%, 100% { transform: translateZ(0) scale(1); }
-        50%      { transform: translateZ(0) scale(1.045); }
-      }
-      @keyframes p4h-pulse-ring {
-        0%   { opacity: .75; transform: scale(.97); }
-        70%  { opacity: 0;   transform: scale(1.16); }
-        100% { opacity: 0;   transform: scale(1.20); }
-      }
-    `}</style>
-  </div>
+              </div>
+            </div>
+          </div>
 
           {/* Guest details */}
           {showGuest && (
