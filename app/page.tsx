@@ -316,6 +316,21 @@ export default function HomePage() {
 
   return (
     <main className={styles.landing}>
+      {/* Safe-area cover (iOS notch) — landing only */}
+      <div
+        aria-hidden
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 'var(--safe-top)',
+          background: 'var(--bg)',
+          zIndex: 3,
+          pointerEvents: 'none',
+        }}
+      />
+
       {/* Accessible skip link */}
       <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>
         Skip to content
