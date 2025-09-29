@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import s from "../legal/legal.module.css";
+import s from "../legal.module.css";
 import Link from "next/link";
 
 export const metadata: Metadata = {
