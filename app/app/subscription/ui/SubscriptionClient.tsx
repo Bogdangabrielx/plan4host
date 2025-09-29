@@ -89,6 +89,8 @@ export default function SubscriptionClient({
   const [role, setRole] = useState<"admin"|"member">("admin");
   const [highlightPlan, setHighlightPlan] = useState<null | Plan["slug"]>(null);
   const [pendingSelect, setPendingSelect] = useState<null | Plan["slug"]>(null);
+  const [manageOpen, setManageOpen] = useState<boolean>(false);
+  const [cancelled, setCancelled] = useState<boolean>(false);
 
   // theme detection + per-plan light-image fallback
   const [isLight, setIsLight] = useState(false);
@@ -254,8 +256,24 @@ export default function SubscriptionClient({
     <div className={styles.container}>
       {/* Header bar: current plan */}
       <div className={styles.headerRow}>
-        <span className={styles.badge}>Active now: {planLabel(currentPlan)}</span>
-        <span className={styles.muted}>{validUntil ? `until ${validUntil}` : "—"}</span>
+        <button
+          className={styles.btn}
+          onClick={() => setManageOpen(true)}
+          style={{ border: '1px solid var(--border)', background: 'transparent' }}
+        >
+          Manage Account
+        </button>
+        {cancelled ? (
+          <>
+            <span className={styles.badge}>Until Cancel:</span>
+            <span className={styles.muted}>{validUntil ? `${validUntil}` : "—"}</span>
+          </>
+        ) : (
+          <>
+            <span className={styles.badge}>Active now: {planLabel(currentPlan)}</span>
+            <span className={styles.muted}>{validUntil ? `until ${validUntil}` : "—"}</span>
+          </>
+        )}
         {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
       </div>
 
@@ -321,6 +339,68 @@ export default function SubscriptionClient({
           );
         })}
       </div>
+
+      {/* Manage Account modal */}
+      {manageOpen && (
+        <div
+          role="dialog"
+          aria-modal
+          aria-labelledby="manage-title"
+          onClick={() => setManageOpen(false)}
+          style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
+        >
+          <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(680px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <h3 id="manage-title" style={{ margin:0 }}>Active plan</h3>
+              <button className={styles.btn} onClick={()=>setManageOpen(false)} style={{ border:'1px solid var(--border)', background:'transparent' }}>✕</button>
+            </div>
+
+            <div style={{ color:'var(--muted)' }}>
+              <p style={{ margin:0 }}>Current: <strong>{planLabel(currentPlan)}</strong>{validUntil ? ` — valid until ${validUntil}` : ''}</p>
+            </div>
+
+            <div style={{ display:'grid', gap:10, marginTop:4 }}>
+              <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+                <button
+                  className={`${styles.btn} ${styles.btnPrimary}`}
+                  onClick={async () => {
+                    // Cancel at period end (server action)
+                    try {
+                      const res = await fetch('/api/account/cancel', { method:'POST' });
+                      if (!res.ok) throw new Error(await res.text());
+                      setCancelled(true);
+                      alert('Subscription will end at the end of the current period.');
+                    } catch (e:any) {
+                      alert(e?.message || 'Could not cancel subscription.');
+                    }
+                  }}
+                >
+                  Cancel subscription
+                </button>
+
+                <button
+                  className={styles.btn}
+                  onClick={async () => {
+                    const conf = prompt('Type DELETE to confirm account deletion. This removes ALL your data.');
+                    if ((conf || '').trim().toUpperCase() !== 'DELETE') return;
+                    try {
+                      const res = await fetch('/api/account/delete', { method:'POST' });
+                      if (!res.ok) throw new Error(await res.text());
+                      // redirect to logout
+                      window.location.assign('/auth/logout');
+                    } catch (e:any) {
+                      alert(e?.message || 'Could not delete account.');
+                    }
+                  }}
+                  style={{ border:'1px solid var(--danger)', color:'var(--danger)', background:'transparent' }}
+                >
+                  Delete account (danger)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirm dialog while on STANDARD free trial */}
       {pendingSelect && (
