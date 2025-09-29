@@ -399,7 +399,7 @@ export default function SubscriptionClient({
                   }}
                   style={{ border:'1px solid var(--danger)', color:'var(--danger)', background:'transparent' }}
                 >
-                  Delete account (danger)
+                  Delete account
                 </button>
               </div>
             </div>
