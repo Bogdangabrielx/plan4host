@@ -1083,26 +1083,24 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
             dangerouslySetInnerHTML={{ __html: preview || "" }}
           />
 
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
-            <button
-              type="button"
-              className="sb-btn"
-              {...useTap(onCopyPreview)}
-              style={{ padding: "12px 14px", minHeight: 44, touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
-            >
-              <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-                {!copied && (
-                  <picture>
-                    <source srcSet="/copy_fordark.png" media="(prefers-color-scheme: dark)" />
-                    <img src="/copy_forlight.png" alt="" width={14} height={14} style={{ opacity:.95 }} />
-                  </picture>
-                )}
-                {copied ? "Copied!" : "Copy preview"}
-              </span>
-            </button>
-            <GenerateLinkButton propertyId={propertyId} bookingId={row.id} values={values} />
-            <SendEmailButton propertyId={propertyId} bookingId={row.id} values={values} />
-          </div>
+          <ActionsRow
+            left={
+              <LeftGroup
+                propertyId={propertyId}
+                bookingId={row.id}
+                values={values}
+              />
+            }
+            right={
+              <RightGroup
+                onCopyPreview={onCopyPreview}
+                copied={copied}
+                propertyId={propertyId}
+                bookingId={row.id}
+                values={values}
+              />
+            }
+          />
         </>
       )}
     </div>
@@ -1165,10 +1163,11 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{
   );
 }
 
-function SendEmailButton({ propertyId, bookingId, values }:{
+function SendEmailButton({ propertyId, bookingId, values, onSent }:{
   propertyId: string;
   bookingId: string|null;
   values: Record<string,string>;
+  onSent?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [last, setLast] = useState<null | { ok: boolean; reason?: string; missingFields?: string[] }>(null);
@@ -1213,6 +1212,7 @@ function SendEmailButton({ propertyId, bookingId, values }:{
       }
       setPopup({ title: 'Email sent', lines: ['The message was sent to the guest.'] });
       setLast({ ok:true });
+      onSent && onSent();
     } catch (e:any) {
       setPopup({ title: 'Send failed', lines: [e?.message || 'Network error'] });
       setLast({ ok:false });
@@ -1248,6 +1248,78 @@ function SendEmailButton({ propertyId, bookingId, values }:{
           </div>
         </div>
       )}
+    </>
+  );
+}
+function ActionsRow({ left, right }:{ left: React.ReactNode; right: React.ReactNode }) {
+  return (
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap: 8, flexWrap:'wrap' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>{left}</div>
+      <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>{right}</div>
+    </div>
+  );
+}
+
+function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookingId:string|null; values: Record<string,string>; }) {
+  const [last, setLast] = useState<null | { status: string; sent_at?: string | null; created_at?: string; error_message?: string | null }>(null);
+  const supa = useMemo(() => createClient(), []);
+
+  async function refreshLast() {
+    try {
+      const res = await fetch(`/api/reservation-message/outbox?booking=${encodeURIComponent(bookingId || '')}`, { cache:'no-store' });
+      const j = await res.json().catch(()=>({}));
+      const l = j?.last as any;
+      if (l) setLast({ status: l.status, sent_at: l.sent_at, created_at: l.created_at, error_message: l.error_message });
+      else setLast(null);
+    } catch { setLast(null); }
+  }
+
+  useEffect(() => { if (bookingId) refreshLast(); }, [bookingId]);
+
+  return (
+    <>
+      <SendEmailButton propertyId={propertyId} bookingId={bookingId} values={values} onSent={refreshLast} />
+      {last && (
+        <small style={{ color:'var(--muted)' }}>
+          {last.status === 'sent' ? (
+            <>Last sent: {last.sent_at || last.created_at}</>
+          ) : last.status === 'error' ? (
+            <>Last error: {last.error_message || 'failed'} ({last.created_at})</>
+          ) : (
+            <>Last status: {last.status} ({last.created_at})</>
+          )}
+        </small>
+      )}
+    </>
+  );
+}
+
+function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values }:{
+  onCopyPreview: () => void;
+  copied: boolean;
+  propertyId: string;
+  bookingId: string|null;
+  values: Record<string,string>;
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        className="sb-btn"
+        {...useTap(onCopyPreview)}
+        style={{ padding: "12px 14px", minHeight: 44, touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+      >
+        <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+          {!copied && (
+            <picture>
+              <source srcSet="/copy_fordark.png" media="(prefers-color-scheme: dark)" />
+              <img src="/copy_forlight.png" alt="" width={14} height={14} style={{ opacity:.95 }} />
+            </picture>
+          )}
+          {copied ? "Copied!" : "Copy preview"}
+        </span>
+      </button>
+      <GenerateLinkButton propertyId={propertyId} bookingId={bookingId} values={values} />
     </>
   );
 }
