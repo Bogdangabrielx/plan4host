@@ -8,9 +8,9 @@ import ConsentOverlayHost from "@/components/consent/ConsentOverlayHost";
 
 
 export const metadata: Metadata = {
-  title: "plan4host",
-  description: "Property ops",
-  applicationName: "plan4host",
+  title: "Plan4Host",
+  description: "Stay Smart, Host Better",
+  applicationName: "Plan4Host",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
     shortcut: ["/favicon.ico"],
   },
-  appleWebApp: { capable: true, title: "plan4host", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Plan4Host", statusBarStyle: "black-translucent" },
   formatDetection: { telephone: false },
 };
 
