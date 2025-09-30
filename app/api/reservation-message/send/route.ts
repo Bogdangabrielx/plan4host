@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     // Booking + property
     const rBk = await supa
       .from("bookings")
-      .select("id, property_id, status, guest_first_name, guest_last_name, start_date, end_date, start_time, end_time, room_id")
+      .select("id, property_id, status, guest_first_name, guest_last_name, start_date, end_date, start_time, end_time, room_id, room_type_id")
       .eq("id", booking_id)
       .maybeSingle();
     if (rBk.error || !rBk.data) return bad(404, { error: "Booking not found" });
@@ -104,6 +104,7 @@ export async function POST(req: Request) {
       check_out_date: bk.end_date,
       check_out_time: bk.end_time || '11:00',
       room_name: '',
+      room_type: '',
       property_name: '',
     };
     // property name
@@ -117,7 +118,19 @@ export async function POST(req: Request) {
         const rRoom = await admin.from('rooms').select('name, room_type_id').eq('id', bk.room_id).maybeSingle();
         if (!rRoom.error && rRoom.data) {
           builtins.room_name = (rRoom.data as any).name || '';
+          const rtId = (rRoom.data as any).room_type_id as string | null;
+          if (rtId) {
+            try {
+              const rType = await admin.from('room_types').select('name').eq('id', rtId).maybeSingle();
+              if (!rType.error && rType.data) builtins.room_type = (rType.data as any).name || '';
+            } catch {}
+          }
         }
+      } catch {}
+    } else if ((bk as any).room_type_id) {
+      try {
+        const rType = await admin.from('room_types').select('name').eq('id', (bk as any).room_type_id).maybeSingle();
+        if (!rType.error && rType.data) builtins.room_type = (rType.data as any).name || '';
       } catch {}
     }
     const vars = { ...builtins, ...(merged || {}) };
@@ -184,4 +197,3 @@ export async function POST(req: Request) {
     return bad(500, { error: 'send_failed', message: e?.message || String(e) });
   }
 }
-
