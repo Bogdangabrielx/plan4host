@@ -1002,7 +1002,13 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
   function _replaceVarsHtml(html: string, vars: Record<string,string>) {
     if (!html) return "";
-    const withVars = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\}\}/g, (_m, k) => _escapeHtml(vars?.[k] ?? `{{${k}}}`));
+    const withVars = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\}\}/g, (_m, k) => {
+      const v = vars?.[k];
+      if (v !== undefined && v !== null && String(v).length > 0) return _escapeHtml(String(v));
+      // Render unresolved variable as a chip (like in Automatic Welcome Message)
+      const safe = _escapeHtml(k);
+      return `<span class="rm-token" data-token="${safe}" contenteditable="false">${safe}</span>`;
+    });
     return withVars.replace(/\r?\n/g, "<br/>");
   }
   function _renderHeadingSafe(src: string, vars: Record<string,string>) {
@@ -1012,7 +1018,12 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
     while ((m = re.exec(s))) {
       out.push(_escapeHtml(s.slice(last, m.index)));
       const key = m[1];
-      out.push(_escapeHtml(vars?.[key] ?? `{{${key}}}`));
+      const val = vars?.[key];
+      if (val !== undefined && val !== null && String(val).length > 0) out.push(_escapeHtml(String(val)));
+      else {
+        const safe = _escapeHtml(key);
+        out.push(`<span class=\"rm-token\" data-token=\"${safe}\" contenteditable=\"false\">${safe}</span>`);
+      }
       last = m.index + m[0].length;
     }
     out.push(_escapeHtml(s.slice(last)));
@@ -1095,6 +1106,12 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
           <div
             style={{ border: "1px solid var(--border)", borderRadius: 10, background: "var(--panel)", padding: 12, opacity: loadingTimes ? .7 : 1 }}
             dangerouslySetInnerHTML={{ __html: preview || "" }}
+          />
+          {/* Chip styles for unresolved variables in preview */}
+          <style
+            dangerouslySetInnerHTML={{ __html: `
+              .rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }
+            `}}
           />
 
 
