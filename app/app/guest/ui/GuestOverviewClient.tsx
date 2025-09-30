@@ -808,7 +808,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           color: "var(--text)",
                           fontWeight: 600,
                           cursor: "pointer",
-                          width: isSmall ? "100%" : undefined,
+                          width: isSmall ? "stretch" : undefined,
                         }}
                         title="Reservation message"
                       >
