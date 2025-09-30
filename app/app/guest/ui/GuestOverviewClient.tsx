@@ -1101,6 +1101,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
               </span>
             </button>
             <GenerateLinkButton propertyId={propertyId} bookingId={row.id} values={values} />
+            <SendEmailButton propertyId={propertyId} bookingId={row.id} values={values} />
           </div>
         </>
       )}
@@ -1161,5 +1162,92 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{
         {busy ? "Generating…" : (copied ? "Copied!" : "Copy link")}
       </span>
     </button>
+  );
+}
+
+function SendEmailButton({ propertyId, bookingId, values }:{
+  propertyId: string;
+  bookingId: string|null;
+  values: Record<string,string>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [last, setLast] = useState<null | { ok: boolean; reason?: string; missingFields?: string[] }>(null);
+  const [popup, setPopup] = useState<null | { title: string; lines: string[] }>(null);
+
+  async function precheck(): Promise<{ok:boolean;reason?:string;missingFields?:string[]}> {
+    const res = await fetch('/api/reservation-message/status', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ booking_id: bookingId, property_id: propertyId, values }),
+    });
+    const j = await res.json().catch(()=>({}));
+    return j;
+  }
+
+  function showPopup(reason: string, missing?: string[]) {
+    if (reason === 'missing_email') setPopup({ title: 'Guest email missing', lines: ['This reservation has no guest email.'] });
+    else if (reason === 'missing_fields') setPopup({ title: 'Missing values', lines: ['Please provide values for:', ...(missing||[]).map(k=>`• ${k}`)] });
+    else if (reason === 'missing_subject') setPopup({ title: 'Missing subject', lines: ['Template has no title heading.'] });
+    else if (reason === 'missing_body') setPopup({ title: 'Missing body', lines: ['Template has no content.'] });
+    else setPopup({ title: 'Cannot send', lines: ['Unknown precheck failure.'] });
+  }
+
+  async function onSend() {
+    if (!bookingId || busy) return;
+    setBusy(true); setLast(null);
+    try {
+      const chk = await precheck();
+      if (!(chk?.ok) || chk?.canSend === false) {
+        showPopup(chk?.reason || 'unknown', chk?.missingFields);
+        setLast({ ok:false, reason: chk?.reason, missingFields: chk?.missingFields });
+        return;
+      }
+      const res = await fetch('/api/reservation-message/send', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking_id: bookingId, property_id: propertyId, values }),
+      });
+      const j = await res.json().catch(()=>({}));
+      if (!res.ok || !j?.sent) {
+        setPopup({ title: 'Send failed', lines: [j?.error || 'Unknown error'] });
+        setLast({ ok:false });
+        return;
+      }
+      setPopup({ title: 'Email sent', lines: ['The message was sent to the guest.'] });
+      setLast({ ok:true });
+    } catch (e:any) {
+      setPopup({ title: 'Send failed', lines: [e?.message || 'Network error'] });
+      setLast({ ok:false });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className="sb-btn sb-btn--primary"
+        {...useTap(onSend)}
+        disabled={busy || !bookingId}
+        aria-busy={busy}
+        title={bookingId ? 'Send email to guest' : 'No booking id'}
+        style={{ padding: '12px 14px', minHeight: 44, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', borderRadius: 10 }}
+      >
+        {busy ? 'Sending…' : 'Send email'}
+      </button>
+
+      {popup && (
+        <div role="dialog" aria-modal="true" onClick={()=>setPopup(null)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:70, display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', padding:16 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+              <strong>{popup.title}</strong>
+              <button className="sb-btn" onClick={()=>setPopup(null)}>Close</button>
+            </div>
+            <div style={{ display:'grid', gap:6, color:'var(--muted)' }}>
+              {popup.lines.map((l, i)=>(<div key={i}>{l}</div>))}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
