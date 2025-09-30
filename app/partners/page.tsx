@@ -3,7 +3,7 @@ import s from "../legal/legal.module.css";
 import ForceDark from "@/components/theme/ForceDark";
 
 export const metadata: Metadata = {
-  title: "Partners — Plan4host",
+  title: "Partners — Plan4Host",
   description: "Partners and collaborations for Plan4Host.",
 };
 

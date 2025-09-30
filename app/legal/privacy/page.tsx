@@ -4,7 +4,7 @@ import s from "../legal.module.css";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Plan4host",
+  title: "Privacy Policy — Plan4Host",
   description:
     "Privacy Policy for plan4host.com operated by BOA DIGITAL SOLUTIONS SRL. Learn what data we collect, why, and how to exercise your rights under GDPR.",
 };
@@ -22,7 +22,7 @@ export default function PrivacyPolicyPage() {
 
         <section>
           <p className={s.p}>
-            This Privacy Policy explains how <strong>Plan4host</strong> (operated by{" "}
+            This Privacy Policy explains how <strong>Plan4Host</strong> (operated by{" "}
             <strong>BOA DIGITAL SOLUTIONS SRL</strong>) (“we”, “us”) collects and uses your
             personal data on <strong>plan4host.com</strong> and <strong>www.plan4host.com</strong>
             (the “Website”) and within our application (after login). We comply with the EU General
@@ -65,7 +65,7 @@ export default function PrivacyPolicyPage() {
           </ul>
 
           <h2 className={s.h2}>5. Sharing & processors</h2>
-          <p className={s.p}>We use vetted service providers (“processors”) to run Plan4host:</p>
+          <p className={s.p}>We use vetted service providers (“processors”) to run Plan4Host:</p>
           <div className={s.tableWrap}>
             <table>
               <thead>

@@ -4,7 +4,7 @@ import ForceDark from "@/components/theme/ForceDark";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Data Processing Addendum — Plan4host",
+  title: "Data Processing Addendum — Plan4Host",
   description: "DPA (GDPR Art. 28) for Plan4Host as a processor.",
 };
 

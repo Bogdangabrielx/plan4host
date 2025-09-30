@@ -8,7 +8,7 @@ import OpenCookieSettingsButton from "@/components/consent/OpenCookieSettingsBut
 </OpenCookieSettingsButton>
 
 export const metadata: Metadata = {
-  title: "Cookie Policy — Plan4host",
+  title: "Cookie Policy — Plan4Host",
   description:
     "Cookie Policy for plan4host.com operated by BOA DIGITAL SOLUTIONS SRL. Learn how we use cookies and how you can control your preferences.",
 };
@@ -26,7 +26,7 @@ export default function CookiePolicyPage() {
 
         <section>
           <p className={s.p}>
-            This Cookie Policy explains how <strong>Plan4host</strong> (operated by{" "}
+            This Cookie Policy explains how <strong>Plan4Host</strong> (operated by{" "}
             <strong>BOA DIGITAL SOLUTIONS SRL</strong>) uses cookies and similar technologies on{" "}
             <strong>plan4host.com</strong> and <strong>www.plan4host.com</strong> (the “Website”).
             This policy is aligned with EU/GDPR requirements.
@@ -101,7 +101,7 @@ export default function CookiePolicyPage() {
                   <td><code>p4h_consent</code></td>
                   <td>Essential</td>
                   <td>Stores your cookie choices and proof of consent.</td>
-                  <td>First-party (Plan4host)</td>
+                  <td>First-party (Plan4Host)</td>
                   <td>Cookie</td>
                   <td>12 months</td>
                 </tr>
@@ -125,7 +125,7 @@ export default function CookiePolicyPage() {
                   <td><code>app_theme</code></td>
                   <td>Essential</td>
                   <td>Remembers your selected theme (light/dark).</td>
-                  <td>First-party (Plan4host)</td>
+                  <td>First-party (Plan4Host)</td>
                   <td>Cookie</td>
                   <td>12 months</td>
                 </tr>

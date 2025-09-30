@@ -5,7 +5,7 @@ import Link from "next/link";
 import OpenCookieSettingsButton from "@/components/consent/OpenCookieSettingsButton";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Plan4host",
+  title: "Terms of Service — Plan4Host",
   description: "Terms of Service for plan4host.com operated by BOA DIGITAL SOLUTIONS SRL.",
 };
 
@@ -23,7 +23,7 @@ export default function TermsOfServicePage() {
         <section>
           <p className={s.p}>
             These Terms of Service (“Terms”) govern your access to and use of{" "}
-            <strong>Plan4host</strong> (operated by <strong>BOA DIGITAL SOLUTIONS SRL</strong>)
+            <strong>Plan4Host</strong> (operated by <strong>BOA DIGITAL SOLUTIONS SRL</strong>)
             on <strong>plan4host.com</strong> and <strong>www.plan4host.com</strong>, including
             the application area after login (collectively, the “Service”). By creating an
             account, accessing, or using the Service, you agree to these Terms.
@@ -31,7 +31,7 @@ export default function TermsOfServicePage() {
 
           <h2 className={s.h2}>1. Who we are</h2>
           <p className={s.p}>
-            The Service is provided by <strong>BOA DIGITAL SOLUTIONS S.R.L.</strong> (“Plan4host”,
+            The Service is provided by <strong>BOA DIGITAL SOLUTIONS S.R.L.</strong> (“Plan4Host”,
             “we”, “us”), CIF/CUI <strong>51680505</strong>. Registered office: <strong>BUZĂU, Mun. Buzău,
             Str. Pietroasele 24, Romania</strong>. For questions, contact{" "}
             <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
