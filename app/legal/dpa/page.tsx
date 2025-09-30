@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import s from "../legal.module.css";
+import ForceDark from "@/components/theme/ForceDark";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -11,6 +12,7 @@ export default function DpaPage() {
   const lastUpdated = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: '2-digit' });
   return (
     <main className={s.page}>
+      <ForceDark />
       <div className={s.container}>
         <header className={s.header}>
           <h1 className={s.h1}>Data Processing Addendum (DPA)</h1>
@@ -113,4 +115,3 @@ export default function DpaPage() {
     </main>
   );
 }
-

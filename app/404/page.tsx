@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import NotFoundImage from "./ui/NotFoundImage";
+import ForceDark from "@/components/theme/ForceDark";
 
 export const metadata: Metadata = {
   title: "404 Not Found — Plan4host",
@@ -19,6 +20,7 @@ export default function NotFoundLanding() {
         color: "var(--text)",
       }}
     >
+      <ForceDark />
       <div style={{ textAlign: "center", maxWidth: 720 }}>
         <h1 style={{ margin: 0, marginBottom: 8 }}>Page not found</h1>
         <p style={{ marginTop: 0, color: "var(--muted)" }}>
