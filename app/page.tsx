@@ -424,7 +424,7 @@ export default function HomePage() {
             Stay Smart, <br />Host <span className={styles.betterGrad}>Better</span>
           </h1>
           <p>
-            Plan4host helps small accommodations manage occupancy, avoid double bookings,
+            Plan4Host helps small accommodations manage occupancy, avoid double bookings
             and sync calendars across channels with ease.
           </p>
           <div className={styles.heroCta}>
@@ -593,7 +593,7 @@ export default function HomePage() {
           <div className={styles.footerCol}>
             <div className={styles.footerBrand}>
               <img src="/logo_fordark.png" alt="" aria-hidden="true" className={styles.logoDark} />
-              <strong>Plan4host</strong>
+              <strong>Plan4Host</strong>
             </div>
             <p className={styles.footerCopy}>
               Lightweight booking calendar &amp; channel sync for small accommodations.
@@ -643,12 +643,12 @@ export default function HomePage() {
 
         <div className={styles.legalBar}>
           <p>
-            © {year} Plan4host. All rights reserved. By using Plan4host you agree to our{" "}
+            © {year} Plan4Host. All rights reserved. By using Plan4Host you agree to our{" "}
             <Link className={styles.footerLink} href="/legal/terms">Terms &amp; Conditions</Link> and{" "}
             <Link className={styles.footerLink} href="/legal/privacy">Privacy Policy</Link>.
           </p>
           <p className={styles.legalMeta}>
-            Plan4host is not affiliated with Airbnb or Booking.com. Trademarks belong to their respective owners.
+            Plan4Host is not affiliated with Airbnb or Booking.com. Trademarks belong to their respective owners.
           </p>
         </div>
       </footer>
