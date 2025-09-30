@@ -74,6 +74,9 @@ function providerBuiltinLogo(provider?: string | null): string | null {
   if (p.includes("booking")) return "/booking.png";
   if (p.includes("airbnb")) return "/airbnb.png";
   if (p.includes("expedia")) return "/expedia.png";
+  if (p.includes("trivago")) return "/trivago.png";
+  if (p.includes("lastminute")) return "/lastminute.png";
+  if (p.includes("travelminit")) return "/travelminit.png";
   return null;
 }
 
@@ -770,6 +773,9 @@ function ManageTypeModal({
     if (s.includes('airbnb')) return 'rgba(255, 90, 96, 0.81)';
     if (s.includes('booking')) return 'rgba(30, 143, 255, 0.9)';
     if (s.includes('expedia')) return 'rgba(254,203,46,0.81)';
+    if (s.includes('trivago')) return 'linear-gradient(90deg, #D83D2B 0%, #F28E21 50%, #007FAD 100%)';
+    if (s.includes('lastminute')) return '#EC008C';
+    if (s.includes('travelminit')) return '#71246C';
     return 'rgba(139,92,246,0.81)';
   }
   useEffect(() => {
@@ -918,6 +924,9 @@ function ManageTypeModal({
               <option>Booking</option>
               <option>Airbnb</option>
               <option>Expedia</option>
+              <option>Trivago</option>
+              <option>Lastminute</option>
+              <option>Travelminit</option>
               <option>Other</option>
             </select>
           </div>
@@ -1148,6 +1157,9 @@ function ManageRoomModal({
     if (s.includes('airbnb')) return 'rgba(255, 90, 96, 0.81)';
     if (s.includes('booking')) return 'rgba(30, 143, 255, 0.9)';
     if (s.includes('expedia')) return 'rgba(254,203,46,0.81)';
+    if (s.includes('trivago')) return 'linear-gradient(90deg, #D83D2B 0%, #F28E21 50%, #007FAD 100%)';
+    if (s.includes('lastminute')) return '#EC008C';
+    if (s.includes('travelminit')) return '#71246C';
     return 'rgba(139,92,246,0.81)';
   }
   useEffect(() => {
@@ -1278,6 +1290,9 @@ function ManageRoomModal({
               <option>Booking</option>
               <option>Airbnb</option>
               <option>Expedia</option>
+              <option>Trivago</option>
+              <option>Lastminute</option>
+              <option>Travelminit</option>
               <option>Other</option>
             </select>
           </div>
