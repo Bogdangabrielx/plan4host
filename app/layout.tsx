@@ -81,8 +81,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
 :root[data-theme="dark"]{
-  --bg:#1b164d; --text:#e6edf3; --muted:#9aa4af;
-  --panel:#0f1623; --card:#0d1320; --border:#1f2937;
+  --bg:#0b1117; --text:#e6edf3; --muted:#9aa4af;
+  --panel:#1b164d; --card:#0d1320; --border:#1f2937;
   --primary:#3ECF8E; --danger:#ef4444; --success:#6ccc4c;
   --accent1:#22d3ee; --accent2:#0d1323;
 }
