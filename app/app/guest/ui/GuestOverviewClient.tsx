@@ -1080,10 +1080,11 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
                 <div key={f.key} style={{ display: "grid", gap: 6 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{f.label}</label>
                   <input
-                    style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 8, background: "var(--card)", color: "var(--text)", fontFamily: "inherit", minHeight: 44 }}
+                    style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 8, background: "var(--card)", color: "var(--text)", fontFamily: "inherit", minHeight: 44, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                     value={values[f.key] || ""}
                     onChange={(e)=>setValues(prev=>({ ...prev, [f.key]: e.currentTarget.value }))}
                     onBlur={() => setValuesPreview({ ...values })}
+                    onPointerDown={(e) => { if (e.pointerType !== 'mouse') { try { (e.currentTarget as HTMLInputElement).focus(); } catch {} } }}
                     placeholder={f.label}
                   />
                 </div>
@@ -1255,7 +1256,15 @@ function SendEmailButton({ propertyId, bookingId, values, onSent }:{
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', padding:16 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <strong>{popup.title}</strong>
-              <button className="sb-btn" type="button" onClick={()=>setPopup(null)} style={{ minHeight: 44, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}>Close</button>
+              <button
+                className="sb-btn"
+                type="button"
+                onClick={()=>setPopup(null)}
+                {...useTap(()=>setPopup(null))}
+                style={{ minHeight: 44, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+              >
+                Close
+              </button>
             </div>
             <div style={{ display:'grid', gap:6, color:'var(--muted)' }}>
               {popup.lines.map((l, i)=>(<div key={i}>{l}</div>))}
