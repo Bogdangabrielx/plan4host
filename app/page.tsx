@@ -598,6 +598,45 @@ export default function HomePage() {
             <p className={styles.footerCopy}>
               Lightweight booking calendar &amp; channel sync for small accommodations.
             </p>
+            {/* Mobile-only: show footer columns directly under the short copy */}
+            <div className={styles.footerStacksMobile}>
+              <div>
+                <div className={styles.footerTitle}>Product</div>
+                <ul className={styles.footerList}>
+                  <li><a className={styles.footerLink} href="#features">Features</a></li>
+                  <li><a className={styles.footerLink} href="#pricing">Pricing</a></li>
+                  <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Start free</Link></li>
+                  <li><Link className={styles.footerLink} href="/auth/login">Sign in</Link></li>
+                </ul>
+              </div>
+              <div>
+                <div className={styles.footerTitle}>Resources</div>
+                <ul className={styles.footerList}>
+                  <li><Link className={styles.footerLink} href="/docs">Docs</Link></li>
+                  <li><Link className={styles.footerLink} href="/changelog">Changelog</Link></li>
+                  <li><Link className={styles.footerLink} href="/status">Status</Link></li>
+                  <li><a className={styles.footerLink} href="mailto:office@plan4host.com">Support</a></li>
+                </ul>
+              </div>
+              <div>
+                <div className={styles.footerTitle}>Company</div>
+                <ul className={styles.footerList}>
+                  <li><Link className={styles.footerLink} href="/about">About us</Link></li>
+                  <li><Link className={styles.footerLink} href="#contact">Contact</Link></li>
+                  <li><Link className={styles.footerLink} href="/careers">Careers</Link></li>
+                  <li><Link className={styles.footerLink} href="/partners">Partners</Link></li>
+                </ul>
+              </div>
+              <div>
+                <div className={styles.footerTitle}>Legal</div>
+                <ul className={styles.footerList}>
+                  <li><Link className={styles.footerLink} href="/legal/terms">Terms &amp; Conditions</Link></li>
+                  <li><Link className={styles.footerLink} href="/legal/privacy">Privacy Policy</Link></li>
+                  <li><Link className={styles.footerLink} href="/legal/dpa">Data Processing Addendum</Link></li>
+                  <li><Link className={styles.footerLink} href="/legal/cookies">Cookie Policy</Link></li>
+                </ul>
+              </div>
+            </div>
           </div>
 
           <div className={styles.footerCol}>

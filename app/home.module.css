@@ -69,7 +69,7 @@
   padding: 14px 20px; border-radius: 999px; font-weight: 800; text-decoration: none;
   color: var(--text); border: 1px solid var(--border);
   transition: transform .05s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease, color .2s ease;
-  line-height: 1.1; white-space: nowrap; min-width: max-content;
+  line-height: 1.1; white-space: nowrap; min-width: max-content; min-height: 44px;
 }
 .btn:active { transform: scale(0.99); }
 .btnPrimary {
@@ -87,7 +87,17 @@
 
 @media (max-width: 900px) {
   .menu { display: none; }
-  .menuToggle { display: inline-flex; }
+  .menuToggle {
+    display: inline-flex;
+    /* Match size/shape with Sign in pill */
+    padding: 14px 20px;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow: none;
+    min-height: 44px;
+  }
   .nav[data-open="true"] + .mobileMenu { display: block; }
 }
 
@@ -372,6 +382,14 @@
 }
 @media (max-width: 560px) { .footerGrid { grid-template-columns: 1fr; } }
 
+/* Mobile-only stacks of footer columns under the short copy */
+.footerStacksMobile { display: none; }
+@media (max-width: 560px){
+  .footerStacksMobile { display: grid; gap: 18px; margin-top: 10px; }
+  /* Hide the separate columns on mobile; we show the stacked copies instead */
+  .footerGrid > .footerCol:not(:first-child) { display: none; }
+}
+
 /* ✅ Logo sizing (nav & footer) */
 .nav .brand img { height: 57px; width: auto; display: inline-block; }
 .footer .footerBrand img { height: 22px; width: auto; display: inline-block; }
@@ -476,4 +494,3 @@ html[data-standalone="true"] .skipLink { display: none !important; }
   /* Ca să nu „intre” footerul în zona acoperită */
   .footer{ padding-bottom: max(16px, var(--safe-bottom, env(safe-area-inset-bottom))); }
 }
-
