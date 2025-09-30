@@ -1157,9 +1157,9 @@ function ManageRoomModal({
     if (s.includes('airbnb')) return 'rgba(255, 90, 96, 0.81)';
     if (s.includes('booking')) return 'rgba(30, 143, 255, 0.9)';
     if (s.includes('expedia')) return 'rgba(254,203,46,0.81)';
-    if (s.includes('trivago')) return 'linear-gradient(90deg, #D83D2B 0%, #F28E21 50%, #007FAD 100%)';
-    if (s.includes('lastminute')) return '#EC008C';
-    if (s.includes('travelminit')) return '#71246C';
+    if (s.includes('trivago')) return 'linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)';
+    if (s.includes('lastminute')) return '#f376c1ff';
+    if (s.includes('travelminit')) return '#a4579f';
     return 'rgba(139,92,246,0.81)';
   }
   useEffect(() => {
