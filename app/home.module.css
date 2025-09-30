@@ -406,7 +406,14 @@
 /* 🔧 Mobile tweak: ascunde “Plan4host” + mărește puțin logo-ul */
 @media (max-width: 480px){
   .brand strong { display: none; }
-  .nav .brand img { height: 40px;width: auto; }
+  /* Keep logo within a square box on phones so height <= width */
+  .nav .brand img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    object-position: left center;
+    display: inline-block;
+  }
 }
 
 /* Responsive media: prevent lateral overflow (scoped) */
