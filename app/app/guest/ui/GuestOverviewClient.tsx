@@ -1083,37 +1083,24 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
             dangerouslySetInnerHTML={{ __html: preview || "" }}
           />
 
-          {(() => {
-            const small = useIsSmall();
-            return small ? (
-              <RMFooter
+          <ActionsRow
+            left={
+              <LeftGroup
                 propertyId={propertyId}
                 bookingId={row.id}
                 values={values}
+              />
+            }
+            right={
+              <RightGroup
                 onCopyPreview={onCopyPreview}
                 copied={copied}
+                propertyId={propertyId}
+                bookingId={row.id}
+                values={values}
               />
-            ) : (
-              <ActionsRow
-                left={
-                  <LeftGroup
-                    propertyId={propertyId}
-                    bookingId={row.id}
-                    values={values}
-                  />
-                }
-                right={
-                  <RightGroup
-                    onCopyPreview={onCopyPreview}
-                    copied={copied}
-                    propertyId={propertyId}
-                    bookingId={row.id}
-                    values={values}
-                  />
-                }
-              />
-            );
-          })()}
+            }
+          />
         </>
       )}
     </div>
@@ -1360,89 +1347,5 @@ function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values }:{
       </button>
       <GenerateLinkButton propertyId={propertyId} bookingId={bookingId} values={values} />
     </>
-  );
-}
-
-// Mobile-only footer: buttons row (Send email | Copy preview + Copy link) and status below
-function RMFooter({ propertyId, bookingId, values, onCopyPreview, copied }:{
-  propertyId: string;
-  bookingId: string|null;
-  values: Record<string,string>;
-  onCopyPreview: () => void;
-  copied: boolean;
-}) {
-  const [last, setLast] = useState<null | { status: string; sent_at?: string | null; created_at?: string; error_message?: string | null }>(null);
-  const [tz, setTz] = useState<string | null>(null);
-  const supa = useMemo(() => createClient(), []);
-
-  async function refreshLast() {
-    try {
-      const res = await fetch(`/api/reservation-message/outbox?booking=${encodeURIComponent(bookingId || '')}`, { cache:'no-store' });
-      const j = await res.json().catch(()=>({}));
-      const l = j?.last as any;
-      if (l) setLast({ status: l.status, sent_at: l.sent_at, created_at: l.created_at, error_message: l.error_message });
-      else setLast(null);
-    } catch { setLast(null); }
-  }
-
-  useEffect(() => { if (bookingId) refreshLast(); }, [bookingId]);
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const { data } = await supa.from('properties').select('timezone').eq('id', propertyId).maybeSingle();
-        if (!alive) return;
-        setTz(((data as any)?.timezone || null) as string | null);
-      } catch { if (alive) setTz(null); }
-    })();
-    return () => { alive = false; };
-  }, [supa, propertyId]);
-
-  function fmtInTZ(iso?: string | null): string | null {
-    if (!iso) return null;
-    try {
-      const d = new Date(iso);
-      const opts: Intl.DateTimeFormatOptions = { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12: false, timeZone: tz || undefined };
-      const s = new Intl.DateTimeFormat(undefined, opts).format(d);
-      return tz ? `${s} (${tz})` : s;
-    } catch { return iso as any; }
-  }
-
-  return (
-    <div style={{ display:'grid', gap: 6 }}>
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, flexWrap:'wrap' }}>
-        <SendEmailButton propertyId={propertyId} bookingId={bookingId} values={values} onSent={refreshLast} />
-        <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-          <button
-            type="button"
-            className="sb-btn"
-            {...useTap(onCopyPreview)}
-            style={{ padding: "12px 14px", minHeight: 44, touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
-          >
-            <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-              {!copied && (
-                <picture>
-                  <source srcSet="/copy_fordark.png" media="(prefers-color-scheme: dark)" />
-                  <img src="/copy_forlight.png" alt="" width={14} height={14} style={{ opacity:.95 }} />
-                </picture>
-              )}
-              {copied ? "Copied!" : "Copy preview"}
-            </span>
-          </button>
-          <GenerateLinkButton propertyId={propertyId} bookingId={bookingId} values={values} />
-        </div>
-      </div>
-      {last && (
-        <small style={{ color:'var(--muted)' }}>
-          {last.status === 'sent' ? (
-            <>Last sent: {fmtInTZ(last.sent_at || last.created_at) || (last.sent_at || last.created_at)}</>
-          ) : last.status === 'error' ? (
-            <>Last error: {last.error_message || 'failed'} ({fmtInTZ(last.created_at) || last.created_at})</>
-          ) : (
-            <>Last status: {last.status} ({fmtInTZ(last.created_at) || last.created_at})</>
-          )}
-        </small>
-      )}
-    </div>
   );
 }
