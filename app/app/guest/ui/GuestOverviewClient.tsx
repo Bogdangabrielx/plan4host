@@ -1174,7 +1174,7 @@ function SendEmailButton({ propertyId, bookingId, values }:{
   const [last, setLast] = useState<null | { ok: boolean; reason?: string; missingFields?: string[] }>(null);
   const [popup, setPopup] = useState<null | { title: string; lines: string[] }>(null);
 
-  async function precheck(): Promise<{ok:boolean;reason?:string;missingFields?:string[]}> {
+  async function precheck(): Promise<{ok:boolean;canSend?:boolean;reason?:string;missingFields?:string[]}> {
     const res = await fetch('/api/reservation-message/status', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ booking_id: bookingId, property_id: propertyId, values }),
