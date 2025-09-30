@@ -1,7 +1,7 @@
 // app/app/guestOverview/ui/GuestOverviewClient.tsx
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useDeferredValue } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
@@ -956,7 +956,6 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
 
   const [tpl, setTpl] = useState<any>(null);
   const [values, setValues] = useState<Record<string,string>>({});
-  const valuesDeferred = useDeferredValue(values);
   const [preview, setPreview] = useState<string>("");
 
   // timpi/interval actuali, LIVE din DB bookings
@@ -1026,7 +1025,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
     return out.join("\n");
   }
 
-  // rebuild preview on tpl/values/time/date change (values deferred for smoother typing on mobile)
+  // rebuild preview on tpl/values/time/date change
   useEffect(() => {
     if (!tpl) { setPreview(""); return; }
 
@@ -1050,9 +1049,9 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
       property_name:  "",
     };
 
-    const merged = { ...builtins, ...valuesDeferred };
+    const merged = { ...builtins, ...values };
     setPreview(_renderRM(tpl, merged));
-  }, [tpl, valuesDeferred, row, ciTime, coTime, startDate, endDate]);
+  }, [tpl, values, row, ciTime, coTime, startDate, endDate]);
 
   const [copied, setCopied] = useState(false);
   async function onCopyPreview() {
@@ -1078,13 +1077,10 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
                 <div key={f.key} style={{ display: "grid", gap: 6 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{f.label}</label>
                   <input
-                    style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 8, background: "var(--card)", color: "var(--text)", fontFamily: "inherit", minHeight: 44, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+                    style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 8, background: "var(--card)", color: "var(--text)", fontFamily: "inherit", minHeight: 44 }}
                     value={values[f.key] || ""}
                     onChange={(e)=>setValues(prev=>({ ...prev, [f.key]: e.currentTarget.value }))}
-                    onPointerDown={(e)=>{ const el = e.currentTarget as HTMLInputElement; if (document.activeElement !== el) { try { el.focus(); } catch {} } }}
                     placeholder={f.label}
-                    autoComplete="off"
-                    enterKeyHint="done"
                   />
                 </div>
               ))}
