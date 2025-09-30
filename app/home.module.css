@@ -81,7 +81,7 @@
 
 /* Mobile nav */
 .menuToggle { display: none; }
-.mobileMenu { display: none; padding: 10px 20px; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--bg) 92%, transparent); }
+.mobileMenu { display: none; font-size: 14; padding: 10px 20px; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--bg) 92%, transparent); }
 .mobileLink { display: block; padding: 10px 6px; text-decoration: none; color: var(--text); font-weight: 700; border-radius: 10px; }
 .mobileLink:hover { background: color-mix(in srgb, var(--card) 85%, transparent); }
 
