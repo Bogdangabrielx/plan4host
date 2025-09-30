@@ -46,6 +46,27 @@ export default function CalendarClient({
 }) {
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
+  // Theme-aware background image
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const attr = document.documentElement.getAttribute("data-theme");
+    if (attr === "dark") return true;
+    if (attr === "light") return false;
+    return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false;
+  });
+  useEffect(() => {
+    const m = window.matchMedia?.("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    try { m?.addEventListener("change", onChange); } catch { m?.addListener?.(onChange); }
+    const root = document.documentElement;
+    const ob = new MutationObserver(() => {
+      const t = root.getAttribute("data-theme");
+      if (t === "dark") setIsDark(true);
+      if (t === "light") setIsDark(false);
+    });
+    ob.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => { try { m?.removeEventListener("change", onChange); } catch { m?.removeListener?.(onChange); } ob.disconnect(); };
+  }, []);
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [isSmall, setIsSmall] = useState(false);
@@ -250,8 +271,9 @@ export default function CalendarClient({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const bgSrc = isDark ? "/background_fordark.png" : "/background_forlight.png";
   return (
-    <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
+    <div style={{ display: "grid", gap: 12, color: "var(--text)", backgroundImage: `url(${bgSrc})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", borderRadius: 12 }}>
       <PlanHeaderBadge title="Calendar" slot="header-right" />
       {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20 }}>
