@@ -1262,6 +1262,7 @@ function ActionsRow({ left, right }:{ left: React.ReactNode; right: React.ReactN
 
 function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookingId:string|null; values: Record<string,string>; }) {
   const [last, setLast] = useState<null | { status: string; sent_at?: string | null; created_at?: string; error_message?: string | null }>(null);
+  const [tz, setTz] = useState<string | null>(null);
   const supa = useMemo(() => createClient(), []);
 
   async function refreshLast() {
@@ -1275,6 +1276,31 @@ function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookin
   }
 
   useEffect(() => { if (bookingId) refreshLast(); }, [bookingId]);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await supa
+          .from('properties')
+          .select('timezone')
+          .eq('id', propertyId)
+          .maybeSingle();
+        if (!alive) return;
+        setTz(((data as any)?.timezone || null) as string | null);
+      } catch { if (alive) setTz(null); }
+    })();
+    return () => { alive = false; };
+  }, [supa, propertyId]);
+
+  function fmtInTZ(iso?: string | null): string | null {
+    if (!iso) return null;
+    try {
+      const d = new Date(iso);
+      const opts: Intl.DateTimeFormatOptions = { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12: false, timeZone: tz || undefined };
+      const s = new Intl.DateTimeFormat(undefined, opts).format(d);
+      return tz ? `${s} (${tz})` : s;
+    } catch { return iso as any; }
+  }
 
   return (
     <>
@@ -1282,11 +1308,11 @@ function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookin
       {last && (
         <small style={{ color:'var(--muted)' }}>
           {last.status === 'sent' ? (
-            <>Last sent: {last.sent_at || last.created_at}</>
+            <>Last sent: {fmtInTZ(last.sent_at || last.created_at) || (last.sent_at || last.created_at)}</>
           ) : last.status === 'error' ? (
-            <>Last error: {last.error_message || 'failed'} ({last.created_at})</>
+            <>Last error: {last.error_message || 'failed'} ({fmtInTZ(last.created_at) || last.created_at})</>
           ) : (
-            <>Last status: {last.status} ({last.created_at})</>
+            <>Last status: {last.status} ({fmtInTZ(last.created_at) || last.created_at})</>
           )}
         </small>
       )}
