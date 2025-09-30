@@ -408,12 +408,15 @@
   .brand strong { display: none; }
   /* Keep logo within a square box on phones so height <= width */
   .nav .brand img {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
     object-position: left center;
     display: inline-block;
   }
+  /* Make header buttons a bit smaller for better balance with the logo */
+  .nav .actions .btn { padding: 10px 14px; min-height: 40px; font-size: 14px; }
+  .menuToggle { padding: 10px 14px; min-height: 40px; font-size: 14px; }
 }
 
 /* Responsive media: prevent lateral overflow (scoped) */
