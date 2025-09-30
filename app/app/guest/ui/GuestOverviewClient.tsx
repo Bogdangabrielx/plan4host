@@ -447,6 +447,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (p.includes("booking")) return "/booking.png";
     if (p.includes("airbnb")) return "/airbnb.png";
     if (p.includes("expedia")) return "/expedia.png";
+    if (p.includes("trivago")) return "/trivago.png";
+    if (p.includes("lastminute")) return "/lastminute.png";
+    if (p.includes("travelminit")) return "/travelminit.png";
     return null;
   }
   function defaultOtaColor(provider?: string | null): string {
@@ -454,6 +457,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (s.includes("airbnb")) return "rgba(255, 90, 96, 0.81)";
     if (s.includes("booking")) return "rgba(30, 143, 255, 0.90)";
     if (s.includes("expedia")) return "rgba(254,203,46,0.81)";
+    if (s.includes("trivago")) return "linear-gradient(90deg, #D83D2B 0%, #F28E21 50%, #007FAD 100%)";
+    if (s.includes("lastminute")) return "#EC008C";
+    if (s.includes("travelminit")) return "#71246C";
     return "rgba(139,92,246,0.81)"; // violet fallback
   }
   function OtaBadge({ provider, color, logo, fullWidth }: { provider?: string | null; color?: string | null; logo?: string | null; fullWidth?: boolean }) {
