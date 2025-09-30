@@ -1264,6 +1264,7 @@ function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookin
   const [last, setLast] = useState<null | { status: string; sent_at?: string | null; created_at?: string; error_message?: string | null }>(null);
   const [tz, setTz] = useState<string | null>(null);
   const supa = useMemo(() => createClient(), []);
+  const isSmall = useIsSmall();
 
   async function refreshLast() {
     try {
@@ -1302,20 +1303,33 @@ function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookin
     } catch { return iso as any; }
   }
 
+  const buttonEl = (
+    <SendEmailButton propertyId={propertyId} bookingId={bookingId} values={values} onSent={refreshLast} />
+  );
+  const statusEl = last ? (
+    <small style={{ color:'var(--muted)' }}>
+      {last.status === 'sent' ? (
+        <>Last sent: {fmtInTZ(last.sent_at || last.created_at) || (last.sent_at || last.created_at)}</>
+      ) : last.status === 'error' ? (
+        <>Last error: {last.error_message || 'failed'} ({fmtInTZ(last.created_at) || last.created_at})</>
+      ) : (
+        <>Last status: {last.status} ({fmtInTZ(last.created_at) || last.created_at})</>
+      )}
+    </small>
+  ) : null;
+
+  if (isSmall) {
+    return (
+      <div style={{ display:'grid', gap: 4 }}>
+        {buttonEl}
+        {statusEl}
+      </div>
+    );
+  }
   return (
     <>
-      <SendEmailButton propertyId={propertyId} bookingId={bookingId} values={values} onSent={refreshLast} />
-      {last && (
-        <small style={{ color:'var(--muted)' }}>
-          {last.status === 'sent' ? (
-            <>Last sent: {fmtInTZ(last.sent_at || last.created_at) || (last.sent_at || last.created_at)}</>
-          ) : last.status === 'error' ? (
-            <>Last error: {last.error_message || 'failed'} ({fmtInTZ(last.created_at) || last.created_at})</>
-          ) : (
-            <>Last status: {last.status} ({fmtInTZ(last.created_at) || last.created_at})</>
-          )}
-        </small>
-      )}
+      {buttonEl}
+      {statusEl}
     </>
   );
 }
