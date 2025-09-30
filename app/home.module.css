@@ -322,7 +322,7 @@
 }
 
 .featureHead { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
-.featureIcon { width: 20px; height: 20px; object-fit: contain; opacity: .9; }
+.featureIcon { width: 29px; height: 29px; object-fit: contain; opacity: .9; }
 .featureCard h3 { margin: 0; font-size: 20px; }
 .featureCard p { margin: 0; color: var(--muted); }
 
