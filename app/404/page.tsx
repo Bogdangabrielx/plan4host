@@ -35,13 +35,13 @@ export default function NotFoundLanding() {
               padding: "10px 14px",
               borderRadius: 10,
               border: "1px solid var(--border)",
-              background: "var(--primary)",
-              color: "#0c111b",
+              background: "#ffffff",
+              color: "#020202ff",
               fontWeight: 900,
               textDecoration: "none",
             }}
           >
-            Go to homepage
+            Take me home
           </a>
         </div>
       </div>
