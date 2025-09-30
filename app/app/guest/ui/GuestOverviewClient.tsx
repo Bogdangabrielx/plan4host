@@ -955,7 +955,10 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   const storageKey = `p4h:rm:template:${propertyId}`;
 
   const [tpl, setTpl] = useState<any>(null);
+  // values: live edits bound to inputs
   const [values, setValues] = useState<Record<string,string>>({});
+  // valuesPreview: committed values used to build the preview (updates on blur)
+  const [valuesPreview, setValuesPreview] = useState<Record<string,string>>({});
   const [preview, setPreview] = useState<string>("");
 
   // timpi/interval actuali, LIVE din DB bookings
@@ -1025,7 +1028,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
     return out.join("\n");
   }
 
-  // rebuild preview on tpl/values/time/date change
+  // rebuild preview on tpl/valuesPreview/time/date change (only after commit on blur)
   useEffect(() => {
     if (!tpl) { setPreview(""); return; }
 
@@ -1049,9 +1052,9 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
       property_name:  "",
     };
 
-    const merged = { ...builtins, ...values };
+    const merged = { ...builtins, ...valuesPreview };
     setPreview(_renderRM(tpl, merged));
-  }, [tpl, values, row, ciTime, coTime, startDate, endDate]);
+  }, [tpl, valuesPreview, row, ciTime, coTime, startDate, endDate]);
 
   const [copied, setCopied] = useState(false);
   async function onCopyPreview() {
@@ -1080,6 +1083,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
                     style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 8, background: "var(--card)", color: "var(--text)", fontFamily: "inherit", minHeight: 44 }}
                     value={values[f.key] || ""}
                     onChange={(e)=>setValues(prev=>({ ...prev, [f.key]: e.currentTarget.value }))}
+                    onBlur={() => setValuesPreview({ ...values })}
                     placeholder={f.label}
                   />
                 </div>
