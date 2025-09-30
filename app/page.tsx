@@ -558,9 +558,9 @@ export default function HomePage() {
         <p>
           Plan4Host helps small hotels and property managers run smoother operations
           <br />
-          with an adaptive calendar, simple property setup, and powerful team workflows. 
+          with an adaptive calendar, simple property setup and powerful team workflows. 
           <br />
-          Our goal is to keep things fast, reliable, and easy to use.
+          Our goal is to keep things fast, reliable and easy to use.
           <br />
           Built with care for clarity and performance,
           <br />
