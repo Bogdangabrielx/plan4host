@@ -600,12 +600,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   {...useTap(() => { setQuery(""); searchRef.current?.focus(); })}
                   style={{
                     position: "absolute",
-                    right: 6,
+                    right: 4,
                     top: "50%",
                     transform: "translateY(-50%)",
-                    width: 28,
-                    height: 28,
-                    borderRadius: 8,
+                    width: 44,
+                    height: 44,
+                    borderRadius: 999,
                     border: "1px solid var(--border)",
                     background: "transparent",
                     color: "var(--muted)",
@@ -1332,6 +1332,26 @@ function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values }:{
   values: Record<string,string>;
 }) {
   const isSmall = useIsSmall();
+  // Theme-aware icon selection tied to app theme (data-theme)
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const attr = document.documentElement.getAttribute('data-theme');
+    if (attr === 'dark') return true; if (attr === 'light') return false;
+    return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false;
+  });
+  useEffect(() => {
+    const m = window.matchMedia?.('(prefers-color-scheme: dark)');
+    const onChange = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    try { m?.addEventListener('change', onChange); } catch { m?.addListener?.(onChange); }
+    const root = document.documentElement;
+    const ob = new MutationObserver(() => {
+      const t = root.getAttribute('data-theme');
+      if (t === 'dark') setIsDark(true);
+      if (t === 'light') setIsDark(false);
+    });
+    ob.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => { try { m?.removeEventListener('change', onChange); } catch { m?.removeListener?.(onChange); } ob.disconnect(); };
+  }, []);
   const [last, setLast] = useState<null | { status: string; sent_at?: string | null; created_at?: string; error_message?: string | null }>(null);
   const [tz, setTz] = useState<string | null>(null);
   const supa = useMemo(() => createClient(), []);
@@ -1379,10 +1399,7 @@ function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values }:{
       >
         <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
           {!copied && (
-            <picture>
-              <source srcSet="/copy_fordark.png" media="(prefers-color-scheme: dark)" />
-              <img src="/copy_forlight.png" alt="" width={14} height={14} style={{ opacity:.95 }} />
-            </picture>
+            <img src={isDark ? '/copy_fordark.png' : '/copy_forlight.png'} alt="" width={14} height={14} style={{ opacity:.95 }} />
           )}
           {copied ? "Copied!" : "Copy preview"}
         </span>
