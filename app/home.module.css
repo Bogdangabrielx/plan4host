@@ -408,8 +408,8 @@
   .brand strong { display: none; }
   /* Keep logo within a square box on phones so height <= width */
   .nav .brand img {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     object-fit: contain;
     object-position: left center;
     display: inline-block;
