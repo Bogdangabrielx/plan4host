@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useHeader } from "../_components/HeaderContext";
 
 /* ---------------- Navigation model ---------------- */
@@ -299,7 +299,17 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           </button>
 
           <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
-            <h1 style={titleStyle(isSmall)}>{title}</h1>
+            <h1 style={{ ...titleStyle(isSmall), whiteSpace: isSmall ? 'normal' : 'nowrap' }}>
+              {useMemo(() => {
+                if (isSmall && typeof title === 'string') {
+                  const t = title.trim();
+                  if (/^automatic\s+welcome\s+message$/i.test(t)) {
+                    return (<><span>Automatic Welcome</span><br/>Message</>);
+                  }
+                }
+                return title;
+              }, [title, isSmall])}
+            </h1>
             {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
           </div>
         </div>
