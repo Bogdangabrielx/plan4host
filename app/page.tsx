@@ -596,7 +596,8 @@ export default function HomePage() {
               <strong>Plan4Host</strong>
             </div>
             <p className={styles.footerCopy}>
-              Lightweight booking calendar &amp; channel sync for small accommodations.
+              Lightweight booking calendar &amp; <br>
+              </br> channel sync for small accommodations.
             </p>
           </div>
 
