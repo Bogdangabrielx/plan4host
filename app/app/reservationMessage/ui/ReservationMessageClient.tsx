@@ -307,7 +307,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
 
   return (
     <div style={{ display: "grid", gap: 12, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
-      <PlanHeaderBadge title="Reservation Message" slot="header-right" />
+      <PlanHeaderBadge title="Automatic Welcome Message" slot="header-right" />
       {/* Property selector */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Property</label>
