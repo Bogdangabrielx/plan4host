@@ -472,7 +472,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         color: "#0c111b",
         border: "1px solid var(--border)",
         fontSize: 12,
-        fontWeight: 800,
+        fontWeight: 400,
         width: fullWidth ? "100%" : undefined,
       }} title={provider || undefined}>
         {src ? <img src={src} alt="" width={16} height={16} style={{ borderRadius: 4 }} /> : <span style={{ width: 12, height: 12, borderRadius: 999, background: "#fff", display: "inline-block" }} />}
