@@ -99,7 +99,7 @@ export default function CleanTaskModal({
   <div
     style={{
       display: "grid",
-      gridTemplateColumns: "40px 1fr 40px",
+      gridTemplateColumns: "44px 1fr 44px",
       alignItems: "center",
       gap: 8,
       
@@ -119,7 +119,7 @@ export default function CleanTaskModal({
     </div>
 
     {/* dreapta: buton închidere */}
-    <button onClick={onClose} aria-label="Close" className="sb-btn sb-btn--ghost sb-btn--small" style={{ justifySelf: "end" }}>✕</button>
+    <button onClick={onClose} aria-label="Close" className="sb-btn sb-btn--ghost sb-btn--small" style={{ justifySelf: "end", width: 44, height: 44, padding: 0, borderRadius: 999 }}>✕</button>
   </div>
 </div>
 

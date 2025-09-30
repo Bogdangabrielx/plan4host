@@ -122,7 +122,7 @@ textarea:focus-visible {
   color: #0c111b;
 }
 .sb-btn--ghost { background: transparent; }
-.sb-btn--icon { width: 36px; height: 36px; padding: 0; border-radius: 999px; }
+.sb-btn--icon { width: 44px; height: 44px; padding: 0; border-radius: 999px; }
 .sb-btn--small { padding: 6px 10px; border-radius: 8px; }
 
 /* înlocuiește blocul .sb-select actual */
@@ -331,5 +331,4 @@ select:not(.sb-select){ /* opțional */
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 }
-
 
