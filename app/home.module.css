@@ -98,6 +98,8 @@
     box-shadow: none;
     min-height: 44px;
     font-size: 16px; /* match Sign in text size */
+    font-weight: 800; /* match Sign in weight */
+    letter-spacing: 0; /* match Sign in spacing (normal) */
   }
   .nav[data-open="true"] + .mobileMenu { display: block; }
 }
