@@ -802,7 +802,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         {...useTap(() => setRmModal({ propertyId, item: it }))}
                         style={{
                           ...BTN_TOUCH_STYLE,
-                          borderRadius: 10,
+                          borderRadius: 21,
                           border: "1px solid var(--border)",
                           background: "var(--card)",
                           color: "var(--text)",
@@ -812,7 +812,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         }}
                         title="Reservation message"
                       >
-                        Reservation message
+                        Automatic message
                       </button>
 
                       <button
