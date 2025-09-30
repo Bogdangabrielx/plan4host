@@ -1266,6 +1266,7 @@ function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookin
   const [last, setLast] = useState<null | { status: string; sent_at?: string | null; created_at?: string; error_message?: string | null }>(null);
   const [tz, setTz] = useState<string | null>(null);
   const supa = useMemo(() => createClient(), []);
+  const isSmall = useIsSmall();
 
   async function refreshLast() {
     try {
@@ -1277,8 +1278,9 @@ function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookin
     } catch { setLast(null); }
   }
 
-  useEffect(() => { if (bookingId) refreshLast(); }, [bookingId]);
+  useEffect(() => { if (bookingId && !isSmall) refreshLast(); }, [bookingId, isSmall]);
   useEffect(() => {
+    if (isSmall) return; // on mobile, status will be shown under Copy link in RightGroup
     let alive = true;
     (async () => {
       try {
@@ -1307,7 +1309,7 @@ function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookin
   return (
     <>
       <SendEmailButton propertyId={propertyId} bookingId={bookingId} values={values} onSent={refreshLast} />
-      {last && (
+      {!isSmall && last && (
         <small style={{ color:'var(--muted)' }}>
           {last.status === 'sent' ? (
             <>Last sent: {fmtInTZ(last.sent_at || last.created_at) || (last.sent_at || last.created_at)}</>
@@ -1329,6 +1331,44 @@ function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values }:{
   bookingId: string|null;
   values: Record<string,string>;
 }) {
+  const isSmall = useIsSmall();
+  const [last, setLast] = useState<null | { status: string; sent_at?: string | null; created_at?: string; error_message?: string | null }>(null);
+  const [tz, setTz] = useState<string | null>(null);
+  const supa = useMemo(() => createClient(), []);
+
+  async function refreshLast() {
+    try {
+      const res = await fetch(`/api/reservation-message/outbox?booking=${encodeURIComponent(bookingId || '')}`, { cache:'no-store' });
+      const j = await res.json().catch(()=>({}));
+      const l = j?.last as any;
+      if (l) setLast({ status: l.status, sent_at: l.sent_at, created_at: l.created_at, error_message: l.error_message });
+      else setLast(null);
+    } catch { setLast(null); }
+  }
+
+  useEffect(() => { if (isSmall && bookingId) refreshLast(); }, [isSmall, bookingId]);
+  useEffect(() => {
+    if (!isSmall) return;
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await supa.from('properties').select('timezone').eq('id', propertyId).maybeSingle();
+        if (!alive) return;
+        setTz(((data as any)?.timezone || null) as string | null);
+      } catch { if (alive) setTz(null); }
+    })();
+    return () => { alive = false; };
+  }, [supa, propertyId, isSmall]);
+
+  function fmtInTZ(iso?: string | null): string | null {
+    if (!iso) return null;
+    try {
+      const d = new Date(iso);
+      const opts: Intl.DateTimeFormatOptions = { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12: false, timeZone: tz || undefined };
+      const s = new Intl.DateTimeFormat(undefined, opts).format(d);
+      return tz ? `${s} (${tz})` : s;
+    } catch { return iso as any; }
+  }
   return (
     <>
       <button
@@ -1348,6 +1388,19 @@ function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values }:{
         </span>
       </button>
       <GenerateLinkButton propertyId={propertyId} bookingId={bookingId} values={values} />
+      {isSmall && last && (
+        <div style={{ width:'100%' }}>
+          <small style={{ color:'var(--muted)' }}>
+            {last.status === 'sent' ? (
+              <>Last sent: {fmtInTZ(last.sent_at || last.created_at) || (last.sent_at || last.created_at)}</>
+            ) : last.status === 'error' ? (
+              <>Last error: {last.error_message || 'failed'} ({fmtInTZ(last.created_at) || last.created_at})</>
+            ) : (
+              <>Last status: {last.status} ({fmtInTZ(last.created_at) || last.created_at})</>
+            )}
+          </small>
+        </div>
+      )}
     </>
   );
 }
