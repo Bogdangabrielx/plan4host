@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 export default function NotFoundImage() {
-  const [src, setSrc] = useState<string>("/404v2.gif");
+  const [src, setSrc] = useState<string>("/lost.png");
   return (
     <img
       src={src}
