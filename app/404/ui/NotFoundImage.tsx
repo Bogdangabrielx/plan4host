@@ -8,7 +8,7 @@ export default function NotFoundImage() {
     <img
       src={src}
       alt="404 — Not found"
-      onError={() => setSrc("/404v2.gif")}
+      onError={() => setSrc("/lost.png")}
       style={{ maxWidth: "100%", height: "auto", borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,.15)" }}
     />
   );
