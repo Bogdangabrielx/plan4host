@@ -1083,13 +1083,37 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
             dangerouslySetInnerHTML={{ __html: preview || "" }}
           />
 
-          <RMFooter
-            propertyId={propertyId}
-            bookingId={row.id}
-            values={values}
-            onCopyPreview={onCopyPreview}
-            copied={copied}
-          />
+          {(() => {
+            const small = useIsSmall();
+            return small ? (
+              <RMFooter
+                propertyId={propertyId}
+                bookingId={row.id}
+                values={values}
+                onCopyPreview={onCopyPreview}
+                copied={copied}
+              />
+            ) : (
+              <ActionsRow
+                left={
+                  <LeftGroup
+                    propertyId={propertyId}
+                    bookingId={row.id}
+                    values={values}
+                  />
+                }
+                right={
+                  <RightGroup
+                    onCopyPreview={onCopyPreview}
+                    copied={copied}
+                    propertyId={propertyId}
+                    bookingId={row.id}
+                    values={values}
+                  />
+                }
+              />
+            );
+          })()}
         </>
       )}
     </div>
