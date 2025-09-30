@@ -928,7 +928,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <strong>Reservation message</strong>
-                <button className="sb-btn" {...useTap(()=>setRmModal(null))} style={BTN_TOUCH_STYLE}>Close</button>
+                <button
+                  type="button"
+                  className="sb-btn"
+                  onClick={() => setRmModal(null)}
+                  {...useTap(()=>setRmModal(null))}
+                  style={{ ...BTN_TOUCH_STYLE }}
+                  aria-label="Close"
+                >
+                  Close
+                </button>
               </div>
               <RMContent propertyId={rmModal.propertyId} row={rmModal.item} />
             </div>
@@ -1242,7 +1251,7 @@ function SendEmailButton({ propertyId, bookingId, values, onSent }:{
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', padding:16 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <strong>{popup.title}</strong>
-              <button className="sb-btn" onClick={()=>setPopup(null)}>Close</button>
+              <button className="sb-btn" type="button" onClick={()=>setPopup(null)} style={{ minHeight: 44, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}>Close</button>
             </div>
             <div style={{ display:'grid', gap:6, color:'var(--muted)' }}>
               {popup.lines.map((l, i)=>(<div key={i}>{l}</div>))}
