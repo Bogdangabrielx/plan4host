@@ -218,6 +218,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
     "/app/propertySetup": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
     "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
+    "/app/notifications": { light: "/notification_forlight.png", dark: "/notification_fordark.png" },
     "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
     "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
     "/app/subscription": { light: "/subscription_forlight.png", dark: "/subscription_fordark.png" },
