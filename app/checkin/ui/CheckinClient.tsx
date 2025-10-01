@@ -238,6 +238,11 @@ export default function CheckinClient() {
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
+  // Confirmation email modal state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmStatus, setConfirmStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
+  const [confirmError, setConfirmError] = useState<string>("");
+
   // responsive helper: 1 col sub 560px
   const [isNarrow, setIsNarrow] = useState(false);
   useEffect(() => {
@@ -553,6 +558,27 @@ export default function CheckinClient() {
       if (docType === "passport") setDocNationality(nationalityToSend);
 
       setSubmitState("success");
+
+      // Trigger confirmation email modal + send
+      const j = await res.json().catch(() => ({}));
+      const booking = (j?.id || null) as string | null;
+      if (booking) {
+        setConfirmOpen(true);
+        setConfirmStatus("sending");
+        setConfirmError("");
+        try {
+          const r = await fetch('/api/checkin/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ booking_id: booking, property_id: propertyId, email })
+          });
+          const jj = await r.json().catch(()=>({}));
+          if (r.ok && jj?.sent) setConfirmStatus("sent");
+          else { setConfirmStatus("error"); setConfirmError(jj?.error || jj?.message || 'Failed to send'); }
+        } catch (er:any) {
+          setConfirmStatus("error"); setConfirmError(er?.message || 'Failed to send');
+        }
+      }
     } catch (err: any) {
       setErrorMsg(err?.message || "Unexpected error. Please try again.");
       setSubmitState("error");
@@ -575,6 +601,8 @@ export default function CheckinClient() {
 
   return (
     <div style={{ maxWidth: 860, margin: "24px auto", padding: 16, display: "grid", gap: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+      {/* Light CSS for pulse animation */}
+      <style dangerouslySetInnerHTML={{ __html: `@keyframes p4h-pulse{0%{opacity:.6}50%{opacity:1}100%{opacity:.6}}` }} />
       {/* Header */}
       <section style={CARD}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
@@ -956,6 +984,44 @@ export default function CheckinClient() {
           </form>
         )}
       </section>
+
+      {/* Confirmation email modal */}
+      {confirmOpen && (
+        <div role="dialog" aria-modal="true" onClick={()=>setConfirmOpen(false)}
+          style={{ position:'fixed', inset:0, zIndex: 300, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(540px, 100%)', padding:16 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+              <strong>Confirmation Email</strong>
+              <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>Close</button>
+            </div>
+            {confirmStatus === 'sending' && (
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <span style={{ width:10, height:10, borderRadius:999, background:'var(--primary)', animation:'p4h-pulse 1.2s infinite' }} />
+                <span>Sending…</span>
+              </div>
+            )}
+            {confirmStatus === 'sent' && (
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <span className="sb-badge" style={{ background:'var(--primary)', color:'#0c111b', borderColor:'var(--primary)' }}>Sent</span>
+                <span>We sent a confirmation email to your address.</span>
+              </div>
+            )}
+            {confirmStatus === 'error' && (
+              <div style={{ display:'grid', gap:8 }}>
+                <div style={{ padding: 10, borderRadius: 10, background:'var(--danger)', color:'#0c111b', fontWeight:800 }}>
+                  Error sending confirmation email.
+                </div>
+                <small style={{ color:'var(--muted)' }}>
+                  You can try again in 30 minutes or contact the property directly.
+                </small>
+              </div>
+            )}
+            <div style={{ marginTop:12, display:'flex', justifyContent:'flex-end' }}>
+              <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>OK</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <p style={{ color: "var(--muted)", textAlign: "center", fontSize: 12 }}>
         Powered by Plan4Host — secure check-in.
