@@ -30,6 +30,19 @@ export async function POST(req: NextRequest) {
     const p256dh: string = subscription.keys.p256dh;
     const authKey: string = subscription.keys.auth;
 
+    // Derive account_id from property_id (if provided), for easier auditing/debug
+    let account_id: string | null = null;
+    if (property_id) {
+      try {
+        const r = await admin
+          .from('properties')
+          .select('account_id')
+          .eq('id', property_id)
+          .maybeSingle();
+        if (!r.error && r.data) account_id = ((r.data as any).account_id || null) as string | null;
+      } catch { /* ignore */ }
+    }
+
     // Upsert by endpoint (unique)
     const { error } = await admin
       .from('push_subscriptions')
@@ -38,6 +51,7 @@ export async function POST(req: NextRequest) {
         p256dh: p256dh,
         auth: authKey,
         user_id: user.id,
+        account_id: account_id,
         property_id: property_id,
         ua,
         os,
@@ -49,4 +63,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e?.message || 'Unexpected error' }, { status: 500 });
   }
 }
-
