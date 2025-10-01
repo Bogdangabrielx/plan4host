@@ -7,9 +7,9 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const runtime = 'nodejs';
 
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const admin = createClient(URL, SERVICE, { auth: { persistSession: false } });
+const admin = createClient(SUPABASE_URL, SERVICE, { auth: { persistSession: false } });
 
 export async function GET(req: NextRequest) {
   try {
@@ -32,4 +32,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: e?.message || 'Unexpected error' }, { status: 500 });
   }
 }
-
