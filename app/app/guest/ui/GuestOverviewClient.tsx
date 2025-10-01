@@ -573,6 +573,22 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     };
   }, [activePropertyId]);
 
+  // iOS hint: suggest installing PWA to enable notifications
+  const [showIosHint, setShowIosHint] = useState<boolean>(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const root = document.documentElement;
+      const os = root.getAttribute('data-os');
+      const standalone = root.getAttribute('data-standalone') === 'true';
+      const perm = (window as any).Notification ? Notification.permission : 'default';
+      const dismissed = localStorage.getItem('p4h:iosPwaHint:dismissed') === '1';
+      if (os === 'ios' && !standalone && perm === 'default' && !dismissed) {
+        setShowIosHint(true);
+      }
+    } catch {}
+  }, []);
+
   return (
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
       <PlanHeaderBadge title="Guest Overview" slot="header-right" />
@@ -611,6 +627,20 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               Refresh
             </button>
           </div>
+
+          {showIosHint && (
+            <div className="sb-card" style={{ gridColumn: '1 / -1', padding: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <div style={{ color: 'var(--muted)', fontSize: 13 }}>
+                On iPhone, install the app to enable notifications: <strong>Share</strong> → <strong>Add to Home Screen</strong>.
+              </div>
+              <button
+                className="sb-btn sb-btn--small"
+                onClick={() => { try { localStorage.setItem('p4h:iosPwaHint:dismissed', '1'); } catch {}; setShowIosHint(false); }}
+              >
+                Got it
+              </button>
+            </div>
+          )}
 
           {/* Search */}
           <div style={{ display: "flex", justifyContent: "stretch", gridColumn: "1 / -1" }}>
