@@ -1,7 +1,7 @@
 {
-  "name": "plan4host",
-  "short_name": "plan4host",
-  "description": "Property ops",
+  "name": "Plan4Host",
+  "short_name": "Plan4Host",
+  "description": "Stay Smart, Host Better",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
