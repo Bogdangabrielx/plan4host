@@ -176,6 +176,7 @@ export async function POST(req: NextRequest) {
     //    Criteriu: dates_equal + type_equal + source iCal (sau ical_uid not null)
     // =========================
     let matchedBookingId: string | null = null;
+    let matchedIsIcal: boolean = false;
     if (isYMD(start_date) && isYMD(end_date) && form_room_type_id) {
       const rIcal = await admin
         .from("bookings")
@@ -191,7 +192,33 @@ export async function POST(req: NextRequest) {
           const b_type = b.room_type_id ?? (await roomTypeFromRoom(b.room_id ?? null));
           if (b_type && String(b_type) === String(form_room_type_id)) {
             matchedBookingId = String(b.id);
+            matchedIsIcal = true;
             break;
+          }
+        }
+      }
+
+      // If no iCal match, try to match a MANUAL booking (non-iCal) by same dates + same type
+      if (!matchedBookingId) {
+        const rManual = await admin
+          .from('bookings')
+          .select('id,room_id,room_type_id,status,source,ical_uid')
+          .eq('property_id', property_id)
+          .eq('start_date', start_date)
+          .eq('end_date', end_date)
+          .neq('status', 'cancelled');
+        if (!rManual.error && Array.isArray(rManual.data)) {
+          const candidates: any[] = [];
+          for (const b of rManual.data) {
+            const src = (b.source || '').toString().toLowerCase();
+            const isIcalish = src === 'ical' || !!b.ical_uid;
+            if (isIcalish) continue; // already handled above
+            const b_type = b.room_type_id ?? (await roomTypeFromRoom(b.room_id ?? null));
+            if (b_type && String(b_type) === String(form_room_type_id)) candidates.push(b);
+          }
+          if (candidates.length === 1) {
+            matchedBookingId = String(candidates[0].id);
+            matchedIsIcal = false;
           }
         }
       }
@@ -200,17 +227,19 @@ export async function POST(req: NextRequest) {
     if (matchedBookingId) {
       // —— MERGE pe booking-ul iCal existent —— //
       // 1) Guest + mark form received
+      const updatePayload: any = {
+        guest_first_name: guest_first_name ?? null,
+        guest_last_name:  guest_last_name  ?? null,
+        guest_email:      email ?? null,
+        guest_phone:      phone ?? null,
+        guest_address:    [address, city, country].map(v => (v ?? "").trim()).filter(Boolean).join(", ") || null,
+        form_submitted_at: new Date().toISOString(),
+      };
+      if (matchedIsIcal) updatePayload.source = 'ical';
+
       await admin
         .from("bookings")
-        .update({
-          guest_first_name: guest_first_name ?? null,
-          guest_last_name:  guest_last_name  ?? null,
-          guest_email:      email ?? null,
-          guest_phone:      phone ?? null,
-          guest_address:    [address, city, country].map(v => (v ?? "").trim()).filter(Boolean).join(", ") || null,
-          form_submitted_at: new Date().toISOString(),
-          source: "ical", // păstrăm „ical” ca sursă principală (formular primit)
-        })
+        .update(updatePayload)
         .eq("id", matchedBookingId);
 
       // 2) Auto-assign cameră de tipul respectiv (dacă încă nu are)
