@@ -18,7 +18,7 @@ const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:office@plan4host.com';
 try { webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY); } catch {}
 
-async function broadcastNewGuestOverview(adminCli: ReturnType<typeof createClient>, property_id: string, start_date: string, end_date: string) {
+async function broadcastNewGuestOverview(adminCli: any, property_id: string, start_date: string, end_date: string) {
   try {
     const { data, error } = await adminCli
       .from('push_subscriptions')
