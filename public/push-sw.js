@@ -1,5 +1,6 @@
 /* public/push-sw.js — push/notification handlers imported by next-pwa generated SW */
 self.addEventListener('push', (event) => {
+  try { console.log('[p4h-sw] push event'); } catch {}
   let data = {};
   try {
     data = event.data ? (event.data.json ? event.data.json() : JSON.parse(event.data.text())) : {};
@@ -39,4 +40,3 @@ self.addEventListener('notificationclick', (event) => {
     })()
   );
 });
-
