@@ -540,28 +540,37 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     let asked = false;
     try { asked = localStorage.getItem('p4h:push:asked') === '1'; } catch {}
     if (asked) return;
-    const handler = async () => {
+    const handler = () => {
       try {
-        if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-        try { localStorage.setItem('p4h:push:asked', '1'); } catch {}
-        const reg = await navigator.serviceWorker.register('/sw.js');
-        const perm = await Notification.requestPermission();
-        if (perm !== 'granted') return;
-        const keyB64 = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY || '').toString();
-        const urlBase64ToUint8Array = (base64: string) => {
-          const padding = '='.repeat((4 - (base64.length % 4)) % 4);
-          const base64Safe = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
-          const rawData = atob(base64Safe);
-          const outputArray = new Uint8Array(rawData.length);
-          for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
-          return outputArray;
-        };
-        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyB64) });
-        const ua = navigator.userAgent || '';
-        const os = (document.documentElement.getAttribute('data-os') || '');
-        await fetch('/api/push/subscribe', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subscription: sub.toJSON(), property_id: activePropertyId, ua, os })
+        if (!('Notification' in window)) return;
+        // Ask permission first, synchronously in gesture
+        Notification.requestPermission().then(async (perm) => {
+          try {
+            if (perm === 'granted') {
+              // Then register SW and subscribe
+              if (!('serviceWorker' in navigator)) return;
+              const reg = await navigator.serviceWorker.register('/sw.js');
+              const keyB64 = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY || '').toString();
+              const urlBase64ToUint8Array = (base64: string) => {
+                const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+                const base64Safe = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
+                const rawData = atob(base64Safe);
+                const outputArray = new Uint8Array(rawData.length);
+                for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+                return outputArray;
+              };
+              const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyB64) });
+              const ua = navigator.userAgent || '';
+              const os = (document.documentElement.getAttribute('data-os') || '');
+              await fetch('/api/push/subscribe', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subscription: sub.toJSON(), property_id: activePropertyId, ua, os })
+              });
+            }
+          } finally {
+            // Mark asked only if user decided (granted/denied)
+            if (perm !== 'default') { try { localStorage.setItem('p4h:push:asked', '1'); } catch {} }
+          }
         });
       } catch { /* ignore */ }
     };
