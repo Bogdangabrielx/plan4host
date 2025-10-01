@@ -1,12 +1,4 @@
-/* public/sw.js — Basic Service Worker for Web Push */
-self.addEventListener('install', (event) => {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
-});
-
+/* public/push-sw.js — push/notification handlers imported by next-pwa generated SW */
 self.addEventListener('push', (event) => {
   let data = {};
   try {

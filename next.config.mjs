@@ -6,7 +6,10 @@ const withPWAConfigured = withPWA({
   register: true,
   skipWaiting: true,
   cacheOnFrontEndNav: true,
-  disable: process.env.NODE_ENV === "development"
+  disable: process.env.NODE_ENV === "development",
+  workboxOptions: {
+    importScripts: ["push-sw.js"],
+  },
 });
 
 /** @type {import('next').NextConfig} */
