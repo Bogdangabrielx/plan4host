@@ -63,6 +63,18 @@ export async function POST(req: Request) {
   // Best-effort push broadcast (do not block response)
   try {
     const pid = String(ev.data.property_id);
+    // Resolve account admins for this property
+    const rProp = await admin.from('properties').select('account_id').eq('id', pid).maybeSingle();
+    if (rProp.error || !rProp.data) return NextResponse.json({ ok: true, booking_id: ins.data.id });
+    const account_id = (rProp.data as any).account_id as string;
+    const rUsers = await admin
+      .from('account_users')
+      .select('user_id,role,disabled')
+      .eq('account_id', account_id)
+      .eq('disabled', false)
+      .eq('role', 'admin');
+    const userIds = (rUsers.data || []).map((u: any) => String(u.user_id));
+    if (userIds.length === 0) return NextResponse.json({ ok: true, booking_id: ins.data.id });
     const payload = JSON.stringify({
       title: 'New reservation',
       body: `From ${ev.data.start_date} to ${ev.data.end_date}`,
@@ -71,8 +83,8 @@ export async function POST(req: Request) {
     });
     const { data: subs } = await admin
       .from('push_subscriptions')
-      .select('endpoint,p256dh,auth')
-      .or(`property_id.is.null,property_id.eq.${pid}`);
+      .select('endpoint,p256dh,auth,user_id')
+      .in('user_id', userIds);
     for (const s of subs || []) {
       const subscription = { endpoint: (s as any).endpoint, keys: { p256dh: (s as any).p256dh, auth: (s as any).auth } } as any;
       try { await webpush.sendNotification(subscription, payload); }

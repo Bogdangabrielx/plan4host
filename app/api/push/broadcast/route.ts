@@ -31,13 +31,29 @@ export async function POST(req: NextRequest) {
     const bodyText: string = body?.body || 'A new reservation has appeared in Guest Overview.';
     if (!property_id) return NextResponse.json({ error: 'property_id required' }, { status: 400 });
 
-    // Select all subscriptions for this property or global (property_id is null)
+    // Fetch account_id for this property
+    const rProp = await admin.from('properties').select('account_id').eq('id', property_id).maybeSingle();
+    if (rProp.error || !rProp.data) return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    const account_id = (rProp.data as any).account_id as string;
+
+    // Fetch admin users for account
+    const rUsers = await admin
+      .from('account_users')
+      .select('user_id,role,disabled')
+      .eq('account_id', account_id)
+      .eq('disabled', false)
+      .eq('role', 'admin');
+    if (rUsers.error) return NextResponse.json({ error: rUsers.error.message }, { status: 500 });
+    const userIds = (rUsers.data || []).map((u: any) => String(u.user_id));
+    if (userIds.length === 0) return NextResponse.json({ ok: true, sent: 0 });
+
+    // Select subscriptions for these users (all devices)
     const { data, error } = await admin
       .from('push_subscriptions')
-      .select('endpoint,p256dh,auth')
-      .or(`property_id.is.null,property_id.eq.${property_id}`);
+      .select('endpoint,p256dh,auth,user_id')
+      .in('user_id', userIds);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    const subs = (data || []) as Array<{ endpoint: string; p256dh: string; auth: string }>;
+    const subs = (data || []) as Array<{ endpoint: string; p256dh: string; auth: string; user_id: string }>;
     if (subs.length === 0) return NextResponse.json({ ok: true, sent: 0 });
 
     const payload = JSON.stringify({
@@ -65,4 +81,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e?.message || 'Unexpected error' }, { status: 500 });
   }
 }
-

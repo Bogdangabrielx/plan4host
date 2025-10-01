@@ -20,12 +20,28 @@ try { webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY
 
 async function broadcastNewGuestOverview(adminCli: any, property_id: string, start_date: string, end_date: string) {
   try {
+    // Fetch account_id for this property
+    const rProp = await adminCli.from('properties').select('account_id').eq('id', property_id).maybeSingle();
+    if (rProp.error || !rProp.data) return;
+    const account_id = (rProp.data as any).account_id as string;
+
+    // Fetch admin users (only admins as requested)
+    const rUsers = await adminCli
+      .from('account_users')
+      .select('user_id,role,disabled')
+      .eq('account_id', account_id)
+      .eq('disabled', false)
+      .eq('role', 'admin');
+    if (rUsers.error) return;
+    const userIds = (rUsers.data || []).map((u: any) => String(u.user_id));
+    if (userIds.length === 0) return;
+
     const { data, error } = await adminCli
       .from('push_subscriptions')
-      .select('endpoint,p256dh,auth')
-      .or(`property_id.is.null,property_id.eq.${property_id}`);
+      .select('endpoint,p256dh,auth,user_id')
+      .in('user_id', userIds);
     if (error) return;
-    const subs = (data || []) as Array<{ endpoint: string; p256dh: string; auth: string }>;
+    const subs = (data || []) as Array<{ endpoint: string; p256dh: string; auth: string; user_id: string }>;
     if (subs.length === 0) return;
     const payload = JSON.stringify({
       title: 'New reservation',
