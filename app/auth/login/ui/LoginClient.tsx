@@ -316,7 +316,16 @@ const dividerLine: React.CSSProperties = { height: 1, background: "var(--border)
 function pillStyle(pill: string): React.CSSProperties {
   const isError = /error/i.test(pill);
   const isBusy = /(sign|load|creat)/i.test(pill);
-  const bg = isError ? "#d4d7ddff" : isBusy ? "var(--primary)" : "var(--card)";
+  const isIdle = /^idle$/i.test(pill);
+  const bg = isError ? "#d4d7ddff" : isBusy ? "var(--primary)" : (isIdle ? "transparent" : "var(--card)");
   const col = isError || isBusy ? "#0c111b" : "var(--muted)";
-  return { padding: "4px 10px", borderRadius: 999, background: bg, color: col, border: "1px solid var(--border)", fontWeight: 800, fontSize: 12 };
+  return {
+    padding: "4px 10px",
+    borderRadius: 999,
+    background: bg,
+    color: col,
+    border: isIdle ? undefined : "1px solid var(--border)",
+    fontWeight: 800,
+    fontSize: 12,
+  };
 }
