@@ -12,6 +12,7 @@ const NAV_BASE = [
   { href: "/app/channels", label: "Channels & iCal", emoji: "🔗", scope: "channels" },
   { href: "/app/reservationMessage", label: "Automatic Welcome Message", emoji: "✉️", scope: "reservation_message" },
   { href: "/app/guest", label: "Guest Overview", emoji: "📥", scope: "guest_overview" },
+  { href: "/app/notifications", label: "Notifications", emoji: "🔔", scope: "notifications" },
   { href: "/app/team", label: "Team", emoji: "👥", scope: "team" },
   { href: "/auth/logout", label: "Logout", emoji: "🚪", scope: "logout" },
 ];
@@ -61,7 +62,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const [isSmall, setIsSmall] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [aboutFailed, setAboutFailed] = useState(false);
-  const [showNotifMgr, setShowNotifMgr] = useState(false);
+  // const [showNotifMgr, setShowNotifMgr] = useState(false);
 
   // Theme
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -169,6 +170,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
         let filtered = NAV_BASE.filter((it) => {
           if (it.scope === "logout") return true;
+          if (it.href === "/app/notifications") return true; // always allow per-device notifications
           if (it.href === "/app/team") return info.role === "admin" && plan === "premium";
           if (allowAll) return true;
           return sc.has(it.scope);
@@ -181,6 +183,17 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               { href: "/app/subscription", label: "Subscription", emoji: "💳", scope: "subscription" },
               ...filtered,
             ];
+          }
+        }
+
+        // Ensure Notifications appears right after Subscription when present
+        const hasSub = filtered.some((x) => x.href === "/app/subscription");
+        const notifIdx = filtered.findIndex((x) => x.href === "/app/notifications");
+        if (hasSub && notifIdx !== -1) {
+          const subIdx = filtered.findIndex((x) => x.href === "/app/subscription");
+          if (subIdx !== -1 && notifIdx !== subIdx + 1) {
+            const [notif] = filtered.splice(notifIdx, 1);
+            filtered.splice(subIdx + 1, 0, notif);
           }
         }
 
@@ -328,15 +341,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           }}
         >
           {right}
-          {currentPath === '/app' && (
-            <button
-              onClick={() => setShowNotifMgr(true)}
-              aria-label="Manage notifications"
-              className="sb-btn sb-btn--ghost sb-btn--small"
-            >
-              Manage notifications
-            </button>
-          )}
           <button
             onClick={() => {
               setOpenRight(true);
@@ -368,18 +372,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           </button>
         </div>
       </header>
-      {showNotifMgr && (
-        <div role="dialog" aria-modal="true" onClick={() => setShowNotifMgr(false)}
-          style={{ position:'fixed', inset:0, zIndex: 600, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px,100%)', padding:16 }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-              <strong>Manage notifications</strong>
-              <button className="sb-btn sb-btn--small" onClick={()=>setShowNotifMgr(false)}>Close</button>
-            </div>
-            <NotifManagerUI />
-          </div>
-        </div>
-      )}
+      {/* Notifications modal removed; now a dedicated page under /app/notifications */}
 
       {/* Left Drawer — Navigation */}
       {open && (
@@ -603,95 +596,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   );
 }
 
-function NotifManagerUI() {
-  const [status, setStatus] = useState<string>('');
-  const [perm, setPerm] = useState<NotificationPermission>('default');
-  const [endpoint, setEndpoint] = useState<string | null>(null);
-  useEffect(() => {
-    setPerm((typeof Notification !== 'undefined' ? Notification.permission : 'default') as any);
-    (async () => {
-      try {
-        const reg = await navigator.serviceWorker.getRegistration();
-        const sub = await reg?.pushManager.getSubscription();
-        setEndpoint(sub?.endpoint || null);
-      } catch {}
-    })();
-  }, []);
-
-  async function enable() {
-    try {
-      setStatus('Requesting permission…');
-      const p = await Notification.requestPermission();
-      setPerm(p);
-      if (p !== 'granted') { setStatus('Permission denied'); return; }
-      setStatus('Registering…');
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      const keyB64 = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY || '').toString();
-      const urlBase64ToUint8Array = (base64: string) => {
-        const padding = '='.repeat((4 - (base64.length % 4)) % 4);
-        const base64Safe = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
-        const raw = atob(base64Safe);
-        const out = new Uint8Array(raw.length);
-        for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
-        return out;
-      };
-      setStatus('Subscribing…');
-      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyB64) });
-      const ua = navigator.userAgent || '';
-      const os = (document.documentElement.getAttribute('data-os') || '');
-      let property_id: string | null = null; try { property_id = localStorage.getItem('p4h:selectedPropertyId'); } catch {}
-      await fetch('/api/push/subscribe', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os })
-      });
-      setEndpoint(sub.endpoint || null);
-      setStatus('Enabled');
-    } catch (e:any) {
-      setStatus(`Error: ${e?.message || e}`);
-    }
-  }
-
-  async function unsubscribe() {
-    try {
-      const reg = await navigator.serviceWorker.getRegistration();
-      const sub = await reg?.pushManager.getSubscription();
-      if (!sub) { setStatus('No subscription'); return; }
-      const ep = sub.endpoint;
-      await fetch('/api/push/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: ep }) });
-      await sub.unsubscribe();
-      setEndpoint(null);
-      setStatus('Unsubscribed');
-    } catch (e:any) {
-      setStatus(`Error: ${e?.message || e}`);
-    }
-  }
-
-  async function testMe() {
-    try {
-      const res = await fetch('/api/push/send', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({}) });
-      const j = await res.json().catch(()=>({}));
-      setStatus(`Test sent: ${j?.sent ?? 0}`);
-    } catch (e:any) { setStatus(`Error: ${e?.message || e}`); }
-  }
-
-  return (
-    <div style={{ display:'grid', gap:10 }}>
-      <div style={{ display:'grid', gap:4 }}>
-        <small style={{ color:'var(--muted)' }}>Status: {status || '—'}</small>
-        <small style={{ color:'var(--muted)' }}>Permission: {perm}</small>
-        <small style={{ color:'var(--muted)', overflow:'hidden', textOverflow:'ellipsis' }}>Endpoint: {endpoint || '—'}</small>
-      </div>
-      <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-        <button className="sb-btn sb-btn--primary" onClick={enable}>Enable</button>
-        <button className="sb-btn" onClick={unsubscribe}>Unsubscribe</button>
-        <button className="sb-btn" onClick={testMe}>Send test</button>
-      </div>
-      <small style={{ color:'var(--muted)' }}>
-        On iPhone, install via “Add to Home Screen” to enable notifications.
-      </small>
-    </div>
-  );
-}
+// Notifications UI moved to /app/notifications
 
 /* ---------------- Tiny style helpers ---------------- */
 function pillStyle(pill: React.ReactNode): React.CSSProperties {
