@@ -77,7 +77,6 @@ export default function NotificationsClient() {
     <div className="sb-card" style={{ padding: 16, display: 'grid', gap: 12 }}>
       <div style={{ display: 'grid', gap: 4 }}>
         <strong>Notifications</strong>
-        <small style={{ color: 'var(--muted)' }}>Per device/account</small>
       </div>
       <div style={{ display:'grid', gap:6 }}>
         <small style={{ color:'var(--muted)' }}>Status: {status || '—'}</small>
