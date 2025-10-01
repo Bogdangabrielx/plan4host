@@ -534,6 +534,45 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     else setPill("Idle");
   }, [loading, setPill]);
 
+  // Auto-prompt for push notifications on first user gesture
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let asked = false;
+    try { asked = localStorage.getItem('p4h:push:asked') === '1'; } catch {}
+    if (asked) return;
+    const handler = async () => {
+      try {
+        if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+        try { localStorage.setItem('p4h:push:asked', '1'); } catch {}
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') return;
+        const keyB64 = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY || '').toString();
+        const urlBase64ToUint8Array = (base64: string) => {
+          const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+          const base64Safe = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
+          const rawData = atob(base64Safe);
+          const outputArray = new Uint8Array(rawData.length);
+          for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+          return outputArray;
+        };
+        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyB64) });
+        const ua = navigator.userAgent || '';
+        const os = (document.documentElement.getAttribute('data-os') || '');
+        await fetch('/api/push/subscribe', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub.toJSON(), property_id: activePropertyId, ua, os })
+        });
+      } catch { /* ignore */ }
+    };
+    window.addEventListener('pointerdown', handler, { once: true });
+    window.addEventListener('keydown', handler, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', handler as any);
+      window.removeEventListener('keydown', handler as any);
+    };
+  }, [activePropertyId]);
+
   return (
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
       <PlanHeaderBadge title="Guest Overview" slot="header-right" />
@@ -571,59 +610,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             >
               Refresh
             </button>
-            <button
-              className="sb-btn"
-              {...useTap(async () => {
-                try {
-                  if (!('serviceWorker' in navigator)) { alert('Service Worker not supported'); return; }
-                  const reg = await navigator.serviceWorker.register('/sw.js');
-                  const perm = await Notification.requestPermission();
-                  if (perm !== 'granted') { alert('Notifications not allowed'); return; }
-                  const keyB64 = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY || '').toString();
-                  const urlBase64ToUint8Array = (base64: string) => {
-                    const padding = '='.repeat((4 - (base64.length % 4)) % 4);
-                    const base64Safe = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
-                    const rawData = atob(base64Safe);
-                    const outputArray = new Uint8Array(rawData.length);
-                    for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
-                    return outputArray;
-                  };
-                  const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyB64) });
-                  const ua = navigator.userAgent || '';
-                  const os = (document.documentElement.getAttribute('data-os') || '');
-                  await fetch('/api/push/subscribe', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subscription: sub.toJSON(), property_id: activePropertyId, ua, os })
-                  });
-                  alert('Notifications enabled');
-                } catch (e:any) {
-                  alert(e?.message || 'Failed to enable notifications');
-                }
-              })}
-              style={{ ...BTN_TOUCH_STYLE, borderRadius: 10 }}
-              title="Enable web push notifications"
-            >
-              Enable notifications
-            </button>
-            {canEditGuest && (
-              <button
-                className="sb-btn"
-                {...useTap(async () => {
-                  try {
-                    const res = await fetch('/api/push/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ property_id: activePropertyId }) });
-                    const j = await res.json().catch(()=>({}));
-                    if (!res.ok) throw new Error(j?.error || 'Failed');
-                    alert(`Test push sent: ${j?.sent || 0}`);
-                  } catch (e:any) {
-                    alert(e?.message || 'Failed to send test push');
-                  }
-                })}
-                style={{ ...BTN_TOUCH_STYLE, borderRadius: 10 }}
-                title="Send test notification"
-              >
-                Send test
-              </button>
-            )}
           </div>
 
           {/* Search */}

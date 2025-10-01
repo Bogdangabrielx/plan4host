@@ -412,6 +412,13 @@ export default function RoomDetailModal({
     if (textRows.length)  await supabase.from("booking_text_values").upsert(textRows);
 
     setSaving(false); setStatus("Saved"); setStatusHint("Reservation created.");
+    try {
+      await fetch('/api/push/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ property_id: PID, title: 'New reservation', body: `From ${startDate} to ${endDate}` })
+      });
+    } catch { /* ignore push errors */ }
     await onChanged(); onClose();
   }
 

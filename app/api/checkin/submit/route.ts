@@ -1,6 +1,7 @@
 // app/api/checkin/submit/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import webpush from 'web-push';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,6 +12,38 @@ const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const admin = createClient(url, service, { auth: { persistSession: false } });
 
 const DEFAULT_DOCS_BUCKET = (process.env.NEXT_PUBLIC_DEFAULT_DOCS_BUCKET || "guest_docs").toString();
+
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY!;
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:office@plan4host.com';
+try { webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY); } catch {}
+
+async function broadcastNewGuestOverview(adminCli: ReturnType<typeof createClient>, property_id: string, start_date: string, end_date: string) {
+  try {
+    const { data, error } = await adminCli
+      .from('push_subscriptions')
+      .select('endpoint,p256dh,auth')
+      .or(`property_id.is.null,property_id.eq.${property_id}`);
+    if (error) return;
+    const subs = (data || []) as Array<{ endpoint: string; p256dh: string; auth: string }>;
+    if (subs.length === 0) return;
+    const payload = JSON.stringify({
+      title: 'New reservation',
+      body: `From ${start_date} to ${end_date}`,
+      url: `/app/guest?property=${encodeURIComponent(property_id)}`,
+      tag: `guest-${property_id}`,
+    });
+    for (const s of subs) {
+      const subscription = { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } } as any;
+      try { await webpush.sendNotification(subscription, payload); }
+      catch (e: any) {
+        if (e?.statusCode === 410 || e?.statusCode === 404) {
+          try { await adminCli.from('push_subscriptions').delete().eq('endpoint', s.endpoint); } catch {}
+        }
+      }
+    }
+  } catch {}
+}
 
 // yyyy-mm-dd validator
 function isYMD(s: unknown): s is string {
@@ -453,6 +486,9 @@ export async function POST(req: NextRequest) {
         } catch { /* ignore */ }
       }
     }
+
+    // Fire-and-forget push broadcast (do not block response)
+    try { broadcastNewGuestOverview(admin, property_id, start_date, end_date); } catch {}
 
     return NextResponse.json({
       ok: true,

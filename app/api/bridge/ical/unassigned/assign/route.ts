@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+import webpush from 'web-push';
 
 export async function POST(req: Request) {
   const supabase = createClient();
+  const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const admin = createAdminClient(URL, SERVICE, { auth: { persistSession: false } });
+  try {
+    const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY!;
+    const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
+    const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:office@plan4host.com';
+    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  } catch { /* ignore VAPID config errors here */ }
   const { eventId, roomId } = await req.json();
   if (!eventId || !roomId) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
 
@@ -48,6 +59,30 @@ export async function POST(req: Request) {
       integration_id: ev.data.integration_id ?? null,
     });
   }
+
+  // Best-effort push broadcast (do not block response)
+  try {
+    const pid = String(ev.data.property_id);
+    const payload = JSON.stringify({
+      title: 'New reservation',
+      body: `From ${ev.data.start_date} to ${ev.data.end_date}`,
+      url: `/app/guest?property=${encodeURIComponent(pid)}`,
+      tag: `guest-${pid}`,
+    });
+    const { data: subs } = await admin
+      .from('push_subscriptions')
+      .select('endpoint,p256dh,auth')
+      .or(`property_id.is.null,property_id.eq.${pid}`);
+    for (const s of subs || []) {
+      const subscription = { endpoint: (s as any).endpoint, keys: { p256dh: (s as any).p256dh, auth: (s as any).auth } } as any;
+      try { await webpush.sendNotification(subscription, payload); }
+      catch (e: any) {
+        if (e?.statusCode === 410 || e?.statusCode === 404) {
+          try { await admin.from('push_subscriptions').delete().eq('endpoint', (s as any).endpoint); } catch {}
+        }
+      }
+    }
+  } catch { /* ignore push errors */ }
 
   return NextResponse.json({ ok: true, booking_id: ins.data.id });
 }
