@@ -318,7 +318,7 @@ function pillStyle(pill: string): React.CSSProperties {
   const isBusy = /(sign|load|creat)/i.test(pill);
   const isIdle = /^idle$/i.test(pill);
   const bg = isError ? "#d4d7ddff" : isBusy ? "var(--primary)" : (isIdle ? "transparent" : "var(--card)");
-  const col = isError || isBusy ? "#0c111b" : "var(--muted)";
+  const col = isIdle ? "transparent" : (isError || isBusy ? "#0c111b" : "var(--muted)");
   return {
     padding: "4px 10px",
     borderRadius: 999,
