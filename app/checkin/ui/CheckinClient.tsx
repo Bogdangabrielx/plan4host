@@ -266,6 +266,16 @@ export default function CheckinClient() {
     return () => { if (docFilePreview) URL.revokeObjectURL(docFilePreview); };
   }, [docFilePreview]);
 
+  // Force dark theme on this page, restore previous on unmount
+  useEffect(() => {
+    try {
+      const root = document.documentElement;
+      const prev = root.getAttribute('data-theme');
+      root.setAttribute('data-theme', 'dark');
+      return () => { if (prev) root.setAttribute('data-theme', prev); else root.removeAttribute('data-theme'); };
+    } catch { /* ignore */ }
+  }, []);
+
   // ---------- THEME & ICONS ----------
   const [isDark, setIsDark] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -364,6 +374,7 @@ export default function CheckinClient() {
 
   // Sparkle border trigger for submit CTA (mobile)
   const sparkleRef = useRef<HTMLSpanElement | null>(null);
+  const sparkleTimerRef = useRef<number | null>(null);
   function triggerSparkle() {
     try {
       const isTouch = typeof window !== 'undefined' && window.matchMedia?.('(hover: none)')?.matches;
@@ -371,7 +382,11 @@ export default function CheckinClient() {
       const el = sparkleRef.current;
       if (!el) return;
       el.setAttribute('data-animate', 'true');
-      window.setTimeout(() => { el.removeAttribute('data-animate'); }, 320);
+      if (sparkleTimerRef.current) window.clearTimeout(sparkleTimerRef.current);
+      sparkleTimerRef.current = window.setTimeout(() => {
+        el.removeAttribute('data-animate');
+        sparkleTimerRef.current = null;
+      }, 1600); // keep the animation visible a bit longer on tap
     } catch {}
   }
 
@@ -967,7 +982,7 @@ export default function CheckinClient() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={onOpenPdf}
-                    style={{ fontWeight: 700, fontSize:12 }}
+                    style={{ fontWeight: 700, fontSize:12, color: 'var(--primary)' }}
                   >
                     Property Rules (pdf)
                   </a>
