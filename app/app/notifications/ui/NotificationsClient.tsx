@@ -22,6 +22,7 @@ export default function NotificationsClient() {
         ep = sub?.endpoint || null;
       } catch {}
       setEndpoint(ep);
+      try { if (ep) localStorage.setItem('p4h:push:endpoint', ep); } catch {}
 
       if (ep) {
         // Check DB state for this device endpoint
@@ -63,6 +64,7 @@ export default function NotificationsClient() {
         body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os })
       });
       setEndpoint(sub.endpoint || null);
+      try { if (sub?.endpoint) localStorage.setItem('p4h:push:endpoint', sub.endpoint); } catch {}
       setActive(true);
     } finally {
       finalize();
@@ -75,11 +77,17 @@ export default function NotificationsClient() {
     try {
       const reg = await navigator.serviceWorker.getRegistration();
       const sub = await reg?.pushManager.getSubscription();
+      let epToRemove: string | null = null;
       if (sub) {
-        const ep = sub.endpoint;
-        try { await fetch('/api/push/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: ep }) }); } catch {}
+        epToRemove = sub.endpoint || null;
         try { await sub.unsubscribe(); } catch {}
+      } else {
+        try { epToRemove = localStorage.getItem('p4h:push:endpoint'); } catch {}
       }
+      if (epToRemove) {
+        try { await fetch('/api/push/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: epToRemove }) }); } catch {}
+      }
+      try { localStorage.removeItem('p4h:push:endpoint'); } catch {}
       setEndpoint(null);
       // Re-check DB status to be precise
       await refreshActive();
