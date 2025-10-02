@@ -38,34 +38,68 @@ export default function NotificationsClient() {
     }
   }
 
+  async function getReadyRegistration(): Promise<ServiceWorkerRegistration> {
+    let reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) {
+      try { await navigator.serviceWorker.register('/sw.js'); } catch {}
+      reg = (await navigator.serviceWorker.getRegistration()) as ServiceWorkerRegistration;
+      if (!reg) reg = await navigator.serviceWorker.ready;
+    }
+    if (!reg.active) {
+      try { reg = await navigator.serviceWorker.ready; } catch {}
+    }
+    return reg;
+  }
+
+  async function subscribeInDB(sub: PushSubscription, property_id: string | null, ua: string, os: string) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => { try { ctrl.abort(); } catch {} }, 8000);
+    try {
+      fetch('/api/push/subscribe', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os }),
+        signal: ctrl.signal,
+      }).catch(() => {});
+    } finally { clearTimeout(t); }
+  }
+
   async function turnOn() {
     setStatus('Loading...');
     setLoading(true);
     try {
       if (!('Notification' in window)) return finalize();
-      const p = await Notification.requestPermission();
-      if (p !== 'granted') return finalize();
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      const keyB64 = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY || '').toString();
-      const urlBase64ToUint8Array = (base64: string) => {
-        const padding = '='.repeat((4 - (base64.length % 4)) % 4);
-        const base64Safe = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
-        const raw = atob(base64Safe);
-        const out = new Uint8Array(raw.length);
-        for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
-        return out;
-      };
-      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyB64) });
-      const ua = navigator.userAgent || '';
-      const os = (document.documentElement.getAttribute('data-os') || '');
-      let property_id: string | null = null; try { property_id = localStorage.getItem('p4h:selectedPropertyId'); } catch {}
-      await fetch('/api/push/subscribe', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os })
-      });
+      const perm = Notification.permission;
+      if (perm !== 'granted') {
+        const p = await Notification.requestPermission();
+        if (p !== 'granted') return finalize();
+      }
+
+      const reg = await getReadyRegistration();
+
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        const keyB64 = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY || '').toString();
+        const urlBase64ToUint8Array = (base64: string) => {
+          const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+          const base64Safe = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
+          const raw = atob(base64Safe);
+          const out = new Uint8Array(raw.length);
+          for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+          return out;
+        };
+        sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyB64) });
+      }
+
+      // Immediately reflect device state
       setEndpoint(sub.endpoint || null);
       try { if (sub?.endpoint) localStorage.setItem('p4h:push:endpoint', sub.endpoint); } catch {}
       setActive(true);
+
+      // Fire-and-forget DB sync to avoid blocking UI
+      const ua = navigator.userAgent || '';
+      const os = (document.documentElement.getAttribute('data-os') || '');
+      let property_id: string | null = null; try { property_id = localStorage.getItem('p4h:selectedPropertyId'); } catch {}
+      subscribeInDB(sub, property_id, ua, os);
     } finally {
       finalize();
     }
