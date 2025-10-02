@@ -24,8 +24,9 @@ function getToken(req: Request) {
 }
 
 export async function GET(req: Request) {
-  // Protecție simplă: token în query (?token=) sau header (x-cron-secret / Authorization: Bearer)
-  if (CRON_SECRET && getToken(req) !== CRON_SECRET) {
+  // Protecție: acceptă Vercel Cron (x-vercel-cron) sau token în query/header
+  const isVercelCron = !!req.headers.get("x-vercel-cron");
+  if (CRON_SECRET && !isVercelCron && getToken(req) !== CRON_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
