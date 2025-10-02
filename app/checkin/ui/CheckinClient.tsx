@@ -239,6 +239,19 @@ export default function CheckinClient() {
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
+  // Privacy Policy acknowledgement gate
+  const [privacyAck, setPrivacyAck] = useState<boolean>(() => {
+    try {
+      const pid = getQueryParam('property');
+      if (!pid) return false;
+      return localStorage.getItem(`p4h:checkin:privacyAck:${pid}`) === '1';
+    } catch { return false; }
+  });
+  const [privacyOpen, setPrivacyOpen] = useState<boolean>(false);
+  const [privacyVisited, setPrivacyVisited] = useState<boolean>(false);
+  const [privacyConfirm, setPrivacyConfirm] = useState<boolean>(false);
+  const [privacySaving, setPrivacySaving] = useState<boolean>(false);
+
   // Confirmation email modal state
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmStatus, setConfirmStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
@@ -464,6 +477,33 @@ export default function CheckinClient() {
     setDateError(endDate <= startDate ? "Check-out must be after check-in." : "");
   }, [startDate, endDate]);
 
+  // Intercept first interaction to show Privacy Policy modal
+  function onFirstInteract(e: React.PointerEvent<HTMLFormElement>) {
+    if (!privacyAck) {
+      e.preventDefault();
+      e.stopPropagation();
+      setPrivacyOpen(true);
+    }
+  }
+
+  async function acceptPrivacyAck() {
+    try {
+      if (!propertyId) { setPrivacyOpen(false); return; }
+      setPrivacySaving(true);
+      // Version label can be the visible last updated date or a semantic version
+      const text_version = 'PrivacyPolicy-ack';
+      await fetch('/api/checkin/consent', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ property_id: propertyId, purpose: 'privacy_ack', text_version })
+      });
+      try { localStorage.setItem(`p4h:checkin:privacyAck:${propertyId}`, '1'); } catch {}
+      setPrivacyAck(true);
+      setPrivacyOpen(false);
+    } finally {
+      setPrivacySaving(false);
+    }
+  }
+
   const nationalityOptions = useMemo(() => {
     const set = new Set<string>();
     for (const c of countries) {
@@ -679,7 +719,7 @@ export default function CheckinClient() {
             </p>
           </div>
         ) : (
-          <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }}>
+          <form onSubmit={onSubmit} onPointerDownCapture={onFirstInteract} style={{ display: "grid", gap: 14 }}>
             {/* Dates */}
             <div style={{
               display: "grid",
@@ -1070,6 +1110,34 @@ export default function CheckinClient() {
             )}
             <div style={{ marginTop:12, display:'flex', justifyContent:'flex-end' }}>
               <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>OK</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy Policy modal (first interaction gate) */}
+      {privacyOpen && (
+        <div role="dialog" aria-modal="true" onClick={()=>setPrivacyOpen(false)}
+          style={{ position:'fixed', inset:0, zIndex: 320, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', padding:16 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+              <strong>Privacy Policy</strong>
+              <button className="sb-btn" onClick={()=>setPrivacyOpen(false)}>Close</button>
+            </div>
+            <div style={{ display:'grid', gap:10 }}>
+              <p style={{ margin:0, color:'var(--muted)' }}>
+                Please review our <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" onClick={()=>setPrivacyVisited(true)} style={{ color:'var(--primary)', fontWeight:800 }}>Privacy Policy</a>. After reading it, confirm below to continue.
+              </p>
+              <label style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <input type="checkbox" disabled={!privacyVisited} checked={privacyConfirm} onChange={(e)=>setPrivacyConfirm(e.currentTarget.checked)} />
+                <span>I have read and understood the Privacy Policy.</span>
+              </label>
+              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+                <button className="sb-btn" onClick={()=>setPrivacyOpen(false)} disabled={privacySaving}>Cancel</button>
+                <button className="sb-btn sb-btn--primary" disabled={!privacyConfirm || privacySaving} onClick={acceptPrivacyAck}>
+                  {privacySaving ? 'Saving…' : 'Confirm & Continue'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
