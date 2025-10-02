@@ -38,8 +38,12 @@ async function handler(req: Request) {
 
   // Dacă există CRON_SECRET, cere-l DOAR pentru apeluri manuale (non-Vercel Cron)
   if (CRON_SECRET && !triggeredByVercelCron) {
-    const key = req.headers.get("x-cron-key") || "";
-    if (key !== CRON_SECRET) {
+    const keyHeader = req.headers.get("x-cron-key") || "";
+    const auth = req.headers.get("authorization") || "";
+    const bearer = auth.replace(/^Bearer\s+/i, "");
+    const queryToken = (() => { try { const u = new URL(req.url); return u.searchParams.get("token") || ""; } catch { return ""; } })();
+    const ok = [keyHeader, bearer, queryToken].some(v => v && v === CRON_SECRET);
+    if (!ok) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
   }
