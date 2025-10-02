@@ -557,8 +557,6 @@ export default function CheckinClient() {
       setCountryText(countryToSend);
       if (docType === "passport") setDocNationality(nationalityToSend);
 
-      setSubmitState("success");
-
       // Trigger confirmation email modal + send
       const j = await res.json().catch(() => ({}));
       const booking = (j?.id || null) as string | null;
@@ -579,11 +577,20 @@ export default function CheckinClient() {
           setConfirmStatus("error"); setConfirmError(er?.message || 'Failed to send');
         }
       }
+      // Mark submit success, but show final Thank you only after email is sent
+      setSubmitState("success");
     } catch (err: any) {
       setErrorMsg(err?.message || "Unexpected error. Please try again.");
       setSubmitState("error");
     }
   }
+
+  // Auto-close confirmation modal on successful send
+  useEffect(() => {
+    if (confirmStatus === 'sent') {
+      setConfirmOpen(false);
+    }
+  }, [confirmStatus]);
 
   // 5) render
   if (!propertyId) {
@@ -626,7 +633,7 @@ export default function CheckinClient() {
       <section style={CARD}>
         {loading ? (
           <div style={{ color: "var(--muted)" }}>Loading…</div>
-        ) : submitState === "success" ? (
+        ) : (submitState === "success" && confirmStatus === "sent") ? (
           <div>
             <h2 style={{ marginTop: 0 }}>Thank you! ✅</h2>
             <p style={{ color: "var(--muted)" }}>
@@ -697,8 +704,12 @@ export default function CheckinClient() {
             ) : (
               <div style={ROW_1}>
                 <div>
-                  <label style={LABEL}>Booked room*</label>
+                  <label htmlFor="checkin-room" style={LABEL_ROW}>
+                    <Image src={themedIcon("room")} alt="" width={16} height={16} />
+                    <span>Booked room*</span>
+                  </label>
                   <select
+                    id="checkin-room"
                     style={SELECT}
                     value={selectedRoomId}
                     onChange={(e) => setSelectedRoomId(e.currentTarget.value)}
