@@ -3,6 +3,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { createTransport } from "nodemailer";
+import { buildTeamWelcomeEmail } from "@/lib/email/templates";
 
 function bad(status: number, body: any) { return NextResponse.json(body, { status }); }
 
@@ -104,6 +106,25 @@ export async function POST(req: Request) {
       .select("user_id")
       .single();
     if (ins.error) return bad(400, { error: ins.error.message });
+
+    // Send welcome email (best-effort)
+    try {
+      const smtpHost = process.env.SMTP_HOST as string | undefined;
+      const smtpPort = Number(process.env.SMTP_PORT || 587);
+      const smtpSecure = String(process.env.SMTP_SECURE || 'false') === 'true';
+      const smtpUser = process.env.SMTP_USER as string | undefined;
+      const smtpPass = process.env.SMTP_PASS as string | undefined;
+      if (smtpHost && smtpUser && smtpPass) {
+        const transporter = createTransport({ host: smtpHost, port: smtpPort, secure: smtpSecure, auth: { user: smtpUser, pass: smtpPass } });
+        const fromEmail = process.env.FROM_EMAIL || 'office@plan4host.com';
+        const fromName  = process.env.FROM_NAME  || 'Plan4Host';
+        const appBase = (process.env.NEXT_PUBLIC_APP_URL || 'https://plan4host.com').replace(/\/+$/, '');
+        const { subject, html, text } = buildTeamWelcomeEmail({ email, password, appBase });
+        await transporter.sendMail({ from: `${fromName} <${fromEmail}>`, to: String(email), subject, html, text });
+      }
+    } catch {
+      // ignore email failures
+    }
 
     return NextResponse.json({ ok: true, userId: newUserId });
   } catch (e: any) {
