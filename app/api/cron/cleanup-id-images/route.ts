@@ -15,7 +15,8 @@ export async function GET(req: Request) {
     const bearer = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
     const token = bearer || urlObj.searchParams.get('token') || '';
     const secret = (process.env.CRON_SECRET || '').toString().trim();
-    if (secret && token !== secret) return bad(401, { error: 'unauthorized' });
+    const isVercelCron = !!req.headers.get('x-vercel-cron');
+    if (secret && token !== secret && !isVercelCron) return bad(401, { error: 'unauthorized' });
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -93,4 +94,3 @@ export async function GET(req: Request) {
     return bad(500, { error: String(e?.message ?? e) });
   }
 }
-
