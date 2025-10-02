@@ -39,16 +39,17 @@ export default function NotificationsClient() {
   }
 
   async function getReadyRegistration(): Promise<ServiceWorkerRegistration> {
+    // Prefer a non-blocking registration; avoid waiting for full activation on first load
     let reg = await navigator.serviceWorker.getRegistration();
-    if (!reg) {
-      try { await navigator.serviceWorker.register('/sw.js'); } catch {}
-      reg = (await navigator.serviceWorker.getRegistration()) as ServiceWorkerRegistration;
-      if (!reg) reg = await navigator.serviceWorker.ready;
+    if (reg) return reg;
+    try {
+      return await navigator.serviceWorker.register('/sw.js');
+    } catch {
+      // fallback: try to fetch existing or, as last resort, wait for ready
+      reg = (await navigator.serviceWorker.getRegistration()) as ServiceWorkerRegistration | undefined;
+      if (reg) return reg;
+      return await navigator.serviceWorker.ready;
     }
-    if (!reg.active) {
-      try { reg = await navigator.serviceWorker.ready; } catch {}
-    }
-    return reg;
   }
 
   async function subscribeInDB(sub: PushSubscription, property_id: string | null, ua: string, os: string) {
@@ -147,8 +148,13 @@ export default function NotificationsClient() {
         <button className={onClass} onClick={turnOn} disabled={loading}>Turn On</button>
         <button className={offClass} onClick={turnOff} disabled={loading}>Turn Off</button>
       </div>
-      <div>
-        <small style={{ color:'var(--muted)' }}>{status}</small>
+      <div style={{ display: 'grid', gap: 4 }}>
+        {status ? (
+          <small style={{ color:'var(--muted)' }}>{status}</small>
+        ) : null}
+        {!loading && !active ? (
+          <small style={{ color:'var(--muted)' }}>Your notifications are currently off.</small>
+        ) : null}
       </div>
     </div>
   );
