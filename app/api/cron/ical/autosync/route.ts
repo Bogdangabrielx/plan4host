@@ -245,7 +245,10 @@ async function runAutosync(req: Request) {
       }
     })();
     const expected = process.env.CRON_ICAL_KEY || ""; // setează în .env / Vercel
-    const keyOk = expected && (headerKey || queryKey) === expected;
+    const auth = req.headers.get("authorization") || "";
+    const bearer = auth.replace(/^Bearer\s+/i, "");
+    const tokenQ = (() => { try { const u = new URL(req.url); return u.searchParams.get("token") || ""; } catch { return ""; } })();
+    const keyOk = expected && [headerKey, queryKey, bearer, tokenQ].some(v => v && v === expected);
     if (!isVercelCron && !keyOk) {
       return j(401, { error: "Unauthorized" });
     }
