@@ -55,6 +55,40 @@ export default function PrivacyPolicyPage() {
             <code>user_id</code>, the <code>account_id</code> the device is associated with, optional
             <code>property_id</code> context, the <em>user agent</em> and <em>OS</em> string, and timestamps.
           </p>
+          
+          <h2 className={s.h2}>2.2. Check‑in data & consents</h2>
+          <p className={s.p}>
+            When you complete the online check‑in form for a property, we process only the data needed to provide the
+            service and to meet legal requirements for guest registration. The form typically includes:
+          </p>
+          <ul className={s.list}>
+            <li className={s.p}><strong>Identification & contact</strong>: first/last name, email, phone.</li>
+            <li className={s.p}><strong>Stay details</strong>: property, check‑in/check‑out dates, room/room type.</li>
+            <li className={s.p}><strong>Address & nationality</strong> (as requested by the property/locale).</li>
+            <li className={s.p}><strong>ID document image</strong> (photo/PDF) used to verify identity at arrival.</li>
+            <li className={s.p}><strong>Acknowledgements</strong>: that you have read the Privacy Policy and accept the House Rules for the stay.</li>
+            <li className={s.p}><strong>Operational logs</strong>: confirmation email status and technical metadata (IP/UA) for security/audit.</li>
+          </ul>
+          <p className={s.p}>
+            <strong>Legal bases.</strong> We process check‑in data primarily to perform the accommodation contract and to comply
+            with local lodging/registration laws (GDPR Art. 6(1)(b) & (c)). We may use limited logs for security and service
+            reliability (legitimate interests, Art. 6(1)(f)). <em>We do not rely on consent for core check‑in processing.</em>
+            The checkbox stating “I have read and understood the Privacy Policy” is an <strong>acknowledgement</strong> of
+            information, not a consent to processing.
+          </p>
+          <p className={s.p}>
+            <strong>Retention.</strong> Reservation and guest records are retained for the duration of the contractual
+            relationship and for the statutory/accounting periods required by law. Acknowledgement records (privacy/house rules)
+            are kept for the stay and for a reasonable audit period thereafter (typically 3–5 years). <strong>ID document
+            images</strong> are retained only as strictly necessary to verify identity—by default, they are scheduled for
+            deletion shortly after check‑out (e.g., within 24–72 hours), unless a longer period is required by applicable law.
+            Extracted data required by law (e.g., name, document number) may be kept per those legal obligations.
+          </p>
+          <p className={s.p}>
+            <strong>Your choice.</strong> If you prefer not to submit data through the online form, please contact the property
+            directly to arrange an alternative check‑in method. You can also exercise your privacy rights (access, erasure,
+            restriction, etc.) as described in this policy; some requests may be limited by legal retention obligations.
+          </p>
           <p className={s.p}>
             Purpose: deliver account-related notifications (e.g., new reservations). Legal basis: <strong>consent</strong>
             — you allow notifications in your browser. Retention: until you unsubscribe or revoke permission; invalid
