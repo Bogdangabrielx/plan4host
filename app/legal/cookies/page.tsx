@@ -154,7 +154,17 @@ export default function CookiePolicyPage() {
             <li className={s.p}><code>p4h:otaColors:type:&lt;id&gt;</code>, <code>p4h:otaColors:room:&lt;id&gt;</code> — per‑provider color preferences. Retention: until cleared.</li>
             <li className={s.p}><code>p4h:otaLogos:type:&lt;id&gt;</code>, <code>p4h:otaLogos:room:&lt;id&gt;</code> — custom OTA logos (data URLs). Retention: until cleared.</li>
             <li className={s.p}><code>p4h:inboxCount</code> — UI badge cache. Retention: until cleared.</li>
+            <li className={s.p}><code>p4h:push:asked</code> — remembers if you already responded to the browser prompt for notifications. Retention: until cleared.</li>
+            <li className={s.p}><code>p4h:push:endpoint</code> — last known Web Push endpoint for this device, used to help with unsubscribe cleanup. Retention: until cleared.</li>
           </ul>
+
+          <h2 className={s.h2}>5.2. Service Workers & Web Push</h2>
+          <p className={s.p}>
+            When you enable notifications, the app registers a <em>Service Worker</em> (<code>sw.js</code>) to deliver
+            Web Push messages. This does not set cookies, and we do not use it for tracking. The browser manages your
+            permission for notifications; you can revoke it at any time from your browser or device settings. You can
+            also unsubscribe from the app under <strong>Notifications</strong> (Turn Off).
+          </p>
 
           <h2 className={s.h2}>6. Your choices</h2>
           <p className={s.p}>
