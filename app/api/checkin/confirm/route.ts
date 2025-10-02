@@ -116,7 +116,7 @@ export async function POST(req: Request) {
     const base = (process.env.NEXT_PUBLIC_APP_URL || 'https://plan4host.com').toString().replace(/\/+$/, '');
     const iconRoom = `${base}/room_forlight.png`;
     const iconNight = `${base}/night_forlight.png`;
-    const iconGuest = `${base}/guest_forlight.png`;
+    const iconGuest = `${base}/logoguest_forlight.png`;
 
     const html = `
       <div style="background:#ffffff; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0c111b; line-height:1.5; padding:16px;">
