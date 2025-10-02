@@ -136,6 +136,16 @@ export default function NotificationsClient() {
     setLoading(false);
   }
 
+  async function sendTest() {
+    setStatus('Loading...');
+    setLoading(true);
+    try {
+      await fetch('/api/push/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    } finally {
+      finalize();
+    }
+  }
+
   const onClass = `sb-btn ${active ? 'sb-btn--primary' : ''}`.trim();
   const offClass = `sb-btn ${!active ? 'sb-btn--primary' : ''}`.trim();
 
@@ -147,6 +157,7 @@ export default function NotificationsClient() {
       <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
         <button className={onClass} onClick={turnOn} disabled={loading}>Turn On</button>
         <button className={offClass} onClick={turnOff} disabled={loading}>Turn Off</button>
+        <button className="sb-btn" onClick={sendTest} disabled={loading || !active}>Send test</button>
       </div>
       <div style={{ display: 'grid', gap: 4 }}>
         {status ? (
