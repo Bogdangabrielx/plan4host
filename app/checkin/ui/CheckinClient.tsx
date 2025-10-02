@@ -275,6 +275,14 @@ export default function CheckinClient() {
     } catch { /* ignore */ }
   }, []);
 
+  // Scroll to top on mount/refresh and disable scroll restoration
+  useEffect(() => {
+    try {
+      if ('scrollRestoration' in history) (history as any).scrollRestoration = 'manual';
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    } catch { /* ignore */ }
+  }, []);
+
   // ---------- THEME & ICONS ----------
   const [isDark, setIsDark] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
