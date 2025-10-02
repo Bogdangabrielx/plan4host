@@ -3,6 +3,8 @@
 
 import React, { useEffect, useMemo, useRef, useState, useImperativeHandle } from "react";
 import Image from "next/image";
+import homeStyles from "../../home.module.css";
+import ctaStyles from "../checkin.module.css";
 
 type PropertyInfo = {
   id: string;
@@ -360,6 +362,19 @@ export default function CheckinClient() {
     display: "grid", gap: 12, gridTemplateColumns: "1fr",
   }), []);
 
+  // Sparkle border trigger for submit CTA (mobile)
+  const sparkleRef = useRef<HTMLSpanElement | null>(null);
+  function triggerSparkle() {
+    try {
+      const isTouch = typeof window !== 'undefined' && window.matchMedia?.('(hover: none)')?.matches;
+      if (!isTouch) return;
+      const el = sparkleRef.current;
+      if (!el) return;
+      el.setAttribute('data-animate', 'true');
+      window.setTimeout(() => { el.removeAttribute('data-animate'); }, 320);
+    } catch {}
+  }
+
   // 1) URL params
   useEffect(() => {
     setPropertyId(getQueryParam("property"));
@@ -615,13 +630,14 @@ export default function CheckinClient() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div>
             <h1 style={{ margin: 0, fontSize: 30, letterSpacing: 0.3, alignContent:"center" }}>
-               Stay Smart, Experience Better  <br />
+               Stay Smart, Experience <span className={homeStyles.betterGrad}>Better</span>
+               <br />
                <br />
             </h1>
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
               Thank you for choosing us!<br />
               Please fill in the fields below with the requested information.<br />
-              Once you complete the online check-in, you will automatically receive an email with confirmation of check-in for {prop?.name ?? "the property"}. <br />
+              Once you complete the online check-in, you will automatically receive an email with confirmation of check-in for <span style={{ color: "var(--primary)", fontWeight: 700 }}>{prop?.name ?? "the property"}</span>.<br />
               Please note that all information you provide is strictly confidential.<br />
               Thank you for your patience!
             </p>
@@ -984,13 +1000,16 @@ export default function CheckinClient() {
               <button type="button" onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = "/")} style={BTN_GHOST}>
                 Cancel
               </button>
-              <button
-                type="submit"
-                disabled={!canSubmit}
-                style={{ ...BTN_PRIMARY, opacity: canSubmit ? 1 : 0.6, cursor: canSubmit ? "pointer" : "not-allowed" }}
-              >
-                {submitState === "submitting" ? "Submitting…" : "Submit check-in"}
-              </button>
+              <span className={ctaStyles.sparkleWrap} ref={sparkleRef}>
+                <button
+                  type="submit"
+                  disabled={!canSubmit}
+                  onPointerDown={triggerSparkle}
+                  style={{ ...BTN_PRIMARY, opacity: canSubmit ? 1 : 0.6, cursor: canSubmit ? "pointer" : "not-allowed" }}
+                >
+                  {submitState === "submitting" ? "Submitting…" : "Submit check-in"}
+                </button>
+              </span>
             </div>
           </form>
         )}

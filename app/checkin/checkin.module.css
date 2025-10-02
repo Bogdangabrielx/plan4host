@@ -1,0 +1,38 @@
+/* Sparkle border wrapper for Check-in CTA (non-intrusive: does not change inner button styles) */
+
+@property --sweep-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+
+.sparkleWrap { position: relative; display: inline-block; border-radius: 12px; }
+.sparkleWrap > * { position: relative; z-index: 0; border-radius: 10px; }
+
+.sparkleWrap::before{
+  content: "";
+  position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; /* ring thickness */
+  background:
+    conic-gradient(from var(--sweep-angle),
+      transparent 0deg,
+      transparent 300deg,
+      rgba(25,189,99,.95) 315deg,
+      rgba(25,189,99,.8) 330deg,
+      transparent 345deg
+    );
+  /* show only the border ring */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; 
+          mask-composite: exclude;
+  opacity: 0; transition: opacity .2s ease;
+  pointer-events: none; z-index: 1;
+}
+
+.sparkleWrap:hover::before,
+.sparkleWrap:focus-within::before { opacity: 1; animation: sweep-rotate 1.8s linear infinite; }
+.sparkleWrap[data-animate="true"]::before { opacity: 1; animation: sweep-rotate 1.8s linear infinite; }
+
+@keyframes sweep-rotate { to { --sweep-angle: 360deg; } }
+
+@media (hover:none){
+  .sparkleWrap::before { display: none !important; }
+  .sparkleWrap[data-animate="true"]::before { display: block !important; }
+}
+
