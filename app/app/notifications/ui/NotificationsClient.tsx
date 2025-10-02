@@ -53,15 +53,15 @@ export default function NotificationsClient() {
   }
 
   async function subscribeInDB(sub: PushSubscription, property_id: string | null, ua: string, os: string) {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => { try { ctrl.abort(); } catch {} }, 8000);
     try {
-      fetch('/api/push/subscribe', {
+      await fetch('/api/push/subscribe', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os }),
-        signal: ctrl.signal,
-      }).catch(() => {});
-    } finally { clearTimeout(t); }
+      });
+    } catch {
+      // Retry once after a short delay without blocking UI
+      try { setTimeout(() => { fetch('/api/push/subscribe', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os }) }).catch(() => {}); }, 3000); } catch {}
+    }
   }
 
   async function turnOn() {
@@ -152,7 +152,7 @@ export default function NotificationsClient() {
         {status ? (
           <small style={{ color:'var(--muted)' }}>{status}</small>
         ) : null}
-        {!loading && !active ? (
+        {!status && !loading && !active ? (
           <small style={{ color:'var(--muted)' }}>Your notifications are currently off.</small>
         ) : null}
       </div>
