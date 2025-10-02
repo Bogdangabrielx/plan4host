@@ -4,7 +4,6 @@
 import React, { useEffect, useMemo, useRef, useState, useImperativeHandle } from "react";
 import Image from "next/image";
 import homeStyles from "../../home.module.css";
-import ctaStyles from "../checkin.module.css";
 
 type PropertyInfo = {
   id: string;
@@ -373,7 +372,7 @@ export default function CheckinClient() {
   }), []);
 
   // Sparkle border trigger for submit CTA (mobile)
-  const sparkleRef = useRef<HTMLSpanElement | null>(null);
+  const sparkleRef = useRef<HTMLButtonElement | null>(null);
   const sparkleTimerRef = useRef<number | null>(null);
   function triggerSparkle() {
     try {
@@ -1015,16 +1014,16 @@ export default function CheckinClient() {
               <button type="button" onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = "/")} style={BTN_GHOST}>
                 Cancel
               </button>
-              <span className={ctaStyles.sparkleWrap} ref={sparkleRef}>
-                <button
-                  type="submit"
-                  disabled={!canSubmit}
-                  onPointerDown={triggerSparkle}
-                  style={{ ...BTN_PRIMARY, opacity: canSubmit ? 1 : 0.6, cursor: canSubmit ? "pointer" : "not-allowed" }}
-                >
-                  {submitState === "submitting" ? "Submitting…" : "Submit check-in"}
-                </button>
-              </span>
+              <button
+                ref={sparkleRef}
+                type="submit"
+                disabled={!canSubmit}
+                onPointerDown={triggerSparkle}
+                className={`${homeStyles.btn} ${homeStyles.btnText} ${homeStyles.btnPrimary}`}
+                style={{ opacity: canSubmit ? 1 : 0.6, cursor: canSubmit ? "pointer" : "not-allowed" }}
+              >
+                {submitState === "submitting" ? "Submitting…" : "Submit check-in"}
+              </button>
             </div>
           </form>
         )}
