@@ -7,12 +7,13 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 function bad(status: number, body: any) { return NextResponse.json(body, { status }); }
 
 // Canonical scope tokens (DB):
-//  - calendar, guest_overview, property_setup, cleaning, channels
-const CANON = new Set(["calendar","guest_overview","property_setup","cleaning","channels"]);
+//  - calendar, guest_overview, property_setup, cleaning, channels, notifications
+const CANON = new Set(["calendar","guest_overview","property_setup","cleaning","channels","notifications"]);
 const ALIASES: Record<string, string> = {
   inbox: "guest_overview",
   reservations: "calendar",
   propertySetup: "property_setup",
+  notification: "notifications",
 };
 const normalize = (s: string) => ALIASES[s] ?? s;
 const sanitizeScopes = (arr: any): string[] => {
@@ -94,9 +95,12 @@ export async function POST(req: Request) {
     if (!newUserId) return bad(500, { error: "Failed to create user" });
 
     // atașează membership (role = editor|viewer; niciodată admin din UI)
+    // ensure default notifications scope
+    const finalScopes = Array.from(new Set([...(scopes || []), 'notifications']));
+
     const ins = await admin
       .from("account_users")
-      .upsert({ account_id: accountId!, user_id: newUserId, role, scopes, disabled: false }, { onConflict: "account_id,user_id" })
+      .upsert({ account_id: accountId!, user_id: newUserId, role, scopes: finalScopes, disabled: false }, { onConflict: "account_id,user_id" })
       .select("user_id")
       .single();
     if (ins.error) return bad(400, { error: ins.error.message });
