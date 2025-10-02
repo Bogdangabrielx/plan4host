@@ -137,33 +137,41 @@ export default function DashboardClient({
     if (!name || !country) return;
     setStatus("Saving…");
 
-    const payload = {
-      p_name: name,
-      p_country_code: country,
-      p_timezone: guessTZ(country),
-      p_check_in_time: "14:00",
-      p_check_out_time: "11:00",
-    };
+    try {
+      const res = await fetch('/api/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          country_code: country,
+          timezone: guessTZ(country),
+          check_in_time: '14:00',
+          check_out_time: '11:00',
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({} as any));
+        console.error('Create property error:', j?.error || res.statusText);
+        setStatus('Error');
+        return;
+      }
 
-    const { error } = await supabase.rpc("create_property", payload);
-    if (error) {
-      console.error("create_property RPC error:", error);
-      setStatus("Error");
-      return;
+      const { data: refreshed } = await supabase
+        .from("properties")
+        .select(
+          "id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at"
+        )
+        .order("created_at", { ascending: true });
+
+      setList((refreshed ?? []) as Property[]);
+      setName("");
+      setCountry("");
+      setStatus("Synced");
+      setTimeout(() => setStatus("Idle"), 800);
+    } catch (e) {
+      console.error(e);
+      setStatus('Error');
     }
-
-    const { data: refreshed } = await supabase
-      .from("properties")
-      .select(
-        "id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at"
-      )
-      .order("created_at", { ascending: true });
-
-    setList((refreshed ?? []) as Property[]);
-    setName("");
-    setCountry("");
-    setStatus("Synced");
-    setTimeout(() => setStatus("Idle"), 800);
   }
 
   function openPropertySetup(id: string) {

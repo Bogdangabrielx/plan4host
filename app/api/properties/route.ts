@@ -6,13 +6,27 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
-  const body = await req.json();
+  const body = await req.json().catch(() => ({}));
   const name = (body?.name ?? "").toString().trim();
   if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
+  const country_code = (body?.country_code ?? "").toString().trim() || null;
+  const timezone = (body?.timezone ?? "").toString().trim() || null;
+  const check_in_time = (body?.check_in_time ?? "").toString().trim() || null;
+  const check_out_time = (body?.check_out_time ?? "").toString().trim() || null;
+
+  const insertRow: any = {
+    name,
+    account_id: user.id,
+    country_code,
+    timezone,
+    check_in_time,
+    check_out_time,
+  };
+
   const { error, data } = await supabase
     .from("properties")
-    .insert({ name, account_id: user.id })
+    .insert(insertRow)
     .select()
     .single();
 
