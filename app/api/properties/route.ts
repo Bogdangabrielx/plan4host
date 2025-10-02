@@ -18,6 +18,7 @@ export async function POST(req: Request) {
   const insertRow: any = {
     name,
     account_id: user.id,
+    admin_id: user.id,
     country_code,
     timezone,
     check_in_time,
