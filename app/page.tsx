@@ -489,6 +489,24 @@ export default function HomePage() {
             </div>
             <p>Sync reservations with Airbnb, Booking.com and more; according to your subscription plan—keeping calendars always up to date, effortlessly.</p>
           </article>
+
+          {/* Secured check-in form */}
+          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+            <div className={styles.featureHead}>
+              <img src="/checkinform_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <h3>Secured Check-in Form</h3>
+            </div>
+            <p>Collect guest details safely before arrival—identity document upload, consent and instant email confirmation—all in a streamlined, GDPR‑friendly flow.</p>
+          </article>
+
+          {/* Delegate tasks (Team) */}
+          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+            <div className={styles.featureHead}>
+              <img src="/team_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+              <h3>Delegate Tasks</h3>
+            </div>
+            <p>Invite teammates (editor/viewer), assign scope‑based access (calendar, cleaning, channels, property setup) and delegate daily tasks with confidence.</p>
+          </article>
         </div>
       </section>
 
