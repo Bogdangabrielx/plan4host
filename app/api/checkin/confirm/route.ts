@@ -120,7 +120,7 @@ export async function POST(req: Request) {
 
     const html = `
       <div style="background:#ffffff; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0c111b; line-height:1.5; padding:16px;">
-        <h2 style="margin:0 0 12px;">Check-in Confirmation${propName ? ` for <span style=\"color:#0ea5e9\">${escapeHtml(propName)}</span>` : ''}</h2>
+        <h2 style="margin:0 0 12px;">Check-in Confirmation${propName ? ` for <span style=\"color:#3ECF8E\">${escapeHtml(propName)}</span>` : ''}</h2>
         <p style="margin:8px 0;">Thank you for completing the online check-in form${propName ? ` for <strong>${escapeHtml(propName)}</strong>` : ''}.</p>
         <div style="margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:grid; gap:10px;">
           ${displayRoom ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconRoom}\" alt=\"room\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">${roomTypeName ? 'Room type' : 'Room'}:</strong> <span>${escapeHtml(displayRoom)}</span></div>` : ''}
