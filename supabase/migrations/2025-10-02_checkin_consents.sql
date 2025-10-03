@@ -26,12 +26,12 @@ do $$ begin
 end $$;
 
  /* Dark-only scoped palette for landing */
-  --bg: #c8c8c8ff; /* deep blue-black */
-  --text: #122f48ff;
-  --muted: #747c85ff;
-  --panel: rgba(65, 82, 120, 0.72); /* glass */
-  --card: rgba(102, 135, 212, 0.9);
-  --border: rgba(120, 169, 238, 0.18);
+  --bg: #0b1117; /* deep blue-black */
+  --text: #e6edf3;
+  --muted: #9aa4af;
+  --panel: rgba(15, 23, 42, 0.72); /* glass */
+  --card: rgba(12, 19, 35, 0.9);
+  --border: rgba(148, 163, 184, 0.18);
   --primary: #3ECF8E; /* brand green */
   --accent1: #22d3ee; /* cyan */
   --accent2: rgba(12, 19, 35, 0.9); /* indigo */
