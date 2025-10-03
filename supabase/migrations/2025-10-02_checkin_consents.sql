@@ -25,13 +25,4 @@ do $$ begin
   end if;
 end $$;
 
- /* Dark-only scoped palette for landing */
-  --bg: #0b1117; /* deep blue-black */
-  --text: #e6edf3;
-  --muted: #9aa4af;
-  --panel: rgba(15, 23, 42, 0.72); /* glass */
-  --card: rgba(12, 19, 35, 0.9);
-  --border: rgba(148, 163, 184, 0.18);
-  --primary: #3ECF8E; /* brand green */
-  --accent1: #22d3ee; /* cyan */
-  --accent2: rgba(12, 19, 35, 0.9); /* indigo */
+ 
