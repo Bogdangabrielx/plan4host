@@ -3,7 +3,7 @@
 .landing { background: var(--bg); color: var(--text); position: relative; }
 .landing {
   /* Dark-only scoped palette for landing */
-  --bg: #121524; /* deep blue-black */
+  --bg: #0b1117; /* deep blue-black */
   --text: #e6edf3;
   --muted: #9aa4af;
   --panel: rgba(15, 23, 42, 0.72); /* glass */
