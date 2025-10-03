@@ -217,7 +217,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
     "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
     "/app/propertySetup": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
-    "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
+    "/app/calendar": { light: "/calendarv2.png", dark: "/calendarv2.png" },
     "/app/notifications": { light: "/notification_forlight.png", dark: "/notification_fordark.png" },
     "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
     "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
