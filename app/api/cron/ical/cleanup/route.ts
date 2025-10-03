@@ -19,6 +19,28 @@ function requireEnv(name: string): string {
   return v;
 }
 
+type UnassignedRow = {
+  id: string;
+  property_id: string;
+  room_type_id: string | null;
+  room_id: string | null;
+  uid: string | null;
+  summary: string | null;
+  start_date: string;
+  end_date: string;
+  start_time: string | null;
+  end_time: string | null;
+  integration_id: string | null;
+  created_at: string;
+};
+
+type CandidateBooking = {
+  id: string;
+  room_id: string | null;
+  room_type_id: string | null;
+  status: string | null;
+};
+
 async function handleCleanup(req: Request) {
   try {
     // ── auth: align with autosync ─────────────────────────────────────
@@ -50,10 +72,10 @@ async function handleCleanup(req: Request) {
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
     const supa = createSb(url, serviceKey, { auth: { persistSession: false } });
 
-    // Load unresolved unassigned events
+    // Load unresolved unassigned events (include room_id!)
     const { data: unassigned, error: eUn } = await supa
       .from("ical_unassigned_events")
-      .select("id,property_id,room_type_id,uid,summary,start_date,end_date,start_time,end_time,integration_id,created_at")
+      .select("id,property_id,room_type_id,room_id,uid,summary,start_date,end_date,start_time,end_time,integration_id,created_at")
       .eq("resolved", false)
       .order("created_at", { ascending: true });
 
@@ -62,12 +84,17 @@ async function handleCleanup(req: Request) {
     let resolved = 0;
     let mapped = 0;
     let updated = 0;
+    let setSourceIcal = 0;
+    let setIcalUid = 0;
 
-    for (const ev of (unassigned || []) as any[]) {
+    const rows: UnassignedRow[] = (unassigned ?? []) as UnassignedRow[];
+
+    for (const ev of rows) {
       const property_id: string = ev.property_id;
       const start_date: string = ev.start_date;
       const end_date: string = ev.end_date;
       const rtId: string | null = ev.room_type_id ?? null;
+      const rId: string | null = ev.room_id ?? null;
 
       // find candidate bookings with same interval, not cancelled
       const { data: cands, error: eB } = await supa
@@ -80,14 +107,20 @@ async function handleCleanup(req: Request) {
 
       if (eB) continue;
 
-      let picked: any | null = null;
-      if ((cands || []).length === 1) {
-        picked = (cands as any[])[0];
-      } else if ((cands || []).length > 1) {
-        const matchByType = (cands as any[]).find(
-          (b) => String(b.room_type_id || "") === String(rtId || "")
-        );
-        picked = matchByType || null;
+      const candidates: CandidateBooking[] = (cands ?? []) as CandidateBooking[];
+      let picked: CandidateBooking | null = null;
+
+      if (candidates.length === 1) {
+        picked = candidates[0];
+      } else if (candidates.length > 1) {
+        // 1) prefer room_id exact
+        if (rId) {
+          picked = candidates.find((b: CandidateBooking) => String(b.room_id || "") === String(rId)) || null;
+        }
+        // 2) else prefer room_type_id exact
+        if (!picked && rtId) {
+          picked = candidates.find((b: CandidateBooking) => String(b.room_type_id || "") === String(rtId)) || null;
+        }
       }
       if (!picked) continue;
 
@@ -102,15 +135,27 @@ async function handleCleanup(req: Request) {
         if (!rI.error && rI.data) provider = (rI.data as any).provider ?? null;
       }
 
-      // update booking with OTA linkage (don’t force source)
+      // update booking with OTA linkage + ensure `source='ical'` and set `ical_uid` if present
+      const updPayload: any = {
+        ota_integration_id: ev.integration_id ?? null,
+        ota_provider: provider ?? null,
+      };
+      if (ev.uid) {
+        updPayload.ical_uid = ev.uid;
+      }
+      // For matched iCal event, force source 'ical'
+      updPayload.source = "ical";
+
       const upd = await supa
         .from("bookings")
-        .update({
-          ota_integration_id: ev.integration_id ?? null,
-          ota_provider: provider ?? null,
-        })
+        .update(updPayload)
         .eq("id", picked.id);
-      if (!upd.error) updated++;
+
+      if (!upd.error) {
+        updated++;
+        if (updPayload.source === "ical") setSourceIcal++;
+        if (ev.uid) setIcalUid++;
+      }
 
       // upsert UID map if we have a UID
       if (ev.uid) {
@@ -121,11 +166,12 @@ async function handleCleanup(req: Request) {
           .eq("uid", ev.uid)
           .limit(1);
 
-        if (existingMap && (existingMap as any[]).length > 0) {
+        if ((existingMap as any[])?.length > 0) {
           await supa
             .from("ical_uid_map")
             .update({
               booking_id: picked.id,
+              room_type_id: rtId,
               room_id: picked.room_id ?? null,
               start_date,
               end_date,
@@ -162,10 +208,12 @@ async function handleCleanup(req: Request) {
 
     return j(200, {
       ok: true,
-      processed: (unassigned || []).length,
+      processed: rows.length,
       resolved,
       mapped,
       updated,
+      set_source_ical: setSourceIcal,
+      set_ical_uid: setIcalUid,
     });
   } catch (e: any) {
     return j(500, { error: e?.message || String(e) });

@@ -18,14 +18,13 @@ const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:office@plan4host.com';
 try { webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY); } catch {}
 
+/* ---------------- push broadcast ---------------- */
 async function broadcastNewGuestOverview(adminCli: any, property_id: string, start_date: string, end_date: string) {
   try {
-    // Fetch account_id for this property
     const rProp = await adminCli.from('properties').select('account_id').eq('id', property_id).maybeSingle();
     if (rProp.error || !rProp.data) return;
     const account_id = (rProp.data as any).account_id as string;
 
-    // Fetch admin users (only admins as requested)
     const rUsers = await adminCli
       .from('account_users')
       .select('user_id,role,disabled')
@@ -43,12 +42,14 @@ async function broadcastNewGuestOverview(adminCli: any, property_id: string, sta
     if (error) return;
     const subs = (data || []) as Array<{ endpoint: string; p256dh: string; auth: string; user_id: string }>;
     if (subs.length === 0) return;
+
     const payload = JSON.stringify({
       title: 'New reservation',
       body: `From ${start_date} to ${end_date}`,
       url: `/app/guest?property=${encodeURIComponent(property_id)}`,
       tag: `guest-${property_id}`,
     });
+
     for (const s of subs) {
       const subscription = { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } } as any;
       try { await webpush.sendNotification(subscription, payload); }
@@ -61,12 +62,10 @@ async function broadcastNewGuestOverview(adminCli: any, property_id: string, sta
   } catch {}
 }
 
-// yyyy-mm-dd validator
+/* ---------------- utils ---------------- */
 function isYMD(s: unknown): s is string {
   return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
 }
-
-// HH:mm normalizer (fallback sigur)
 function clampTime(t: unknown, fallback: string): string {
   if (typeof t !== "string") return fallback;
   const m = t.match(/^(\d{1,2}):(\d{1,2})/);
@@ -75,56 +74,39 @@ function clampTime(t: unknown, fallback: string): string {
   let mm = Math.max(0, Math.min(59, parseInt(m[2], 10)));
   return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
-
 function looksEnumHoldError(msg?: string) {
   return !!msg && /invalid input value for enum .*: "hold"/i.test(msg);
 }
-function looksForeignKeyOrOverlap(msg?: string) {
-  return !!msg && /(foreign key|duplicate key|unique|overlap|exclusion)/i.test(msg);
-}
 
-// Validează că room_id aparține proprietății; altfel -> null
+/* ---------------- room/type helpers ---------------- */
 async function normalizeRoomId(room_id: any, property_id: string): Promise<string | null> {
   if (!room_id) return null;
   const r = await admin.from("rooms").select("id,property_id,room_type_id").eq("id", room_id).maybeSingle();
   if (r.error || !r.data) return null;
   return r.data.property_id === property_id ? String(r.data.id) : null;
 }
-
-// Validează că room_type_id aparține proprietății; altfel -> null
 async function normalizeRoomTypeId(room_type_id: any, property_id: string): Promise<string | null> {
   if (!room_type_id) return null;
   const r = await admin.from("room_types").select("id,property_id").eq("id", room_type_id).maybeSingle();
   if (r.error || !r.data) return null;
   return r.data.property_id === property_id ? String(r.data.id) : null;
 }
-
-// Dacă avem room_id dar nu avem room_type_id, întoarce type-ul camerei
 async function roomTypeFromRoom(room_id: string | null): Promise<string | null> {
   if (!room_id) return null;
   const r = await admin.from("rooms").select("room_type_id").eq("id", room_id).maybeSingle();
   if (r.error || !r.data) return null;
   return r.data.room_type_id ? String(r.data.room_type_id) : null;
 }
-
-// găsește o cameră liberă pentru un tip, în intervalul [start_date, end_date)
-async function findFreeRoomForType(opts: {
-  property_id: string;
-  room_type_id: string;
-  start_date: string;
-  end_date: string;
-}): Promise<string | null> {
+async function findFreeRoomForType(opts: { property_id: string; room_type_id: string; start_date: string; end_date: string; }): Promise<string | null> {
   const { property_id, room_type_id, start_date, end_date } = opts;
-
   const rRooms = await admin
     .from("rooms")
     .select("id,name")
     .eq("property_id", property_id)
     .eq("room_type_id", room_type_id)
     .order("name", { ascending: true });
-
   if (rRooms.error || !rRooms.data || rRooms.data.length === 0) return null;
-  const candIds = rRooms.data.map((r) => r.id as string);
+  const candIds = rRooms.data.map((r) => String(r.id));
 
   const rBusy = await admin
     .from("bookings")
@@ -135,16 +117,22 @@ async function findFreeRoomForType(opts: {
     .gt("end_date", start_date);
 
   const busy = new Set<string>();
-  if (!rBusy.error) {
-    for (const b of rBusy.data ?? []) {
-      if (b.room_id) busy.add(String(b.room_id));
-    }
-  }
+  if (!rBusy.error) for (const b of rBusy.data ?? []) if (b.room_id) busy.add(String(b.room_id));
 
-  const free = candIds.find((id) => !busy.has(id));
-  return free ?? null;
+  return candIds.find((id) => !busy.has(id)) ?? null;
+}
+async function isRoomFree(room_id: string, start_date: string, end_date: string): Promise<boolean> {
+  const rBusy = await admin
+    .from("bookings")
+    .select("id")
+    .eq("room_id", room_id)
+    .neq("status", "cancelled")
+    .lt("start_date", end_date)
+    .gt("end_date", start_date);
+  return !rBusy.error && (rBusy.data?.length ?? 0) === 0;
 }
 
+/* ---------------- handler ---------------- */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -158,11 +146,11 @@ export async function POST(req: NextRequest) {
       guest_first_name,
       guest_last_name,
 
-      // selecții din form
+      // form selections
       requested_room_id,
       requested_room_type_id,
 
-      // opțional; dacă lipsesc -> fallback din property
+      // optional times (fallback to property defaults)
       start_time: start_time_client,
       end_time: end_time_client,
 
@@ -173,7 +161,7 @@ export async function POST(req: NextRequest) {
       city,
       country,
 
-      // ---- document (v1) ----
+      // docs v1
       doc_type,
       doc_series,
       doc_number,
@@ -181,7 +169,7 @@ export async function POST(req: NextRequest) {
       doc_file_path,
       doc_file_mime,
 
-      // ---- documente (v2) ----
+      // docs v2
       docs,
     } = body ?? {};
 
@@ -189,7 +177,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing property_id" }, { status: 400 });
     }
 
-    // 1) Citește orele default (+ account_id pentru check suspendare)
+    // property defaults & suspended account check
     const rProp = await admin
       .from("properties")
       .select("id,account_id,check_in_time,check_out_time,timezone")
@@ -199,34 +187,31 @@ export async function POST(req: NextRequest) {
     if (rProp.error) return NextResponse.json({ error: rProp.error.message }, { status: 500 });
     if (!rProp.data) return NextResponse.json({ error: "Property not found" }, { status: 404 });
 
-    // 1.a) Blochează dacă account-ul e suspendat (IMPORTANT pt. flux public)
     try {
       const susp = await admin.rpc("account_is_suspended", { account_id: rProp.data.account_id as string });
       if (!susp.error && susp.data === true) {
         return NextResponse.json({ error: "Account suspended" }, { status: 403 });
       }
-    } catch {
-      // dacă RPC lipsește, nu oprim; dar recomandat să existe
-    }
+    } catch {}
 
     const checkInDefault  = rProp.data.check_in_time  ?? "14:00";
     const checkOutDefault = rProp.data.check_out_time ?? "11:00";
     const start_time = clampTime(start_time_client, checkInDefault);
     const end_time   = clampTime(end_time_client,   checkOutDefault);
 
-    // Derivă tipul din selecții
-    let form_room_id: string | null = await normalizeRoomId(requested_room_id, property_id);
+    // derive normalized selections
+    const form_room_id: string | null = await normalizeRoomId(requested_room_id, property_id);
     let form_room_type_id: string | null =
       (await normalizeRoomTypeId(requested_room_type_id, property_id)) ??
       (await roomTypeFromRoom(form_room_id));
 
-    // =========================
-    // A) ÎNCERCARE MATCH cu rezervare iCal existentă (fără booking_id în link)
-    //    Criteriu: dates_equal + type_equal + source iCal (sau ical_uid not null)
-    // =========================
+    /* ========= A) try match with existing iCal booking =========
+       criteria: same dates AND (same room_id OR same room_type_id) AND iCal-ish (source=ical or ical_uid not null)
+    */
     let matchedBookingId: string | null = null;
-    let matchedIsIcal: boolean = false;
-    if (isYMD(start_date) && isYMD(end_date) && form_room_type_id) {
+    let matchedIsIcal = false;
+
+    if (isYMD(start_date) && isYMD(end_date) && (form_room_id || form_room_type_id)) {
       const rIcal = await admin
         .from("bookings")
         .select("id,room_id,room_type_id,start_date,end_date,status,source,ical_uid")
@@ -234,39 +219,63 @@ export async function POST(req: NextRequest) {
         .eq("start_date", start_date)
         .eq("end_date", end_date)
         .neq("status", "cancelled")
-        .or("source.eq.ical,ical_uid.not.is.null"); // iCal candidate
+        .or("source.eq.ical,ical_uid.not.is.null");
 
-      if (!rIcal.error && Array.isArray(rIcal.data)) {
-        for (const b of rIcal.data) {
-          const b_type = b.room_type_id ?? (await roomTypeFromRoom(b.room_id ?? null));
-          if (b_type && String(b_type) === String(form_room_type_id)) {
-            matchedBookingId = String(b.id);
+      if (!rIcal.error && Array.isArray(rIcal.data) && rIcal.data.length) {
+        // 1) prefer hard match by room_id
+        if (form_room_id) {
+          const byRoom = rIcal.data.find(b => String(b.room_id || "") === String(form_room_id));
+          if (byRoom) {
+            matchedBookingId = String(byRoom.id);
             matchedIsIcal = true;
-            break;
+          }
+        }
+        // 2) else match by room_type_id
+        if (!matchedBookingId && form_room_type_id) {
+          for (const b of rIcal.data) {
+            const bType = b.room_type_id ?? (await roomTypeFromRoom(b.room_id ?? null));
+            if (bType && String(bType) === String(form_room_type_id)) {
+              matchedBookingId = String(b.id);
+              matchedIsIcal = true;
+              break;
+            }
           }
         }
       }
 
-      // If no iCal match, try to match a MANUAL booking (non-iCal) by same dates + same type
+      // If no iCal match, try match a non-ical (manual) booking on the same interval
       if (!matchedBookingId) {
         const rManual = await admin
-          .from('bookings')
-          .select('id,room_id,room_type_id,status,source,ical_uid')
-          .eq('property_id', property_id)
-          .eq('start_date', start_date)
-          .eq('end_date', end_date)
-          .neq('status', 'cancelled');
-        if (!rManual.error && Array.isArray(rManual.data)) {
-          const candidates: any[] = [];
-          for (const b of rManual.data) {
-            const src = (b.source || '').toString().toLowerCase();
-            const isIcalish = src === 'ical' || !!b.ical_uid;
-            if (isIcalish) continue; // already handled above
-            const b_type = b.room_type_id ?? (await roomTypeFromRoom(b.room_id ?? null));
-            if (b_type && String(b_type) === String(form_room_type_id)) candidates.push(b);
+          .from("bookings")
+          .select("id,room_id,room_type_id,status,source,ical_uid")
+          .eq("property_id", property_id)
+          .eq("start_date", start_date)
+          .eq("end_date", end_date)
+          .neq("status", "cancelled");
+
+        if (!rManual.error && Array.isArray(rManual.data) && rManual.data.length) {
+          // filter out any iCal-ish (already handled)
+          const pool = rManual.data.filter(b => (b.source || '').toLowerCase() !== 'ical' && !b.ical_uid);
+
+          let candidate: any | null = null;
+
+          // prefer unique by room_id
+          if (form_room_id) {
+            const byRoom = pool.filter(b => String(b.room_id || "") === String(form_room_id));
+            if (byRoom.length === 1) candidate = byRoom[0];
           }
-          if (candidates.length === 1) {
-            matchedBookingId = String(candidates[0].id);
+          // else prefer unique by room_type_id
+          if (!candidate && form_room_type_id) {
+            const byType: any[] = [];
+            for (const b of pool) {
+              const bType = b.room_type_id ?? (await roomTypeFromRoom(b.room_id ?? null));
+              if (bType && String(bType) === String(form_room_type_id)) byType.push(b);
+            }
+            if (byType.length === 1) candidate = byType[0];
+          }
+
+          if (candidate) {
+            matchedBookingId = String(candidate.id);
             matchedIsIcal = false;
           }
         }
@@ -274,8 +283,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (matchedBookingId) {
-      // —— MERGE pe booking-ul iCal existent —— //
-      // 1) Guest + mark form received
+      // —— MERGE în booking-ul matched —— //
+      // 1) Guest + mark form received (preserve source=ical when matchedIsIcal)
       const updatePayload: any = {
         guest_first_name: guest_first_name ?? null,
         guest_last_name:  guest_last_name  ?? null,
@@ -286,34 +295,27 @@ export async function POST(req: NextRequest) {
       };
       if (matchedIsIcal) updatePayload.source = 'ical';
 
-      await admin
-        .from("bookings")
-        .update(updatePayload)
-        .eq("id", matchedBookingId);
+      await admin.from("bookings").update(updatePayload).eq("id", matchedBookingId);
 
-      // 2) Auto-assign cameră de tipul respectiv (dacă încă nu are)
+      // 2) Auto-assign cameră dacă booking-ul nu are încă
       let auto_assigned_room_id: string | null = null;
-      const tryAssign = await admin
-        .from("bookings")
-        .select("room_id")
-        .eq("id", matchedBookingId)
-        .maybeSingle();
-
-      if (!tryAssign.error && tryAssign.data && !tryAssign.data.room_id && form_room_type_id) {
-        const free = await findFreeRoomForType({
-          property_id,
-          room_type_id: form_room_type_id,
-          start_date,
-          end_date,
-        });
-        if (free) {
-          await admin.from("bookings").update({ room_id: free }).eq("id", matchedBookingId);
-          auto_assigned_room_id = free;
+      const cur = await admin.from("bookings").select("room_id").eq("id", matchedBookingId).maybeSingle();
+      if (!cur.error && cur.data && !cur.data.room_id) {
+        // prefer exact room_id din formular dacă e liber
+        if (form_room_id && await isRoomFree(form_room_id, start_date, end_date)) {
+          await admin.from("bookings").update({ room_id: form_room_id }).eq("id", matchedBookingId);
+          auto_assigned_room_id = form_room_id;
+        } else if (form_room_type_id) {
+          // fallback: prima cameră liberă din tip
+          const free = await findFreeRoomForType({ property_id, room_type_id: form_room_type_id, start_date, end_date });
+          if (free) {
+            await admin.from("bookings").update({ room_id: free }).eq("id", matchedBookingId);
+            auto_assigned_room_id = free;
+          }
         }
-        // dacă nu e liber, UI va marca RED — nu blocăm submitul
       }
 
-      // 3) Contact structurat
+      // 3) Contact
       if (email || phone || address || city || country) {
         try {
           await admin
@@ -331,7 +333,7 @@ export async function POST(req: NextRequest) {
             )
             .select("booking_id")
             .single();
-        } catch { /* ignore */ }
+        } catch {}
       }
 
       // 4) Documente
@@ -379,7 +381,7 @@ export async function POST(req: NextRequest) {
           try {
             const insDocs = await admin.from("booking_documents").insert(rows).select("id");
             if (!insDocs.error) documents_saved = insDocs.data?.length ?? 0;
-          } catch { /* ignore */ }
+          } catch {}
         }
       }
 
@@ -392,10 +394,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // =========================
-    // B) FĂRĂ MATCH iCal → Form-only
-    //    → Cream doar SOFT HOLD pe tip (NU asignezi cameră)
-    // =========================
+    /* ========= B) fără match iCal → soft hold de tip (fără alocare cameră) ========= */
     if (!isYMD(start_date) || !isYMD(end_date)) {
       return NextResponse.json({ error: "Missing/invalid dates" }, { status: 400 });
     }
@@ -403,12 +402,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "end_date must be after start_date" }, { status: 400 });
     }
 
-    // NU mai alocăm cameră automat aici. Doar room_type_id (dacă există).
     const displayAddress = [address, city, country].map(v => (v ?? "").trim()).filter(Boolean).join(", ") || null;
 
     const basePayload: any = {
       property_id,
-      room_id: null,                          // ← fără auto-assign
+      room_id: null,
       room_type_id: form_room_type_id ?? null,
       start_date,
       end_date,
@@ -422,9 +420,9 @@ export async function POST(req: NextRequest) {
       guest_address:    displayAddress,
       form_submitted_at: new Date().toISOString(),
       source: "form",
-      is_soft_hold: true,                     // ← contează la capacitate ca soft-hold
+      is_soft_hold: true,
       hold_status: "active",
-      hold_expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // ← NOU: expiră în 2h
+      hold_expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     };
 
     let ins = await admin.from("bookings").insert(basePayload).select("id").single();
@@ -453,7 +451,7 @@ export async function POST(req: NextRequest) {
           )
           .select("booking_id")
           .single();
-      } catch { /* ignore */ }
+      } catch {}
     }
 
     const docsArray: Array<any> = Array.isArray(docs) ? docs : [];
@@ -499,11 +497,10 @@ export async function POST(req: NextRequest) {
         try {
           const insDocs = await admin.from("booking_documents").insert(rows).select("id");
           if (!insDocs.error) documents_saved = insDocs.data?.length ?? 0;
-        } catch { /* ignore */ }
+        } catch {}
       }
     }
 
-    // Fire-and-forget push broadcast (do not block response)
     try { broadcastNewGuestOverview(admin, property_id, start_date, end_date); } catch {}
 
     return NextResponse.json({
