@@ -49,13 +49,8 @@ function fmtTime(d: Date, tz: string) {
 
 function isFormish(b: any) {
   const src = (b?.source || "").toString().toLowerCase();
-  return (
-    src === "form" ||
-    !!b?.is_soft_hold ||
-    !!b?.form_submitted_at ||
-    b?.status === "hold" ||
-    b?.status === "pending"
-  );
+  // fără is_soft_hold / hold_status (au dispărut din DB)
+  return src === "form" || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
 }
 
 // small net helper
