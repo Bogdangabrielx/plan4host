@@ -48,7 +48,7 @@ async function broadcastNewGuestOverview(adminCli: any, property_id: string, sta
     const payload = JSON.stringify({
       title: "New reservation",
       body: `From ${start_date} to ${end_date}`,
-      // 👉 dacă noul ecran este /app/guestOverview, actualizează linkul:
+      // dacă noul ecran este /app/guestOverview:
       url: `/app/guestOverview?property=${encodeURIComponent(property_id)}`,
       tag: `guest-${property_id}`,
     });
@@ -79,11 +79,6 @@ function clampTime(t: unknown, fallback: string): string {
 }
 function looksEnumHoldError(msg?: string) {
   return !!msg && /invalid input value for enum .*: "hold"/i.test(msg);
-}
-function looksMissingColumnError(msg: string | undefined, col: string) {
-  if (!msg) return false;
-  const low = msg.toLowerCase();
-  return low.includes(`column ${col.toLowerCase()} does not exist`) || low.includes(`column "${col.toLowerCase()}" does not exist`);
 }
 
 /* ---------------- room/type helpers ---------------- */
@@ -371,7 +366,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    /* ========= B) fără match iCal → hold de tip ========= */
+    /* ========= B) fără match iCal → soft-hold de tip (fără coloane supl.) ========= */
     if (!isYMD(start_date) || !isYMD(end_date)) {
       return NextResponse.json({ error: "Missing/invalid dates" }, { status: 400 });
     }
@@ -389,7 +384,7 @@ export async function POST(req: NextRequest) {
       end_date,
       start_time,
       end_time,
-      status: "hold",               // dacă enum-ul nu conține "hold", vezi fallback mai jos
+      status: "hold",               // dacă enum-ul nu conține "hold", facem fallback mai jos
       guest_first_name: guest_first_name ?? null,
       guest_last_name:  guest_last_name  ?? null,
       guest_email:      email ?? null,
@@ -397,30 +392,15 @@ export async function POST(req: NextRequest) {
       guest_address:    displayAddress,
       form_submitted_at: new Date().toISOString(),
       source: "form",
-      // aceste două câmpuri sunt opționale: dacă lipsesc din schemă, facem fallback
-      hold_status: "active",
-      hold_expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     };
 
-    // încercare #1 — cu hold_status/hold_expires_at
+    // încercare — poate enum-ul include "hold"
     let ins = await admin.from("bookings").insert(basePayload).select("id").single();
 
-    // fallback enum: status=hold nu există
+    // fallback: dacă enum-ul nu are "hold", salvăm cu "pending"
     if (ins.error && looksEnumHoldError(ins.error.message)) {
-      basePayload.status = "pending";
-      ins = await admin.from("bookings").insert(basePayload).select("id").single();
-    }
-
-    // fallback lipsă coloană: hold_status / hold_expires_at nu există în schemă
-    if (ins.error && (looksMissingColumnError(ins.error.message, "hold_status") || looksMissingColumnError(ins.error.message, "hold_expires_at"))) {
-      const { hold_status, hold_expires_at, ...withoutHoldCols } = basePayload;
-      // reîncercare cu/ fără "hold" în enum
-      let ins2 = await admin.from("bookings").insert(withoutHoldCols).select("id").single();
-      if (ins2.error && looksEnumHoldError(ins2.error.message)) {
-        (withoutHoldCols as any).status = "pending";
-        ins2 = await admin.from("bookings").insert(withoutHoldCols).select("id").single();
-      }
-      ins = ins2;
+      const payload2 = { ...basePayload, status: "pending" as const };
+      ins = await admin.from("bookings").insert(payload2).select("id").single();
     }
 
     if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 });
