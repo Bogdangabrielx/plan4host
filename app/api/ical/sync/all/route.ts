@@ -1,11 +1,13 @@
-//app/api/ical/sync/all/route.ts
-
+// app/api/ical/sync/all/route.ts
 import { NextResponse } from "next/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import { createClient as createRls } from "@/lib/supabase/server";
 import { parseIcsToEvents, toLocalDateTime, type ParsedEvent } from "@/lib/ical/parse";
 
-/** ---------- response helper ---------- */
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function j(status: number, body: any) {
   return new NextResponse(JSON.stringify(body), {
     status,
@@ -13,11 +15,9 @@ function j(status: number, body: any) {
   });
 }
 
-/** ---------- env ---------- */
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-/** ---------- tiny net helper ---------- */
 async function fetchWithRetry(url: string, opts?: { timeoutMs?: number; retries?: number }) {
   const timeoutMs = opts?.timeoutMs ?? 15000;
   const retries = opts?.retries ?? 1;
@@ -40,55 +40,37 @@ async function fetchWithRetry(url: string, opts?: { timeoutMs?: number; retries?
   throw lastErr || new Error("fetch failed");
 }
 
-/** ---------- format helpers (same as autosync) ---------- */
-function fmtDate(d: Date, tz: string) {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
-}
-function fmtTime(d: Date, tz: string) {
-  return new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour12: false, hour: "2-digit", minute: "2-digit" }).format(d);
-}
+function fmtDate(d: Date, tz: string) { return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(d); }
+function fmtTime(d: Date, tz: string) { return new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour12: false, hour: "2-digit", minute: "2-digit" }).format(d); }
 type Norm = { start_date: string; end_date: string; start_time: string | null; end_time: string | null; };
 function normalizeEvent(ev: ParsedEvent, propTZ: string): Norm {
   let start_date = ev.start.date;
   let end_date = ev.end?.date ?? ev.start.date;
   let start_time: string | null = ev.start.time ?? null;
   let end_time: string | null = ev.end?.time ?? null;
-
-  if (ev.start.absolute) {
-    const d = toLocalDateTime(ev.start.absolute, propTZ);
-    start_date = fmtDate(d, propTZ);
-    start_time = fmtTime(d, propTZ);
-  }
-  if (ev.end?.absolute) {
-    const d = toLocalDateTime(ev.end.absolute as Date, propTZ);
-    end_date = fmtDate(d, propTZ);
-    end_time = fmtTime(d, propTZ);
-  }
+  if (ev.start.absolute) { const d = toLocalDateTime(ev.start.absolute, propTZ); start_date = fmtDate(d, propTZ); start_time = fmtTime(d, propTZ); }
+  if (ev.end?.absolute) { const d = toLocalDateTime(ev.end.absolute as Date, propTZ); end_date = fmtDate(d, propTZ); end_time = fmtTime(d, propTZ); }
   if (end_date < start_date) end_date = start_date;
   return { start_date, end_date, start_time, end_time };
 }
 
-/** ---------- capacity helper (same as autosync) ---------- */
 async function findFreeRoomForType(supa: any, opts: { property_id: string; room_type_id: string; start_date: string; end_date: string; }): Promise<string | null> {
   const { property_id, room_type_id, start_date, end_date } = opts;
   const rRooms = await supa.from("rooms").select("id,name").eq("property_id", property_id).eq("room_type_id", room_type_id).order("name", { ascending: true });
   if (rRooms.error || !rRooms.data || rRooms.data.length === 0) return null;
   const candIds: string[] = rRooms.data.map((r: any) => String(r.id));
-
   const rBusy = await supa.from("bookings")
     .select("room_id,start_date,end_date,status")
     .in("room_id", candIds)
     .neq("status", "cancelled")
     .lt("start_date", end_date)
     .gt("end_date", start_date);
-
   const busy = new Set<string>();
   if (!rBusy.error) for (const b of rBusy.data ?? []) if (b.room_id) busy.add(String(b.room_id));
   const free: string | undefined = candIds.find((id: string) => !busy.has(id));
   return free ?? null;
 }
 
-/** ---------- form → ical merge (same as autosync) ---------- */
 function isFormish(b: any) {
   const src = (b?.source || "").toString().toLowerCase();
   return src === "form" || !!b?.is_soft_hold || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
@@ -97,16 +79,11 @@ async function mergeFormIntoIcal(supa: any, params: {
   property_id: string; icalBookingId: string; icalRoomId: string | null; icalRoomTypeId: string | null; start_date: string; end_date: string;
 }) {
   const { property_id, icalBookingId, icalRoomId, icalRoomTypeId, start_date, end_date } = params;
-
   const rCands = await supa
     .from("bookings")
     .select("id,room_id,room_type_id,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address,form_submitted_at,source,is_soft_hold,status")
-    .eq("property_id", property_id)
-    .eq("start_date", start_date)
-    .eq("end_date", end_date)
-    .neq("status", "cancelled");
+    .eq("property_id", property_id).eq("start_date", start_date).eq("end_date", end_date).neq("status", "cancelled");
   if (rCands.error) return { merged: false };
-
   const forms: any[] = (rCands.data || []).filter(isFormish as (b: any) => boolean);
   if (forms.length === 0) return { merged: false };
 
@@ -117,7 +94,6 @@ async function mergeFormIntoIcal(supa: any, params: {
   if (!pick) return { merged: false };
 
   const formId = String(pick.id);
-
   await supa.from("bookings").update({
     source: "ical",
     guest_first_name: pick.guest_first_name ?? null,
@@ -130,9 +106,7 @@ async function mergeFormIntoIcal(supa: any, params: {
 
   try {
     const rBC = await supa.from("booking_contacts").select("email,phone,address,city,country").eq("booking_id", formId).maybeSingle();
-    if (!rBC.error && rBC.data) {
-      await supa.from("booking_contacts").upsert({ booking_id: icalBookingId, ...rBC.data }, { onConflict: "booking_id" });
-    }
+    if (!rBC.error && rBC.data) await supa.from("booking_contacts").upsert({ booking_id: icalBookingId, ...rBC.data }, { onConflict: "booking_id" });
   } catch {}
   try { await supa.from("booking_documents").update({ booking_id: icalBookingId }).eq("booking_id", formId); } catch {}
   try { await supa.from("bookings").delete().eq("id", formId); } catch {}
@@ -140,20 +114,17 @@ async function mergeFormIntoIcal(supa: any, params: {
   return { merged: true, mergedFormId: formId };
 }
 
-/** ---------- create/update from iCal (same as autosync) ---------- */
 async function createOrUpdateFromEvent(supa: any, feed: {
   id: string; property_id: string; room_type_id: string | null; room_id: string | null; provider: string | null; properties: { timezone: string | null };
 }, ev: ParsedEvent) {
   const propTZ = feed.properties.timezone || "UTC";
   const { start_date, end_date, start_time, end_time } = normalizeEvent(ev, propTZ);
 
-  // suppression (manual delete guard)
   if (ev.uid) {
     const { data: suppr } = await supa.from("ical_suppressions").select("id").eq("property_id", feed.property_id).eq("ical_uid", ev.uid).limit(1);
     if ((suppr?.length || 0) > 0) return { skipped: true, reason: "suppressed" };
   }
 
-  // match by UID (map or bookings)
   let icalBooking: any | null = null;
   if (ev.uid) {
     const rMap = await supa.from("ical_uid_map").select("booking_id").eq("property_id", feed.property_id).eq("uid", ev.uid).maybeSingle();
@@ -168,7 +139,6 @@ async function createOrUpdateFromEvent(supa: any, feed: {
     }
   }
 
-  // fallback match same dates + (room_id|room_type_id) & source=ical
   if (!icalBooking) {
     const orConds: string[] = [];
     if (feed.room_id) orConds.push(`room_id.eq.${feed.room_id}`);
@@ -194,14 +164,8 @@ async function createOrUpdateFromEvent(supa: any, feed: {
     room_id_final = icalBooking.room_id ?? (feed.room_id || null);
     room_type_id_final = icalBooking.room_type_id ?? (feed.room_type_id || null);
 
-    if (feed.room_id && !icalBooking.room_id) {
-      await supa.from("bookings").update({ room_id: feed.room_id }).eq("id", bookingId);
-      room_id_final = feed.room_id;
-    }
-    if (!icalBooking.room_type_id && feed.room_type_id) {
-      await supa.from("bookings").update({ room_type_id: feed.room_type_id }).eq("id", bookingId);
-      room_type_id_final = feed.room_type_id;
-    }
+    if (feed.room_id && !icalBooking.room_id) { await supa.from("bookings").update({ room_id: feed.room_id }).eq("id", bookingId); room_id_final = feed.room_id; }
+    if (!icalBooking.room_type_id && feed.room_type_id) { await supa.from("bookings").update({ room_type_id: feed.room_type_id }).eq("id", bookingId); room_type_id_final = feed.room_type_id; }
 
     await supa.from("bookings").update({
       source: "ical",
@@ -214,14 +178,12 @@ async function createOrUpdateFromEvent(supa: any, feed: {
 
   } else {
     if (feed.room_id) {
-      room_id_final = feed.room_id;
-      room_type_id_final = feed.room_type_id ?? null;
+      room_id_final = feed.room_id; room_type_id_final = feed.room_type_id ?? null;
     } else if (feed.room_type_id) {
       room_type_id_final = feed.room_type_id;
       room_id_final = await findFreeRoomForType(supa, { property_id: feed.property_id, room_type_id: feed.room_type_id, start_date, end_date });
     } else {
-      room_id_final = null;
-      room_type_id_final = null;
+      room_id_final = null; room_type_id_final = null;
     }
 
     const ins = await supa.from("bookings").insert({
@@ -282,7 +244,7 @@ async function createOrUpdateFromEvent(supa: any, feed: {
 /** ---------- POST: Sync Now (ALL feeds for a property) ---------- */
 export async function POST(req: Request) {
   try {
-    const rls = createClient(); // RLS client for auth + gating
+    const rls = createRls();
     const { data: auth } = await rls.auth.getUser();
     if (!auth?.user) return j(401, { error: "Not authenticated" });
 
@@ -290,7 +252,6 @@ export async function POST(req: Request) {
     const propertyId: string | undefined = body?.propertyId;
     if (!propertyId) return j(400, { error: "Missing propertyId" });
 
-    // property + account (RLS ensures access)
     const { data: prop, error: eProp } = await rls
       .from("properties")
       .select("id, admin_id, timezone")
@@ -300,7 +261,6 @@ export async function POST(req: Request) {
 
     const accountId = (prop as any).admin_id as string;
 
-    // gating (premium + cooldown for sync_now)
     const can = await rls.rpc("account_can_sync_now_v2", { p_account_id: accountId, p_event_type: "sync_now" });
     if (can.error) return j(400, { error: "Policy check failed", details: can.error.message });
     if (!can.data?.allowed) {
@@ -313,7 +273,6 @@ export async function POST(req: Request) {
       });
     }
 
-    // load active feeds (RLS)
     const { data: feeds, error: fErr } = await rls
       .from("ical_type_integrations")
       .select("id, property_id, room_type_id, room_id, provider, url, is_active")
@@ -322,7 +281,6 @@ export async function POST(req: Request) {
       .order("created_at", { ascending: true });
     if (fErr) return j(400, { error: "Failed to load integrations", details: fErr.message });
 
-    // admin client for write operations
     const admin = createAdmin(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
     const results: Array<{ integrationId: string; ok: boolean; imported: number; error?: string }> = [];
@@ -354,7 +312,6 @@ export async function POST(req: Request) {
           imported++;
         }
 
-        // last_sync (RLS is fine here too, dar folosim admin pt. simplitate)
         await admin.from("ical_type_integrations").update({ last_sync: new Date().toISOString() }).eq("id", feed.id);
 
         results.push({ integrationId: feed.id, ok: true, imported });
@@ -364,7 +321,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // register usage
     await rls.rpc("account_register_sync_usage_v2", { p_account_id: accountId, p_event_type: "sync_now" });
 
     return j(200, { ok: true, propertyId, importedTotal, results });

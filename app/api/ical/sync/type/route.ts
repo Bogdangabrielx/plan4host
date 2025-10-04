@@ -1,7 +1,12 @@
+// app/api/ical/sync/type/route.ts
 import { NextResponse } from "next/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import { createClient as createRls } from "@/lib/supabase/server";
 import { parseIcsToEvents, toLocalDateTime, type ParsedEvent } from "@/lib/ical/parse";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 /** ---------- response helper ---------- */
 function j(status: number, body: any) {
@@ -66,7 +71,7 @@ function normalizeEvent(ev: ParsedEvent, propTZ: string): Norm {
   return { start_date, end_date, start_time, end_time };
 }
 
-/** ---------- capacity & merge helpers (same as autosync) ---------- */
+/** ---------- capacity & merge helpers ---------- */
 async function findFreeRoomForType(supa: any, opts: { property_id: string; room_type_id: string; start_date: string; end_date: string; }): Promise<string | null> {
   const { property_id, room_type_id, start_date, end_date } = opts;
   const rRooms = await supa.from("rooms").select("id,name").eq("property_id", property_id).eq("room_type_id", room_type_id).order("name", { ascending: true });
@@ -122,6 +127,7 @@ async function mergeFormIntoIcal(supa: any, params: {
   } catch {}
   try { await supa.from("booking_documents").update({ booking_id: icalBookingId }).eq("booking_id", formId); } catch {}
   try { await supa.from("bookings").delete().eq("id", formId); } catch {}
+
   return { merged: true, mergedFormId: formId };
 }
 async function createOrUpdateFromEvent(supa: any, feed: {
@@ -130,11 +136,13 @@ async function createOrUpdateFromEvent(supa: any, feed: {
   const propTZ = feed.properties.timezone || "UTC";
   const { start_date, end_date, start_time, end_time } = normalizeEvent(ev, propTZ);
 
+  // suppression by UID (if booking deleted intentionally)
   if (ev.uid) {
     const { data: suppr } = await supa.from("ical_suppressions").select("id").eq("property_id", feed.property_id).eq("ical_uid", ev.uid).limit(1);
     if ((suppr?.length || 0) > 0) return { skipped: true, reason: "suppressed" };
   }
 
+  // match by UID
   let icalBooking: any | null = null;
   if (ev.uid) {
     const rMap = await supa.from("ical_uid_map").select("booking_id").eq("property_id", feed.property_id).eq("uid", ev.uid).maybeSingle();
@@ -149,6 +157,7 @@ async function createOrUpdateFromEvent(supa: any, feed: {
     }
   }
 
+  // fallback match by same dates + (room_id|room_type_id) & source=ical
   if (!icalBooking) {
     const orConds: string[] = [];
     if (feed.room_id) orConds.push(`room_id.eq.${feed.room_id}`);
@@ -253,7 +262,7 @@ async function createOrUpdateFromEvent(supa: any, feed: {
 /** ---------- POST: Sync Now (ONE integration) ---------- */
 export async function POST(req: Request) {
   try {
-    const rls = createClient(); // RLS for auth + gating
+    const rls = createRls(); // RLS for auth + gating
     const { data: auth } = await rls.auth.getUser();
     if (!auth?.user) return j(401, { error: "Not authenticated" });
 
@@ -311,7 +320,7 @@ export async function POST(req: Request) {
     // update last_sync
     await admin.from("ical_type_integrations").update({ last_sync: new Date().toISOString() }).eq("id", integrationId);
 
-    // register usage window
+    // register usage
     await rls.rpc("account_register_sync_usage_v2", { p_account_id: accountId, p_event_type: "sync_now" });
 
     return j(200, { ok: true, integrationId, imported });
