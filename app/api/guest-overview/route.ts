@@ -1,3 +1,4 @@
+// app/api/guest-overview/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -26,8 +27,7 @@ type BRow = {
   guest_name: string | null;
   form_submitted_at?: string | null;
   created_at?: string | null;
-  hold_status?: "active" | "expired" | null;
-  hold_expires_at?: string | null;
+  // NOTĂ: nu mai depindem de is_soft_hold / hold_status / hold_expires_at
 };
 
 type Room = { id: string; room_type_id: string | null; name: string | null };
@@ -44,7 +44,7 @@ function isIcalish(b: BRow) {
 }
 function isFormish(b: any) {
   const src = (b?.source || "").toString().toLowerCase();
-  // fără is_soft_hold / hold_status (au dispărut din DB)
+  // fără is_soft_hold (scoasă din DB)
   return src === "form" || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
 }
 
@@ -71,7 +71,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Missing ?property=<id>" }, { status: 400 });
     }
 
-    // ——— Guard: cont suspendat? ———
+    // Guard: cont suspendat?
     const rProp = await admin
       .from("properties")
       .select("id,account_id")
@@ -85,19 +85,18 @@ export async function GET(req: Request) {
       if (!susp.error && susp.data === true) {
         return NextResponse.json({ error: "Account suspended" }, { status: 403 });
       }
-    } catch { /* if RPC missing, we don't block */ }
+    } catch { /* dacă RPC lipsește, nu blocăm */ }
 
     const todayYMD = new Date().toISOString().slice(0,10);
 
-    // ——— Bookings: viitoare/curente, non-cancelled ———
+    // Bookings: viitoare/curente, non-cancelled
     const rBookings = await admin
       .from("bookings")
       .select(`
         id, property_id, room_id, room_type_id,
         start_date, end_date, status, source, ical_uid, ota_integration_id, ota_provider,
         guest_first_name, guest_last_name, guest_name,
-        is_soft_hold, form_submitted_at, created_at,
-        hold_status, hold_expires_at
+        form_submitted_at, created_at
       `)
       .eq("property_id", property_id)
       .neq("status", "cancelled")
@@ -109,7 +108,7 @@ export async function GET(req: Request) {
     }
     const bookings: BRow[] = (rBookings.data ?? []) as any[];
 
-    // ——— Unassigned iCal events (pending import) ———
+    // Unassigned iCal events (pending import)
     const rUnassigned = await admin
       .from("ical_unassigned_events")
       .select("id,property_id,room_type_id,uid,summary,start_date,end_date,start_time,end_time,created_at,integration_id,resolved")
@@ -130,7 +129,7 @@ export async function GET(req: Request) {
       integration_id: string | null;
     }> = (rUnassigned.data ?? []) as any[];
 
-    // Resolve missing integration linkage via uid_map (fallback)
+    // Fallback integrare via uid_map dacă lipsește pe booking
     const needMapFor = bookings.filter(b => !b.ota_integration_id && !!b.id).map(b => b.id);
     const integByBooking = new Map<string, string>();
     if (needMapFor.length > 0) {
@@ -145,7 +144,7 @@ export async function GET(req: Request) {
       }
     }
 
-    // Load integration metadata for all linked bookings
+    // Load meta integrări
     const integrationIds = new Set<string>();
     for (const b of bookings) {
       if (b.ota_integration_id) integrationIds.add(String(b.ota_integration_id));
@@ -169,7 +168,7 @@ export async function GET(req: Request) {
       }
     }
 
-    // ——— Rooms & types ———
+    // Rooms & types
     const [rRooms, rTypes] = await Promise.all([
       admin.from("rooms").select("id, room_type_id, name").eq("property_id", property_id),
       admin.from("room_types").select("id, name").eq("property_id", property_id),
@@ -182,7 +181,7 @@ export async function GET(req: Request) {
     const typeNameById = new Map<string, string>();
     for (const t of types) typeNameById.set(String(t.id), t.name ?? "Type");
 
-    // ——— Grupare pe (start_date, end_date, type_id) ———
+    // Grupare pe (start_date, end_date, type_id)
     type Pack = {
       key: string;
       start_date: string;
@@ -216,7 +215,7 @@ export async function GET(req: Request) {
       }
     }
 
-    // ——— Evaluare stări ———
+    // Evaluare stări
     type Item = {
       kind: "green" | "yellow" | "red";
       reason?: string;
@@ -257,13 +256,13 @@ export async function GET(req: Request) {
       const room = roomId ? roomById.get(roomId) : null;
       const roomLabel = room?.name ?? (roomId ? `#${String(roomId).slice(0,4)}` : null);
 
-      // Preferăm hold_expires_at; fallback = form_submitted_at + 2h
+      // Deadline form: fallback = form_submitted_at + 2h
       const formDeadline =
-        (pk.form?.hold_expires_at && !isNaN(new Date(pk.form.hold_expires_at).getTime()))
-          ? new Date(pk.form.hold_expires_at)
-          : (pk.form?.form_submitted_at ? new Date(new Date(pk.form.form_submitted_at).getTime() + 2*60*60*1000) : null);
+        pk.form?.form_submitted_at
+          ? new Date(new Date(pk.form.form_submitted_at).getTime() + 2 * 60 * 60 * 1000)
+          : null;
 
-      // Helper: resolve OTA meta for the primary booking in this pack (prefer iCal booking)
+      // META pentru badge (prefer iCal booking)
       function pickMeta(b: BRow | null | undefined): { provider: string | null; color: string | null; logo_url: string | null } {
         if (!b) return { provider: null, color: null, logo_url: null };
         const intId = b.ota_integration_id || integByBooking.get(String(b.id)) || null;
@@ -274,7 +273,7 @@ export async function GET(req: Request) {
         return { provider: b.ota_provider ?? null, color: null, logo_url: null };
       }
 
-      // A) iCal + Form — ok dacă avem ori nume ori cameră
+      // A) iCal + Form
       if (hasIcal && hasForm) {
         if (roomId || nameKnown) {
           const meta = pickMeta(pk.ical!);
@@ -373,7 +372,7 @@ export async function GET(req: Request) {
 
       // C) doar Form
       if (hasForm && !hasIcal) {
-        // conflict: există iCal-only pe alt tip în același interval?
+        // Conflict: există iCal-only pe alt tip pe același interval?
         let hasIcalOtherType = false;
         for (const [, pk2] of packs) {
           if (pk2 === pk) continue;
@@ -410,9 +409,9 @@ export async function GET(req: Request) {
             guest_last_name:  pk.form?.guest_last_name  ?? null,
           });
         } else {
-          const holdActive = pk.form?.hold_status !== "expired";
+          // fără hold_status/hold_expires_at → folosim fereastra de 2h de la form_submitted_at
           const notExpiredYet = !!formDeadline && now < formDeadline;
-          if (holdActive && notExpiredYet) {
+          if (notExpiredYet) {
             items.push({
               kind: "yellow",
               reason: "waiting_ical",
@@ -475,16 +474,13 @@ export async function GET(req: Request) {
       }
     }
 
-    // ——— Add UNASSIGNED events as items (yellow < 2h, red >= 2h) ———
+    // Unassigned events ca items (yellow < 2h, red >= 2h)
     const nowTs = now.getTime();
     const twoHoursMs = 2 * 60 * 60 * 1000;
     for (const ev of unassigned) {
-      // type/name
       const tId = ev.room_type_id ? String(ev.room_type_id) : null;
       const tName = tId ? (typeNameById.get(tId) ?? "Type") : null;
-      // meta
       const im = ev.integration_id && integMeta.has(String(ev.integration_id)) ? integMeta.get(String(ev.integration_id))! : { provider: null, color: null, logo_url: null };
-      // times
       const created = ev.created_at ? new Date(ev.created_at).getTime() : nowTs;
       const isYellow = (nowTs - created) < twoHoursMs;
 
@@ -516,9 +512,9 @@ export async function GET(req: Request) {
       return (a.room_type_name || "").localeCompare(b.room_type_name || "");
     });
 
-    // —— Output compatibil cu UI (rows) ——
+    // Output compatibil cu UI
     const rows = items.map((it) => ({
-      id: it.booking_id ?? null,            // asigurăm string | null
+      id: it.booking_id ?? null,
       property_id,
       room_id: it.room_id ?? null,
       start_date: it.start_date,
