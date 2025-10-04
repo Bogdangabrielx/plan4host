@@ -1,7 +1,7 @@
 // app/api/checkin/submit/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import webpush from 'web-push';
+import webpush from "web-push";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,38 +15,41 @@ const DEFAULT_DOCS_BUCKET = (process.env.NEXT_PUBLIC_DEFAULT_DOCS_BUCKET || "gue
 
 const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY!;
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:office@plan4host.com';
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || "mailto:office@plan4host.com";
 try { webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY); } catch {}
 
 /* ---------------- push broadcast ---------------- */
 async function broadcastNewGuestOverview(adminCli: any, property_id: string, start_date: string, end_date: string) {
   try {
-    const rProp = await adminCli.from('properties').select('account_id').eq('id', property_id).maybeSingle();
+    const rProp = await adminCli.from("properties").select("account_id").eq("id", property_id).maybeSingle();
     if (rProp.error || !rProp.data) return;
     const account_id = (rProp.data as any).account_id as string;
 
     const rUsers = await adminCli
-      .from('account_users')
-      .select('user_id,role,disabled')
-      .eq('account_id', account_id)
-      .eq('disabled', false)
-      .eq('role', 'admin');
+      .from("account_users")
+      .select("user_id,role,disabled")
+      .eq("account_id", account_id)
+      .eq("disabled", false)
+      .eq("role", "admin");
     if (rUsers.error) return;
+
     const userIds = (rUsers.data || []).map((u: any) => String(u.user_id));
     if (userIds.length === 0) return;
 
     const { data, error } = await adminCli
-      .from('push_subscriptions')
-      .select('endpoint,p256dh,auth,user_id')
-      .in('user_id', userIds);
+      .from("push_subscriptions")
+      .select("endpoint,p256dh,auth,user_id")
+      .in("user_id", userIds);
     if (error) return;
+
     const subs = (data || []) as Array<{ endpoint: string; p256dh: string; auth: string; user_id: string }>;
     if (subs.length === 0) return;
 
     const payload = JSON.stringify({
-      title: 'New reservation',
+      title: "New reservation",
       body: `From ${start_date} to ${end_date}`,
-      url: `/app/guest?property=${encodeURIComponent(property_id)}`,
+      // 👉 dacă noul ecran este /app/guestOverview, actualizează linkul:
+      url: `/app/guestOverview?property=${encodeURIComponent(property_id)}`,
       tag: `guest-${property_id}`,
     });
 
@@ -55,7 +58,7 @@ async function broadcastNewGuestOverview(adminCli: any, property_id: string, sta
       try { await webpush.sendNotification(subscription, payload); }
       catch (e: any) {
         if (e?.statusCode === 410 || e?.statusCode === 404) {
-          try { await adminCli.from('push_subscriptions').delete().eq('endpoint', s.endpoint); } catch {}
+          try { await adminCli.from("push_subscriptions").delete().eq("endpoint", s.endpoint); } catch {}
         }
       }
     }
@@ -76,6 +79,11 @@ function clampTime(t: unknown, fallback: string): string {
 }
 function looksEnumHoldError(msg?: string) {
   return !!msg && /invalid input value for enum .*: "hold"/i.test(msg);
+}
+function looksMissingColumnError(msg: string | undefined, col: string) {
+  if (!msg) return false;
+  const low = msg.toLowerCase();
+  return low.includes(`column ${col.toLowerCase()} does not exist`) || low.includes(`column "${col.toLowerCase()}" does not exist`);
 }
 
 /* ---------------- room/type helpers ---------------- */
@@ -205,9 +213,7 @@ export async function POST(req: NextRequest) {
       (await normalizeRoomTypeId(requested_room_type_id, property_id)) ??
       (await roomTypeFromRoom(form_room_id));
 
-    /* ========= A) try match with existing iCal booking =========
-       criteria: same dates AND (same room_id OR same room_type_id) AND iCal-ish (source=ical or ical_uid not null)
-    */
+    /* ========= A) try match with existing iCal booking ========= */
     let matchedBookingId: string | null = null;
     let matchedIsIcal = false;
 
@@ -222,28 +228,20 @@ export async function POST(req: NextRequest) {
         .or("source.eq.ical,ical_uid.not.is.null");
 
       if (!rIcal.error && Array.isArray(rIcal.data) && rIcal.data.length) {
-        // 1) prefer hard match by room_id
         if (form_room_id) {
           const byRoom = rIcal.data.find(b => String(b.room_id || "") === String(form_room_id));
-          if (byRoom) {
-            matchedBookingId = String(byRoom.id);
-            matchedIsIcal = true;
-          }
+          if (byRoom) { matchedBookingId = String(byRoom.id); matchedIsIcal = true; }
         }
-        // 2) else match by room_type_id
         if (!matchedBookingId && form_room_type_id) {
           for (const b of rIcal.data) {
             const bType = b.room_type_id ?? (await roomTypeFromRoom(b.room_id ?? null));
             if (bType && String(bType) === String(form_room_type_id)) {
-              matchedBookingId = String(b.id);
-              matchedIsIcal = true;
-              break;
+              matchedBookingId = String(b.id); matchedIsIcal = true; break;
             }
           }
         }
       }
 
-      // If no iCal match, try match a non-ical (manual) booking on the same interval
       if (!matchedBookingId) {
         const rManual = await admin
           .from("bookings")
@@ -254,17 +252,13 @@ export async function POST(req: NextRequest) {
           .neq("status", "cancelled");
 
         if (!rManual.error && Array.isArray(rManual.data) && rManual.data.length) {
-          // filter out any iCal-ish (already handled)
-          const pool = rManual.data.filter(b => (b.source || '').toLowerCase() !== 'ical' && !b.ical_uid);
-
+          const pool = rManual.data.filter(b => (b.source || "").toLowerCase() !== "ical" && !b.ical_uid);
           let candidate: any | null = null;
 
-          // prefer unique by room_id
           if (form_room_id) {
             const byRoom = pool.filter(b => String(b.room_id || "") === String(form_room_id));
             if (byRoom.length === 1) candidate = byRoom[0];
           }
-          // else prefer unique by room_type_id
           if (!candidate && form_room_type_id) {
             const byType: any[] = [];
             for (const b of pool) {
@@ -274,17 +268,13 @@ export async function POST(req: NextRequest) {
             if (byType.length === 1) candidate = byType[0];
           }
 
-          if (candidate) {
-            matchedBookingId = String(candidate.id);
-            matchedIsIcal = false;
-          }
+          if (candidate) { matchedBookingId = String(candidate.id); matchedIsIcal = false; }
         }
       }
     }
 
     if (matchedBookingId) {
       // —— MERGE în booking-ul matched —— //
-      // 1) Guest + mark form received (preserve source=ical when matchedIsIcal)
       const updatePayload: any = {
         guest_first_name: guest_first_name ?? null,
         guest_last_name:  guest_last_name  ?? null,
@@ -293,20 +283,18 @@ export async function POST(req: NextRequest) {
         guest_address:    [address, city, country].map(v => (v ?? "").trim()).filter(Boolean).join(", ") || null,
         form_submitted_at: new Date().toISOString(),
       };
-      if (matchedIsIcal) updatePayload.source = 'ical';
+      if (matchedIsIcal) updatePayload.source = "ical";
 
       await admin.from("bookings").update(updatePayload).eq("id", matchedBookingId);
 
-      // 2) Auto-assign cameră dacă booking-ul nu are încă
+      // auto-assign room dacă lipsește
       let auto_assigned_room_id: string | null = null;
       const cur = await admin.from("bookings").select("room_id").eq("id", matchedBookingId).maybeSingle();
       if (!cur.error && cur.data && !cur.data.room_id) {
-        // prefer exact room_id din formular dacă e liber
         if (form_room_id && await isRoomFree(form_room_id, start_date, end_date)) {
           await admin.from("bookings").update({ room_id: form_room_id }).eq("id", matchedBookingId);
           auto_assigned_room_id = form_room_id;
         } else if (form_room_type_id) {
-          // fallback: prima cameră liberă din tip
           const free = await findFreeRoomForType({ property_id, room_type_id: form_room_type_id, start_date, end_date });
           if (free) {
             await admin.from("bookings").update({ room_id: free }).eq("id", matchedBookingId);
@@ -315,20 +303,13 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 3) Contact
+      // contact
       if (email || phone || address || city || country) {
         try {
           await admin
             .from("booking_contacts")
             .upsert(
-              {
-                booking_id: matchedBookingId,
-                email: email ?? null,
-                phone: phone ?? null,
-                address: address ?? null,
-                city: city ?? null,
-                country: country ?? null,
-              },
+              { booking_id: matchedBookingId, email: email ?? null, phone: phone ?? null, address: address ?? null, city: city ?? null, country: country ?? null },
               { onConflict: "booking_id" }
             )
             .select("booking_id")
@@ -336,7 +317,7 @@ export async function POST(req: NextRequest) {
         } catch {}
       }
 
-      // 4) Documente
+      // documente
       const docsArray: Array<any> = Array.isArray(docs) ? docs : [];
       if (!docsArray.length && (doc_type || doc_file_path || doc_file_mime)) {
         docsArray.push({
@@ -351,31 +332,27 @@ export async function POST(req: NextRequest) {
       }
       let documents_saved = 0;
       if (docsArray.length) {
-        const rows = docsArray
-          .map((d) => {
-            const bucket = String(d.storage_bucket || DEFAULT_DOCS_BUCKET);
-            const path   = String(d.storage_path || d.path || "");
-            if (!path) return null;
-
-            const t = (d.doc_type ?? "").toString();
-            const typeText = t === "id_card" || t === "passport" ? t : null;
-
-            const r: any = {
-              property_id,
-              booking_id: matchedBookingId!,
-              doc_type: typeText,
-              storage_bucket: bucket,
-              storage_path: path,
-              mime_type: d.mime_type ? String(d.mime_type) : null,
-              size_bytes: Number.isFinite(d.size_bytes) ? Number(d.size_bytes) : null,
-              uploaded_at: new Date().toISOString(),
-            };
-            if (typeof d.doc_series === "string")      r.doc_series = d.doc_series;
-            if (typeof d.doc_number === "string")      r.doc_number = d.doc_number;
-            if (typeof d.doc_nationality === "string") r.doc_nationality = d.doc_nationality;
-            return r;
-          })
-          .filter(Boolean) as any[];
+        const rows = docsArray.map((d) => {
+          const bucket = String(d.storage_bucket || DEFAULT_DOCS_BUCKET);
+          const path   = String(d.storage_path || d.path || "");
+          if (!path) return null;
+          const t = (d.doc_type ?? "").toString();
+          const typeText = t === "id_card" || t === "passport" ? t : null;
+          const r: any = {
+            property_id,
+            booking_id: matchedBookingId!,
+            doc_type: typeText,
+            storage_bucket: bucket,
+            storage_path: path,
+            mime_type: d.mime_type ? String(d.mime_type) : null,
+            size_bytes: Number.isFinite(d.size_bytes) ? Number(d.size_bytes) : null,
+            uploaded_at: new Date().toISOString(),
+          };
+          if (typeof d.doc_series === "string")      r.doc_series = d.doc_series;
+          if (typeof d.doc_number === "string")      r.doc_number = d.doc_number;
+          if (typeof d.doc_nationality === "string") r.doc_nationality = d.doc_nationality;
+          return r;
+        }).filter(Boolean) as any[];
 
         if (rows.length) {
           try {
@@ -394,7 +371,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    /* ========= B) fără match iCal → soft hold de tip (fără alocare cameră) ========= */
+    /* ========= B) fără match iCal → hold de tip ========= */
     if (!isYMD(start_date) || !isYMD(end_date)) {
       return NextResponse.json({ error: "Missing/invalid dates" }, { status: 400 });
     }
@@ -412,7 +389,7 @@ export async function POST(req: NextRequest) {
       end_date,
       start_time,
       end_time,
-      status: "hold",
+      status: "hold",               // dacă enum-ul nu conține "hold", vezi fallback mai jos
       guest_first_name: guest_first_name ?? null,
       guest_last_name:  guest_last_name  ?? null,
       guest_email:      email ?? null,
@@ -420,15 +397,32 @@ export async function POST(req: NextRequest) {
       guest_address:    displayAddress,
       form_submitted_at: new Date().toISOString(),
       source: "form",
+      // aceste două câmpuri sunt opționale: dacă lipsesc din schemă, facem fallback
       hold_status: "active",
       hold_expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     };
 
+    // încercare #1 — cu hold_status/hold_expires_at
     let ins = await admin.from("bookings").insert(basePayload).select("id").single();
+
+    // fallback enum: status=hold nu există
     if (ins.error && looksEnumHoldError(ins.error.message)) {
       basePayload.status = "pending";
       ins = await admin.from("bookings").insert(basePayload).select("id").single();
     }
+
+    // fallback lipsă coloană: hold_status / hold_expires_at nu există în schemă
+    if (ins.error && (looksMissingColumnError(ins.error.message, "hold_status") || looksMissingColumnError(ins.error.message, "hold_expires_at"))) {
+      const { hold_status, hold_expires_at, ...withoutHoldCols } = basePayload;
+      // reîncercare cu/ fără "hold" în enum
+      let ins2 = await admin.from("bookings").insert(withoutHoldCols).select("id").single();
+      if (ins2.error && looksEnumHoldError(ins2.error.message)) {
+        (withoutHoldCols as any).status = "pending";
+        ins2 = await admin.from("bookings").insert(withoutHoldCols).select("id").single();
+      }
+      ins = ins2;
+    }
+
     if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 });
 
     const newId = ins.data.id as string;
@@ -438,14 +432,7 @@ export async function POST(req: NextRequest) {
         await admin
           .from("booking_contacts")
           .upsert(
-            {
-              booking_id: newId,
-              email: email ?? null,
-              phone: phone ?? null,
-              address: address ?? null,
-              city: city ?? null,
-              country: country ?? null,
-            },
+            { booking_id: newId, email: email ?? null, phone: phone ?? null, address: address ?? null, city: city ?? null, country: country ?? null },
             { onConflict: "booking_id" }
           )
           .select("booking_id")
@@ -467,31 +454,28 @@ export async function POST(req: NextRequest) {
     }
     let documents_saved = 0;
     if (docsArray.length) {
-      const rows = docsArray
-        .map((d) => {
-          const bucket = String(d.storage_bucket || DEFAULT_DOCS_BUCKET);
-          const path   = String(d.storage_path || d.path || "");
-          if (!path) return null;
+      const rows = docsArray.map((d) => {
+        const bucket = String(d.storage_bucket || DEFAULT_DOCS_BUCKET);
+        const path   = String(d.storage_path || d.path || "");
+        if (!path) return null;
+        const t = (d.doc_type ?? "").toString();
+        const typeText = t === "id_card" || t === "passport" ? t : null;
+        const r: any = {
+          property_id,
+          booking_id: newId,
+          doc_type: typeText,
+          storage_bucket: bucket,
+          storage_path: path,
+          mime_type: d.mime_type ? String(d.mime_type) : null,
+          size_bytes: Number.isFinite(d.size_bytes) ? Number(d.size_bytes) : null,
+          uploaded_at: new Date().toISOString(),
+        };
+        if (typeof d.doc_series === "string")      r.doc_series = d.doc_series;
+        if (typeof d.doc_number === "string")      r.doc_number = d.doc_number;
+        if (typeof d.doc_nationality === "string") r.doc_nationality = d.doc_nationality;
+        return r;
+      }).filter(Boolean) as any[];
 
-          const t = (d.doc_type ?? "").toString();
-          const typeText = t === "id_card" || t === "passport" ? t : null;
-
-          const r: any = {
-            property_id,
-            booking_id: newId,
-            doc_type: typeText,
-            storage_bucket: bucket,
-            storage_path: path,
-            mime_type: d.mime_type ? String(d.mime_type) : null,
-            size_bytes: Number.isFinite(d.size_bytes) ? Number(d.size_bytes) : null,
-            uploaded_at: new Date().toISOString(),
-          };
-          if (typeof d.doc_series === "string")      r.doc_series = d.doc_series;
-          if (typeof d.doc_number === "string")      r.doc_number = d.doc_number;
-          if (typeof d.doc_nationality === "string") r.doc_nationality = d.doc_nationality;
-          return r;
-        })
-        .filter(Boolean) as any[];
       if (rows.length) {
         try {
           const insDocs = await admin.from("booking_documents").insert(rows).select("id");
