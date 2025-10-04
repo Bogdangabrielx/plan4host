@@ -49,11 +49,20 @@ function fmtTime(d: Date, tz: string) {
 
 function isFormish(b: any) {
   const src = (b?.source || "").toString().toLowerCase();
-  return src === "form" || !!b?.is_soft_hold || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
+  return (
+    src === "form" ||
+    !!b?.is_soft_hold ||
+    !!b?.form_submitted_at ||
+    b?.status === "hold" ||
+    b?.status === "pending"
+  );
 }
 
 // small net helper
-async function fetchWithRetry(url: string, opts?: { timeoutMs?: number; retries?: number }) {
+async function fetchWithRetry(
+  url: string,
+  opts?: { timeoutMs?: number; retries?: number }
+) {
   const timeoutMs = opts?.timeoutMs ?? 15000;
   const retries = opts?.retries ?? 1;
   let attempt = 0;
@@ -72,7 +81,8 @@ async function fetchWithRetry(url: string, opts?: { timeoutMs?: number; retries?
     } catch (e) {
       clearTimeout(t);
       lastErr = e;
-      if (attempt < retries) await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+      if (attempt < retries)
+        await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
     }
     attempt++;
   }
@@ -81,7 +91,14 @@ async function fetchWithRetry(url: string, opts?: { timeoutMs?: number; retries?
 
 async function logSync(
   supabase: any,
-  params: { integration_id: string; status: string; imported?: number; error_message?: string; started_at?: string; finished_at?: string }
+  params: {
+    integration_id: string;
+    status: string;
+    imported?: number;
+    error_message?: string;
+    started_at?: string;
+    finished_at?: string;
+  }
 ) {
   const { integration_id, status } = params;
   const started_at = params.started_at ?? new Date().toISOString();
@@ -106,7 +123,12 @@ async function logSync(
 // ---------- capacity helper ----------
 async function findFreeRoomForType(
   supa: any,
-  opts: { property_id: string; room_type_id: string; start_date: string; end_date: string; }
+  opts: {
+    property_id: string;
+    room_type_id: string;
+    start_date: string;
+    end_date: string;
+  }
 ): Promise<string | null> {
   const { property_id, room_type_id, start_date, end_date } = opts;
 
@@ -133,14 +155,16 @@ async function findFreeRoomForType(
     for (const b of rBusy.data ?? []) if (b.room_id) busy.add(String(b.room_id));
   }
 
-  const free: string | undefined = candIds.find((rid: string) => !busy.has(rid));
+  const free: string | undefined = candIds.find((id: string) => !busy.has(id));
   return free ?? null;
 }
 
 // ---------- event normalization ----------
 type Norm = {
-  start_date: string; end_date: string;
-  start_time: string | null; end_time: string | null;
+  start_date: string;
+  end_date: string;
+  start_time: string | null;
+  end_time: string | null;
 };
 function normalizeEvent(ev: ParsedEvent, propTZ: string): Norm {
   let startDateStr = ev.start.date;
@@ -154,30 +178,47 @@ function normalizeEvent(ev: ParsedEvent, propTZ: string): Norm {
     startTimeStr = fmtTime(dStart, propTZ);
   }
   if (ev.end?.absolute) {
-    const dEnd = toLocalDateTime((ev.end.absolute as Date), propTZ);
+    const dEnd = toLocalDateTime(ev.end.absolute as Date, propTZ);
     endDateStr = fmtDate(dEnd, propTZ);
     endTimeStr = fmtTime(dEnd, propTZ);
   }
   if (endDateStr < startDateStr) endDateStr = startDateStr;
 
-  return { start_date: startDateStr, end_date: endDateStr, start_time: startTimeStr, end_time: endTimeStr };
+  return {
+    start_date: startDateStr,
+    end_date: endDateStr,
+    start_time: startTimeStr,
+    end_time: endTimeStr,
+  };
 }
 
 // ---------- merge form → ical booking ----------
-async function mergeFormIntoIcal(supa: any, params: {
-  property_id: string;
-  icalBookingId: string;
-  icalRoomId: string | null;
-  icalRoomTypeId: string | null;
-  start_date: string;
-  end_date: string;
-}) {
-  const { property_id, icalBookingId, icalRoomId, icalRoomTypeId, start_date, end_date } = params;
+async function mergeFormIntoIcal(
+  supa: any,
+  params: {
+    property_id: string;
+    icalBookingId: string;
+    icalRoomId: string | null;
+    icalRoomTypeId: string | null;
+    start_date: string;
+    end_date: string;
+  }
+) {
+  const {
+    property_id,
+    icalBookingId,
+    icalRoomId,
+    icalRoomTypeId,
+    start_date,
+    end_date,
+  } = params;
 
   // load candidate form-ish bookings on same interval
   const rCands = await supa
     .from("bookings")
-    .select("id,room_id,room_type_id,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address,form_submitted_at,source,is_soft_hold,status")
+    .select(
+      "id,room_id,room_type_id,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address,form_submitted_at,source,is_soft_hold,status"
+    )
     .eq("property_id", property_id)
     .eq("start_date", start_date)
     .eq("end_date", end_date)
@@ -185,16 +226,24 @@ async function mergeFormIntoIcal(supa: any, params: {
 
   if (rCands.error) return { merged: false };
 
-  const forms: any[] = (rCands.data || []).filter((b: any) => isFormish(b));
+  const forms: any[] = (rCands.data || []).filter(
+    isFormish as (b: any) => boolean
+  );
   if (forms.length === 0) return { merged: false };
 
-  // scoring: prefer same room_id, altfel same room_type_id, altfel single remaining
+  // scoring: prefer same room_id, otherwise same room_type_id, otherwise single remaining
   let pick: any | null = null;
   if (icalRoomId) {
-    pick = forms.find((f: any) => String(f.room_id || "") === String(icalRoomId)) || null;
+    pick =
+      forms.find(
+        (f: any) => String(f.room_id || "") === String(icalRoomId)
+      ) || null;
   }
   if (!pick && icalRoomTypeId) {
-    pick = forms.find((f: any) => String(f.room_type_id || "") === String(icalRoomTypeId)) || null;
+    pick =
+      forms.find(
+        (f: any) => String(f.room_type_id || "") === String(icalRoomTypeId)
+      ) || null;
   }
   if (!pick && forms.length === 1) pick = forms[0];
   if (!pick) return { merged: false };
@@ -207,17 +256,22 @@ async function mergeFormIntoIcal(supa: any, params: {
     .update({
       source: "ical",
       guest_first_name: pick.guest_first_name ?? null,
-      guest_last_name:  pick.guest_last_name  ?? null,
-      guest_email:      pick.guest_email      ?? null,
-      guest_phone:      pick.guest_phone      ?? null,
-      guest_address:    pick.guest_address    ?? null,
-      form_submitted_at: pick.form_submitted_at ?? new Date().toISOString(),
+      guest_last_name: pick.guest_last_name ?? null,
+      guest_email: pick.guest_email ?? null,
+      guest_phone: pick.guest_phone ?? null,
+      guest_address: pick.guest_address ?? null,
+      form_submitted_at:
+        pick.form_submitted_at ?? new Date().toISOString(),
     })
     .eq("id", icalBookingId);
 
   // move booking_contacts
   try {
-    const rBC = await supa.from("booking_contacts").select("email,phone,address,city,country").eq("booking_id", formId).maybeSingle();
+    const rBC = await supa
+      .from("booking_contacts")
+      .select("email,phone,address,city,country")
+      .eq("booking_id", formId)
+      .maybeSingle();
     if (!rBC.error && rBC.data) {
       await supa.from("booking_contacts").upsert(
         { booking_id: icalBookingId, ...rBC.data },
@@ -228,19 +282,15 @@ async function mergeFormIntoIcal(supa: any, params: {
 
   // move documents
   try {
-    await supa.from("booking_documents").update({ booking_id: icalBookingId }).eq("booking_id", formId);
+    await supa
+      .from("booking_documents")
+      .update({ booking_id: icalBookingId })
+      .eq("booking_id", formId);
   } catch {}
 
-  // IMPORTANT: NU ștergem form-ul; îl marcăm anulat & fără soft-hold, pentru a păstra auditul
+  // delete the form hold to avoid double counting capacity
   try {
-    await supa
-      .from("bookings")
-      .update({
-        status: "cancelled",
-        is_soft_hold: false,
-        hold_status: "merged",
-      })
-      .eq("id", formId);
+    await supa.from("bookings").delete().eq("id", formId);
   } catch {}
 
   return { merged: true, mergedFormId: formId };
@@ -250,12 +300,20 @@ async function mergeFormIntoIcal(supa: any, params: {
 async function createOrUpdateFromEvent(
   supa: any,
   feed: {
-    id: string; property_id: string; room_type_id: string | null; room_id: string | null; provider: string | null; properties: { timezone: string | null };
+    id: string;
+    property_id: string;
+    room_type_id: string | null;
+    room_id: string | null;
+    provider: string | null;
+    properties: { timezone: string | null };
   },
   ev: ParsedEvent
 ) {
   const propTZ = feed.properties.timezone || "UTC";
-  const { start_date, end_date, start_time, end_time } = normalizeEvent(ev, propTZ);
+  const { start_date, end_date, start_time, end_time } = normalizeEvent(
+    ev,
+    propTZ
+  );
 
   // suppression by UID (if booking manually deleted earlier)
   if (ev.uid) {
@@ -266,7 +324,8 @@ async function createOrUpdateFromEvent(
         .eq("property_id", feed.property_id)
         .eq("ical_uid", ev.uid)
         .limit(1);
-      if ((suppr?.length || 0) > 0) return { skipped: true, reason: "suppressed" };
+      if ((suppr?.length || 0) > 0)
+        return { skipped: true, reason: "suppressed" };
     } catch {}
   }
 
@@ -283,7 +342,9 @@ async function createOrUpdateFromEvent(
     if (!rMap.error && rMap.data && rMap.data.booking_id) {
       const rBk = await supa
         .from("bookings")
-        .select("id,room_id,room_type_id,source,ical_uid,ota_integration_id")
+        .select(
+          "id,room_id,room_type_id,source,ical_uid,ota_integration_id"
+        )
         .eq("id", rMap.data.booking_id)
         .maybeSingle();
       if (!rBk.error && rBk.data) icalBooking = rBk.data;
@@ -292,7 +353,9 @@ async function createOrUpdateFromEvent(
     if (!icalBooking) {
       const rBk = await supa
         .from("bookings")
-        .select("id,room_id,room_type_id,source,ical_uid,ota_integration_id")
+        .select(
+          "id,room_id,room_type_id,source,ical_uid,ota_integration_id"
+        )
         .eq("property_id", feed.property_id)
         .eq("ical_uid", ev.uid)
         .maybeSingle();
@@ -310,7 +373,9 @@ async function createOrUpdateFromEvent(
     if (orConds.length > 0) {
       rBk = await supa
         .from("bookings")
-        .select("id,room_id,room_type_id,source,ical_uid,ota_integration_id")
+        .select(
+          "id,room_id,room_type_id,source,ical_uid,ota_integration_id"
+        )
         .eq("property_id", feed.property_id)
         .eq("start_date", start_date)
         .eq("end_date", end_date)
@@ -352,7 +417,6 @@ async function createOrUpdateFromEvent(
         ota_provider: feed.provider ?? null,
       })
       .eq("id", bookingId);
-
   } else {
     // choose room_id (camera) if feed is per-type
     if (feed.room_id) {
@@ -379,8 +443,10 @@ async function createOrUpdateFromEvent(
         property_id: feed.property_id,
         room_id: room_id_final,
         room_type_id: room_type_id_final,
-        start_date, end_date,
-        start_time, end_time,
+        start_date,
+        end_date,
+        start_time,
+        end_time,
         status: "confirmed",
         source: "ical",
         ical_uid: ev.uid ?? null,
@@ -390,42 +456,49 @@ async function createOrUpdateFromEvent(
       .select("id")
       .single();
 
-    if (ins.error || !ins.data) throw new Error(ins.error?.message || "create_booking_failed");
+    if (ins.error || !ins.data)
+      throw new Error(ins.error?.message || "create_booking_failed");
     bookingId = String(ins.data.id);
   }
 
   // 4) Upsert UID map (if UID present)
   if (ev.uid) {
     try {
-      await supa.from("ical_uid_map").upsert({
-        property_id: feed.property_id,
-        room_type_id: room_type_id_final ?? null,
-        room_id: room_id_final ?? null,
-        booking_id: bookingId,
-        uid: ev.uid,
-        source: feed.provider || "ical",
-        start_date, end_date,
-        start_time: start_time ?? null,
-        end_time: end_time ?? null,
-        integration_id: feed.id,
-        last_seen: new Date().toISOString(),
-      }, { onConflict: "property_id,uid" });
+      await supa.from("ical_uid_map").upsert(
+        {
+          property_id: feed.property_id,
+          room_type_id: room_type_id_final ?? null,
+          room_id: room_id_final ?? null,
+          booking_id: bookingId,
+          uid: ev.uid,
+          source: feed.provider || "ical",
+          start_date,
+          end_date,
+          start_time: start_time ?? null,
+          end_time: end_time ?? null,
+          integration_id: feed.id,
+          last_seen: new Date().toISOString(),
+        },
+        { onConflict: "property_id,uid" }
+      );
     } catch {}
   }
 
   // 5) Best-effort: mark any matching unassigned as resolved (if still present)
   try {
     if (ev.uid) {
-      await supa.from("ical_unassigned_events")
+      await supa
+        .from("ical_unassigned_events")
         .update({ resolved: true })
         .eq("property_id", feed.property_id)
         .eq("uid", ev.uid);
     } else {
       const eqCol = feed.room_id ? "room_id" : "room_type_id";
-      await supa.from("ical_unassigned_events")
+      await supa
+        .from("ical_unassigned_events")
         .update({ resolved: true })
         .eq("property_id", feed.property_id)
-        .eq(eqCol as any, (feed.room_id || feed.room_type_id))
+        .eq(eqCol as any, feed.room_id || feed.room_type_id)
         .eq("start_date", start_date)
         .eq("end_date", end_date);
     }
@@ -437,13 +510,35 @@ async function createOrUpdateFromEvent(
     icalBookingId: bookingId,
     icalRoomId: room_id_final,
     icalRoomTypeId: room_type_id_final,
-    start_date, end_date,
+    start_date,
+    end_date,
   });
 
   return { ok: true, bookingId };
 }
 
 // ---------- handler ----------
+type FeedRow = {
+  id: string;
+  property_id: string;
+  room_type_id: string | null;
+  room_id: string | null;
+  provider: string | null;
+  url: string;
+  is_active: boolean | null;
+  last_sync: string | null;
+  color?: string | null;
+  logo_url?: string | null;
+  properties: { id: string; admin_id: string; timezone: string | null };
+};
+
+// raw type from supabase (properties can be object OR array)
+type FeedRowRaw = Omit<FeedRow, "properties"> & {
+  properties:
+    | { id: string; admin_id: string; timezone: string | null }
+    | Array<{ id: string; admin_id: string; timezone: string | null }>;
+};
+
 async function runAutosync(req: Request) {
   try {
     // security
@@ -460,8 +555,17 @@ async function runAutosync(req: Request) {
     const expected = process.env.CRON_ICAL_KEY || "";
     const auth = req.headers.get("authorization") || "";
     const bearer = auth.replace(/^Bearer\s+/i, "");
-    const tokenQ = (() => { try { const u = new URL(req.url); return u.searchParams.get("token") || ""; } catch { return ""; } })();
-    const keyOk = expected && [headerKey, queryKey, bearer, tokenQ].some(v => v && v === expected);
+    const tokenQ = (() => {
+      try {
+        const u = new URL(req.url);
+        return u.searchParams.get("token") || "";
+      } catch {
+        return "";
+      }
+    })();
+    const keyOk =
+      expected &&
+      [headerKey, queryKey, bearer, tokenQ].some((v) => v && v === expected);
     if (!isVercelCron && !keyOk) {
       return j(401, { error: "Unauthorized" });
     }
@@ -469,12 +573,15 @@ async function runAutosync(req: Request) {
     // supabase service-role
     const url = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
-    const supabase = createSb(url, serviceKey, { auth: { persistSession: false } });
+    const supabase = createSb(url, serviceKey, {
+      auth: { persistSession: false },
+    });
 
     // active feeds
     const { data: feeds, error: fErr } = await supabase
       .from("ical_type_integrations")
-      .select(`
+      .select(
+        `
         id,
         property_id,
         room_type_id,
@@ -490,29 +597,30 @@ async function runAutosync(req: Request) {
           admin_id,
           timezone
         )
-      `)
+      `
+      )
       .eq("is_active", true);
 
-    if (fErr) return j(400, { error: "Load feeds failed", details: fErr.message });
-    if (!feeds || (feeds as any[]).length === 0) return j(200, { ok: true, message: "No active feeds." });
+    if (fErr)
+      return j(400, { error: "Load feeds failed", details: fErr.message });
+    if (!feeds || (feeds as any[]).length === 0)
+      return j(200, { ok: true, message: "No active feeds." });
 
-    type FeedRow = {
-      id: string;
-      property_id: string;
-      room_type_id: string | null;
-      room_id: string | null;
-      provider: string | null;
-      url: string;
-      is_active: boolean | null;
-      last_sync: string | null;
-      color?: string | null;
-      logo_url?: string | null;
-      properties: { id: string; admin_id: string; timezone: string | null };
-    };
+    // normalize properties (array -> first element)
+    const feedsRaw = (feeds ?? []) as unknown as FeedRowRaw[];
+    const feedsNorm: FeedRow[] = feedsRaw
+      .map((r: FeedRowRaw) => {
+        const props = Array.isArray(r.properties)
+          ? r.properties[0]
+          : r.properties;
+        if (!props) return null as unknown as FeedRow;
+        return { ...r, properties: props };
+      })
+      .filter(Boolean) as FeedRow[];
 
     // group by account
     const byAccount = new Map<string, FeedRow[]>();
-    for (const f of (feeds as FeedRow[])) {
+    for (const f of feedsNorm) {
       const acc = f.properties.admin_id;
       if (!byAccount.has(acc)) byAccount.set(acc, []);
       byAccount.get(acc)!.push(f);
@@ -527,7 +635,14 @@ async function runAutosync(req: Request) {
       });
 
       if (can.error) {
-        summary.push({ accountId, ok: false, reason: "policy_rpc_failed", details: can.error.message, processedFeeds: 0, importedEvents: 0 });
+        summary.push({
+          accountId,
+          ok: false,
+          reason: "policy_rpc_failed",
+          details: can.error.message,
+          processedFeeds: 0,
+          importedEvents: 0,
+        });
         continue;
       }
       if (!can.data?.allowed) {
@@ -539,7 +654,8 @@ async function runAutosync(req: Request) {
           processedFeeds: 0,
           importedEvents: 0,
         });
-        for (const f of rows) await logSync(supabase, { integration_id: f.id, status: "cooldown" });
+        for (const f of rows)
+          await logSync(supabase, { integration_id: f.id, status: "cooldown" });
         continue;
       }
 
@@ -551,15 +667,30 @@ async function runAutosync(req: Request) {
         try {
           const startedAt = new Date();
           const propTZ = feed.properties.timezone || "UTC";
-          const res = await fetchWithRetry(feed.url, { timeoutMs: 15000, retries: 1 });
+          const res = await fetchWithRetry(feed.url, {
+            timeoutMs: 15000,
+            retries: 1,
+          });
           if (!res.ok) {
-            summary.push({ accountId, feedId: feed.id, ok: false, reason: "fetch_failed", status: res.status });
-            await logSync(supabase, { integration_id: feed.id, status: "error", error_message: `http_${res.status}`, started_at: startedAt.toISOString(), finished_at: new Date().toISOString() });
+            summary.push({
+              accountId,
+              feedId: feed.id,
+              ok: false,
+              reason: "fetch_failed",
+              status: res.status,
+            });
+            await logSync(supabase, {
+              integration_id: feed.id,
+              status: "error",
+              error_message: `http_${res.status}`,
+              started_at: startedAt.toISOString(),
+              finished_at: new Date().toISOString(),
+            });
             processed++;
             continue;
           }
           const ics = await res.text();
-          const events = parseIcsToEvents(ics);
+          const events: ParsedEvent[] = parseIcsToEvents(ics);
 
           let imported = 0;
           for (const ev of events) {
@@ -571,24 +702,51 @@ async function runAutosync(req: Request) {
           }
 
           // mark last_sync
-          await supabase.from("ical_type_integrations").update({ last_sync: new Date().toISOString() }).eq("id" as any, feed.id as any);
+          await supabase
+            .from("ical_type_integrations")
+            .update({ last_sync: new Date().toISOString() })
+            .eq("id" as any, feed.id as any);
 
-          await logSync(supabase, { integration_id: feed.id, status: "ok", imported, started_at: startedAt.toISOString(), finished_at: new Date().toISOString() });
+          await logSync(supabase, {
+            integration_id: feed.id,
+            status: "ok",
+            imported,
+            started_at: startedAt.toISOString(),
+            finished_at: new Date().toISOString(),
+          });
 
           importedTotal += imported;
           processed++;
           summary.push({ accountId, feedId: feed.id, ok: true, imported });
         } catch (e: any) {
           processed++;
-          summary.push({ accountId, feedId: feed.id, ok: false, reason: "exception", error: e?.message ?? String(e) });
-          await logSync(supabase, { integration_id: feed.id, status: "error", error_message: e?.message ?? String(e) });
+          summary.push({
+            accountId,
+            feedId: feed.id,
+            ok: false,
+            reason: "exception",
+            error: e?.message ?? String(e),
+          });
+          await logSync(supabase, {
+            integration_id: feed.id,
+            status: "error",
+            error_message: e?.message ?? String(e),
+          });
         }
       }
 
       // register usage per account for this run
-      await supabase.rpc("account_register_sync_usage_v2", { p_account_id: accountId, p_event_type: "autosync" });
+      await supabase.rpc("account_register_sync_usage_v2", {
+        p_account_id: accountId,
+        p_event_type: "autosync",
+      });
 
-      summary.push({ accountId, ok: true, processedFeeds: processed, importedEvents: importedTotal });
+      summary.push({
+        accountId,
+        ok: true,
+        processedFeeds: processed,
+        importedEvents: importedTotal,
+      });
     }
 
     return j(200, { ok: true, summary });
@@ -608,6 +766,7 @@ export async function GET(req: Request) {
 export async function HEAD(req: Request) {
   const headerKey = req.headers.get("x-cron-key") || "";
   const expected = process.env.CRON_ICAL_KEY || "";
-  if (!expected || headerKey !== expected) return new NextResponse(null, { status: 401 });
+  if (!expected || headerKey !== expected)
+    return new NextResponse(null, { status: 401 });
   return new NextResponse(null, { status: 200 });
 }
