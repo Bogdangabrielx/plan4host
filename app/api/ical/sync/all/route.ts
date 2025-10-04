@@ -1,4 +1,3 @@
-// app/api/ical/sync/all/route.ts
 import { NextResponse } from "next/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { createClient as createRls } from "@/lib/supabase/server";
@@ -40,21 +39,37 @@ async function fetchWithRetry(url: string, opts?: { timeoutMs?: number; retries?
   throw lastErr || new Error("fetch failed");
 }
 
-function fmtDate(d: Date, tz: string) { return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(d); }
-function fmtTime(d: Date, tz: string) { return new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour12: false, hour: "2-digit", minute: "2-digit" }).format(d); }
+function fmtDate(d: Date, tz: string) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+}
+function fmtTime(d: Date, tz: string) {
+  return new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour12: false, hour: "2-digit", minute: "2-digit" }).format(d);
+}
 type Norm = { start_date: string; end_date: string; start_time: string | null; end_time: string | null; };
 function normalizeEvent(ev: ParsedEvent, propTZ: string): Norm {
   let start_date = ev.start.date;
   let end_date = ev.end?.date ?? ev.start.date;
   let start_time: string | null = ev.start.time ?? null;
   let end_time: string | null = ev.end?.time ?? null;
-  if (ev.start.absolute) { const d = toLocalDateTime(ev.start.absolute, propTZ); start_date = fmtDate(d, propTZ); start_time = fmtTime(d, propTZ); }
-  if (ev.end?.absolute) { const d = toLocalDateTime(ev.end.absolute as Date, propTZ); end_date = fmtDate(d, propTZ); end_time = fmtTime(d, propTZ); }
+
+  if (ev.start.absolute) {
+    const d = toLocalDateTime(ev.start.absolute, propTZ);
+    start_date = fmtDate(d, propTZ);
+    start_time = fmtTime(d, propTZ);
+  }
+  if (ev.end?.absolute) {
+    const d = toLocalDateTime(ev.end.absolute as Date, propTZ);
+    end_date = fmtDate(d, propTZ);
+    end_time = fmtTime(d, propTZ);
+  }
   if (end_date < start_date) end_date = start_date;
   return { start_date, end_date, start_time, end_time };
 }
 
-async function findFreeRoomForType(supa: any, opts: { property_id: string; room_type_id: string; start_date: string; end_date: string; }): Promise<string | null> {
+async function findFreeRoomForType(
+  supa: any,
+  opts: { property_id: string; room_type_id: string; start_date: string; end_date: string; }
+): Promise<string | null> {
   const { property_id, room_type_id, start_date, end_date } = opts;
   const rRooms = await supa.from("rooms").select("id,name").eq("property_id", property_id).eq("room_type_id", room_type_id).order("name", { ascending: true });
   if (rRooms.error || !rRooms.data || rRooms.data.length === 0) return null;
@@ -75,9 +90,10 @@ function isFormish(b: any) {
   const src = (b?.source || "").toString().toLowerCase();
   return src === "form" || !!b?.is_soft_hold || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
 }
-async function mergeFormIntoIcal(supa: any, params: {
-  property_id: string; icalBookingId: string; icalRoomId: string | null; icalRoomTypeId: string | null; start_date: string; end_date: string;
-}) {
+async function mergeFormIntoIcal(
+  supa: any,
+  params: { property_id: string; icalBookingId: string; icalRoomId: string | null; icalRoomTypeId: string | null; start_date: string; end_date: string; }
+) {
   const { property_id, icalBookingId, icalRoomId, icalRoomTypeId, start_date, end_date } = params;
   const rCands = await supa
     .from("bookings")
@@ -94,6 +110,7 @@ async function mergeFormIntoIcal(supa: any, params: {
   if (!pick) return { merged: false };
 
   const formId = String(pick.id);
+
   await supa.from("bookings").update({
     source: "ical",
     guest_first_name: pick.guest_first_name ?? null,
@@ -109,14 +126,28 @@ async function mergeFormIntoIcal(supa: any, params: {
     if (!rBC.error && rBC.data) await supa.from("booking_contacts").upsert({ booking_id: icalBookingId, ...rBC.data }, { onConflict: "booking_id" });
   } catch {}
   try { await supa.from("booking_documents").update({ booking_id: icalBookingId }).eq("booking_id", formId); } catch {}
-  try { await supa.from("bookings").delete().eq("id", formId); } catch {}
+
+  // SAFE ARCHIVE (nu mai ștergem form-ul)
+  try {
+    await supa.from("bookings").update({
+      is_soft_hold: false,
+      hold_status: "converted",
+      source: "form",
+    })
+    .eq("id", formId)
+    .eq("source", "form")
+    .eq("is_soft_hold", true)
+    .in("status", ["hold", "pending"]);
+  } catch {}
 
   return { merged: true, mergedFormId: formId };
 }
 
-async function createOrUpdateFromEvent(supa: any, feed: {
-  id: string; property_id: string; room_type_id: string | null; room_id: string | null; provider: string | null; properties: { timezone: string | null };
-}, ev: ParsedEvent) {
+async function createOrUpdateFromEvent(
+  supa: any,
+  feed: { id: string; property_id: string; room_type_id: string | null; room_id: string | null; provider: string | null; properties: { timezone: string | null } },
+  ev: ParsedEvent
+) {
   const propTZ = feed.properties.timezone || "UTC";
   const { start_date, end_date, start_time, end_time } = normalizeEvent(ev, propTZ);
 
