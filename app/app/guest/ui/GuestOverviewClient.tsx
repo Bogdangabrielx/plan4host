@@ -87,6 +87,7 @@ function statusTooltip(row: OverviewRow): string | undefined {
     if (row._reason === "no_ota_found") return "Form dates don’t match any OTA reservation.";
     if (row._reason === "type_conflict") return "Unmatched Room: OTA type and form type differ. Resolve in Calendar.";
     if (row._reason === "room_required_auto_failed") return "Auto-assignment failed: no free room of the booked type.";
+    if (row._reason === "waiting_ical") return "Form-only for >2h; edit dates/type/name or wait for OTA iCal.";
     return "Action required.";
   }
   return undefined;
@@ -260,14 +261,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     try {
       const ids = new Set((properties || []).map(p => p.id));
       let desired: string | null = null;
-      if (typeof window !== 'undefined') {
-        try {
-          const u = new URL(window.location.href);
-          desired = u.searchParams.get('property');
-        } catch {}
-        if (!desired) {
-          try { desired = localStorage.getItem('p4h:selectedPropertyId'); } catch { desired = null; }
-        }
+      if (typeof window === 'undefined') return;
+      try {
+        const u = new URL(window.location.href);
+        desired = u.searchParams.get('property');
+      } catch {}
+      if (!desired) {
+        try { desired = localStorage.getItem('p4h:selectedPropertyId'); } catch { desired = null; }
       }
       if (desired && ids.has(desired) && desired !== activePropertyId) {
         setActivePropertyId(desired);
@@ -294,6 +294,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   // Modals
   const [modal, setModal] = useState<null | { propertyId: string; dateStr: string; room: Room }>(null);
   const [rmModal, setRmModal] = useState<null | { propertyId: string; item: OverviewRow }>(null);
+  const [editModal, setEditModal] = useState<null | { propertyId: string; bookingId: string }>(null);
 
   // Legend popovers
   const [legendInfo, setLegendInfo] = useState<null | "green" | "yellow" | "red">(null);
@@ -377,6 +378,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     // close modals tied to previous property
     setModal(null);
     setRmModal(null);
+    setEditModal(null);
     // clear lists
     setRooms([]);
     setItems([]);
@@ -788,6 +790,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               ((kind === "yellow" && it._reason === "waiting_form") ||
                 (kind === "red" && it._reason === "missing_form"));
 
+            // NEW: show edit form booking when FORM ONLY turned RED ( > 2h ) — reasons waiting_ical or no_ota_found
+            const canEditFormBooking =
+              kind === "red" &&
+              !!it.id &&
+              (it._reason === "waiting_ical" || it._reason === "no_ota_found");
+
             return (
               <section
                 key={key}
@@ -947,23 +955,45 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   )}
 
                   {kind === "red" && (
-                    <button
-                      type="button"
-                      {...useTap(() => resolveInCalendar(it))}
-                      style={{
-                        ...BTN_TOUCH_STYLE,
-                        borderRadius: 21,
-                        border: "1px solid var(--danger)",
-                        background: "transparent",
-                        color: "var(--text)",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        width: isSmall ? "100%" : undefined,
-                      }}
-                      title="Resolve in Calendar"
-                    >
-                      Resolve in Calendar
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        {...useTap(() => resolveInCalendar(it))}
+                        style={{
+                          ...BTN_TOUCH_STYLE,
+                          borderRadius: 21,
+                          border: "1px solid var(--danger)",
+                          background: "transparent",
+                          color: "var(--text)",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          width: isSmall ? "100%" : undefined,
+                        }}
+                        title="Resolve in Calendar"
+                      >
+                        Resolve in Calendar
+                      </button>
+
+                      {canEditFormBooking && (
+                        <button
+                          type="button"
+                          {...useTap(() => setEditModal({ propertyId, bookingId: String(it.id) }))}
+                          style={{
+                            ...BTN_TOUCH_STYLE,
+                            borderRadius: 21,
+                            border: "1px solid var(--border)",
+                            background: "var(--card)",
+                            color: "var(--text)",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            width: isSmall ? "100%" : undefined,
+                          }}
+                          title="Edit form booking"
+                        >
+                          Edit form booking
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </section>
@@ -1027,12 +1057,286 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             </div>
           </div>
         )}
+
+        {editModal && (
+          <EditFormBookingModal
+            propertyId={editModal.propertyId}
+            bookingId={editModal.bookingId}
+            onClose={() => setEditModal(null)}
+            onSaved={() => { setEditModal(null); refresh(); }}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-/* ───────────────── Reservation Message (safe HTML build, cu times live din bookings) ───────────────── */
+/* ───────────────── EditFormBookingModal ───────────────── */
+
+function EditFormBookingModal({
+  propertyId,
+  bookingId,
+  onClose,
+  onSaved,
+}: {
+  propertyId: string;
+  bookingId: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const supabase = useMemo(() => createClient(), []);
+  const isSmall = useIsSmall();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // booking fields
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [roomId, setRoomId] = useState<string | "">("");
+  const [roomTypeId, setRoomTypeId] = useState<string | "">("");
+
+  // readonly guest info
+  const [guestFirst, setGuestFirst] = useState<string>("");
+  const [guestLast, setGuestLast] = useState<string>("");
+  const [guestEmail, setGuestEmail] = useState<string>("");
+
+  // property shapes
+  const [rooms, setRooms] = useState<Array<{ id: string; name: string; room_type_id: string | null }>>([]);
+  const [roomTypes, setRoomTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const hasRoomTypes = roomTypes.length > 0;
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [bRes, rRes, rtRes, cRes] = await Promise.all([
+          supabase
+            .from("bookings")
+            .select("id,property_id,start_date,end_date,room_id,room_type_id,source,status,guest_first_name,guest_last_name,guest_email")
+            .eq("id", bookingId)
+            .maybeSingle(),
+          supabase
+            .from("rooms")
+            .select("id,name,room_type_id")
+            .eq("property_id", propertyId)
+            .order("name", { ascending: true }),
+          supabase
+            .from("room_types")
+            .select("id,name")
+            .eq("property_id", propertyId)
+            .order("name", { ascending: true }),
+          supabase
+            .from("booking_contacts")
+            .select("email")
+            .eq("booking_id", bookingId)
+            .maybeSingle(),
+        ]);
+
+        if (!alive) return;
+
+        if (bRes.error) throw new Error(bRes.error.message);
+        if (!bRes.data || String(bRes.data.property_id) !== String(propertyId)) {
+          throw new Error("Booking not found for this property.");
+        }
+
+        setStartDate(bRes.data.start_date || "");
+        setEndDate(bRes.data.end_date || "");
+        setRoomId(bRes.data.room_id || "");
+        setRoomTypeId(bRes.data.room_type_id || "");
+        setGuestFirst(bRes.data.guest_first_name || "");
+        setGuestLast(bRes.data.guest_last_name || "");
+        setGuestEmail((bRes.data.guest_email || cRes.data?.email || "") as string);
+
+        if (rRes.error) throw new Error(rRes.error.message);
+        setRooms((rRes.data || []) as any);
+
+        if (rtRes.error) throw new Error(rtRes.error.message);
+        setRoomTypes((rtRes.data || []) as any);
+      } catch (e: any) {
+        setError(e?.message || "Failed to load booking.");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [supabase, propertyId, bookingId]);
+
+  function valid(): boolean {
+    if (!startDate || !endDate) return false;
+    if (endDate < startDate) return false;
+    // When property has room types → user may pick a type (optional).
+    // When property has *no* room types → user may pick a room (optional).
+    return true;
+  }
+
+  async function onSave() {
+    if (!valid() || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const upd: any = {
+        start_date: startDate,
+        end_date: endDate,
+      };
+      if (hasRoomTypes) {
+        upd.room_type_id = roomTypeId || null;
+        upd.room_id = null; // avoid accidental mismatch
+      } else {
+        upd.room_id = roomId || null;
+        upd.room_type_id = null;
+      }
+
+      const { error: e1 } = await supabase.from("bookings").update(upd).eq("id", bookingId);
+      if (e1) throw new Error(e1.message);
+
+      onSaved();
+    } catch (e: any) {
+      setError(e?.message || "Failed to save changes.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function onDelete() {
+    if (deleting) return;
+    const sure = confirm("Delete this form booking? This cannot be undone.");
+    if (!sure) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      const { error: e1 } = await supabase.from("bookings").delete().eq("id", bookingId);
+      if (e1) throw new Error(e1.message);
+      onSaved();
+    } catch (e: any) {
+      setError(e?.message || "Failed to delete.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  const wrap: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 70, display: "grid", placeItems: "center", padding: 12 };
+  const card: React.CSSProperties = { width: "min(680px, 100%)", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 };
+
+  return (
+    <div role="dialog" aria-modal="true" onClick={onClose} style={wrap}>
+      <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={card}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:8 }}>
+          <strong>Edit form booking</strong>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <button className="sb-btn" type="button" onClick={onClose} disabled={saving || deleting}>Close</button>
+          </div>
+        </div>
+
+        {loading ? (
+          <div style={{ color:"var(--muted)" }}>Loading…</div>
+        ) : error ? (
+          <div style={{ color:"var(--danger)" }}>{error}</div>
+        ) : (
+          <div style={{ display:"grid", gap:12 }}>
+            {/* Read-only guest details */}
+            <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)" }}>
+              <div style={{ fontSize:12, color:"var(--muted)", fontWeight:800, marginBottom:6 }}>Guest</div>
+              <div style={{ display:"grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap:8 }}>
+                <div><strong>Name:</strong> {(guestFirst + " " + guestLast).trim() || "—"}</div>
+                <div><strong>Email:</strong> {guestEmail || "—"}</div>
+              </div>
+            </div>
+
+            {/* Editable fields */}
+            <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)", display:"grid", gap:10 }}>
+              <div style={{ display:"grid", gap:6 }}>
+                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Start date</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e)=>setStartDate((e.target as HTMLInputElement).value)}
+                  style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
+                />
+              </div>
+              <div style={{ display:"grid", gap:6 }}>
+                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>End date</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e)=>setEndDate((e.target as HTMLInputElement).value)}
+                  style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
+                />
+              </div>
+
+              {hasRoomTypes ? (
+                <div style={{ display:"grid", gap:6 }}>
+                  <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Room type</label>
+                  <select
+                    value={roomTypeId || ""}
+                    onChange={(e)=>setRoomTypeId((e.target as HTMLSelectElement).value)}
+                    style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
+                  >
+                    <option value="">—</option>
+                    {roomTypes.map(rt => (
+                      <option key={rt.id} value={rt.id}>{rt.name}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div style={{ display:"grid", gap:6 }}>
+                  <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Room name</label>
+                  <select
+                    value={roomId || ""}
+                    onChange={(e)=>setRoomId((e.target as HTMLSelectElement).value)}
+                    style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
+                  >
+                    <option value="">—</option>
+                    {rooms.map(r => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <button
+                  type="button"
+                  className="sb-btn sb-btn--primary"
+                  disabled={!valid() || saving || deleting}
+                  onClick={onSave}
+                  style={{ minHeight:44 }}
+                >
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  className="sb-btn"
+                  onClick={onDelete}
+                  disabled={saving || deleting}
+                  style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)" }}
+                  title="Delete this form booking"
+                >
+                  {deleting ? "Deleting…" : "Delete form"}
+                </button>
+              </div>
+            </div>
+
+            {(!valid() && startDate && endDate && endDate < startDate) && (
+              <div style={{ color:"var(--danger)" }}>End date cannot be before start date.</div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────── Reservation Message (unchanged) ───────────────── */
+/* (kept as in your version; only context lines changed above) */
 
 function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   const supabase = useMemo(() => createClient(), []);
@@ -1198,8 +1502,6 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
             `}}
           />
 
-
-
           <ActionsRow
             left={
               <LeftGroup
@@ -1261,7 +1563,7 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{
     <button
       type="button"
       className="sb-btn sb-btn--primary"
-      {...useTap(onGenerateAndCopy)}
+      onClick={onGenerateAndCopy}
       disabled={busy || !bookingId}
       aria-busy={busy}
       title={bookingId ? "Copy generated link" : "No booking id"}
@@ -1343,7 +1645,7 @@ function SendEmailButton({ propertyId, bookingId, values, onSent }:{
       <button
         type="button"
         className="sb-btn sb-btn--primary"
-        {...useTap(onSend)}
+        onClick={onSend}
         disabled={busy || !bookingId}
         aria-busy={busy}
         title={bookingId ? 'Send email to guest' : 'No booking id'}
@@ -1361,7 +1663,6 @@ function SendEmailButton({ propertyId, bookingId, values, onSent }:{
                 className="sb-btn"
                 type="button"
                 onClick={()=>setPopup(null)}
-                {...useTap(()=>setPopup(null))}
                 style={{ minHeight: 44, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
               >
                 Close
@@ -1517,7 +1818,7 @@ function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values }:{
       <button
         type="button"
         className="sb-btn"
-        {...useTap(onCopyPreview)}
+        onClick={onCopyPreview}
         style={{ padding: "12px 14px", minHeight: 44, touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
       >
         <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
