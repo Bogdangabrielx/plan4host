@@ -1,562 +1,321 @@
-// /app/api/ical/sync/type/route.ts
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient as createAdmin } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/server";
+import { parseIcsToEvents, toLocalDateTime, type ParsedEvent } from "@/lib/ical/parse";
 
-/**
- * Helpers
- */
-
-type Integration = {
-  id: string;
-  property_id: string;
-  room_type_id: string;
-  provider: string | null;
-  url: string;
-  is_active: boolean | null;
-};
-
-type Property = {
-  id: string;
-  timezone: string | null;
-  check_in_time: string | null;
-  check_out_time: string | null;
-};
-
-type Room = { id: string; name: string; property_id: string; room_type_id: string | null };
-
-const SUPABASE_URL =
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-
-function admin() {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error("Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY");
-  }
-  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { persistSession: false },
+/** ---------- response helper ---------- */
+function j(status: number, body: any) {
+  return new NextResponse(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
   });
 }
 
-// Unfold iCal lines (RFC 5545 line folding)
-function unfoldIcs(text: string): string[] {
-  const lines = text.split(/\r?\n/);
-  const out: string[] = [];
-  for (const line of lines) {
-    if (line.startsWith(" ") || line.startsWith("\t")) {
-      // continuation of previous
-      if (out.length) out[out.length - 1] += line.slice(1);
-    } else {
-      out.push(line);
+/** ---------- env ---------- */
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+/** ---------- tiny net helper ---------- */
+async function fetchWithRetry(url: string, opts?: { timeoutMs?: number; retries?: number }) {
+  const timeoutMs = opts?.timeoutMs ?? 15000;
+  const retries = opts?.retries ?? 1;
+  let attempt = 0;
+  let lastErr: any = null;
+  while (attempt <= retries) {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { method: "GET", signal: ac.signal } as RequestInit);
+      clearTimeout(t);
+      return res;
+    } catch (e) {
+      clearTimeout(t);
+      lastErr = e;
+      if (attempt < retries) await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
     }
+    attempt++;
   }
-  return out;
+  throw lastErr || new Error("fetch failed");
 }
 
-type ICalEvent = {
-  uid: string | null;
-  status: string | null; // e.g. CANCELLED
-  summary: string | null;
-  dtstartRaw: string | null;
-  dtstartTzid: string | null;
-  dtendRaw: string | null;
-  dtendTzid: string | null;
-};
+/** ---------- format helpers ---------- */
+function fmtDate(d: Date, tz: string) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+}
+function fmtTime(d: Date, tz: string) {
+  return new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour12: false, hour: "2-digit", minute: "2-digit" }).format(d);
+}
+type Norm = { start_date: string; end_date: string; start_time: string | null; end_time: string | null; };
+function normalizeEvent(ev: ParsedEvent, propTZ: string): Norm {
+  let start_date = ev.start.date;
+  let end_date = ev.end?.date ?? ev.start.date;
+  let start_time: string | null = ev.start.time ?? null;
+  let end_time: string | null = ev.end?.time ?? null;
 
-// crude VEVENT parser for UID/STATUS/SUMMARY/DTSTART/DTEND (+ TZID param)
-function parseIcs(text: string): ICalEvent[] {
-  const lines = unfoldIcs(text);
-  const events: ICalEvent[] = [];
-
-  let inEvent = false;
-  let cur: ICalEvent | null = null;
-
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (line === "BEGIN:VEVENT") {
-      inEvent = true;
-      cur = {
-        uid: null,
-        status: null,
-        summary: null,
-        dtstartRaw: null,
-        dtstartTzid: null,
-        dtendRaw: null,
-        dtendTzid: null,
-      };
-      continue;
-    }
-    if (line === "END:VEVENT") {
-      if (inEvent && cur) events.push(cur);
-      inEvent = false;
-      cur = null;
-      continue;
-    }
-    if (!inEvent || !cur) continue;
-
-    // Simple key[:|;]value split with params
-    const m = line.match(/^([^:;]+)(;[^:]+)?:([\s\S]*)$/);
-    if (!m) continue;
-    const key = m[1].toUpperCase();
-    const params = (m[2] || "").toUpperCase(); // e.g. ";TZID=EUROPE/BUCHAREST;VALUE=DATE"
-    const value = m[3];
-
-    if (key === "UID") cur.uid = value.trim();
-    else if (key === "STATUS") cur.status = value.trim();
-    else if (key === "SUMMARY") cur.summary = value.trim();
-    else if (key === "DTSTART") {
-      cur.dtstartRaw = value.trim();
-      const tz = params.match(/TZID=([^;]+)/);
-      cur.dtstartTzid = tz ? tz[1] : null;
-    } else if (key === "DTEND") {
-      cur.dtendRaw = value.trim();
-      const tz = params.match(/TZID=([^;]+)/);
-      cur.dtendTzid = tz ? tz[1] : null;
-    }
+  if (ev.start.absolute) {
+    const d = toLocalDateTime(ev.start.absolute, propTZ);
+    start_date = fmtDate(d, propTZ);
+    start_time = fmtTime(d, propTZ);
   }
-
-  return events;
+  if (ev.end?.absolute) {
+    const d = toLocalDateTime(ev.end.absolute as Date, propTZ);
+    end_date = fmtDate(d, propTZ);
+    end_time = fmtTime(d, propTZ);
+  }
+  if (end_date < start_date) end_date = start_date;
+  return { start_date, end_date, start_time, end_time };
 }
 
-type LocalDateTime = { date: string; time: string | null };
-
-// Parse an iCal date/datetime into a local (property TZ) date+time.
-// Handles:
-//  - DATE (YYYYMMDD)  => all-day; returns time=null
-//  - UTC (…Z)         => convert to TZ
-//  - Floating / TZID  => best-effort: if TZID present use it, otherwise assume property TZ
-function toLocal(value: string, tzProp: string): LocalDateTime {
-  // DATE only
-  if (/^\d{8}$/.test(value)) {
-    const yyyy = value.slice(0, 4);
-    const mm = value.slice(4, 6);
-    const dd = value.slice(6, 8);
-    return { date: `${yyyy}-${mm}-${dd}`, time: null };
-  }
-
-  // date-time with optional trailing Z
-  // DT w/ Z -> UTC
-  if (/Z$/.test(value)) {
-    const d = new Date(value);
-    // format into TZ
-    const fmt = new Intl.DateTimeFormat("sv-SE", {
-      timeZone: tzProp,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    })
-      .format(d)
-      .replace(" ", "T"); // "YYYY-MM-DDTHH:mm"
-    const [date, timeFull] = fmt.split("T");
-    const time = timeFull?.slice(0, 5) || null;
-    return { date, time };
-  }
-
-  // floating local -> assume property TZ; we can't shift without a lib,
-  // so we take the components and treat them as if already in that TZ.
-  // Convert "YYYYMMDDTHHmmss" or "YYYYMMDDTHHmm"
-  const m = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/);
-  if (m) {
-    const yyyy = m[1],
-      mm = m[2],
-      dd = m[3],
-      HH = m[4],
-      MM = m[5];
-    return { date: `${yyyy}-${mm}-${dd}`, time: `${HH}:${MM}` };
-  }
-
-  // Fallback: try Date parse (local) then format
-  const d = new Date(value);
-  const fmt = new Intl.DateTimeFormat("sv-SE", {
-    timeZone: tzProp,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  })
-    .format(d)
-    .replace(" ", "T");
-  const [date, timeFull] = fmt.split("T");
-  const time = timeFull?.slice(0, 5) || null;
-  return { date, time };
+/** ---------- capacity & merge helpers (same as autosync) ---------- */
+async function findFreeRoomForType(supa: any, opts: { property_id: string; room_type_id: string; start_date: string; end_date: string; }): Promise<string | null> {
+  const { property_id, room_type_id, start_date, end_date } = opts;
+  const rRooms = await supa.from("rooms").select("id,name").eq("property_id", property_id).eq("room_type_id", room_type_id).order("name", { ascending: true });
+  if (rRooms.error || !rRooms.data || rRooms.data.length === 0) return null;
+  const candIds: string[] = rRooms.data.map((r: any) => String(r.id));
+  const rBusy = await supa.from("bookings")
+    .select("room_id,start_date,end_date,status")
+    .in("room_id", candIds)
+    .neq("status", "cancelled")
+    .lt("start_date", end_date)
+    .gt("end_date", start_date);
+  const busy = new Set<string>();
+  if (!rBusy.error) for (const b of rBusy.data ?? []) if (b.room_id) busy.add(String(b.room_id));
+  const free: string | undefined = candIds.find((id: string) => !busy.has(id));
+  return free ?? null;
 }
-
-// Overlap check on date ranges [start, end) with optional times ignored here.
-// We only need date precision for picking a free room.
-function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
-  return aStart < bEnd && aEnd > bStart;
+function isFormish(b: any) {
+  const src = (b?.source || "").toString().toLowerCase();
+  return src === "form" || !!b?.is_soft_hold || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
 }
+async function mergeFormIntoIcal(supa: any, params: {
+  property_id: string; icalBookingId: string; icalRoomId: string | null; icalRoomTypeId: string | null; start_date: string; end_date: string;
+}) {
+  const { property_id, icalBookingId, icalRoomId, icalRoomTypeId, start_date, end_date } = params;
+  const rCands = await supa
+    .from("bookings")
+    .select("id,room_id,room_type_id,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address,form_submitted_at,source,is_soft_hold,status")
+    .eq("property_id", property_id).eq("start_date", start_date).eq("end_date", end_date).neq("status", "cancelled");
+  if (rCands.error) return { merged: false };
+  const forms: any[] = (rCands.data || []).filter(isFormish as (b: any) => boolean);
+  if (forms.length === 0) return { merged: false };
 
-// Time-aware overlap using property check-in/out defaults
-function overlapsWithTimes(
-  aS: string, aSt: string | null, aE: string, aEt: string | null,
-  bS: string, bSt: string | null, bE: string, bEt: string | null,
-  ci: string, co: string
-) {
-  const as = new Date(`${aS}T${(aSt ?? ci)}:00Z`).getTime();
-  const ae = new Date(`${aE}T${(aEt ?? co)}:00Z`).getTime();
-  const bs = new Date(`${bS}T${(bSt ?? ci)}:00Z`).getTime();
-  const be = new Date(`${bE}T${(bEt ?? co)}:00Z`).getTime();
-  return as < be && bs < ae;
-}
+  let pick: any | null = null;
+  if (icalRoomId) pick = forms.find((f: any) => String(f.room_id || "") === String(icalRoomId)) || null;
+  if (!pick && icalRoomTypeId) pick = forms.find((f: any) => String(f.room_type_id || "") === String(icalRoomTypeId)) || null;
+  if (!pick && forms.length === 1) pick = forms[0];
+  if (!pick) return { merged: false };
 
-/**
- * Route handler
- */
-export async function POST(req: Request) {
-  const startedAt = new Date();
-  const supa = admin();
+  const formId = String(pick.id);
+  await supa.from("bookings").update({
+    source: "ical",
+    guest_first_name: pick.guest_first_name ?? null,
+    guest_last_name:  pick.guest_last_name  ?? null,
+    guest_email:      pick.guest_email      ?? null,
+    guest_phone:      pick.guest_phone      ?? null,
+    guest_address:    pick.guest_address    ?? null,
+    form_submitted_at: pick.form_submitted_at ?? new Date().toISOString(),
+  }).eq("id", icalBookingId);
 
   try {
+    const rBC = await supa.from("booking_contacts").select("email,phone,address,city,country").eq("booking_id", formId).maybeSingle();
+    if (!rBC.error && rBC.data) await supa.from("booking_contacts").upsert({ booking_id: icalBookingId, ...rBC.data }, { onConflict: "booking_id" });
+  } catch {}
+  try { await supa.from("booking_documents").update({ booking_id: icalBookingId }).eq("booking_id", formId); } catch {}
+  try { await supa.from("bookings").delete().eq("id", formId); } catch {}
+  return { merged: true, mergedFormId: formId };
+}
+async function createOrUpdateFromEvent(supa: any, feed: {
+  id: string; property_id: string; room_type_id: string | null; room_id: string | null; provider: string | null; properties: { timezone: string | null };
+}, ev: ParsedEvent) {
+  const propTZ = feed.properties.timezone || "UTC";
+  const { start_date, end_date, start_time, end_time } = normalizeEvent(ev, propTZ);
+
+  if (ev.uid) {
+    const { data: suppr } = await supa.from("ical_suppressions").select("id").eq("property_id", feed.property_id).eq("ical_uid", ev.uid).limit(1);
+    if ((suppr?.length || 0) > 0) return { skipped: true, reason: "suppressed" };
+  }
+
+  let icalBooking: any | null = null;
+  if (ev.uid) {
+    const rMap = await supa.from("ical_uid_map").select("booking_id").eq("property_id", feed.property_id).eq("uid", ev.uid).maybeSingle();
+    if (!rMap.error && rMap.data?.booking_id) {
+      const rBk = await supa.from("bookings").select("id,room_id,room_type_id,source,ical_uid,ota_integration_id").eq("id", rMap.data.booking_id).maybeSingle();
+      if (!rBk.error && rBk.data) icalBooking = rBk.data;
+    }
+    if (!icalBooking) {
+      const rBk = await supa.from("bookings").select("id,room_id,room_type_id,source,ical_uid,ota_integration_id")
+        .eq("property_id", feed.property_id).eq("ical_uid", ev.uid).maybeSingle();
+      if (!rBk.error && rBk.data) icalBooking = rBk.data;
+    }
+  }
+
+  if (!icalBooking) {
+    const orConds: string[] = [];
+    if (feed.room_id) orConds.push(`room_id.eq.${feed.room_id}`);
+    if (feed.room_type_id) orConds.push(`room_type_id.eq.${feed.room_type_id}`);
+    if (orConds.length > 0) {
+      const rBk = await supa.from("bookings")
+        .select("id,room_id,room_type_id,source,ical_uid,ota_integration_id")
+        .eq("property_id", feed.property_id)
+        .eq("start_date", start_date).eq("end_date", end_date)
+        .eq("source", "ical")
+        .or(orConds.join(","))
+        .maybeSingle();
+      if (!rBk.error && rBk.data) icalBooking = rBk.data;
+    }
+  }
+
+  let bookingId: string;
+  let room_id_final: string | null = null;
+  let room_type_id_final: string | null = null;
+
+  if (icalBooking) {
+    bookingId = String(icalBooking.id);
+    room_id_final = icalBooking.room_id ?? (feed.room_id || null);
+    room_type_id_final = icalBooking.room_type_id ?? (feed.room_type_id || null);
+
+    if (feed.room_id && !icalBooking.room_id) { await supa.from("bookings").update({ room_id: feed.room_id }).eq("id", bookingId); room_id_final = feed.room_id; }
+    if (!icalBooking.room_type_id && feed.room_type_id) { await supa.from("bookings").update({ room_type_id: feed.room_type_id }).eq("id", bookingId); room_type_id_final = feed.room_type_id; }
+
+    await supa.from("bookings").update({
+      source: "ical",
+      ical_uid: ev.uid ?? icalBooking.ical_uid ?? null,
+      ota_integration_id: feed.id,
+      ota_provider: feed.provider ?? null,
+      start_date, end_date, start_time, end_time,
+      status: "confirmed",
+    }).eq("id", bookingId);
+  } else {
+    if (feed.room_id) {
+      room_id_final = feed.room_id; room_type_id_final = feed.room_type_id ?? null;
+    } else if (feed.room_type_id) {
+      room_type_id_final = feed.room_type_id;
+      room_id_final = await findFreeRoomForType(supa, { property_id: feed.property_id, room_type_id: feed.room_type_id, start_date, end_date });
+    } else {
+      room_id_final = null; room_type_id_final = null;
+    }
+
+    const ins = await supa.from("bookings").insert({
+      property_id: feed.property_id,
+      room_id: room_id_final,
+      room_type_id: room_type_id_final,
+      start_date, end_date, start_time, end_time,
+      status: "confirmed",
+      source: "ical",
+      ical_uid: ev.uid ?? null,
+      ota_integration_id: feed.id,
+      ota_provider: feed.provider ?? null,
+    }).select("id").single();
+    if (ins.error || !ins.data) throw new Error(ins.error?.message || "create_booking_failed");
+    bookingId = String(ins.data.id);
+  }
+
+  if (ev.uid) {
+    try {
+      await supa.from("ical_uid_map").upsert({
+        property_id: feed.property_id,
+        room_type_id: room_type_id_final ?? null,
+        room_id: room_id_final ?? null,
+        booking_id: bookingId,
+        uid: ev.uid,
+        source: feed.provider || "ical",
+        start_date, end_date, start_time: start_time ?? null, end_time: end_time ?? null,
+        integration_id: feed.id,
+        last_seen: new Date().toISOString(),
+      }, { onConflict: "property_id,uid" });
+    } catch {}
+  }
+
+  try {
+    if (ev.uid) {
+      await supa.from("ical_unassigned_events").update({ resolved: true }).eq("property_id", feed.property_id).eq("uid", ev.uid);
+    } else {
+      const eqCol = feed.room_id ? "room_id" : "room_type_id";
+      await supa.from("ical_unassigned_events").update({ resolved: true })
+        .eq("property_id", feed.property_id)
+        .eq(eqCol as any, (feed.room_id || feed.room_type_id))
+        .eq("start_date", start_date)
+        .eq("end_date", end_date);
+    }
+  } catch {}
+
+  await mergeFormIntoIcal(supa, {
+    property_id: feed.property_id,
+    icalBookingId: bookingId,
+    icalRoomId: room_id_final,
+    icalRoomTypeId: room_type_id_final,
+    start_date, end_date,
+  });
+
+  return { ok: true, bookingId };
+}
+
+/** ---------- POST: Sync Now (ONE integration) ---------- */
+export async function POST(req: Request) {
+  try {
+    const rls = createClient(); // RLS for auth + gating
+    const { data: auth } = await rls.auth.getUser();
+    if (!auth?.user) return j(401, { error: "Not authenticated" });
+
     const body = await req.json().catch(() => ({}));
     const integrationId = String(body?.integrationId || "").trim();
-    if (!integrationId) {
-      return NextResponse.json({ ok: false, error: "integrationId missing" }, { status: 400 });
-    }
+    if (!integrationId) return j(400, { error: "integrationId missing" });
 
-    // 1) Load integration + property + rooms in type
-    const { data: integ, error: eInteg } = await supa
+    // load integration with property (RLS)
+    const { data: integ, error: eInteg } = await rls
       .from("ical_type_integrations")
-      .select("id,property_id,room_type_id,provider,url,is_active")
+      .select("id,property_id,room_type_id,room_id,provider,url,is_active,properties:properties!inner(id,admin_id,timezone)")
       .eq("id", integrationId)
       .single();
-    if (eInteg || !integ) throw new Error("Integration not found");
+    if (eInteg || !integ) return j(404, { error: "Integration not found" });
+    if (integ.is_active === false) return j(409, { error: "Integration inactive" });
 
-    const I = integ as Integration;
-    if (I.is_active === false) {
-      return NextResponse.json({ ok: false, error: "integration inactive" }, { status: 400 });
+    const accountId = (integ.properties as any).admin_id as string;
+
+    // gating (premium + cooldown for sync_now)
+    const can = await rls.rpc("account_can_sync_now_v2", { p_account_id: accountId, p_event_type: "sync_now" });
+    if (can.error) return j(400, { error: "Policy check failed", details: can.error.message });
+    if (!can.data?.allowed) {
+      return j(429, {
+        error: "Rate limited",
+        reason: can.data?.reason,
+        cooldown_remaining_sec: can.data?.cooldown_remaining_sec ?? 0,
+        remaining_in_window: can.data?.remaining_in_window ?? 0,
+        retry_after_sec: can.data?.cooldown_remaining_sec ?? 0,
+      });
     }
 
-    const { data: prop, error: eProp } = await supa
-      .from("properties")
-      .select("id,timezone,check_in_time,check_out_time")
-      .eq("id", I.property_id)
-      .single();
-    if (eProp || !prop) throw new Error("Property not found");
+    // admin client for writes
+    const admin = createAdmin(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
-    const P = prop as Property;
-    const tz = P.timezone || "UTC";
-    const ci = P.check_in_time || "14:00";
-    const co = P.check_out_time || "11:00";
-
-    const { data: roomRows, error: eRooms } = await supa
-      .from("rooms")
-      .select("id,name,property_id,room_type_id")
-      .eq("property_id", I.property_id)
-      .eq("room_type_id", I.room_type_id);
-    if (eRooms) throw eRooms;
-
-    const rooms = (roomRows || []) as Room[];
-    const roomIds = rooms.map((r) => r.id);
-
-    // 2) Download ICS
-    const res = await fetch(I.url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`Fetch ICS failed (${res.status})`);
+    // fetch ICS
+    const res = await fetchWithRetry(integ.url, { timeoutMs: 15000, retries: 1 });
+    if (!res.ok) return j(400, { error: `Fetch failed (${res.status})` });
     const icsText = await res.text();
+    const events = parseIcsToEvents(icsText);
 
-    // 3) Parse ICS VEVENTs
-    const events = parseIcs(icsText);
-
-    // 4) Load existing UID map for this property & type
-    const { data: mapRows } = await supa
-      .from("ical_uid_map")
-      .select("id,uid,booking_id,room_id,start_date,end_date,last_seen")
-      .eq("property_id", I.property_id)
-      .eq("room_type_id", I.room_type_id);
-
-    const mapByUid = new Map<string, any>();
-    for (const m of mapRows || []) mapByUid.set(m.uid, m);
-
-    // 5) Prefetch bookings for overlap checks in the date envelope we see in feed
-    //    We'll expand a little (±7 zile) ca siguranță
-    const dates = events
-      .flatMap((ev) => [ev.dtstartRaw, ev.dtendRaw])
-      .filter(Boolean) as string[];
-    const minRaw = dates.reduce((a, b) => (a < b ? a : b), "99999999");
-    const maxRaw = dates.reduce((a, b) => (a > b ? a : b), "00000000");
-    // convert to local dates best-effort
-    const minLocal = toLocal(minRaw, tz).date;
-    const maxLocal = toLocal(maxRaw, tz).date;
-
-    const pad = (s: string, n: number) => {
-      const d = new Date(s + "T00:00:00");
-      d.setDate(d.getDate() + n);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
-      return `${y}-${m}-${dd}`;
-    };
-
-    const envStart = pad(minLocal, -7);
-    const envEnd = pad(maxLocal, 7);
-
-    let bookedByRoom = new Map<string, Array<{ s: string; st: string | null; e: string; et: string | null }>>();
-    if (roomIds.length) {
-      const { data: bookRows } = await supa
-        .from("bookings")
-        .select("room_id,start_date,end_date,start_time,end_time,status")
-        .eq("property_id", I.property_id)
-        .in("room_id", roomIds)
-        .neq("status", "cancelled")
-        .lt("start_date", envEnd)
-        .gt("end_date", envStart);
-      bookedByRoom = new Map();
-      for (const br of bookRows || []) {
-        const arr = bookedByRoom.get(br.room_id) || [] as Array<{ s: string; st: string | null; e: string; et: string | null }>;
-        arr.push({ s: br.start_date, st: (br as any).start_time ?? null, e: br.end_date, et: (br as any).end_time ?? null });
-        bookedByRoom.set(br.room_id, arr);
-      }
-    }
-
-    // 6) Walk events
-    let added = 0;
-    let updated = 0;
-    let cancelled = 0;
-    let unassigned = 0;
-    const seenUID = new Set<string>();
-
+    let imported = 0;
     for (const ev of events) {
-      const uid = (ev.uid || "").trim();
-      if (!uid) continue;
-      seenUID.add(uid);
-
-      // cancelled?
-      if (String(ev.status || "").toUpperCase() === "CANCELLED") {
-        const mm = mapByUid.get(uid);
-        if (mm?.booking_id) {
-          await supa.from("bookings").update({ status: "cancelled" }).eq("id", mm.booking_id);
-          cancelled++;
-        }
-        // still mark last_seen, keep mapping (helps idempotency)
-        await supa
-          .from("ical_uid_map")
-          .update({ last_seen: new Date().toISOString() })
-          .eq("id", mm?.id || "00000000-0000-0000-0000-000000000000")
-          .neq("id", "00000000-0000-0000-0000-000000000000"); // no-op if not exists
-        continue;
-      }
-
-      // normalize dates
-      if (!ev.dtstartRaw || !ev.dtendRaw) continue;
-      const start = toLocal(ev.dtstartRaw, tz);
-      const end = toLocal(ev.dtendRaw, tz);
-      const start_date = start.date;
-      const end_date = end.date;
-      const start_time = start.time; // poate fi null
-      const end_time = end.time;
-
-      // Update existing mapping / booking
-      const mm = mapByUid.get(uid);
-      if (mm && mm.booking_id) {
-        // Update booking if changed (dates/times)
-        const { error: eUp } = await supa
-          .from("bookings")
-          .update({ start_date, end_date, start_time, end_time, status: "confirmed" })
-          .eq("id", mm.booking_id);
-        await supa
-          .from("ical_uid_map")
-          .update({ start_date, end_date, start_time, end_time, last_seen: new Date().toISOString() })
-          .eq("id", mm.id);
-        if (!eUp) updated++;
-        continue;
-      }
-
-      // New event: try to assign a free room
-      let pickedRoomId: string | null = null;
-      for (const r of rooms) {
-        const taken = (bookedByRoom.get(r.id) || []).some((b: any) => overlapsWithTimes(
-          start_date, start_time, end_date, end_time,
-          b.s, b.st ?? null, b.e, b.et ?? null,
-          ci, co
-        ));
-        if (!taken) {
-          pickedRoomId = r.id;
-          // reserve locally (to avoid double-assign in same run)
-          const arr = (bookedByRoom.get(r.id) || []) as Array<{ s: string; st: string | null; e: string; et: string | null }>;
-          arr.push({ s: start_date, st: start_time, e: end_date, et: end_time });
-          bookedByRoom.set(r.id, arr);
-          break;
-        }
-      }
-
-      if (!pickedRoomId) {
-        // put to unassigned inbox
-        await supa.from("ical_unassigned_events").insert({
-          id: crypto.randomUUID(),
-          property_id: I.property_id,
-          room_type_id: I.room_type_id,
-          uid,
-          summary: ev.summary || null,
-          start_date,
-          end_date,
-          start_time,
-          end_time,
-          payload: icsText ? ev.summary || "" : "",
-          resolved: false,
-          integration_id: I.id,
-        });
-        // create/update mapping without booking
-        const nowIso = new Date().toISOString();
-        if (mm) {
-          await supa
-            .from("ical_uid_map")
-            .update({ start_date, end_date, start_time, end_time, last_seen: nowIso, integration_id: I.id })
-            .eq("id", mm.id);
-        } else {
-          await supa.from("ical_uid_map").insert({
-            id: crypto.randomUUID(),
-            property_id: I.property_id,
-            room_type_id: I.room_type_id,
-            room_id: null,
-            booking_id: null,
-            uid,
-            source: I.provider || "ical",
-            start_date,
-            end_date,
-            start_time,
-            end_time,
-            last_seen: nowIso,
-            integration_id: I.id,
-          });
-        }
-        unassigned++;
-        continue;
-      }
-
-      // create booking
-      const guest = (ev.summary || "").slice(0, 120) || null;
-      const { data: newBooking, error: eIns } = await supa
-        .from("bookings")
-        .insert({
-          id: crypto.randomUUID(),
-          property_id: I.property_id,
-          room_id: pickedRoomId,
-          start_date,
-          end_date,
-          start_time,
-          end_time,
-          guest_name: guest,
-          source: I.provider || "ical",
-          ota_integration_id: I.id,
-          ota_provider: I.provider || null,
-          status: "confirmed",
-        })
-        .select("id")
-        .single();
-      if (eIns) {
-        // fallback to unassigned if booking insert failed
-        await supa.from("ical_unassigned_events").insert({
-          id: crypto.randomUUID(),
-          property_id: I.property_id,
-          room_type_id: I.room_type_id,
-          uid,
-          summary: ev.summary || null,
-          start_date,
-          end_date,
-          start_time,
-          end_time,
-          payload: icsText ? ev.summary || "" : "",
-          resolved: false,
-          integration_id: I.id,
-        });
-        unassigned++;
-        continue;
-      }
-
-      // map UID
-      const nowIso = new Date().toISOString();
-      if (mm) {
-        await supa
-          .from("ical_uid_map")
-          .update({
-            room_id: pickedRoomId,
-            booking_id: newBooking!.id,
-            start_date,
-            end_date,
-            start_time,
-            end_time,
-            last_seen: nowIso,
-            integration_id: I.id,
-          })
-          .eq("id", mm.id);
-      } else {
-        await supa.from("ical_uid_map").insert({
-          id: crypto.randomUUID(),
-          property_id: I.property_id,
-          room_type_id: I.room_type_id,
-          room_id: pickedRoomId,
-          booking_id: newBooking!.id,
-          uid,
-          source: I.provider || "ical",
-          start_date,
-          end_date,
-          start_time,
-          end_time,
-          last_seen: nowIso,
-          integration_id: I.id,
-        });
-      }
-      added++;
+      if (!ev.start) continue;
+      await createOrUpdateFromEvent(admin, {
+        id: integ.id,
+        property_id: integ.property_id,
+        room_type_id: integ.room_type_id,
+        room_id: integ.room_id,
+        provider: integ.provider,
+        properties: { timezone: (integ.properties as any).timezone || "UTC" },
+      }, ev);
+      imported++;
     }
 
-    // 7) Any previously-seen mappings that are NOT in current feed → mark cancelled
-    const stale = (mapRows || []).filter((m) => !seenUID.has(m.uid));
-    for (const st of stale) {
-      if (st.booking_id) {
-        await supa.from("bookings").update({ status: "cancelled" }).eq("id", st.booking_id);
-        cancelled++;
-      }
-      await supa.from("ical_uid_map").update({ last_seen: new Date().toISOString() }).eq("id", st.id);
-    }
+    // update last_sync
+    await admin.from("ical_type_integrations").update({ last_sync: new Date().toISOString() }).eq("id", integrationId);
 
-    // 8) Log
-    const finishedAt = new Date();
-    await supa.from("ical_type_sync_logs").insert({
-      id: crypto.randomUUID(),
-      integration_id: I.id,
-      started_at: startedAt.toISOString(),
-      finished_at: finishedAt.toISOString(),
-      status: "ok",
-      added_count: added,
-      updated_count: updated,
-      conflicts: unassigned, // folosim "conflicts" pentru unassigned aici
-      error_message: null,
-    });
+    // register usage window
+    await rls.rpc("account_register_sync_usage_v2", { p_account_id: accountId, p_event_type: "sync_now" });
 
-    return NextResponse.json({
-      ok: true,
-      added,
-      updated,
-      cancelled,
-      unassigned,
-    });
-  } catch (err: any) {
-    // best-effort log
-    try {
-      const supa = admin();
-      const body = await req.json().catch(() => ({}));
-      const integrationId = String(body?.integrationId || "").trim();
-      if (integrationId) {
-        await supa.from("ical_type_sync_logs").insert({
-          id: crypto.randomUUID(),
-          integration_id: integrationId,
-          started_at: new Date().toISOString(),
-          finished_at: new Date().toISOString(),
-          status: "error",
-          added_count: 0,
-          updated_count: 0,
-          conflicts: 0,
-          error_message: String(err?.message || err),
-        });
-      }
-    } catch {}
-    return NextResponse.json(
-      { ok: false, error: String(err?.message || err) },
-      { status: 500 }
-    );
+    return j(200, { ok: true, integrationId, imported });
+  } catch (e: any) {
+    return j(500, { error: "Server error", details: e?.message || String(e) });
   }
 }
