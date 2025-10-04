@@ -52,8 +52,6 @@ function isFormish(b: any) {
   return src === "form" || !!b?.is_soft_hold || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
 }
 
-function safeLower(s?: string | null) { return (s ?? "").toLowerCase(); }
-
 // small net helper
 async function fetchWithRetry(url: string, opts?: { timeoutMs?: number; retries?: number }) {
   const timeoutMs = opts?.timeoutMs ?? 15000;
@@ -106,9 +104,10 @@ async function logSync(
 }
 
 // ---------- capacity helper ----------
-async function findFreeRoomForType(supa: any, opts: {
-  property_id: string; room_type_id: string; start_date: string; end_date: string;
-}): Promise<string | null> {
+async function findFreeRoomForType(
+  supa: any,
+  opts: { property_id: string; room_type_id: string; start_date: string; end_date: string; }
+): Promise<string | null> {
   const { property_id, room_type_id, start_date, end_date } = opts;
 
   const rRooms = await supa
@@ -134,7 +133,7 @@ async function findFreeRoomForType(supa: any, opts: {
     for (const b of rBusy.data ?? []) if (b.room_id) busy.add(String(b.room_id));
   }
 
-  const free: string | undefined = candIds.find((id: string) => !busy.has(id));
+  const free: string | undefined = candIds.find((rid: string) => !busy.has(rid));
   return free ?? null;
 }
 
@@ -186,7 +185,7 @@ async function mergeFormIntoIcal(supa: any, params: {
 
   if (rCands.error) return { merged: false };
 
-  const forms: any[] = (rCands.data || []).filter(isFormish as (b: any) => boolean);
+  const forms: any[] = (rCands.data || []).filter((b: any) => isFormish(b));
   if (forms.length === 0) return { merged: false };
 
   // scoring: prefer same room_id, altfel same room_type_id, altfel single remaining
@@ -232,18 +231,29 @@ async function mergeFormIntoIcal(supa: any, params: {
     await supa.from("booking_documents").update({ booking_id: icalBookingId }).eq("booking_id", formId);
   } catch {}
 
-  // delete the form hold to avoid double counting capacity
+  // IMPORTANT: NU ștergem form-ul; îl marcăm anulat & fără soft-hold, pentru a păstra auditul
   try {
-    await supa.from("bookings").delete().eq("id", formId);
+    await supa
+      .from("bookings")
+      .update({
+        status: "cancelled",
+        is_soft_hold: false,
+        hold_status: "merged",
+      })
+      .eq("id", formId);
   } catch {}
 
   return { merged: true, mergedFormId: formId };
 }
 
 // ---------- create/update booking from event ----------
-async function createOrUpdateFromEvent(supa: any, feed: {
-  id: string; property_id: string; room_type_id: string | null; room_id: string | null; provider: string | null; properties: { timezone: string | null };
-}, ev: ParsedEvent) {
+async function createOrUpdateFromEvent(
+  supa: any,
+  feed: {
+    id: string; property_id: string; room_type_id: string | null; room_id: string | null; provider: string | null; properties: { timezone: string | null };
+  },
+  ev: ParsedEvent
+) {
   const propTZ = feed.properties.timezone || "UTC";
   const { start_date, end_date, start_time, end_time } = normalizeEvent(ev, propTZ);
 
@@ -295,7 +305,7 @@ async function createOrUpdateFromEvent(supa: any, feed: {
     const orConds: string[] = [];
     if (feed.room_id) orConds.push(`room_id.eq.${feed.room_id}`);
     if (feed.room_type_id) orConds.push(`room_type_id.eq.${feed.room_type_id}`);
-    let rBk = null as any;
+    let rBk: any = null;
 
     if (orConds.length > 0) {
       rBk = await supa
@@ -502,7 +512,7 @@ async function runAutosync(req: Request) {
 
     // group by account
     const byAccount = new Map<string, FeedRow[]>();
-    for (const f of (feeds as any[] as FeedRow[])) {
+    for (const f of (feeds as FeedRow[])) {
       const acc = f.properties.admin_id;
       if (!byAccount.has(acc)) byAccount.set(acc, []);
       byAccount.get(acc)!.push(f);
