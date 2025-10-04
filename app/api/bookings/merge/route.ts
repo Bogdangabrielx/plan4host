@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     // 1) Load bookings and validate they belong to property
     const [rManual, rForm] = await Promise.all([
       admin.from('bookings').select('id,property_id,room_id,room_type_id,start_date,end_date,status,source,guest_first_name,guest_last_name').eq('id', manual_booking_id).maybeSingle(),
-      admin.from('bookings').select('id,property_id,room_id,room_type_id,start_date,end_date,status,source,guest_first_name,guest_last_name,is_soft_hold,form_submitted_at').eq('id', form_booking_id).maybeSingle(),
+      admin.from('bookings').select('id,property_id,room_id,room_type_id,start_date,end_date,status,source,guest_first_name,guest_last_name,form_submitted_at').eq('id', form_booking_id).maybeSingle(),
     ]);
 
     if (rManual.error) return bad(500, { error: rManual.error.message });

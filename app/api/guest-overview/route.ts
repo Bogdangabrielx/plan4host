@@ -24,7 +24,6 @@ type BRow = {
   guest_first_name: string | null;
   guest_last_name: string | null;
   guest_name: string | null;
-  is_soft_hold?: boolean | null;
   form_submitted_at?: string | null;
   created_at?: string | null;
   hold_status?: "active" | "expired" | null;
@@ -43,10 +42,12 @@ function isIcalish(b: BRow) {
   const src = safeLower(b.source);
   return !!b.ical_uid || ["ical","ota","airbnb","booking","booking.com","expedia","channel_manager"].includes(src);
 }
-function isFormish(b: BRow) {
-  const src = safeLower(b.source);
-  return src === "form" || !!b.is_soft_hold || !!b.form_submitted_at || b.status === "hold";
+function isFormish(b: any) {
+  const src = (b?.source || "").toString().toLowerCase();
+  // fără is_soft_hold / hold_status (au dispărut din DB)
+  return src === "form" || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
 }
+
 function hasAnyName(b: Pick<BRow, "guest_first_name"|"guest_last_name"|"guest_name">) {
   const f = (b.guest_first_name ?? "").trim();
   const l = (b.guest_last_name ?? "").trim();

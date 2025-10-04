@@ -420,7 +420,6 @@ export async function POST(req: NextRequest) {
       guest_address:    displayAddress,
       form_submitted_at: new Date().toISOString(),
       source: "form",
-      is_soft_hold: true,
       hold_status: "active",
       hold_expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     };

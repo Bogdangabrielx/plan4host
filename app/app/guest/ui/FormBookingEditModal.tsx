@@ -1,280 +1,460 @@
-// app/app/guest/ui/FormBookingEditModal.tsx
 "use client";
 
-import * as React from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-type RoomType = { id: string; name: string };
-type Room = { id: string; name: string; room_type_id: string | null };
+/**
+ * Modal for editing a *form-only* booking.
+ * Editable fields: start_date, end_date, and either room_type_id (if the property uses room types)
+ * or room_id (if the property has no room types).
+ *
+ * Everything else is read-only.
+ */
+
+type Props = {
+  bookingId: string;
+  propertyId: string;
+  onClose: () => void;
+  onSaved?: () => void;
+};
+
 type Booking = {
   id: string;
   property_id: string;
-  source: string;
-  status: string;
+  source: string | null;
+  status: string | null;
   start_date: string;
   end_date: string;
+  start_time: string | null;
+  end_time: string | null;
   room_id: string | null;
   room_type_id: string | null;
-  guest_first_name?: string | null;
-  guest_last_name?: string | null;
-  guest_email?: string | null;
-  guest_phone?: string | null;
-  created_at?: string | null;
-  form_submitted_at?: string | null;
+
+  guest_first_name: string | null;
+  guest_last_name: string | null;
+  guest_email: string | null;
+  guest_phone: string | null;
+
+  form_submitted_at: string | null;
+  created_at: string | null;
 };
 
-type Props = {
-  open: boolean;
-  bookingId: string | null;
-  onClose: () => void;
-  onSaved?: (updated: any) => void; // parent can refresh list
+type RoomType = { id: string; name: string };
+type Room = { id: string; name: string; room_type_id: string | null };
+
+const FIELD: React.CSSProperties = {
+  padding: "10px 12px",
+  background: "var(--card)",
+  color: "var(--text)",
+  border: "1px solid var(--border)",
+  borderRadius: 10,
+  fontFamily: "inherit",
+  minHeight: 44,
 };
 
-export default function FormBookingEditModal({ open, bookingId, onClose, onSaved }: Props) {
-  const [loading, setLoading] = React.useState(false);
-  const [saving, setSaving] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
+      {children}
+    </label>
+  );
+}
 
-  const [booking, setBooking] = React.useState<Booking | null>(null);
-  const [roomTypes, setRoomTypes] = React.useState<RoomType[]>([]);
-  const [rooms, setRooms] = React.useState<Room[]>([]);
+function isValidYMD(s: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
 
-  const [startDate, setStartDate] = React.useState("");
-  const [endDate, setEndDate] = React.useState("");
-  const [roomTypeId, setRoomTypeId] = React.useState<string | null>(null);
-  const [roomId, setRoomId] = React.useState<string | null>(null);
+export default function EditFormBookingModal({
+  bookingId,
+  propertyId,
+  onClose,
+  onSaved,
+}: Props) {
+  const supabase = useMemo(() => createClient(), []);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const hasTypes = roomTypes.length > 0;
+  // Read-only data
+  const [booking, setBooking] = useState<Booking | null>(null);
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [hasRoomTypes, setHasRoomTypes] = useState<boolean>(false);
 
-  React.useEffect(() => {
-    if (!open || !bookingId) return;
-    setError(null);
-    setLoading(true);
+  // Editable fields
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [roomTypeId, setRoomTypeId] = useState<string | "">("");
+  const [roomId, setRoomId] = useState<string | "">("");
 
-    fetch(`/api/form-bookings/${bookingId}`, { method: "GET" })
-      .then(async (r) => {
-        if (!r.ok) throw new Error((await r.json())?.error || `HTTP ${r.status}`);
-        return r.json();
-      })
-      .then(({ booking, room_types, rooms }) => {
-        setBooking(booking);
-        setRoomTypes(room_types || []);
-        setRooms(rooms || []);
-        setStartDate(booking.start_date || "");
-        setEndDate(booking.end_date || "");
-        setRoomTypeId(booking.room_type_id || null);
-        setRoomId(booking.room_id || null);
-      })
-      .catch((e) => setError(e?.message ?? String(e)))
-      .finally(() => setLoading(false));
-  }, [open, bookingId]);
+  // Derived: filtered list of rooms if a room type is chosen
+  const filteredRooms = useMemo(() => {
+    if (!roomTypes.length) return rooms;
+    if (!roomTypeId) return rooms;
+    return rooms.filter((r) => (r.room_type_id || null) === (roomTypeId || null));
+  }, [rooms, roomTypes, roomTypeId]);
 
-  function resetStateAndClose() {
-    setBooking(null);
-    setRoomTypes([]);
-    setRooms([]);
-    setStartDate("");
-    setEndDate("");
-    setRoomTypeId(null);
-    setRoomId(null);
-    setError(null);
-    setLoading(false);
-    setSaving(false);
-    onClose();
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // 1) Load booking (RLS)
+        const { data: b, error: eB } = await supabase
+          .from("bookings")
+          .select(
+            "id,property_id,source,status,start_date,end_date,start_time,end_time,room_id,room_type_id,guest_first_name,guest_last_name,guest_email,guest_phone,form_submitted_at,created_at"
+          )
+          .eq("id", bookingId)
+          .maybeSingle();
+
+        if (!alive) return;
+        if (eB || !b) {
+          setError(eB?.message || "Booking not found.");
+          setLoading(false);
+          return;
+        }
+
+        setBooking(b as Booking);
+
+        // 2) Load room types and rooms for property
+        const [rt, rr] = await Promise.all([
+          supabase
+            .from("room_types")
+            .select("id,name")
+            .eq("property_id", propertyId)
+            .order("name", { ascending: true }),
+          supabase
+            .from("rooms")
+            .select("id,name,room_type_id")
+            .eq("property_id", propertyId)
+            .order("name", { ascending: true }),
+        ]);
+
+        if (!alive) return;
+
+        const listRT = (rt.data || []) as RoomType[];
+        const listR = (rr.data || []) as Room[];
+
+        setRoomTypes(listRT);
+        setRooms(listR);
+        setHasRoomTypes(listRT.length > 0);
+
+        // 3) Seed edit fields
+        setStartDate(b.start_date);
+        setEndDate(b.end_date);
+
+        // If property has room types → prefer editing by type (consistent with "what guest selected")
+        // Otherwise, edit by room id (room name).
+        if (listRT.length > 0) {
+          setRoomTypeId((b.room_type_id as string) || "");
+          setRoomId(""); // keep room independent in this modal
+        } else {
+          setRoomId((b.room_id as string) || "");
+          setRoomTypeId("");
+        }
+      } catch (e: any) {
+        if (!alive) return;
+        setError(e?.message || "Failed to load data.");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [supabase, bookingId, propertyId]);
+
+  function validate(): string | null {
+    if (!isValidYMD(startDate)) return "Start date must be in YYYY-MM-DD format.";
+    if (!isValidYMD(endDate)) return "End date must be in YYYY-MM-DD format.";
+    if (endDate < startDate) return "End date cannot be before Start date.";
+
+    if (hasRoomTypes) {
+      if (!roomTypeId) return "Please select a Room type.";
+    } else {
+      if (!roomId) return "Please select a Room.";
+    }
+    return null;
   }
 
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault();
+  async function onSave() {
     if (!booking) return;
+    const v = validate();
+    if (v) {
+      setError(v);
+      return;
+    }
     setSaving(true);
     setError(null);
-
-    const payload: any = {
-      start_date: startDate,
-      end_date: endDate,
-    };
-    if (hasTypes) {
-      if (roomTypeId) payload.room_type_id = roomTypeId;
-      if (roomId) payload.room_id = roomId;
-    } else {
-      // fără room types -> cerem room_id
-      if (roomId) payload.room_id = roomId;
-    }
-
     try {
-      const res = await fetch(`/api/form-bookings/${booking.id}`, {
-        method: "PATCH",
+      const res = await fetch("/api/booking/form/update", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          booking_id: booking.id,
+          start_date: startDate,
+          end_date: endDate,
+          // Only send one of room_type_id / room_id (avoid risky overwrites)
+          room_type_id: hasRoomTypes ? (roomTypeId || null) : null,
+          room_id: !hasRoomTypes ? (roomId || null) : null,
+        }),
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
-      if (onSaved) onSaved(data?.booking);
-      resetStateAndClose();
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(j?.error || "Save failed.");
+        return;
+      }
+      onSaved && onSaved();
+      onClose();
     } catch (e: any) {
-      setError(e?.message ?? String(e));
+      setError(e?.message || "Network error.");
     } finally {
       setSaving(false);
     }
   }
 
-  if (!open) return null;
+  function ReadRow({ label, value }: { label: string; value: React.ReactNode }) {
+    return (
+      <div style={{ display: "grid", gap: 6 }}>
+        <Label>{label}</Label>
+        <div
+          style={{
+            ...FIELD,
+            background: "var(--panel)",
+            color: "var(--muted)",
+            borderStyle: "dashed",
+          }}
+        >
+          {value ?? "—"}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="fixed inset-0 z-50">
-      {/* backdrop */}
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.55)",
+        zIndex: 80,
+        display: "grid",
+        placeItems: "center",
+        padding: 12,
+      }}
+    >
       <div
-        className="absolute inset-0 bg-black/40"
-        onClick={saving ? undefined : resetStateAndClose}
-      />
-      {/* modal */}
-      <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl">
-          <div className="flex items-center justify-between border-b px-6 py-4">
-            <h2 className="text-lg font-semibold">Update form data</h2>
+        onClick={(e) => e.stopPropagation()}
+        className="sb-card"
+        style={{
+          width: "min(820px, 100%)",
+          maxHeight: "calc(100vh - 32px)",
+          overflow: "auto",
+          padding: 16,
+          border: "1px solid var(--border)",
+          background: "var(--panel)",
+          borderRadius: 12,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 8,
+          }}
+        >
+          <strong>Edit form booking</strong>
+          <div style={{ display: "flex", gap: 8 }}>
             <button
-              onClick={saving ? undefined : resetStateAndClose}
-              className="rounded-md p-2 text-gray-500 hover:bg-gray-100"
-              aria-label="Close"
+              type="button"
+              className="sb-btn"
+              onClick={onClose}
+              style={{ minHeight: 44 }}
             >
-              ✕
+              Close
+            </button>
+            <button
+              type="button"
+              className="sb-btn sb-btn--primary"
+              onClick={onSave}
+              disabled={saving || loading || !booking}
+              aria-busy={saving}
+              style={{ minHeight: 44 }}
+            >
+              {saving ? "Saving…" : "Save changes"}
             </button>
           </div>
-
-          <div className="px-6 py-4 space-y-4">
-            {loading && <p className="text-sm text-gray-500">Loading…</p>}
-            {error && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-                {error}
-              </div>
-            )}
-
-            {/* READ-ONLY details */}
-            {booking && (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500">Guest</label>
-                  <div className="mt-1 text-sm">
-                    {(booking.guest_first_name || "") + " " + (booking.guest_last_name || "")}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500">Email</label>
-                  <div className="mt-1 text-sm">{booking.guest_email || "—"}</div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500">Phone</label>
-                  <div className="mt-1 text-sm">{booking.guest_phone || "—"}</div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500">Source</label>
-                  <div className="mt-1 text-sm">form</div>
-                </div>
-              </div>
-            )}
-
-            {/* EDITABLE FIELDS */}
-            <form onSubmit={handleSave} className="space-y-4">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium">Start date</label>
-                  <input
-                    type="date"
-                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium">End date</label>
-                  <input
-                    type="date"
-                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              {hasTypes ? (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium">Room type (optional)</label>
-                    <select
-                      className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                      value={roomTypeId || ""}
-                      onChange={(e) => setRoomTypeId(e.target.value || null)}
-                    >
-                      <option value="">— none —</option>
-                      {roomTypes.map((rt) => (
-                        <option key={rt.id} value={rt.id}>{rt.name}</option>
-                      ))}
-                    </select>
-                    <p className="mt-1 text-xs text-gray-500">
-                      Dacă proprietatea are tipuri, poți seta tipul; camera e opțională.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium">Room (optional)</label>
-                    <select
-                      className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                      value={roomId || ""}
-                      onChange={(e) => setRoomId(e.target.value || null)}
-                    >
-                      <option value="">— none —</option>
-                      {rooms
-                        .filter((r) => !roomTypeId || String(r.room_type_id || "") === String(roomTypeId))
-                        .map((r) => (
-                          <option key={r.id} value={r.id}>{r.name}</option>
-                        ))}
-                    </select>
-                    <p className="mt-1 text-xs text-gray-500">
-                      Dacă alegi o cameră, verificăm disponibilitatea pentru intervalul selectat.
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <div>
-                  <label className="block text-sm font-medium">Room</label>
-                  <select
-                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                    value={roomId || ""}
-                    onChange={(e) => setRoomId(e.target.value || null)}
-                    required
-                  >
-                    <option value="">— select —</option>
-                    {rooms.map((r) => (
-                      <option key={r.id} value={r.id}>{r.name}</option>
-                    ))}
-                  </select>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Proprietatea nu are room types, selectează direct camera.
-                  </p>
-                </div>
-              )}
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  className="rounded-md px-4 py-2 text-sm hover:bg-gray-100"
-                  disabled={saving}
-                  onClick={resetStateAndClose}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-md bg-black px-4 py-2 text-sm text-white disabled:opacity-60"
-                  disabled={saving}
-                >
-                  {saving ? "Saving…" : "Save changes"}
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
+
+        {loading ? (
+          <div style={{ color: "var(--muted)" }}>Loading…</div>
+        ) : error ? (
+          <div
+            style={{
+              color: "var(--danger)",
+              background: "color-mix(in srgb, var(--danger) 10%, transparent)",
+              border: "1px solid var(--danger)",
+              padding: 10,
+              borderRadius: 8,
+              marginBottom: 10,
+            }}
+          >
+            {error}
+          </div>
+        ) : !booking ? (
+          <div style={{ color: "var(--muted)" }}>Booking not found.</div>
+        ) : (
+          <div style={{ display: "grid", gap: 12 }}>
+            {/* Read-only section */}
+            <div
+              className="sb-card"
+              style={{ padding: 12, borderRadius: 10, background: "var(--card)" }}
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 12,
+                }}
+              >
+                <ReadRow
+                  label="Guest"
+                  value={
+                    <>
+                      {(booking.guest_first_name || "").toString()}{" "}
+                      {(booking.guest_last_name || "").toString()}
+                    </>
+                  }
+                />
+                <ReadRow
+                  label="Contact"
+                  value={
+                    <>
+                      {booking.guest_email || "—"}
+                      {booking.guest_phone ? ` • ${booking.guest_phone}` : ""}
+                    </>
+                  }
+                />
+                <ReadRow label="Source" value={booking.source || "—"} />
+                <ReadRow
+                  label="Form submitted"
+                  value={
+                    booking.form_submitted_at
+                      ? new Date(booking.form_submitted_at).toLocaleString()
+                      : "—"
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Editable section */}
+            <div
+              className="sb-card"
+              style={{ padding: 12, borderRadius: 10, background: "var(--card)" }}
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 12,
+                }}
+              >
+                <div style={{ display: "grid", gap: 6 }}>
+                  <Label>Start date</Label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.currentTarget.value)}
+                    style={FIELD}
+                  />
+                </div>
+
+                <div style={{ display: "grid", gap: 6 }}>
+                  <Label>End date</Label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.currentTarget.value)}
+                    style={FIELD}
+                  />
+                </div>
+
+                {hasRoomTypes ? (
+                  <>
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <Label>Room type</Label>
+                      <select
+                        value={roomTypeId}
+                        onChange={(e) => {
+                          setRoomTypeId(e.currentTarget.value);
+                          // keep roomId independent for this edit modal (we only persist type)
+                          setRoomId("");
+                        }}
+                        style={FIELD}
+                      >
+                        <option value="">Select room type…</option>
+                        {roomTypes.map((rt) => (
+                          <option key={rt.id} value={rt.id}>
+                            {rt.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Optional hint list of rooms in the chosen type (read-only preview) */}
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <Label>Rooms in selected type (read only)</Label>
+                      <div
+                        style={{
+                          ...FIELD,
+                          background: "var(--panel)",
+                          borderStyle: "dashed",
+                          color: "var(--muted)",
+                          minHeight: 44,
+                        }}
+                      >
+                        {roomTypeId
+                          ? filteredRooms.map((r) => r.name).join(", ") || "—"
+                          : "Select a room type…"}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <Label>Room</Label>
+                      <select
+                        value={roomId}
+                        onChange={(e) => setRoomId(e.currentTarget.value)}
+                        style={FIELD}
+                      >
+                        <option value="">Select room…</option>
+                        {rooms.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div />
+                  </>
+                )}
+              </div>
+
+              <div style={{ marginTop: 8, color: "var(--muted)", fontSize: 12 }}>
+                Only the fields above are editable. All other details remain read-only.
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
