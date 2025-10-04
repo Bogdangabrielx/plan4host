@@ -1,3 +1,4 @@
+// app/api/ical/rooms/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -15,6 +16,7 @@ function icsEscape(s: string) {
     .replace(/,/g, "\\,")
     .replace(/\r?\n/g, "\\n");
 }
+
 function asICSDate(d: Date): string {
   const y = d.getUTCFullYear();
   const m = String(d.getUTCMonth() + 1).padStart(2, "0");
@@ -38,20 +40,20 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   }
   const roomName = rRoom.data.name as string;
 
-  // 2) Rezervări reale (NU soft-hold, NU cancelled) pentru camera asta
+  // 2) Rezervări reale (exclude: cancelled + form)
   const rBookings = await admin
     .from("bookings")
-    .select("id,start_date,end_date,status,is_soft_hold,guest_first_name,guest_last_name")
+    .select("id,start_date,end_date,status,source,guest_first_name,guest_last_name")
     .eq("room_id", roomId)
-    .eq("is_soft_hold", false)        // ⬅️ IMPORTANT: exclude soft-hold-urile
     .neq("status", "cancelled")
+    .neq("source", "form") // ⬅️ exclude formularele
     .order("start_date", { ascending: true });
 
   if (rBookings.error) {
     return new NextResponse("Failed to load bookings", { status: 500 });
   }
 
-  // 3) ICS (all-day) — DTEND e exclusiv și rămâne = end_date
+  // 3) ICS (all-day) — DTEND este exclusiv și rămâne = end_date
   let ics =
     "BEGIN:VCALENDAR\r\n" +
     "VERSION:2.0\r\n" +
@@ -65,11 +67,10 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const dtEnd   = asICSDate(new Date(`${b.end_date}T00:00:00Z`)); // end exclusiv
 
     const uid = `${roomId}-${b.start_date}-${b.end_date}@plan4host`;
-    const guest =
-      [b.guest_first_name ?? "", b.guest_last_name ?? ""]
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .join(" ");
+    const guest = [b.guest_first_name ?? "", b.guest_last_name ?? ""]
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .join(" ");
     const summary = guest ? `${guest} — #${roomName}` : `Reserved — #${roomName}`;
 
     ics +=
@@ -89,8 +90,6 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     status: 200,
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      // dacă vrei cache mic pe CDN:
-      // "Cache-Control": "s-maxage=60, stale-while-revalidate=120"
       "Cache-Control": "no-store, max-age=0",
     },
   });
