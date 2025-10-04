@@ -370,81 +370,75 @@ export async function GET(req: Request) {
         continue;
       }
 
-      // C) doar Form
-      if (hasForm && !hasIcal) {
-        // Conflict: există iCal-only pe alt tip pe același interval?
-        let hasIcalOtherType = false;
-        for (const [, pk2] of packs) {
-          if (pk2 === pk) continue;
-          if (pk2.start_date === pk.start_date && pk2.end_date === pk.end_date && pk2.ical && !pk2.form) {
-            hasIcalOtherType = true; break;
-          }
-        }
+// C) doar Form
+if (hasForm && !hasIcal) {
+  // dacă a apărut între timp un booking MANUAL pe același interval => considerăm "primit manual" => verde
+  const hasManual = pk.others.some(o => !isIcalish(o) && !isFormish(o));
 
-        if (hasIcalOtherType) {
-          items.push({
-            kind: "red",
-            reason: "type_conflict",
-            start_date: pk.start_date,
-            end_date: pk.end_date,
-            room_id: roomId,
-            room_label: roomLabel,
-            room_type_id: pk.type_id,
-            room_type_name: pk.type_name,
-            booking_id: pk.form?.id ?? null,
-            guest_first_name: pk.form?.guest_first_name ?? null,
-            guest_last_name:  pk.form?.guest_last_name  ?? null,
-          });
-        } else if (nameKnown) {
-          items.push({
-            kind: "green",
-            start_date: pk.start_date,
-            end_date: pk.end_date,
-            room_id: roomId,
-            room_label: roomLabel,
-            room_type_id: pk.type_id,
-            room_type_name: pk.type_name,
-            booking_id: pk.form?.id ?? null,
-            guest_first_name: pk.form?.guest_first_name ?? null,
-            guest_last_name:  pk.form?.guest_last_name  ?? null,
-          });
-        } else {
-          // fără hold_status/hold_expires_at → folosim fereastra de 2h de la form_submitted_at
-          const notExpiredYet = !!formDeadline && now < formDeadline;
-          if (notExpiredYet) {
-            items.push({
-              kind: "yellow",
-              reason: "waiting_ical",
-              start_date: pk.start_date,
-              end_date: pk.end_date,
-              room_id: roomId,
-              room_label: roomLabel,
-              room_type_id: pk.type_id,
-              room_type_name: pk.type_name,
-              booking_id: pk.form?.id ?? null,
-              guest_first_name: pk.form?.guest_first_name ?? null,
-              guest_last_name:  pk.form?.guest_last_name  ?? null,
-              cutoff_ts: formDeadline?.toISOString(),
-            });
-          } else {
-            items.push({
-              kind: "red",
-              reason: "no_ota_found",
-              start_date: pk.start_date,
-              end_date: pk.end_date,
-              room_id: roomId,
-              room_label: roomLabel,
-              room_type_id: pk.type_id,
-              room_type_name: pk.type_name,
-              booking_id: pk.form?.id ?? null,
-              guest_first_name: pk.form?.guest_first_name ?? null,
-              guest_last_name:  pk.form?.guest_last_name  ?? null,
-            });
-          }
-        }
-        continue;
-      }
+  // Conflict de tip? (există iCal-only pe alt tip pe același interval)
+  let hasIcalOtherType = false;
+  for (const [, pk2] of packs) {
+    if (pk2 === pk) continue;
+    if (pk2.start_date === pk.start_date && pk2.end_date === pk.end_date && pk2.ical && !pk2.form) {
+      hasIcalOtherType = true; break;
+    }
+  }
 
+  if (hasIcalOtherType) {
+    items.push({
+      kind: "red",
+      reason: "type_conflict",
+      start_date: pk.start_date, end_date: pk.end_date,
+      room_id: roomId, room_label: roomLabel,
+      room_type_id: pk.type_id, room_type_name: pk.type_name,
+      booking_id: pk.form?.id ?? null,
+      guest_first_name: pk.form?.guest_first_name ?? null,
+      guest_last_name:  pk.form?.guest_last_name  ?? null,
+    });
+  } else if (hasManual) {
+    // a sosit un booking manual (non-ical) compatibil => verde
+    items.push({
+      kind: "green",
+      start_date: pk.start_date, end_date: pk.end_date,
+      room_id: roomId, room_label: roomLabel,
+      room_type_id: pk.type_id, room_type_name: pk.type_name,
+      booking_id: pk.form?.id ?? null,
+      guest_first_name: pk.form?.guest_first_name ?? null,
+      guest_last_name:  pk.form?.guest_last_name  ?? null,
+    });
+  } else {
+    // fereastra de 2h bazată pe form_submitted_at (sau created_at fallback)
+    const submittedAt = pk.form?.form_submitted_at || pk.form?.created_at || null;
+    const formDeadline = submittedAt ? new Date(new Date(submittedAt).getTime() + 2 * 60 * 60 * 1000) : null;
+    const notExpiredYet = !!formDeadline && now < formDeadline;
+
+    if (notExpiredYet) {
+      items.push({
+        kind: "yellow",
+        reason: "waiting_ical",
+        start_date: pk.start_date, end_date: pk.end_date,
+        room_id: roomId, room_label: roomLabel,
+        room_type_id: pk.type_id, room_type_name: pk.type_name,
+        booking_id: pk.form?.id ?? null,
+        guest_first_name: pk.form?.guest_first_name ?? null,
+        guest_last_name:  pk.form?.guest_last_name  ?? null,
+        cutoff_ts: formDeadline?.toISOString(),
+      });
+    } else {
+      items.push({
+        kind: "red",
+        reason: "no_ota_found",
+        start_date: pk.start_date, end_date: pk.end_date,
+        room_id: roomId, room_label: roomLabel,
+        room_type_id: pk.type_id, room_type_name: pk.type_name,
+        booking_id: pk.form?.id ?? null,
+        guest_first_name: pk.form?.guest_first_name ?? null,
+        guest_last_name:  pk.form?.guest_last_name  ?? null,
+      });
+    }
+  }
+  continue;
+}
       // D) nici iCal, nici Form (manual)
       if (nameKnown) {
         items.push({
