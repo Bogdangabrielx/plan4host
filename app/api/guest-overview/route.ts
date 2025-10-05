@@ -27,15 +27,12 @@ type BRow = {
   guest_name: string | null;
   form_submitted_at?: string | null;
   created_at?: string | null;
-  // NOTĂ: nu mai depindem de is_soft_hold / hold_status / hold_expires_at
 };
 
 type Room = { id: string; room_type_id: string | null; name: string | null };
 type RoomType = { id: string; name: string | null };
 
 const safeLower = (s?: string | null) => (s ?? "").toLowerCase();
-const ymdToDate = (ymd: string) => new Date(`${ymd}T00:00:00Z`);
-const addDays = (d: Date, days: number) => { const x = new Date(d.getTime()); x.setUTCDate(x.getUTCDate() + days); return x; };
 const nowUtc = () => new Date();
 
 function isIcalish(b: BRow) {
@@ -44,52 +41,54 @@ function isIcalish(b: BRow) {
 }
 function isFormish(b: any) {
   const src = (b?.source || "").toString().toLowerCase();
-  // fără is_soft_hold (scoasă din DB)
   return src === "form" || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
 }
-
-function hasAnyName(b: Pick<BRow, "guest_first_name"|"guest_last_name"|"guest_name">) {
-  const f = (b.guest_first_name ?? "").trim();
-  const l = (b.guest_last_name ?? "").trim();
-  const gn = (b.guest_name ?? "").trim();
-  return (f.length + l.length) > 0 || gn.length > 0;
+function hasAnyName(b: Pick<BRow,"guest_first_name"|"guest_last_name"|"guest_name">) {
+  return !!((b.guest_first_name ?? "").trim() || (b.guest_last_name ?? "").trim() || (b.guest_name ?? "").trim());
 }
 function typeFor(b: BRow, roomById: Map<string, Room>) {
   if (b.room_type_id) return String(b.room_type_id);
-  if (b.room_id) {
-    const r = roomById.get(b.room_id);
-    if (r?.room_type_id) return String(r.room_type_id);
-  }
-  return null;
+  const r = b.room_id ? roomById.get(b.room_id) : null;
+  return r?.room_type_id ? String(r.room_type_id) : null;
 }
+
+type ItemKind = "green" | "yellow" | "red";
+type Item = {
+  kind: ItemKind;
+  reason?: string | null;
+  start_date: string;
+  end_date: string;
+  room_id: string | null;
+  room_label: string | null;
+  room_type_id: string | null;
+  room_type_name: string | null;
+  booking_id: string | null;
+  _ota_provider?: string | null;
+  _ota_color?: string | null;
+  _ota_logo_url?: string | null;
+  _guest_first_name?: string | null;
+  _guest_last_name?: string | null;
+  _cutoff_ts?: string | null;
+};
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const property_id = searchParams.get("property");
-    if (!property_id) {
-      return NextResponse.json({ error: "Missing ?property=<id>" }, { status: 400 });
-    }
+    if (!property_id) return NextResponse.json({ error: "Missing ?property=<id>" }, { status: 400 });
 
-    // Guard: cont suspendat?
-    const rProp = await admin
-      .from("properties")
-      .select("id,account_id")
-      .eq("id", property_id)
-      .maybeSingle();
+    // property + suspend
+    const rProp = await admin.from("properties").select("id,account_id").eq("id", property_id).maybeSingle();
     if (rProp.error) return NextResponse.json({ error: rProp.error.message }, { status: 500 });
-    if (!rProp.data)  return NextResponse.json({ error: "Property not found" }, { status: 404 });
-
+    if (!rProp.data) return NextResponse.json({ error: "Property not found" }, { status: 404 });
     try {
       const susp = await admin.rpc("account_is_suspended", { account_id: rProp.data.account_id as string });
-      if (!susp.error && susp.data === true) {
-        return NextResponse.json({ error: "Account suspended" }, { status: 403 });
-      }
-    } catch { /* dacă RPC lipsește, nu blocăm */ }
+      if (!susp.error && susp.data === true) return NextResponse.json({ error: "Account suspended" }, { status: 403 });
+    } catch {}
 
     const todayYMD = new Date().toISOString().slice(0,10);
 
-    // Bookings: viitoare/curente, non-cancelled
+    // bookings viitoare/curente
     const rBookings = await admin
       .from("bookings")
       .select(`
@@ -102,86 +101,63 @@ export async function GET(req: Request) {
       .neq("status", "cancelled")
       .gte("end_date", todayYMD)
       .order("start_date", { ascending: true });
-
-    if (rBookings.error) {
-      return NextResponse.json({ error: rBookings.error.message }, { status: 500 });
-    }
+    if (rBookings.error) return NextResponse.json({ error: rBookings.error.message }, { status: 500 });
     const bookings: BRow[] = (rBookings.data ?? []) as any[];
 
-    // Unassigned iCal events (pending import)
+    // ICS unassigned
     const rUnassigned = await admin
       .from("ical_unassigned_events")
       .select("id,property_id,room_type_id,uid,summary,start_date,end_date,start_time,end_time,created_at,integration_id,resolved")
       .eq("property_id", property_id)
-      .eq("resolved", false)
-      .order("created_at", { ascending: false });
-    const unassigned: Array<{
-      id: string;
-      property_id: string;
-      room_type_id: string | null;
-      uid: string | null;
-      summary: string | null;
-      start_date: string;
-      end_date: string;
-      start_time: string | null;
-      end_time: string | null;
-      created_at: string | null;
-      integration_id: string | null;
-    }> = (rUnassigned.data ?? []) as any[];
+      .eq("resolved", false);
+    const unassigned = rUnassigned.data ?? [];
 
-    // Fallback integrare via uid_map dacă lipsește pe booking
-    const needMapFor = bookings.filter(b => !b.ota_integration_id && !!b.id).map(b => b.id);
+    // integ by booking (uid map)
     const integByBooking = new Map<string, string>();
-    if (needMapFor.length > 0) {
+    if (bookings.length) {
       const { data: maps } = await admin
         .from("ical_uid_map")
         .select("booking_id,integration_id")
-        .in("booking_id", needMapFor);
-      for (const m of (maps ?? [])) {
-        if (m && (m as any).booking_id && (m as any).integration_id) {
-          integByBooking.set(String((m as any).booking_id), String((m as any).integration_id));
-        }
-      }
+        .in("booking_id", bookings.map(b => b.id));
+      for (const m of maps ?? []) integByBooking.set(String(m.booking_id), String(m.integration_id));
     }
 
-    // Load meta integrări
-    const integrationIds = new Set<string>();
+    // integ meta
+    const integIds = new Set<string>();
     for (const b of bookings) {
-      if (b.ota_integration_id) integrationIds.add(String(b.ota_integration_id));
-      else if (integByBooking.has(String(b.id))) integrationIds.add(String(integByBooking.get(String(b.id))));
+      if (b.ota_integration_id) integIds.add(b.ota_integration_id);
+      else {
+        const mid = integByBooking.get(b.id);
+        if (mid) integIds.add(mid);
+      }
     }
-    for (const ev of unassigned) {
-      if (ev.integration_id) integrationIds.add(String(ev.integration_id));
-    }
+    for (const u of unassigned) if (u.integration_id) integIds.add(u.integration_id);
     const integMeta = new Map<string, { provider: string | null; color: string | null; logo_url: string | null }>();
-    if (integrationIds.size > 0) {
-      const { data: ints } = await admin
+    if (integIds.size) {
+      const { data } = await admin
         .from("ical_type_integrations")
         .select("id,provider,color,logo_url")
-        .in("id", Array.from(integrationIds));
-      for (const i of (ints ?? [])) {
-        integMeta.set(String((i as any).id), {
-          provider: (i as any).provider ?? null,
-          color: (i as any).color ?? null,
-          logo_url: (i as any).logo_url ?? null,
-        });
-      }
+        .in("id", Array.from(integIds));
+      for (const i of data ?? []) integMeta.set(String((i as any).id), {
+        provider: (i as any).provider ?? null,
+        color: (i as any).color ?? null,
+        logo_url: (i as any).logo_url ?? null,
+      });
     }
 
-    // Rooms & types
+    // camere + tipuri
     const [rRooms, rTypes] = await Promise.all([
       admin.from("rooms").select("id, room_type_id, name").eq("property_id", property_id),
       admin.from("room_types").select("id, name").eq("property_id", property_id),
     ]);
     const rooms: Room[] = (rRooms.data ?? []) as any[];
     const types: RoomType[] = (rTypes.data ?? []) as any[];
-
     const roomById = new Map<string, Room>();
     for (const r of rooms) roomById.set(String(r.id), r);
     const typeNameById = new Map<string, string>();
     for (const t of types) typeNameById.set(String(t.id), t.name ?? "Type");
 
-    // Grupare pe (start_date, end_date, type_id)
+    // grupare pe interval + tip
     type Pack = {
       key: string;
       start_date: string;
@@ -193,59 +169,31 @@ export async function GET(req: Request) {
       others: BRow[];
     };
     const packs = new Map<string, Pack>();
-
     for (const b of bookings) {
       const tId = typeFor(b, roomById);
       const key = `${b.start_date}|${b.end_date}|${tId ?? "null"}`;
-      let entry = packs.get(key);
-      if (!entry) {
-        entry = {
-          key, start_date: b.start_date, end_date: b.end_date,
-          type_id: tId, type_name: tId ? (typeNameById.get(tId) ?? "Type") : null,
-          others: []
-        };
-        packs.set(key, entry);
+      let p = packs.get(key);
+      if (!p) {
+        p = { key, start_date: b.start_date, end_date: b.end_date, type_id: tId, type_name: tId ? (typeNameById.get(tId) ?? "Type") : null, ical: undefined, form: undefined, others: [] };
+        packs.set(key, p);
       }
-      if (isIcalish(b)) {
-        if (!entry.ical) entry.ical = b; else entry.others.push(b);
-      } else if (isFormish(b)) {
-        if (!entry.form) entry.form = b; else entry.others.push(b);
-      } else {
-        entry.others.push(b);
-      }
+      if (isIcalish(b)) p.ical = b;
+      else if (isFormish(b)) p.form = b;
+      else p.others.push(b);
     }
 
-    // Evaluare stări
-    type Item = {
-      kind: "green" | "yellow" | "red";
-      reason?: string;
-      start_date: string;
-      end_date: string;
-      room_id: string | null;
-      room_label: string | null;
-      room_type_id: string | null;
-      room_type_name: string | null;
-      booking_id: string | null;
-      ota_provider?: string | null;
-      ota_color?: string | null;
-      ota_logo_url?: string | null;
-      guest_first_name?: string | null;
-      guest_last_name?: string | null;
-      cutoff_ts?: string;
-    };
-
+    // evaluare
     const items: Item[] = [];
     const now = nowUtc();
 
     for (const [, pk] of packs) {
-      const startDt = ymdToDate(pk.start_date);
-      const cutoffIcal = addDays(startDt, -3); // T-3 zile la check-in
       const hasIcal = !!pk.ical;
       const hasForm = !!pk.form;
 
+      // nume cunoscut pentru (manual)
       const nameKnown =
-        (pk.form && hasAnyName(pk.form)) ||
         (pk.ical && hasAnyName(pk.ical)) ||
+        (pk.form && hasAnyName(pk.form)) ||
         pk.others.some(o => hasAnyName(o));
 
       const roomId =
@@ -256,227 +204,114 @@ export async function GET(req: Request) {
       const room = roomId ? roomById.get(roomId) : null;
       const roomLabel = room?.name ?? (roomId ? `#${String(roomId).slice(0,4)}` : null);
 
-      // Deadline form: fallback = form_submitted_at + 2h
-      const formDeadline =
-        pk.form?.form_submitted_at
-          ? new Date(new Date(pk.form.form_submitted_at).getTime() + 2 * 60 * 60 * 1000)
-          : null;
+      const meta = pk.ical
+        ? (() => {
+            const mId = pk.ical!.ota_integration_id || integByBooking.get(pk.ical!.id) || null;
+            if (mId && integMeta.has(String(mId))) return integMeta.get(String(mId))!;
+            return { provider: pk.ical!.ota_provider ?? null, color: null, logo_url: null };
+          })()
+        : null;
 
-      // META pentru badge (prefer iCal booking)
-      function pickMeta(b: BRow | null | undefined): { provider: string | null; color: string | null; logo_url: string | null } {
-        if (!b) return { provider: null, color: null, logo_url: null };
-        const intId = b.ota_integration_id || integByBooking.get(String(b.id)) || null;
-        if (intId && integMeta.has(String(intId))) {
-          const m = integMeta.get(String(intId))!;
-          return { provider: m.provider, color: m.color, logo_url: m.logo_url };
-        }
-        return { provider: b.ota_provider ?? null, color: null, logo_url: null };
-      }
-
-      // A) iCal + Form
+      // 1) iCal + Form => GREEN
       if (hasIcal && hasForm) {
-        if (roomId || nameKnown) {
-          const meta = pickMeta(pk.ical!);
-          items.push({
-            kind: "green",
-            start_date: pk.start_date,
-            end_date: pk.end_date,
-            room_id: roomId,
-            room_label: roomLabel,
-            room_type_id: pk.type_id,
-            room_type_name: pk.type_name,
-            booking_id: pk.ical?.id ?? pk.form?.id ?? null,
-            ota_provider: meta.provider,
-            ota_color: meta.color,
-            ota_logo_url: meta.logo_url,
-            guest_first_name: pk.form?.guest_first_name ?? pk.ical?.guest_first_name ?? null,
-            guest_last_name:  pk.form?.guest_last_name  ?? pk.ical?.guest_last_name  ?? null,
-          });
-        } else {
-          const meta = pickMeta(pk.ical!);
-          items.push({
-            kind: "red",
-            reason: "room_required_auto_failed",
-            start_date: pk.start_date,
-            end_date: pk.end_date,
-            room_id: null,
-            room_label: null,
-            room_type_id: pk.type_id,
-            room_type_name: pk.type_name,
-            booking_id: pk.ical?.id ?? pk.form?.id ?? null,
-            ota_provider: meta.provider,
-            ota_color: meta.color,
-            ota_logo_url: meta.logo_url,
-            guest_first_name: pk.form?.guest_first_name ?? pk.ical?.guest_first_name ?? null,
-            guest_last_name:  pk.form?.guest_last_name  ?? pk.ical?.guest_last_name  ?? null,
-          });
-        }
-        continue;
-      }
-
-      // B) doar iCal
-      if (hasIcal && !hasForm) {
-        const meta = pickMeta(pk.ical!);
-        if (nameKnown) {
-          items.push({
-            kind: "green",
-            start_date: pk.start_date,
-            end_date: pk.end_date,
-            room_id: roomId,
-            room_label: roomLabel,
-            room_type_id: pk.type_id,
-            room_type_name: pk.type_name,
-            booking_id: pk.ical?.id ?? null,
-            ota_provider: meta.provider,
-            ota_color: meta.color,
-            ota_logo_url: meta.logo_url,
-            guest_first_name: pk.ical?.guest_first_name ?? null,
-            guest_last_name:  pk.ical?.guest_last_name  ?? null,
-          });
-        } else if (now < cutoffIcal) {
-          items.push({
-            kind: "yellow",
-            reason: "waiting_form",
-            start_date: pk.start_date,
-            end_date: pk.end_date,
-            room_id: pk.ical?.room_id ?? null,
-            room_label: pk.ical?.room_id ? (roomLabel ?? null) : null,
-            room_type_id: pk.type_id,
-            room_type_name: pk.type_name,
-            booking_id: pk.ical?.id ?? null,
-            ota_provider: meta.provider,
-            ota_color: meta.color,
-            ota_logo_url: meta.logo_url,
-            guest_first_name: null,
-            guest_last_name: null,
-            cutoff_ts: cutoffIcal.toISOString(),
-          });
-        } else {
-          items.push({
-            kind: "red",
-            reason: "missing_form",
-            start_date: pk.start_date,
-            end_date: pk.end_date,
-            room_id: pk.ical?.room_id ?? null,
-            room_label: pk.ical?.room_id ? (roomLabel ?? null) : null,
-            room_type_id: pk.type_id,
-            room_type_name: pk.type_name,
-            booking_id: pk.ical?.id ?? null,
-            ota_provider: meta.provider,
-            ota_color: meta.color,
-            ota_logo_url: meta.logo_url,
-          });
-        }
-        continue;
-      }
-
-// C) doar Form
-if (hasForm && !hasIcal) {
-  // dacă a apărut între timp un booking MANUAL pe același interval => considerăm "primit manual" => verde
-  const hasManual = pk.others.some(o => !isIcalish(o) && !isFormish(o));
-
-  // Conflict de tip? (există iCal-only pe alt tip pe același interval)
-  let hasIcalOtherType = false;
-  for (const [, pk2] of packs) {
-    if (pk2 === pk) continue;
-    if (pk2.start_date === pk.start_date && pk2.end_date === pk.end_date && pk2.ical && !pk2.form) {
-      hasIcalOtherType = true; break;
-    }
-  }
-
-  if (hasIcalOtherType) {
-    items.push({
-      kind: "red",
-      reason: "type_conflict",
-      start_date: pk.start_date, end_date: pk.end_date,
-      room_id: roomId, room_label: roomLabel,
-      room_type_id: pk.type_id, room_type_name: pk.type_name,
-      booking_id: pk.form?.id ?? null,
-      guest_first_name: pk.form?.guest_first_name ?? null,
-      guest_last_name:  pk.form?.guest_last_name  ?? null,
-    });
-  } else if (hasManual) {
-    // a sosit un booking manual (non-ical) compatibil => verde
-    items.push({
-      kind: "green",
-      start_date: pk.start_date, end_date: pk.end_date,
-      room_id: roomId, room_label: roomLabel,
-      room_type_id: pk.type_id, room_type_name: pk.type_name,
-      booking_id: pk.form?.id ?? null,
-      guest_first_name: pk.form?.guest_first_name ?? null,
-      guest_last_name:  pk.form?.guest_last_name  ?? null,
-    });
-  } else {
-    // fereastra de 2h bazată pe form_submitted_at (sau created_at fallback)
-    const submittedAt = pk.form?.form_submitted_at || pk.form?.created_at || null;
-    const formDeadline = submittedAt ? new Date(new Date(submittedAt).getTime() + 2 * 60 * 60 * 1000) : null;
-    const notExpiredYet = !!formDeadline && now < formDeadline;
-
-    if (notExpiredYet) {
-      items.push({
-        kind: "yellow",
-        reason: "waiting_ical",
-        start_date: pk.start_date, end_date: pk.end_date,
-        room_id: roomId, room_label: roomLabel,
-        room_type_id: pk.type_id, room_type_name: pk.type_name,
-        booking_id: pk.form?.id ?? null,
-        guest_first_name: pk.form?.guest_first_name ?? null,
-        guest_last_name:  pk.form?.guest_last_name  ?? null,
-        cutoff_ts: formDeadline?.toISOString(),
-      });
-    } else {
-      items.push({
-        kind: "red",
-        reason: "no_ota_found",
-        start_date: pk.start_date, end_date: pk.end_date,
-        room_id: roomId, room_label: roomLabel,
-        room_type_id: pk.type_id, room_type_name: pk.type_name,
-        booking_id: pk.form?.id ?? null,
-        guest_first_name: pk.form?.guest_first_name ?? null,
-        guest_last_name:  pk.form?.guest_last_name  ?? null,
-      });
-    }
-  }
-  continue;
-}
-      // D) nici iCal, nici Form (manual)
-      if (nameKnown) {
         items.push({
           kind: "green",
           start_date: pk.start_date,
           end_date: pk.end_date,
-          room_id: roomId,
-          room_label: roomLabel,
-          room_type_id: pk.type_id,
-          room_type_name: pk.type_name,
-          booking_id: pk.others[0]?.id ?? null,
-          guest_first_name: pk.others.find(o => (o.guest_first_name ?? "").trim())?.guest_first_name ?? null,
-          guest_last_name:  pk.others.find(o => (o.guest_last_name  ?? "").trim())?.guest_last_name  ?? null,
+          room_id: roomId ?? null,
+          room_label: roomLabel ?? null,
+          room_type_id: pk.type_id ?? null,
+          room_type_name: pk.type_name ?? null,
+          booking_id: pk.ical?.id ?? pk.form?.id ?? null,
+          _ota_provider: meta?.provider ?? null,
+          _ota_color: meta?.color ?? null,
+          _ota_logo_url: meta?.logo_url ?? null,
+          _guest_first_name: pk.form?.guest_first_name ?? pk.ical?.guest_first_name ?? null,
+          _guest_last_name: pk.form?.guest_last_name ?? pk.ical?.guest_last_name ?? null,
+          _cutoff_ts: null,
         });
-      } else {
+        continue;
+      }
+
+      // 2) doar iCal => YELLOW (așteaptă form)
+      if (hasIcal && !hasForm) {
         items.push({
-          kind: "red",
-          reason: "no_ota_found",
+          kind: "yellow",
+          reason: "waiting_form",
           start_date: pk.start_date,
           end_date: pk.end_date,
-          room_id: roomId,
-          room_label: roomLabel,
-          room_type_id: pk.type_id,
-          room_type_name: pk.type_name,
+          room_id: roomId ?? null,
+          room_label: roomLabel ?? null,
+          room_type_id: pk.type_id ?? null,
+          room_type_name: pk.type_name ?? null,
+          booking_id: pk.ical?.id ?? null,
+          _ota_provider: meta?.provider ?? null,
+          _ota_color: meta?.color ?? null,
+          _ota_logo_url: meta?.logo_url ?? null,
+          _guest_first_name: pk.ical?.guest_first_name ?? null,
+          _guest_last_name: pk.ical?.guest_last_name ?? null,
+          _cutoff_ts: null,
+        });
+        continue;
+      }
+
+      // 3) doar Form => YELLOW 2h, apoi RED
+      if (hasForm && !hasIcal) {
+        const submittedAt = pk.form?.form_submitted_at || pk.form?.created_at || null;
+        const formDeadline = submittedAt ? new Date(new Date(submittedAt).getTime() + 2 * 60 * 60 * 1000) : null;
+        const notExpiredYet = !!formDeadline && now < formDeadline;
+
+        items.push({
+          kind: notExpiredYet ? "yellow" as const : "red",
+          reason: notExpiredYet ? "waiting_ical" : "no_ota_found",
+          start_date: pk.start_date,
+          end_date: pk.end_date,
+          room_id: roomId ?? null,
+          room_label: roomLabel ?? null,
+          room_type_id: pk.type_id ?? null,
+          room_type_name: pk.type_name ?? null,
+          booking_id: pk.form?.id ?? null,
+          _ota_provider: null,
+          _ota_color: null,
+          _ota_logo_url: null,
+          _guest_first_name: pk.form?.guest_first_name ?? null,
+          _guest_last_name: pk.form?.guest_last_name ?? null,
+          _cutoff_ts: formDeadline ? formDeadline.toISOString() : null,
+        });
+        continue;
+      }
+
+      // 4) manual-only: GREEN dacă are nume, altfel YELLOW
+      if (!hasIcal && !hasForm) {
+        const firstNamed = pk.others.find(o => hasAnyName(o));
+        items.push({
+          kind: nameKnown ? "green" : "yellow",
+          reason: nameKnown ? null : "waiting_form",
+          start_date: pk.start_date,
+          end_date: pk.end_date,
+          room_id: roomId ?? null,
+          room_label: roomLabel ?? null,
+          room_type_id: pk.type_id ?? null,
+          room_type_name: pk.type_name ?? null,
           booking_id: pk.others[0]?.id ?? null,
+          _ota_provider: null,
+          _ota_color: null,
+          _ota_logo_url: null,
+          _guest_first_name: firstNamed?.guest_first_name ?? null,
+          _guest_last_name: firstNamed?.guest_last_name ?? null,
+          _cutoff_ts: null,
         });
       }
     }
 
-    // Unassigned events ca items (yellow < 2h, red >= 2h)
+    // Unassigned ICS → YELLOW <2h, RED ≥2h
     const nowTs = now.getTime();
-    const twoHoursMs = 2 * 60 * 60 * 1000;
     for (const ev of unassigned) {
+      const created = ev.created_at ? new Date(ev.created_at).getTime() : nowTs;
+      const isYellow = (nowTs - created) < 2 * 60 * 60 * 1000;
       const tId = ev.room_type_id ? String(ev.room_type_id) : null;
       const tName = tId ? (typeNameById.get(tId) ?? "Type") : null;
-      const im = ev.integration_id && integMeta.has(String(ev.integration_id)) ? integMeta.get(String(ev.integration_id))! : { provider: null, color: null, logo_url: null };
-      const created = ev.created_at ? new Date(ev.created_at).getTime() : nowTs;
-      const isYellow = (nowTs - created) < twoHoursMs;
+      const im = ev.integration_id ? integMeta.get(String(ev.integration_id)) : null;
 
       items.push({
         kind: isYellow ? "yellow" : "red",
@@ -488,46 +323,28 @@ if (hasForm && !hasIcal) {
         room_type_id: tId,
         room_type_name: tName,
         booking_id: null,
-        ota_provider: im.provider,
-        ota_color: im.color,
-        ota_logo_url: im.logo_url,
-        guest_first_name: null,
-        guest_last_name: null,
-        cutoff_ts: isYellow ? new Date(created + twoHoursMs).toISOString() : undefined,
+        _ota_provider: im?.provider ?? null,
+        _ota_color: im?.color ?? null,
+        _ota_logo_url: im?.logo_url ?? null,
+        _guest_first_name: null,
+        _guest_last_name: null,
+        _cutoff_ts: isYellow ? new Date(created + 2 * 60 * 60 * 1000).toISOString() : null,
       });
     }
 
-    // Sortare: GREEN → YELLOW → RED, apoi cronologic & nume tip
-    const orderKind = (k: string) => (k === "green" ? 0 : k === "yellow" ? 1 : 2);
+    // sort stabil și tipat
+    const order: Record<ItemKind, number> = { green: 0, yellow: 1, red: 2 };
     items.sort((a, b) => {
-      const dk = orderKind(a.kind) - orderKind(b.kind);
+      const dk = order[a.kind] - order[b.kind];
       if (dk) return dk;
       if (a.start_date !== b.start_date) return a.start_date.localeCompare(b.start_date);
-      return (a.room_type_name || "").localeCompare(b.room_type_name || "");
+      const ta = a.room_type_name || "";
+      const tb = b.room_type_name || "";
+      return ta.localeCompare(tb);
     });
 
-    // Output compatibil cu UI
-    const rows = items.map((it) => ({
-      id: it.booking_id ?? null,
-      property_id,
-      room_id: it.room_id ?? null,
-      start_date: it.start_date,
-      end_date: it.end_date,
-      status: it.kind as "green" | "yellow" | "red",
-      _room_label: it.room_label ?? null,
-      _room_type_id: it.room_type_id ?? null,
-      _room_type_name: it.room_type_name ?? null,
-      _reason: it.reason ?? null,
-      _cutoff_ts: it.cutoff_ts ?? null,
-      _ota_provider: it.ota_provider ?? null,
-      _ota_color: it.ota_color ?? null,
-      _ota_logo_url: it.ota_logo_url ?? null,
-      _guest_first_name: it.guest_first_name ?? null,
-      _guest_last_name: it.guest_last_name ?? null,
-    }));
-
     return NextResponse.json(
-      { ok: true, items: rows },
+      { ok: true, items },
       { status: 200, headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   } catch (e: any) {
