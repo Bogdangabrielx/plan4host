@@ -1090,6 +1090,7 @@ function EditFormBookingModal({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [popupMsg, setPopupMsg] = useState<string | null>(null);
 
   // booking fields
   const [startDate, setStartDate] = useState<string>("");
@@ -1199,7 +1200,9 @@ function EditFormBookingModal({
           const r = await q;
           if (!r.error && (r.data?.length || 0) > 0) {
             const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
-            setError(`Overlaps an existing confirmed reservation on Room ${roomName}.`);
+            const msg = `Overlaps an existing confirmed reservation on Room ${roomName}.`;
+            setError(msg);
+            setPopupMsg(msg);
             setSaving(false);
             return;
           }
@@ -1219,7 +1222,9 @@ function EditFormBookingModal({
           const r = await q;
           if (!r.error && (r.data?.length || 0) > 0) {
             const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
-            setError(`Overlaps an existing confirmed reservation on Room ${roomName}.`);
+            const msg = `Overlaps an existing confirmed reservation on Room ${roomName}.`;
+            setError(msg);
+            setPopupMsg(msg);
             setSaving(false);
             return;
           }
@@ -1274,7 +1279,31 @@ function EditFormBookingModal({
   const card: React.CSSProperties = { width: "min(680px, 100%)", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 };
 
   return (
-    <div role="dialog" aria-modal="true" onClick={onClose} style={wrap}>
+    <div role="dialog" aria-modal="true" onClick={() => { if (!popupMsg) onClose(); }} style={wrap}>
+      {popupMsg && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e)=>{ e.stopPropagation(); setPopupMsg(null); }}
+          style={{ position:'fixed', inset:0, zIndex: 90, display:'grid', placeItems:'center', padding:12, background:'rgba(0,0,0,.55)' }}
+        >
+          <div
+            onClick={(e)=>e.stopPropagation()}
+            className="sb-card"
+            style={{ width: 'min(480px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}
+          >
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 8 }}>
+              <strong>Cannot save</strong>
+            </div>
+            <div style={{ color:'var(--text)', marginBottom: 12 }}>
+              {popupMsg}
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end' }}>
+              <button className="sb-btn sb-btn--primary" onClick={() => setPopupMsg(null)}>OK</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={card}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:8 }}>
           <strong>Edit form booking</strong>
