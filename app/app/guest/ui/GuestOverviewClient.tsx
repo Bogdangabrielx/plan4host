@@ -1091,6 +1091,7 @@ function EditFormBookingModal({
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [popupMsg, setPopupMsg] = useState<string | null>(null);
+  const [popupTitle, setPopupTitle] = useState<string | null>(null);
 
   // booking fields
   const [startDate, setStartDate] = useState<string>("");
@@ -1202,6 +1203,7 @@ function EditFormBookingModal({
             const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
             const msg = `Overlaps an existing confirmed reservation on Room ${roomName}.`;
             setError(msg);
+            setPopupTitle('Cannot save');
             setPopupMsg(msg);
             setSaving(false);
             return;
@@ -1224,6 +1226,7 @@ function EditFormBookingModal({
             const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
             const msg = `Overlaps an existing confirmed reservation on Room ${roomName}.`;
             setError(msg);
+            setPopupTitle('Cannot save');
             setPopupMsg(msg);
             setSaving(false);
             return;
@@ -1253,7 +1256,44 @@ function EditFormBookingModal({
       // refresh parent list but keep modal open; show success pop-up
       try { onSaved(); } catch {}
       setError(null);
-      setPopupMsg('Saved');
+      // After save, if user selected a room type, inform about availability for this type
+      if (roomTypeId) {
+        try {
+          const rRooms = await supabase
+            .from('rooms')
+            .select('id')
+            .eq('property_id', propertyId)
+            .eq('room_type_id', roomTypeId);
+          const ids = (rRooms.data || []).map((x: any) => String(x.id));
+          const total = ids.length;
+          if (total > 0) {
+            const rBusy = await supabase
+              .from('bookings')
+              .select('room_id')
+              .in('room_id', ids)
+              .eq('status', 'confirmed')
+              .lt('start_date', endDate)
+              .gt('end_date', startDate);
+            const busy = new Set<string>((rBusy.data || []).map((b: any) => String(b.room_id)).filter(Boolean)).size;
+            if (busy >= total) {
+              setPopupTitle('No availability');
+              setPopupMsg('All rooms in this type are occupied on the selected dates. Green reservations cannot be changed.');
+            } else {
+              setPopupTitle('Saved');
+              setPopupMsg('Saved');
+            }
+          } else {
+            setPopupTitle('Saved');
+            setPopupMsg('Saved');
+          }
+        } catch {
+          setPopupTitle('Saved');
+          setPopupMsg('Saved');
+        }
+      } else {
+        setPopupTitle('Saved');
+        setPopupMsg('Saved');
+      }
     } catch (e: any) {
       setError(e?.message || "Failed to save changes.");
     } finally {
@@ -1296,7 +1336,7 @@ function EditFormBookingModal({
             style={{ width: 'min(480px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}
           >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 8 }}>
-              <strong>Cannot save</strong>
+              <strong>{popupTitle || 'Notice'}</strong>
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
               {popupMsg}
