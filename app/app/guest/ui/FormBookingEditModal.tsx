@@ -190,6 +190,26 @@ export default function EditFormBookingModal({
     setSaving(true);
     setError(null);
     try {
+      // Friendly pre-check: do not allow selecting a room that overlaps a confirmed booking (verde/intangibil)
+      if (!hasRoomTypes && roomId) {
+        const q = supabase
+          .from('bookings')
+          .select('id,start_date,end_date,room_id,status')
+          .eq('property_id', propertyId)
+          .eq('room_id', roomId)
+          .eq('status', 'confirmed')
+          .lt('start_date', endDate)
+          .gt('end_date', startDate)
+          .limit(1);
+        const r = await q;
+        if (!r.error && (r.data?.length || 0) > 0) {
+          const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
+          setError(`Overlaps an existing confirmed reservation on Room ${roomName}.`);
+          setSaving(false);
+          return;
+        }
+      }
+
       const res = await fetch("/api/booking/form/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -204,7 +224,9 @@ export default function EditFormBookingModal({
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(j?.error || "Save failed.");
+        const raw = (j?.error || '').toString();
+        const isOverlap = /overlap/i.test(raw) || /bookings_no_overlap|exclusion|23P01/i.test(raw);
+        setError(isOverlap ? 'Overlaps an existing confirmed reservation on this room.' : (raw || 'Save failed.'));
         return;
       }
       onSaved && onSaved();
