@@ -106,8 +106,46 @@ export async function POST(req: Request) {
       update.room_type_id = null; // clear type
     }
 
+    // Guard: do not allow editing the form booking to values that would match a GREEN reservation (confirmed)
+    // Room-level conflict (no room types)
+    if (room_id) {
+      const { data: conflicts } = await admin
+        .from('bookings')
+        .select('id')
+        .eq('property_id', property_id)
+        .eq('room_id', room_id)
+        .eq('status', 'confirmed')
+        .lt('start_date', end_date)
+        .gt('end_date', start_date)
+        .limit(1);
+      if ((conflicts?.length || 0) > 0) {
+        return j(409, { error: 'Overlaps an existing confirmed reservation on this room.' });
+      }
+    }
+    // Type-level conflict (properties with room types)
+    if (!room_id && room_type_id) {
+      const { data: conflicts } = await admin
+        .from('bookings')
+        .select('id')
+        .eq('property_id', property_id)
+        .eq('room_type_id', room_type_id)
+        .eq('status', 'confirmed')
+        .lt('start_date', end_date)
+        .gt('end_date', start_date)
+        .limit(1);
+      if ((conflicts?.length || 0) > 0) {
+        return j(409, { error: 'Overlaps an existing confirmed reservation on this room type. Green reservations cannot be changed.' });
+      }
+    }
+
     const rUp = await admin.from("bookings").update(update).eq("id", booking_id);
-    if (rUp.error) return j(500, { error: rUp.error.message });
+    if (rUp.error) {
+      const msg = (rUp.error as any)?.message || '';
+      if (/bookings_no_overlap|exclusion|23P01/i.test(msg)) {
+        return j(409, { error: 'Overlaps an existing confirmed reservation on this room.' });
+      }
+      return j(500, { error: msg || 'Failed to update' });
+    }
 
     return j(200, { ok: true, booking_id, start_date, end_date, room_id: update.room_id ?? null, room_type_id: update.room_type_id ?? null });
   } catch (e: any) {
