@@ -1063,7 +1063,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             propertyId={editModal.propertyId}
             bookingId={editModal.bookingId}
             onClose={() => setEditModal(null)}
-            onSaved={() => { setEditModal(null); refresh(); }}
+            onSaved={() => { /* keep modal open after save */ refresh(); }}
           />
         )}
       </div>
@@ -1250,7 +1250,10 @@ function EditFormBookingModal({
         throw new Error(isOverlap ? 'Overlaps an existing confirmed reservation on this room.' : msg);
       }
 
-      onSaved();
+      // refresh parent list but keep modal open; show success pop-up
+      try { onSaved(); } catch {}
+      setError(null);
+      setPopupMsg('Saved');
     } catch (e: any) {
       setError(e?.message || "Failed to save changes.");
     } finally {
