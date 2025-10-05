@@ -323,7 +323,7 @@ export default function CheckinClient() {
     return () => ob.disconnect();
   }, []);
 
-  // formular_* icons (themed)
+  // formular_* icons — force dark variant in check-in
   const formIcon = (key: "email"|"phone"|"address"|"city"|"country"|"id"|"firstname"|"lastname") => {
     const token = {
       email: "email",
@@ -335,11 +335,11 @@ export default function CheckinClient() {
       firstname: "firstname",
       lastname: "lastname",
     }[key];
-    return `/formular_${token}_${isDark ? "fordark" : "forlight"}.png`;
+    return `/formular_${token}_fordark.png`;
   };
 
-  // generic themed icons (e.g. /room_forlight.png)
-  const themedIcon = (base: "room") => `/${base}_${isDark ? "fordark" : "forlight"}.png`;
+  // generic icons — force dark variant in check-in
+  const themedIcon = (base: "room") => `/${base}_fordark.png`;
 
 
   
@@ -1079,12 +1079,14 @@ export default function CheckinClient() {
 
       {/* Confirmation email modal */}
       {confirmOpen && (
-        <div role="dialog" aria-modal="true" onClick={()=>setConfirmOpen(false)}
+        <div role="dialog" aria-modal="true" onClick={()=>{ if (confirmStatus !== 'sending') setConfirmOpen(false); }}
           style={{ position:'fixed', inset:0, zIndex: 300, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(540px, 100%)', padding:16 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <strong>Confirmation Email</strong>
-              <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>Close</button>
+              {confirmStatus !== 'sending' && (
+                <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>Close</button>
+              )}
             </div>
             {confirmStatus === 'sending' && (
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -1108,9 +1110,11 @@ export default function CheckinClient() {
                 </small>
               </div>
             )}
-            <div style={{ marginTop:12, display:'flex', justifyContent:'flex-end' }}>
-              <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>OK</button>
-            </div>
+            {confirmStatus !== 'sending' && (
+              <div style={{ marginTop:12, display:'flex', justifyContent:'flex-end' }}>
+                <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>OK</button>
+              </div>
+            )}
           </div>
         </div>
       )}
