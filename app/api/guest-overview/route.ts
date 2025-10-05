@@ -204,6 +204,8 @@ export async function GET(req: Request) {
     const groups = new Map<string, Group>();
     // Index global de form-uri pe (start_date|end_date) pentru fallback unic
     const formsByDates = new Map<string, BRow[]>();
+    // Index global de chei de evenimente (type/room) pe (start_date|end_date) pentru detectarea conflictelor de tip/room
+    const eventKeysByDates = new Map<string, Set<string>>();
 
     for (const b of bookings) {
       const k = groupKey(b);
@@ -222,6 +224,11 @@ export async function GET(req: Request) {
         formsByDates.set(dk, arr);
       } else {
         g.events.push(b);
+        const dk2 = `${b.start_date}|${b.end_date}`;
+        let s = eventKeysByDates.get(dk2);
+        if (!s) { s = new Set<string>(); eventKeysByDates.set(dk2, s); }
+        const keyVal = hasTypes ? (effectiveTypeId(b) ?? 'null') : (b.room_id ? String(b.room_id) : 'null');
+        s.add(String(keyVal));
       }
     }
 
@@ -392,9 +399,16 @@ export async function GET(req: Request) {
         const rId = f.room_id ?? null;
         const r = rId ? roomById.get(String(rId)) : null;
         const isYellow = now < deadline;
+
+        // Conflict: există evenimente pe aceleași date dar pe alt key (type/room) => formularul este marcat ca 'type_conflict'
+        const dk = `${g.start_date}|${g.end_date}`;
+        const eventKeys = eventKeysByDates.get(dk);
+        const thisKey = hasTypes ? (g.type_id ?? null) : (rId ? String(rId) : null);
+        const conflict = !!(eventKeys && eventKeys.size > 0 && !eventKeys.has(String(thisKey)));
+
         items.push({
-          kind: isYellow ? "yellow" : "red",
-          reason: isYellow ? "waiting_ical" : "no_ota_found",
+          kind: conflict ? 'red' : (isYellow ? 'yellow' : 'red'),
+          reason: conflict ? 'type_conflict' : (isYellow ? 'waiting_ical' : 'no_ota_found'),
           start_date: g.start_date,
           end_date: g.end_date,
           room_id: rId,
@@ -404,7 +418,7 @@ export async function GET(req: Request) {
           booking_id: f.id,
           guest_first_name: f.guest_first_name ?? null,
           guest_last_name:  f.guest_last_name  ?? null,
-          cutoff_ts: isYellow ? deadline.toISOString() : undefined,
+          cutoff_ts: (!conflict && isYellow) ? deadline.toISOString() : undefined,
         });
       }
     }
