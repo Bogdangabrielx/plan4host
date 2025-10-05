@@ -1178,6 +1178,54 @@ function EditFormBookingModal({
     setSaving(true);
     setError(null);
     try {
+      // Friendly guard: do not allow selecting a room_id that overlaps an existing confirmed booking (green/intangible)
+      const ci = '14:00'; // informational only; we use date-based overlap at DB level
+      const co = '11:00';
+      const sDate = startDate;
+      const eDate = endDate;
+
+      if (hasRoomTypes) {
+        // If user picked a specific room (even when types exist), check overlap on that room
+        if (roomId) {
+          const q = supabase
+            .from('bookings')
+            .select('id,start_date,end_date,room_id,status')
+            .eq('property_id', propertyId)
+            .eq('room_id', roomId)
+            .eq('status', 'confirmed')
+            .lt('start_date', eDate)
+            .gt('end_date', sDate)
+            .limit(1);
+          const r = await q;
+          if (!r.error && (r.data?.length || 0) > 0) {
+            const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
+            setError(`Overlaps an existing confirmed reservation on Room ${roomName}.`);
+            setSaving(false);
+            return;
+          }
+        }
+      } else {
+        // No room types: roomId is the allocation key; check overlap when a room is chosen
+        if (roomId) {
+          const q = supabase
+            .from('bookings')
+            .select('id,start_date,end_date,room_id,status')
+            .eq('property_id', propertyId)
+            .eq('room_id', roomId)
+            .eq('status', 'confirmed')
+            .lt('start_date', eDate)
+            .gt('end_date', sDate)
+            .limit(1);
+          const r = await q;
+          if (!r.error && (r.data?.length || 0) > 0) {
+            const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
+            setError(`Overlaps an existing confirmed reservation on Room ${roomName}.`);
+            setSaving(false);
+            return;
+          }
+        }
+      }
+
       const upd: any = {
         start_date: startDate,
         end_date: endDate,
@@ -1191,7 +1239,11 @@ function EditFormBookingModal({
       }
 
       const { error: e1 } = await supabase.from("bookings").update(upd).eq("id", bookingId);
-      if (e1) throw new Error(e1.message);
+      if (e1) {
+        const msg = (e1 as any)?.message || '';
+        const isOverlap = /bookings_no_overlap|exclusion|23P01/i.test(msg || '');
+        throw new Error(isOverlap ? 'Overlaps an existing confirmed reservation on this room.' : msg);
+      }
 
       onSaved();
     } catch (e: any) {
