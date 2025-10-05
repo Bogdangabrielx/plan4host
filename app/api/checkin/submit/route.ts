@@ -18,7 +18,6 @@ const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || "mailto:office@plan4host.com";
 try { webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY); } catch {}
 
-/* ---------------- push broadcast ---------------- */
 async function broadcastNewGuestOverview(adminCli: any, property_id: string, start_date: string, end_date: string) {
   try {
     const rProp = await adminCli.from("properties").select("account_id").eq("id", property_id).maybeSingle();
@@ -48,7 +47,6 @@ async function broadcastNewGuestOverview(adminCli: any, property_id: string, sta
     const payload = JSON.stringify({
       title: "New reservation",
       body: `From ${start_date} to ${end_date}`,
-      // dacă noul ecran este /app/guestOverview:
       url: `/app/guestOverview?property=${encodeURIComponent(property_id)}`,
       tag: `guest-${property_id}`,
     });
@@ -135,6 +133,24 @@ async function isRoomFree(room_id: string, start_date: string, end_date: string)
   return !rBusy.error && (rBusy.data?.length ?? 0) === 0;
 }
 
+/* ---------------- STRICT MATCH HELPERS ---------------- */
+function datesEqual(a?: string | null, b?: string | null) {
+  return !!a && !!b && a === b;
+}
+async function typeOfBooking(b: { room_type_id: string | null; room_id: string | null }): Promise<string | null> {
+  return b.room_type_id ?? (await roomTypeFromRoom(b.room_id ?? null));
+}
+async function matchesFormCriteria(form: { room_id: string | null; room_type_id: string | null }, event: { room_id: string | null; room_type_id: string | null }): Promise<boolean> {
+  if (form.room_id) {
+    return !!event.room_id && String(event.room_id) === String(form.room_id);
+  }
+  if (form.room_type_id) {
+    const evType = await typeOfBooking(event);
+    return !!evType && String(evType) === String(form.room_type_id);
+  }
+  return false;
+}
+
 /* ---------------- handler ---------------- */
 export async function POST(req: NextRequest) {
   try {
@@ -208,11 +224,17 @@ export async function POST(req: NextRequest) {
       (await normalizeRoomTypeId(requested_room_type_id, property_id)) ??
       (await roomTypeFromRoom(form_room_id));
 
-    /* ========= A) try match with existing iCal booking ========= */
+    /* ========= STRICT MATCH cu EXISTING BOOKING (iCal sau manual) =========
+       Reguli:
+       - dates trebuie să fie egale (ambele perechi)
+       - Dacă formularul are room_id -> match doar cu booking cu același room_id
+       - altfel, dacă are room_type_id -> match doar cu booking de același type (room_type_id direct sau derivat din room_id)
+    */
     let matchedBookingId: string | null = null;
     let matchedIsIcal = false;
 
     if (isYMD(start_date) && isYMD(end_date) && (form_room_id || form_room_type_id)) {
+      // 1) candidate iCal-ish
       const rIcal = await admin
         .from("bookings")
         .select("id,room_id,room_type_id,start_date,end_date,status,source,ical_uid")
@@ -223,24 +245,19 @@ export async function POST(req: NextRequest) {
         .or("source.eq.ical,ical_uid.not.is.null");
 
       if (!rIcal.error && Array.isArray(rIcal.data) && rIcal.data.length) {
-        if (form_room_id) {
-          const byRoom = rIcal.data.find(b => String(b.room_id || "") === String(form_room_id));
-          if (byRoom) { matchedBookingId = String(byRoom.id); matchedIsIcal = true; }
-        }
-        if (!matchedBookingId && form_room_type_id) {
-          for (const b of rIcal.data) {
-            const bType = b.room_type_id ?? (await roomTypeFromRoom(b.room_id ?? null));
-            if (bType && String(bType) === String(form_room_type_id)) {
-              matchedBookingId = String(b.id); matchedIsIcal = true; break;
-            }
+        for (const b of rIcal.data) {
+          if (!datesEqual(b.start_date, start_date) || !datesEqual(b.end_date, end_date)) continue;
+          if (await matchesFormCriteria({ room_id: form_room_id, room_type_id: form_room_type_id }, { room_id: b.room_id ?? null, room_type_id: b.room_type_id ?? null })) {
+            matchedBookingId = String(b.id); matchedIsIcal = true; break;
           }
         }
       }
 
+      // 2) candidate manual (non-ical-ish)
       if (!matchedBookingId) {
         const rManual = await admin
           .from("bookings")
-          .select("id,room_id,room_type_id,status,source,ical_uid")
+          .select("id,room_id,room_type_id,start_date,end_date,status,source,ical_uid")
           .eq("property_id", property_id)
           .eq("start_date", start_date)
           .eq("end_date", end_date)
@@ -248,22 +265,12 @@ export async function POST(req: NextRequest) {
 
         if (!rManual.error && Array.isArray(rManual.data) && rManual.data.length) {
           const pool = rManual.data.filter(b => (b.source || "").toLowerCase() !== "ical" && !b.ical_uid);
-          let candidate: any | null = null;
-
-          if (form_room_id) {
-            const byRoom = pool.filter(b => String(b.room_id || "") === String(form_room_id));
-            if (byRoom.length === 1) candidate = byRoom[0];
-          }
-          if (!candidate && form_room_type_id) {
-            const byType: any[] = [];
-            for (const b of pool) {
-              const bType = b.room_type_id ?? (await roomTypeFromRoom(b.room_id ?? null));
-              if (bType && String(bType) === String(form_room_type_id)) byType.push(b);
+          for (const b of pool) {
+            if (!datesEqual(b.start_date, start_date) || !datesEqual(b.end_date, end_date)) continue;
+            if (await matchesFormCriteria({ room_id: form_room_id, room_type_id: form_room_type_id }, { room_id: b.room_id ?? null, room_type_id: b.room_type_id ?? null })) {
+              matchedBookingId = String(b.id); matchedIsIcal = false; break;
             }
-            if (byType.length === 1) candidate = byType[0];
           }
-
-          if (candidate) { matchedBookingId = String(candidate.id); matchedIsIcal = false; }
         }
       }
     }
@@ -366,7 +373,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    /* ========= B) fără match iCal → soft-hold de tip (fără coloane supl.) ========= */
+    /* ========= FĂRĂ MATCH → creăm „form booking” (va fi galben 2h, apoi roșu) ========= */
     if (!isYMD(start_date) || !isYMD(end_date)) {
       return NextResponse.json({ error: "Missing/invalid dates" }, { status: 400 });
     }
@@ -384,7 +391,7 @@ export async function POST(req: NextRequest) {
       end_date,
       start_time,
       end_time,
-      status: "hold",               // dacă enum-ul nu conține "hold", facem fallback mai jos
+      status: "hold",               // fallback la "pending" dacă enum-ul nu conține "hold"
       guest_first_name: guest_first_name ?? null,
       guest_last_name:  guest_last_name  ?? null,
       guest_email:      email ?? null,
@@ -394,15 +401,11 @@ export async function POST(req: NextRequest) {
       source: "form",
     };
 
-    // încercare — poate enum-ul include "hold"
     let ins = await admin.from("bookings").insert(basePayload).select("id").single();
-
-    // fallback: dacă enum-ul nu are "hold", salvăm cu "pending"
     if (ins.error && looksEnumHoldError(ins.error.message)) {
-      const payload2 = { ...basePayload, status: "pending" as const };
-      ins = await admin.from("bookings").insert(payload2).select("id").single();
+      basePayload.status = "pending";
+      ins = await admin.from("bookings").insert(basePayload).select("id").single();
     }
-
     if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 });
 
     const newId = ins.data.id as string;
