@@ -22,7 +22,7 @@ async function typeOfBooking(b: { room_type_id: string | null; room_id: string |
 }
 function isFormish(b: any) {
   const src = (b?.source || "").toString().toLowerCase();
-  return src === "form" || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
+  return src === "form" || b?.status === "hold" || b?.status === "pending";
 }
 
 /**

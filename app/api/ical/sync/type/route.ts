@@ -74,7 +74,7 @@ async function findFreeRoomForType(
 // merge form → iCal (fără delete)
 function isFormish(b: any) {
   const src = (b?.source || "").toString().toLowerCase();
-  return src === "form" || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
+  return src === "form" || b?.status === "hold" || b?.status === "pending";
 }
 async function mergeFormIntoIcal(
   supa: any,
@@ -188,6 +188,15 @@ async function createOrUpdateFromEvent(
 
     if (feed.room_id && !icalBooking.room_id) { await supa.from("bookings").update({ room_id: feed.room_id }).eq("id", bookingId); room_id_final = feed.room_id; }
     if (!icalBooking.room_type_id && feed.room_type_id) { await supa.from("bookings").update({ room_type_id: feed.room_type_id }).eq("id", bookingId); room_type_id_final = feed.room_type_id; }
+
+    // Dacă proprietatea are types și încă nu avem room_id, alocă automat o cameră liberă pentru tipul cunoscut
+    if (!room_id_final) {
+      const typeForAuto = room_type_id_final ?? feed.room_type_id ?? null;
+      if (typeForAuto) {
+        const picked = await findFreeRoomForType(supa, { property_id: feed.property_id, room_type_id: String(typeForAuto), start_date, end_date });
+        if (picked) { await supa.from("bookings").update({ room_id: picked }).eq("id", bookingId); room_id_final = picked; }
+      }
+    }
 
     await supa.from("bookings").update({
       source: "ical",

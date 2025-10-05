@@ -45,9 +45,9 @@ export async function POST(req: NextRequest) {
       return bad(400, { error: "Bookings must belong to the same property" });
     }
 
-    // Guard: form booking?
+    // Guard: form booking? (doar source='form' sau status hold/pending)
     const src = (rForm.data.source || "").toString().toLowerCase();
-    const looksForm = src === "form" || !!(rForm.data as any).form_submitted_at || rForm.data.status === "hold" || rForm.data.status === "pending";
+    const looksForm = src === "form" || rForm.data.status === "hold" || rForm.data.status === "pending";
     if (!looksForm) return bad(400, { error: "form_booking_id is not a form/hold booking" });
 
     // 2) STRICT RULES: dates + allocation criterion must both match

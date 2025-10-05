@@ -131,7 +131,8 @@ function normalizeEvent(ev: ParsedEvent, propTZ: string): Norm {
 // ---------- merge form → iCal (fără delete; fără soft-hold) ----------
 function isFormish(b: any) {
   const src = (b?.source || "").toString().toLowerCase();
-  return src === "form" || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
+  // Doar sursa 'form' sau status temporar hold/pending definesc un FORM booking
+  return src === "form" || b?.status === "hold" || b?.status === "pending";
 }
 async function mergeFormIntoIcal(
   supa: any,
