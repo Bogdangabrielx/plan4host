@@ -202,6 +202,25 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     });
   }, [countdownSec]);
 
+  // When countdown finishes, clear/restore hint so "Wait 1s" doesn't linger
+  useEffect(() => {
+    if (countdownSec !== null) return;
+    setHintText((old) => {
+      // Only replace if the previous message was a cooldown/quota message
+      if (/^Wait\b/.test(old) || /^Hourly limit\b/.test(old)) {
+        return isPremium ? "Ready" : "";
+      }
+      return old;
+    });
+    setHintVariant((old) => {
+      if (isPremium === null) return old;
+      if (/^Wait\b/.test(hintText) || /^Hourly limit\b/.test(hintText)) {
+        return isPremium ? "success" : "muted";
+      }
+      return old;
+    });
+  }, [countdownSec, isPremium, hintText]);
+
   // Refresh all data for current property with race-guard
   const refresh = useCallback(async () => {
     if (!propertyId) { setStatus("Idle"); return; }
@@ -471,7 +490,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
   return (
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
-      <PlanHeaderBadge title="Channels & iCal" slot="header-right" />
+      <PlanHeaderBadge title="Sync Calendars" slot="header-right" />
       {/* Toolbar minimalistă */}
       <div className="sb-toolbar" style={{ gap: 12, marginBottom: 8 }}>
         <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800,}}>
@@ -485,7 +504,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
       {/* Card cu acțiuni */}
       <section className="sb-card" style={{ padding: 16, marginTop: 8 }}>
-        <h3 style={{ marginTop: 0 }}>Channels & iCal</h3>
+        <h3 style={{ marginTop: 0 }}>Sync Calendars</h3>
         {!timezone && (
           <p style={{ fontSize:8, color: "var(--danger)", marginTop: 0 }}>
             Set Country (timezone) in Dashboard to produce valid .ics files.

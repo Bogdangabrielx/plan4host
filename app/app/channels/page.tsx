@@ -28,7 +28,7 @@ export default async function ChannelsPage() {
   }));
 
   return (
-    <AppShell currentPath="/app/channels" title="Channels & iCal">
+    <AppShell currentPath="/app/channels" title="Sync Calendars">
       <ChannelsClient initialProperties={properties} />
     </AppShell>
   );

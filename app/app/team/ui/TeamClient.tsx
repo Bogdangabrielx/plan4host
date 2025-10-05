@@ -110,7 +110,8 @@ export default function TeamClient() {
     { key: "guest_overview",  title: "Guest Overview" },
     { key: "property_setup",  title: "Property Setup" },
     { key: "cleaning",        title: "Cleaning Board" },
-    { key: "channels",        title: "Channels & iCal" },
+    // keep key 'channels' (scope id) but show friendly label matching the page name
+    { key: "channels",        title: "Sync Calendars" },
   ];
 
   // Pretty-print scopes in Members list (handles legacy tokens too)
