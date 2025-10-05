@@ -325,14 +325,20 @@
 /* Animated gradient border on feature card (mask technique) */
 @property --ring-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
 .featureCard {
-  background: var(--card); border-radius: 22px; padding: 26px; min-height: 180px;
-  transition: box-shadow .15s ease, transform .15s ease; position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  min-height: 180px;
+  transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+  position: relative;
   scroll-snap-align: start;
   flex: 0 0 auto;
-  min-width: 320px; /* desktop card width */
+  width: clamp(280px, 30vw, 360px); /* consistent card width on desktop */
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
 }
+.featureCard:hover { box-shadow: 0 10px 24px rgba(0,0,0,.10); transform: translateY(-2px); }
 .featureCard > * { position: relative; z-index: 2; }
-.featureCard:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); transform: translateY(-2px); }
 .featureCard::before {
   content: ""; position: absolute; inset: 0; padding: var(--ring); border-radius: inherit;
   background: conic-gradient(
@@ -363,8 +369,8 @@
 
 .featureHead { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
 .featureIcon { width: 36px; height: 36px; object-fit: contain; opacity: .9; }
-.featureCard h3 { margin: 0; font-size: 20px; }
-.featureCard p { margin: 0; color: var(--muted); }
+.featureCard h3 { margin: 0; font-size: 20px; line-height: 1.2; overflow-wrap: anywhere; word-break: break-word; hyphens: auto; }
+.featureCard p { margin: 0; color: var(--muted); overflow-wrap: anywhere; word-break: break-word; hyphens: auto; }
 
 /* Pricing */
 .pricing { max-width: 1100px; margin: 80px auto; padding: 0 20px; }
@@ -419,7 +425,7 @@
   .footerGrid { grid-template-columns: 1fr 1fr; }
   .menuToggle { display: inline-flex; background: transparent; color: var(--text); border: 1px solid var(--border); box-shadow: none; }
   /* Full-bleed slides on phones */
-  .featureCard { min-width: calc(100vw - 40px); }
+  .featureCard { width: calc(100vw - 40px); }
 }
 @media (max-width: 560px) { .footerGrid { grid-template-columns: 1fr; } }
 
