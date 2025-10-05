@@ -94,6 +94,73 @@ export default function EditFormBookingModal({
     return rooms.filter((r) => (r.room_type_id || null) === (roomTypeId || null));
   }, [rooms, roomTypes, roomTypeId]);
 
+  // Occupancy hint for selected room type (informational only)
+  const [typeBusyCount, setTypeBusyCount] = useState<number | null>(null);
+  const [typeTotalCount, setTypeTotalCount] = useState<number | null>(null);
+  const [typeHintLoading, setTypeHintLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!hasRoomTypes) { setTypeBusyCount(null); setTypeTotalCount(null); return; }
+      if (!roomTypeId || !isValidYMD(startDate) || !isValidYMD(endDate)) { setTypeBusyCount(null); setTypeTotalCount(null); return; }
+      const ids = filteredRooms.map(r => String(r.id));
+      setTypeTotalCount(ids.length || 0);
+      if (ids.length === 0) { setTypeBusyCount(0); return; }
+      setTypeHintLoading(true);
+      try {
+        const q = supabase
+          .from('bookings')
+          .select('room_id')
+          .in('room_id', ids)
+          .eq('status', 'confirmed')
+          .lt('start_date', endDate)
+          .gt('end_date', startDate);
+        const r = await q;
+        if (!alive) return;
+        if (r.error) { setTypeBusyCount(null); return; }
+        const busy = new Set<string>((r.data || []).map((b: any) => String(b.room_id)).filter(Boolean));
+        setTypeBusyCount(busy.size);
+      } catch {
+        if (alive) setTypeBusyCount(null);
+      } finally {
+        if (alive) setTypeHintLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [supabase, hasRoomTypes, roomTypeId, startDate, endDate, filteredRooms.map(r=>r.id).join('|')]);
+
+  // Occupancy hint for selected room (no room types case)
+  const [roomBusy, setRoomBusy] = useState<boolean | null>(null);
+  const [roomHintLoading, setRoomHintLoading] = useState<boolean>(false);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (hasRoomTypes) { setRoomBusy(null); return; }
+      if (!roomId || !isValidYMD(startDate) || !isValidYMD(endDate)) { setRoomBusy(null); return; }
+      setRoomHintLoading(true);
+      try {
+        const r = await supabase
+          .from('bookings')
+          .select('id')
+          .eq('property_id', propertyId)
+          .eq('room_id', roomId)
+          .eq('status', 'confirmed')
+          .lt('start_date', endDate)
+          .gt('end_date', startDate)
+          .limit(1);
+        if (!alive) return;
+        if (r.error) { setRoomBusy(null); return; }
+        setRoomBusy((r.data?.length || 0) > 0);
+      } catch {
+        if (alive) setRoomBusy(null);
+      } finally {
+        if (alive) setRoomHintLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [supabase, hasRoomTypes, roomId, startDate, endDate, propertyId]);
+
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -269,6 +336,8 @@ export default function EditFormBookingModal({
         display: "grid",
         placeItems: "center",
         padding: 12,
+        fontFamily:
+          'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
       }}
     >
       <div
@@ -446,6 +515,25 @@ export default function EditFormBookingModal({
                           ? filteredRooms.map((r) => r.name).join(", ") || "—"
                           : "Select a room type…"}
                       </div>
+                      {roomTypeId && (
+                        <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                          {typeHintLoading ? (
+                            <>Checking availability…</>
+                          ) : (typeTotalCount != null && typeBusyCount != null) ? (
+                            typeTotalCount === 0 ? (
+                              <>No rooms are defined for this type.</>
+                            ) : typeBusyCount === 0 ? (
+                              <>All {typeTotalCount} rooms in this type are currently free on the selected dates.</>
+                            ) : typeBusyCount >= typeTotalCount ? (
+                              <>All rooms in this type are occupied on the selected dates. Green reservations cannot be changed.</>
+                            ) : (
+                              <>
+                                {typeBusyCount} of {typeTotalCount} rooms in this type are occupied on the selected dates. Green reservations cannot be changed.
+                              </>
+                            )
+                          ) : null}
+                        </div>
+                      )}
                     </div>
                   </>
                 ) : (
@@ -464,6 +552,17 @@ export default function EditFormBookingModal({
                           </option>
                         ))}
                       </select>
+                      {roomId && (
+                        <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                          {roomHintLoading ? (
+                            <>Checking availability…</>
+                          ) : roomBusy == null ? null : roomBusy ? (
+                            <>This room is occupied on the selected dates. Green reservations cannot be changed.</>
+                          ) : (
+                            <>This room is currently free on the selected dates.</>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div />
