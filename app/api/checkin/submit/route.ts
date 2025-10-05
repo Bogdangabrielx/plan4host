@@ -280,15 +280,33 @@ export async function POST(req: NextRequest) {
       try {
         const rLock = await admin
           .from("bookings")
-          .select("id, guest_first_name, guest_last_name, guest_name, form_submitted_at")
+          .select("id, room_id, room_type_id, start_date, end_date, guest_first_name, guest_last_name, guest_name, form_submitted_at")
           .eq("id", matchedBookingId)
           .maybeSingle();
         if (!rLock.error && rLock.data) {
           const anyName = ((rLock.data.guest_first_name || '').trim().length + (rLock.data.guest_last_name || '').trim().length) > 0 || (rLock.data.guest_name || '').trim().length > 0;
           const locked = !!rLock.data.form_submitted_at || anyName;
           if (locked) {
-            // tratează formularul ca separat (nu suprascrie perechea existentă)
-            matchedBookingId = null;
+            matchedBookingId = null; // eveniment verde -> nu mai acceptă alte formulare
+          } else {
+            // Gard suplimentar: dacă există DEJA un form booking pe aceleași date și același criteriu (room_id/room_type), nu atașa acest formular
+            const evRoom = rLock.data.room_id ? String(rLock.data.room_id) : null;
+            const evType = rLock.data.room_type_id ? String(rLock.data.room_type_id) : null;
+            let q = admin
+              .from('bookings')
+              .select('id')
+              .eq('property_id', property_id)
+              .eq('start_date', rLock.data.start_date)
+              .eq('end_date', rLock.data.end_date)
+              .neq('status', 'cancelled')
+              .eq('source', 'form')
+              .limit(1);
+            if (evRoom) q = (q as any).eq('room_id', evRoom);
+            else if (evType) q = (q as any).eq('room_type_id', evType);
+            const existing = await q;
+            if (!existing.error && (existing.data?.length || 0) > 0) {
+              matchedBookingId = null; // există deja un formular lipit conceptual -> nu suprascrie
+            }
           }
         }
       } catch {}

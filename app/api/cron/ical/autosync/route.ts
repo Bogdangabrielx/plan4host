@@ -163,7 +163,9 @@ async function mergeFormIntoIcal(
     .neq("status", "cancelled");
 
   if (rCands.error) return { merged: false };
-  const forms: any[] = (rCands.data || []).filter(isFormish as (b: any) => boolean);
+  const forms: any[] = (rCands.data || [])
+    .filter(isFormish as (b: any) => boolean)
+    .sort((a: any, b: any) => ((a.form_submitted_at || a.created_at || '') as string).localeCompare((b.form_submitted_at || b.created_at || '') as string));
   if (!forms.length) return { merged: false };
 
   let pick: any | null = null;
