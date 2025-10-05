@@ -277,15 +277,20 @@ async function createOrUpdateFromEvent(
     if (feed.room_id && !icalBooking.room_id) { await supa.from("bookings").update({ room_id: feed.room_id }).eq("id", bookingId); room_id_final = feed.room_id; }
     if (!icalBooking.room_type_id && feed.room_type_id) { await supa.from("bookings").update({ room_type_id: feed.room_type_id }).eq("id", bookingId); room_type_id_final = feed.room_type_id; }
 
-    // Dacă există room types și booking-ul nu are încă room_id, alege automat o cameră liberă de acel tip.
+    // Dacă există room types și booking-ul nu are încă room_id, cere DB să aloce atomic o cameră liberă
     if (!room_id_final) {
       const typeForAuto = room_type_id_final ?? feed.room_type_id ?? null;
       if (typeForAuto) {
-        const picked = await findFreeRoomForType(supa, { property_id: feed.property_id, room_type_id: String(typeForAuto), start_date, end_date });
-        if (picked) {
-          await supa.from("bookings").update({ room_id: picked }).eq("id", bookingId);
-          room_id_final = picked;
-        }
+        try {
+          const rAssign = await supa.rpc('assign_room_for_type', {
+            p_property_id: feed.property_id,
+            p_room_type_id: String(typeForAuto),
+            p_start_date: start_date,
+            p_end_date: end_date,
+            p_booking_id: bookingId,
+          });
+          if (!rAssign.error) room_id_final = (rAssign.data as any) || null;
+        } catch {}
       }
     }
 
@@ -304,7 +309,8 @@ async function createOrUpdateFromEvent(
       room_id_final = feed.room_id; room_type_id_final = feed.room_type_id ?? null;
     } else if (feed.room_type_id) {
       room_type_id_final = feed.room_type_id;
-      room_id_final = await findFreeRoomForType(supa, { property_id: feed.property_id, room_type_id: feed.room_type_id, start_date, end_date });
+      // alocarea efectivă se face după INSERT prin RPC (assign_room_for_type)
+      room_id_final = null;
     } else {
       room_id_final = null; room_type_id_final = null;
     }
@@ -323,6 +329,20 @@ async function createOrUpdateFromEvent(
 
     if (ins.error || !ins.data) throw new Error(ins.error?.message || "create_booking_failed");
     bookingId = String(ins.data.id);
+
+    // dacă e pe room_type, încearcă alocare atomică prin RPC după insert
+    if (!room_id_final && room_type_id_final) {
+      try {
+        const rAssign = await supa.rpc('assign_room_for_type', {
+          p_property_id: feed.property_id,
+          p_room_type_id: String(room_type_id_final),
+          p_start_date: start_date,
+          p_end_date: end_date,
+          p_booking_id: bookingId,
+        });
+        if (!rAssign.error) room_id_final = (rAssign.data as any) || null;
+      } catch {}
+    }
   }
 
   // 4) Upsert UID map
