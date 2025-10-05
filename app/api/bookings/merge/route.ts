@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     // 1) Load bookings and validate they belong to property
     const [rManual, rForm] = await Promise.all([
-      admin.from("bookings").select("id,property_id,room_id,room_type_id,start_date,end_date,status,source,guest_first_name,guest_last_name").eq("id", manual_booking_id).maybeSingle(),
+      admin.from("bookings").select("id,property_id,room_id,room_type_id,start_date,end_date,status,source,guest_first_name,guest_last_name,guest_name,form_submitted_at").eq("id", manual_booking_id).maybeSingle(),
       admin.from("bookings").select("id,property_id,room_id,room_type_id,start_date,end_date,status,source,guest_first_name,guest_last_name,form_submitted_at").eq("id", form_booking_id).maybeSingle(),
     ]);
 
@@ -77,7 +77,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3) Read contact from form booking
+    // 3) Event locked? nu permitem modificarea unei perechi verzi
+    const anyName = ((rManual.data.guest_first_name || '').trim().length + (rManual.data.guest_last_name || '').trim().length) > 0 || (rManual.data.guest_name || '').trim().length > 0;
+    const locked = !!rManual.data.form_submitted_at || anyName;
+    if (locked) return bad(409, { error: "event_locked" });
+
+    // 4) Read contact from form booking
     const rContact = await admin
       .from("booking_contacts")
       .select("email,phone,address,city,country")
@@ -85,7 +90,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
     const contact = (rContact.data || null) as { email?: string|null; phone?:string|null; address?:string|null; city?:string|null; country?:string|null } | null;
 
-    // 4) Update manual booking names (only if provided by form)
+    // 5) Update manual booking names (only if provided by form)
     const upd: any = {};
     if ((rForm.data as any).guest_first_name) upd.guest_first_name = (rForm.data as any).guest_first_name;
     if ((rForm.data as any).guest_last_name)  upd.guest_last_name  = (rForm.data as any).guest_last_name;
@@ -93,7 +98,7 @@ export async function POST(req: NextRequest) {
       await admin.from("bookings").update(upd).eq("id", manual_booking_id);
     }
 
-    // 5) Upsert contact onto manual booking
+    // 6) Upsert contact onto manual booking
     if (contact && (contact.email || contact.phone || contact.address || contact.city || contact.country)) {
       await admin
         .from("booking_contacts")
@@ -109,7 +114,7 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
     }
 
-    // 6) Optionally move documents
+    // 7) Optionally move documents
     let movedDocs = 0;
     if (move_documents) {
       const updDocs = await admin
@@ -120,7 +125,7 @@ export async function POST(req: NextRequest) {
       if (!updDocs.error) movedDocs = (updDocs.data?.length || 0);
     }
 
-    // 7) Close form booking (mark cancelled) — fără coloane care nu mai există
+    // 8) Close form booking (mark cancelled) — fără coloane care nu mai există
     await admin
       .from("bookings")
       .update({ status: "cancelled" })

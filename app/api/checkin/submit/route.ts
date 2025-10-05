@@ -276,6 +276,25 @@ export async function POST(req: NextRequest) {
     }
 
     if (matchedBookingId) {
+      // Nu permite atașarea la o rezervare deja "verde" (locked)
+      try {
+        const rLock = await admin
+          .from("bookings")
+          .select("id, guest_first_name, guest_last_name, guest_name, form_submitted_at")
+          .eq("id", matchedBookingId)
+          .maybeSingle();
+        if (!rLock.error && rLock.data) {
+          const anyName = ((rLock.data.guest_first_name || '').trim().length + (rLock.data.guest_last_name || '').trim().length) > 0 || (rLock.data.guest_name || '').trim().length > 0;
+          const locked = !!rLock.data.form_submitted_at || anyName;
+          if (locked) {
+            // tratează formularul ca separat (nu suprascrie perechea existentă)
+            matchedBookingId = null;
+          }
+        }
+      } catch {}
+    }
+
+    if (matchedBookingId) {
       // —— MERGE în booking-ul matched —— //
       const updatePayload: any = {
         guest_first_name: guest_first_name ?? null,

@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     // 1) Load the event booking (manual/ical)
     const rEvent = await admin
       .from("bookings")
-      .select("id,property_id,room_id,room_type_id,start_date,end_date,status,source,ical_uid,guest_first_name,guest_last_name")
+      .select("id,property_id,room_id,room_type_id,start_date,end_date,status,source,ical_uid,guest_first_name,guest_last_name,guest_name,form_submitted_at")
       .eq("id", event_booking_id)
       .maybeSingle();
 
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       return bad(400, { error: "Event booking has no dates" });
     }
 
-    // 2) Determine event's allocation criterion
+    // 2) Determine event's allocation criterion + lock check
     const evType = await typeOfBooking({ room_type_id: ev.room_type_id, room_id: ev.room_id });
     const hasRoomCriterion = !!ev.room_id;
     const hasTypeCriterion = !!evType;
@@ -73,6 +73,12 @@ export async function POST(req: NextRequest) {
     if (!hasRoomCriterion && !hasTypeCriterion) {
       // nu putem reconcilia fără room_id sau type
       return NextResponse.json({ ok: true, reconciled: false, reason: "event_has_no_room_or_type" });
+    }
+
+    const anyName = ((ev.guest_first_name || '').trim().length + (ev.guest_last_name || '').trim().length) > 0 || (ev.guest_name || '').trim().length > 0;
+    const locked = !!ev.form_submitted_at || anyName;
+    if (locked) {
+      return NextResponse.json({ ok: true, reconciled: false, reason: "event_locked" });
     }
 
     // 3) Find candidate form bookings on the same interval

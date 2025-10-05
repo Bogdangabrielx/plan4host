@@ -82,6 +82,20 @@ async function mergeFormIntoIcal(
 ) {
   const { property_id, icalBookingId, icalRoomId, icalRoomTypeId, start_date, end_date } = params;
 
+  // Nu modifica dacă booking-ul iCal este deja paired (verde/locked)
+  try {
+    const rLock = await supa
+      .from("bookings")
+      .select("id, guest_first_name, guest_last_name, guest_name, form_submitted_at")
+      .eq("id", icalBookingId)
+      .maybeSingle();
+    if (!rLock.error && rLock.data) {
+      const anyName = ((rLock.data.guest_first_name || '').trim().length + (rLock.data.guest_last_name || '').trim().length) > 0 || (rLock.data.guest_name || '').trim().length > 0;
+      const locked = !!rLock.data.form_submitted_at || anyName;
+      if (locked) return { merged: false };
+    }
+  } catch {}
+
   const rCands = await supa
     .from("bookings")
     .select("id,room_id,room_type_id,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address,form_submitted_at,source,status")
