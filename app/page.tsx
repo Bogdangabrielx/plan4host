@@ -59,6 +59,89 @@ function CtaLink({
 }
 
 /* ──────────────────────────────────────────────────────────────
+   FeatureCarousel — responsive: full-width slides on mobile,
+   scrollable carousel with arrows on desktop.
+   ────────────────────────────────────────────────────────────── */
+function FeatureCarousel() {
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const getStep = () => {
+    const el = trackRef.current;
+    if (!el) return 0;
+    const first = el.querySelector('[data-card]') as HTMLElement | null;
+    if (first) return first.offsetWidth + 20; // include gap
+    return Math.max(280, Math.floor(el.clientWidth * 0.9));
+  };
+
+  const prev = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollBy({ left: -getStep(), behavior: 'smooth' });
+  };
+  const next = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollBy({ left: getStep(), behavior: 'smooth' });
+  };
+
+  return (
+    <div className={styles.featureCarousel}>
+      <button type="button" aria-label="Previous features" className={`${styles.carouselBtn} ${styles.carouselBtnLeft}`} onClick={prev}>‹</button>
+      <div className={styles.featureTrack} ref={trackRef}>
+        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+          <div className={styles.featureHead}>
+            <img src="/dashboard_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+            <h3>Easy-to-use Dashboard</h3>
+          </div>
+          <p>Bring all your properties into one simple dashboard and shape it your way, with flexibility to customize every detail.</p>
+        </article>
+
+        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+          <div className={styles.featureHead}>
+            <img src="/configurator_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+            <h3>Property Setup</h3>
+          </div>
+          <p>Quickly configure each property to match your needs—add rooms, adjust details, and personalize settings for a smooth workflow.</p>
+        </article>
+
+        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+          <div className={styles.featureHead}>
+            <img src="/calendar_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+            <h3>Adaptive Calendar</h3>
+          </div>
+          <p>Your calendar, your way. Customize views, organize reservations, and keep everything visible at a glance.</p>
+        </article>
+
+        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+          <div className={styles.featureHead}>
+            <img src="/ical_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+            <h3>Automatic Sync</h3>
+          </div>
+          <p>Sync reservations with Airbnb, Booking.com and more; according to your subscription plan—keeping calendars always up to date, effortlessly.</p>
+        </article>
+
+        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+          <div className={styles.featureHead}>
+            <img src="/checkinform_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+            <h3>Secured Check-in Form</h3>
+          </div>
+          <p>Collect guest details safely before arrival—identity document upload, consent and instant email confirmation—all in a streamlined, GDPR‑friendly flow.</p>
+        </article>
+
+        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+          <div className={styles.featureHead}>
+            <img src="/team_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+            <h3>Delegate Tasks</h3>
+          </div>
+          <p>Invite teammates (editor/viewer), assign scope‑based access (calendar, cleaning, channels, property setup) and delegate daily tasks with confidence.</p>
+        </article>
+      </div>
+      <button type="button" aria-label="Next features" className={`${styles.carouselBtn} ${styles.carouselBtnRight}`} onClick={next}>›</button>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────
    CookieConsentLanding — doar Necessary + Preferences (tema)
    - persistă 180 zile în localStorage + cookie
    - blochează pagina până se alege o opțiune
@@ -347,8 +430,7 @@ export default function HomePage() {
         aria-label="Primary"
       >
         <Link href="/" className={`${styles.brand} ${styles.focusable}`}>
-          <img src="/logo_fordark.png" alt="Plan4host" className={styles.logoDark} />
-         
+          <img src="/logo_forlight.png" alt="Plan4host" className={styles.logoDark} />
         </Link>
 
         {/* Desktop menu */}
@@ -457,57 +539,7 @@ export default function HomePage() {
       {/* Features */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title">Features</h2>
-        <div className={styles.featureGrid}>
-          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-            <div className={styles.featureHead}>
-              <img src="/dashboard_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-              <h3>Easy-to-use Dashboard</h3>
-            </div>
-            <p>Bring all your properties into one simple dashboard and shape it your way, with flexibility to customize every detail.</p>
-          </article>
-
-          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-            <div className={styles.featureHead}>
-              <img src="/configurator_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-              <h3>Property Setup</h3>
-            </div>
-            <p>Quickly configure each property to match your needs—add rooms, adjust details, and personalize settings for a smooth workflow.</p>
-          </article>
-
-          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-            <div className={styles.featureHead}>
-              <img src="/calendar_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-              <h3>Adaptive Calendar</h3>
-            </div>
-            <p>Your calendar, your way. Customize views, organize reservations, and keep everything visible at a glance.</p>
-          </article>
-
-          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-            <div className={styles.featureHead}>
-              <img src="/ical_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-              <h3>Automatic Sync</h3>
-            </div>
-            <p>Sync reservations with Airbnb, Booking.com and more; according to your subscription plan—keeping calendars always up to date, effortlessly.</p>
-          </article>
-
-          {/* Secured check-in form */}
-          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-            <div className={styles.featureHead}>
-              <img src="/checkinform_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-              <h3>Secured Check-in Form</h3>
-            </div>
-            <p>Collect guest details safely before arrival—identity document upload, consent and instant email confirmation—all in a streamlined, GDPR‑friendly flow.</p>
-          </article>
-
-          {/* Delegate tasks (Team) */}
-          <article className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-            <div className={styles.featureHead}>
-              <img src="/team_fordark.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-              <h3>Delegate Tasks</h3>
-            </div>
-            <p>Invite teammates (editor/viewer), assign scope‑based access (calendar, cleaning, channels, property setup) and delegate daily tasks with confidence.</p>
-          </article>
-        </div>
+        <FeatureCarousel />
       </section>
 
       {/* Pricing */}
@@ -610,7 +642,7 @@ export default function HomePage() {
         <div className={styles.footerGrid}>
           <div className={styles.footerCol}>
             <div className={styles.footerBrand}>
-              <img src="/logo_fordark.png" alt="" aria-hidden="true" className={styles.logoDark} />
+              <img src="/logo_forlight.png" alt="" aria-hidden="true" className={styles.logoDark} />
               <strong>Plan4Host</strong>
             </div>
             <p className={styles.footerCopy}>
