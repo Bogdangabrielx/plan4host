@@ -260,6 +260,18 @@ async function createOrUpdateFromEvent(
     if (feed.room_id && !icalBooking.room_id) { await supa.from("bookings").update({ room_id: feed.room_id }).eq("id", bookingId); room_id_final = feed.room_id; }
     if (!icalBooking.room_type_id && feed.room_type_id) { await supa.from("bookings").update({ room_type_id: feed.room_type_id }).eq("id", bookingId); room_type_id_final = feed.room_type_id; }
 
+    // Dacă există room types și booking-ul nu are încă room_id, alege automat o cameră liberă de acel tip.
+    if (!room_id_final) {
+      const typeForAuto = room_type_id_final ?? feed.room_type_id ?? null;
+      if (typeForAuto) {
+        const picked = await findFreeRoomForType(supa, { property_id: feed.property_id, room_type_id: String(typeForAuto), start_date, end_date });
+        if (picked) {
+          await supa.from("bookings").update({ room_id: picked }).eq("id", bookingId);
+          room_id_final = picked;
+        }
+      }
+    }
+
     // la autosync alegem să NU forțăm start/end_time (evităm drift-uri). Dacă vrei să le updatăm, de-comentează linia următoare.
     await supa.from("bookings").update({
       source: "ical",

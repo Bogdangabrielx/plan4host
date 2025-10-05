@@ -43,7 +43,9 @@ function isIcalish(b: BRow) {
 }
 function isFormish(b: any) {
   const src = (b?.source || "").toString().toLowerCase();
-  return src === "form" || !!b?.form_submitted_at || b?.status === "hold" || b?.status === "pending";
+  // Form-urile reale au source='form' sau status temporar hold/pending.
+  // NU clasificăm ca "form" doar pe baza form_submitted_at, pentru că iCal/manual pot primi acest timestamp după merge.
+  return src === "form" || b?.status === "hold" || b?.status === "pending";
 }
 function isManual(b: BRow) {
   return !isIcalish(b) && !isFormish(b);
@@ -200,6 +202,8 @@ export async function GET(req: Request) {
       forms: BRow[];
     };
     const groups = new Map<string, Group>();
+    // Index global de form-uri pe (start_date|end_date) pentru fallback unic
+    const formsByDates = new Map<string, BRow[]>();
 
     for (const b of bookings) {
       const k = groupKey(b);
@@ -210,8 +214,15 @@ export async function GET(req: Request) {
         g = { start_date: b.start_date, end_date: b.end_date, key_id: hasTypes ? tId : (b.room_id ? String(b.room_id) : null), type_id: tId, type_name: name, events: [], forms: [] };
         groups.set(k, g);
       }
-      if (isFormish(b)) g.forms.push(b);
-      else g.events.push(b);
+      if (isFormish(b)) {
+        g.forms.push(b);
+        const dk = `${b.start_date}|${b.end_date}`;
+        const arr = formsByDates.get(dk) || [];
+        arr.push(b);
+        formsByDates.set(dk, arr);
+      } else {
+        g.events.push(b);
+      }
     }
 
     // Evaluare stări conform regulilor
@@ -245,18 +256,45 @@ export async function GET(req: Request) {
       return { provider: b.ota_provider ?? null, color: null, logo_url: null };
     }
 
+    const usedFormsGlobal = new Set<string>();
     for (const [, g] of groups) {
       // sort events/forms pentru pairing stabil
       const events = [...g.events].sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
       const forms = [...g.forms].sort((a, b) => (a.form_submitted_at || a.created_at || "").localeCompare(b.form_submitted_at || b.created_at || ""));
 
-      const usedForm = new Set<string>();
+      // folosim marcaje globale pentru a evita reutilizarea unui form în alt grup
 
       // Perechere 1:1 — pentru fiecare event lipim primul form liber
       for (const ev of events) {
-        const f = forms.find(x => !usedForm.has(String(x.id)));
+        const evHasMerged = !!ev.form_submitted_at;
+        // 1) întâi încearcă form din același grup (cheie exactă)
+        let f = forms.find(x => !usedFormsGlobal.has(String(x.id)));
+
+        // 2) dacă nu există în grup, aplică fallback-uri ca în autosync:
+        //    - match după room_id (dacă event are room_id)
+        //    - match după room_type_id (dacă există types și event are type)
+        //    - dacă există exact UN form pe aceleași date în toată proprietatea, îl legăm
+        if (!f) {
+          const dk = `${g.start_date}|${g.end_date}`;
+          const all = (formsByDates.get(dk) || []).filter(x => !usedFormsGlobal.has(String(x.id)));
+          if (all.length > 0) {
+            // room_id strict
+            if (ev.room_id) {
+              f = all.find(x => (x.room_id ? String(x.room_id) : null) === String(ev.room_id));
+            }
+            // type strict (doar când proprietatea are types)
+            if (!f && hasTypes) {
+              const evType = effectiveTypeId(ev);
+              f = all.find(x => effectiveTypeId(x) === evType);
+            }
+            // unic la nivel de date
+            if (!f && all.length === 1) {
+              f = all[0];
+            }
+          }
+        }
         if (f) {
-          usedForm.add(String(f.id));
+          usedFormsGlobal.add(String(f.id));
           const meta = pickMeta(ev);
           const rId = ev.room_id ?? null;
           const r = rId ? roomById.get(String(rId)) : null;
@@ -276,7 +314,29 @@ export async function GET(req: Request) {
             guest_last_name:  f.guest_last_name  ?? ev.guest_last_name  ?? null,
           });
         } else {
-          // Event fără form
+          // Event fără form (sau form necunoscut)
+          if (evHasMerged) {
+            // DB indică faptul că a existat un form (form_submitted_at) — tratăm ca GREEN deja pereche
+            const meta = pickMeta(ev);
+            const rId = ev.room_id ?? null;
+            const r = rId ? roomById.get(String(rId)) : null;
+            items.push({
+              kind: "green",
+              start_date: g.start_date,
+              end_date: g.end_date,
+              room_id: rId,
+              room_label: r?.name ?? (rId ? `#${String(rId).slice(0,4)}` : null),
+              room_type_id: g.type_id ?? null,
+              room_type_name: g.type_name ?? null,
+              booking_id: ev.id,
+              ota_provider: meta.provider,
+              ota_color: meta.color,
+              ota_logo_url: meta.logo_url,
+              guest_first_name: ev.guest_first_name ?? null,
+              guest_last_name:  ev.guest_last_name  ?? null,
+            });
+            continue;
+          }
           const hasName = hasAnyName(ev);
           if (hasName) {
             const meta = pickMeta(ev);
@@ -326,7 +386,7 @@ export async function GET(req: Request) {
 
       // Form-only rânduri rămase
       for (const f of forms) {
-        if (usedForm.has(String(f.id))) continue;
+        if (usedFormsGlobal.has(String(f.id))) continue;
         const ts = f.form_submitted_at ? new Date(f.form_submitted_at) : (f.created_at ? new Date(f.created_at) : now);
         const deadline = new Date(ts.getTime() + 2 * 60 * 60 * 1000);
         const rId = f.room_id ?? null;
@@ -416,4 +476,3 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: e?.message || "Unexpected error" }, { status: 500 });
   }
 }
-
