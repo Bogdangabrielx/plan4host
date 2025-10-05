@@ -117,7 +117,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       .maybeSingle();
 
     if (upd.error) {
-      return NextResponse.json({ error: upd.error.message }, { status: 400 });
+      const msg = (upd.error as any)?.message || '';
+      if (/bookings_no_overlap|exclusion|23P01/i.test(msg)) {
+        // Friendly message; we could also include room name if desired, but room name isn't loaded here; client already knows room
+        return NextResponse.json({ error: 'Overlaps an existing confirmed reservation on this room.' }, { status: 409 });
+      }
+      return NextResponse.json({ error: (upd.error as any)?.message || 'Failed to update' }, { status: 400 });
     }
 
     return NextResponse.json({ ok: true }, { status: 200 });

@@ -391,7 +391,14 @@ export default function RoomDetailModal({
     }).select("id").maybeSingle();
 
     if (ins.error || !ins.data) {
-      setStatus("Error"); setStatusHint(ins.error?.message || "Failed to create.");
+      const msg = (ins.error as any)?.message || '';
+      const isOverlap = /bookings_no_overlap|exclusion|23P01/i.test(msg || '');
+      setStatus("Error");
+      setStatusHint(
+        isOverlap
+          ? `Overlaps an existing confirmed reservation on Room ${room.name}.`
+          : (msg || "Failed to create.")
+      );
       setSaving(false); return;
     }
     const newId = ins.data.id as string;
@@ -490,7 +497,17 @@ export default function RoomDetailModal({
       end_time: endTime || null,
     }).eq("id", active.id);
 
-    if (upd.error) { setStatus("Error"); setStatusHint(upd.error.message || "Failed to save times."); setSaving(false); return; }
+    if (upd.error) {
+      const msg = (upd.error as any)?.message || '';
+      const isOverlap = /bookings_no_overlap|exclusion|23P01/i.test(msg || '');
+      setStatus("Error");
+      setStatusHint(
+        isOverlap
+          ? `Overlaps an existing confirmed reservation on Room ${room.name}.`
+          : (msg || "Failed to save times.")
+      );
+      setSaving(false); return;
+    }
 
     setSaving(false); setStatus("Saved"); setStatusHint("Dates & times updated.");
     await onChanged(); onClose();

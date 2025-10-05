@@ -44,7 +44,13 @@ export async function POST(req: Request) {
     ota_provider: provider ?? null,
   }).select().maybeSingle();
 
-  if (ins.error || !ins.data) return NextResponse.json({ error: "Failed to create booking" }, { status: 500 });
+  if (ins.error || !ins.data) {
+    const msg = (ins.error as any)?.message || '';
+    if (/bookings_no_overlap|exclusion|23P01/i.test(msg)) {
+      return NextResponse.json({ error: `Overlaps an existing confirmed reservation on Room.` }, { status: 409 });
+    }
+    return NextResponse.json({ error: (ins.error as any)?.message || "Failed to create booking" }, { status: 500 });
+  }
 
   // marchează resolved + adaugă în uid_map dacă avem uid
   await supabase.from("ical_unassigned_events").update({ resolved: true }).eq("id", eventId);
