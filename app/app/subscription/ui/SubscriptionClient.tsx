@@ -72,7 +72,7 @@ function planLabel(slug: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-const BENEFIT_ROWS = 9; // exact 15 rânduri înainte de imagine
+const BENEFIT_ROWS = 17; // exact 15 rânduri înainte de imagine
 
 export default function SubscriptionClient({
   initialAccount: _a,
