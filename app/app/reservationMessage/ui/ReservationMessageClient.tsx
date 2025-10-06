@@ -437,16 +437,23 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         ) : (
           <div style={{ display:'grid', gap:10, gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))' }}>
             {templates.map(t => (
-              <div key={t.id} className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, display:'grid', gap:6 }}>
+              <div
+                key={t.id}
+                className="sb-card"
+                onClick={() => setActiveId(t.id)}
+                style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, display:'grid', gap:6, cursor:'pointer' }}
+                role="button"
+                tabIndex={0}
+              >
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
                   <strong style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{t.title || '(Untitled)'}</strong>
                   <span className="sb-badge" style={{ background: t.status==='published' ? 'var(--primary)' : 'var(--card)', color: t.status==='published' ? '#0c111b' : 'var(--muted)' }}>{t.status}</span>
                 </div>
                 <small style={{ color:'var(--muted)' }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
                 <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-                  <button className="sb-btn" onClick={()=>setActiveId(t.id)}>Edit</button>
-                  <button className="sb-btn" onClick={()=>onDuplicate(t.id, t.title)}>Duplicate</button>
-                  <button className="sb-btn" onClick={()=>onDelete(t.id)}>Delete</button>
+                  <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); setActiveId(t.id); }}>Edit</button>
+                  <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); onDuplicate(t.id, t.title); }}>Duplicate</button>
+                  <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); onDelete(t.id); }}>Delete</button>
                 </div>
               </div>
             ))}
@@ -499,15 +506,6 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
           <button style={btn} onClick={saveDraft} disabled={!isAdmin}>Save</button>
           <button style={btnPri} onClick={publish} disabled={!isAdmin}>Publish</button>
-          <button style={btn} onClick={async ()=>{
-            const to = prompt('Send test to (email)');
-            if (!to) return;
-            try{
-              const res = await fetch('/api/reservation-message/test-send', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ template_id: activeId, property_id: propertyId, to_email: to }) });
-              if (!res.ok) throw new Error(await res.text());
-              alert('Test email sent');
-            }catch(e:any){ alert(e?.message || 'Failed to send test'); }
-          }} disabled={!isAdmin}>Send test</button>
         </div>
       </section>
       )}

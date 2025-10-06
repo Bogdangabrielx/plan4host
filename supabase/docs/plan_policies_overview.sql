@@ -84,16 +84,18 @@
        Reads public.billing_plans for (sync_interval_minutes, allow_sync_now).
        - p_event_type = 'autosync' => cooldown = interval * 60 seconds.
        - p_event_type = 'sync_now' => allowed only if allow_sync_now = true (Premium).
-       Adds deterministic staggering on 5-minute rounds to avoid spikes:
-         Premium  → slot_mod=2 (one slot every 10 minutes)
-         Standard → slot_mod=6 (one slot every 30 minutes)
-         Basic    → slot_mod=12 (one slot every 60 minutes)
-       Slot is computed as hash(account_id) % slot_mod over 5-minute round index.
+       Deterministic staggering on 5-minute rounds to avoid spikes:
+         - Round duration: 5 minutes; round_index = floor(epoch_seconds/300)
+         - Premium  → slot_mod=2 (effective 10m)
+           Standard → slot_mod=6 (effective 30m)
+           Basic    → slot_mod=12 (effective 60m)
+         - Slot selection: slot_idx = abs(hashtextextended(account_id::text,0)) % slot_mod
+           Allowed only if (round_index % slot_mod) == slot_idx
        Uses public.account_sync_usage to compute cooldown and returns JSON:
          { allowed:boolean,
-           reason:'cooldown'|'slot_wait'|'sync_now_only_on_premium'|..., 
+           reason:'cooldown'|'slot_wait'|'sync_now_only_on_premium'|...,
            cooldown_remaining_sec:int,
-           remaining_in_window:int|null,  -- how many rounds until its slot (5-minute rounds)
+           remaining_in_window:int|null,  -- 5-minute rounds until next slot
            retry_after_sec:int|null }
 
    Sync usage logging
