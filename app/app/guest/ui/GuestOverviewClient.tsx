@@ -1178,6 +1178,27 @@ function EditFormBookingModal({
     setSaving(true);
     setError(null);
     try {
+      // Pre-check: require at least one event-only (yellow/red) candidate to link this form to.
+      try {
+        const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(propertyId)}`, { cache: 'no-store' });
+        const j = await res.json().catch(() => ({}));
+        const items = Array.isArray(j?.items) ? j.items : [];
+        const isEventReason = (r: string | null | undefined) => r === 'waiting_form' || r === 'missing_form';
+        const candidates = items.filter((it: any) => {
+          if (!it) return false;
+          if (!isEventReason(it._reason)) return false; // only event-only rows (yellow/red)
+          if (it.start_date !== startDate || it.end_date !== endDate) return false;
+          // Allocation: match by room type if property has types; otherwise by room id
+          if (hasRoomTypes) return String(it._room_type_id || '') === String(roomTypeId || '');
+          return String(it.room_id || '') === String(roomId || '');
+        });
+        if (candidates.length === 0) {
+          setPopupTitle('Cannot save');
+          setPopupMsg('There is no calendar reservation matching these dates and type/room.');
+          setSaving(false);
+          return;
+        }
+      } catch { /* if verification fails, continue without blocking */ }
       // Friendly guard: do not allow selecting a room_id that overlaps an existing confirmed booking (green/intangible)
       const ci = '14:00'; // informational only; we use date-based overlap at DB level
       const co = '11:00';
@@ -1292,41 +1313,6 @@ function EditFormBookingModal({
         setPopupTitle('Saved');
         setPopupMsg('Saved');
       }
-
-      // After saving, try to reconcile with a matching calendar event (single candidate).
-      // Uses the same UI classification (reasons) to detect event-only rows.
-      try {
-        const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(propertyId)}`, { cache: 'no-store' });
-        const j = await res.json().catch(() => ({}));
-        const items = Array.isArray(j?.items) ? j.items : [];
-        const isEventReason = (r: string | null | undefined) => r === 'waiting_form' || r === 'missing_form';
-        const candidates = items.filter((it: any) => {
-          if (!it) return false;
-          if (!isEventReason(it._reason)) return false;
-          if (it.start_date !== startDate || it.end_date !== endDate) return false;
-          // Allocation criterion: match by room type when types exist; else match by room id
-          if (hasRoomTypes) return String(it._room_type_id || '') === String(roomTypeId || '');
-          return String(it.room_id || '') === String(roomId || '');
-        });
-
-        if (candidates.length === 1) {
-          const evId = String(candidates[0].id || candidates[0].booking_id || '');
-          if (evId) {
-            const r = await fetch('/api/bookings/reconcile', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ property_id: propertyId, event_booking_id: evId, move_documents: true }),
-            });
-            // Whether it succeeded or not, we keep "Saved"; if it worked, refresh list to turn it green
-            const ok = r.ok && (await r.clone().json().catch(()=>({})))?.reconciled === true;
-            if (ok) { try { onSaved(); } catch {} }
-          }
-        } else if (candidates.length === 0) {
-          setPopupTitle('Saved');
-          setPopupMsg('Saved. There is no calendar reservation matching these dates and type/room.');
-        }
-        // If multiple candidates exist, do nothing automatically (keep Saved)
-      } catch { /* ignore background reconcile errors */ }
     } catch (e: any) {
       setError(e?.message || "Failed to save changes.");
     } finally {
