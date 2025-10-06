@@ -89,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 :root[data-theme="light"]{
   --bg:#f7faf9; --text:#0f172a; --muted:#64748b;
   --panel:#ffffff; --card:#ffffff; --border:#e2e8f0;
-  --primary:#26dc9dff; --danger:#dc2626; --success:#6ccc4c;
+  --primary:#22F2A9; --danger:#dc2626; --success:#6ccc4c;
   --accent1:#22d3ee; --accent2:#0d1323;
 }
 html, body { background: var(--bg); color: var(--text); }
@@ -115,7 +115,7 @@ html, body { background: var(--bg); color: var(--text); }
 :root[data-theme="dark"][data-accent="indigo"] { --primary:#6366f1; }
 :root[data-theme="dark"][data-accent="emerald"]{ --primary:#34d399; }
 :root[data-theme="dark"][data-accent="amber"]  { --primary:#f59e0b; }
-:root[data-theme="light"][data-accent="base"]  { --primary:#9AFF2E;}
+:root[data-theme="light"][data-accent="base"]  { --primary:#22F2A9;}
 :root[data-theme="light"][data-accent="blue"]   { --primary:#3b82f6; }
 :root[data-theme="light"][data-accent="indigo"] { --primary:#6366f1; }
 :root[data-theme="light"][data-accent="emerald"]{ --primary:#10b981; }
