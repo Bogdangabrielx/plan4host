@@ -115,7 +115,7 @@ html, body { background: var(--bg); color: var(--text); }
 :root[data-theme="dark"][data-accent="indigo"] { --primary:#6366f1; }
 :root[data-theme="dark"][data-accent="emerald"]{ --primary:#34d399; }
 :root[data-theme="dark"][data-accent="amber"]  { --primary:#f59e0b; }
-:root[data-theme="light"][data-accent="base"]  { --primary:#26dc9dff;}
+:root[data-theme="light"][data-accent="base"]  { --primary:#A020F0;}
 :root[data-theme="light"][data-accent="blue"]   { --primary:#3b82f6; }
 :root[data-theme="light"][data-accent="indigo"] { --primary:#6366f1; }
 :root[data-theme="light"][data-accent="emerald"]{ --primary:#10b981; }
