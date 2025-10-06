@@ -524,15 +524,19 @@ export default function HomePage() {
         </div>
 
         <div className={styles.heroVisual} aria-label="Calendar preview">
-          <Image
-            src="/Hero_vid.mp4"
-            alt=""
-            width={900}
-            height={600}
-            priority
-            sizes="(max-width: 900px) 100vw, 50vw"
+          <video
             className={styles.focusable}
-          />
+            src="/Hero_vid.MP4"
+            poster="/Hero_vid.mp4"
+            muted
+            autoPlay
+            loop
+            playsInline
+            preload="metadata"
+            style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 12 }}
+          >
+            Sorry, your browser doesn’t support embedded videos.
+          </video>
         </div>
       </section>
 
