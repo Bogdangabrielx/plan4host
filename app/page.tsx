@@ -64,9 +64,6 @@ function CtaLink({
    ────────────────────────────────────────────────────────────── */
 function FeatureCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
-  // Keep internal refs to avoid re-renders on scroll
-  const activeIndexRef = useRef<number>(0);
-  const manualRef = useRef<boolean>(false);
 
   const getStep = () => {
     const el = trackRef.current;
@@ -76,102 +73,16 @@ function FeatureCarousel() {
     return Math.max(280, Math.floor(el.clientWidth * 0.9));
   };
 
-  // Center a specific card by index
-  const scrollToCard = (index: number) => {
+  const prev = () => {
     const el = trackRef.current;
     if (!el) return;
-    const cards = Array.from(el.querySelectorAll('[data-card]')) as HTMLElement[];
-    const target = cards[index];
-    if (!target) return;
-    const targetCenter = target.offsetLeft + target.offsetWidth / 2;
-    const containerCenter = el.clientWidth / 2;
-    el.scrollTo({ left: Math.max(0, targetCenter - containerCenter), behavior: 'smooth' });
-  };
-
-  const prev = () => {
-    const idx = Math.max(0, activeIndexRef.current - 1);
-    scrollToCard(idx);
+    el.scrollBy({ left: -getStep(), behavior: 'smooth' });
   };
   const next = () => {
     const el = trackRef.current;
     if (!el) return;
-    const cards = el.querySelectorAll('[data-card]');
-    const idx = Math.min(cards.length - 1, activeIndexRef.current + 1);
-    scrollToCard(idx);
+    el.scrollBy({ left: getStep(), behavior: 'smooth' });
   };
-
-  // Observe scroll and hover to set active card and offsets
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const cards = Array.from(el.querySelectorAll('[data-card]')) as HTMLElement[];
-    if (!cards.length) return;
-
-    const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
-    const setActive = (idx: number) => {
-      activeIndexRef.current = idx;
-      cards.forEach((card, i) => {
-        const diff = clamp(i - idx, -2, 2);
-        card.setAttribute('data-offset', String(diff));
-        if (diff === 0) card.setAttribute('data-active', 'true'); else card.removeAttribute('data-active');
-      });
-    };
-
-    const computeNearest = () => {
-      const rect = el.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      let best = 0;
-      let bestDist = Infinity;
-      cards.forEach((card, i) => {
-        const cr = card.getBoundingClientRect();
-        const cx = cr.left + cr.width / 2;
-        const d = Math.abs(cx - centerX);
-        if (d < bestDist) { best = i; bestDist = d; }
-      });
-      setActive(best);
-    };
-
-    // Initial state
-    computeNearest();
-
-    let raf = 0;
-    const onScroll = () => {
-      if (manualRef.current) return; // when hovering a card, keep it active until leave
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(computeNearest);
-    };
-    el.addEventListener('scroll', onScroll, { passive: true });
-
-    // Hover handlers to bring hovered card to front
-    const onEnter = (i: number) => {
-      manualRef.current = true;
-      setActive(i);
-    };
-    const onLeave = () => {
-      manualRef.current = false;
-      computeNearest();
-    };
-    const cleanup: Array<() => void> = [];
-    cards.forEach((card, i) => {
-      const enter = () => onEnter(i);
-      card.addEventListener('mouseenter', enter);
-      card.addEventListener('mouseleave', onLeave);
-      cleanup.push(() => {
-        card.removeEventListener('mouseenter', enter);
-        card.removeEventListener('mouseleave', onLeave);
-      });
-    });
-
-    const onResize = () => computeNearest();
-    window.addEventListener('resize', onResize);
-
-    return () => {
-      el.removeEventListener('scroll', onScroll as any);
-      cancelAnimationFrame(raf);
-      cleanup.forEach((fn) => fn());
-      window.removeEventListener('resize', onResize);
-    };
-  }, []);
 
   return (
     <div className={styles.featureCarousel}>
