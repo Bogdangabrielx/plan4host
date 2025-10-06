@@ -75,6 +75,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     NAV_BASE.filter((n) => !["/app/calendar", "/app/cleaning", "/app/guest"].includes(n.href)),
   );
 
+  // Hover state for drawer items (simulate selected on hover)
+  const [hoverLeft, setHoverLeft] = useState<string | null>(null);
+  const [hoverRight, setHoverRight] = useState<string | null>(null);
+
   // Inbox badge
   const [inboxCount, setInboxCount] = useState<number>(() => {
     try {
@@ -451,6 +455,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                     <li key={it.href}>
                       <button
                         onClick={() => hardNavigate(it.href)}
+                        onMouseEnter={() => setHoverLeft(it.href)}
+                        onMouseLeave={() => setHoverLeft((h) => (h === it.href ? null : h))}
                         style={{
                           width: "100%",
                           textAlign: "left",
@@ -460,11 +466,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                           padding: "10px 12px",
                           borderRadius: 10,
                           border: "1px solid var(--border)",
-                          background: active ? "var(--primary)" : "var(--card)",
-                          color: active ? "#0c111b" : "var(--text)",
+                          background: active || hoverLeft === it.href ? "var(--primary)" : "var(--card)",
+                          color: active || hoverLeft === it.href ? "#0c111b" : "var(--text)",
                           fontWeight: 800,
                           position: "relative",
                           cursor: "pointer",
+                          transform: hoverLeft === it.href && !active ? "scale(1.02)" : undefined,
+                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
                         }}
                       >
                         <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
@@ -563,6 +571,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                           setOpenRight(false);
                           hardNavigate(it.href);
                         }}
+                        onMouseEnter={() => setHoverRight(it.href)}
+                        onMouseLeave={() => setHoverRight((h) => (h === it.href ? null : h))}
                         style={{
                           width: "100%",
                           textAlign: "left",
@@ -572,11 +582,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                           padding: "10px 12px",
                           borderRadius: 10,
                           border: "1px solid var(--border)",
-                          background: active ? "var(--primary)" : "var(--card)",
-                          color: active ? "#0c111b" : "var(--text)",
+                          background: active || hoverRight === it.href ? "var(--primary)" : "var(--card)",
+                          color: active || hoverRight === it.href ? "#0c111b" : "var(--text)",
                           fontWeight: 800,
                           position: "relative",
                           cursor: "pointer",
+                          transform: hoverRight === it.href && !active ? "scale(1.02)" : undefined,
+                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
                         }}
                       >
                         <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
