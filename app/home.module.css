@@ -511,6 +511,17 @@
   .cookieTable td { padding: 8px; }
 }
 
+/* Phone: slightly smaller section titles */
+@media (max-width: 560px) {
+  .features h2,
+  .pricing h2,
+  .about h2,
+  .contact h2 {
+    font-size: clamp(19px, 6vw, 24px);
+    line-height: 1.15;
+  }
+}
+
 /* ascunde skip link-ul când rulează ca PWA instalată */
 @media (display-mode: standalone), (display-mode: fullscreen) {
   .skipLink { display: none !important; }
