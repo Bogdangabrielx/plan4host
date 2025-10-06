@@ -616,14 +616,21 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             marginBottom: 12,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, width: isSmall ? "100%" : "auto" }}>
+          <div style={{ display: isSmall ? "grid" : "flex", gridTemplateColumns: isSmall ? "1fr auto" : undefined, alignItems: "center", gap: 8, flexWrap: isSmall ? "nowrap" : "wrap", width: "100%" }}>
+            <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, width: isSmall ? "100%" : "auto", gridColumn: isSmall ? "1 / -1" : undefined }}>
               Property
             </label>
             <select
               value={activePropertyId}
               onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value)}
-              style={FIELD_STYLE}
+              style={{
+                ...FIELD_STYLE,
+                /* On small, avoid full-width so the refresh button stays on the same row */
+                width: isSmall ? 'auto' : (FIELD_STYLE as any).width,
+                minWidth: 0,
+                flex: isSmall ? undefined : '1 1 auto',
+                gridColumn: isSmall ? '1 / 2' : undefined,
+              }}
             >
               {properties.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
@@ -632,7 +639,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             <button
               className="sb-btn"
               {...useTap(refresh)}
-              style={{ ...BTN_TOUCH_STYLE, borderRadius: 10, whiteSpace: 'nowrap' }}
+              style={{
+                ...BTN_TOUCH_STYLE,
+                borderRadius: 10,
+                whiteSpace: 'nowrap',
+                gridColumn: isSmall ? '2 / 3' : undefined,
+                justifySelf: isSmall ? 'end' : undefined,
+              }}
               title="Refresh"
               type="button"
             >
@@ -709,7 +722,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         </div>
 
         {/* Legend with popovers (legendInfo) */}
-        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 12, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 12, flexWrap: isSmall ? "nowrap" : "wrap", overflowX: isSmall ? "auto" : undefined }}>
           {(["green","yellow","red"] as const).map((k) => (
             <div key={k} style={{ position: "relative" }} data-legend="keep">
               <span style={badgeStyle(k)}>{STATUS_LABEL[k]}</span>
