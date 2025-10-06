@@ -525,7 +525,7 @@ export default function HomePage() {
 
         <div className={styles.heroVisual} aria-label="Calendar preview">
           <Image
-            src="/hero_calendar.png"
+            src="/hero_vid.mp4"
             alt=""
             width={900}
             height={600}
