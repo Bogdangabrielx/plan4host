@@ -1856,7 +1856,7 @@ function SendEmailButton({ propertyId, bookingId, values, templateId, onSent }:{
       <button
         type="button"
         className="sb-btn sb-btn--primary"
-        onClick={onSend}
+        {...useTap(onSend)}
         disabled={busy || !bookingId}
         aria-busy={busy}
         title={bookingId ? 'Send email to guest' : 'No booking id'}
@@ -1873,7 +1873,7 @@ function SendEmailButton({ propertyId, bookingId, values, templateId, onSent }:{
               <button
                 className="sb-btn"
                 type="button"
-                onClick={()=>setPopup(null)}
+                {...useTap(()=>setPopup(null))}
                 style={{ minHeight: 44, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
               >
                 Close
