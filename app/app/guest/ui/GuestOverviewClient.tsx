@@ -434,8 +434,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   };
   const badgeStyle = (kind: OverviewRow["status"]): React.CSSProperties => ({
     display: "inline-block",
-    padding: "3px 10px",
-    fontSize: 12,
+    padding: isSmall ? "2px 8px" : "3px 10px",
+    fontSize: isSmall ? 11 : 12,
     fontWeight: 500,
     borderRadius: 999,
     border: "1px solid " + STATUS_COLOR[kind],
@@ -616,7 +616,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             marginBottom: 12,
           }}
         >
-          <div style={{ display: isSmall ? "grid" : "flex", gridTemplateColumns: isSmall ? "1fr auto" : undefined, alignItems: "center", gap: 8, flexWrap: isSmall ? "nowrap" : "wrap", width: "100%" }}>
+          <div style={{ display: isSmall ? "grid" : "flex", gridTemplateColumns: isSmall ? "1fr" : undefined, alignItems: "center", gap: 8, flexWrap: isSmall ? "nowrap" : "wrap", width: "100%" }}>
             <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, width: isSmall ? "100%" : "auto", gridColumn: isSmall ? "1 / -1" : undefined }}>
               Property
             </label>
@@ -625,11 +625,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value)}
               style={{
                 ...FIELD_STYLE,
-                /* On small, avoid full-width so the refresh button stays on the same row */
-                width: isSmall ? 'auto' : (FIELD_STYLE as any).width,
-                minWidth: 0,
+                /* Phone: stretch selector full width */
+                width: isSmall ? '100%' : (FIELD_STYLE as any).width,
+                minWidth: isSmall ? '100%' : 0,
                 flex: isSmall ? undefined : '1 1 auto',
-                gridColumn: isSmall ? '1 / 2' : undefined,
+                gridColumn: isSmall ? '1 / -1' : undefined,
               }}
             >
               {properties.map((p) => (
@@ -641,10 +641,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               {...useTap(refresh)}
               style={{
                 ...BTN_TOUCH_STYLE,
-                borderRadius: 10,
+                borderRadius: isSmall ? 29 : 10,
                 whiteSpace: 'nowrap',
-                gridColumn: isSmall ? '2 / 3' : undefined,
-                justifySelf: isSmall ? 'end' : undefined,
+                gridColumn: isSmall ? '1 / -1' : undefined,
+                justifySelf: isSmall ? 'stretch' : undefined,
+                width: isSmall ? '100%' : undefined,
               }}
               title="Refresh"
               type="button"
@@ -722,7 +723,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         </div>
 
         {/* Legend with popovers (legendInfo) */}
-        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 12, flexWrap: isSmall ? "nowrap" : "wrap", overflowX: isSmall ? "auto" : undefined }}>
+        <div style={{ display: "flex", gap: isSmall ? 8 : 14, alignItems: "flex-start", marginBottom: 12, flexWrap: isSmall ? "nowrap" : "wrap", overflowX: isSmall ? "hidden" : undefined, justifyContent: isSmall ? 'space-between' : undefined }}>
           {(["green","yellow","red"] as const).map((k) => (
             <div key={k} style={{ position: "relative" }} data-legend="keep">
               <span style={badgeStyle(k)}>{STATUS_LABEL[k]}</span>
@@ -731,11 +732,14 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 {...useTap(() => setLegendInfo(legendInfo === k ? null : k))}
                 aria-label={`What is ${STATUS_LABEL[k]}?`}
                 style={{
-                  marginLeft: 6, width: 24, height: 24, borderRadius: 6,
+                  marginLeft: isSmall ? 4 : 6,
+                  width: isSmall ? 22 : 24,
+                  height: isSmall ? 22 : 24,
+                  borderRadius: 6,
                   border: "1px solid var(--border)", background: "transparent",
-                  color: "var(--muted)", lineHeight: 1, fontSize: 12, cursor: "pointer",
+                  color: "var(--muted)", lineHeight: 1, fontSize: isSmall ? 11 : 12, cursor: "pointer",
                   ...BTN_TOUCH_STYLE,
-                  padding: 0, minHeight: 24,
+                  padding: 0, minHeight: isSmall ? 22 : 24,
                 }}
               >
                 i
