@@ -30,6 +30,61 @@ function renderHeadingSafe(src: string, vars: Record<string,string>) {
   return out.join("");
 }
 
+// Wrap inner HTML into a simple, email-safe white template.
+function wrapEmailHtml(subjectPlain: string, innerHtml: string): string {
+  const border = '#e2e8f0';
+  const text = '#0f172a';
+  const muted = '#64748b';
+  const link = '#16b981';
+  // Table layout for broad client compatibility
+  return (
+    `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>${escapeHtml(subjectPlain || 'Message')}</title>
+      <style>
+        /* Basic resets */
+        body { margin:0; padding:0; background:#ffffff; }
+        img { border:0; outline:none; text-decoration:none; max-width:100%; height:auto; display:block; }
+        a { color:${link}; }
+        /* Typographic defaults inside content */
+        .p4h-content h1, .p4h-content h2, .p4h-content h3 { margin: 0 0 12px; line-height: 1.25; }
+        .p4h-content p, .p4h-content div { line-height: 1.6; }
+        .p4h-content ul, .p4h-content ol { margin: 10px 0 10px 20px; }
+        .p4h-content hr { border:0; border-top:1px solid ${border}; margin:14px 0; opacity:.9; }
+        .p4h-muted { color:${muted}; font-size:12px; }
+        /* Dark mode user-agents should still get white background */
+        @media (prefers-color-scheme: dark) {
+          body { background:#ffffff !important; }
+        }
+      </style>
+    </head>
+    <body>
+      <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background:#ffffff;">
+        <tr>
+          <td align="center" style="padding:16px; background:#f5f8fb;">
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:640px; background:#ffffff; border:1px solid ${border}; border-radius:12px;">
+              <tr>
+                <td style="padding:24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:${text}; font-size:16px; line-height:1.6;">
+                  <div class="p4h-content">${innerHtml}</div>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:12px 24px; border-top:1px solid ${border};">
+                  <div class="p4h-muted" style="font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Powered by Plan4Host</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>`
+  );
+}
+
 export async function POST(req: Request) {
   try {
     const supa = createServerClient();
@@ -142,10 +197,12 @@ export async function POST(req: Request) {
 
     const bodyParts: string[] = [];
     for (const b of blocks) {
-      if (b.type === 'divider') bodyParts.push('<hr style="border:1px solid var(--border); opacity:.6;"/>');
-      if (b.type === 'paragraph') bodyParts.push(`<div style=\"margin:6px 0; line-height:1.5;\">${replaceVarsInHtml(b.text || '', vars)}</div>`);
+      if (b.type === 'divider') bodyParts.push('<hr style="border:0;border-top:1px solid #e2e8f0; opacity:.9;"/>');
+      if (b.type === 'paragraph') bodyParts.push(`<div style=\"margin:6px 0; line-height:1.6;\">${replaceVarsInHtml(b.text || '', vars)}</div>`);
     }
-    const html = bodyParts.join('\n');
+    const bodyHtml = bodyParts.join('\n');
+    const subjectPlain = subject.replace(/<[^>]+>/g, '');
+    const html = wrapEmailHtml(subjectPlain, bodyHtml);
     if (!html.trim()) return bad(400, { error: 'missing_body' });
 
     // Insert outbox pending (service role to bypass RLS)
@@ -170,7 +227,7 @@ export async function POST(req: Request) {
     const info = await transporter.sendMail({
       from: `${fromName} <${fromEmail}>`,
       to: toEmail,
-      subject: subject.replace(/<[^>]+>/g, ''), // safety
+      subject: subjectPlain, // safety
       html,
     });
 

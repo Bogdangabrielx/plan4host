@@ -1616,13 +1616,26 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
           )}
 
           <div
-            style={{ border: "1px solid var(--border)", borderRadius: 10, background: "var(--panel)", padding: 12, opacity: loadingTimes ? .7 : 1 }}
+            className="rm-email-preview"
+            style={{
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              background: "#ffffff",
+              padding: 16,
+              opacity: loadingTimes ? .7 : 1,
+              color: "#0f172a",
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+              lineHeight: 1.6,
+            }}
             dangerouslySetInnerHTML={{ __html: preview || "" }}
           />
-          {/* Chip styles for unresolved variables in preview */}
+          {/* Chip + preview overrides (scoped) */}
           <style
             dangerouslySetInnerHTML={{ __html: `
-              .rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }
+              .rm-token{ display:inline-block; padding: 2px 6px; border:1px solid #e2e8f0; background: #f8fafc; color: #0f172a; border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }
+              .rm-email-preview h1,.rm-email-preview h2,.rm-email-preview h3{ margin: 0 0 12px; line-height: 1.25; }
+              .rm-email-preview hr{ border:0; border-top:1px solid #e2e8f0; margin: 14px 0; opacity: .9; }
+              .rm-email-preview a{ color:#16b981; }
             `}}
           />
 
