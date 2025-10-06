@@ -791,10 +791,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 (kind === "red" && it._reason === "missing_form"));
 
             // NEW: show edit form booking when FORM ONLY turned RED ( > 2h ) — reasons waiting_ical or no_ota_found
-            const canEditFormBooking =
-              kind === "red" &&
-              !!it.id &&
-              (it._reason === "waiting_ical" || it._reason === "no_ota_found");
+            const isFormLike = it._reason === "waiting_ical" || it._reason === "no_ota_found" || it._reason === "type_conflict";
+            const canEditFormBooking = kind === "red" && !!it.id && isFormLike;
 
             return (
               <section
