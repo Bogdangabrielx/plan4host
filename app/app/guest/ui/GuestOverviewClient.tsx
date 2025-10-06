@@ -293,7 +293,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   // Modals
   const [modal, setModal] = useState<null | { propertyId: string; dateStr: string; room: Room }>(null);
-  const [rmModal, setRmModal] = useState<null | { propertyId: string; item: OverviewRow }>(null);
+  const [rmModal, setRmModal] = useState<null | { propertyId: string; item: OverviewRow; templateId?: string | null }>(null);
+  const [rmPicker, setRmPicker] = useState<null | { propertyId: string; item: OverviewRow }>(null);
+  const [rmPickerItems, setRmPickerItems] = useState<Array<{ id:string; title:string; updated_at?:string; status?:string }>>([]);
+  const [rmPickerLoading, setRmPickerLoading] = useState(false);
   const [editModal, setEditModal] = useState<null | { propertyId: string; bookingId: string }>(null);
 
   // Legend popovers
@@ -889,7 +892,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     <>
                       <button
                         type="button"
-                        {...useTap(() => setRmModal({ propertyId, item: it }))}
+                        {...useTap(async () => {
+                          setRmPicker({ propertyId, item: it });
+                          try {
+                            setRmPickerLoading(true);
+                            const r = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(propertyId)}`, { cache:'no-store' });
+                            const j = await r.json().catch(()=>({}));
+                            const items = Array.isArray(j?.items) ? j.items : [];
+                            const pubs = items.filter((x:any)=>String(x.status||'').toLowerCase()==='published');
+                            setRmPickerItems(pubs.map((x:any)=>({ id:String(x.id), title:String(x.title||''), updated_at:x.updated_at, status:x.status })));
+                          } catch { setRmPickerItems([]); } finally { setRmPickerLoading(false); }
+                        })}
                         style={{
                           ...BTN_TOUCH_STYLE,
                           borderRadius: 21,
@@ -1051,7 +1064,35 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   Close
                 </button>
               </div>
-              <RMContent propertyId={rmModal.propertyId} row={rmModal.item} />
+              <RMContent propertyId={rmModal.propertyId} row={rmModal.item} templateId={rmModal.templateId || undefined} />
+            </div>
+          </div>
+        )}
+
+        {/* Template picker modal (titles list) */}
+        {rmPicker && (
+          <div role="dialog" aria-modal="true" onClick={()=>setRmPicker(null)}
+            style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:70, display:'grid', placeItems:'center', padding:12 }}>
+            <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px,100%)', maxHeight:'calc(100vh - 32px)', overflow:'auto', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+                <strong>Select message</strong>
+                <button className="sb-btn" {...useTap(()=>setRmPicker(null))}>Close</button>
+              </div>
+              {rmPickerLoading ? (
+                <div style={{ color:'var(--muted)' }}>Loading…</div>
+              ) : rmPickerItems.length === 0 ? (
+                <div style={{ color:'var(--muted)' }}>No published messages for this property. Go to Automatic Messages to create one.</div>
+              ) : (
+                <div style={{ display:'grid', gap:8 }}>
+                  {rmPickerItems.map(t => (
+                    <button key={t.id} className="sb-btn" style={{ justifyContent:'space-between' }}
+                      {...useTap(()=>{ setRmPicker(null); setRmModal({ propertyId: rmPicker.propertyId, item: rmPicker.item, templateId: t.id }); })}>
+                      <span style={{ fontWeight:800 }}>{t.title || '(Untitled)'}</span>
+                      <small style={{ color:'var(--muted)' }}>{t.updated_at ? new Date(t.updated_at).toLocaleString() : ''}</small>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1481,7 +1522,7 @@ function EditFormBookingModal({
 /* ───────────────── Reservation Message (unchanged) ───────────────── */
 /* (kept as in your version; only context lines changed above) */
 
-function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
+function RMContent({ propertyId, row, templateId }: { propertyId: string; row: any; templateId?: string }) {
   const supabase = useMemo(() => createClient(), []);
   const storageKey = `p4h:rm:template:${propertyId}`;
 
@@ -1500,11 +1541,22 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
   const [loadingTimes, setLoadingTimes] = useState<boolean>(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      setTpl(raw ? JSON.parse(raw) : null);
-    } catch { setTpl(null); }
-  }, [storageKey]);
+    // If a specific template is chosen, load it from server; else fallback to LS
+    (async () => {
+      if (templateId) {
+        try {
+          const res = await fetch(`/api/reservation-message/template?id=${encodeURIComponent(templateId)}`, { cache:'no-store' });
+          const j = await res.json().catch(()=>({}));
+          const t = j?.template;
+          if (t) { setTpl(t); return; }
+        } catch { /* ignore and fallback */ }
+      }
+      try {
+        const raw = localStorage.getItem(storageKey);
+        setTpl(raw ? JSON.parse(raw) : null);
+      } catch { setTpl(null); }
+    })();
+  }, [storageKey, templateId]);
 
   // FETCH live start_time / end_time / dates
   useEffect(() => {
@@ -1664,6 +1716,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
                 propertyId={propertyId}
                 bookingId={row.id}
                 values={values}
+                templateId={templateId}
               />
             }
             right={
@@ -1673,6 +1726,7 @@ function RMContent({ propertyId, row }: { propertyId: string; row: any }) {
                 propertyId={propertyId}
                 bookingId={row.id}
                 values={values}
+                templateId={templateId}
               />
             }
           />
@@ -1738,10 +1792,11 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{
   );
 }
 
-function SendEmailButton({ propertyId, bookingId, values, onSent }:{
+function SendEmailButton({ propertyId, bookingId, values, templateId, onSent }:{
   propertyId: string;
   bookingId: string|null;
   values: Record<string,string>;
+  templateId?: string;
   onSent?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
@@ -1751,7 +1806,7 @@ function SendEmailButton({ propertyId, bookingId, values, onSent }:{
   async function precheck(): Promise<{ok:boolean;canSend?:boolean;reason?:string;missingFields?:string[]}> {
     const res = await fetch('/api/reservation-message/status', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ booking_id: bookingId, property_id: propertyId, values }),
+      body: JSON.stringify({ booking_id: bookingId, property_id: propertyId, values, template_id: templateId }),
     });
     const j = await res.json().catch(()=>({}));
     return j;
@@ -1777,7 +1832,7 @@ function SendEmailButton({ propertyId, bookingId, values, onSent }:{
       }
       const res = await fetch('/api/reservation-message/send', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ booking_id: bookingId, property_id: propertyId, values }),
+        body: JSON.stringify({ booking_id: bookingId, property_id: propertyId, values, template_id: templateId }),
       });
       const j = await res.json().catch(()=>({}));
       if (!res.ok || !j?.sent) {
@@ -1842,7 +1897,7 @@ function ActionsRow({ left, right }:{ left: React.ReactNode; right: React.ReactN
   );
 }
 
-function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookingId:string|null; values: Record<string,string>; }) {
+function LeftGroup({ propertyId, bookingId, values, templateId }:{ propertyId:string; bookingId:string|null; values: Record<string,string>; templateId?: string; }) {
   const [last, setLast] = useState<null | { status: string; sent_at?: string | null; created_at?: string; error_message?: string | null }>(null);
   const [tz, setTz] = useState<string | null>(null);
   const supa = useMemo(() => createClient(), []);
@@ -1888,7 +1943,7 @@ function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookin
 
   return (
     <>
-      <SendEmailButton propertyId={propertyId} bookingId={bookingId} values={values} onSent={refreshLast} />
+      <SendEmailButton propertyId={propertyId} bookingId={bookingId} values={values} templateId={templateId} onSent={refreshLast} />
       {!isSmall && last && (
         <small style={{ color:'var(--muted)' }}>
           {last.status === 'sent' ? (
@@ -1904,12 +1959,13 @@ function LeftGroup({ propertyId, bookingId, values }:{ propertyId:string; bookin
   );
 }
 
-function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values }:{
+function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values, templateId }:{
   onCopyPreview: () => void;
   copied: boolean;
   propertyId: string;
   bookingId: string|null;
   values: Record<string,string>;
+  templateId?: string;
 }) {
   const isSmall = useIsSmall();
   // Theme-aware icon selection tied to app theme (data-theme)

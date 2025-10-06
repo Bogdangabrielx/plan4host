@@ -92,6 +92,9 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
+  const [templates, setTemplates] = useState<Array<{ id:string; title:string; status:'draft'|'published'; updated_at:string }>>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [loadingList, setLoadingList] = useState<boolean>(false);
   // Simplified editor state
   const [titleText, setTitleText] = useState<string>("");
   // body content is unmanaged (uncontrolled) to keep caret stable
@@ -104,7 +107,24 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   const [hasRoomTypes, setHasRoomTypes] = useState(false);
   // sample vars removed; WYSIWYG-only composing
 
-  const storageKey = propertyId ? lsKey(propertyId) : "";
+  const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
+
+  // Load template list for current property
+  useEffect(() => {
+    let alive = true;
+    if (!propertyId) { setTemplates([]); setActiveId(null); return; }
+    (async () => {
+      try {
+        setLoadingList(true);
+        const res = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(propertyId)}`, { cache: 'no-store' });
+        const j = await res.json().catch(()=>({}));
+        if (!alive) return;
+        const items = Array.isArray(j?.items) ? j.items : [];
+        setTemplates(items.map((x:any)=>({ id:String(x.id), title:String(x.title||''), status:(x.status||'draft'), updated_at:String(x.updated_at||'') })) as any);
+      } finally { if (alive) setLoadingList(false); }
+    })();
+    return () => { alive = false; };
+  }, [propertyId]);
 
   // Load from LS on property change (with race-guard against stale async updates)
   useEffect(() => {
@@ -140,7 +160,8 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     // Also try to load from server (overrides LS if available)
     (async () => {
       try {
-        const res = await fetch(`/api/reservation-message/template?property=${encodeURIComponent(propertyId)}`, { cache: 'no-store' });
+        const q = activeId ? `id=${encodeURIComponent(activeId)}` : `property=${encodeURIComponent(propertyId)}`;
+        const res = await fetch(`/api/reservation-message/template?${q}`, { cache: 'no-store' });
         if (!res.ok) return;
         const j = await res.json();
         const t = j?.template;
@@ -211,16 +232,75 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     try {
       setSaving("Saving…");
       const blk = blocks ?? composeBlocks();
-      const payload = {
+      const { title } = deriveFromBlocks(blk);
+      const payload: any = {
+        id: activeId || undefined,
         property_id: propertyId,
+        title,
         status,
-        blocks: blk.map((b) => ({ type: b.type, text: (b as any).text || null })),
-        fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, required: true, multiline: false, placeholder: null })),
+        blocks: blk.map((b:any) => ({ type: b.type, text: b.text || null })),
+        fields: tpl.fields.map((f) => ({ key: f.key, label: f.label })),
       };
       const res = await fetch('/api/reservation-message/template', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      // ignore errors silently in UI; RLS/server will enforce perms
-      if (!res.ok) setSaving("Error"); else { setSaving("Synced"); setTimeout(()=>setSaving("Idle"), 800); }
+      const j = await res.json().catch(()=>({}));
+      if (!res.ok || !j?.ok) { setSaving("Error"); return; }
+      if (!activeId && j?.template_id) setActiveId(String(j.template_id));
+      // refresh list
+      try {
+        const rl = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(propertyId||'')}`, { cache:'no-store' });
+        const jl = await rl.json().catch(()=>({}));
+        const items = Array.isArray(jl?.items) ? jl.items : [];
+        setTemplates(items.map((x:any)=>({ id:String(x.id), title:String(x.title||''), status:(x.status||'draft'), updated_at:String(x.updated_at||'') })) as any);
+      } catch {}
+      setSaving("Synced"); setTimeout(()=>setSaving("Idle"), 800);
     } catch { setSaving("Error"); }
+  }
+
+  async function onAddNew() {
+    if (!propertyId) return;
+    const t = prompt('Message title');
+    if (!t) return;
+    try {
+      const res = await fetch('/api/reservation-message/template', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ property_id: propertyId, title: t, status: 'draft', blocks: [], fields: [] }) });
+      const j = await res.json().catch(()=>({}));
+      if (!res.ok || !j?.template_id) throw new Error(j?.error || 'Create failed');
+      setActiveId(String(j.template_id));
+      const rl = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(propertyId)}`, { cache: 'no-store' });
+      const jl = await rl.json().catch(()=>({}));
+      const items = Array.isArray(jl?.items) ? jl.items : [];
+      setTemplates(items.map((x:any)=>({ id:String(x.id), title:String(x.title||''), status:(x.status||'draft'), updated_at:String(x.updated_at||'') })) as any);
+    } catch (e:any) { alert(e?.message || 'Failed'); }
+  }
+
+  async function onDuplicate(id: string, title: string) {
+    try {
+      const r = await fetch(`/api/reservation-message/template?id=${encodeURIComponent(id)}`, { cache:'no-store' });
+      const j = await r.json().catch(()=>({}));
+      const t = j?.template; if (!t) return;
+      const blocks = (t.blocks||[]).map((b:any)=>({ type:b.type, text:b.text??null }));
+      const fields = (t.fields||[]).map((f:any)=>({ key:f.key, label:f.label }));
+      const res = await fetch('/api/reservation-message/template', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ property_id: t.property_id, title: `${title} (Copy)`, status: 'draft', blocks, fields }) });
+      const jj = await res.json().catch(()=>({}));
+      if (!res.ok || !jj?.template_id) throw new Error(jj?.error || 'Duplicate failed');
+      setActiveId(String(jj.template_id));
+      const rl = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(t.property_id)}`, { cache: 'no-store' });
+      const jl = await rl.json().catch(()=>({}));
+      const items = Array.isArray(jl?.items) ? jl.items : [];
+      setTemplates(items.map((x:any)=>({ id:String(x.id), title:String(x.title||''), status:(x.status||'draft'), updated_at:String(x.updated_at||'') })) as any);
+    } catch (e:any) { alert(e?.message || 'Failed'); }
+  }
+
+  async function onDelete(id: string) {
+    if (!confirm('Delete this message?')) return;
+    try {
+      const r = await fetch(`/api/reservation-message/template?id=${encodeURIComponent(id)}`, { method:'DELETE' });
+      if (!r.ok) throw new Error(await r.text());
+      const rl = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(propertyId||'')}`, { cache: 'no-store' });
+      const jl = await rl.json().catch(()=>({}));
+      const items = Array.isArray(jl?.items) ? jl.items : [];
+      setTemplates(items.map((x:any)=>({ id:String(x.id), title:String(x.title||''), status:(x.status||'draft'), updated_at:String(x.updated_at||'') })) as any);
+      if (activeId === id) setActiveId(null);
+    } catch (e:any) { alert(e?.message || 'Failed'); }
   }
 
   // Insert variable into the focused input
@@ -338,6 +418,40 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         </div>
       </section>
 
+      {/* Templates header + grid */}
+      <section className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, marginBottom:8 }}>
+          <strong>Messages</strong>
+          <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Add message</button>
+        </div>
+        {loadingList ? (
+          <div style={{ color:'var(--muted)' }}>Loading…</div>
+        ) : templates.length === 0 ? (
+          <div className="sb-card" style={{ padding: 16, textAlign:'center' }}>
+            <div style={{ fontWeight:800, marginBottom: 6 }}>No messages yet</div>
+            <div style={{ color:'var(--muted)', marginBottom: 10 }}>Create your first message for this property.</div>
+            <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Create your first message</button>
+          </div>
+        ) : (
+          <div style={{ display:'grid', gap:10, gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))' }}>
+            {templates.map(t => (
+              <div key={t.id} className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, display:'grid', gap:6 }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+                  <strong style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{t.title || '(Untitled)'}</strong>
+                  <span className="sb-badge" style={{ background: t.status==='published' ? 'var(--primary)' : 'var(--card)', color: t.status==='published' ? '#0c111b' : 'var(--muted)' }}>{t.status}</span>
+                </div>
+                <small style={{ color:'var(--muted)' }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
+                <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                  <button className="sb-btn" onClick={()=>setActiveId(t.id)}>Edit</button>
+                  <button className="sb-btn" onClick={()=>onDuplicate(t.id, t.title)}>Duplicate</button>
+                  <button className="sb-btn" onClick={()=>onDelete(t.id)}>Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
       {/* Message composer (full width, bottom) */}
       <section style={card}>
         <h2 style={{ marginTop: 0 }}>Message</h2>
@@ -382,6 +496,15 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
           <button style={btn} onClick={saveDraft} disabled={!isAdmin}>Save</button>
           <button style={btnPri} onClick={publish} disabled={!isAdmin}>Publish</button>
+          <button style={btn} onClick={async ()=>{
+            const to = prompt('Send test to (email)');
+            if (!to) return;
+            try{
+              const res = await fetch('/api/reservation-message/test-send', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ template_id: activeId, property_id: propertyId, to_email: to }) });
+              if (!res.ok) throw new Error(await res.text());
+              alert('Test email sent');
+            }catch(e:any){ alert(e?.message || 'Failed to send test'); }
+          }} disabled={!isAdmin}>Send test</button>
         </div>
       </section>
       </div>

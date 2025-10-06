@@ -44,7 +44,7 @@ export default async function ReservationMessagePage() {
   } catch {}
 
   return (
-    <AppShell currentPath="/app/reservationMessage" title="Automatic Welcome Message">
+    <AppShell currentPath="/app/reservationMessage" title="Automatic Messages">
       <ReservationMessageClient initialProperties={properties} isAdmin={isAdmin} />
     </AppShell>
   );

@@ -95,6 +95,7 @@ export async function POST(req: Request) {
     const booking_id: string | undefined  = body?.booking_id;
     const property_id: string | undefined = body?.property_id;
     const values: Record<string,string> = (body?.values || {}) as any;
+    const template_id: string | undefined = body?.template_id;
     if (!booking_id) return bad(400, { error: "booking_id required" });
 
     // Booking + property
@@ -117,13 +118,24 @@ export async function POST(req: Request) {
     if (!toEmail) return bad(400, { error: "missing_email" });
 
     // Template
-    const rTpl = await supa
-      .from("reservation_templates")
-      .select("id,status")
-      .eq("property_id", propId)
-      .maybeSingle();
-    if (rTpl.error || !rTpl.data) return bad(400, { error: "missing_template" });
-    const tplId = (rTpl.data as any).id as string;
+    let tplId: string | null = null;
+    if (template_id) {
+      const rOne = await supa
+        .from('reservation_templates')
+        .select('id,status')
+        .eq('id', template_id)
+        .maybeSingle();
+      if (rOne.error || !rOne.data) return bad(400, { error: 'missing_template' });
+      tplId = (rOne.data as any).id as string;
+    } else {
+      const rTpl = await supa
+        .from("reservation_templates")
+        .select("id,status")
+        .eq("property_id", propId)
+        .maybeSingle();
+      if (rTpl.error || !rTpl.data) return bad(400, { error: "missing_template" });
+      tplId = (rTpl.data as any).id as string;
+    }
 
     const [rBlocks, rFields] = await Promise.all([
       supa.from("reservation_template_blocks").select("type,text,sort_index").eq("template_id", tplId).order("sort_index", { ascending: true }),
