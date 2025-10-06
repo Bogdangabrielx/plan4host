@@ -319,7 +319,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 if (isSmall && typeof title === 'string') {
                   const t = title.trim();
                   if (/^automatic\s+welcome\s+message$/i.test(t)) {
-                    return (<><span>Automatic Welcome</span><br/>Message</>);
+                    return (<><span>Automatic</span>Messages</>);
                   }
                 }
                 return title;

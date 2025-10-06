@@ -261,7 +261,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     const t = prompt('Message title');
     if (!t) return;
     try {
-      const res = await fetch('/api/reservation-message/template', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ property_id: propertyId, title: t, status: 'draft', blocks: [], fields: [] }) });
+      const res = await fetch('/api/reservation-message/template', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ property_id: propertyId, title: t, status: 'draft', blocks: [{ type:'heading', text: t }], fields: [] }) });
       const j = await res.json().catch(()=>({}));
       if (!res.ok || !j?.template_id) throw new Error(j?.error || 'Create failed');
       setActiveId(String(j.template_id));
@@ -387,7 +387,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
 
   return (
     <div style={{ display: "grid", gap: 12, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
-      <PlanHeaderBadge title="Automatic Welcome Message" slot="header-right" />
+      <PlanHeaderBadge title="Automatic Messages" slot="header-right" />
       {/* Property selector */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Property</label>
@@ -397,7 +397,8 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         <div style={{ flex: 1 }} />
       </div>
 
-      {/* Variables row: built-ins + custom with remove + add input */}
+      {/* Variables row: built-ins + custom — show only when a template is active */}
+      {activeId && (
       <section style={card}>
         <h2 style={{ marginTop: 0 }}>Variables</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -417,6 +418,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           <AddVarInline onAdd={(name)=>addFieldFromName(name)} disabled={!isAdmin} />
         </div>
       </section>
+      )}
 
       {/* Templates header + grid */}
       <section className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12 }}>
@@ -452,7 +454,8 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         )}
       </section>
 
-      {/* Message composer (full width, bottom) */}
+      {/* Message composer (full width, bottom) — only when a template is active */}
+      {activeId && (
       <section style={card}>
         <h2 style={{ marginTop: 0 }}>Message</h2>
         {/* Variable chips */}
@@ -507,6 +510,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           }} disabled={!isAdmin}>Send test</button>
         </div>
       </section>
+      )}
       </div>
   );
 }
