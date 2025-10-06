@@ -125,7 +125,7 @@
   margin: 0;
   padding-left: 18px;                 /* indent pentru bullets */
   display: grid;
-  grid-template-rows: repeat(var(--rows, 15), auto);
+  grid-template-rows: repeat(var(--rows, 21), auto);
   row-gap: 4px;
   color: var(--text);
   font-weight: 300;
