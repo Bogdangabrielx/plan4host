@@ -442,6 +442,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     background: STATUS_COLOR[kind],
     color: "#ffffff",
     letterSpacing: 0.0,
+    whiteSpace: 'nowrap',
   });
   // OTA badge helpers
   function builtinLogo(provider?: string | null): string | null {
@@ -631,7 +632,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             <button
               className="sb-btn"
               {...useTap(refresh)}
-              style={{ ...BTN_TOUCH_STYLE, borderRadius: 10 }}
+              style={{ ...BTN_TOUCH_STYLE, borderRadius: 10, whiteSpace: 'nowrap' }}
               title="Refresh"
               type="button"
             >
