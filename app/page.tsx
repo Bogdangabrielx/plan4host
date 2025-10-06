@@ -554,8 +554,9 @@ export default function HomePage() {
             <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
               <li>Adaptive calendar</li>
-              <li>Online check-in form</li>
+              <li>Secured online check-in form</li>
               <li>Unlimited properties and rooms listed</li>
+              <li>Unlimited automatic messages</li>
               <li>Autosync every 60 minutes with iCal</li>
             </ul>
             <img className={styles.priceImg} src="/basic.png" alt="" aria-hidden="true" />
@@ -571,10 +572,11 @@ export default function HomePage() {
             <div className={styles.priceTier}>STANDARD</div>
             <ul className={styles.priceList}>
               <li>Adaptive calendar</li>
-              <li>Online check-in form</li>
+              <li>Secured online check-in form</li>
               <li>Unlimited properties and rooms listed</li>
+              <li>Unlimited automatic messages</li>
               <li>Autosync every 30 minutes with iCal</li>
-              <li>Smart cleaning board (Advanced Next-Check-In Priority)</li>
+              <li>Smart cleaning board - (Advanced Next-Check-In Priority)</li>
             </ul>
             <img className={styles.priceImg} src="/standard.png" alt="" aria-hidden="true" />
             <Link
@@ -589,10 +591,11 @@ export default function HomePage() {
             <div className={styles.priceTier}>PREMIUM</div>
             <ul className={styles.priceList}>
               <li>Adaptive calendar</li>
-              <li>Online check-in form</li>
+              <li>Secured online check-in form</li>
               <li>Unlimited properties and rooms listed</li>
+              <li>Unlimited automatic messages</li>
               <li>Autosync every 10 minutes with iCal + Sync Now Function</li>
-              <li>Smart cleaning board - Advanced Next-Check-In Priority</li>
+              <li>Smart cleaning board - (Advanced Next-Check-In Priority)</li>
               <li>Delegate tasks with your team members</li>
             </ul>
             <img className={styles.priceImg} src="/premium.png" alt="" aria-hidden="true" />

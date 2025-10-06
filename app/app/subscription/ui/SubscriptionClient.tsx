@@ -24,8 +24,9 @@ const PLANS: Plan[] = [
     allowSyncNow: false,
     bullets: [
       "Adaptive calendar",
-      "Online check-in form",
+      "Secured online check-in form",
       "Unlimited properties and rooms listed",
+      "Unlimited automatic messages",
       "Autosync every 60 minutes with iCal",
     ],
   },
@@ -37,8 +38,9 @@ const PLANS: Plan[] = [
     allowSyncNow: false,
     bullets: [
       "Adaptive calendar",
-      "Online check-in form",
+      "Secured online check-in form",
       "Unlimited properties and rooms listed",
+      "Unlimited automatic messages",
       "Autosync every 30 minutes with iCal",
       "Smart cleaning board - ",
       "   (Advanced Next-Check-In Priority)",
@@ -52,8 +54,9 @@ const PLANS: Plan[] = [
     allowSyncNow: true,
     bullets: [
       "Adaptive calendar",
-      "Online check-in form",
+      "Secured online check-in form",
       "Unlimited properties and rooms listed",
+      "Unlimited automatic messages",
       "Autosync every 10 minutes with iCal",
       "                + Sync Now Function",
       "Smart cleaning board - ",
