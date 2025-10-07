@@ -64,6 +64,7 @@ function CtaLink({
    ────────────────────────────────────────────────────────────── */
 function FeatureCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   const getStep = () => {
     const el = trackRef.current;
@@ -84,8 +85,42 @@ function FeatureCarousel() {
     el.scrollBy({ left: getStep(), behavior: 'smooth' });
   };
 
+  // Mobile-only nudge effect when section scrolls into view
+  useEffect(() => {
+    const el = wrapRef.current;
+    const track = trackRef.current;
+    if (!el || !track) return;
+
+    let nudged = false;
+    const isMobile = () => {
+      try { return window.matchMedia?.('(hover: none), (pointer: coarse), (max-width: 640px)')?.matches ?? false; } catch { return false; }
+    };
+    const canScroll = () => track.scrollWidth - track.clientWidth > 8;
+    const nudge = () => {
+      if (nudged || !isMobile() || !canScroll() || track.scrollLeft > 4) return;
+      nudged = true;
+      const dx = Math.min(48, Math.max(24, track.clientWidth * 0.12));
+      try { track.scrollBy({ left: dx, behavior: 'smooth' }); } catch { track.scrollLeft += dx; }
+      const t = window.setTimeout(() => {
+        try { track.scrollBy({ left: -dx, behavior: 'smooth' }); } catch { track.scrollLeft -= dx; }
+      }, 420);
+      // safety clear
+      window.setTimeout(() => window.clearTimeout(t), 1200);
+    };
+
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting && e.intersectionRatio >= 0.4) {
+          nudge();
+        }
+      }
+    }, { threshold: [0, 0.25, 0.4, 0.75, 1] });
+    io.observe(el);
+    return () => { try { io.disconnect(); } catch {} };
+  }, []);
+
   return (
-    <div className={styles.featureCarousel}>
+    <div className={styles.featureCarousel} ref={wrapRef}>
       <button type="button" aria-label="Previous features" className={`${styles.carouselBtn} ${styles.carouselBtnLeft}`} onClick={prev}>‹</button>
       <div className={styles.featureTrack} ref={trackRef}>
         <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
