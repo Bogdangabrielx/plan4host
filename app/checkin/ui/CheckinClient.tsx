@@ -238,6 +238,16 @@ export default function CheckinClient() {
     function initCanvas() {
       const el = sigCanvasRef.current;
       if (!el) return;
+      // snapshot current content before resizing (to avoid clearing on viewport/keyboard changes)
+      let snapshot: HTMLCanvasElement | null = null;
+      if (el.width > 0 && el.height > 0) {
+        snapshot = document.createElement('canvas');
+        snapshot.width = el.width;
+        snapshot.height = el.height;
+        const sctx = snapshot.getContext('2d');
+        if (sctx) sctx.drawImage(el, 0, 0);
+      }
+
       const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
       const rect = el.getBoundingClientRect();
       el.width = Math.max(1, Math.floor(rect.width * dpr));
@@ -249,6 +259,10 @@ export default function CheckinClient() {
       // white background for better readability when exported
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, el.width, el.height);
+      // restore previous drawing scaled to new size
+      if (snapshot) {
+        try { ctx.drawImage(snapshot, 0, 0, snapshot.width, snapshot.height, 0, 0, el.width, el.height); } catch {}
+      }
       ctx.lineWidth = 2 * dpr;
       ctx.lineCap = 'round';
       ctx.strokeStyle = '#111827';
@@ -274,7 +288,11 @@ export default function CheckinClient() {
     const p = sigPoint(e);
     ctx.beginPath();
     ctx.moveTo(p.x, p.y);
+    // draw a tiny dot so a simple click counts as a signature
+    ctx.lineTo(p.x + 0.1, p.y + 0.1);
+    ctx.stroke();
     sigDrawingRef.current = true;
+    setSigDirty(true);
   }
   function onSigMove(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!sigDrawingRef.current) return;
@@ -616,6 +634,7 @@ export default function CheckinClient() {
     countryValid &&
     docValid &&
     !!docFile && // document upload obligatoriu
+    sigDirty && // semnătura este obligatorie
     consentGatePassed && agree &&
     submitState !== "submitting";
 
@@ -1106,9 +1125,9 @@ export default function CheckinClient() {
               </div>
             </div>
 
-            {/* Signature (optional) */}
+            {/* Signature (required) */}
             <div style={{ marginTop: 6 }}>
-              <label style={LABEL}>Signature (optional)</label>
+              <label style={LABEL}>Signature*</label>
               <div
                 style={{
                   border: '1px dashed var(--border)',
@@ -1119,7 +1138,7 @@ export default function CheckinClient() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                   <small style={{ color: 'var(--muted)' }}>
-                    Please draw your signature in the box below.
+                    Please draw your signature below (mouse or touch).
                   </small>
                   <button type="button" onClick={clearSignature} style={BTN_GHOST}>
                     Clear
