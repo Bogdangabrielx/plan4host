@@ -226,6 +226,78 @@ export default function CheckinClient() {
   const [docFile, setDocFile] = useState<File | null>(null);
   const [docFilePreview, setDocFilePreview] = useState<string | null>(null);
 
+  // Signature pad
+  const sigCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const sigCtxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const sigScaleRef = useRef<number>(1);
+  const sigDrawingRef = useRef<boolean>(false);
+  const [sigDirty, setSigDirty] = useState<boolean>(false);
+
+  // Initialize/rescale signature canvas for crisp drawing
+  useEffect(() => {
+    function initCanvas() {
+      const el = sigCanvasRef.current;
+      if (!el) return;
+      const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+      const rect = el.getBoundingClientRect();
+      el.width = Math.max(1, Math.floor(rect.width * dpr));
+      el.height = Math.max(1, Math.floor(rect.height * dpr));
+      sigScaleRef.current = dpr;
+      const ctx = el.getContext('2d');
+      if (!ctx) return;
+      sigCtxRef.current = ctx;
+      // white background for better readability when exported
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, el.width, el.height);
+      ctx.lineWidth = 2 * dpr;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#111827';
+    }
+    initCanvas();
+    const onResize = () => initCanvas();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  function sigPoint(e: React.PointerEvent<HTMLCanvasElement>) {
+    const el = e.currentTarget;
+    const rect = el.getBoundingClientRect();
+    const s = sigScaleRef.current || 1;
+    return {
+      x: (e.clientX - rect.left) * s,
+      y: (e.clientY - rect.top) * s,
+    };
+  }
+  function onSigDown(e: React.PointerEvent<HTMLCanvasElement>) {
+    try { (e.currentTarget as any).setPointerCapture?.(e.pointerId); } catch {}
+    const ctx = sigCtxRef.current; if (!ctx) return;
+    const p = sigPoint(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    sigDrawingRef.current = true;
+  }
+  function onSigMove(e: React.PointerEvent<HTMLCanvasElement>) {
+    if (!sigDrawingRef.current) return;
+    const ctx = sigCtxRef.current; if (!ctx) return;
+    const p = sigPoint(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    setSigDirty(true);
+  }
+  function onSigUp(_e: React.PointerEvent<HTMLCanvasElement>) {
+    sigDrawingRef.current = false;
+  }
+  function clearSignature() {
+    const el = sigCanvasRef.current; const ctx = sigCtxRef.current; if (!el || !ctx) return;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, el.width, el.height);
+    ctx.fillStyle = '#111827';
+    ctx.lineWidth = 2 * (sigScaleRef.current || 1);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#111827';
+    setSigDirty(false);
+  }
+
   // dates
   const [startDate, setStartDate] = useState<string>(() => todayYMD());
   const [endDate,   setEndDate]   = useState<string>(() => addDaysYMD(todayYMD(), 1));
@@ -569,6 +641,25 @@ export default function CheckinClient() {
     return { path: j?.path as string, mime: docFile.type || "application/octet-stream" };
   }
 
+  async function uploadSignature(): Promise<{ path: string; mime: string } | null> {
+    if (!sigDirty || !propertyId) return null;
+    const el = sigCanvasRef.current; if (!el) return null;
+    const blob: Blob = await new Promise((resolve) => el.toBlob(b => resolve(b || new Blob([])), 'image/png'));
+    if (!blob || blob.size === 0) return null;
+    const file = new File([blob], 'signature.png', { type: 'image/png' });
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('property', propertyId);
+    if (bookingId) fd.append('booking', bookingId);
+    const res = await fetch('/api/checkin/upload', { method: 'POST', body: fd });
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      throw new Error(txt || 'Signature upload failed');
+    }
+    const j = await res.json();
+    return { path: j?.path as string, mime: 'image/png' };
+  }
+
   // 4) submit
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -585,9 +676,10 @@ export default function CheckinClient() {
     const nationalityToSend = (nationalityRef.current?.getText() ?? docNationality).trim();
 
     try {
-      // 4.1 upload fișier (obligatoriu)
+      // 4.1 upload fișier (obligatoriu) + semnătură (opțional)
       const uploaded = await uploadDocFile();
       if (!uploaded) throw new Error("Please upload your ID document.");
+      const uploadedSig = await uploadSignature();
 
       // 4.2 payload
       const payload: any = {
@@ -610,10 +702,24 @@ export default function CheckinClient() {
         doc_series: docType === "id_card" ? docSeries.trim() : null,
         doc_number: docNumber.trim(),
         doc_nationality: docType === "passport" ? nationalityToSend : null,
-
-        // file
-        doc_file_path: uploaded.path,
-        doc_file_mime: uploaded.mime,
+        // multiple docs (id + optional signature)
+        docs: [
+          {
+            doc_type: docType,
+            doc_series: docType === 'id_card' ? docSeries.trim() : null,
+            doc_number: docNumber.trim(),
+            doc_nationality: docType === 'passport' ? nationalityToSend : null,
+            storage_bucket: 'guest_docs',
+            storage_path: uploaded.path,
+            mime_type: uploaded.mime,
+          },
+          ...(uploadedSig ? [{
+            doc_type: 'signature',
+            storage_bucket: 'guest_docs',
+            storage_path: uploadedSig.path,
+            mime_type: uploadedSig.mime,
+          }] : []),
+        ],
       };
 
       const res = await fetch("/api/checkin/submit", {
@@ -957,11 +1063,11 @@ export default function CheckinClient() {
                 </div>
               )}
 
-              {/* Upload ID document (photo/PDF) — obligatoriu */}
-              <div style={{ marginTop: 6 }}>
-                <label style={LABEL}>Upload ID document (photo/PDF)*</label>
-                <input
-                  style={INPUT}
+            {/* Upload ID document (photo/PDF) — obligatoriu */}
+            <div style={{ marginTop: 6 }}>
+              <label style={LABEL}>Upload ID document (photo/PDF)*</label>
+              <input
+                style={INPUT}
                   type="file"
                   accept="image/*,application/pdf"
                   onChange={(e) => {
@@ -997,6 +1103,38 @@ export default function CheckinClient() {
                     </button>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Signature (optional) */}
+            <div style={{ marginTop: 6 }}>
+              <label style={LABEL}>Signature (optional)</label>
+              <div
+                style={{
+                  border: '1px dashed var(--border)',
+                  background: 'var(--card)',
+                  borderRadius: 10,
+                  padding: 8,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <small style={{ color: 'var(--muted)' }}>
+                    Please draw your signature in the box below.
+                  </small>
+                  <button type="button" onClick={clearSignature} style={BTN_GHOST}>
+                    Clear
+                  </button>
+                </div>
+                <div style={{ width: '100%', height: 180 }}>
+                  <canvas
+                    ref={sigCanvasRef}
+                    onPointerDown={onSigDown}
+                    onPointerMove={onSigMove}
+                    onPointerUp={onSigUp}
+                    onPointerCancel={onSigUp}
+                    style={{ width: '100%', height: '100%', touchAction: 'none', display: 'block', borderRadius: 8, background: '#fff' }}
+                  />
+                </div>
               </div>
             </div>
 

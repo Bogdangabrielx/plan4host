@@ -187,6 +187,10 @@ export default function RoomDetailModal({
     if (pref) return pref;
     return [...docs].sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime())[0];
   }, [docs]);
+  const signatureDoc: BookingDoc | null = useMemo(() => {
+    const s = docs.find((d) => (d.doc_type || '').toLowerCase() === 'signature');
+    return s || null;
+  }, [docs]);
 
   // Load everything
   useEffect(() => {
@@ -1051,6 +1055,26 @@ export default function RoomDetailModal({
                         opacity: 0.9,
                       }}
                     />
+                  </div>
+                </div>
+
+                {/* Inline previews: ID image (if image) and Signature side by side */}
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginTop: 6 }}>
+                  <div style={{ display: 'grid', gap: 6 }}>
+                    <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>ID preview</label>
+                    {primaryDoc?.url && (primaryDoc?.mime_type || '').startsWith('image/') ? (
+                      <img src={primaryDoc.url} alt="ID document" style={{ maxWidth: '100%', height: 'auto', borderRadius: 8, border: '1px solid var(--border)' }} />
+                    ) : (
+                      <small style={{ color: 'var(--muted)' }}>No image preview</small>
+                    )}
+                  </div>
+                  <div style={{ display: 'grid', gap: 6 }}>
+                    <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Signature</label>
+                    {signatureDoc?.url ? (
+                      <img src={signatureDoc.url} alt="Signature" style={{ maxWidth: '100%', height: 'auto', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
+                    ) : (
+                      <small style={{ color: 'var(--muted)' }}>No signature provided</small>
+                    )}
                   </div>
                 </div>
 
