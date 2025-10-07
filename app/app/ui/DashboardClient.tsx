@@ -611,12 +611,15 @@ export default function DashboardClient({
           .propActions {
             grid-column: 1 / -1; /* mută acțiunile sub meta */
             display: grid !important; /* suprascrie inline flex */
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: 1fr; /* butoanele unul sub altul */
             gap: 8px;
             margin-top: 4px;
+            width: 100%;
           }
           .propActions > button {
             width: 100%; /* fiecare buton umple coloana */
+            border-radius: 29px !important; /* cerință: radius 29 pe mobil */
+            min-height: 44px; /* touch-friendly */
           }
         }
       `}</style>
