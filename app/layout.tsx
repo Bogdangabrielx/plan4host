@@ -4,6 +4,7 @@ import "./globals.css";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import ConsentOverlayHost from "@/components/consent/ConsentOverlayHost";
+import VisibilityManager from "@/components/system/VisibilityManager";
 
 
 
@@ -42,6 +43,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" data-theme={theme} data-accent={accent}>
       <body style={{ margin: 0 }}>
+        {/* Global page visibility manager (safe, no visual side effects) */}
+        <VisibilityManager />
         {/* UA flags -> <html data-browser|data-os|data-standalone> */}
         <Script id="ua-flags" strategy="beforeInteractive">
           {`(function(){
@@ -122,6 +125,9 @@ html, body { background: var(--bg); color: var(--text); }
 :root[data-theme="light"][data-accent="amber"]  { --primary:#f59e0b; }
 
 * { transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
+
+/* Pause CSS animations when tab is hidden (brand-safe; avoids GPU work in background) */
+html[data-page-visible="false"] * { animation-play-state: paused !important; }
 
 .config-grid { display:grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
 @media (min-width: 1025px) { .config-grid { grid-template-columns: 280px 1fr; } }
