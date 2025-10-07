@@ -1199,7 +1199,7 @@ export default function CheckinClient() {
                       <img
                         src={docFilePreview}
                         alt="Preview"
-                        style={{ width: 160, height: 110, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }}
+                        style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }}
                       />
                     ) : (
                       <small style={{ color: "var(--muted)" }}>

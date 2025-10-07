@@ -1067,7 +1067,7 @@ export default function RoomDetailModal({
                   <div style={{ display: 'grid', gap: 6 }}>
                     <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>ID preview</label>
                     {primaryDoc?.url && (primaryDoc?.mime_type || '').startsWith('image/') ? (
-                      <img src={primaryDoc.url} alt="ID document" style={{ width: 160, height: 110, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
+                      <img src={primaryDoc.url} alt="ID document" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
                     ) : (
                       <small style={{ color: 'var(--muted)' }}>No image preview</small>
                     )}
@@ -1075,7 +1075,7 @@ export default function RoomDetailModal({
                   <div style={{ display: 'grid', gap: 6 }}>
                     <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Signature</label>
                     {signatureDoc?.url ? (
-                      <img src={signatureDoc.url} alt="Signature" style={{ width: 160, height: 110, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
+                      <img src={signatureDoc.url} alt="Signature" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
                     ) : (
                       <small style={{ color: 'var(--muted)' }}>No signature provided</small>
                     )}
