@@ -273,16 +273,16 @@ export default function CheckinClient() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  function sigPoint(e: React.PointerEvent<HTMLCanvasElement>) {
-    const el = e.currentTarget;
+  function sigPointFromClient(el: HTMLCanvasElement, clientX: number, clientY: number) {
     const rect = el.getBoundingClientRect();
     const s = sigScaleRef.current || 1;
-    return {
-      x: (e.clientX - rect.left) * s,
-      y: (e.clientY - rect.top) * s,
-    };
+    return { x: (clientX - rect.left) * s, y: (clientY - rect.top) * s };
+  }
+  function sigPoint(e: React.PointerEvent<HTMLCanvasElement>) {
+    return sigPointFromClient(e.currentTarget, e.clientX, e.clientY);
   }
   function onSigDown(e: React.PointerEvent<HTMLCanvasElement>) {
+    e.preventDefault();
     try { (e.currentTarget as any).setPointerCapture?.(e.pointerId); } catch {}
     const ctx = sigCtxRef.current; if (!ctx) return;
     const p = sigPoint(e);
@@ -295,6 +295,7 @@ export default function CheckinClient() {
     setSigDirty(true);
   }
   function onSigMove(e: React.PointerEvent<HTMLCanvasElement>) {
+    e.preventDefault();
     if (!sigDrawingRef.current) return;
     const ctx = sigCtxRef.current; if (!ctx) return;
     const p = sigPoint(e);
@@ -302,8 +303,51 @@ export default function CheckinClient() {
     ctx.stroke();
     setSigDirty(true);
   }
-  function onSigUp(_e: React.PointerEvent<HTMLCanvasElement>) {
+  function onSigUp(e: React.PointerEvent<HTMLCanvasElement>) {
+    e.preventDefault();
     sigDrawingRef.current = false;
+  }
+
+  // Fallback handlers for browsers without Pointer Events
+  function onSigMouseDown(e: React.MouseEvent<HTMLCanvasElement>) {
+    e.preventDefault();
+    const el = e.currentTarget; const ctx = sigCtxRef.current; if (!ctx) return;
+    const p = sigPointFromClient(el, e.clientX, e.clientY);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x + 0.1, p.y + 0.1);
+    ctx.stroke();
+    sigDrawingRef.current = true; setSigDirty(true);
+  }
+  function onSigMouseMove(e: React.MouseEvent<HTMLCanvasElement>) {
+    if (!sigDrawingRef.current) return; e.preventDefault();
+    const el = e.currentTarget; const ctx = sigCtxRef.current; if (!ctx) return;
+    const p = sigPointFromClient(el, e.clientX, e.clientY);
+    ctx.lineTo(p.x, p.y); ctx.stroke(); setSigDirty(true);
+  }
+  function onSigMouseUp(e: React.MouseEvent<HTMLCanvasElement>) {
+    e.preventDefault(); sigDrawingRef.current = false;
+  }
+  function onSigMouseLeave(e: React.MouseEvent<HTMLCanvasElement>) {
+    e.preventDefault(); sigDrawingRef.current = false;
+  }
+  function onSigTouchStart(e: React.TouchEvent<HTMLCanvasElement>) {
+    if (e.touches.length === 0) return; e.preventDefault();
+    const el = e.currentTarget; const ctx = sigCtxRef.current; if (!ctx) return;
+    const t = e.touches[0];
+    const p = sigPointFromClient(el, t.clientX, t.clientY);
+    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + 0.1, p.y + 0.1); ctx.stroke();
+    sigDrawingRef.current = true; setSigDirty(true);
+  }
+  function onSigTouchMove(e: React.TouchEvent<HTMLCanvasElement>) {
+    if (!sigDrawingRef.current) return; if (e.touches.length === 0) return; e.preventDefault();
+    const el = e.currentTarget; const ctx = sigCtxRef.current; if (!ctx) return;
+    const t = e.touches[0];
+    const p = sigPointFromClient(el, t.clientX, t.clientY);
+    ctx.lineTo(p.x, p.y); ctx.stroke(); setSigDirty(true);
+  }
+  function onSigTouchEnd(e: React.TouchEvent<HTMLCanvasElement>) {
+    e.preventDefault(); sigDrawingRef.current = false;
   }
   function clearSignature() {
     const el = sigCanvasRef.current; const ctx = sigCtxRef.current; if (!el || !ctx) return;
@@ -663,9 +707,24 @@ export default function CheckinClient() {
   async function uploadSignature(): Promise<{ path: string; mime: string } | null> {
     if (!sigDirty || !propertyId) return null;
     const el = sigCanvasRef.current; if (!el) return null;
-    const blob: Blob = await new Promise((resolve) => el.toBlob(b => resolve(b || new Blob([])), 'image/png'));
-    if (!blob || blob.size === 0) return null;
-    const file = new File([blob], 'signature.png', { type: 'image/png' });
+    function dataURLToBlob(dataUrl: string): Blob | null {
+      try {
+        const parts = dataUrl.split(',');
+        const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
+        const bstr = atob(parts[1]);
+        let n = bstr.length; const u8 = new Uint8Array(n);
+        while (n--) u8[n] = bstr.charCodeAt(n);
+        return new Blob([u8], { type: mime });
+      } catch { return null; }
+    }
+    const blob: Blob = await new Promise((resolve) => el.toBlob ? el.toBlob(b => resolve(b || new Blob([])), 'image/png') : resolve(new Blob([])));
+    let finalBlob = blob;
+    if (!finalBlob || finalBlob.size === 0) {
+      const dataUrl = el.toDataURL('image/png');
+      const b = dataURLToBlob(dataUrl);
+      if (!b) return null; finalBlob = b;
+    }
+    const file = new File([finalBlob], 'signature.png', { type: 'image/png' });
     const fd = new FormData();
     fd.append('file', file);
     fd.append('property', propertyId);
@@ -1151,6 +1210,14 @@ export default function CheckinClient() {
                     onPointerMove={onSigMove}
                     onPointerUp={onSigUp}
                     onPointerCancel={onSigUp}
+                    onMouseDown={onSigMouseDown}
+                    onMouseMove={onSigMouseMove}
+                    onMouseUp={onSigMouseUp}
+                    onMouseLeave={onSigMouseLeave}
+                    onTouchStart={onSigTouchStart}
+                    onTouchMove={onSigTouchMove}
+                    onTouchEnd={onSigTouchEnd}
+                    onTouchCancel={onSigTouchEnd}
                     style={{ width: '100%', height: '100%', touchAction: 'none', display: 'block', borderRadius: 8, background: '#fff' }}
                   />
                 </div>
