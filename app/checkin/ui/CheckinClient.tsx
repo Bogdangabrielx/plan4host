@@ -95,30 +95,7 @@ const Combobox = React.forwardRef<ComboboxHandle, ComboboxProps>(function Combob
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  // Initialize canvas when it becomes visible (after agreeing to House Rules)
-  useEffect(() => {
-    if (!agree) return;
-    // Defer to next tick so the ref is attached
-    const t = window.setTimeout(() => {
-      try {
-        const el = sigCanvasRef.current; if (!el) return;
-        // Prepare surface at device pixel ratio
-        const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-        const rect = el.getBoundingClientRect();
-        el.width = Math.max(1, Math.floor(rect.width * dpr));
-        el.height = Math.max(1, Math.floor(rect.height * dpr));
-        sigScaleRef.current = dpr;
-        const ctx = el.getContext('2d'); if (!ctx) return;
-        sigCtxRef.current = ctx;
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, el.width, el.height);
-        ctx.lineWidth = 2 * dpr;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = '#111827';
-      } catch {}
-    }, 0);
-    return () => { try { window.clearTimeout(t); } catch {} };
-  }, [agree]);
+  // (moved) canvas init on agree is handled in CheckinClient component
 
   function select(v: string) {
     setQuery(v);
@@ -1413,3 +1390,25 @@ export default function CheckinClient() {
     </div>
   );
 }
+  // Initialize canvas when it becomes visible (after agreeing to House Rules)
+  useEffect(() => {
+    if (!agree) return;
+    const t = window.setTimeout(() => {
+      try {
+        const el = sigCanvasRef.current; if (!el) return;
+        const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+        const rect = el.getBoundingClientRect();
+        el.width = Math.max(1, Math.floor(rect.width * dpr));
+        el.height = Math.max(1, Math.floor(rect.height * dpr));
+        sigScaleRef.current = dpr;
+        const ctx = el.getContext('2d'); if (!ctx) return;
+        sigCtxRef.current = ctx;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, el.width, el.height);
+        ctx.lineWidth = 2 * dpr;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#111827';
+      } catch {}
+    }, 0);
+    return () => { try { window.clearTimeout(t); } catch {} };
+  }, [agree]);
