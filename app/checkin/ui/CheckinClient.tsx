@@ -270,7 +270,16 @@ export default function CheckinClient() {
     initCanvas();
     const onResize = () => initCanvas();
     window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    // Observe element size changes (not only window resize)
+    let ro: ResizeObserver | null = null;
+    try {
+      ro = new ResizeObserver(() => initCanvas());
+      const el = sigCanvasRef.current; if (el) ro.observe(el);
+    } catch {}
+    return () => {
+      window.removeEventListener('resize', onResize);
+      try { ro?.disconnect(); } catch {}
+    };
   }, []);
 
   function sigPointFromClient(el: HTMLCanvasElement, clientX: number, clientY: number) {
@@ -1218,7 +1227,7 @@ export default function CheckinClient() {
                     onTouchMove={onSigTouchMove}
                     onTouchEnd={onSigTouchEnd}
                     onTouchCancel={onSigTouchEnd}
-                    style={{ width: '100%', height: '100%', touchAction: 'none', display: 'block', borderRadius: 8, background: '#fff' }}
+                    style={{ width: '100%', height: '100%', touchAction: 'none', display: 'block', borderRadius: 8, background: '#fff', cursor: 'crosshair' }}
                   />
                 </div>
               </div>

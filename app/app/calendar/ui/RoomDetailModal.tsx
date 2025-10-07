@@ -188,9 +188,13 @@ export default function RoomDetailModal({
     return [...docs].sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime())[0];
   }, [docs]);
   const signatureDoc: BookingDoc | null = useMemo(() => {
-    const s = docs.find((d) => (d.doc_type || '').toLowerCase() === 'signature');
-    return s || null;
-  }, [docs]);
+    const byType = docs.find((d) => (d.doc_type || '').toLowerCase() === 'signature');
+    if (byType) return byType;
+    // fallback: if backend stored null type for signature, pick an image doc different than the primary ID doc
+    const primaryId = primaryDoc?.id || null;
+    const img = docs.find((d) => (!d.doc_type || d.doc_type === null) && ((d.mime_type || '').startsWith('image/')) && (String(d.id) !== String(primaryId)));
+    return img || null;
+  }, [docs, primaryDoc?.id]);
 
   // Load everything
   useEffect(() => {

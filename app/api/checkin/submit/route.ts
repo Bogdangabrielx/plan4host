@@ -376,7 +376,8 @@ export async function POST(req: NextRequest) {
           const path   = String(d.storage_path || d.path || "");
           if (!path) return null;
           const t = (d.doc_type ?? "").toString();
-          const typeText = (t === "id_card" || t === "passport" || t === "signature") ? t : null;
+          // Keep only known-safe types to avoid enum insert errors; signature will be stored as NULL type
+          const typeText = (t === "id_card" || t === "passport") ? t : null;
           const r: any = {
             property_id,
             booking_id: matchedBookingId!,
@@ -479,7 +480,8 @@ export async function POST(req: NextRequest) {
         const path   = String(d.storage_path || d.path || "");
         if (!path) return null;
         const t = (d.doc_type ?? "").toString();
-        const typeText = (t === "id_card" || t === "passport" || t === "signature") ? t : null;
+        // Keep only known-safe types to avoid enum insert errors; signature will be stored as NULL type
+        const typeText = (t === "id_card" || t === "passport") ? t : null;
         const r: any = {
           property_id,
           booking_id: newId,
