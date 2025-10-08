@@ -590,7 +590,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               width: 100%;
               padding: 8px 12px;
               font-size: 13px;
-              font-weight: 800;
+              font-weight: 600;
               line-height: 1.1;
               justify-self: stretch;
               border-radius: 29;
@@ -610,7 +610,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 width: 100%;
                 padding: 6px 6px;
                 font-size: 13px;
-                font-weight: 800;
+                font-weight: 700;
                 line-height: 1.1;
                 justify-self: stretch;
                 border-radius: 10;
