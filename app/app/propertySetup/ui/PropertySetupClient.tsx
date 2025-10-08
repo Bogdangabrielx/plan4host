@@ -509,7 +509,7 @@ function tabBtn(active: boolean): React.CSSProperties {
   return {
     padding: "8px 12px",
     borderRadius: 8,
-    border: "0.5px solid var(--primary)",
+    border: "1px solid var(--card)",
     cursor: "pointer",
     background: active ? "var(--primary)" : "var(--card)",
     color: active ? "#0c111b" : "var(--text)",

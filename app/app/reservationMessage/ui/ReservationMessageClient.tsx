@@ -377,7 +377,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   // Styles
   const card: React.CSSProperties = { background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 };
   const input: React.CSSProperties = { padding: 10, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, width: "100%", boxSizing: "border-box", fontFamily: 'inherit' };
-  const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 800, cursor: "pointer" };
+  const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 700, cursor: "pointer" };
   const btnPri: React.CSSProperties = { ...btn, background: "var(--primary)", color: "#0c111b", border: "1px solid var(--border)" };
 
   // Reflect saving state in AppHeader pill
@@ -430,7 +430,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           <div style={{ color:'var(--muted)' }}>Loading…</div>
         ) : templates.length === 0 ? (
           <div className="sb-card" style={{ padding: 16, textAlign:'center' }}>
-            <div style={{ fontWeight:800, marginBottom: 6 }}>No messages yet</div>
+            <div style={{ fontWeight:700, marginBottom: 6 }}>No messages yet</div>
             <div style={{ color:'var(--muted)', marginBottom: 10 }}>Create your first message for this property.</div>
             <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Create your first message</button>
           </div>
@@ -551,7 +551,7 @@ function AddVarInline({ onAdd, disabled }: { onAdd: (name: string) => void; disa
         style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)' }}
         disabled={!!disabled}
       />
-      <button onClick={submit} disabled={!!disabled} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--primary)', color: '#0c111b', fontWeight: 800 }}>Add</button>
+      <button onClick={submit} disabled={!!disabled} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--primary)', color: '#0c111b', fontWeight: 700 }}>Add</button>
     </span>
   );
 }
