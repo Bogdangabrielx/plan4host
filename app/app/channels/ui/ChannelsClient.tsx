@@ -86,17 +86,15 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
   const [status, setStatus] = useState<"Idle" | "Loading" | "Saving…" | "Error">("Idle");
-  // Responsive helper for inline styles (avoid style jsx): phone vs desktop
+  // Responsive: folosit doar pentru layout-ul cardurilor (mobil vs desktop)
   const [isSmall, setIsSmall] = useState<boolean>(false);
   useEffect(() => {
-    const detect = () => {
-      if (typeof window === 'undefined') return;
-      try { setIsSmall(window.matchMedia('(max-width: 720px)').matches); }
-      catch { setIsSmall(window.innerWidth < 720); }
-    };
-    detect();
-    window.addEventListener('resize', detect);
-    return () => window.removeEventListener('resize', detect);
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(max-width: 720px)');
+    const apply = () => setIsSmall(mq.matches);
+    try { mq.addEventListener('change', apply); } catch { mq.addListener?.(apply as any); }
+    apply();
+    return () => { try { mq.removeEventListener('change', apply); } catch { mq.removeListener?.(apply as any); } };
   }, []);
 
   const [properties] = useState<Property[]>(initialProperties);
@@ -559,15 +557,16 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           >
             <div
               className="sb-card"
-              style={{ display: 'grid', gap: 12, padding: 16, width: isSmall ? '100%' : 240, aspectRatio: '5 / 4' }}
+              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 220, ...(isSmall ? {} : { aspectRatio: '5 / 4' }) }}
             >
-              <h4 style={{ margin: 0, textAlign: 'center', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 700 }}>Room Types</h4>
+              <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Room Types</h4>
+              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per type</small>
               <button
                 className="sb-btn"
                 style={{
                   width: isSmall ? '100%' : 'auto',
                   padding: '8px 12px',
-                  borderRadius: isSmall ? 29 : 10,
+                  borderRadius: isSmall ? 10 : 10,
                   border: '1px solid var(--border)',
                   background: 'var(--panel)',
                   color: 'var(--text)',
@@ -584,15 +583,16 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
             <div
               className="sb-card"
-              style={{ display: 'grid', gap: 12, padding: 16, width: isSmall ? '100%' : 240, aspectRatio: '5 / 4' }}
+              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 220, ...(isSmall ? {} : { aspectRatio: '5 / 4' }) }}
             >
-              <h4 style={{ margin: 0, textAlign: 'center', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 700 }}>Import</h4>
+              <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Import</h4>
+              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Add OTA iCal URL</small>
               <button
                 className="sb-btn"
                 style={{
                   width: isSmall ? '100%' : 'auto',
                   padding: '8px 12px',
-                  borderRadius: isSmall ? 29 : 10,
+                  borderRadius: isSmall ? 10 : 10,
                   border: '1px solid var(--border)',
                   background: 'var(--panel)',
                   color: 'var(--text)',
@@ -609,15 +609,16 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
             <div
               className="sb-card"
-              style={{ display: 'grid', gap: 12, padding: 16, width: isSmall ? '100%' : 240, aspectRatio: '5 / 4' }}
+              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 220, ...(isSmall ? {} : { aspectRatio: '5 / 4' }) }}
             >
-              <h4 style={{ margin: 0, textAlign: 'center', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 700 }}>Rooms</h4>
+              <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Rooms</h4>
+              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per room</small>
               <button
                 className="sb-btn"
                 style={{
                   width: isSmall ? '100%' : 'auto',
                   padding: '8px 12px',
-                  borderRadius: isSmall ? 29 : 10,
+                  borderRadius: isSmall ? 10 : 10,
                   border: '1px solid var(--border)',
                   background: 'var(--panel)',
                   color: 'var(--text)',
