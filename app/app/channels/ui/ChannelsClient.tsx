@@ -504,7 +504,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
       {/* Card cu acțiuni */}
       <section className="sb-card" style={{ padding: 16, marginTop: 8 }}>
-        <h3 style={{ marginTop: 0 }}>Sync Calendars</h3>
+        <h3 style={{ marginTop: 0 }}>Calendar Integrations</h3>
         {!timezone && (
           <p style={{ fontSize:8, color: "var(--danger)", marginTop: 0 }}>
             Set Country (timezone) in Dashboard to produce valid .ics files.
