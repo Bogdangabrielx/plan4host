@@ -485,7 +485,7 @@ export default function HomePage() {
           {/* Get started -> login in signup mode (animated) */}
           <CtaLink
             href="/auth/login?mode=signup"
-            className={`${styles.btnChoose} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
+            className={`${styles.btn} ${styles.btnChoose} ${styles.btnText} ${styles.focusable}`}
           >
             Get started
           </CtaLink>
@@ -548,7 +548,7 @@ export default function HomePage() {
             {/* Start free -> login in signup mode (animated) */}
             <CtaLink
               href="/auth/login?mode=signup"
-              className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
+              className={`${styles.btn} ${styles.btnChoose} ${styles.btnText} ${styles.focusable}`}
             >
               Start free
             </CtaLink>
