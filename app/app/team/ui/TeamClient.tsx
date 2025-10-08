@@ -179,7 +179,7 @@ export default function TeamClient() {
           {members.map((u) => {
             const isAdmin = u.role === "admin";
             return (
-              <li key={u.user_id} style={row}>
+              <li key={u.user_id} style={row} className="memberRow">
                 <div style={{ display: "grid", gap: 4 }}>
                   <strong>{u.email || u.user_id}</strong>
                   <small style={{ color: "var(--muted)" }}>
@@ -189,7 +189,7 @@ export default function TeamClient() {
                     {formatScopes(u.scopes)}
                   </small>
                 </div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} className="memberActions">
                   <button
                     style={{ ...ghostBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
                     onClick={()=>!isAdmin && setPasswordFor(u)}
@@ -232,6 +232,25 @@ export default function TeamClient() {
           })}
         </ul>
       </section>
+      {/* ⬇️ CSS responsive pentru acțiuni pe mobil */}
+      <style jsx>{`
+        @media (max-width: 720px) {
+          .memberRow { align-items: stretch; }
+          .memberActions {
+            grid-column: 1 / -1;
+            display: grid !important;
+            grid-template-columns: 1fr; /* butoane unul sub altul */
+            gap: 8px;
+            width: 100%;
+            margin-top: 4px;
+          }
+          .memberActions > button {
+            width: 100%;
+            border-radius: 29px !important;
+            min-height: 44px; /* touch friendly */
+          }
+        }
+      `}</style>
     </div>
   );
 }
