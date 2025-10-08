@@ -252,7 +252,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         const items = Array.isArray(jl?.items) ? jl.items : [];
         setTemplates(items.map((x:any)=>({ id:String(x.id), title:String(x.title||''), status:(x.status||'draft'), updated_at:String(x.updated_at||'') })) as any);
       } catch {}
-      setSaving("Synced"); setTimeout(()=>setSaving("Idle"), 800);
+      setSaving("Synced"); setTimeout(()=>setSaving("Idle"), 700);
     } catch { setSaving("Error"); }
   }
 
