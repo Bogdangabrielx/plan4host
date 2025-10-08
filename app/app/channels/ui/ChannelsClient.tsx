@@ -557,14 +557,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           >
             <div
               className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 380 }}
+              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
             >
               <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Room Types</h4>
               <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per type</small>
               <button
                 className="sb-btn"
                 style={{
-                  width: isSmall ? '100%' : 360,
+                  width: isSmall ? '100%' : 340,
                   padding: '8px 12px',
                   borderRadius: isSmall ? 29 : 10,
                   border: '1px solid var(--border)',
@@ -583,14 +583,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
             <div
               className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 380 }}
+              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
             >
               <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Import</h4>
               <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics from other platforms</small>
               <button
                 className="sb-btn"
                 style={{
-                  width: isSmall ? '100%' : 360,
+                  width: isSmall ? '100%' : 340,
                   padding: '8px 12px',
                   borderRadius: isSmall ? 29 : 10,
                   border: '1px solid var(--border)',
@@ -609,14 +609,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
             <div
               className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 380 }}
+              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
             >
               <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Rooms</h4>
               <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per room</small>
               <button
                 className="sb-btn"
                 style={{
-                  width: isSmall ? '100%' : 360,
+                  width: isSmall ? '100%' : 340,
                   padding: '8px 12px',
                   borderRadius: isSmall ? 29 : 10,
                   border: '1px solid var(--border)',
