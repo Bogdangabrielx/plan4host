@@ -593,7 +593,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               font-weight: 800;
               line-height: 1.1;
               justify-self: stretch;
-              border-radius: 10px;
+              border-radius: 29;
               font-family: 'Switzer', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
             }
             .syncCard :global(.sb-btn--primary){
@@ -608,12 +608,12 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               /* Desktop: același look ca pe mobil (stil Dashboard) */
               .syncCard :global(.sb-btn){
                 width: 100%;
-                padding: 8px 12px;
+                padding: 6px 6px;
                 font-size: 13px;
                 font-weight: 800;
                 line-height: 1.1;
                 justify-self: stretch;
-                border-radius: 10px;
+                border-radius: 10;
                 font-family: 'Switzer', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
               }
               .syncCard :global(.sb-btn--primary){
