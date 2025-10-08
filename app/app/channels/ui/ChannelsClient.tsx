@@ -523,7 +523,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
         <div style={{ display: "grid", gap: 12 }}>
           {/* GLOBAL: Sync Now — ALL */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: isSmall ? 'stretch' : 'center', }}>
             <button
               className="sb-btn sb-btn--primary"
               style={{ opacity: (isPremium === false ? 0.95 : 1) * (activeCount === 0 || status === "Saving…" ? 0.6 : 1) }}
