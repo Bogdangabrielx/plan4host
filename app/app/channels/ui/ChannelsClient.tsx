@@ -571,7 +571,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   background: 'var(--panel)',
                   color: 'var(--text)',
                   fontWeight: 800,
-                  justifySelf: isSmall ? 'stretch' : 'center',
+                  justifySelf: isSmall ? 'stretch' : 'stretch',
                 }}
                 disabled={!canWrite}
                 onClick={() => { if (!canWrite) return; setShowTypesModal(true); }}
@@ -597,7 +597,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   background: 'var(--panel)',
                   color: 'var(--text)',
                   fontWeight: 800,
-                  justifySelf: isSmall ? 'stretch' : 'center',
+                  justifySelf: isSmall ? 'stretch' : 'stretch',
                 }}
                 disabled={!canWrite}
                 onClick={() => { if (!canWrite) return; setShowImportModal(true); }}
@@ -623,7 +623,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   background: 'var(--panel)',
                   color: 'var(--text)',
                   fontWeight: 800,
-                  justifySelf: isSmall ? 'stretch' : 'center',
+                  justifySelf: isSmall ? 'stretch' : 'stretch',
                 }}
                 disabled={!canWrite}
                 onClick={() => { if (!canWrite) return; setShowRoomsModal(true); }}
