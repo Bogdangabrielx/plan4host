@@ -594,7 +594,7 @@ export default function HomePage() {
               <li>Unlimited automatic messages</li>
               <li>Autosync every 60 minutes with iCal</li>
             </ul>
-            <img className={styles.priceImg} src="/basic.png" alt="" aria-hidden="true" />
+            <img className={styles.priceImg} src="/basic_forlight.png" alt="" aria-hidden="true" />
             <Link
               href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1"
               className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
@@ -613,7 +613,7 @@ export default function HomePage() {
               <li>Autosync every 30 minutes with iCal</li>
               <li>Smart cleaning board - (Advanced Next-Check-In Priority)</li>
             </ul>
-            <img className={styles.priceImg} src="/standard.png" alt="" aria-hidden="true" />
+            <img className={styles.priceImg} src="/standard_forlight.png" alt="" aria-hidden="true" />
             <Link
               href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1"
               className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
@@ -633,7 +633,7 @@ export default function HomePage() {
               <li>Smart cleaning board - (Advanced Next-Check-In Priority)</li>
               <li>Delegate tasks with your team members</li>
             </ul>
-            <img className={styles.priceImg} src="/premium.png" alt="" aria-hidden="true" />
+            <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
             <Link
               href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1"
               className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
