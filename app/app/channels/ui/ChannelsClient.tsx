@@ -589,7 +589,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             .syncCard :global(.sb-btn){
               width: 100%;
               height: 22px;     /* puțin mai înalt vs 20px pentru lizibilitate */
-              padding: 0 10px;  /* fără padding vertical suplimentar */
+              padding: 0 14px;  /* mai mult spațiu între text și border, pe orizontală */
               font-size: 13px;  /* mărim fontul ca în restul paginilor */
               font-weight: 800; /* uniform cu sb-btn global */
               line-height: 1;
@@ -610,7 +610,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               .syncCard :global(.sb-btn){
                 width: 220px;   /* aceeași lățime pentru toate */
                 height: 22px;   /* subțire dar consistent */
-                padding: 0 10px;
+                padding: 0 16px; /* mai mult spațiu între text și border pe desktop */
                 font-size: 13px;
                 font-weight: 800;
                 line-height: 1;
