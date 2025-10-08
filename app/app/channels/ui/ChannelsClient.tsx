@@ -588,7 +588,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             /* Telefon: butoane pe toată lățimea cardului, radius 29, doar contur primary */
             .syncCard :global(button){
               width: 100%;
-              min-height: 10px;
+              min-height: 11px; /* ~4x mai scund decât 44px */
+              padding: 2px 12px; /* redu padding vertical pentru înălțime efectivă mică */
               justify-self: stretch;
               border-radius: 29px;
             }
@@ -600,11 +601,12 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             }
             @media (min-width: 900px){
               .syncCards{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
-              .syncCard{ aspect-ratio: 1 / 1; }
+              .syncCard{ aspect-ratio: 5 / 4; } /* puțin mai scunde pe desktop */
               /* Desktop: butoane egale, centrate, radius 8 */
               .syncCard :global(button){
-                width: 220px;
-                min-height: 10px;
+                width: 220px; /* aceleași dimensiuni, indiferent de text */
+                min-height: 11px;
+                padding: 2px 12px;
                 justify-self: center;
                 border-radius: 8px;
               }
