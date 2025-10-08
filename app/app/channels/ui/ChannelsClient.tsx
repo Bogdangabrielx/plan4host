@@ -614,8 +614,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 font-weight: 700;
                 line-height: 1;
                 justify-self: center;
-                border-radius: 8px;
+                border-radius: 4px; /* mai dreptunghiular pe desktop */
               }
+              .syncCard :global(.sb-btn--primary){ border-width: 1px !important; }
             }
           `}</style>
         </div>
