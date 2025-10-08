@@ -585,17 +585,29 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               font-weight:700;
               letter-spacing:.01em;
             }
-            /* Buttons full width on phone, centered text; primary only as border */
-            .syncCard :global(button){ width: 100%; justify-self: stretch; }
+            /* Telefon: butoane pe toată lățimea cardului, radius 29, doar contur primary */
+            .syncCard :global(button){
+              width: 100%;
+              min-height: 44px;
+              justify-self: stretch;
+              border-radius: 29px;
+            }
             .syncCard :global(.sb-btn--primary){
               background: transparent !important;
               color: var(--text) !important;
-              border-color: var(--primary) !important;
+              border: 1.5px solid var(--primary) !important;
+              box-shadow: none !important;
             }
             @media (min-width: 900px){
               .syncCards{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
               .syncCard{ aspect-ratio: 1 / 1; }
-              .syncCard :global(button){ border-radius: 8px; }
+              /* Desktop: butoane egale, centrate, radius 8 */
+              .syncCard :global(button){
+                width: 220px;
+                min-height: 44px;
+                justify-self: center;
+                border-radius: 8px;
+              }
             }
           `}</style>
         </div>
