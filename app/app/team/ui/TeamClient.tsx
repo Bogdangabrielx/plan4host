@@ -198,22 +198,26 @@ export default function TeamClient() {
                   >
                     Set password
                   </button>
-                  <button
-                    style={{ ...ghostBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
-                    onClick={()=>!isAdmin && updateUser(u, { role: u.role === "editor" ? "viewer" : "editor" })}
-                    disabled={loading || isAdmin}
-                    title={isAdmin ? "Not allowed for admin" : "Toggle role"}
-                  >
-                    Toggle role
-                  </button>
-                  <button
-                    style={{ ...ghostBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
-                    onClick={()=>!isAdmin && updateUser(u, { disabled: !u.disabled })}
-                    disabled={loading || isAdmin}
-                    title={isAdmin ? "Not allowed for admin" : (u.disabled ? "Enable" : "Disable")}
-                  >
-                    {u.disabled ? "Enable" : "Disable"}
-                  </button>
+                  {false && (
+                    <button
+                      style={{ ...ghostBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
+                      onClick={()=>!isAdmin && updateUser(u, { role: u.role === "editor" ? "viewer" : "editor" })}
+                      disabled={loading || isAdmin}
+                      title={isAdmin ? "Not allowed for admin" : "Toggle role"}
+                    >
+                      Toggle role
+                    </button>
+                  )}
+                  {false && (
+                    <button
+                      style={{ ...ghostBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
+                      onClick={()=>!isAdmin && updateUser(u, { disabled: !u.disabled })}
+                      disabled={loading || isAdmin}
+                      title={isAdmin ? "Not allowed for admin" : (u.disabled ? "Enable" : "Disable")}
+                    >
+                      {u.disabled ? "Enable" : "Disable"}
+                    </button>
+                  )}
                   <button
                     style={{ ...dangerBtn, opacity: isAdmin ? 0.5 : 1, cursor: isAdmin ? "not-allowed" : "pointer" }}
                     onClick={()=>!isAdmin && removeUser(u)}
