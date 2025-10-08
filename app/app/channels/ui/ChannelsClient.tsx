@@ -585,22 +585,21 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               font-weight:700;
               letter-spacing:.01em;
             }
-            /* Telefon: butoane pe toată lățimea cardului, radius 29, doar contur primary; subțiri dar lizibile */
+            /* Telefon: inspirat de Dashboard → "Property Setup" look */
             .syncCard :global(.sb-btn){
               width: 100%;
-              height: 22px;     /* puțin mai înalt vs 20px pentru lizibilitate */
-              padding: 0 14px;  /* mai mult spațiu între text și border, pe orizontală */
-              font-size: 13px;  /* mărim fontul ca în restul paginilor */
-              font-weight: 800; /* uniform cu sb-btn global */
-              line-height: 1;
+              padding: 8px 12px;
+              font-size: 13px;
+              font-weight: 800;
+              line-height: 1.1;
               justify-self: stretch;
-              border-radius: 29px;
+              border-radius: 10px;
               font-family: 'Switzer', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
             }
             .syncCard :global(.sb-btn--primary){
-              background: transparent !important;
+              background: var(--panel) !important;
               color: var(--text) !important;
-              border: 1.5px solid var(--primary) !important;
+              border: 1px solid var(--border) !important;
               box-shadow: none !important;
             }
             @media (min-width: 900px){
