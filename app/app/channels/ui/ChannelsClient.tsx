@@ -585,16 +585,17 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               font-weight:700;
               letter-spacing:.01em;
             }
-            /* Telefon: butoane pe toată lățimea cardului, radius 29, doar contur primary; subțiri */
+            /* Telefon: butoane pe toată lățimea cardului, radius 29, doar contur primary; subțiri dar lizibile */
             .syncCard :global(.sb-btn){
               width: 100%;
-              height: 20px;     /* subțire controlat */
-              padding: 0 8px;   /* fără padding vertical suplimentar */
-              font-size: 11px;
-              font-weight: 700;
+              height: 22px;     /* puțin mai înalt vs 20px pentru lizibilitate */
+              padding: 0 10px;  /* fără padding vertical suplimentar */
+              font-size: 13px;  /* mărim fontul ca în restul paginilor */
+              font-weight: 800; /* uniform cu sb-btn global */
               line-height: 1;
               justify-self: stretch;
               border-radius: 29px;
+              font-family: 'Switzer', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
             }
             .syncCard :global(.sb-btn--primary){
               background: transparent !important;
@@ -605,16 +606,17 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             @media (min-width: 900px){
               .syncCards{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
               .syncCard{ aspect-ratio: 5 / 4; } /* puțin mai scunde pe desktop */
-              /* Desktop: butoane egale, centrate, radius 8, subțiri */
+              /* Desktop: butoane egale, centrate, radius 8, subțiri dar cu font mai mare */
               .syncCard :global(.sb-btn){
                 width: 220px;   /* aceeași lățime pentru toate */
-                height: 20px;   /* subțire */
-                padding: 0 8px;
-                font-size: 11px;
-                font-weight: 700;
+                height: 22px;   /* subțire dar consistent */
+                padding: 0 10px;
+                font-size: 13px;
+                font-weight: 800;
                 line-height: 1;
                 justify-self: center;
                 border-radius: 4px; /* mai dreptunghiular pe desktop */
+                font-family: 'Switzer', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
               }
               .syncCard :global(.sb-btn--primary){ border-width: 1px !important; }
             }
