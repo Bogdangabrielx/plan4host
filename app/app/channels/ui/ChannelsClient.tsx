@@ -564,7 +564,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <button
                 className="sb-btn"
                 style={{
-                  width: isSmall ? '100%' : 'auto',
+                  width: isSmall ? '100%' : 180,
                   padding: '8px 12px',
                   borderRadius: isSmall ? 10 : 10,
                   border: '1px solid var(--border)',
@@ -590,7 +590,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <button
                 className="sb-btn"
                 style={{
-                  width: isSmall ? '100%' : 'auto',
+                  width: isSmall ? '100%' : 180,
                   padding: '8px 12px',
                   borderRadius: isSmall ? 10 : 10,
                   border: '1px solid var(--border)',
@@ -616,7 +616,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <button
                 className="sb-btn"
                 style={{
-                  width: isSmall ? '100%' : 'auto',
+                  width: isSmall ? '100%' : 180,
                   padding: '8px 12px',
                   borderRadius: isSmall ? 10 : 10,
                   border: '1px solid var(--border)',
