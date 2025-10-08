@@ -485,14 +485,14 @@ export default function HomePage() {
           {/* Get started -> login in signup mode (animated) */}
           <CtaLink
             href="/auth/login?mode=signup"
-            className={`${styles.btn} ${styles.btnChoose} ${styles.btnText} ${styles.focusable}`}
+            className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}
           >
             Get started
           </CtaLink>
 
           <button
             type="button"
-            className={`${styles.btnChoose} ${styles.menuToggle} ${styles.focusable}`}
+            className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
             aria-controls="mobile-menu"
             aria-expanded={navOpen}
             onClick={() => setNavOpen((v) => !v)}
@@ -548,7 +548,7 @@ export default function HomePage() {
             {/* Start free -> login in signup mode (animated) */}
             <CtaLink
               href="/auth/login?mode=signup"
-              className={`${styles.btn} ${styles.btnChoose} ${styles.btnText} ${styles.focusable}`}
+              className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}
             >
               Start free
             </CtaLink>
