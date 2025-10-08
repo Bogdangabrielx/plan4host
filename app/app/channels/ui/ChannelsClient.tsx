@@ -589,7 +589,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             .syncCard :global(button){
               width: 100%;
               min-height: 11px; /* ~4x mai scund decât 44px */
-              padding: 2px 12px; /* redu padding vertical pentru înălțime efectivă mică */
+              padding: 2px 10px; /* redu padding vertical pentru înălțime efectivă mică */
+              font-size: 12px;  /* micșorăm percepția de „zoom” */
+              line-height: 1.1;
               justify-self: stretch;
               border-radius: 29px;
             }
@@ -606,7 +608,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               .syncCard :global(button){
                 width: 220px; /* aceleași dimensiuni, indiferent de text */
                 min-height: 11px;
-                padding: 2px 12px;
+                padding: 2px 10px;
+                font-size: 12px;
+                line-height: 1.1;
                 justify-self: center;
                 border-radius: 8px;
               }
