@@ -200,7 +200,18 @@
 }
 
 @keyframes sweep-rotate { to { --sweep-angle: 360deg; } }
-
+@keyframes stars-twinkle {
+  0%,100% {
+    filter: drop-shadow(0 0 6px rgba(255,255,255,.7))
+            drop-shadow(0 0 18px color-mix(in srgb, var(--primary) 65%, transparent));
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(255,255,255,1))
+            drop-shadow(0 0 26px color-mix(in srgb, var(--primary) 75%, transparent));
+    transform: translateY(-1px) rotate(6deg);
+  }
+}
 
 /* ───────────────
    .btnChoose — same sparkle, NO stars

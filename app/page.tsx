@@ -485,14 +485,14 @@ export default function HomePage() {
           {/* Get started -> login in signup mode (animated) */}
           <CtaLink
             href="/auth/login?mode=signup"
-            className={`${styles.btn} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
+            className={`${styles.btnChoose} ${styles.btnPrimary} ${styles.btnText} ${styles.focusable}`}
           >
             Get started
           </CtaLink>
 
           <button
             type="button"
-            className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
+            className={`${styles.btnChoose} ${styles.menuToggle} ${styles.focusable}`}
             aria-controls="mobile-menu"
             aria-expanded={navOpen}
             onClick={() => setNavOpen((v) => !v)}
