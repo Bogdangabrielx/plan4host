@@ -474,12 +474,12 @@ function Tabs({ settings, rooms, roomDetails, cleaning }:{
 }) {
   const [tab, setTab] = useState<"settings" | "rooms" | "roomdetails" | "cleaning">("settings");
   return (
-    <div style={{ display: "grid", gap: 12 }}>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <button onClick={() => setTab("settings")}    style={tabBtn(tab === "settings")}>Check-in/out Time</button>
-        <button onClick={() => setTab("rooms")}       style={tabBtn(tab === "rooms")}>Rooms</button>
-        <button onClick={() => setTab("roomdetails")} style={tabBtn(tab === "roomdetails")}>Room details</button>
-        <button onClick={() => setTab("cleaning")}    style={tabBtn(tab === "cleaning")}>Cleaning</button>
+    <div style={{ display: "grid", gap: 12 }} className="psTabs">
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} className="psTabsBar">
+        <button onClick={() => setTab("settings")}    style={tabBtn(tab === "settings")} className="psTabBtn">Check-in/out Time</button>
+        <button onClick={() => setTab("rooms")}       style={tabBtn(tab === "rooms")} className="psTabBtn">Rooms</button>
+        <button onClick={() => setTab("roomdetails")} style={tabBtn(tab === "roomdetails")} className="psTabBtn">Room details</button>
+        <button onClick={() => setTab("cleaning")}    style={tabBtn(tab === "cleaning")} className="psTabBtn">Cleaning</button>
       </div>
       <div>
         {tab === "settings"    && settings}
@@ -487,6 +487,21 @@ function Tabs({ settings, rooms, roomDetails, cleaning }:{
         {tab === "roomdetails" && roomDetails}
         {tab === "cleaning"    && cleaning}
       </div>
+      <style jsx>{`
+        @media (max-width: 720px) {
+          .psTabsBar{
+            display: grid !important;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            width: 100%;
+          }
+          .psTabsBar .psTabBtn{
+            width: 100%;
+            border-radius: 29px !important;
+            min-height: 44px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
