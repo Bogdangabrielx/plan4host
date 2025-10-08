@@ -577,7 +577,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
           <style jsx>{`
             .syncCards{ display:grid; gap:12px; grid-template-columns: 1fr; }
-            .syncCard{ display:grid; gap:10px; padding:16px; min-height: 160px; }
+            .syncCard{ display:grid; gap:12px; padding:16px; min-height: 180px; }
             .syncCardTitle{
               margin:0;
               text-align:center;
@@ -585,9 +585,16 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               font-weight:700;
               letter-spacing:.01em;
             }
-            .syncCard :global(button){ justify-self: center; }
+            /* Buttons full width on phone, centered text; primary only as border */
+            .syncCard :global(button){ width: 100%; justify-self: stretch; }
+            .syncCard :global(.sb-btn--primary){
+              background: transparent !important;
+              color: var(--text) !important;
+              border-color: var(--primary) !important;
+            }
             @media (min-width: 900px){
               .syncCards{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+              .syncCard{ aspect-ratio: 1 / 1; }
               .syncCard :global(button){ border-radius: 8px; }
             }
           `}</style>
