@@ -575,9 +575,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 }}
                 disabled={!canWrite}
                 onClick={() => { if (!canWrite) return; setShowTypesModal(true); }}
-                title="Export per Room Type"
+                title="Export · Room Types"
               >
-                Export
+                Export iCal
               </button>
             </div>
 
@@ -603,7 +603,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 onClick={() => { if (!canWrite) return; setShowImportModal(true); }}
                 title="Import feeds"
               >
-                Import
+                Import iCal
               </button>
             </div>
 
@@ -627,9 +627,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 }}
                 disabled={!canWrite}
                 onClick={() => { if (!canWrite) return; setShowRoomsModal(true); }}
-                title="Export per Room"
+                title="Export · Rooms"
               >
-                Export Room Only
+                Export iCal
               </button>
             </div>
           </div>
@@ -638,7 +638,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
       {/* ======= MODAL A: EXPORT per ROOM ======= */}
       {showRoomsModal && (
-        <Modal title="Export Room Only" onClose={() => { setShowRoomsModal(false); setActiveRoomId(null); }}>
+        <Modal title="Export · Rooms" onClose={() => { setShowRoomsModal(false); setActiveRoomId(null); }}>
           <div style={tileGrid}>
             {rooms.length === 0 ? (
               <p style={{ color: "var(--text)", gridColumn: "1 / -1" }}>No rooms in this property.</p>
@@ -676,7 +676,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
       {/* ======= MODAL B: EXPORT per TYPE ======= */}
       {showTypesModal && (
-        <Modal title="Export" onClose={() => { setShowTypesModal(false); setActiveTypeId(null); }}>
+        <Modal title="Export · Room Types" onClose={() => { setShowTypesModal(false); setActiveTypeId(null); }}>
           <div style={tileGrid}>
             {types.length === 0 ? (
               <p style={{ color: "var(--text)", gridColumn: "1 / -1" }}>No room types defined.</p>
@@ -724,7 +724,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   onClick={() => setShowRoomImport(v => !v)}
                   title="Use this only when the property has no Room Types"
                 >
-                  Import Room Only
+                  Import · Rooms
                 </button>
                 <button
                   type="button"
