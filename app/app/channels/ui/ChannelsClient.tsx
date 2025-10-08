@@ -577,10 +577,18 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
           <style jsx>{`
             .syncCards{ display:grid; gap:12px; grid-template-columns: 1fr; }
-            .syncCard{ display:grid; gap:10px; padding:16px; }
-            .syncCardTitle{ margin:0; text-align:center; font-weight:900; letter-spacing:.01em; }
+            .syncCard{ display:grid; gap:10px; padding:16px; min-height: 160px; }
+            .syncCardTitle{
+              margin:0;
+              text-align:center;
+              font-family: 'Switzer', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+              font-weight:700;
+              letter-spacing:.01em;
+            }
+            .syncCard :global(button){ justify-self: center; }
             @media (min-width: 900px){
               .syncCards{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+              .syncCard :global(button){ border-radius: 8px; }
             }
           `}</style>
         </div>
