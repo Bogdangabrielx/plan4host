@@ -499,6 +499,7 @@ function Tabs({ settings, rooms, roomDetails, cleaning }:{
             width: 100%;
             border-radius: 29px !important;
             min-height: 44px;
+            border: "1px solid var(--primary)";
           }
         }
       `}</style>
