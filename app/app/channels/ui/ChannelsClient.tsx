@@ -604,20 +604,24 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             }
             @media (min-width: 900px){
               .syncCards{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
-              .syncCard{ aspect-ratio: 5 / 4; } /* puțin mai scunde pe desktop */
-              /* Desktop: butoane egale, centrate, radius 8, subțiri dar cu font mai mare */
+              .syncCard{ aspect-ratio: 5 / 4; }
+              /* Desktop: același look ca pe mobil (stil Dashboard) */
               .syncCard :global(.sb-btn){
-                width: 220px;   /* aceeași lățime pentru toate */
-                height: 22px;   /* subțire dar consistent */
-                padding: 0 16px; /* mai mult spațiu între text și border pe desktop */
+                width: 100%;
+                padding: 8px 12px;
                 font-size: 13px;
                 font-weight: 800;
-                line-height: 1;
-                justify-self: center;
-                border-radius: 4px; /* mai dreptunghiular pe desktop */
+                line-height: 1.1;
+                justify-self: stretch;
+                border-radius: 10px;
                 font-family: 'Switzer', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
               }
-              .syncCard :global(.sb-btn--primary){ border-width: 1px !important; }
+              .syncCard :global(.sb-btn--primary){
+                background: var(--panel) !important;
+                color: var(--text) !important;
+                border: 1px solid var(--border) !important;
+                box-shadow: none !important;
+              }
             }
           `}</style>
         </div>
