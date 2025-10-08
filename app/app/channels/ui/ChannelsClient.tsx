@@ -86,6 +86,18 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
   const [status, setStatus] = useState<"Idle" | "Loading" | "Saving…" | "Error">("Idle");
+  // Responsive helper for inline styles (avoid style jsx): phone vs desktop
+  const [isSmall, setIsSmall] = useState<boolean>(false);
+  useEffect(() => {
+    const detect = () => {
+      if (typeof window === 'undefined') return;
+      try { setIsSmall(window.matchMedia('(max-width: 720px)').matches); }
+      catch { setIsSmall(window.innerWidth < 720); }
+    };
+    detect();
+    window.addEventListener('resize', detect);
+    return () => window.removeEventListener('resize', detect);
+  }, []);
 
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
@@ -537,11 +549,31 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           </div>
 
           {/* Cards pentru Export/Import */}
-          <div className="syncCards">
-            <div className="sb-card syncCard">
-              <h4 className="syncCardTitle">Room Types</h4>
+          <div
+            style={{
+              display: 'grid',
+              gap: 12,
+              gridTemplateColumns: isSmall ? '1fr' : 'repeat(3, minmax(0, 1fr))',
+              justifyItems: isSmall ? 'stretch' : 'center',
+            }}
+          >
+            <div
+              className="sb-card"
+              style={{ display: 'grid', gap: 12, padding: 16, width: isSmall ? '100%' : 240, aspectRatio: '5 / 4' }}
+            >
+              <h4 style={{ margin: 0, textAlign: 'center', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 700 }}>Room Types</h4>
               <button
-                className="sb-btn sb-btn--primary"
+                className="sb-btn"
+                style={{
+                  width: isSmall ? '100%' : 'auto',
+                  padding: '8px 12px',
+                  borderRadius: isSmall ? 29 : 10,
+                  border: '1px solid var(--border)',
+                  background: 'var(--panel)',
+                  color: 'var(--text)',
+                  fontWeight: 800,
+                  justifySelf: isSmall ? 'stretch' : 'center',
+                }}
                 disabled={!canWrite}
                 onClick={() => { if (!canWrite) return; setShowTypesModal(true); }}
                 title="Export per Room Type"
@@ -550,10 +582,23 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               </button>
             </div>
 
-            <div className="sb-card syncCard">
-              <h4 className="syncCardTitle">Import</h4>
+            <div
+              className="sb-card"
+              style={{ display: 'grid', gap: 12, padding: 16, width: isSmall ? '100%' : 240, aspectRatio: '5 / 4' }}
+            >
+              <h4 style={{ margin: 0, textAlign: 'center', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 700 }}>Import</h4>
               <button
-                className="sb-btn sb-btn--primary"
+                className="sb-btn"
+                style={{
+                  width: isSmall ? '100%' : 'auto',
+                  padding: '8px 12px',
+                  borderRadius: isSmall ? 29 : 10,
+                  border: '1px solid var(--border)',
+                  background: 'var(--panel)',
+                  color: 'var(--text)',
+                  fontWeight: 800,
+                  justifySelf: isSmall ? 'stretch' : 'center',
+                }}
                 disabled={!canWrite}
                 onClick={() => { if (!canWrite) return; setShowImportModal(true); }}
                 title="Import feeds"
@@ -562,10 +607,23 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               </button>
             </div>
 
-            <div className="sb-card syncCard">
-              <h4 className="syncCardTitle">Rooms</h4>
+            <div
+              className="sb-card"
+              style={{ display: 'grid', gap: 12, padding: 16, width: isSmall ? '100%' : 240, aspectRatio: '5 / 4' }}
+            >
+              <h4 style={{ margin: 0, textAlign: 'center', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 700 }}>Rooms</h4>
               <button
-                className="sb-btn sb-btn--primary"
+                className="sb-btn"
+                style={{
+                  width: isSmall ? '100%' : 'auto',
+                  padding: '8px 12px',
+                  borderRadius: isSmall ? 29 : 10,
+                  border: '1px solid var(--border)',
+                  background: 'var(--panel)',
+                  color: 'var(--text)',
+                  fontWeight: 800,
+                  justifySelf: isSmall ? 'stretch' : 'center',
+                }}
                 disabled={!canWrite}
                 onClick={() => { if (!canWrite) return; setShowRoomsModal(true); }}
                 title="Export per Room"
@@ -574,56 +632,6 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               </button>
             </div>
           </div>
-
-          <style jsx>{`
-            .syncCards{ display:grid; gap:12px; grid-template-columns: 1fr; }
-            .syncCard{ display:grid; gap:12px; padding:16px; min-height: 180px; }
-            .syncCardTitle{
-              margin:0;
-              text-align:center;
-              font-family: 'Switzer', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-              font-weight:700;
-              letter-spacing:.01em;
-            }
-            /* Telefon: inspirat de Dashboard → "Property Setup" look */
-            .syncCard :global(.sb-btn){
-              width: 100%;
-              padding: 8px 12px;
-              font-size: 13px;
-              font-weight: 800;
-              line-height: 1.1;
-              justify-self: stretch;
-              border-radius: 29px;
-              font-family: 'Switzer', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-            }
-            .syncCard :global(.sb-btn--primary){
-              background: var(--panel) !important;
-              color: var(--text) !important;
-              border: 1px solid var(--border) !important;
-              box-shadow: none !important;
-            }
-            @media (min-width: 900px){
-              .syncCards{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
-              .syncCard{ aspect-ratio: 5 / 4; }
-              /* Desktop: inspirat de Dashboard (buton dreptunghiular, nu full-width) */
-              .syncCard :global(.sb-btn){
-                width: auto;
-                padding: 8px 12px;
-                font-size: 13px;
-                font-weight: 800;
-                line-height: 1.1;
-                justify-self: center;
-                border-radius: 10px;
-                font-family: 'Switzer', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-              }
-              .syncCard :global(.sb-btn--primary){
-                background: var(--panel) !important;
-                color: var(--text) !important;
-                border: 1px solid var(--border) !important;
-                box-shadow: none !important;
-              }
-            }
-          `}</style>
         </div>
       </section>
 
