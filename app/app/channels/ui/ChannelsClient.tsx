@@ -511,9 +511,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           </p>
         )}
 
-        <div style={{ display: "grid", gap: 8 }}>
+        <div style={{ display: "grid", gap: 12 }}>
+          {/* GLOBAL: Sync Now — ALL */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            {/* GLOBAL: Sync Now — ALL */}
             <button
               className="sb-btn sb-btn--primary"
               style={{ opacity: (isPremium === false ? 0.95 : 1) * (activeCount === 0 || status === "Saving…" ? 0.6 : 1) }}
@@ -530,17 +530,59 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               {syncBtnText}
             </button>
 
-            <button className="sb-btn" disabled={!canWrite} onClick={() => { if (!canWrite) return; setShowTypesModal(true); }}>Export</button>
-            <button className="sb-btn" disabled={!canWrite} onClick={() => { if (!canWrite) return; setShowImportModal(true); }}>Import</button>
-            <button className="sb-btn" disabled={!canWrite} onClick={() => { if (!canWrite) return; setShowRoomsModal(true); }}>Export Room Only</button>
+            {/* PILLAȘ persistent lângă butonul global */}
+            {hintText ? (
+              <span className="sb-badge">{hintText}</span>
+            ) : null}
           </div>
 
-          {/* PILLAȘ persistent sub buton */}
-          {hintText ? (
-            <div>
-              <span className="sb-badge">{hintText}</span>
+          {/* Cards pentru Export/Import */}
+          <div className="syncCards">
+            <div className="sb-card syncCard">
+              <h4 className="syncCardTitle">Room Types</h4>
+              <button
+                className="sb-btn sb-btn--primary"
+                disabled={!canWrite}
+                onClick={() => { if (!canWrite) return; setShowTypesModal(true); }}
+                title="Export per Room Type"
+              >
+                Export
+              </button>
             </div>
-          ) : null}
+
+            <div className="sb-card syncCard">
+              <h4 className="syncCardTitle">Import</h4>
+              <button
+                className="sb-btn sb-btn--primary"
+                disabled={!canWrite}
+                onClick={() => { if (!canWrite) return; setShowImportModal(true); }}
+                title="Import feeds"
+              >
+                Import
+              </button>
+            </div>
+
+            <div className="sb-card syncCard">
+              <h4 className="syncCardTitle">Rooms</h4>
+              <button
+                className="sb-btn sb-btn--primary"
+                disabled={!canWrite}
+                onClick={() => { if (!canWrite) return; setShowRoomsModal(true); }}
+                title="Export per Room"
+              >
+                Export Room Only
+              </button>
+            </div>
+          </div>
+
+          <style jsx>{`
+            .syncCards{ display:grid; gap:12px; grid-template-columns: 1fr; }
+            .syncCard{ display:grid; gap:10px; padding:16px; }
+            .syncCardTitle{ margin:0; text-align:center; font-weight:900; letter-spacing:.01em; }
+            @media (min-width: 900px){
+              .syncCards{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            }
+          `}</style>
         </div>
       </section>
 
