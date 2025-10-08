@@ -485,7 +485,7 @@ export default function HomePage() {
           {/* Get started -> login in signup mode (animated) */}
           <CtaLink
             href="/auth/login?mode=signup"
-            className={`${styles.btn} ${styles.btnPrimary} ${styles.focusable}`}
+            className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}
           >
             Get started
           </CtaLink>
