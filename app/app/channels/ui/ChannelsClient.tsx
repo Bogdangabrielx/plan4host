@@ -588,7 +588,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             /* Telefon: butoane pe toată lățimea cardului, radius 29, doar contur primary */
             .syncCard :global(button){
               width: 100%;
-              min-height: 44px;
+              min-height: 10px;
               justify-self: stretch;
               border-radius: 29px;
             }
@@ -604,7 +604,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               /* Desktop: butoane egale, centrate, radius 8 */
               .syncCard :global(button){
                 width: 220px;
-                min-height: 44px;
+                min-height: 10px;
                 justify-self: center;
                 border-radius: 8px;
               }
