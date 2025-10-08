@@ -557,7 +557,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           >
             <div
               className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 320, ...(isSmall ? {} : { aspectRatio: '5 / 4' }) }}
+              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 320 }}
             >
               <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Room Types</h4>
               <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per type</small>
@@ -583,7 +583,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
             <div
               className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 320, ...(isSmall ? {} : { aspectRatio: '5 / 4' }) }}
+              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 320 }}
             >
               <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Import</h4>
               <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Add OTA iCal URL</small>
@@ -609,7 +609,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
             <div
               className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 320, ...(isSmall ? {} : { aspectRatio: '5 / 4' }) }}
+              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 320 }}
             >
               <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Rooms</h4>
               <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per room</small>
