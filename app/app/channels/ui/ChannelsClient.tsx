@@ -566,7 +566,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 style={{
                   width: isSmall ? '100%' : 180,
                   padding: '8px 12px',
-                  borderRadius: isSmall ? 10 : 10,
+                  borderRadius: isSmall ? 29 : 10,
                   border: '1px solid var(--border)',
                   background: 'var(--panel)',
                   color: 'var(--text)',
@@ -586,13 +586,13 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 320 }}
             >
               <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Import</h4>
-              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Add OTA iCal URL</small>
+              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics from other platforms</small>
               <button
                 className="sb-btn"
                 style={{
                   width: isSmall ? '100%' : 180,
                   padding: '8px 12px',
-                  borderRadius: isSmall ? 10 : 10,
+                  borderRadius: isSmall ? 29 : 10,
                   border: '1px solid var(--border)',
                   background: 'var(--panel)',
                   color: 'var(--text)',
@@ -618,7 +618,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 style={{
                   width: isSmall ? '100%' : 180,
                   padding: '8px 12px',
-                  borderRadius: isSmall ? 10 : 10,
+                  borderRadius: isSmall ? 29 : 10,
                   border: '1px solid var(--border)',
                   background: 'var(--panel)',
                   color: 'var(--text)',
