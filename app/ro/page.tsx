@@ -248,8 +248,10 @@ export default function HomePageRO() {
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
         </div>
         <div className={styles.actions}>
-          {/* Switch limbă către EN */}
-          <Link href="/" className={`${styles.btn} ${styles.btnGhost} ${styles.btnLang} ${styles.focusable}`} aria-label="Switch to English">EN</Link>
+          {/* Switch limbă către EN (flag icon) */}
+          <Link href="/" className={`${styles.btn} ${styles.btnGhost} ${styles.btnLang} ${styles.focusable}`} aria-label="Switch to English">
+            <img src="/eng.png" alt="" width={22} height={22} style={{ display: 'block' }} />
+          </Link>
           <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Autentificare</Link>
           <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Începe gratuit</CtaLink>
           <button
@@ -292,7 +294,7 @@ export default function HomePageRO() {
           </p>
           <div className={styles.heroCta}>
             <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Începe gratuit</CtaLink>
-            <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Vezi funcții</a>
+            <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Vezi funcțiile</a>
           </div>
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview">

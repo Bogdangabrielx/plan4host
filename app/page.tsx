@@ -478,9 +478,9 @@ export default function HomePage() {
 
         {/* Actions + Mobile toggle */}
         <div className={styles.actions}>
-          {/* Language switcher: EN (current) / RO */}
-          <Link href="/ro" className={`${styles.btn} ${styles.btnGhost} ${styles.btnLang} ${styles.focusable}`} aria-label="Switch to Romanian">
-            RO
+          {/* Language switcher: EN (current) / RO (flag icon) */}
+          <Link href="/ro" className={`${styles.btn} ${styles.btnGhost} ${styles.btnLang} ${styles.focusable}`} aria-label="Schimbă limba în română">
+            <img src="/ro.png" alt="" width={22} height={22} style={{ display: 'block' }} />
           </Link>
           <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
             Sign in
