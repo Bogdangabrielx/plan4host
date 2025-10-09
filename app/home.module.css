@@ -103,6 +103,8 @@
     letter-spacing: 0; /* match Sign in spacing (normal) */
     gap: 8px;
   }
+  /* On mobile, start actions from the right: hamburger at the edge, then CTAs */
+  .actions { justify-content: flex-end; flex-direction: row-reverse; }
   .nav[data-open="true"] + .mobileMenu { display: block; }
 }
 
