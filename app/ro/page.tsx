@@ -252,8 +252,8 @@ export default function HomePageRO() {
           <Link href="/" className={`${styles.btn} ${styles.btnGhost} ${styles.btnLang} ${styles.focusable}`} aria-label="Switch to English">
             <img src="/eng.png" alt="" width={22} height={22} style={{ display: 'block' }} />
           </Link>
-          <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Autentificare</Link>
-          <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Începe gratuit</CtaLink>
+          <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Logare</Link>
+          <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Încearcă</CtaLink>
           <button
             type="button"
             className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
