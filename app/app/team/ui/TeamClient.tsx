@@ -17,6 +17,8 @@ export default function TeamClient() {
   const [members, setMembers] = useState<Member[]>([]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   // Nou: default role = "editor" (nu mai folosim "member")
   const [role, setRole] = useState<Role>("editor");
   const [scopes, setScopes] = useState<string[]>([]);
@@ -29,6 +31,25 @@ export default function TeamClient() {
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
+
+  // Detect theme to choose proper icon for show/hide password
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const el = document.documentElement;
+    const detect = () => {
+      const t = el.getAttribute('data-theme');
+      if (t === 'dark') setIsDark(true);
+      else if (t === 'light') setIsDark(false);
+      else setIsDark(window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false);
+    };
+    detect();
+    const mo = new MutationObserver(detect);
+    mo.observe(el, { attributes: true, attributeFilter: ['data-theme'] });
+    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
+    const onMq = () => detect();
+    try { mq?.addEventListener('change', onMq); } catch { mq?.addListener?.(onMq as any); }
+    return () => { try { mq?.removeEventListener('change', onMq); } catch { mq?.removeListener?.(onMq as any); } mo.disconnect(); };
+  }, []);
 
   function toggleScope(key: string) {
     setScopes((prev) => prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]);
@@ -139,14 +160,46 @@ export default function TeamClient() {
             style={input}
             disabled={loading}
           />
-          <input
-            placeholder="password"
-            type="password"
-            value={password}
-            onChange={(e)=>setPassword((e.target as HTMLInputElement).value)}
-            style={input}
-            disabled={loading}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              placeholder="password"
+              type={showPwd ? 'text' : 'password'}
+              value={password}
+              onChange={(e)=>setPassword((e.target as HTMLInputElement).value)}
+              style={{ ...input, paddingRight: 42, width: '100%' }}
+              disabled={loading}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPwd(v => !v)}
+              aria-label={showPwd ? 'Hide password' : 'Show password'}
+              title={showPwd ? 'Hide password' : 'Show password'}
+              style={{
+                position: 'absolute',
+                right: 6,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 24,
+                height: 24,
+                borderRadius: 6,
+                border: 0,
+                background: 'transparent',
+                color: 'var(--text)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <img
+                src={isDark ? '/show_hide_pwd_fordark.png' : '/show_hide_pwd_forlight.png'}
+                alt=""
+                width={14}
+                height={14}
+                style={{ display: 'block', opacity: .95 }}
+              />
+            </button>
+          </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <label style={label}>Role</label>
             <select
@@ -256,7 +309,7 @@ export default function TeamClient() {
 }
 
 const card: React.CSSProperties = { background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 };
-const input: React.CSSProperties = { padding: "8px 10px", background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, fontFamily: 'inherit' };
+const input: React.CSSProperties = { padding: "8px 10px", background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, fontFamily: 'inherit', width: '100%' };
 const select: React.CSSProperties = { background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", padding: "6px 10px", borderRadius: 8, fontFamily: 'inherit' };
 const label: React.CSSProperties = { fontSize: 12, color: "var(--muted)" };
 const row: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, flexWrap: "wrap" };
