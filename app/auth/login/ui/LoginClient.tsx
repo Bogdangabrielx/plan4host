@@ -221,7 +221,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                   value={pass}
                   onChange={(e)=>setPass(asStr(e.currentTarget.value))}
                   placeholder="••••••••"
-                  style={{ ...input, paddingRight: 42 }}
+                  style={{ ...input, paddingRight: 42, width: '100%' }}
                   required
                 />
                 <button
@@ -234,11 +234,11 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                     right: 6,
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    width: 28,
-                    height: 28,
-                    borderRadius: 8,
-                    border: '1px solid var(--border)',
-                    background: 'var(--card)',
+                    width: 24,
+                    height: 24,
+                    borderRadius: 6,
+                    border: 0,
+                    background: 'transparent',
                     color: 'var(--text)',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -249,8 +249,8 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                   <img
                     src={mounted ? (theme === 'light' ? '/show_hide_pwd_forlight.png' : '/show_hide_pwd_fordark.png') : '/show_hide_pwd_fordark.png'}
                     alt=""
-                    width={16}
-                    height={16}
+                    width={14}
+                    height={14}
                     style={{ display: 'block', opacity: .95 }}
                   />
                 </button>
@@ -340,7 +340,7 @@ function wrap(theme: Theme): React.CSSProperties {
   };
 }
 const headRow: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 };
-const input: React.CSSProperties = { padding: "10px 12px", background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8 };
+const input: React.CSSProperties = { padding: "10px 12px", background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, width: '100%' };
 const lbl: React.CSSProperties = { fontSize: 12, color: "var(--muted)" };
 const primaryBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--primary)", color: "#0c111b", fontWeight: 800, cursor: "pointer" };
 const oauthBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 };
