@@ -10,6 +10,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState<string>("");
   const [pass, setPass] = useState<string>("");
+  const [showPwd, setShowPwd] = useState<boolean>(false);
   const [status, setStatus] = useState<"Idle"|"Loading"|"Error">("Idle");
   const [err, setErr] = useState<string>("");
   const [failCount, setFailCount] = useState<number>(0);
@@ -214,15 +215,47 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
             </div>
             <div style={{ display: "grid", gap: 6 }}>
               <label style={lbl}>{mode === "login" ? "Password" : "Choose a password"}</label>
-              <input
-                type="password"
-                value={pass}
-                onChange={(e)=>setPass(asStr(e.currentTarget.value))}
-                placeholder="••••••••"
-                style={input}
-                required
-              />
-          </div>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPwd ? "text" : "password"}
+                  value={pass}
+                  onChange={(e)=>setPass(asStr(e.currentTarget.value))}
+                  placeholder="••••••••"
+                  style={{ ...input, paddingRight: 42 }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd(v => !v)}
+                  aria-label={showPwd ? 'Hide password' : 'Show password'}
+                  title={showPwd ? 'Hide password' : 'Show password'}
+                  style={{
+                    position: 'absolute',
+                    right: 6,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: 28,
+                    height: 28,
+                    borderRadius: 8,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <img
+                    src={mounted ? (theme === 'light' ? '/show_hide_pwd_forlight.png' : '/show_hide_pwd_fordark.png') : '/show_hide_pwd_fordark.png'}
+                    alt=""
+                    width={16}
+                    height={16}
+                    style={{ display: 'block', opacity: .95 }}
+                  />
+                </button>
+              </div>
+            </div>
 
           {err && <div style={{ color: "var(--text)", fontSize: 13 }}>{err}</div>}
 
