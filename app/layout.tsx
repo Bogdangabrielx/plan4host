@@ -8,11 +8,38 @@ import VisibilityManager from "@/components/system/VisibilityManager";
 
 
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.plan4host.com";
+
 export const metadata: Metadata = {
   title: "Plan4Host",
   description: "Stay Smart, Host Better",
   applicationName: "Plan4Host",
   manifest: "/manifest.webmanifest",
+  metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "/",
+    languages: {
+      en: "/",
+      ro: "/ro",
+    },
+  },
+  openGraph: {
+    siteName: "Plan4Host",
+    type: "website",
+    title: "Plan4Host",
+    description: "Stay Smart, Host Better",
+    images: [{ url: "/og-default.png" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Plan4Host",
+    description: "Stay Smart, Host Better",
+    images: ["/og-default.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: [
       { url: "/icons/icon-192.png", sizes: "192x192" },

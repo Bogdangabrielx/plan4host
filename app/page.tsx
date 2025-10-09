@@ -478,6 +478,10 @@ export default function HomePage() {
 
         {/* Actions + Mobile toggle */}
         <div className={styles.actions}>
+          {/* Language switcher: EN (current) / RO */}
+          <Link href="/ro" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`} aria-label="Switch to Romanian">
+            RO
+          </Link>
           <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
             Sign in
           </Link>
@@ -642,6 +646,10 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
+        {/* Textual prices for SEO (VAT included) */}
+        <p style={{ marginTop: 16, color: "var(--muted)" }}>
+          Prices: €9.99/month (Basic), €14.99/month (Standard), €17.99/month (Premium). VAT included.
+        </p>
       </section>
 
       {/* About */}
@@ -786,6 +794,33 @@ export default function HomePage() {
 
       {/* 🍪 Cookie consent — doar pe landing */}
       <CookieConsentLanding />
+      {/* JSON-LD for offers */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "Plan4Host",
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web",
+            description:
+              "Channel manager with iCal sync for Booking.com and Airbnb, affordable plans and secure online check-in.",
+            offers: {
+              "@type": "AggregateOffer",
+              priceCurrency: "EUR",
+              lowPrice: "9.99",
+              highPrice: "17.99",
+              offerCount: 3,
+              offers: [
+                { "@type": "Offer", price: "9.99", priceCurrency: "EUR", category: "Basic" },
+                { "@type": "Offer", price: "14.99", priceCurrency: "EUR", category: "Standard" },
+                { "@type": "Offer", price: "17.99", priceCurrency: "EUR", category: "Premium" },
+              ],
+            },
+          }),
+        }}
+      />
     </main>
   );
 }
