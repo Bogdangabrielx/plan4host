@@ -110,6 +110,16 @@
 .menuIcon { display: inline-block; width: 22px; height: 16px; }
 .menuIcon svg { width: 22px; height: 16px; display: block; }
 
+/* Extra small phones: keep logo visible, tighten actions */
+@media (max-width: 520px) {
+  .nav { gap: 12px; padding: 12px 14px; }
+  .actions { gap: 6px; }
+  .nav .actions .btn { padding: 10px 12px; min-height: 36px; font-size: 13px; }
+  .menuToggle { padding: 10px 12px; min-height: 36px; font-size: 14px; }
+  /* Hide Sign in/Autentificare to save space; keep primary CTA */
+  .actions :global(a[href="/auth/login"]) { display: none; }
+}
+
 /* ──────────────────────────────────────────────────────────
    CTA sparkle like in the video (desktop hover) + mobile trigger
    ────────────────────────────────────────────────────────── */
