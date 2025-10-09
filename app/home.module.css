@@ -59,6 +59,8 @@
 }
 .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; min-width: 0; }
 .brand strong { white-space: nowrap; font-weight: 800; max-width: 28ch; overflow: hidden; text-overflow: ellipsis; }
+.brandWrap { display: inline-flex; align-items: center; gap: 8px; }
+@media (max-width: 520px) { .brandWrap { gap: 6px; } }
 .menu { display: flex; gap: 18px; justify-content: center; }
 .menuLink { color: var(--muted); text-decoration: none; font-weight: 700; }
 .menuLink:hover { color: var(--text); }

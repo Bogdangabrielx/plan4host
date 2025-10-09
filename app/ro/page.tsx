@@ -231,9 +231,15 @@ export default function HomePageRO() {
 
       {/* Navigație */}
       <nav className={styles.nav} data-open={navOpen ? "true" : "false"} aria-label="Primary">
-        <Link href="/ro" className={`${styles.brand} ${styles.focusable}`}>
-          <img src="/logo_forlight.png" alt="Plan4host" className={styles.logoDark} />
-        </Link>
+        <div className={styles.brandWrap}>
+          <Link href="/ro" className={`${styles.brand} ${styles.focusable}`}>
+            <img src="/logo_forlight.png" alt="Plan4host" className={styles.logoDark} />
+          </Link>
+          {/* Switch limbă (lipit de logo) */}
+          <Link href="/" className={`${styles.btnLang} ${styles.focusable}`} aria-label="Switch to English">
+            <img src="/eng.png" alt="" width={22} height={22} style={{ display: 'block' }} />
+          </Link>
+        </div>
         <div className={styles.menu} id="nav-menu">
           <a href="#features" className={`${styles.menuLink} ${styles.focusable}`}>Funcții</a>
           <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Prețuri</a>
@@ -241,10 +247,6 @@ export default function HomePageRO() {
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
         </div>
         <div className={styles.actions}>
-          {/* Switch limbă către EN (flag icon) */}
-          <Link href="/" className={`${styles.btn} ${styles.btnGhost} ${styles.btnLang} ${styles.focusable}`} aria-label="Switch to English">
-            <img src="/eng.png" alt="" width={22} height={22} style={{ display: 'block' }} />
-          </Link>
           <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Logare</Link>
           <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
           <button
