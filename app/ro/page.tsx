@@ -286,7 +286,7 @@ export default function HomePageRO() {
             să sincronizeze calendarele și să pornească rapid check‑in online.
           </p>
           <div className={styles.heroCta}>
-            <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Începe gratuit</CtaLink>
+            <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
             <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Vezi funcțiile</a>
           </div>
         </div>
@@ -390,7 +390,7 @@ export default function HomePageRO() {
                 <ul className={styles.footerList}>
                   <li><a className={styles.footerLink} href="#features">Funcții</a></li>
                   <li><a className={styles.footerLink} href="#pricing">Prețuri</a></li>
-                  <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Începe gratuit</Link></li>
+                  <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Încearcă gratuit</Link></li>
                   <li><Link className={styles.footerLink} href="/auth/login">Autentificare</Link></li>
                 </ul>
               </div>
@@ -429,7 +429,7 @@ export default function HomePageRO() {
             <ul className={styles.footerList}>
               <li><a className={styles.footerLink} href="#features">Funcții</a></li>
               <li><a className={styles.footerLink} href="#pricing">Prețuri</a></li>
-              <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Începe gratuit</Link></li>
+              <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Încearcă gratuit</Link></li>
               <li><Link className={styles.footerLink} href="/auth/login">Autentificare</Link></li>
             </ul>
           </div>
