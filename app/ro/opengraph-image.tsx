@@ -27,7 +27,6 @@ export default function OGImageRO() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 14,
             fontSize: 42,
             fontWeight: 900,
             color: text,
@@ -40,6 +39,7 @@ export default function OGImageRO() {
               height: 18,
               background: primary,
               borderRadius: 6,
+              marginRight: 14,
             }}
           />
           <span>Plan4Host</span>
