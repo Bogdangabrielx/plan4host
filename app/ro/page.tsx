@@ -91,44 +91,44 @@ function FeatureCarousel() {
         <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
           <div className={styles.featureHead}>
             <img src="/dashboard_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-            <h3>Easy-to-use Dashboard</h3>
+            <h3>Panou ușor de folosit</h3>
           </div>
-          <p>Bring all your properties into one simple dashboard and shape it your way, with flexibility to customize every detail.</p>
+          <p>Gestionezi toate proprietățile într‑un singur tablou clar și flexibil, personalizând fiecare detaliu după nevoi.</p>
         </article>
         <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
           <div className={styles.featureHead}>
             <img src="/configurator_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-            <h3>Property Setup</h3>
+            <h3>Configurare proprietate</h3>
           </div>
-          <p>Quickly configure each property to match your needs—add rooms, adjust details, and personalize settings for a smooth workflow.</p>
+          <p>Configurezi rapid fiecare proprietate: adaugi camere, ajustezi detalii și personalizezi setările pentru un flux lin.</p>
         </article>
         <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
           <div className={styles.featureHead}>
             <img src="/calendar_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-            <h3>Adaptive Calendar</h3>
+            <h3>Calendar adaptiv</h3>
           </div>
-          <p>Your calendar, your way. Customize views, organize reservations, and keep everything visible at a glance.</p>
+          <p>Calendarul tău, pe stilul tău: vizualizări personalizabile, rezervări organizate și totul la vedere dintr‑o privire.</p>
         </article>
         <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
           <div className={styles.featureHead}>
             <img src="/ical_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-            <h3>Automatic Sync</h3>
+            <h3>Sincronizare automată</h3>
           </div>
-          <p>Sync reservations with Airbnb, Booking.com and more; according to your subscription plan—keeping calendars always up to date, effortlessly.</p>
+          <p>Sincronizezi rezervările cu Airbnb, Booking.com și altele prin iCal, conform planului — calendarele rămân actualizate fără efort.</p>
         </article>
         <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
           <div className={styles.featureHead}>
             <img src="/guest_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-            <h3>Secured Check-in Form</h3>
+            <h3>Formular check‑in sigur</h3>
           </div>
-          <p>Collect guest details safely before arrival—identity document upload, consent and instant email confirmation—all in a streamlined, GDPR‑friendly flow.</p>
+          <p>Colectezi datele oaspeților în siguranță înainte de sosire — upload act identitate, consimțământ și confirmare instant pe email — totul într‑un flux prietenos GDPR.</p>
         </article>
         <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
           <div className={styles.featureHead}>
             <img src="/team_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-            <h3>Delegate Tasks</h3>
+            <h3>Delegare sarcini</h3>
           </div>
-          <p>Invite teammates (editor/viewer), assign scope‑based access (calendar, cleaning, channels, property setup) and delegate daily tasks with confidence.</p>
+          <p>Invită colegi (editor/vizualizare), setează acces pe arii (calendar, curățenie, canale, configurare) și delegă cu încredere sarcinile zilnice.</p>
         </article>
       </div>
       <button type="button" aria-label="Next features" className={`${styles.carouselBtn} ${styles.carouselBtnRight}`} onClick={next}>›</button>
@@ -234,35 +234,35 @@ export default function HomePageRO() {
       <div aria-hidden style={{ position:'fixed', top:0, bottom:0, right:0, width:'var(--safe-right)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
 
       {/* Skip link */}
-      <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>Skip to content</a>
+      <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>Sari la conținut</a>
 
-      {/* Navigation */}
+      {/* Navigație */}
       <nav className={styles.nav} data-open={navOpen ? "true" : "false"} aria-label="Primary">
         <Link href="/ro" className={`${styles.brand} ${styles.focusable}`}>
           <img src="/logo_forlight.png" alt="Plan4host" className={styles.logoDark} />
         </Link>
         <div className={styles.menu} id="nav-menu">
-          <a href="#features" className={`${styles.menuLink} ${styles.focusable}`}>Features</a>
-          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
-          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
+          <a href="#features" className={`${styles.menuLink} ${styles.focusable}`}>Funcții</a>
+          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Prețuri</a>
+          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>Despre</a>
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
         </div>
         <div className={styles.actions}>
           {/* Switch limbă către EN */}
           <Link href="/" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`} aria-label="Switch to English">EN</Link>
-          <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Sign in</Link>
-          <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Get started</CtaLink>
+          <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Autentificare</Link>
+          <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Începe gratuit</CtaLink>
           <button type="button" className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`} aria-controls="mobile-menu" aria-expanded={navOpen} onClick={() => setNavOpen((v) => !v)}>
-            {navOpen ? "Close" : "Menu"}
+            {navOpen ? "Închide" : "Meniu"}
           </button>
         </div>
       </nav>
 
-      {/* Mobile menu */}
+      {/* Meniu mobil */}
       <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
-        <a href="#features" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Features</a>
-        <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Pricing</a>
-        <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>About</a>
+        <a href="#features" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Funcții</a>
+        <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
+        <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Despre</a>
         <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Contact</a>
       </div>
 
@@ -273,93 +273,84 @@ export default function HomePageRO() {
             Stay Smart, <br />Host <span className={styles.betterGrad}>Better</span>
           </h1>
           <p>
-            Plan4Host helps small accommodations manage occupancy, avoid double bookings
-            and sync calendars across channels with ease.
+            Plan4Host ajută pensiunile și apartamentele în regim hotelier să evite overbooking,
+            să sincronizeze calendarele și să pornească rapid check‑in online.
           </p>
           <div className={styles.heroCta}>
-            <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Start free</CtaLink>
-            <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>See features</a>
+            <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Începe gratuit</CtaLink>
+            <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Vezi funcții</a>
           </div>
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview">
           <video className={styles.focusable} src="/Hero_vid.MP4" poster="/Hero_vid.mp4" muted autoPlay loop playsInline preload="metadata" style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 12 }}>
-            Sorry, your browser doesn’t support embedded videos.
+            Video preview indisponibil.
           </video>
         </div>
       </section>
 
-      {/* Features */}
+      {/* Caracteristici */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
-        <h2 id="features-title">Features</h2>
+        <h2 id="features-title">Funcții</h2>
         <FeatureCarousel />
       </section>
 
-      {/* Pricing */}
+      {/* Prețuri */}
       <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
-        <h2 id="pricing-title">Pricing</h2>
+        <h2 id="pricing-title">Prețuri</h2>
         <div className={styles.pricingGrid}>
           <div className={styles.priceCard}>
             <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
-              <li>Adaptive calendar</li>
-              <li>Secured online check-in form</li>
-              <li>Unlimited properties and rooms listed</li>
-              <li>Unlimited automatic messages</li>
-              <li>Autosync every 60 minutes with iCal</li>
+              <li>Calendar adaptiv</li>
+              <li>Formular check‑in online sigur</li>
+              <li>Proprietăți și camere nelimitate</li>
+              <li>Mesaje automate nelimitate</li>
+              <li>Autosync iCal la 60 de minute</li>
             </ul>
             <img className={styles.priceImg} src="/basic_forlight.png" alt="" aria-hidden="true" />
-            <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Choose Basic</Link>
+            <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Basic</Link>
           </div>
 
           <div className={styles.priceCard}>
             <div className={styles.priceTier}>STANDARD</div>
             <ul className={styles.priceList}>
-              <li>Adaptive calendar</li>
-              <li>Secured online check-in form</li>
-              <li>Unlimited properties and rooms listed</li>
-              <li>Unlimited automatic messages</li>
-              <li>Autosync every 30 minutes with iCal</li>
-              <li>Smart cleaning board - (Advanced Next-Check-In Priority)</li>
+              <li>Calendar adaptiv</li>
+              <li>Formular check‑in online sigur</li>
+              <li>Proprietăți și camere nelimitate</li>
+              <li>Mesaje automate nelimitate</li>
+              <li>Autosync iCal la 30 de minute</li>
+              <li>Smart cleaning board (prioritate check‑in)</li>
             </ul>
             <img className={styles.priceImg} src="/standard_forlight.png" alt="" aria-hidden="true" />
-            <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Choose Standard</Link>
+            <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Standard</Link>
           </div>
 
           <div className={styles.priceCard}>
             <div className={styles.priceTier}>PREMIUM</div>
             <ul className={styles.priceList}>
-              <li>Adaptive calendar</li>
-              <li>Secured online check-in form</li>
-              <li>Unlimited properties and rooms listed</li>
-              <li>Unlimited automatic messages</li>
-              <li>Autosync every 10 minutes with iCal + Sync Now Function</li>
-              <li>Smart cleaning board - (Advanced Next-Check-In Priority)</li>
-              <li>Delegate tasks with your team members</li>
+              <li>Calendar adaptiv</li>
+              <li>Formular check‑in online sigur</li>
+              <li>Proprietăți și camere nelimitate</li>
+              <li>Mesaje automate nelimitate</li>
+              <li>Autosync iCal la 10 minute + Sync Now</li>
+              <li>Smart cleaning board (prioritate check‑in)</li>
+              <li>Delegare sarcini în echipă</li>
             </ul>
             <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
-            <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Choose Premium</Link>
+            <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Premium</Link>
           </div>
         </div>
         <p style={{ marginTop: 16, color: "var(--muted)" }}>
-          Prices: €9.99/month (Basic), €14.99/month (Standard), €17.99/month (Premium). VAT included.
+          Prețurile sunt: 9,99 €/lună (Basic), 14,99 €/lună (Standard), 17,99 €/lună (Premium). TVA inclus.
         </p>
       </section>
 
-      {/* About */}
+      {/* Despre */}
       <section id="about" className={styles.about} aria-labelledby="about-title">
-        <h2 id="about-title">About</h2>
+        <h2 id="about-title">Despre</h2>
         <p>
-          Plan4Host helps small hotels and property managers run smoother operations
-          <br />
-          with an adaptive calendar, simple property setup and powerful team workflows. 
-          <br />
-          Our goal is to keep things fast, reliable and easy to use.
-          <br />
-          Built with care for clarity and performance,
-          <br />
-          Plan4Host focuses on the tools you actually use every day:
-          <br />
-          calendars, cleaning, guest overview and iCal synchronization that just works.
+          Plan4Host simplifică operațiunile pentru proprietăți mici și mari: calendar, sincronizare iCal pentru Booking.com/Airbnb,
+          check‑in online și lucru în echipă — rapid și clar.
         </p>
       </section>
 
@@ -368,115 +359,115 @@ export default function HomePageRO() {
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
           <p>
-            We’re just an email away: <a className={styles.focusable} href="mailto:office@plan4host.com">office@plan4host.com</a>.
+            Suntem la un email distanță: <a className={styles.focusable} href="mailto:office@plan4host.com">office@plan4host.com</a>.
           </p>
         </div>
       </section>
 
-      {/* Footer (expanded) — force links to EN pages */}
+      {/* Footer (extins) — etichete în RO, linkuri către paginile EN */}
       <footer className={styles.footer} aria-labelledby="footer-title">
-        <h2 id="footer-title" className={styles.srOnly}>Footer</h2>
+        <h2 id="footer-title" className={styles.srOnly}>Subsol</h2>
         <div className={styles.footerGrid}>
           <div className={styles.footerCol}>
             <div className={styles.footerBrand}>
               <img src="/logo_forlight.png" alt="" aria-hidden="true" className={styles.logoDark} />
               <strong>Plan4Host</strong>
             </div>
-            <p className={styles.footerCopy}>Lightweight booking calendar &amp; channel sync for small accommodations.</p>
+            <p className={styles.footerCopy}>Calendar de rezervări ușor și sincronizare canale pentru unități mici de cazare.</p>
             {/* Mobile-only: show footer columns directly under the short copy */}
             <div className={styles.footerStacksMobile}>
               <div>
-                <div className={styles.footerTitle}>Product</div>
+                <div className={styles.footerTitle}>Produs</div>
                 <ul className={styles.footerList}>
-                  <li><a className={styles.footerLink} href="#features">Features</a></li>
-                  <li><a className={styles.footerLink} href="#pricing">Pricing</a></li>
-                  <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Start free</Link></li>
-                  <li><Link className={styles.footerLink} href="/auth/login">Sign in</Link></li>
+                  <li><a className={styles.footerLink} href="#features">Funcții</a></li>
+                  <li><a className={styles.footerLink} href="#pricing">Prețuri</a></li>
+                  <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Începe gratuit</Link></li>
+                  <li><Link className={styles.footerLink} href="/auth/login">Autentificare</Link></li>
                 </ul>
               </div>
               <div>
-                <div className={styles.footerTitle}>Resources</div>
+                <div className={styles.footerTitle}>Resurse</div>
                 <ul className={styles.footerList}>
-                  <li><Link className={styles.footerLink} href="/docs">Docs</Link></li>
+                  <li><Link className={styles.footerLink} href="/docs">Documentație</Link></li>
                   <li><Link className={styles.footerLink} href="/changelog">Changelog</Link></li>
                   <li><Link className={styles.footerLink} href="/status">Status</Link></li>
-                  <li><a className={styles.footerLink} href="mailto:office@plan4host.com">Support</a></li>
+                  <li><a className={styles.footerLink} href="mailto:office@plan4host.com">Suport</a></li>
                 </ul>
               </div>
               <div>
-                <div className={styles.footerTitle}>Company</div>
+                <div className={styles.footerTitle}>Companie</div>
                 <ul className={styles.footerList}>
-                  <li><Link className={styles.footerLink} href="/about">About us</Link></li>
+                  <li><Link className={styles.footerLink} href="/about">Despre noi</Link></li>
                   <li><Link className={styles.footerLink} href="#contact">Contact</Link></li>
-                  <li><Link className={styles.footerLink} href="/careers">Careers</Link></li>
-                  <li><Link className={styles.footerLink} href="/partners">Partners</Link></li>
+                  <li><Link className={styles.footerLink} href="/careers">Cariere</Link></li>
+                  <li><Link className={styles.footerLink} href="/partners">Parteneri</Link></li>
                 </ul>
               </div>
               <div>
                 <div className={styles.footerTitle}>Legal</div>
                 <ul className={styles.footerList}>
-                  <li><Link className={styles.footerLink} href="/legal/terms">Terms &amp; Conditions</Link></li>
-                  <li><Link className={styles.footerLink} href="/legal/privacy">Privacy Policy</Link></li>
-                  <li><Link className={styles.footerLink} href="/legal/dpa">Data Processing Addendum</Link></li>
-                  <li><Link className={styles.footerLink} href="/legal/cookies">Cookie Policy</Link></li>
+                  <li><Link className={styles.footerLink} href="/legal/terms">Termeni și condiții</Link></li>
+                  <li><Link className={styles.footerLink} href="/legal/privacy">Politica de confidențialitate</Link></li>
+                  <li><Link className={styles.footerLink} href="/legal/dpa">Acord de prelucrare a datelor</Link></li>
+                  <li><Link className={styles.footerLink} href="/legal/cookies">Politica Cookie</Link></li>
                 </ul>
               </div>
             </div>
           </div>
 
           <div className={styles.footerCol}>
-            <div className={styles.footerTitle}>Product</div>
+            <div className={styles.footerTitle}>Produs</div>
             <ul className={styles.footerList}>
-              <li><a className={styles.footerLink} href="#features">Features</a></li>
-              <li><a className={styles.footerLink} href="#pricing">Pricing</a></li>
-              <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Start free</Link></li>
-              <li><Link className={styles.footerLink} href="/auth/login">Sign in</Link></li>
+              <li><a className={styles.footerLink} href="#features">Funcții</a></li>
+              <li><a className={styles.footerLink} href="#pricing">Prețuri</a></li>
+              <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Începe gratuit</Link></li>
+              <li><Link className={styles.footerLink} href="/auth/login">Autentificare</Link></li>
             </ul>
           </div>
 
           <div className={styles.footerCol}>
-            <div className={styles.footerTitle}>Resources</div>
+            <div className={styles.footerTitle}>Resurse</div>
             <ul className={styles.footerList}>
-              <li><Link className={styles.footerLink} href="/docs">Docs</Link></li>
+              <li><Link className={styles.footerLink} href="/docs">Documentație</Link></li>
               <li><Link className={styles.footerLink} href="/changelog">Changelog</Link></li>
               <li><Link className={styles.footerLink} href="/status">Status</Link></li>
-              <li><a className={styles.footerLink} href="mailto:office@plan4host.com">Support</a></li>
+              <li><a className={styles.footerLink} href="mailto:office@plan4host.com">Suport</a></li>
             </ul>
           </div>
 
           <div className={styles.footerCol}>
-            <div className={styles.footerTitle}>Company</div>
+            <div className={styles.footerTitle}>Companie</div>
             <ul className={styles.footerList}>
-              <li><Link className={styles.footerLink} href="/about">About us</Link></li>
+              <li><Link className={styles.footerLink} href="/about">Despre noi</Link></li>
               <li><Link className={styles.footerLink} href="#contact">Contact</Link></li>
-              <li><Link className={styles.footerLink} href="/careers">Careers</Link></li>
-              <li><Link className={styles.footerLink} href="/partners">Partners</Link></li>
+              <li><Link className={styles.footerLink} href="/careers">Cariere</Link></li>
+              <li><Link className={styles.footerLink} href="/partners">Parteneri</Link></li>
             </ul>
           </div>
 
           <div className={styles.footerCol}>
             <div className={styles.footerTitle}>Legal</div>
             <ul className={styles.footerList}>
-              <li><Link className={styles.footerLink} href="/legal/terms">Terms &amp; Conditions</Link></li>
-              <li><Link className={styles.footerLink} href="/legal/privacy">Privacy Policy</Link></li>
-              <li><Link className={styles.footerLink} href="/legal/dpa">Data Processing Addendum</Link></li>
-              <li><Link className={styles.footerLink} href="/legal/cookies">Cookie Policy</Link></li>
+              <li><Link className={styles.footerLink} href="/legal/terms">Termeni și condiții</Link></li>
+              <li><Link className={styles.footerLink} href="/legal/privacy">Politica de confidențialitate</Link></li>
+              <li><Link className={styles.footerLink} href="/legal/dpa">Acord de prelucrare a datelor</Link></li>
+              <li><Link className={styles.footerLink} href="/legal/cookies">Politica Cookie</Link></li>
             </ul>
           </div>
         </div>
 
         <div className={styles.legalBar}>
           <p>
-            © {year} Plan4Host. All rights reserved. By using Plan4Host you agree to our <Link className={styles.footerLink} href="/legal/terms">Terms &amp; Conditions</Link> and <Link className={styles.footerLink} href="/legal/privacy">Privacy Policy</Link>.
+            © {year} Plan4Host. Toate drepturile rezervate. Prin utilizarea Plan4Host ești de acord cu <Link className={styles.footerLink} href="/legal/terms">Termeni și condiții</Link> și <Link className={styles.footerLink} href="/legal/privacy">Politica de confidențialitate</Link>.
           </p>
-          <p className={styles.legalMeta}>Plan4Host is not affiliated with Airbnb or Booking.com. Trademarks belong to their respective owners.</p>
+          <p className={styles.legalMeta}>Plan4Host nu este afiliat cu Airbnb sau Booking.com. Mărcile aparțin proprietarilor.</p>
         </div>
       </footer>
 
       {/* Cookie consent */}
       <CookieConsentLanding />
 
-      {/* JSON-LD for offers (same as EN) */}
+      {/* JSON-LD oferte (RO) */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -487,7 +478,7 @@ export default function HomePageRO() {
             applicationCategory: "BusinessApplication",
             operatingSystem: "Web",
             description:
-              "Channel manager with iCal sync for Booking.com and Airbnb, affordable plans and secure online check-in.",
+              "Channel manager ieftin cu sincronizare iCal pentru Booking.com și Airbnb și check‑in online sigur.",
             offers: {
               "@type": "AggregateOffer",
               priceCurrency: "EUR",
