@@ -7,6 +7,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const urls = [
     "/",
     "/ro",
+    "/airbnb-ical-sync",
+    "/ro/sincronizare-ical-airbnb",
     "/docs",
     "/partners",
     "/status",
@@ -22,4 +24,3 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: path === "/" ? 1 : 0.5,
   }));
 }
-

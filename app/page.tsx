@@ -802,6 +802,29 @@ export default function HomePage() {
 
       {/* 🍪 Cookie consent — doar pe landing */}
       <CookieConsentLanding />
+      {/* JSON-LD Organization */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Plan4Host",
+            url: "https://www.plan4host.com",
+            logo: "https://www.plan4host.com/logo_forlight.png",
+            sameAs: [
+              "https://www.plan4host.com"
+            ],
+            knowsAbout: [
+              "Channel manager",
+              "iCal sync Airbnb",
+              "iCal sync Booking.com",
+              "vacation rental software",
+              "online check-in"
+            ]
+          })
+        }}
+      />
       {/* JSON-LD for offers */}
       <script
         type="application/ld+json"

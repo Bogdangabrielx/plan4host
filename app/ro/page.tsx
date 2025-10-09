@@ -476,6 +476,30 @@ export default function HomePageRO() {
       {/* Cookie consent */}
       <CookieConsentLanding />
 
+      {/* JSON-LD Organization (RO) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Plan4Host",
+            url: "https://www.plan4host.com",
+            logo: "https://www.plan4host.com/logo_forlight.png",
+            sameAs: [
+              "https://www.plan4host.com"
+            ],
+            knowsAbout: [
+              "channel manager",
+              "sincronizare iCal Airbnb",
+              "sincronizare iCal Booking.com",
+              "software cazare",
+              "check‑in online"
+            ]
+          })
+        }}
+      />
+
       {/* JSON-LD oferte (RO) */}
       <script
         type="application/ld+json"
