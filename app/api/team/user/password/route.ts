@@ -41,7 +41,12 @@ export async function PATCH(req: Request) {
       if (!meAdmin || meAdmin.disabled || meAdmin.role !== "admin") return bad(403, { error: "Forbidden" });
     }
 
-    const { data: target } = await supa
+    // Use admin client for membership check to avoid RLS pitfalls when actor is admin
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const admin = createAdmin(url, serviceKey, { auth: { persistSession: false } });
+
+    const { data: target } = await admin
       .from("account_users")
       .select("role, account_id")
       .eq("account_id", accountId)
@@ -49,12 +54,8 @@ export async function PATCH(req: Request) {
       .maybeSingle();
 
     if (!target) return bad(404, { error: "Target user not in your account" });
-    if (target.role === "admin") return bad(403, { error: "Cannot change password for admin" });
+    if ((target as any).role === "admin") return bad(403, { error: "Cannot change password for admin" });
     if (userId === actor.id) return bad(403, { error: "Use /auth/change-password for your own account" });
-
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    const admin = createAdmin(url, serviceKey, { auth: { persistSession: false } });
 
     const upd = await admin.auth.admin.updateUserById(userId, { password: newPassword });
     if (upd.error) return bad(400, { error: upd.error.message });
