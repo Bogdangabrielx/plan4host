@@ -25,7 +25,7 @@ export default function OGImageRO() {
       >
         <div
           style={{
-            display: "inline-flex",
+            display: "flex",
             alignItems: "center",
             gap: 14,
             fontSize: 42,
@@ -57,4 +57,3 @@ export default function OGImageRO() {
     { ...size }
   );
 }
-
