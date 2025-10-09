@@ -114,8 +114,16 @@
 @media (max-width: 520px) {
   .nav { gap: 12px; padding: 12px 14px; }
   .actions { gap: 6px; }
-  .nav .actions .btn { padding: 10px 12px; min-height: 36px; font-size: 13px; }
-  .menuToggle { padding: 10px 12px; min-height: 36px; font-size: 14px; }
+  .nav .actions .btn { padding: 8px 10px; min-height: 34px; font-size: 12px; }
+  .menuToggle { padding: 8px 10px; min-height: 34px; font-size: 12px; }
+}
+
+/* Ultra small devices: tighten further */
+@media (max-width: 380px) {
+  .nav { gap: 10px; padding: 10px 12px; }
+  .actions { gap: 6px; }
+  .nav .actions .btn { padding: 6px 8px; min-height: 30px; font-size: 11px; }
+  .menuToggle { padding: 6px 8px; min-height: 30px; font-size: 12px; }
 }
 
 /* Language switcher: compact, no border */
