@@ -112,18 +112,18 @@
 
 /* Extra small phones: keep logo visible, tighten actions */
 @media (max-width: 520px) {
-  .nav { gap: 12px; padding: 12px 14px; }
-  .actions { gap: 6px; }
+  .nav { gap: 12px; padding: 12px 10px; }
+  .actions { gap: 4px; }
   .nav .actions .btn { padding: 8px 10px; min-height: 34px; font-size: 12px; }
-  .menuToggle { padding: 8px 10px; min-height: 34px; font-size: 12px; }
+  .menuToggle { padding: 8px 10px; min-height: 34px; font-size: 12px; margin-right: -4px; }
 }
 
 /* Ultra small devices: tighten further */
 @media (max-width: 380px) {
-  .nav { gap: 10px; padding: 10px 12px; }
-  .actions { gap: 6px; }
+  .nav { gap: 10px; padding: 10px 8px; }
+  .actions { gap: 4px; }
   .nav .actions .btn { padding: 6px 8px; min-height: 30px; font-size: 11px; }
-  .menuToggle { padding: 6px 8px; min-height: 30px; font-size: 12px; }
+  .menuToggle { padding: 6px 8px; min-height: 30px; font-size: 12px; margin-right: -6px; }
 }
 
 /* Language switcher: compact, no border */
