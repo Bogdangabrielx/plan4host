@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   metadataBase: new URL(siteUrl),
   alternates: {
-    canonical: "/",
     languages: {
       en: "/",
       ro: "/ro",
@@ -28,13 +27,11 @@ export const metadata: Metadata = {
     type: "website",
     title: "Plan4Host",
     description: "Stay Smart, Host Better",
-    images: [{ url: "/og-default.png" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Plan4Host",
     description: "Stay Smart, Host Better",
-    images: ["/og-default.png"],
   },
   robots: {
     index: true,

@@ -422,7 +422,7 @@ export default function HomePageRO() {
               <div>
                 <div className={styles.footerTitle}>Legal</div>
                 <ul className={styles.footerList}>
-                  <li><Link className={styles.footerLink} href="/legal/terms">Termeni și condiții</Link></li>
+                  <li><Link className={styles.footerLink} href="/legal/terms">Termeni & condiții</Link></li>
                   <li><Link className={styles.footerLink} href="/legal/privacy">Politica de confidențialitate</Link></li>
                   <li><Link className={styles.footerLink} href="/legal/dpa">Acord de prelucrare a datelor</Link></li>
                   <li><Link className={styles.footerLink} href="/legal/cookies">Politica Cookie</Link></li>
