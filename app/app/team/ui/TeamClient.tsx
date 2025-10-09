@@ -17,8 +17,6 @@ export default function TeamClient() {
   const [members, setMembers] = useState<Member[]>([]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPwd, setShowPwd] = useState(false);
-  const [isDark, setIsDark] = useState(false);
   // Nou: default role = "editor" (nu mai folosim "member")
   const [role, setRole] = useState<Role>("editor");
   const [scopes, setScopes] = useState<string[]>([]);
@@ -31,25 +29,6 @@ export default function TeamClient() {
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
-
-  // detect theme for show/hide password icon
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const el = document.documentElement;
-    const detect = () => {
-      const t = el.getAttribute('data-theme');
-      if (t === 'dark') setIsDark(true);
-      else if (t === 'light') setIsDark(false);
-      else setIsDark(window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false);
-    };
-    detect();
-    const mo = new MutationObserver(detect);
-    mo.observe(el, { attributes: true, attributeFilter: ['data-theme'] });
-    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
-    const onMq = () => detect();
-    try { mq?.addEventListener('change', onMq); } catch { mq?.addListener?.(onMq); }
-    return () => { try { mq?.removeEventListener('change', onMq); } catch { mq?.removeListener?.(onMq); } mo.disconnect(); };
-  }, []);
 
   function toggleScope(key: string) {
     setScopes((prev) => prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]);
@@ -160,46 +139,14 @@ export default function TeamClient() {
             style={input}
             disabled={loading}
           />
-          <div style={{ position: 'relative' }}>
-            <input
-              placeholder="password"
-              type={showPwd ? 'text' : 'password'}
-              value={password}
-              onChange={(e)=>setPassword((e.target as HTMLInputElement).value)}
-              style={{ ...input, paddingRight: 42, width: '100%' }}
-              disabled={loading}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPwd(v => !v)}
-              aria-label={showPwd ? 'Hide password' : 'Show password'}
-              title={showPwd ? 'Hide password' : 'Show password'}
-              style={{
-                position: 'absolute',
-                right: 6,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: 28,
-                height: 28,
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: 'var(--card)',
-                color: 'var(--text)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-              }}
-            >
-              <img
-                src={isDark ? '/show_hide_pwd_fordark.png' : '/show_hide_pwd_forlight.png'}
-                alt=""
-                width={16}
-                height={16}
-                style={{ display: 'block', opacity: .95 }}
-              />
-            </button>
-          </div>
+          <input
+            placeholder="password"
+            type="password"
+            value={password}
+            onChange={(e)=>setPassword((e.target as HTMLInputElement).value)}
+            style={input}
+            disabled={loading}
+          />
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <label style={label}>Role</label>
             <select
