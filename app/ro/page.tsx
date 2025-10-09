@@ -252,8 +252,22 @@ export default function HomePageRO() {
           <Link href="/" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`} aria-label="Switch to English">EN</Link>
           <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Autentificare</Link>
           <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Începe gratuit</CtaLink>
-          <button type="button" className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`} aria-controls="mobile-menu" aria-expanded={navOpen} onClick={() => setNavOpen((v) => !v)}>
-            {navOpen ? "Închide" : "Meniu"}
+          <button
+            type="button"
+            className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
+            aria-controls="mobile-menu"
+            aria-expanded={navOpen}
+            aria-label={navOpen ? "Închide meniul" : "Deschide meniul"}
+            onClick={() => setNavOpen((v) => !v)}
+          >
+            <span className={styles.srOnly}>{navOpen ? "Închide" : "Meniu"}</span>
+            <span className={styles.menuIcon} aria-hidden>
+              <svg viewBox="0 0 24 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M2 2h20"/>
+                <path d="M2 8h20"/>
+                <path d="M2 14h20"/>
+              </svg>
+            </span>
           </button>
         </div>
       </nav>

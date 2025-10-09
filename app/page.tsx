@@ -499,9 +499,17 @@ export default function HomePage() {
             className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
             aria-controls="mobile-menu"
             aria-expanded={navOpen}
+            aria-label={navOpen ? "Close menu" : "Open menu"}
             onClick={() => setNavOpen((v) => !v)}
           >
-            {navOpen ? "Close" : "Menu"}
+            <span className={styles.srOnly}>{navOpen ? "Close" : "Menu"}</span>
+            <span className={styles.menuIcon} aria-hidden>
+              <svg viewBox="0 0 24 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M2 2h20"/>
+                <path d="M2 8h20"/>
+                <path d="M2 14h20"/>
+              </svg>
+            </span>
           </button>
         </div>
       </nav>

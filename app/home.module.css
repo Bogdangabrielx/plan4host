@@ -101,9 +101,14 @@
     font-size: 16px; /* match Sign in text size */
     font-weight: 800; /* match Sign in weight */
     letter-spacing: 0; /* match Sign in spacing (normal) */
+    gap: 8px;
   }
   .nav[data-open="true"] + .mobileMenu { display: block; }
 }
+
+/* Compact hamburger icon for mobile menu toggle */
+.menuIcon { display: inline-block; width: 22px; height: 16px; }
+.menuIcon svg { width: 22px; height: 16px; display: block; }
 
 /* ──────────────────────────────────────────────────────────
    CTA sparkle like in the video (desktop hover) + mobile trigger
