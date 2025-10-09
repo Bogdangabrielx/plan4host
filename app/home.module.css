@@ -95,7 +95,7 @@
     border-radius: 999px;
     background: transparent;
     color: var(--text);
-    border: 1px solid var(--border);
+    border: none; /* remove outline to save space */
     box-shadow: none;
     min-height: 44px;
     font-size: 16px; /* match Sign in text size */
@@ -116,8 +116,18 @@
   .actions { gap: 6px; }
   .nav .actions .btn { padding: 10px 12px; min-height: 36px; font-size: 13px; }
   .menuToggle { padding: 10px 12px; min-height: 36px; font-size: 14px; }
-  /* Hide Sign in/Autentificare to save space; keep primary CTA */
-  .actions :global(a[href="/auth/login"]) { display: none; }
+}
+
+/* Language switcher: compact, no border */
+.btnLang {
+  border: none;
+  background: transparent;
+  padding: 8px 10px;
+  min-height: 36px;
+  border-radius: 10px;
+}
+@media (max-width: 520px) {
+  .btnLang { padding: 6px 8px; min-height: 32px; font-size: 13px; }
 }
 
 /* ──────────────────────────────────────────────────────────

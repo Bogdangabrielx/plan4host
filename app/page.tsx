@@ -479,7 +479,7 @@ export default function HomePage() {
         {/* Actions + Mobile toggle */}
         <div className={styles.actions}>
           {/* Language switcher: EN (current) / RO */}
-          <Link href="/ro" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`} aria-label="Switch to Romanian">
+          <Link href="/ro" className={`${styles.btn} ${styles.btnGhost} ${styles.btnLang} ${styles.focusable}`} aria-label="Switch to Romanian">
             RO
           </Link>
           <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>

@@ -249,7 +249,7 @@ export default function HomePageRO() {
         </div>
         <div className={styles.actions}>
           {/* Switch limbă către EN */}
-          <Link href="/" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`} aria-label="Switch to English">EN</Link>
+          <Link href="/" className={`${styles.btn} ${styles.btnGhost} ${styles.btnLang} ${styles.focusable}`} aria-label="Switch to English">EN</Link>
           <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Autentificare</Link>
           <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Începe gratuit</CtaLink>
           <button
