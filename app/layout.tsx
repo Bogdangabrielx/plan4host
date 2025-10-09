@@ -27,11 +27,15 @@ export const metadata: Metadata = {
     type: "website",
     title: "Plan4Host",
     description: "Stay Smart, Host Better",
+    images: [
+      { url: "/og-default.png", width: 1200, height: 630, alt: "Plan4Host — Stay Smart, Host Better" },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Plan4Host",
     description: "Stay Smart, Host Better",
+    images: ["/og-default.png"],
   },
   robots: {
     index: true,
