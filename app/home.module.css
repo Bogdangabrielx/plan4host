@@ -112,20 +112,20 @@
 
 /* Extra small phones: keep logo visible, tighten actions */
 @media (max-width: 520px) {
-  .nav { gap: 12px; padding: 12px 10px; }
+  .nav { gap: 12px; padding: 12px 0 12px 10px; }
   .actions { gap: 4px; }
   .nav .actions .btn { padding: 8px 10px; min-height: 32px; font-size: 12px; }
-  .menuToggle { padding: 6px 8px; min-height: 32px; font-size: 12px; margin-right: -4px; }
+  .menuToggle { padding: 6px 8px; min-height: 32px; font-size: 12px; margin-right: calc(-1 * (var(--safe-right, 0px) + 6px)); }
   .menuIcon { width: 20px; height: 14px; }
   .menuIcon svg { width: 20px; height: 14px; }
 }
 
 /* Ultra small devices: tighten further */
 @media (max-width: 380px) {
-  .nav { gap: 10px; padding: 10px 8px; }
+  .nav { gap: 10px; padding: 10px 0 10px 8px; }
   .actions { gap: 4px; }
   .nav .actions .btn { padding: 6px 8px; min-height: 28px; font-size: 11px; }
-  .menuToggle { padding: 5px 7px; min-height: 28px; font-size: 11px; margin-right: -6px; }
+  .menuToggle { padding: 5px 7px; min-height: 28px; font-size: 11px; margin-right: calc(-1 * (var(--safe-right, 0px) + 8px)); }
   .menuIcon { width: 18px; height: 12px; }
   .menuIcon svg { width: 18px; height: 12px; }
 }
