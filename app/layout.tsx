@@ -65,11 +65,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = cookies();
+  const langCookie = cookieStore.get("site_lang")?.value;
+  const lang = langCookie === "ro" ? "ro" : "en";
   const theme = (cookieStore.get("app_theme")?.value as "light" | "dark") ?? "light";
   const accent = cookieStore.get("app_accent")?.value ?? "base";
 
   return (
-    <html lang="en" data-theme={theme} data-accent={accent}>
+    <html lang={lang} data-theme={theme} data-accent={accent}>
       <body style={{ margin: 0 }}>
         {/* Global page visibility manager (safe, no visual side effects) */}
         <VisibilityManager />

@@ -216,13 +216,6 @@ export default function HomePageRO() {
   const [navOpen, setNavOpen] = useState(false);
   const year = new Date().getFullYear();
 
-  // setează lang="ro" pe HTML când ești pe /ro
-  useEffect(() => {
-    const prev = document.documentElement.getAttribute("lang");
-    document.documentElement.setAttribute("lang", "ro");
-    return () => { if (prev) document.documentElement.setAttribute("lang", prev); };
-  }, []);
-
   return (
     <main className={styles.landing}>
       <AutoOpenOnLanding delay={150} />
@@ -253,7 +246,7 @@ export default function HomePageRO() {
             <img src="/eng.png" alt="" width={22} height={22} style={{ display: 'block' }} />
           </Link>
           <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Logare</Link>
-          <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Încearcă</CtaLink>
+          <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
           <button
             type="button"
             className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
