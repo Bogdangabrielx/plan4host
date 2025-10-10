@@ -470,7 +470,10 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
                 tabIndex={0}
               >
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-                  <strong style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{t.title || '(Untitled)'}</strong>
+                  <strong
+                    style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}
+                    dangerouslySetInnerHTML={{ __html: titleToChips(t.title || '(Untitled)') }}
+                  />
                   <span className="sb-badge" style={{ background: t.status==='published' ? 'var(--primary)' : 'var(--card)', color: t.status==='published' ? '#0c111b' : 'var(--muted)' }}>{t.status}</span>
                 </div>
                 <small style={{ color:'var(--muted)' }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
@@ -482,6 +485,8 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
               </div>
             ))}
           </div>
+          {/* Chip style for titles in grid */}
+          <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
         )}
       </section>
 
@@ -698,4 +703,11 @@ function markdownToHtmlInline(src: string): string {
   s = s.replace(/(^|\s)\*(.+?)\*(?=\s|$)/g, '$1<em>$2</em>');
   s = s.replace(/\n/g, '<br/>');
   return s;
+}
+
+// Render {{token}} as chip HTML for titles (safe)
+function titleToChips(title: string): string {
+  const esc = (str: string) => str.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
+  const s = String(title || '');
+  return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => `<span class=\"rm-token\" data-token=\"${esc(k)}\" contenteditable=\"false\">${esc(k)}</span>`);
 }
