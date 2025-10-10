@@ -446,16 +446,16 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       {/* Templates header + grid */}
       <section className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12 }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, marginBottom:8 }}>
-          <strong>Messages</strong>
-          <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Add message</button>
+          <strong>Templates</strong>
+          <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Add template</button>
         </div>
         {loadingList ? (
           <div style={{ color:'var(--muted)' }}>Loading…</div>
         ) : templates.length === 0 ? (
           <div className="sb-card" style={{ padding: 16, textAlign:'center' }}>
-            <div style={{ fontWeight:700, marginBottom: 6 }}>No messages yet</div>
-            <div style={{ color:'var(--muted)', marginBottom: 10 }}>Create your first message for this property.</div>
-            <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Create your first message</button>
+            <div style={{ fontWeight:700, marginBottom: 6 }}>No templates yet</div>
+            <div style={{ color:'var(--muted)', marginBottom: 10 }}>Create your first template for this property.</div>
+            <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Create your first template</button>
           </div>
         ) : (
           <>
