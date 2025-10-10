@@ -14,12 +14,14 @@ type Booking = {
   id: string;
   property_id: string;
   room_id: string | null;
+  room_type_id?: string | null;
   start_date: string;
   end_date: string;
   start_time: string | null;
   end_time: string | null;
   status: string;
   source?: string | null;
+  ota_integration_id?: string | null;
 };
 type TypeIntegration = {
   id: string;
@@ -77,7 +79,7 @@ export default function RoomViewModal({
       // overlap: start_date <= to AND end_date >= from
       const rBookings = await supabase
         .from("bookings")
-        .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status,source")
+        .select("id,property_id,room_id,room_type_id,start_date,end_date,start_time,end_time,status,source,ota_integration_id")
         .eq("property_id", propertyId)
         .neq("status","cancelled")
         .lte("start_date", to)
@@ -137,24 +139,76 @@ export default function RoomViewModal({
     return map;
   }, [integrations]);
 
+  // Exact integration color by integration id
+  const integColorById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const it of integrations) {
+      if (!it?.is_active) continue;
+      if ((it as any).id && it.color) {
+        m.set(String((it as any).id), it.color);
+      }
+    }
+    return m;
+  }, [integrations]);
+
+  // Integration color by room/type (for cases where source is generic 'ical' or unknown)
+  const integColorByRoomId = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const it of integrations) {
+      if (!it?.is_active) continue;
+      if (it.room_id && it.color) {
+        if (!m.has(it.room_id)) m.set(it.room_id, it.color);
+      }
+    }
+    return m;
+  }, [integrations]);
+  const integColorByTypeId = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const it of integrations) {
+      if (!it?.is_active) continue;
+      if (it.room_type_id && it.color) {
+        if (!m.has(it.room_type_id)) m.set(it.room_type_id, it.color);
+      }
+    }
+    return m;
+  }, [integrations]);
+
   const colorByRoomDate = useMemo(() => {
     const map = new Map<string, Map<string, string>>();
     for (const b of bookings) {
       if (!b.room_id) continue;
       const key = normalizeProvider(b.source);
-      const color = key === "manual" ? "#6CCC4C" : (providerColors.get(key) || providerColors.get("other") || "rgba(139,92,246,0.81)");
+      let color: string | undefined;
+      // 1) Integration-specific color
+      const intId = (b as any).ota_integration_id as string | undefined;
+      if (intId && integColorById.has(intId)) {
+        color = integColorById.get(intId);
+      }
+      if (key === "manual") {
+        color = "#6CCC4C";
+      } else {
+        // 2) Provider-based palette
+        if (!color && key !== "other") color = providerColors.get(key);
+        // If unknown/generic ('other') or no provider color set, try integration color by room or type
+        if (!color) {
+          color = (b.room_id && integColorByRoomId.get(b.room_id))
+            || ((b as any).room_type_id && integColorByTypeId.get((b as any).room_type_id as string))
+            || providerColors.get("other")
+            || "rgba(139,92,246,0.81)";
+        }
+      }
       let d = b.start_date;
       const end = b.end_date;
       while (d <= end) {
         const inner = map.get(b.room_id) || new Map<string, string>();
         // Prefer first assignment; if overlaps somehow, keep existing
-        if (!inner.has(d)) inner.set(d, color);
+        if (!inner.has(d)) inner.set(d, color!);
         map.set(b.room_id, inner);
         const dt = new Date(d + "T00:00:00"); dt.setDate(dt.getDate() + 1); d = ymd(dt);
       }
     }
     return map;
-  }, [bookings, providerColors]);
+  }, [bookings, providerColors, integColorByRoomId, integColorByTypeId]);
 
   const RADIUS = 12;
 
