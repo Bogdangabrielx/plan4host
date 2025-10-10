@@ -152,6 +152,13 @@ function highlight(text: string, query: string): React.ReactNode {
   return parts;
 }
 
+// Render {{token}} as chip HTML for titles (safe)
+function rmTitleToChips(title: string): string {
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
+  const s = String(title || '');
+  return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => `<span class=\"rm-token\" data-token=\"${esc(k)}\" contenteditable=\"false\">${esc(k)}</span>`);
+}
+
 /** Mobile-safe clipboard (desktop + iOS Safari fallback) */
 async function copyTextMobileSafe(text: string): Promise<boolean> {
   try {
@@ -1087,12 +1094,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   {rmPickerItems.map(t => (
                     <button key={t.id} className="sb-btn" style={{ justifyContent:'space-between' }}
                       {...useTap(()=>{ setRmPicker(null); setRmModal({ propertyId: rmPicker.propertyId, item: rmPicker.item, templateId: t.id }); })}>
-                      <span style={{ fontWeight:800 }}>{t.title || '(Untitled)'}</span>
+                      <span style={{ fontWeight:800 }} dangerouslySetInnerHTML={{ __html: rmTitleToChips(t.title || '(Untitled)') }} />
                       <small style={{ color:'var(--muted)' }}>{t.updated_at ? new Date(t.updated_at).toLocaleString() : ''}</small>
                     </button>
                   ))}
                 </div>
               )}
+              <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
             </div>
           </div>
         )}
