@@ -6,7 +6,8 @@ import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 
-/* ... restul tipurilor tale rămân neschimbate ... */
+/* ===================== types ===================== */
+
 type Property = { id: string; name: string };
 
 type Block =
@@ -40,13 +41,58 @@ const BUILTIN_VARS: Array<{ key: string; label: string }> = [
 
 const EMPTY: TemplateState = { blocks: [], fields: [], status: "draft" };
 
+/* ===================== helpers ===================== */
+
 function lsKey(pid: string) { return `p4h:rm:template:${pid}`; }
 function uid() { return Math.random().toString(36).slice(2, 10); }
-function slugify(s: string) { return (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, ""); }
-function escapeHtml(s: string) { return (s || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
-function mdToHtml(src: string) { let s = escapeHtml(src); s = s.replace(/\[(.+?)\]\((https?:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>'); s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); s = s.replace(/(^|\s)\*(.+?)\*(?=\s|$)/g, '$1<em>$2</em>'); s = s.replace(/\n/g, "<br/>"); return s; }
-function replaceVars(s: string, vars: Record<string, string>) { if (!s) return ""; return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => (vars?.[k] ?? `{{${k}}}`)); }
-function renderTemplateToHtml(t: TemplateState, vars: Record<string, string>) { const out: string[] = []; for (const b of t.blocks) { if (b.type === "divider") out.push('<hr style="border:1px solid var(--border); opacity:.6;"/>'); else if (b.type === "heading") out.push(`<h3 style="margin:8px 0 6px;">${escapeHtml(replaceVars(b.text, vars))}</h3>`); else if (b.type === "paragraph") out.push(`<p style="margin:6px 0; line-height:1.5;">${mdToHtml(replaceVars(b.text, vars))}</p>`); } return out.join("\n"); }
+
+function slugify(s: string) {
+  return (s || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function escapeHtml(s: string) {
+  return (s || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
+}
+
+// Minimal Markdown (bold/italic/links) → HTML; headings separate as dedicated block
+function mdToHtml(src: string) {
+  let s = escapeHtml(src);
+  // links [text](url)
+  s = s.replace(/\[(.+?)\]\((https?:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+  // bold **text**
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // italic *text*
+  s = s.replace(/(^|\s)\*(.+?)\*(?=\s|$)/g, '$1<em>$2</em>');
+  // line breaks
+  s = s.replace(/\n/g, "<br/>");
+  return s;
+}
+
+function renderTemplateToHtml(t: TemplateState, vars: Record<string, string>) {
+  const out: string[] = [];
+  for (const b of t.blocks) {
+    if (b.type === "divider") {
+      out.push('<hr style="border:1px solid var(--border); opacity:.6;"/>');
+    } else if (b.type === "heading") {
+      const txt = replaceVars(b.text, vars);
+      out.push(`<h3 style="margin:8px 0 6px;">${escapeHtml(txt)}</h3>`);
+    } else if (b.type === "paragraph") {
+      const txt = replaceVars(b.text, vars);
+      out.push(`<p style="margin:6px 0; line-height:1.5;">${mdToHtml(txt)}</p>`);
+    }
+  }
+  return out.join("\n");
+}
+
+function replaceVars(s: string, vars: Record<string, string>) {
+  if (!s) return "";
+  return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => (vars?.[k] ?? `{{${k}}}`));
+}
+
+/* ===================== main page ===================== */
 
 export default function ReservationMessageClient({ initialProperties, isAdmin }: { initialProperties: Property[]; isAdmin: boolean }) {
   const [properties] = useState<Property[]>(initialProperties);
@@ -55,6 +101,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   const [templates, setTemplates] = useState<Array<{ id:string; title:string; status:'draft'|'published'; updated_at:string }>>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loadingList, setLoadingList] = useState<boolean>(false);
+  // Simplified editor state
   const [titleText, setTitleText] = useState<string>("");
   const [focusedInput, setFocusedInput] = useState<null | "title" | "body">(null);
   const [saving, setSaving] = useState<"Idle"|"Saving…"|"Synced"|"Error">("Idle");
@@ -64,12 +111,12 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   const sb = useMemo(() => createClient(), []);
   const [hasRoomTypes, setHasRoomTypes] = useState(false);
 
-  // === ROOM VARS: state pentru panel ===
+  // NEW: room variables drawer state
   const [roomVarsOpen, setRoomVarsOpen] = useState(false);
 
   const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
 
-  /* --- restul efectelor tale: load templates, LS, etc. (nemonodificate) --- */
+  // Load template list for current property
   useEffect(() => {
     let alive = true;
     if (!propertyId) { setTemplates([]); setActiveId(null); return; }
@@ -86,6 +133,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     return () => { alive = false; };
   }, [propertyId]);
 
+  // Load from LS on property change (with race-guard against stale async updates)
   useEffect(() => {
     if (!propertyId) return;
     const keySnapshot = storageKey;
@@ -132,12 +180,13 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           if (titleRef.current) tokensTextToChips(titleRef.current, title);
           if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
         }
-      } catch {}
+      } catch { /* ignore */ }
     })();
 
     return () => { cancelled = true; };
-  }, [storageKey, propertyId]);
+  }, [storageKey, propertyId, activeId]);
 
+  // Check if property has room types to expose room_type_name variable chip
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -151,8 +200,22 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     return () => { alive = false; };
   }, [sb, propertyId]);
 
-  function saveDraft() { if (!propertyId) return; const blocks = composeBlocks(); const next = { ...tpl, status: "draft" as const, blocks }; try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {} setTpl(next); syncToServer("draft", blocks); }
-  function publish() { if (!propertyId) return; const blocks = composeBlocks(); const next = { ...tpl, status: "published" as const, blocks }; try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {} setTpl(next); syncToServer("published", blocks); }
+  function saveDraft() {
+    if (!propertyId) return;
+    const blocks = composeBlocks();
+    const next = { ...tpl, status: "draft" as const, blocks };
+    try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+    setTpl(next);
+    syncToServer("draft", blocks);
+  }
+  function publish() {
+    if (!propertyId) return;
+    const blocks = composeBlocks();
+    const next = { ...tpl, status: "published" as const, blocks };
+    try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+    setTpl(next);
+    syncToServer("published", blocks);
+  }
   function resetAll() {
     if (!propertyId) return;
     const seeded: TemplateState = {
@@ -168,6 +231,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     setTitleText("Reservation details");
     if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML("Hello {{guest_first_name}},<br/>Check-in {{check_in_date}} {{check_in_time}}.<br/>Check-out {{check_out_date}} {{check_out_time}}.<br/>Room: {{room_name}}.<br/>Wi-Fi: {{wifi_name}} / {{wifi_password}}.<br/>Door code: {{door_code}}.");
   }
+
   async function syncToServer(status: "draft"|"published", blocks?: Block[]) {
     try {
       setSaving("Saving…");
@@ -185,6 +249,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       const j = await res.json().catch(()=>({}));
       if (!res.ok || !j?.ok) { setSaving("Error"); return; }
       if (!activeId && j?.template_id) setActiveId(String(j.template_id));
+      // refresh list
       try {
         const rl = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(propertyId||'')}`, { cache:'no-store' });
         const jl = await rl.json().catch(()=>({}));
@@ -195,9 +260,10 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     } catch { setSaving("Error"); }
   }
 
-  async function onAddNew() { /* neschimbat */ 
+  async function onAddNew() {
     if (!propertyId) return;
-    const t = prompt('Message title'); if (!t) return;
+    const t = prompt('Message title');
+    if (!t) return;
     try {
       const res = await fetch('/api/reservation-message/template', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ property_id: propertyId, title: t, status: 'draft', blocks: [{ type:'heading', text: t }], fields: [] }) });
       const j = await res.json().catch(()=>({}));
@@ -209,7 +275,8 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       setTemplates(items.map((x:any)=>({ id:String(x.id), title:String(x.title||''), status:(x.status||'draft'), updated_at:String(x.updated_at||'') })) as any);
     } catch (e:any) { alert(e?.message || 'Failed'); }
   }
-  async function onDuplicate(id: string, title: string) { /* neschimbat */ 
+
+  async function onDuplicate(id: string, title: string) {
     try {
       const r = await fetch(`/api/reservation-message/template?id=${encodeURIComponent(id)}`, { cache:'no-store' });
       const j = await r.json().catch(()=>({}));
@@ -226,7 +293,8 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       setTemplates(items.map((x:any)=>({ id:String(x.id), title:String(x.title||''), status:(x.status||'draft'), updated_at:String(x.updated_at||'') })) as any);
     } catch (e:any) { alert(e?.message || 'Failed'); }
   }
-  async function onDelete(id: string) { /* neschimbat */ 
+
+  async function onDelete(id: string) {
     if (!confirm('Delete this message?')) return;
     try {
       const r = await fetch(`/api/reservation-message/template?id=${encodeURIComponent(id)}`, { method:'DELETE' });
@@ -239,38 +307,96 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     } catch (e:any) { alert(e?.message || 'Failed'); }
   }
 
-  function insertVarIntoFocused(token: string) { if (focusedInput === "title" && titleRef.current) insertTokenChip(titleRef.current, token.replace(/[{}]/g, "")); else if (focusedInput === "body" && bodyRef.current) insertTokenChip(bodyRef.current, token.replace(/[{}]/g, "")); }
+  // Insert variable into the focused input
+  function insertVarIntoFocused(token: string) {
+    if (focusedInput === "title" && titleRef.current) {
+      insertTokenChip(titleRef.current, token.replace(/[{}]/g, ""));
+    } else if (focusedInput === "body" && bodyRef.current) {
+      insertTokenChip(bodyRef.current, token.replace(/[{}]/g, ""));
+    }
+  }
+
   function focusBody() { if (bodyRef.current) { try { bodyRef.current.focus(); } catch {} } }
   function applyBold() { if (focusedInput==='body') { focusBody(); document.execCommand('bold'); } }
   function applyItalic() { if (focusedInput==='body') { focusBody(); document.execCommand('italic'); } }
   function applyUnderline() { if (focusedInput==='body') { focusBody(); document.execCommand('underline'); } }
-  function applyLink() { const container = focusedInput === 'body' ? bodyRef.current : (focusedInput === 'title' ? titleRef.current : null); if (!container) return; const url = prompt('Link URL (https://...)'); if (!url) return; const sel = window.getSelection(); const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null; const inside = range ? isRangeInside(range, container) : false; if (inside && sel && !sel.isCollapsed && sel.toString().trim()) { try { container.focus(); document.execCommand('createLink', false, url); } catch {} } else { const text = prompt('Link text') || url; insertAnchorAtCaret(container, url, text); } }
+  function applyLink() {
+    const container = focusedInput === 'body' ? bodyRef.current : (focusedInput === 'title' ? titleRef.current : null);
+    if (!container) return;
+    const url = prompt('Link URL (https://...)');
+    if (!url) return;
+    const sel = window.getSelection();
+    const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+    const inside = range ? isRangeInside(range, container) : false;
+    if (inside && sel && !sel.isCollapsed && sel.toString().trim()) {
+      try { container.focus(); document.execCommand('createLink', false, url); } catch {}
+    } else {
+      const text = prompt('Link text') || url;
+      insertAnchorAtCaret(container, url, text);
+    }
+  }
 
-  function addFieldFromName(name: string) { const label = name.trim(); if (!label) return; const key = slugify(label); if (!key) return; let def: string | null | undefined = null; try { const ans = prompt('Valoare implicită pentru această variabilă (opțional)'); if (ans !== null) def = ans; } catch {} setTpl((prev) => { if (prev.fields.some((f) => f.key === key)) return prev; return { ...prev, fields: [...prev.fields, { uid: uid(), key, label, defaultValue: def }] }; }); }
-  function removeFieldByUid(uidVal: string) { setTpl((prev) => ({ ...prev, fields: prev.fields.filter((f) => f.uid !== uidVal) })); }
+  // Custom variables management (shown as chips in Variables bar)
+  function addFieldFromName(name: string) {
+    const label = name.trim();
+    if (!label) return;
+    const key = slugify(label);
+    if (!key) return;
+    let def: string | null | undefined = null;
+    try {
+      const ans = prompt('Valoare implicită pentru această variabilă (opțional)');
+      if (ans !== null) def = ans;
+    } catch {}
+    setTpl((prev) => {
+      if (prev.fields.some((f) => f.key === key)) return prev;
+      return { ...prev, fields: [...prev.fields, { uid: uid(), key, label, defaultValue: def }] };
+    });
+  }
+  function removeFieldByUid(uidVal: string) {
+    setTpl((prev) => ({ ...prev, fields: prev.fields.filter((f) => f.uid !== uidVal) }));
+  }
 
-  function composeBlocks(): Block[] { const blocks: Block[] = []; const t = titleTextWithTokens(titleRef.current); const bHtml = htmlWithTokens(bodyRef.current?.innerHTML || '').trim(); if (t) blocks.push({ id: uid(), type: "heading", text: t }); if (bHtml) blocks.push({ id: uid(), type: "paragraph", text: bHtml }); return blocks; }
-  function deriveFromBlocks(blocks: Block[]): { title: string; body: string } { let title = ""; const paras: string[] = []; for (const bl of blocks || []) { if (bl.type === "heading" && !title) title = (bl as any).text || ""; if (bl.type === "paragraph") paras.push(((bl as any).text || "")); } return { title, body: paras.join("") }; }
+  // Convert simple editor state to blocks (store HTML directly with tokens)
+  function composeBlocks(): Block[] {
+    const blocks: Block[] = [];
+    const t = titleTextWithTokens(titleRef.current);
+    const bHtml = htmlWithTokens(bodyRef.current?.innerHTML || '').trim();
+    if (t) blocks.push({ id: uid(), type: "heading", text: t });
+    if (bHtml) blocks.push({ id: uid(), type: "paragraph", text: bHtml });
+    return blocks;
+  }
 
+  function deriveFromBlocks(blocks: Block[]): { title: string; body: string } {
+    let title = "";
+    const paras: string[] = [];
+    for (const bl of blocks || []) {
+      if (bl.type === "heading" && !title) title = (bl as any).text || "";
+      if (bl.type === "paragraph") paras.push(((bl as any).text || ""));
+    }
+    return { title, body: paras.join("") };
+  }
+
+  // Styles
   const card: React.CSSProperties = { background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 };
   const input: React.CSSProperties = { padding: 10, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, width: "100%", boxSizing: "border-box", fontFamily: 'inherit' };
   const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 700, cursor: "pointer" };
   const btnPri: React.CSSProperties = { ...btn, background: "var(--primary)", color: "#0c111b", border: "1px solid var(--border)" };
 
-  useEffect(() => { setPill(saving); }, [saving, setPill]);
+  // Reflect saving state in AppHeader pill
+  useEffect(() => {
+    setPill(saving);
+  }, [saving, setPill]);
 
   return (
     <div style={{ display: "grid", gap: 12, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
       <PlanHeaderBadge title="Automatic Messages" slot="header-right" />
 
-      {/* Property selector + === ROOM VARS button === */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {/* Property selector + Room variables button */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Property</label>
         <select className="sb-select" value={propertyId} onChange={(e)=>setPropertyId((e.target as HTMLSelectElement).value)} style={{ minWidth: 220 }}>
           {properties.map((p)=> (<option key={p.id} value={p.id}>{p.name}</option>))}
         </select>
-        <div style={{ flex: 1 }} />
-        {/* === ROOM VARS: toggle button (nu încurcă editorul) === */}
         <button
           className="sb-btn"
           onClick={()=>setRoomVarsOpen(true)}
@@ -280,9 +406,10 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         >
           Room variables
         </button>
+        <div style={{ flex: 1 }} />
       </div>
 
-      {/* Variables row (mesaj) */}
+      {/* Variables row: built-ins + custom — show only when a template is active */}
       {activeId && (
       <section style={card}>
         <h2 style={{ marginTop: 0 }}>Variables</h2>
@@ -297,10 +424,24 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           {tpl.fields.map((f)=>(
             <span key={f.uid} className="rm-token" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
               <button style={btn} onClick={()=>insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
-              {typeof f.defaultValue === 'string' && (<small style={{ color:'var(--muted)' }}>= {f.defaultValue || '""'}</small>)}
-              <button style={{ ...btn, border: '1px solid var(--border)' }} onClick={()=>{
-                try { const cur = typeof f.defaultValue === 'string' ? f.defaultValue : ''; const ans = prompt('Setează valoarea implicită', cur); if (ans !== null) { setTpl(prev => ({ ...prev, fields: prev.fields.map(x => x.uid === f.uid ? { ...x, defaultValue: ans } : x) })); } } catch {}
-              }} title="Set default value">✎</button>
+              {typeof f.defaultValue === 'string' && (
+                <small style={{ color:'var(--muted)' }}>= {f.defaultValue || '""'}</small>
+              )}
+              <button
+                style={{ ...btn, border: '1px solid var(--border)' }}
+                onClick={()=>{
+                  try {
+                    const cur = typeof f.defaultValue === 'string' ? f.defaultValue : '';
+                    const ans = prompt('Setează valoarea implicită', cur);
+                    if (ans !== null) {
+                      setTpl(prev => ({ ...prev, fields: prev.fields.map(x => x.uid === f.uid ? { ...x, defaultValue: ans } : x) }));
+                    }
+                  } catch {}
+                }}
+                title="Set default value"
+              >
+                ✎
+              </button>
               <button style={{ ...btn, border: '1px solid var(--danger)' }} onClick={()=>removeFieldByUid(f.uid)} title="Remove">×</button>
             </span>
           ))}
@@ -309,21 +450,67 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       </section>
       )}
 
-      {/* Templates list (nemodificat) */}
+      {/* Templates header + grid (nemodificat) */}
       <section className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12 }}>
-        {/* ... conținutul tău existent ... */}
-        {/* (am lăsat neschimbat pentru brevități) */}
-        {/* —— păstrează aici exact ce ai deja din versiunea ta —— */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, marginBottom:8 }}>
+          <strong>Templates</strong>
+          <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Add template</button>
+        </div>
+        {loadingList ? (
+          <div style={{ color:'var(--muted)' }}>Loading…</div>
+        ) : templates.length === 0 ? (
+          <div className="sb-card" style={{ padding: 16, textAlign:'center' }}>
+            <div style={{ fontWeight:700, marginBottom: 6 }}>No templates yet</div>
+            <div style={{ color:'var(--muted)', marginBottom: 10 }}>Create your first template for this property.</div>
+            <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Create your first template</button>
+          </div>
+        ) : (
+          <>
+            <div style={{ display:'grid', gap:10, gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))' }}>
+              {templates.map(t => (
+                <div
+                  key={t.id}
+                  className="sb-card"
+                  onClick={() => setActiveId(t.id)}
+                  style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, display:'grid', gap:6, cursor:'pointer' }}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+                    <strong
+                      style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}
+                      dangerouslySetInnerHTML={{ __html: titleToChips(t.title || '(Untitled)') }}
+                    />
+                    <span className="sb-badge" style={{ background: t.status==='published' ? 'var(--primary)' : 'var(--card)', color: t.status==='published' ? '#0c111b' : 'var(--muted)' }}>{t.status}</span>
+                  </div>
+                  <small style={{ color:'var(--muted)' }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
+                  <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                    <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); setActiveId(t.id); }}>Edit</button>
+                    <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); onDuplicate(t.id, t.title); }}>Duplicate</button>
+                    <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); onDelete(t.id); }}>Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
+          </>
+        )}
       </section>
 
+      {/* Message composer (full width, bottom) — only when a template is active */}
       {activeId && (
       <section style={card}>
         <h2 style={{ marginTop: 0 }}>Message</h2>
-        {/* formatting bar */}
+
         <div style={{ display: 'grid', gap: 8 }}>
           <div>
             <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Title</label>
-            <ContentEditableStable ref={titleRef} onFocus={()=>setFocusedInput('title')} style={input} placeholder="Reservation details" />
+            <ContentEditableStable
+              ref={titleRef}
+              onFocus={()=>setFocusedInput('title')}
+              style={{ ...input, minHeight: 38, direction: 'ltr', textAlign: 'left' }}
+              placeholder="Reservation details"
+            />
           </div>
           <div>
             <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Message</label>
@@ -334,7 +521,12 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
               <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyUnderline();}} disabled={!isAdmin}><span style={{ textDecoration: 'underline' }}>U</span></button>
               <button style={btn} onMouseDown={(e)=>e.preventDefault()} onClick={(e)=>{e.preventDefault(); applyLink();}} disabled={!isAdmin}>Link</button>
             </div>
-            <ContentEditableStable ref={bodyRef} onFocus={()=>setFocusedInput('body')} style={{ ...input, minHeight: 260, lineHeight: 1.5, whiteSpace: 'pre-wrap' }} placeholder="Your message..." />
+            <ContentEditableStable
+              ref={bodyRef}
+              onFocus={()=>setFocusedInput('body')}
+              style={{ ...input, minHeight: 260, lineHeight: 1.5, whiteSpace: 'pre-wrap', direction: 'ltr', textAlign: 'left' }}
+              placeholder="Your message..."
+            />
             <style dangerouslySetInnerHTML={{ __html: `
               [data-placeholder]:empty:before{ content: attr(data-placeholder); color: var(--muted); }
               .rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }
@@ -349,7 +541,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       </section>
       )}
 
-      {/* === ROOM VARS: drawer (nu încurcă editorul) === */}
+      {/* Drawer Room Variables */}
       {roomVarsOpen && propertyId && (
         <RoomVariablesPanel
           propertyId={propertyId}
@@ -362,221 +554,409 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
   );
 }
 
-/* ===== ROOM VARS: Drawer component ===== */
-function RoomVariablesPanel({
-  propertyId,
-  onClose,
-  supabase,
-  isAdmin,
-}: {
-  propertyId: string;
-  onClose: () => void;
-  supabase: ReturnType<typeof createClient>;
-  isAdmin: boolean;
-}) {
-  const [loading, setLoading] = useState(true);
-  const [rooms, setRooms] = useState<Array<{ id: string; name: string }>>([]);
-  const [roomId, setRoomId] = useState<string | null>(null);
-  const [varsList, setVarsList] = useState<Array<{ id?: string; key: string; value: string; _local?: boolean }>>([]);
-  const [err, setErr] = useState<string | null>(null);
-  const [saving, setSaving] = useState<"idle"|"saving"|"saved"|"error">("idle");
+/* ===================== ContentEditable stable ===================== */
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        setLoading(true); setErr(null);
-        const r1 = await supabase.from('rooms').select('id,name').eq('property_id', propertyId).order('name',{ascending:true});
-        if (r1.error) throw new Error(r1.error.message);
-        const rs = (r1.data||[]).map((r:any)=>({ id:String(r.id), name: r.name || `#${String(r.id).slice(0,4)}` }));
-        if (!alive) return;
-        setRooms(rs);
-        setRoomId(rs[0]?.id || null);
-      } catch (e:any) {
-        if (!alive) return;
-        setErr(e?.message || 'Failed to load rooms');
-      } finally { if (alive) setLoading(false); }
-    })();
-    return () => { alive = false; };
-  }, [propertyId, supabase]);
-
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      if (!roomId) { setVarsList([]); return; }
-      try {
-        setErr(null);
-        const r = await supabase.from('room_variables').select('id,key,value').eq('property_id', propertyId).eq('room_id', roomId).order('key',{ascending:true});
-        if (r.error) {
-          // Tabelul s-ar putea să nu existe încă – nu blocăm UI
-          setErr('Room variables table not found (run migration).'); 
-          setVarsList([]);
-          return;
-        }
-        const rows = (r.data||[]).map((x:any)=>({ id:String(x.id), key:String(x.key), value:String(x.value) }));
-        if (!alive) return;
-        setVarsList(rows);
-      } catch (e:any) {
-        if (!alive) return;
-        setErr(e?.message || 'Failed to load variables');
-        setVarsList([]);
-      }
-    })();
-    return () => { alive = false; };
-  }, [roomId, propertyId, supabase]);
-
-  function addRow() {
-    setVarsList((prev)=>[...prev, { key:'', value:'', _local:true }]);
-  }
-
-  async function saveRow(ix: number) {
-    if (!isAdmin) return;
-    const row = varsList[ix];
-    const key = row.key.trim().toLowerCase().replace(/[^a-z0-9_]+/g,'_').replace(/^_+|_+$/g,'');
-    if (!key) { alert('Cheia nu poate fi goală'); return; }
-    if (!roomId) return;
-    try {
-      setSaving("saving");
-      const payload: any = { property_id: propertyId, room_id: roomId, key, value: row.value ?? '' };
-      const res = await supabase.from('room_variables').upsert(payload, { onConflict: 'property_id,room_id,key' }).select('id,key,value').single();
-      if (res.error) throw new Error(res.error.message);
-      const saved = { id: String(res.data.id), key: String(res.data.key), value: String(res.data.value) };
-      setVarsList(prev => prev.map((r, i)=> i===ix ? saved : r));
-      setSaving("saved"); setTimeout(()=>setSaving("idle"), 600);
-    } catch (e:any) {
-      setSaving("error"); setErr(e?.message || 'Save failed');
-    }
-  }
-
-  async function deleteRow(ix: number) {
-    if (!isAdmin) return;
-    const row = varsList[ix];
-    if (!row.id) { setVarsList(prev => prev.filter((_r,i)=>i!==ix)); return; }
-    if (!confirm(`Delete variable "${row.key}"?`)) return;
-    try {
-      const res = await supabase.from('room_variables').delete().eq('id', row.id);
-      if (res.error) throw new Error(res.error.message);
-      setVarsList(prev => prev.filter((_r,i)=>i!==ix));
-    } catch (e:any) {
-      setErr(e?.message || 'Delete failed');
-    }
-  }
-
-  return (
-    <>
-      {/* Backdrop */}
-      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.4)', zIndex: 60 }} />
-      {/* Drawer */}
-      <div style={{
-        position:'fixed', top:0, right:0, height:'100vh', width:'min(520px, 90vw)',
-        background:'var(--panel)', borderLeft:'1px solid var(--border)', zIndex:61,
-        display:'grid', gridTemplateRows:'auto 1fr auto'
-      }}>
-        <div style={{ padding:12, borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:8 }}>
-          <strong>Room variables</strong>
-          <div style={{ flex:1 }} />
-          <button onClick={onClose} className="sb-btn">Close</button>
-        </div>
-
-        <div style={{ padding:12, overflow:'auto', display:'grid', gap:10 }}>
-          {loading ? (
-            <div style={{ color:'var(--muted)' }}>Loading rooms…</div>
-          ) : err ? (
-            <div className="sb-card" style={{ padding:12, border:'1px solid var(--danger)', borderRadius:10 }}>
-              <strong style={{ color:'var(--danger)' }}>Error</strong>
-              <div style={{ color:'var(--muted)' }}>{err}</div>
-            </div>
-          ) : (
-            <>
-              <div style={{ display:'grid', gap:6 }}>
-                <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>Room</label>
-                <select
-                  className="sb-select"
-                  value={roomId ?? ''}
-                  onChange={(e)=>setRoomId((e.target as HTMLSelectElement).value || null)}
-                >
-                  {rooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                </select>
-              </div>
-
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-                <strong>Variables ({varsList.length})</strong>
-                <button className="sb-btn sb-btn--primary" onClick={addRow} disabled={!isAdmin}>Add</button>
-              </div>
-
-              <div style={{ border:'1px solid var(--border)', borderRadius:10, overflow:'hidden' }}>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr auto', gap:0, background:'var(--card)', padding:'8px 10px', fontSize:12, fontWeight:800, color:'var(--muted)' }}>
-                  <div>Key</div><div>Value</div><div></div>
-                </div>
-                {varsList.length === 0 ? (
-                  <div style={{ padding:12, color:'var(--muted)' }}>No variables yet.</div>
-                ) : (
-                  varsList.map((row, ix) => (
-                    <div key={(row.id||'new')+ix} style={{ display:'grid', gridTemplateColumns:'1fr 1fr auto', gap:8, alignItems:'center', padding:'8px 10px', borderTop:'1px solid var(--border)' }}>
-                      <input
-                        value={row.key}
-                        onChange={(e)=>setVarsList(prev => prev.map((r,i)=> i===ix ? { ...r, key: e.currentTarget.value } : r))}
-                        placeholder="wifi_password"
-                        style={{ padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8, background:'var(--card)', color:'var(--text)' }}
-                        disabled={!isAdmin}
-                      />
-                      <input
-                        value={row.value}
-                        onChange={(e)=>setVarsList(prev => prev.map((r,i)=> i===ix ? { ...r, value: e.currentTarget.value } : r))}
-                        placeholder="MySecret123!"
-                        style={{ padding:'8px 10px', border:'1px solid var(--border)', borderRadius:8, background:'var(--card)', color:'var(--text)' }}
-                        disabled={!isAdmin}
-                      />
-                      <div style={{ display:'flex', gap:6, justifyContent:'flex-end' }}>
-                        <button className="sb-btn" onClick={()=>saveRow(ix)} disabled={!isAdmin}>Save</button>
-                        <button className="sb-btn" onClick={()=>deleteRow(ix)} disabled={!isAdmin} style={{ borderColor:'var(--danger)', color:'var(--danger)' }}>Delete</button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-              <small style={{ color:'var(--muted)' }}>
-                Sfat: folosește chei cu litere/cifre/underscore (ex: <code>wifi_password</code>, <code>door_code</code>). Aceste chei vor fi disponibile ca <code>{'{{wifi_password}}'}</code>, <code>{'{{door_code}}'}</code> în template.
-              </small>
-            </>
-          )}
-        </div>
-
-        <div style={{ padding:12, borderTop:'1px solid var(--border)', display:'flex', alignItems:'center', gap:8 }}>
-          <span style={{ fontSize:12, color: saving==='saving' ? 'var(--primary)' : 'var(--muted)' }}>
-            {saving==='saving' ? 'Saving…' : saving==='saved' ? 'Saved' : saving==='error' ? 'Error' : ''}
-          </span>
-          <div style={{ flex:1 }} />
-          <button className="sb-btn" onClick={onClose}>Close</button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ==== restul helperelor tale rămân neschimbate (ContentEditableStable, AddVarInline, etc.) ==== */
 const ContentEditableStable = React.memo(
   React.forwardRef<HTMLDivElement, { onFocus?: () => void; style?: React.CSSProperties; placeholder?: string }>(
     function CE({ onFocus, style, placeholder }, ref) {
       return (
-        <div ref={ref} contentEditable suppressContentEditableWarning onFocus={onFocus} style={style} data-placeholder={placeholder}/>
+        <div
+          ref={ref}
+          contentEditable
+          suppressContentEditableWarning
+          onFocus={onFocus}
+          style={style}
+          data-placeholder={placeholder}
+        />
       );
     }
   ),
   () => true
 );
 
-function AddVarInline({ onAdd, disabled }: { onAdd: (name: string) => void; disabled?: boolean }) { const [val, setVal] = useState(""); function submit(){ const v = val.trim(); if(!v) return; onAdd(v); setVal(""); } return (<span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-  <input value={val} onChange={(e)=>setVal(e.currentTarget.value)} onKeyDown={(e)=>{ if (e.key === 'Enter') { e.preventDefault(); submit(); } }} placeholder="Add variable…" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)' }} disabled={!!disabled}/>
-  <button onClick={submit} disabled={!!disabled} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--primary)', color: '#0c111b', fontWeight: 700 }}>Add</button>
-</span>); }
+/* ===================== Inline add-var ===================== */
 
-function insertTokenChip(container: HTMLDivElement, key: string) { const sel = window.getSelection(); if (!sel || sel.rangeCount === 0) { container.focus(); return; } const range = sel.getRangeAt(0); let node: Node|null = range.commonAncestorContainer; let inside = false; while (node) { if (node === container) { inside = true; break; } node = node.parentNode; } if (!inside) { container.focus(); return; } const chip = document.createElement('span'); chip.className = 'rm-token'; chip.setAttribute('data-token', key); chip.contentEditable = 'false'; chip.textContent = key; range.deleteContents(); range.insertNode(chip); const space = document.createTextNode(' '); chip.after(space); sel.collapse(space, 1); }
-function isRangeInside(range: Range, container: HTMLElement): boolean { let node: Node | null = range.commonAncestorContainer; while (node) { if (node === container) return true; node = node.parentNode; } return false; }
-function insertAnchorAtCaret(container: HTMLDivElement, url: string, text: string) { const sel = window.getSelection(); if (!sel || sel.rangeCount === 0) { container.focus(); return; } const range = sel.getRangeAt(0); if (!isRangeInside(range, container)) { try { container.focus(); } catch {} } const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noreferrer'; a.textContent = text || url; range.deleteContents(); range.insertNode(a); const space = document.createTextNode(' '); a.after(space); sel.collapse(space, 1); }
-function tokensTextToChips(container: HTMLDivElement, text: string) { const s = text || ''; const re = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g; container.innerHTML = ''; let last = 0; let m: RegExpExecArray | null; while ((m = re.exec(s))) { const before = s.slice(last, m.index); if (before) container.appendChild(document.createTextNode(before)); const chip = document.createElement('span'); chip.className = 'rm-token'; chip.setAttribute('data-token', m[1]); chip.contentEditable = 'false'; chip.textContent = m[1]; container.appendChild(chip); container.appendChild(document.createTextNode(' ')); last = m.index + m[0].length; } const tail = s.slice(last); if (tail) container.appendChild(document.createTextNode(tail)); }
-function titleTextWithTokens(el: HTMLDivElement | null): string { if (!el) return ''; const nodes = Array.from(el.childNodes); let out = ''; for (const n of nodes) { if (n.nodeType === 3) out += n.nodeValue || ''; else if (n instanceof HTMLElement && n.classList.contains('rm-token')) { const k = n.getAttribute('data-token') || ''; out += `{{${k}}}`; } else out += (n.textContent || ''); } return out.trim(); }
-function tokensToChipsHTML(html: string): string { if (!html) return ''; return html.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => `<span class=\"rm-token\" data-token=\"${k}\" contenteditable=\"false\">${k}</span>`); }
-function htmlWithTokens(html: string): string { const tmp = document.createElement('div'); tmp.innerHTML = html || ''; tmp.querySelectorAll('span.rm-token[data-token]').forEach((el) => { const k = el.getAttribute('data-token') || ''; el.replaceWith(document.createTextNode(`{{${k}}}`)); }); tmp.querySelectorAll('[contenteditable], [data-placeholder]').forEach((el) => { el.removeAttribute('contenteditable'); el.removeAttribute('data-placeholder'); }); return tmp.innerHTML; }
-function markdownToHtmlInline(src: string): string { let s = escapeHtml(src || ''); s = s.replace(/\[(.+?)\]\((https?:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>'); s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); s = s.replace(/__([^_]+?)__/g, '<u>$1</u>'); s = s.replace(/(^|\s)\*(.+?)\*(?=\s|$)/g, '$1<em>$2</em>'); s = s.replace(/\n/g, '<br/>'); return s; }
-function titleToChips(title: string): string { const esc = (str: string) => str.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;"," >":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); const s = String(title || ''); return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => `<span class=\"rm-token\" data-token=\"${esc(k)}\" contenteditable=\"false\">${esc(k)}</span>`); }
+function AddVarInline({ onAdd, disabled }: { onAdd: (name: string) => void; disabled?: boolean }) {
+  const [val, setVal] = useState("");
+  function submit() {
+    const v = val.trim();
+    if (!v) return;
+    onAdd(v);
+    setVal("");
+  }
+  return (
+    <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+      <input
+        value={val}
+        onChange={(e)=>setVal(e.currentTarget.value)}
+        onKeyDown={(e)=>{ if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
+        placeholder="Add variable…"
+        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)' }}
+        disabled={!!disabled}
+      />
+      <button onClick={submit} disabled={!!disabled} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--primary)', color: '#0c111b', fontWeight: 700 }}>Add</button>
+    </span>
+  );
+}
+
+/* ===================== token helpers ===================== */
+
+// Insert a token chip at caret inside a contentEditable container
+function insertTokenChip(container: HTMLDivElement, key: string) {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) { container.focus(); return; }
+  const range = sel.getRangeAt(0);
+  // Ensure selection is inside container
+  let node: Node|null = range.commonAncestorContainer;
+  let inside = false;
+  while (node) { if (node === container) { inside = true; break; } node = node.parentNode; }
+  if (!inside) { container.focus(); return; }
+  const chip = document.createElement('span');
+  chip.className = 'rm-token';
+  chip.setAttribute('data-token', key);
+  chip.contentEditable = 'false';
+  chip.textContent = key;
+  range.deleteContents();
+  range.insertNode(chip);
+  // place caret after chip
+  const space = document.createTextNode(' ');
+  chip.after(space);
+  sel.collapse(space, 1);
+}
+
+function isRangeInside(range: Range, container: HTMLElement): boolean {
+  let node: Node | null = range.commonAncestorContainer;
+  while (node) { if (node === container) return true; node = node.parentNode; }
+  return false;
+}
+
+function insertAnchorAtCaret(container: HTMLDivElement, url: string, text: string) {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) { container.focus(); return; }
+  const range = sel.getRangeAt(0);
+  if (!isRangeInside(range, container)) {
+    try { container.focus(); } catch {}
+  }
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noreferrer';
+  a.textContent = text || url;
+  range.deleteContents();
+  range.insertNode(a);
+  const space = document.createTextNode(' ');
+  a.after(space);
+  sel.collapse(space, 1);
+}
+
+// Convert plain text with {{token}} to chips in a contentEditable container (Title)
+function tokensTextToChips(container: HTMLDivElement, text: string) {
+  const s = text || '';
+  const re = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
+  container.innerHTML = '';
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(s))) {
+    const before = s.slice(last, m.index);
+    if (before) container.appendChild(document.createTextNode(before));
+    const chip = document.createElement('span');
+    chip.className = 'rm-token';
+    chip.setAttribute('data-token', m[1]);
+    chip.contentEditable = 'false';
+    chip.textContent = m[1];
+    container.appendChild(chip);
+    container.appendChild(document.createTextNode(' '));
+    last = m.index + m[0].length;
+  }
+  const tail = s.slice(last);
+  if (tail) container.appendChild(document.createTextNode(tail));
+}
+
+// Build title string with {{token}} from title contentEditable (chips back to tokens)
+function titleTextWithTokens(el: HTMLDivElement | null): string {
+  if (!el) return '';
+  const nodes = Array.from(el.childNodes);
+  let out = '';
+  for (const n of nodes) {
+    if (n.nodeType === 3) out += n.nodeValue || '';
+    else if (n instanceof HTMLElement && n.classList.contains('rm-token')) {
+      const k = n.getAttribute('data-token') || '';
+      out += `{{${k}}}`;
+    } else out += (n.textContent || '');
+  }
+  return out.trim();
+}
+
+// Replace {{token}} inside HTML string with chips markup (for body load)
+function tokensToChipsHTML(html: string): string {
+  if (!html) return '';
+  return html.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => `<span class=\"rm-token\" data-token=\"${k}\" contenteditable=\"false\">${k}</span>`);
+}
+
+// Convert HTML with rm-token spans to HTML + {{token}} placeholders (keeps formatting)
+function htmlWithTokens(html: string): string {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html || '';
+  // Replace token chips with {{token}}
+  tmp.querySelectorAll('span.rm-token[data-token]').forEach((el) => {
+    const k = el.getAttribute('data-token') || '';
+    el.replaceWith(document.createTextNode(`{{${k}}}`));
+  });
+  // Remove contentEditable artifacts
+  tmp.querySelectorAll('[contenteditable], [data-placeholder]').forEach((el) => {
+    el.removeAttribute('contenteditable');
+    el.removeAttribute('data-placeholder');
+  });
+  return tmp.innerHTML;
+}
+
+// Render {{token}} as chip HTML for titles (safe)
+function titleToChips(title: string): string {
+  const esc = (str: string) => str.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;"," >":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
+  const s = String(title || '');
+  return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => `<span class=\"rm-token\" data-token=\"${esc(k)}\" contenteditable=\"false\">${esc(k)}</span>`);
+}
+
+/* ===================== ROOM VARIABLES DRAWER ===================== */
+
+type Room = { id: string; name: string | null };
+type RoomVar = { id: string; room_id: string; key: string; value: string; updated_at?: string };
+
+function RoomVariablesPanel({
+  propertyId,
+  supabase,
+  onClose,
+  isAdmin
+}: {
+  propertyId: string;
+  supabase: ReturnType<typeof createClient>;
+  onClose: () => void;
+  isAdmin: boolean;
+}) {
+  const sb = supabase;
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [roomId, setRoomId] = useState<string>("");
+  const [varsList, setVarsList] = useState<RoomVar[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState<"idle"|"saving">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  const [newKey, setNewKey] = useState("");
+  const [newVal, setNewVal] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const rRooms = await sb.from("rooms").select("id,name").eq("property_id", propertyId).order("name", { ascending: true });
+        if (!alive) return;
+        if (rRooms.error) throw new Error(rRooms.error.message);
+        const list = (rRooms.data || []) as any[];
+        setRooms(list.map(r => ({ id: String(r.id), name: r.name ?? null })));
+        if (list.length) setRoomId(String(list[0].id));
+      } catch (e:any) {
+        setError(e?.message || "Failed to load rooms");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [sb, propertyId]);
+
+  useEffect(() => {
+    if (!roomId) { setVarsList([]); return; }
+    let alive = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const rVars = await sb.from("room_variables").select("id,room_id,key,value,updated_at").eq("room_id", roomId).order("key", { ascending: true });
+        if (!alive) return;
+        if (rVars.error) {
+          // dacă tabela nu există încă, nu stricăm UI-ul
+          if (String(rVars.error.message || "").toLowerCase().includes("relation") || String(rVars.error.message || "").toLowerCase().includes("does not exist")) {
+            setVarsList([]);
+            setError("Table not found. Create `room_variables` first.");
+          } else {
+            throw new Error(rVars.error.message);
+          }
+        } else {
+          setVarsList((rVars.data || []) as any);
+          setError(null);
+        }
+      } catch (e:any) {
+        setError(e?.message || "Failed to load variables");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [sb, roomId]);
+
+  async function createVar() {
+    const k = (newKey || "").trim();
+    const v = (newVal || "").toString();
+    if (!k) return;
+    setSaving("saving");
+    try {
+      const key = slugify(k);
+      const ins = await sb.from("room_variables").insert({ property_id: propertyId, room_id: roomId, key, value: v }).select("id,room_id,key,value,updated_at").single();
+      if (ins.error) throw new Error(ins.error.message);
+      setVarsList(prev => [...prev, ins.data as any].sort((a,b)=>a.key.localeCompare(b.key)));
+      setNewKey(""); setNewVal("");
+    } catch (e:any) {
+      alert(e?.message || "Failed to add variable");
+    } finally {
+      setSaving("idle");
+    }
+  }
+
+  async function updateVar(id: string, value: string) {
+    setSaving("saving");
+    try {
+      const upd = await sb.from("room_variables").update({ value }).eq("id", id).select("id,room_id,key,value,updated_at").single();
+      if (upd.error) throw new Error(upd.error.message);
+      setVarsList(prev => prev.map(x => x.id === id ? (upd.data as any) : x));
+    } catch (e:any) {
+      alert(e?.message || "Failed to save");
+    } finally {
+      setSaving("idle");
+    }
+  }
+
+  async function deleteVar(id: string) {
+    if (!confirm("Delete this variable?")) return;
+    setSaving("saving");
+    try {
+      const del = await sb.from("room_variables").delete().eq("id", id);
+      if (del.error) throw new Error(del.error.message);
+      setVarsList(prev => prev.filter(x => x.id !== id));
+    } catch (e:any) {
+      alert(e?.message || "Failed to delete");
+    } finally {
+      setSaving("idle");
+    }
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position:'fixed', inset:0, background:'rgba(0,0,0,.35)', zIndex:60
+        }}
+      />
+      {/* Drawer */}
+      <div
+        className="rv-drawer"
+        style={{
+          position:'fixed', top:0, right:0, height:'100vh',
+          width:'min(520px, 90vw)',
+          background:'var(--panel)', borderLeft:'1px solid var(--border)', zIndex:61,
+          display:'grid', gridTemplateRows:'auto 1fr auto'
+        }}
+      >
+        {/* Header */}
+        <div className="rv-header" style={{ padding:12, borderBottom:'1px solid var(--border)', display:'flex', gap:8, alignItems:'center' }}>
+          <strong style={{ fontSize:16 }}>Room variables</strong>
+          <div style={{ flex:1 }}/>
+          <button className="sb-btn" onClick={onClose} aria-label="Close">Close</button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding:12, overflow:'auto', display:'grid', gap:12 }}>
+          {/* Room selector */}
+          <div style={{ display:'grid', gap:6 }}>
+            <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>Room</label>
+            {loading && rooms.length === 0 ? (
+              <div style={{ color:'var(--muted)' }}>Loading rooms…</div>
+            ) : rooms.length === 0 ? (
+              <div style={{ color:'var(--muted)' }}>No rooms.</div>
+            ) : (
+              <select className="sb-select" value={roomId} onChange={(e)=>setRoomId(e.currentTarget.value)}>
+                {rooms.map(r => (<option value={r.id} key={r.id}>{r.name || `#${r.id.slice(0,6)}`}</option>))}
+              </select>
+            )}
+          </div>
+
+          {/* Warning / error */}
+          {error && (
+            <div style={{ background:'var(--card)', border:'1px solid var(--danger)', color:'var(--text)', borderRadius:10, padding:10 }}>
+              {error}
+            </div>
+          )}
+
+          {/* Existing variables */}
+          <div style={{ display:'grid', gap:8 }}>
+            <div style={{ fontWeight:800, color:'var(--muted)' }}>Variables for this room</div>
+            {varsList.length === 0 ? (
+              <div style={{ color:'var(--muted)' }}>No variables yet.</div>
+            ) : (
+              <div style={{ display:'grid', gap:8 }}>
+                {varsList.map(v => (
+                  <div key={v.id} style={{ display:'grid', gap:6, border:'1px solid var(--border)', borderRadius:10, padding:10, background:'var(--card)' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                      <span className="rm-token">{v.key}</span>
+                      <div style={{ flex:1 }} />
+                      <small style={{ color:'var(--muted)' }}>{v.updated_at ? new Date(v.updated_at).toLocaleString() : ""}</small>
+                    </div>
+                    <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                      <input
+                        style={{ flex:1, padding:'8px 10px', borderRadius:8, border:'1px solid var(--border)', background:'var(--panel)', color:'var(--text)' }}
+                        defaultValue={v.value}
+                        onBlur={(e)=>{ if (e.currentTarget.value !== v.value) updateVar(v.id, e.currentTarget.value); }}
+                        disabled={!isAdmin || saving==='saving'}
+                      />
+                      <button className="sb-btn" onClick={()=>deleteVar(v.id)} disabled={!isAdmin || saving==='saving'}>Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Add new variable */}
+          <div style={{ display:'grid', gap:6 }}>
+            <div style={{ fontWeight:800 }}>Add variable</div>
+            <div style={{ display:'grid', gap:6 }}>
+              <input
+                placeholder="Variable name (e.g., door_code)"
+                value={newKey}
+                onChange={(e)=>setNewKey(e.currentTarget.value)}
+                style={{ padding:'8px 10px', borderRadius:8, border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)' }}
+                disabled={!isAdmin}
+              />
+              <input
+                placeholder="Value (string)"
+                value={newVal}
+                onChange={(e)=>setNewVal(e.currentTarget.value)}
+                style={{ padding:'8px 10px', borderRadius:8, border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)' }}
+                disabled={!isAdmin}
+              />
+              <div style={{ display:'flex', gap:8 }}>
+                <button className="sb-btn sb-btn--primary" onClick={createVar} disabled={!isAdmin || !roomId || saving==='saving'}>Add</button>
+                <small style={{ color:'var(--muted)' }}>Keys will be slugified automatically.</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="rv-footer" style={{ padding:12, borderTop:'1px solid var(--border)', display:'flex', gap:8, justifyContent:'flex-end' }}>
+          <button className="sb-btn" onClick={onClose}>Done</button>
+        </div>
+
+        {/* Mobile enhancements */}
+        <style dangerouslySetInnerHTML={{__html: `
+@media (max-width: 640px){
+  .rv-drawer{ width: 100vw !important; }
+  .rv-header, .rv-footer{ position: sticky; background: var(--panel); z-index: 1; }
+  .rv-header{ top:0; }
+  .rv-footer{ bottom:0; }
+}
+`}}/>
+      </div>
+    </>
+  );
+}
