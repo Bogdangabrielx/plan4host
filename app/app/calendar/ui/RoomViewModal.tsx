@@ -19,6 +19,16 @@ type Booking = {
   start_time: string | null;
   end_time: string | null;
   status: string;
+  source?: string | null;
+};
+type TypeIntegration = {
+  id: string;
+  property_id: string;
+  room_type_id: string | null;
+  room_id?: string | null;
+  provider: string | null;
+  is_active: boolean | null;
+  color?: string | null;
 };
 
 function pad(n: number) { return String(n).padStart(2, "0"); }
@@ -45,6 +55,7 @@ export default function RoomViewModal({
   const [month, setMonth] = useState<number>(initialMonth);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [integrations, setIntegrations] = useState<TypeIntegration[]>([]);
   const [loading, setLoading] = useState<"Idle"|"Loading"|"Error">("Idle");
   const [openDate, setOpenDate] = useState<string | null>(null);
 
@@ -66,12 +77,19 @@ export default function RoomViewModal({
       // overlap: start_date <= to AND end_date >= from
       const rBookings = await supabase
         .from("bookings")
-        .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status")
+        .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status,source")
         .eq("property_id", propertyId)
         .neq("status","cancelled")
         .lte("start_date", to)
         .gte("end_date", from)
         .order("start_date", { ascending: true });
+
+      // Integrations are optional (RLS may block for non-channels users). We tolerate errors.
+      const rInteg = await supabase
+        .from("ical_type_integrations")
+        .select("id,property_id,room_type_id,room_id,provider,is_active,color")
+        .eq("property_id", propertyId)
+        .order("created_at", { ascending: true });
 
       if (rRooms.error || rBookings.error) {
         setRooms([]);
@@ -80,27 +98,63 @@ export default function RoomViewModal({
       } else {
         setRooms((rRooms.data ?? []) as Room[]);
         setBookings((rBookings.data ?? []) as Booking[]);
+        if (!rInteg.error) setIntegrations((rInteg.data ?? []) as TypeIntegration[]);
         setLoading("Idle");
       }
     })();
   }, [propertyId, year, month, supabase]);
 
-  const occByRoom = useMemo(() => {
-    const map = new Map<string, Set<string>>();
+  function normalizeProvider(s?: string | null) {
+    const p = (s || "").toLowerCase();
+    if (!p) return "manual"; // null/empty → manual
+    if (p.includes("manual") || p.includes("native") || p.includes("internal")) return "manual";
+    if (p.includes("airbnb")) return "airbnb";
+    if (p.includes("booking")) return "booking";
+    if (p.includes("expedia")) return "expedia";
+    if (p.includes("trivago")) return "trivago";
+    if (p.includes("lastminute")) return "lastminute";
+    if (p.includes("travelminit")) return "travelminit";
+    // other/ical/unknown providers → use generic fallback palette
+    return "other";
+  }
+
+  const providerColors = useMemo(() => {
+    const map = new Map<string, string>();
+    // User manual overrides from Channels (only if set), lower priority than explicit manual color rule
+    for (const it of integrations) {
+      if (!it?.is_active) continue;
+      const key = normalizeProvider(it.provider);
+      if (it.color && !map.has(key)) map.set(key, it.color);
+    }
+    // Fallback palette copied from GuestOverview defaults
+    if (!map.has("airbnb")) map.set("airbnb", "rgba(255, 90, 96, 0.81)");
+    if (!map.has("booking")) map.set("booking", "rgba(30, 143, 255, 0.90)");
+    if (!map.has("expedia")) map.set("expedia", "rgba(254,203,46,0.81)");
+    if (!map.has("trivago")) map.set("trivago", "linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)");
+    if (!map.has("lastminute")) map.set("lastminute", "#d493baff");
+    if (!map.has("travelminit")) map.set("travelminit", "#a4579f");
+    if (!map.has("other")) map.set("other", "rgba(139,92,246,0.81)"); // violet fallback
+    return map;
+  }, [integrations]);
+
+  const colorByRoomDate = useMemo(() => {
+    const map = new Map<string, Map<string, string>>();
     for (const b of bookings) {
       if (!b.room_id) continue;
+      const key = normalizeProvider(b.source);
+      const color = key === "manual" ? "#6CCC4C" : (providerColors.get(key) || providerColors.get("other") || "rgba(139,92,246,0.81)");
       let d = b.start_date;
       const end = b.end_date;
       while (d <= end) {
-        const set = map.get(b.room_id) || new Set<string>();
-        set.add(d);
-        map.set(b.room_id, set);
-        // add 1 day
+        const inner = map.get(b.room_id) || new Map<string, string>();
+        // Prefer first assignment; if overlaps somehow, keep existing
+        if (!inner.has(d)) inner.set(d, color);
+        map.set(b.room_id, inner);
         const dt = new Date(d + "T00:00:00"); dt.setDate(dt.getDate() + 1); d = ymd(dt);
       }
     }
     return map;
-  }, [bookings]);
+  }, [bookings, providerColors]);
 
   const RADIUS = 12;
 
@@ -142,7 +196,7 @@ export default function RoomViewModal({
                   year={year}
                   month={month}
                   roomId={r.id}
-                  occDays={occByRoom.get(r.id) || new Set<string>()}
+                  colors={colorByRoomDate.get(r.id) || new Map<string,string>()}
                   onDayClick={(dateStr) => setOpenDate(dateStr)}
                 />
               </div>
@@ -163,18 +217,18 @@ export default function RoomViewModal({
   );
 }
 
-function MiniMonthRoom({ year, month, roomId, occDays, onDayClick }: {
-  year: number; month: number; roomId: string; occDays: Set<string>;
+function MiniMonthRoom({ year, month, roomId, colors, onDayClick }: {
+  year: number; month: number; roomId: string; colors: Map<string,string>;
   onDayClick: (dateStr: string) => void;
 }) {
   const dim = daysInMonth(year, month);
   const fw  = firstWeekday(year, month);
-  const cells: Array<{ dateStr?: string; dayNum?: number; reserved?: boolean }> = [];
+  const cells: Array<{ dateStr?: string; dayNum?: number; color?: string }> = [];
 
   for (let i = 0; i < fw; i++) cells.push({});
   for (let d = 1; d <= dim; d++) {
     const ds = `${year}-${pad(month+1)}-${pad(d)}`;
-    cells.push({ dateStr: ds, dayNum: d, reserved: occDays.has(ds) });
+    cells.push({ dateStr: ds, dayNum: d, color: colors.get(ds) });
   }
   const rows  = Math.ceil(cells.length / 7);
   const total = rows * 7;
@@ -184,22 +238,25 @@ function MiniMonthRoom({ year, month, roomId, occDays, onDayClick }: {
     <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
       {cells.map((c, i) => {
         const clickable = !!c.dateStr;
+        const hasColor = !!c.color;
         return (
           <div
             key={i}
             onClick={clickable ? () => onDayClick(c.dateStr!) : undefined}
-            title={c.dateStr ? (c.reserved ? "Reserved" : "Available") : undefined}
+            title={c.dateStr ? (hasColor ? "Reserved" : "Available") : undefined}
             style={{
               position: "relative",
               height: 28,
               borderRadius: 8,
               border: "1px solid var(--border)",
-              background: c.reserved ? "var(--danger)" : "var(--card)",
-              opacity: c.reserved ? 0.25 : 1,
+              background: "var(--card)",
               cursor: clickable ? "pointer" : "default",
               overflow: "hidden",
             }}
           >
+            {hasColor && (
+              <div style={{ position: 'absolute', inset: 0, background: c.color!, opacity: 0.28 }} />
+            )}
             {typeof c.dayNum === "number" && (
               <span style={{ position: "absolute", top: 5, left: 6, fontSize: 11, color: "var(--text)", fontWeight: 800 }}>
                 {c.dayNum}
@@ -211,4 +268,3 @@ function MiniMonthRoom({ year, month, roomId, occDays, onDayClick }: {
     </div>
   );
 }
-
