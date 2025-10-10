@@ -24,6 +24,7 @@ export default function CleanTaskModal({
   onClose,
   onLocalProgress,
   onComplete,
+  onCleanedBy,
 }: {
   item: RoomItem;
   tasks: TaskDef[];
@@ -32,11 +33,25 @@ export default function CleanTaskModal({
   onClose: () => void;
   onLocalProgress: (roomId: string, cleanDate: string, taskId: string, value: boolean) => void;
   onComplete: (roomId: string, cleanDate: string) => void;
+  onCleanedBy: (roomId: string, cleanDate: string, email: string | null) => void;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [saving, setSaving] = useState(false);
   const [local, setLocal] = useState<Record<string, boolean>>({});
   const locked = useMemo(() => tasks.length > 0 && tasks.every(t => !!progress?.[t.id]), [tasks, progress]);
+
+  // Actor email (for "Cleaned by <email>")
+  const [actorEmail, setActorEmail] = useState<string | null>(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        setActorEmail(data.user?.email ?? null);
+      } catch {
+        setActorEmail(null);
+      }
+    })();
+  }, [supabase]);
 
   useEffect(() => {
     setLocal(progress); // sync când deschidem
@@ -61,6 +76,7 @@ export default function CleanTaskModal({
     const allDone = tasks.length > 0 && tasks.every(t => (taskId === t.id ? value : !!local[t.id]));
     if (allDone) {
       onComplete(item.room.id, item.cleanDate);
+      onCleanedBy(item.room.id, item.cleanDate, actorEmail);
     }
   }
 
@@ -85,6 +101,7 @@ export default function CleanTaskModal({
     // update parent local map
     for (const t of tasks) onLocalProgress(item.room.id, item.cleanDate, t.id, true);
     onComplete(item.room.id, item.cleanDate);
+    onCleanedBy(item.room.id, item.cleanDate, actorEmail);
   }
 
   return (

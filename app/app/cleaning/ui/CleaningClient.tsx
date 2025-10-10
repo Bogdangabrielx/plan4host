@@ -81,6 +81,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   const [tasks, setTasks] = useState<TaskDef[]>([]);
   const [items, setItems] = useState<RoomItem[]>([]);
   const [cleaningMap, setCleaningMap] = useState<Record<string, Record<string, boolean>>>({});
+  const [cleanedByMap, setCleanedByMap] = useState<Record<string, string>>({});
 
   const [openItem, setOpenItem] = useState<RoomItem | null>(null);
 
@@ -307,15 +308,22 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   }
 
   function onComplete(roomId: string, cleanDate: string) {
+    // Păstrăm cardurile de tip "checkout" în board ca să poată afișa "Cleaned by <email>"
+    // Eliminăm doar carry-over-ul (deoarece dispare din ziua următoare oricum)
     setItems((prev) =>
       prev.filter((it) => {
         if (it.room.id !== roomId) return true;
-        if (it.mode === "checkout") return !(it.cleanDate === dateStr);
         if (it.mode === "carry") return !(it.cleanDate === cleanDate);
-        return true;
+        return true; // keep checkout
       })
     );
     setOpenItem(null);
+  }
+
+  function onCleanedBy(roomId: string, cleanDate: string, email: string | null) {
+    if (!email) return;
+    const key = `${roomId}|${cleanDate}`;
+    setCleanedByMap((prev) => ({ ...prev, [key]: email }));
   }
 
   const tdefs = sortedTasks();
@@ -419,6 +427,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             const doneCount = tdefs.filter((t) => !!prog[t.id]).length;
             const total = tdefs.length;
             const cleaned = total > 0 && doneCount === total;
+            const cleanedBy = cleaned ? cleanedByMap[key] : undefined;
 
             return (
               <li
@@ -447,7 +456,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                   </small>
 
                   {cleaned ? (
-                    <span className="sb-badge">Cleaned</span>
+                    <span className="sb-badge">{cleanedBy ? `Cleaned by ${cleanedBy}` : "Cleaned"}</span>
                   ) : (
                     <span className="sb-badge">{doneCount}/{total}</span>
                   )}
@@ -467,6 +476,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
           onClose={() => setOpenItem(null)}
           onLocalProgress={onLocalProgress}
           onComplete={onComplete}
+          onCleanedBy={onCleanedBy}
         />
       )}
     </div>
