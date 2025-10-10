@@ -77,6 +77,14 @@ export default function CleanTaskModal({
     if (allDone) {
       onComplete(item.room.id, item.cleanDate);
       onCleanedBy(item.room.id, item.cleanDate, actorEmail);
+      // Persist attribution server-side
+      try {
+        await fetch('/api/cleaning/mark', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ propertyId, roomId: item.room.id, cleanDate: item.cleanDate })
+        });
+      } catch {}
     }
   }
 
@@ -102,6 +110,13 @@ export default function CleanTaskModal({
     for (const t of tasks) onLocalProgress(item.room.id, item.cleanDate, t.id, true);
     onComplete(item.room.id, item.cleanDate);
     onCleanedBy(item.room.id, item.cleanDate, actorEmail);
+    try {
+      await fetch('/api/cleaning/mark', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ propertyId, roomId: item.room.id, cleanDate: item.cleanDate })
+      });
+    } catch {}
   }
 
   return (

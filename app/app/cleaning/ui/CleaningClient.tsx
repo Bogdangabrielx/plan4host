@@ -174,6 +174,14 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         .gte("clean_date", fromStr)
         .lte("clean_date", dateStr);
 
+      // Load persisted attribution (who cleaned)
+      const rMarks = await supabase
+        .from("cleaning_marks")
+        .select("room_id,clean_date,cleaned_by_email")
+        .eq("property_id", propertyId)
+        .gte("clean_date", fromStr)
+        .lte("clean_date", dateStr);
+
       // Allow board to render even if cleaning_progress SELECT is not permitted (viewer without 'cleaning' scope).
       if (rRooms.error || rTasks.error || rBookingsBefore.error || rBookingsAfter.error) {
         setStatus("Error");
@@ -208,6 +216,14 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         progMap[key][row.task_id] = !!row.done;
       }
       setCleaningMap(progMap);
+
+      const cbMap: Record<string, string> = {};
+      const markRows = (rMarks.error ? [] : (rMarks.data ?? [])) as any[];
+      for (const m of markRows) {
+        const key = `${m.room_id}|${m.clean_date}`;
+        if (m.cleaned_by_email) cbMap[key] = m.cleaned_by_email as string;
+      }
+      setCleanedByMap(cbMap);
 
       // CI/CO din property (fallback)
       const prop = initialProperties.find((p) => p.id === propertyId);
@@ -429,15 +445,16 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             const doneCount = tdefs.filter((t) => !!prog[t.id]).length;
             const total = tdefs.length;
             const cleaned = total > 0 && doneCount === total;
-            const cleanedBy = cleaned ? cleanedByMap[key] : undefined;
+            const cleanedBy = cleanedByMap[key];
+            const isCleaned = cleaned || !!cleanedBy;
 
             return (
               <li
                 key={it.room.id + "|" + it.cleanDate}
-                onClick={(!canWrite || cleaned) ? undefined : () => setOpenItem(it)}
+                onClick={(!canWrite || isCleaned) ? undefined : () => setOpenItem(it)}
                 className="sb-card"
-                style={{ aspectRatio: "1.2 / 1", padding: 10, cursor: cleaned ? "default" : "pointer", display: "grid", placeItems: "center", gap: 6, opacity: cleaned ? .66 : 1 }}
-                title={cleaned ? "Cleaned" : "Open cleaning tasks"}
+                style={{ aspectRatio: "1.2 / 1", padding: 10, cursor: isCleaned ? "default" : "pointer", display: "grid", placeItems: "center", gap: 6, opacity: isCleaned ? .66 : 1 }}
+                title={isCleaned ? "Cleaned" : "Open cleaning tasks"}
               >
                 <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
                   {/* Icon above room name, theme-aware */}
@@ -457,7 +474,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                     {it.mode === "carry" ? `carry-over • ${it.cleanDate}` : it.statusLine}
                   </small>
 
-                  {cleaned ? (
+                  {isCleaned ? (
                     <span className="sb-badge">{cleanedBy ? `Cleaned by ${cleanedBy}` : "Cleaned"}</span>
                   ) : (
                     <span className="sb-badge">{doneCount}/{total}</span>
