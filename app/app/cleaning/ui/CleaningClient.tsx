@@ -174,7 +174,8 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         .gte("clean_date", fromStr)
         .lte("clean_date", dateStr);
 
-      if (rRooms.error || rTasks.error || rBookingsBefore.error || rBookingsAfter.error || rProgress.error) {
+      // Allow board to render even if cleaning_progress SELECT is not permitted (viewer without 'cleaning' scope).
+      if (rRooms.error || rTasks.error || rBookingsBefore.error || rBookingsAfter.error) {
         setStatus("Error");
         return;
       }
@@ -200,7 +201,8 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
 
       // Progress map
       const progMap: Record<string, Record<string, boolean>> = {};
-      for (const row of (rProgress.data ?? []) as any[]) {
+      const progressRows = (rProgress.error ? [] : (rProgress.data ?? [])) as any[];
+      for (const row of progressRows) {
         const key = `${row.room_id}|${row.clean_date}`;
         progMap[key] = progMap[key] || {};
         progMap[key][row.task_id] = !!row.done;

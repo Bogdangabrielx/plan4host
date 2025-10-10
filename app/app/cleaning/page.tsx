@@ -3,7 +3,6 @@ import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CleaningClient from "./ui/CleaningClient";
-import { ensureScope } from "@/lib/auth/scopes";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,7 +13,8 @@ export default async function CleaningPage() {
   if (!user) redirect("/auth/login");
   const mode = await supabase.rpc("account_access_mode");
   if ((mode.data as string | null) === 'billing_only') redirect('/app/subscription');
-  await ensureScope("cleaning", supabase, user.id);
+  // Allow any member to view Cleaning Board (read-only for non-admin/editor).
+  // RLS will still enforce write permissions.
 
   // Plan gating: on Basic do not fetch any property data, show upgrade prompt in client
   const planRes = await supabase.rpc("account_current_plan");

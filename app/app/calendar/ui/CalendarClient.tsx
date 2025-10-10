@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import RoomViewModal from "./RoomViewModal";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
@@ -105,6 +106,7 @@ export default function CalendarClient({
 
   // Year overlay + month picker
   const [showYear, setShowYear] = useState<boolean>(false);
+  const [showRoomView, setShowRoomView] = useState<boolean>(false);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const dateOverlayInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -284,6 +286,9 @@ export default function CalendarClient({
           <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label="Open year overview">
             Year
           </button>
+          <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label="Open room overview">
+            Room view
+          </button>
         </div>
         <div style={{ flex: 1 }} />
       </div>
@@ -331,6 +336,22 @@ export default function CalendarClient({
               isSmall={isSmall}
               onMonthTitleClick={(m) => { setMonth(m); setView("month"); setHighlightDate(null); setShowYear(false); }}
               onDayClick={(dateStr) => { goToMonthFor(dateStr); setShowYear(false); }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Room View overlay */}
+      {showRoomView && (
+        <div role="dialog" aria-modal="true" onClick={() => setShowRoomView(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 225, background: "var(--bg)", display: "grid", placeItems: "center" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "min(1100px, 100%)" }}>
+            <RoomViewModal
+              propertyId={propertyId}
+              initialYear={year}
+              initialMonth={month}
+              canEdit={canEdit}
+              onClose={() => setShowRoomView(false)}
             />
           </div>
         </div>
