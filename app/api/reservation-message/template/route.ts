@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
         .order("sort_index", { ascending: true }),
       supa
         .from("reservation_template_fields")
-        .select("id,sort_index,key,label,required,multiline,placeholder")
+        .select("id,sort_index,key,label,required,multiline,placeholder,default_value")
         .eq("template_id", tplId)
         .order("sort_index", { ascending: true }),
     ]);
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     const title: string = (body?.title || "").toString();
     const status: "draft"|"published" = (body?.status || "draft").toLowerCase();
     const blocks: Array<{ type: string; text?: string }>|undefined = body?.blocks;
-    const fields: Array<{ key: string; label: string; required?: boolean; multiline?: boolean; placeholder?: string }>|undefined = body?.fields;
+    const fields: Array<{ key: string; label: string; required?: boolean; multiline?: boolean; placeholder?: string; default_value?: string | null }>|undefined = body?.fields;
     if (!property_id) return bad(400, { error: "property_id required" });
 
     let tplId: string;
@@ -137,6 +137,7 @@ export async function POST(req: NextRequest) {
         required: !!f.required,
         multiline: !!f.multiline,
         placeholder: f.placeholder ?? null,
+        default_value: (f.default_value ?? null) as any,
       }));
       if (rows.length) {
         const ins = await supa.from("reservation_template_fields").insert(rows).select("id");

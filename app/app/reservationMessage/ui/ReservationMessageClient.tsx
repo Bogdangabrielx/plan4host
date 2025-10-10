@@ -17,6 +17,7 @@ type ManualField = {
   uid: string; // UI-only stable key
   key: string;
   label: string;
+  defaultValue?: string | null;
 };
 
 type TemplateState = {
@@ -167,7 +168,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         const t = j?.template;
         if (!t) return;
         const blocks: Block[] = (t.blocks as any[]).map((b) => ({ id: uid(), type: b.type, text: b.text ?? '' }));
-        const fields: ManualField[] = (t.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label }));
+        const fields: ManualField[] = (t.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label, defaultValue: (f as any).default_value ?? null }));
         const next: TemplateState = { status: (t.status || 'draft') as any, blocks, fields };
         if (!cancelled && keySnapshot === storageKey) {
           setTpl(next);
@@ -239,7 +240,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         title,
         status,
         blocks: blk.map((b:any) => ({ type: b.type, text: b.text || null })),
-        fields: tpl.fields.map((f) => ({ key: f.key, label: f.label })),
+        fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, default_value: (f.defaultValue ?? null) })),
       };
       const res = await fetch('/api/reservation-message/template', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const j = await res.json().catch(()=>({}));
@@ -278,7 +279,7 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       const j = await r.json().catch(()=>({}));
       const t = j?.template; if (!t) return;
       const blocks = (t.blocks||[]).map((b:any)=>({ type:b.type, text:b.text??null }));
-      const fields = (t.fields||[]).map((f:any)=>({ key:f.key, label:f.label }));
+      const fields = (t.fields||[]).map((f:any)=>({ key:f.key, label:f.label, default_value: (f.default_value ?? null) }));
       const res = await fetch('/api/reservation-message/template', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ property_id: t.property_id, title: `${title} (Copy)`, status: 'draft', blocks, fields }) });
       const jj = await res.json().catch(()=>({}));
       if (!res.ok || !jj?.template_id) throw new Error(jj?.error || 'Duplicate failed');
@@ -338,9 +339,14 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
     if (!label) return;
     const key = slugify(label);
     if (!key) return;
+    let def: string | null | undefined = null;
+    try {
+      const ans = prompt('Valoare implicită pentru această variabilă (opțional)');
+      if (ans !== null) def = ans;
+    } catch {}
     setTpl((prev) => {
       if (prev.fields.some((f) => f.key === key)) return prev;
-      return { ...prev, fields: [...prev.fields, { uid: uid(), key, label }] };
+      return { ...prev, fields: [...prev.fields, { uid: uid(), key, label, defaultValue: def }] };
     });
   }
   function removeFieldByUid(uidVal: string) {
@@ -412,6 +418,24 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
           {tpl.fields.map((f)=>(
             <span key={f.uid} className="rm-token" style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
               <button style={btn} onClick={()=>insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
+              {typeof f.defaultValue === 'string' && (
+                <small style={{ color:'var(--muted)' }}>= {f.defaultValue || '""'}</small>
+              )}
+              <button
+                style={{ ...btn, border: '1px solid var(--border)' }}
+                onClick={()=>{
+                  try {
+                    const cur = typeof f.defaultValue === 'string' ? f.defaultValue : '';
+                    const ans = prompt('Setează valoarea implicită', cur);
+                    if (ans !== null) {
+                      setTpl(prev => ({ ...prev, fields: prev.fields.map(x => x.uid === f.uid ? { ...x, defaultValue: ans } : x) }));
+                    }
+                  } catch {}
+                }}
+                title="Set default value"
+              >
+                ✎
+              </button>
               <button style={{ ...btn, border: '1px solid var(--danger)' }} onClick={()=>removeFieldByUid(f.uid)} title="Remove">×</button>
             </span>
           ))}
