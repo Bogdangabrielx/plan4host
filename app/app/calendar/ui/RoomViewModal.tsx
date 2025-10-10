@@ -159,14 +159,37 @@ export default function RoomViewModal({
   const RADIUS = 12;
 
   return (
-    <div role="dialog" aria-modal="true" onClick={onClose}
-      style={{ position: "fixed", inset: 0, zIndex: 240, background: "rgba(0,0,0,0.5)", display: "grid", placeItems: "center", padding: 12 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{
-        width: "min(1100px, 100%)",
-        maxHeight: "calc(100dvh - 48px)",
-        overflow: "auto",
-        background: "var(--panel)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: RADIUS,
-      }}>
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 240,
+        background: "rgba(0,0,0,0.5)",
+        display: "grid",
+        placeItems: "center",
+        paddingTop: "calc(var(--safe-top) + 12px)",
+        paddingBottom: "calc(var(--safe-bottom) + 12px)",
+        paddingLeft: 12,
+        paddingRight: 12,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "min(1100px, 100%)",
+          maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 48px))",
+          overflow: "auto",
+          WebkitOverflowScrolling: "touch" as any,
+          overscrollBehavior: "contain" as any,
+          background: "var(--panel)",
+          color: "var(--text)",
+          border: "1px solid var(--border)",
+          borderRadius: RADIUS,
+        }}
+      >
         {/* Header */}
         <div style={{ position: "sticky", top: 0, zIndex: 2, background: "var(--panel)", borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS, borderBottom: "1px solid var(--border)", padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <strong>Room view — {monthNames[month]} {year}</strong>

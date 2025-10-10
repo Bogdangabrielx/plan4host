@@ -317,10 +317,36 @@ export default function CalendarClient({
 
       {/* Year overlay */}
       {showYear && (
-        <div role="dialog" aria-modal="true" onClick={() => setShowYear(false)}
-          style={{ position: "fixed", inset: 0, zIndex: 225, background: "var(--bg)", display: "grid", placeItems: "center" }}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowYear(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 225,
+            background: "rgba(0,0,0,0.5)",
+            display: "grid",
+            placeItems: "center",
+            paddingTop: "calc(var(--safe-top) + 12px)",
+            paddingBottom: "calc(var(--safe-bottom) + 12px)",
+            paddingLeft: 12,
+            paddingRight: 12,
+          }}
+        >
           {/* înlocuit sb-card cu modalCard pentru același efect */}
-          <div onClick={(e) => e.stopPropagation()} className="modalCard" style={{ width: "min(1024px, calc(100vw - 32px))", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 }}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="modalCard"
+            style={{
+              width: "min(1024px, calc(100vw - 32px))",
+              maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 32px))",
+              overflow: "auto",
+              WebkitOverflowScrolling: "touch",
+              overscrollBehavior: "contain",
+              padding: 16,
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <strong style={{ fontSize: 16 }}>Pick a month — {year}</strong>
               <div style={{ display: "flex", gap: 8 }}>
