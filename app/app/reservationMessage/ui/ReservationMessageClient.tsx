@@ -40,7 +40,6 @@ const BUILTIN_VARS: Array<{ key: string; label: string }> = [
 const EMPTY: TemplateState = { blocks: [], fields: [], status: "draft" };
 
 function lsKey(pid: string) { return `p4h:rm:template:${pid}`; }
-
 function uid() { return Math.random().toString(36).slice(2, 10); }
 
 function slugify(s: string) {
@@ -220,13 +219,13 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
       fields: [],
       blocks: [
         { id: uid(), type: "heading", text: "Reservation details" },
-        { id: uid(), type: "paragraph", text: "Hello {{guest_first_name}},\nCheck‑in {{check_in_date}} {{check_in_time}}.\nCheck‑out {{check_out_date}} {{check_out_time}}.\nRoom: {{room_name}}.\nWi‑Fi: {{wifi_name}} / {{wifi_password}}.\nDoor code: {{door_code}}." },
+        { id: uid(), type: "paragraph", text: "Hello {{guest_first_name}},\nCheck-in {{check_in_date}} {{check_in_time}}.\nCheck-out {{check_out_date}} {{check_out_time}}.\nRoom: {{room_name}}.\nWi-Fi: {{wifi_name}} / {{wifi_password}}.\nDoor code: {{door_code}}." },
       ],
     };
     try { localStorage.setItem(storageKey, JSON.stringify(seeded)); } catch {}
     setTpl(seeded);
     setTitleText("Reservation details");
-    if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML("Hello {{guest_first_name}},<br/>Check‑in {{check_in_date}} {{check_in_time}}.<br/>Check‑out {{check_out_date}} {{check_out_time}}.<br/>Room: {{room_name}}.<br/>Wi‑Fi: {{wifi_name}} / {{wifi_password}}.<br/>Door code: {{door_code}}.");
+    if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML("Hello {{guest_first_name}},<br/>Check-in {{check_in_date}} {{check_in_time}}.<br/>Check-out {{check_out_date}} {{check_out_time}}.<br/>Room: {{room_name}}.<br/>Wi-Fi: {{wifi_name}} / {{wifi_password}}.<br/>Door code: {{door_code}}.");
   }
 
   async function syncToServer(status: "draft"|"published", blocks?: Block[]) {
@@ -459,34 +458,36 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
             <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Create your first message</button>
           </div>
         ) : (
-          <div style={{ display:'grid', gap:10, gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))' }}>
-            {templates.map(t => (
-              <div
-                key={t.id}
-                className="sb-card"
-                onClick={() => setActiveId(t.id)}
-                style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, display:'grid', gap:6, cursor:'pointer' }}
-                role="button"
-                tabIndex={0}
-              >
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-                  <strong
-                    style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}
-                    dangerouslySetInnerHTML={{ __html: titleToChips(t.title || '(Untitled)') }}
-                  />
-                  <span className="sb-badge" style={{ background: t.status==='published' ? 'var(--primary)' : 'var(--card)', color: t.status==='published' ? '#0c111b' : 'var(--muted)' }}>{t.status}</span>
+          <>
+            <div style={{ display:'grid', gap:10, gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))' }}>
+              {templates.map(t => (
+                <div
+                  key={t.id}
+                  className="sb-card"
+                  onClick={() => setActiveId(t.id)}
+                  style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, display:'grid', gap:6, cursor:'pointer' }}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+                    <strong
+                      style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}
+                      dangerouslySetInnerHTML={{ __html: titleToChips(t.title || '(Untitled)') }}
+                    />
+                    <span className="sb-badge" style={{ background: t.status==='published' ? 'var(--primary)' : 'var(--card)', color: t.status==='published' ? '#0c111b' : 'var(--muted)' }}>{t.status}</span>
+                  </div>
+                  <small style={{ color:'var(--muted)' }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
+                  <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                    <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); setActiveId(t.id); }}>Edit</button>
+                    <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); onDuplicate(t.id, t.title); }}>Duplicate</button>
+                    <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); onDelete(t.id); }}>Delete</button>
+                  </div>
                 </div>
-                <small style={{ color:'var(--muted)' }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
-                <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-                  <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); setActiveId(t.id); }}>Edit</button>
-                  <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); onDuplicate(t.id, t.title); }}>Duplicate</button>
-                  <button className="sb-btn" onClick={(e)=>{ e.stopPropagation(); onDelete(t.id); }}>Delete</button>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Chip style for titles in grid */}
-          <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
+              ))}
+            </div>
+            {/* Chip style for titles in grid */}
+            <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
+          </>
         )}
       </section>
 
@@ -496,7 +497,6 @@ export default function ReservationMessageClient({ initialProperties, isAdmin }:
         <h2 style={{ marginTop: 0 }}>Message</h2>
         {/* Variable chips */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-          
           {/* Insert chips already shown above */}
         </div>
 
