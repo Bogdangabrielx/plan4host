@@ -108,6 +108,7 @@ export default function ReservationMessageClient({
   const [savingRoomValues, setSavingRoomValues] = useState<"Idle" | "Saving…" | "Saved" | "Error">("Idle");
   const [creatingVar, setCreatingVar] = useState<boolean>(false);
   const [newVarName, setNewVarName] = useState<string>("");
+  const [rvError, setRvError] = useState<string | null>(null); // <- pentru mesaje clare în modal
 
   const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
 
@@ -186,7 +187,7 @@ export default function ReservationMessageClient({
     return () => { cancelled = true; };
   }, [storageKey, propertyId, activeId]);
 
-  /** --------- Detect if property has room types (for {{room_type}} chip) --------- */
+  /** --------- Detect if property has room types (for room_type chip) --------- */
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -200,7 +201,7 @@ export default function ReservationMessageClient({
     return () => { alive = false; };
   }, [sb, propertyId]);
 
-  /** --------- Load Rooms + Variable Definitions when property changes --------- */
+  /** --------- Load Rooms + Variable Definitions on property change --------- */
   useEffect(() => {
     if (!propertyId) { setRooms([]); setVarDefs([]); setSelectedRoomId(null); setValuesByKey({}); return; }
     let alive = true;
@@ -211,7 +212,6 @@ export default function ReservationMessageClient({
         if (!alive) return;
         const rr = (r.data || []).map((x: any) => ({ id: String(x.id), name: String(x.name || "Room") }));
         setRooms(rr);
-        // preselect first room for Values tab
         setSelectedRoomId(rr[0]?.id || null);
       } catch { if (alive) setRooms([]); }
 
@@ -222,7 +222,9 @@ export default function ReservationMessageClient({
         if (!alive) return;
         const defs: VarDef[] = Array.isArray(j?.items) ? j.items.map((d: any) => ({ id: String(d.id), key: String(d.key), label: String(d.label || d.key) })) : [];
         setVarDefs(defs);
-      } catch { if (alive) setVarDefs([]); }
+      } catch {
+        if (alive) setVarDefs([]);
+      }
     })();
     return () => { alive = false; };
   }, [sb, propertyId]);
@@ -239,7 +241,6 @@ export default function ReservationMessageClient({
         const byKey: Record<string, string> = {};
         const arr: Array<{ key: string; value: string }> = Array.isArray(j?.items) ? j.items : [];
         for (const kv of arr) byKey[String(kv.key)] = String(kv.value ?? "");
-        // Ensure all defs exist in map
         for (const d of varDefs) if (!(d.key in byKey)) byKey[d.key] = "";
         setValuesByKey(byKey);
       } catch {
@@ -376,7 +377,7 @@ export default function ReservationMessageClient({
     }
   }
 
-  /** --------- Custom fields (old per-template manual vars, keep as-is) --------- */
+  /** --------- Custom fields (template-local) --------- */
   function addFieldFromName(name: string) {
     const label = name.trim();
     if (!label) return;
@@ -417,6 +418,7 @@ export default function ReservationMessageClient({
 
   /** --------- Room Variable Definitions (create/delete) --------- */
   async function createDefinition() {
+    setRvError(null);
     if (!propertyId || !newVarName.trim()) return;
     const label = newVarName.trim();
     const key = slugify(label);
@@ -426,32 +428,44 @@ export default function ReservationMessageClient({
       const res = await fetch("/api/room-variables/definitions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ property_id: propertyId, label }),
+        // trimitem și key și label, ca să fim compatibili cu orice variantă de backend
+        body: JSON.stringify({ property_id: propertyId, key, label }),
       });
+
+      if (res.status === 404) {
+        setRvError("Endpoint-ul pentru definiții lipsește (404). Verifică dacă /app/api/room-variables/definitions/route.ts există în build-ul live.");
+        setCreatingVar(false);
+        return;
+      }
+
       const j = await res.json().catch(() => ({}));
-      if (!res.ok || !j?.id) throw new Error(j?.error || "Create failed");
-      setVarDefs((prev) => [...prev, { id: String(j.id), key: String(j.key || key), label }]);
+      if (!res.ok || !(j?.id || j?.definition_id)) {
+        throw new Error(j?.error || "Create failed");
+      }
+      const retId = String(j.id || j.definition_id);
+      const retKey = String(j.key || key);
+      setVarDefs((prev) => [...prev, { id: retId, key: retKey, label }]);
       setNewVarName("");
     } catch (e: any) {
-      alert(e?.message || "Failed");
+      setRvError(e?.message || "Create failed");
     } finally {
       setCreatingVar(false);
     }
   }
   async function deleteDefinition(id: string) {
     if (!confirm("Delete this variable for all rooms?")) return;
+    setRvError(null);
     try {
       const res = await fetch(`/api/room-variables/definitions?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (res.status === 404) {
+        setRvError("Endpoint-ul pentru definiții lipsește (404).");
+        return;
+      }
       if (!res.ok) throw new Error(await res.text());
       setVarDefs((prev) => prev.filter((d) => d.id !== id));
-      // also purge local valuesByKey entry for this key
       const def = varDefs.find((d) => d.id === id);
-      if (def) {
-        setValuesByKey((prev) => {
-          const n = { ...prev }; delete n[def.key]; return n;
-        });
-      }
-    } catch (e: any) { alert(e?.message || "Failed"); }
+      if (def) setValuesByKey((prev) => { const n = { ...prev }; delete n[def.key]; return n; });
+    } catch (e: any) { setRvError(e?.message || "Delete failed"); }
   }
 
   /** --------- Save Values per Room --------- */
@@ -459,23 +473,22 @@ export default function ReservationMessageClient({
     if (!propertyId || !selectedRoomId) return;
     try {
       setSavingRoomValues("Saving…");
-      const payload = {
-        property_id: propertyId,
-        room_id: selectedRoomId,
-        values: valuesByKey, // { key: value }
-      };
+      const payload = { property_id: propertyId, room_id: selectedRoomId, values: valuesByKey };
       const res = await fetch("/api/room-variables/values", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
+      if (res.status === 404) {
+        setSavingRoomValues("Error");
+        setRvError("Endpoint-ul pentru valori lipsește (404).");
+        return;
+      }
       const j = await res.json().catch(() => ({}));
       if (!res.ok || !j?.ok) throw new Error(j?.error || "Save failed");
       setSavingRoomValues("Saved");
       setTimeout(() => setSavingRoomValues("Idle"), 800);
     } catch (e: any) {
       setSavingRoomValues("Error");
-      alert(e?.message || "Failed");
+      setRvError(e?.message || "Save failed");
     }
   }
 
@@ -531,6 +544,8 @@ export default function ReservationMessageClient({
               >
                 Definitions
               </button>
+              {/* status compact în header-ul tab-urilor */}
+              {rvError && <span style={{ color: "var(--danger)", fontSize: 12, marginLeft: "auto" }}>{rvError}</span>}
             </div>
 
             {/* Tab: Values */}
@@ -557,7 +572,10 @@ export default function ReservationMessageClient({
                   <div style={{ display: "grid", gap: 10 }}>
                     {varDefs.map((d) => (
                       <div key={d.id} style={{ display: "grid", gap: 6 }}>
-                        <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{d.label} <small style={{ opacity: 0.6 }}>({`{{${d.key}}}`})</small></label>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                          <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{d.label}</label>
+                          <span className="rm-token" aria-label="Variable key">{d.key}</span>
+                        </div>
                         <input
                           value={valuesByKey[d.key] ?? ""}
                           onChange={(e) => {
@@ -573,7 +591,7 @@ export default function ReservationMessageClient({
                       <button style={btnPri} onClick={saveValuesForRoom} disabled={!isAdmin || !selectedRoomId || varDefs.length === 0}>
                         Save values
                       </button>
-                      <small style={{ color: "var(--muted)" }}>
+                      <small style={{ color: "var(--muted)", maxWidth: 160, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {savingRoomValues === "Saving…" ? "Saving…" : savingRoomValues === "Saved" ? "Saved" : savingRoomValues === "Error" ? "Error" : ""}
                       </small>
                     </div>
@@ -590,7 +608,7 @@ export default function ReservationMessageClient({
                   <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
                     <input
                       value={newVarName}
-                      onChange={(e) => setNewVarName(e.currentTarget.value)}
+                      onChange={(e) => { setNewVarName(e.currentTarget.value); setRvError(null); }}
                       placeholder='e.g. "Room Key", "Wifi Password"'
                       style={input}
                       disabled={!isAdmin}
@@ -600,7 +618,14 @@ export default function ReservationMessageClient({
                       {creatingVar ? "Adding…" : "Add"}
                     </button>
                   </div>
-                  <small style={{ color: "var(--muted)" }}> Will be available as <code>{"{{}}"}</code> token, using a slug (e.g. <code>{"{{room_key}}"}</code>).</small>
+                  {/* preview cheie generată ca chip, fără acolade */}
+                  {newVarName.trim() && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <small style={{ color: "var(--muted)" }}>Key (auto):</small>
+                      <span className="rm-token">{slugify(newVarName)}</span>
+                    </div>
+                  )}
+                  {rvError && <small style={{ color: "var(--danger)" }}>{rvError}</small>}
                 </div>
 
                 <div style={{ display: "grid", gap: 8 }}>
@@ -616,7 +641,10 @@ export default function ReservationMessageClient({
                         <div key={d.id} className="sb-card" style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 10, display: "flex", alignItems: "center", gap: 10, justifyContent: "space-between", flexWrap: "wrap" }}>
                           <div style={{ display: "grid", gap: 4 }}>
                             <div style={{ fontWeight: 700 }}>{d.label}</div>
-                            <small style={{ color: "var(--muted)" }}>{`{{${d.key}}}`}</small>
+                            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                              <small style={{ color: "var(--muted)" }}>Key:</small>
+                              <span className="rm-token">{d.key}</span>
+                            </div>
                           </div>
                           <div style={{ display: "flex", gap: 8 }}>
                             <button
@@ -639,12 +667,12 @@ export default function ReservationMessageClient({
         )}
       </section>
 
-      {/* Variables row: built-ins + custom + GLOBAL ROOM VAR DEFS — show only when a template is active */}
+      {/* Variables row: built-ins + GLOBAL ROOM VARS + custom (template-local) — doar când un template e activ */}
       {activeId && (
         <section style={card}>
           <h2 style={{ marginTop: 0 }}>Variables</h2>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-            <small style={{ color: "var(--muted)" }}>Insert variables:</small>
+            <small style={{ color: "var(--muted)" }}>Insert:</small>
             {BUILTIN_VARS.map((v) => (
               <button key={v.key} style={btn} onClick={() => insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
             ))}
@@ -678,7 +706,6 @@ export default function ReservationMessageClient({
                 <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={() => removeFieldByUid(f.uid)} title="Remove">×</button>
               </span>
             ))}
-            {/* inline adder (kept) */}
             <AddVarInline onAdd={(name) => addFieldFromName(name)} disabled={!isAdmin} />
           </div>
         </section>
@@ -920,7 +947,7 @@ function markdownToHtmlInline(src: string): string {
   return s;
 }
 function titleToChips(title: string): string {
-  const esc = (str: string) => str.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
+  const esc = (str: string) => str.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;","&gt;":">","\"":"&quot;","'":"&#39;"}[c] as string));
   const s = String(title || "");
   return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => `<span class="rm-token" data-token="${esc(k)}" contenteditable="false">${esc(k)}</span>`);
 }
