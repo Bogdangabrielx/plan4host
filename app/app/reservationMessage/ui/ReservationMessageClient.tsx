@@ -439,7 +439,7 @@ export default function ReservationMessageClient({
         return;
       }
 
-      // 409 = deja există: facem refresh listă, dar nu arătăm "Create failed"
+      // 409 = deja există -> refresh listă, fără „Create failed”
       if (res.status === 409) {
         try {
           const rf = await fetch(`/api/room-variables/definitions?property=${encodeURIComponent(propertyId)}`, { cache: "no-store" });
@@ -473,7 +473,6 @@ export default function ReservationMessageClient({
     if (!confirm("Delete this variable for all rooms?")) return;
     setRvError(null);
     try {
-      // trimitem și property pentru RLS/politici
       const url = `/api/room-variables/definitions?id=${encodeURIComponent(id)}&property=${encodeURIComponent(propertyId || "")}`;
       const res = await fetch(url, { method: "DELETE" });
       if (res.status === 404) { setRvError("Endpoint-ul pentru definiții lipsește (404)."); return; }
@@ -490,18 +489,31 @@ export default function ReservationMessageClient({
     try {
       setSavingRoomValues("Saving…");
 
-      // IMPORTANT: API așteaptă items[] cu def_key / def_id
+      const pid = String(propertyId);
+      const rid = String(selectedRoomId);
+
+      // map valori key->value (în plus față de items)
+      const values: Record<string, string> = {};
+      for (const d of varDefs) values[d.key] = String(valuesByKey[d.key] ?? "");
+
+      // păstrăm și items cu def_key, dar trimitem și property_id/room_id la nivel de root
       const items = varDefs.map((d) => ({
-        property_id: propertyId,
-        room_id: selectedRoomId,
-        def_key: d.key,                 // <- cheia definției (nu simple "key")
-        value: valuesByKey[d.key] ?? "",
+        property_id: pid,
+        room_id: rid,
+        def_key: d.key,
+        value: values[d.key] ?? "",
       }));
 
-      const res = await fetch("/api/room-variables/values", {
+      const url = `/api/room-variables/values?property=${encodeURIComponent(pid)}&room=${encodeURIComponent(rid)}`;
+
+      const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items }),
+        headers: {
+          "Content-Type": "application/json",
+          "x-property-id": pid,
+          "x-room-id": rid,
+        },
+        body: JSON.stringify({ property_id: pid, room_id: rid, values, items }),
       });
 
       if (res.status === 404) {
@@ -620,7 +632,11 @@ export default function ReservationMessageClient({
                       </div>
                     ))}
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                      <button style={btnPri} onClick={saveValuesForRoom} disabled={!isAdmin || !selectedRoomId || varDefs.length === 0}>
+                      <button
+                        style={btnPri}
+                        onClick={saveValuesForRoom}
+                        disabled={!isAdmin || !propertyId || !selectedRoomId || varDefs.length === 0}
+                      >
                         Save values
                       </button>
                       <small style={{ color: "var(--muted)", maxWidth: 160, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
