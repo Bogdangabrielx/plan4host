@@ -200,7 +200,29 @@ export async function POST(req: Request) {
         if (!rType.error && rType.data) builtins.room_type = (rType.data as any).name || '';
       } catch {}
     }
-    const vars = { ...builtins, ...(merged || {}) };
+
+    /* ---- NEW: room-level variables merge (property_id + room_id) ---- */
+    let roomVars: Record<string, string> = {};
+    if (bk.room_id) {
+      try {
+        const rVars = await admin
+          .from('room_variables')
+          .select('key,value')
+          .eq('property_id', propId)
+          .eq('room_id', bk.room_id);
+        if (!rVars.error && Array.isArray(rVars.data)) {
+          for (const row of rVars.data as any[]) {
+            const k = String(row.key || '');
+            if (!k) continue;
+            roomVars[k] = String(row.value ?? '');
+          }
+        }
+      } catch { /* ignore; fall back to builtins + manual */ }
+    }
+    /* ---- END NEW ---- */
+
+    // Priority: builtins < roomVars < merged(manual saved + body.values)
+    const vars = { ...builtins, ...roomVars, ...(merged || {}) };
 
     // Subject (first heading) and body (paragraphs)
     const heading = blocks.find(b => b.type === 'heading');

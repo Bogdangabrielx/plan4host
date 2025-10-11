@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const template_id: string | undefined = body?.template_id;
     if (!booking_id) return bad(400, { error: "booking_id required" });
 
-    // Booking + property
+    // Booking + property (include room_id pentru room variables)
     const rBk = await supa
       .from("bookings")
       .select("id, property_id, status, guest_first_name, guest_last_name, start_date, end_date, start_time, end_time, room_id")
@@ -77,8 +77,25 @@ export async function POST(req: Request) {
       .maybeSingle();
     const saved: Record<string,string> = (rMsg.data as any)?.manual_values || {};
 
-    // Merge values: live UI overrides saved
-    const manualMerged: Record<string,string> = { ...(saved || {}), ...(values || {}) };
+    // NEW: room-level variables (defaults) pentru camera rezervării
+    let roomVars: Record<string,string> = {};
+    if (bk.room_id) {
+      const rVars = await supa
+        .from("room_variables")
+        .select("key,value")
+        .eq("property_id", propId)
+        .eq("room_id", bk.room_id);
+      if (!rVars.error && Array.isArray(rVars.data)) {
+        for (const row of rVars.data as any[]) {
+          const k = String(row.key || "");
+          if (!k) continue;
+          roomVars[k] = String(row.value ?? "");
+        }
+      }
+    }
+
+    // Merge: room defaults < saved < UI values
+    const manualMerged: Record<string,string> = { ...(roomVars || {}), ...(saved || {}), ...(values || {}) };
     const missingFields: string[] = fields.filter(k => !manualMerged[k] || manualMerged[k].trim() === "");
 
     // Heading/body presence

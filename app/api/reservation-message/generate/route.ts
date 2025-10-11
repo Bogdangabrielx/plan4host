@@ -30,12 +30,31 @@ export async function POST(req: Request) {
     // Verify booking belongs to property and is not cancelled
     const rBk = await supa
       .from("bookings")
-      .select("id, property_id, end_date, status")
+      .select("id, property_id, end_date, status, room_id") // ← added room_id
       .eq("id", booking_id)
       .maybeSingle();
     if (rBk.error || !rBk.data) return bad(404, { error: "Booking not found" });
     if ((rBk.data as any).property_id !== property_id) return bad(400, { error: "Booking not in property" });
     if ((rBk.data as any).status === 'cancelled') return bad(400, { error: "Booking cancelled" });
+
+    // NEW: fetch room-level variables for this booking's room (if any)
+    let roomVars: Record<string,string> = {};
+    const roomId = (rBk.data as any).room_id as string | null;
+    if (roomId) {
+      const rVars = await supa
+        .from("room_variables")
+        .select("key,value")
+        .eq("property_id", property_id)
+        .eq("room_id", roomId);
+      if (!rVars.error && Array.isArray(rVars.data)) {
+        for (const row of rVars.data as any[]) {
+          const k = String(row.key || "");
+          if (!k) continue;
+          roomVars[k] = String(row.value ?? "");
+        }
+      }
+    }
+    // END NEW
 
     const endDate = (rBk.data as any).end_date as string; // YYYY-MM-DD
     const expiresAt = endDate ? new Date(`${endDate}T00:00:00Z`) : null;
@@ -55,7 +74,8 @@ export async function POST(req: Request) {
       booking_id,
       token: existing.data?.token || token(),
       status: 'active',
-      manual_values: manual_values || {},
+      // merge room-level defaults under manual values so UI overrides win
+      manual_values: { ...(roomVars || {}), ...(manual_values || {}) },
       expires_at: expiresAt ? expiresAt.toISOString() : null,
     } as any;
 
@@ -85,4 +105,3 @@ export async function POST(req: Request) {
     return bad(500, { error: e?.message || "Unexpected error" });
   }
 }
-
