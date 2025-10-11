@@ -196,7 +196,7 @@ export default function ReservationMessageClient({
       } catch {}
     })();
 
-    return () => { cancelled = true; };
+  return () => { cancelled = true; };
   }, [storageKey, propertyId, activeId]);
 
   /** --------- Detect if property has room types (for room_type chip) --------- */
@@ -746,15 +746,15 @@ export default function ReservationMessageClient({
           </div>
         ) : (
           <>
-            {/* CHANGE #1: Make cards wider so status pill never overflows */}
+            {/* Make cards wider so status pill never overflows */}
             <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
               {templates.map((t) => (
                 <div
                   key={t.id}
                   className="sb-card"
                   onClick={() => {
-                    // CHANGE #3 (mobile): tap same template toggles open/close
-                    if (isSmall && activeId === t.id) setActiveId(null);
+                    // TOGGLE ON DESKTOP & MOBILE: clicking the same card closes it
+                    if (activeId === t.id) setActiveId(null);
                     else setActiveId(t.id);
                   }}
                   style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12, display: "grid", gap: 6, cursor: "pointer" }}
@@ -792,7 +792,7 @@ export default function ReservationMessageClient({
         )}
       </section>
 
-      {/* CHANGE #2: Variables card moved BELOW templates (closer to composer) */}
+      {/* Variables card BELOW templates (closer to composer) */}
       {activeId && (
         <section style={card}>
           <h2 style={{ marginTop: 0 }}>Variables</h2>
