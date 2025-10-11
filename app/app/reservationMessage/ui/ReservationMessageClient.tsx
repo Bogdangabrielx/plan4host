@@ -75,6 +75,16 @@ function replaceVars(s: string, vars: Record<string, string>) {
   return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => (vars?.[k] ?? `{{${k}}}`));
 }
 
+/** --------- Helpers (API fallback refresh) --------- */
+async function refreshVarDefsFor(propertyId: string, setVarDefs: (defs: VarDef[]) => void) {
+  const res = await fetch(`/api/room-variables/definitions?property=${encodeURIComponent(propertyId)}`, { cache: "no-store" });
+  const j = await res.json().catch(() => ({}));
+  const defs: VarDef[] = Array.isArray(j?.items)
+    ? j.items.map((d: any) => ({ id: String(d.id), key: String(d.key), label: String(d.label || d.key) }))
+    : [];
+  setVarDefs(defs);
+}
+
 /** ---------------- Component ---------------- */
 export default function ReservationMessageClient({
   initialProperties,
@@ -108,7 +118,7 @@ export default function ReservationMessageClient({
   const [savingRoomValues, setSavingRoomValues] = useState<"Idle" | "Saving…" | "Saved" | "Error">("Idle");
   const [creatingVar, setCreatingVar] = useState<boolean>(false);
   const [newVarName, setNewVarName] = useState<string>("");
-  const [rvError, setRvError] = useState<string | null>(null); // <- pentru mesaje clare în modal
+  const [rvError, setRvError] = useState<string | null>(null);
 
   const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
 
@@ -421,37 +431,63 @@ export default function ReservationMessageClient({
     setRvError(null);
     if (!propertyId || !newVarName.trim()) return;
     const label = newVarName.trim();
-    const key = slugify(label);
-    if (!key) return;
+    const baseKey = slugify(label);
+    if (!baseKey) { setRvError("Nume invalid"); return; }
+
     try {
       setCreatingVar(true);
       const res = await fetch("/api/room-variables/definitions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // trimitem și key și label, ca să fim compatibili cu orice variantă de backend
-        body: JSON.stringify({ property_id: propertyId, key, label }),
+        // trimitem și key și label (compatibil cu orice backend)
+        body: JSON.stringify({ property_id: propertyId, key: baseKey, label }),
       });
 
       if (res.status === 404) {
-        setRvError("Endpoint-ul pentru definiții lipsește (404). Verifică dacă /app/api/room-variables/definitions/route.ts există în build-ul live.");
+        setRvError("Endpoint-ul pentru definiții lipsește (404). Verifică /app/api/room-variables/definitions/route.ts.");
         setCreatingVar(false);
         return;
       }
 
-      const j = await res.json().catch(() => ({}));
-      if (!res.ok || !(j?.id || j?.definition_id)) {
-        throw new Error(j?.error || "Create failed");
+      // Unele implementări pot răspunde fără body
+      let j: any = null;
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("application/json")) {
+        j = await res.json().catch(() => null);
       }
-      const retId = String(j.id || j.definition_id);
-      const retKey = String(j.key || key);
-      setVarDefs((prev) => [...prev, { id: retId, key: retKey, label }]);
+
+      if (!res.ok) {
+        if (res.status === 409) {
+          // deja există — sincronizează și arată mesaj
+          await refreshVarDefsFor(propertyId, setVarDefs);
+          setRvError("Există deja o variabilă cu această cheie pentru această proprietate.");
+          setNewVarName("");
+          return;
+        }
+        // alt cod — încearcă refresh listă
+        await refreshVarDefsFor(propertyId, setVarDefs);
+        setRvError(`Create failed (HTTP ${res.status})`);
+        return;
+      }
+
+      const retId = j?.id || j?.definition_id || j?.item?.id || null;
+      const retKey = j?.key || j?.item?.key || baseKey;
+
+      if (retId) {
+        setVarDefs(prev => [...prev, { id: String(retId), key: String(retKey), label }]);
+      } else {
+        // dacă nu avem body/ID -> refresh listă și consideră succes
+        await refreshVarDefsFor(propertyId, setVarDefs);
+      }
       setNewVarName("");
+      setRvError(null);
     } catch (e: any) {
       setRvError(e?.message || "Create failed");
     } finally {
       setCreatingVar(false);
     }
   }
+
   async function deleteDefinition(id: string) {
     if (!confirm("Delete this variable for all rooms?")) return;
     setRvError(null);
@@ -473,18 +509,44 @@ export default function ReservationMessageClient({
     if (!propertyId || !selectedRoomId) return;
     try {
       setSavingRoomValues("Saving…");
-      const payload = { property_id: propertyId, room_id: selectedRoomId, values: valuesByKey };
+
+      // Transformăm map-ul într-o listă de obiecte cu cheile pe care backend-ul tău le așteaptă.
+      const valuesArray = Object.entries(valuesByKey).map(([k, v]) => ({
+        def_key: k,        // pentru backend-uri care cer 'def_key'
+        key: k,            // pentru backend-uri care cer 'key'
+        value: v ?? "",
+      }));
+
+      const payload = {
+        property_id: propertyId,
+        room_id: selectedRoomId,
+        values: valuesArray,
+      };
+
       const res = await fetch("/api/room-variables/values", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
+
       if (res.status === 404) {
         setSavingRoomValues("Error");
         setRvError("Endpoint-ul pentru valori lipsește (404).");
         return;
       }
-      const j = await res.json().catch(() => ({}));
-      if (!res.ok || !j?.ok) throw new Error(j?.error || "Save failed");
+
+      // poate fi fără body -> nu încerca neapărat json
+      let j: any = null;
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("application/json")) {
+        j = await res.json().catch(() => null);
+      }
+
+      if (!res.ok || (j && j.ok === false)) {
+        const msg = j?.error || `Save failed (HTTP ${res.status})`;
+        throw new Error(msg);
+      }
+
       setSavingRoomValues("Saved");
+      setRvError(null);
       setTimeout(() => setSavingRoomValues("Idle"), 800);
     } catch (e: any) {
       setSavingRoomValues("Error");
@@ -503,6 +565,9 @@ export default function ReservationMessageClient({
   /** --------- Render --------- */
   return (
     <div style={{ display: "grid", gap: 12, fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" }}>
+      {/* global chip style */}
+      <style>{`.rm-token{display:inline-block;padding:2px 6px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;font-weight:800;font-size:12px;margin:0 2px;}`}</style>
+
       <PlanHeaderBadge title="Automatic Messages" slot="header-right" />
 
       {/* Property selector */}
@@ -544,7 +609,7 @@ export default function ReservationMessageClient({
               >
                 Definitions
               </button>
-              {/* status compact în header-ul tab-urilor */}
+              {/* status compact în header-ul tab-urilor (nu iese din modal) */}
               {rvError && <span style={{ color: "var(--danger)", fontSize: 12, marginLeft: "auto" }}>{rvError}</span>}
             </div>
 
@@ -603,7 +668,7 @@ export default function ReservationMessageClient({
             {/* Tab: Definitions */}
             {rvTab === "defs" && (
               <div className="sb-card" style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 12, display: "grid", gap: 12 }}>
-                <div style={{ display: "grid", gap: 6, maxWidth: 720 }}>
+                <div style={{ display: "grid", gap: 6, maxWidth: 520 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Add variable</label>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
                     <input
@@ -753,7 +818,6 @@ export default function ReservationMessageClient({
                 </div>
               ))}
             </div>
-            <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
           </>
         )}
       </section>
@@ -947,7 +1011,7 @@ function markdownToHtmlInline(src: string): string {
   return s;
 }
 function titleToChips(title: string): string {
-  const esc = (str: string) => str.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;","&gt;":">","\"":"&quot;","'":"&#39;"}[c] as string));
+  const esc = (str: string) => str.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
   const s = String(title || "");
   return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => `<span class="rm-token" data-token="${esc(k)}" contenteditable="false">${esc(k)}</span>`);
 }
