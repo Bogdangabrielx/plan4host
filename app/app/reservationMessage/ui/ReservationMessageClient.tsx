@@ -75,16 +75,6 @@ function replaceVars(s: string, vars: Record<string, string>) {
   return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => (vars?.[k] ?? `{{${k}}}`));
 }
 
-/** --------- Helpers (API fallback refresh) --------- */
-async function refreshVarDefsFor(propertyId: string, setVarDefs: (defs: VarDef[]) => void) {
-  const res = await fetch(`/api/room-variables/definitions?property=${encodeURIComponent(propertyId)}`, { cache: "no-store" });
-  const j = await res.json().catch(() => ({}));
-  const defs: VarDef[] = Array.isArray(j?.items)
-    ? j.items.map((d: any) => ({ id: String(d.id), key: String(d.key), label: String(d.label || d.key) }))
-    : [];
-  setVarDefs(defs);
-}
-
 /** ---------------- Component ---------------- */
 export default function ReservationMessageClient({
   initialProperties,
@@ -134,9 +124,7 @@ export default function ReservationMessageClient({
         if (!alive) return;
         const items = Array.isArray(j?.items) ? j.items : [];
         setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
-      } finally {
-        if (alive) setLoadingList(false);
-      }
+      } finally { if (alive) setLoadingList(false); }
     })();
     return () => { alive = false; };
   }, [propertyId]);
@@ -147,13 +135,13 @@ export default function ReservationMessageClient({
     const keySnapshot = storageKey;
     let cancelled = false;
 
-    // clear UI fast
+    // clear UI
     setTpl(EMPTY);
     setTitleText("");
     if (titleRef.current) tokensTextToChips(titleRef.current, "");
     if (bodyRef.current) bodyRef.current.innerHTML = "";
 
-    // from LS
+    // LS
     try {
       const raw = localStorage.getItem(keySnapshot);
       const parsed: TemplateState | null = raw ? JSON.parse(raw) : null;
@@ -166,21 +154,19 @@ export default function ReservationMessageClient({
       }
     } catch {
       if (!cancelled && keySnapshot === storageKey) {
-        setTpl(EMPTY);
-        setTitleText("");
+        setTpl(EMPTY); setTitleText("");
         if (bodyRef.current) bodyRef.current.innerHTML = "";
       }
     }
 
-    // from API
+    // API
     (async () => {
       try {
         const q = activeId ? `id=${encodeURIComponent(activeId)}` : `property=${encodeURIComponent(propertyId)}`;
         const res = await fetch(`/api/reservation-message/template?${q}`, { cache: "no-store" });
         if (!res.ok) return;
         const j = await res.json();
-        const t = j?.template;
-        if (!t) return;
+        const t = j?.template; if (!t) return;
         const blocks: Block[] = (t.blocks as any[]).map((b) => ({ id: uid(), type: b.type, text: b.text ?? "" }));
         const fields: ManualField[] = (t.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label, defaultValue: (f as any).default_value ?? null }));
         const next: TemplateState = { status: (t.status || "draft") as any, blocks, fields };
@@ -191,7 +177,7 @@ export default function ReservationMessageClient({
           if (titleRef.current) tokensTextToChips(titleRef.current, title);
           if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
         }
-      } catch { /* ignore */ }
+      } catch {}
     })();
 
     return () => { cancelled = true; };
@@ -211,12 +197,11 @@ export default function ReservationMessageClient({
     return () => { alive = false; };
   }, [sb, propertyId]);
 
-  /** --------- Load Rooms + Variable Definitions on property change --------- */
+  /** --------- Load Rooms + Variable Definitions --------- */
   useEffect(() => {
     if (!propertyId) { setRooms([]); setVarDefs([]); setSelectedRoomId(null); setValuesByKey({}); return; }
     let alive = true;
     (async () => {
-      // rooms
       try {
         const r = await sb.from("rooms").select("id,name").eq("property_id", propertyId).order("name", { ascending: true });
         if (!alive) return;
@@ -225,16 +210,15 @@ export default function ReservationMessageClient({
         setSelectedRoomId(rr[0]?.id || null);
       } catch { if (alive) setRooms([]); }
 
-      // var defs
       try {
         const res = await fetch(`/api/room-variables/definitions?property=${encodeURIComponent(propertyId)}`, { cache: "no-store" });
         const j = await res.json().catch(() => ({}));
         if (!alive) return;
-        const defs: VarDef[] = Array.isArray(j?.items) ? j.items.map((d: any) => ({ id: String(d.id), key: String(d.key), label: String(d.label || d.key) })) : [];
+        const defs: VarDef[] = Array.isArray(j?.items)
+          ? j.items.map((d: any) => ({ id: String(d.id), key: String(d.key), label: String(d.label || d.key) }))
+          : [];
         setVarDefs(defs);
-      } catch {
-        if (alive) setVarDefs([]);
-      }
+      } catch { if (alive) setVarDefs([]); }
     })();
     return () => { alive = false; };
   }, [sb, propertyId]);
@@ -245,12 +229,20 @@ export default function ReservationMessageClient({
     let alive = true;
     (async () => {
       try {
-        const res = await fetch(`/api/room-variables/values?property=${encodeURIComponent(propertyId)}&room=${encodeURIComponent(selectedRoomId)}`, { cache: "no-store" });
+        const res = await fetch(
+          `/api/room-variables/values?property=${encodeURIComponent(propertyId)}&room=${encodeURIComponent(selectedRoomId)}`,
+          { cache: "no-store" }
+        );
         const j = await res.json().catch(() => ({}));
         if (!alive) return;
+
+        // accept both shapes from API: {def_key,value} OR {key,value}
         const byKey: Record<string, string> = {};
-        const arr: Array<{ key: string; value: string }> = Array.isArray(j?.items) ? j.items : [];
-        for (const kv of arr) byKey[String(kv.key)] = String(kv.value ?? "");
+        const arr: Array<{ def_key?: string; key?: string; value: string }> = Array.isArray(j?.items) ? j.items : [];
+        for (const kv of arr) {
+          const k = (kv as any).def_key ?? (kv as any).key;
+          if (k) byKey[String(k)] = String(kv.value ?? "");
+        }
         for (const d of varDefs) if (!(d.key in byKey)) byKey[d.key] = "";
         setValuesByKey(byKey);
       } catch {
@@ -387,7 +379,7 @@ export default function ReservationMessageClient({
     }
   }
 
-  /** --------- Custom fields (template-local) --------- */
+  /** --------- Custom fields (template-local; kept) --------- */
   function addFieldFromName(name: string) {
     const label = name.trim();
     if (!label) return;
@@ -431,56 +423,45 @@ export default function ReservationMessageClient({
     setRvError(null);
     if (!propertyId || !newVarName.trim()) return;
     const label = newVarName.trim();
-    const baseKey = slugify(label);
-    if (!baseKey) { setRvError("Nume invalid"); return; }
-
+    const key = slugify(label);
+    if (!key) return;
     try {
       setCreatingVar(true);
       const res = await fetch("/api/room-variables/definitions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // trimitem și key și label (compatibil cu orice backend)
-        body: JSON.stringify({ property_id: propertyId, key: baseKey, label }),
+        body: JSON.stringify({ property_id: propertyId, key, label }),
       });
 
       if (res.status === 404) {
-        setRvError("Endpoint-ul pentru definiții lipsește (404). Verifică /app/api/room-variables/definitions/route.ts.");
+        setRvError("Endpoint-ul pentru definiții lipsește (404). Verifică build-ul/route.");
         setCreatingVar(false);
         return;
       }
 
-      // Unele implementări pot răspunde fără body
-      let j: any = null;
-      const ct = res.headers.get("content-type") || "";
-      if (ct.includes("application/json")) {
-        j = await res.json().catch(() => null);
-      }
-
-      if (!res.ok) {
-        if (res.status === 409) {
-          // deja există — sincronizează și arată mesaj
-          await refreshVarDefsFor(propertyId, setVarDefs);
-          setRvError("Există deja o variabilă cu această cheie pentru această proprietate.");
-          setNewVarName("");
-          return;
-        }
-        // alt cod — încearcă refresh listă
-        await refreshVarDefsFor(propertyId, setVarDefs);
-        setRvError(`Create failed (HTTP ${res.status})`);
+      // 409 = deja există: facem refresh listă, dar nu arătăm "Create failed"
+      if (res.status === 409) {
+        try {
+          const rf = await fetch(`/api/room-variables/definitions?property=${encodeURIComponent(propertyId)}`, { cache: "no-store" });
+          const jf = await rf.json().catch(() => ({}));
+          const defs: VarDef[] = Array.isArray(jf?.items)
+            ? jf.items.map((d: any) => ({ id: String(d.id), key: String(d.key), label: String(d.label || d.key) }))
+            : [];
+          setVarDefs(defs);
+        } catch {}
+        setNewVarName("");
+        setCreatingVar(false);
         return;
       }
 
-      const retId = j?.id || j?.definition_id || j?.item?.id || null;
-      const retKey = j?.key || j?.item?.key || baseKey;
-
-      if (retId) {
-        setVarDefs(prev => [...prev, { id: String(retId), key: String(retKey), label }]);
-      } else {
-        // dacă nu avem body/ID -> refresh listă și consideră succes
-        await refreshVarDefsFor(propertyId, setVarDefs);
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || !(j?.id || j?.definition_id)) {
+        throw new Error(j?.error || "Create failed");
       }
+      const retId = String(j.id || j.definition_id);
+      const retKey = String(j.key || key);
+      setVarDefs((prev) => [...prev, { id: retId, key: retKey, label }]);
       setNewVarName("");
-      setRvError(null);
     } catch (e: any) {
       setRvError(e?.message || "Create failed");
     } finally {
@@ -492,11 +473,10 @@ export default function ReservationMessageClient({
     if (!confirm("Delete this variable for all rooms?")) return;
     setRvError(null);
     try {
-      const res = await fetch(`/api/room-variables/definitions?id=${encodeURIComponent(id)}`, { method: "DELETE" });
-      if (res.status === 404) {
-        setRvError("Endpoint-ul pentru definiții lipsește (404).");
-        return;
-      }
+      // trimitem și property pentru RLS/politici
+      const url = `/api/room-variables/definitions?id=${encodeURIComponent(id)}&property=${encodeURIComponent(propertyId || "")}`;
+      const res = await fetch(url, { method: "DELETE" });
+      if (res.status === 404) { setRvError("Endpoint-ul pentru definiții lipsește (404)."); return; }
       if (!res.ok) throw new Error(await res.text());
       setVarDefs((prev) => prev.filter((d) => d.id !== id));
       const def = varDefs.find((d) => d.id === id);
@@ -510,21 +490,18 @@ export default function ReservationMessageClient({
     try {
       setSavingRoomValues("Saving…");
 
-      // Transformăm map-ul într-o listă de obiecte cu cheile pe care backend-ul tău le așteaptă.
-      const valuesArray = Object.entries(valuesByKey).map(([k, v]) => ({
-        def_key: k,        // pentru backend-uri care cer 'def_key'
-        key: k,            // pentru backend-uri care cer 'key'
-        value: v ?? "",
-      }));
-
-      const payload = {
+      // IMPORTANT: API așteaptă items[] cu def_key / def_id
+      const items = varDefs.map((d) => ({
         property_id: propertyId,
         room_id: selectedRoomId,
-        values: valuesArray,
-      };
+        def_key: d.key,                 // <- cheia definției (nu simple "key")
+        value: valuesByKey[d.key] ?? "",
+      }));
 
       const res = await fetch("/api/room-variables/values", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
       });
 
       if (res.status === 404) {
@@ -532,21 +509,9 @@ export default function ReservationMessageClient({
         setRvError("Endpoint-ul pentru valori lipsește (404).");
         return;
       }
-
-      // poate fi fără body -> nu încerca neapărat json
-      let j: any = null;
-      const ct = res.headers.get("content-type") || "";
-      if (ct.includes("application/json")) {
-        j = await res.json().catch(() => null);
-      }
-
-      if (!res.ok || (j && j.ok === false)) {
-        const msg = j?.error || `Save failed (HTTP ${res.status})`;
-        throw new Error(msg);
-      }
-
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || !j?.ok) throw new Error(j?.error || "Save failed");
       setSavingRoomValues("Saved");
-      setRvError(null);
       setTimeout(() => setSavingRoomValues("Idle"), 800);
     } catch (e: any) {
       setSavingRoomValues("Error");
@@ -555,7 +520,7 @@ export default function ReservationMessageClient({
   }
 
   /** --------- Styles --------- */
-  const card: React.CSSProperties = { background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 18 };
+  const card: React.CSSProperties = { background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 };
   const input: React.CSSProperties = { padding: 10, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, width: "100%", boxSizing: "border-box", fontFamily: "inherit" };
   const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 700, cursor: "pointer" };
   const btnPri: React.CSSProperties = { ...btn, background: "var(--primary)", color: "#0c111b", border: "1px solid var(--border)" };
@@ -565,9 +530,6 @@ export default function ReservationMessageClient({
   /** --------- Render --------- */
   return (
     <div style={{ display: "grid", gap: 12, fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" }}>
-      {/* global chip style */}
-      <style>{`.rm-token{display:inline-block;padding:2px 6px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;font-weight:800;font-size:12px;margin:0 2px;}`}</style>
-
       <PlanHeaderBadge title="Automatic Messages" slot="header-right" />
 
       {/* Property selector */}
@@ -596,7 +558,7 @@ export default function ReservationMessageClient({
         {rvOpen && (
           <div style={{ borderTop: "1px solid var(--border)", padding: 12, display: "grid", gap: 12 }}>
             {/* Tabs */}
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
               <button
                 style={{ ...btn, background: rvTab === "values" ? "var(--primary)" : "var(--card)", color: rvTab === "values" ? "#0c111b" : "var(--text)" }}
                 onClick={() => setRvTab("values")}
@@ -609,8 +571,13 @@ export default function ReservationMessageClient({
               >
                 Definitions
               </button>
-              {/* status compact în header-ul tab-urilor (nu iese din modal) */}
-              {rvError && <span style={{ color: "var(--danger)", fontSize: 12, marginLeft: "auto" }}>{rvError}</span>}
+
+              {/* status/erori compact */}
+              {rvError && (
+                <span style={{ marginLeft: "auto", color: "var(--danger)", fontSize: 12, maxWidth: 320, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {rvError}
+                </span>
+              )}
             </div>
 
             {/* Tab: Values */}
@@ -683,7 +650,6 @@ export default function ReservationMessageClient({
                       {creatingVar ? "Adding…" : "Add"}
                     </button>
                   </div>
-                  {/* preview cheie generată ca chip, fără acolade */}
                   {newVarName.trim() && (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                       <small style={{ color: "var(--muted)" }}>Key (auto):</small>
@@ -732,7 +698,7 @@ export default function ReservationMessageClient({
         )}
       </section>
 
-      {/* Variables row: built-ins + GLOBAL ROOM VARS + custom (template-local) — doar când un template e activ */}
+      {/* Variables row pentru editor — fără acolade în UI, doar chip-uri/butoane */}
       {activeId && (
         <section style={card}>
           <h2 style={{ marginTop: 0 }}>Variables</h2>
@@ -818,6 +784,7 @@ export default function ReservationMessageClient({
                 </div>
               ))}
             </div>
+            <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
           </>
         )}
       </section>
@@ -943,7 +910,8 @@ function insertAnchorAtCaret(container: HTMLDivElement, url: string, text: strin
   const range = sel.getRangeAt(0);
   if (!isRangeInside(range, container)) { try { container.focus(); } catch {} }
   const a = document.createElement("a");
-  a.href = url; a.target = "_blank"; a.rel = "noreferrer"; a.textContent = text || url;
+  a.href = url; a.target = "_blank"; a.rel = "noreferrer";
+  a.textContent = text || url;
   range.deleteContents();
   range.insertNode(a);
   const space = document.createTextNode(" ");
@@ -1011,7 +979,7 @@ function markdownToHtmlInline(src: string): string {
   return s;
 }
 function titleToChips(title: string): string {
-  const esc = (str: string) => str.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
+  const esc = (str: string) => str.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;"," >": "&gt;", "\"":"&quot;","'":"&#39;"}[c] as string));
   const s = String(title || "");
   return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => `<span class="rm-token" data-token="${esc(k)}" contenteditable="false">${esc(k)}</span>`);
 }
