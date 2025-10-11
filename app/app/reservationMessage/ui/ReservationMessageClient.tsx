@@ -15,7 +15,7 @@ type Block =
   | { id: string; type: "divider" };
 
 type ManualField = {
-  uid: string; // UI-only stable key
+  uid: string;
   key: string;
   label: string;
   defaultValue?: string | null;
@@ -89,7 +89,7 @@ export default function ReservationMessageClient({
   const [templates, setTemplates] = useState<Array<{ id: string; title: string; status: "draft" | "published"; updated_at: string }>>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loadingList, setLoadingList] = useState<boolean>(false);
-  const [titleText, setTitleText] = useState<string>("");
+  const [, setTitleText] = useState<string>("");
   const [focusedInput, setFocusedInput] = useState<null | "title" | "body">(null);
   const [saving, setSaving] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
   const { setPill } = useHeader();
@@ -183,7 +183,7 @@ export default function ReservationMessageClient({
     return () => { cancelled = true; };
   }, [storageKey, propertyId, activeId]);
 
-  /** --------- Detect if property has room types (for room_type chip) --------- */
+  /** --------- Detect if property has room types --------- */
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -236,7 +236,7 @@ export default function ReservationMessageClient({
         const j = await res.json().catch(() => ({}));
         if (!alive) return;
 
-        // accept both shapes from API: {def_key,value} OR {key,value}
+        // accept {def_key,value} sau {key,value}
         const byKey: Record<string, string> = {};
         const arr: Array<{ def_key?: string; key?: string; value: string }> = Array.isArray(j?.items) ? j.items : [];
         for (const kv of arr) {
@@ -439,8 +439,8 @@ export default function ReservationMessageClient({
         return;
       }
 
-      // 409 = deja există: facem refresh listă, dar nu arătăm "Create failed"
       if (res.status === 409) {
+        // deja există -> reîncarc lista
         try {
           const rf = await fetch(`/api/room-variables/definitions?property=${encodeURIComponent(propertyId)}`, { cache: "no-store" });
           const jf = await rf.json().catch(() => ({}));
@@ -455,9 +455,7 @@ export default function ReservationMessageClient({
       }
 
       const j = await res.json().catch(() => ({}));
-      if (!res.ok || !(j?.id || j?.definition_id)) {
-        throw new Error(j?.error || "Create failed");
-      }
+      if (!res.ok || !(j?.id || j?.definition_id)) throw new Error(j?.error || "Create failed");
       const retId = String(j.id || j.definition_id);
       const retKey = String(j.key || key);
       setVarDefs((prev) => [...prev, { id: retId, key: retKey, label }]);
@@ -473,14 +471,29 @@ export default function ReservationMessageClient({
     if (!confirm("Delete this variable for all rooms?")) return;
     setRvError(null);
     try {
-      // trimitem și property pentru RLS/politici
-      const url = `/api/room-variables/definitions?id=${encodeURIComponent(id)}&property=${encodeURIComponent(propertyId || "")}`;
-      const res = await fetch(url, { method: "DELETE" });
+      // încerc DELETE nativ
+      let res = await fetch(`/api/room-variables/definitions?id=${encodeURIComponent(id)}&property=${encodeURIComponent(propertyId || "")}`, { method: "DELETE" });
+      if (res.status === 405) {
+        // fallback: method override via POST
+        res = await fetch("/api/room-variables/definitions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ _method: "DELETE", id, property_id: propertyId }),
+        });
+      }
       if (res.status === 404) { setRvError("Endpoint-ul pentru definiții lipsește (404)."); return; }
       if (!res.ok) throw new Error(await res.text());
-      setVarDefs((prev) => prev.filter((d) => d.id !== id));
-      const def = varDefs.find((d) => d.id === id);
-      if (def) setValuesByKey((prev) => { const n = { ...prev }; delete n[def.key]; return n; });
+
+      // reload curat lista (evităm mismatch key/id)
+      const rf = await fetch(`/api/room-variables/definitions?property=${encodeURIComponent(propertyId || "")}`, { cache: "no-store" });
+      const jf = await rf.json().catch(() => ({}));
+      const defs: VarDef[] = Array.isArray(jf?.items)
+        ? jf.items.map((d: any) => ({ id: String(d.id), key: String(d.key), label: String(d.label || d.key) }))
+        : [];
+      setVarDefs(defs);
+      // curăț și local map-ul
+      const removed = varDefs.find((d) => d.id === id);
+      if (removed) setValuesByKey((prev) => { const n = { ...prev }; delete n[removed.key]; return n; });
     } catch (e: any) { setRvError(e?.message || "Delete failed"); }
   }
 
@@ -490,18 +503,20 @@ export default function ReservationMessageClient({
     try {
       setSavingRoomValues("Saving…");
 
-      // IMPORTANT: API așteaptă items[] cu def_key / def_id
+      // API tolerant: trimitem top-level + items[]
       const items = varDefs.map((d) => ({
-        property_id: propertyId,
-        room_id: selectedRoomId,
-        def_key: d.key,                 // <- cheia definției (nu simple "key")
+        def_key: d.key,
         value: valuesByKey[d.key] ?? "",
       }));
 
       const res = await fetch("/api/room-variables/values", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({
+          property_id: propertyId,
+          room_id: selectedRoomId,
+          items, // [{def_key,value}]
+        }),
       });
 
       if (res.status === 404) {
@@ -698,7 +713,7 @@ export default function ReservationMessageClient({
         )}
       </section>
 
-      {/* Variables row pentru editor — fără acolade în UI, doar chip-uri/butoane */}
+      {/* Variables row pentru editor */}
       {activeId && (
         <section style={card}>
           <h2 style={{ marginTop: 0 }}>Variables</h2>
@@ -710,11 +725,9 @@ export default function ReservationMessageClient({
             {hasRoomTypes && (
               <button key="room_type" style={btn} onClick={() => insertVarIntoFocused(`{{room_type}}`)} title="Room type">room_type</button>
             )}
-            {/* GLOBAL ROOM VARS */}
             {varDefs.map((v) => (
               <button key={`global:${v.key}`} style={btn} onClick={() => insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
             ))}
-            {/* OLD per-template custom vars (kept) */}
             {tpl.fields.map((f) => (
               <span key={f.uid} className="rm-token" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                 <button style={btn} onClick={() => insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
@@ -758,7 +771,8 @@ export default function ReservationMessageClient({
           </div>
         ) : (
           <>
-            <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
+            {/* card mai lat ca să nu iasă pill-ul în afară */}
+            <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
               {templates.map((t) => (
                 <div
                   key={t.id}
@@ -773,7 +787,12 @@ export default function ReservationMessageClient({
                       style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                       dangerouslySetInnerHTML={{ __html: titleToChips(t.title || "(Untitled)") }}
                     />
-                    <span className="sb-badge" style={{ background: t.status === "published" ? "var(--primary)" : "var(--card)", color: t.status === "published" ? "#0c111b" : "var(--muted)" }}>{t.status}</span>
+                    <span
+                      className="sb-badge"
+                      style={{ background: t.status === "published" ? "var(--primary)" : "var(--card)", color: t.status === "published" ? "#0c111b" : "var(--muted)", flexShrink: 0, padding: "2px 8px", borderRadius: 999 }}
+                    >
+                      {t.status}
+                    </span>
                   </div>
                   <small style={{ color: "var(--muted)" }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -979,7 +998,7 @@ function markdownToHtmlInline(src: string): string {
   return s;
 }
 function titleToChips(title: string): string {
-  const esc = (str: string) => str.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;"," >": "&gt;", "\"":"&quot;","'":"&#39;"}[c] as string));
+  const esc = (str: string) => str.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
   const s = String(title || "");
   return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => `<span class="rm-token" data-token="${esc(k)}" contenteditable="false">${esc(k)}</span>`);
 }
