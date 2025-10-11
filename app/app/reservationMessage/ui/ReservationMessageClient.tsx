@@ -603,7 +603,7 @@ export default function ReservationMessageClient({
             {/* Tab: Definitions */}
             {rvTab === "defs" && (
               <div className="sb-card" style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 12, display: "grid", gap: 12 }}>
-                <div style={{ display: "grid", gap: 6, maxWidth: 520 }}>
+                <div style={{ display: "grid", gap: 6, maxWidth: 720 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Add variable</label>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
                     <input
