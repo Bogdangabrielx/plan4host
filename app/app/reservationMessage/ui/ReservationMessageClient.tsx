@@ -51,7 +51,7 @@ function slugify(s: string) {
   return (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
 }
 function escapeHtml(s: string) {
-  return (s || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
+  return (s || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;"," >": "&gt;", "\"":"&quot;","'":"&#39;"}[c] as string));
 }
 function mdToHtml(src: string) {
   let s = escapeHtml(src);
@@ -73,6 +73,21 @@ function renderTemplateToHtml(t: TemplateState, vars: Record<string, string>) {
 function replaceVars(s: string, vars: Record<string, string>) {
   if (!s) return "";
   return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => (vars?.[k] ?? `{{${k}}}`));
+}
+
+/** ---------------- Small-screen helper (for mobile tap toggle) ---------------- */
+function useIsSmall() {
+  const [isSmall, setIsSmall] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia?.("(max-width: 560px), (pointer: coarse)")?.matches ?? false;
+  });
+  useEffect(() => {
+    const mq = window.matchMedia?.("(max-width: 560px), (pointer: coarse)");
+    const on = (e: MediaQueryListEvent) => setIsSmall(e.matches);
+    try { mq?.addEventListener("change", on); } catch { mq?.addListener?.(on); }
+    return () => { try { mq?.removeEventListener("change", on); } catch { mq?.removeListener?.(on); } };
+  }, []);
+  return isSmall;
 }
 
 /** ---------------- Component ---------------- */
@@ -97,6 +112,7 @@ export default function ReservationMessageClient({
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const sb = useMemo(() => createClient(), []);
   const [hasRoomTypes, setHasRoomTypes] = useState(false);
+  const isSmall = useIsSmall(); // ← for mobile tap-to-toggle
 
   // Room Variables UI state
   const [rvOpen, setRvOpen] = useState<boolean>(false);
@@ -714,7 +730,69 @@ export default function ReservationMessageClient({
         )}
       </section>
 
-      {/* Variables row pentru editor — fără acolade în UI, doar chip-uri/butoane */}
+      {/* Templates header + grid */}
+      <section className="sb-card" style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+          <strong>Templates</strong>
+          <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Add template</button>
+        </div>
+        {loadingList ? (
+          <div style={{ color: "var(--muted)" }}>Loading…</div>
+        ) : templates.length === 0 ? (
+          <div className="sb-card" style={{ padding: 16, textAlign: "center" }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>No templates yet</div>
+            <div style={{ color: "var(--muted)", marginBottom: 10 }}>Create your first template for this property.</div>
+            <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Create your first template</button>
+          </div>
+        ) : (
+          <>
+            {/* CHANGE #1: Make cards wider so status pill never overflows */}
+            <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
+              {templates.map((t) => (
+                <div
+                  key={t.id}
+                  className="sb-card"
+                  onClick={() => {
+                    // CHANGE #3 (mobile): tap same template toggles open/close
+                    if (isSmall && activeId === t.id) setActiveId(null);
+                    else setActiveId(t.id);
+                  }}
+                  style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12, display: "grid", gap: 6, cursor: "pointer" }}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                    <strong
+                      style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                      dangerouslySetInnerHTML={{ __html: titleToChips(t.title || "(Untitled)") }}
+                    />
+                    <span
+                      className="sb-badge"
+                      style={{
+                        display: "inline-block",
+                        whiteSpace: "nowrap",
+                        background: t.status === "published" ? "var(--primary)" : "var(--card)",
+                        color: t.status === "published" ? "#0c111b" : "var(--muted)"
+                      }}
+                    >
+                      {t.status}
+                    </span>
+                  </div>
+                  <small style={{ color: "var(--muted)" }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); setActiveId(t.id); }}>Edit</button>
+                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); onDuplicate(t.id, t.title); }}>Duplicate</button>
+                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); onDelete(t.id); }}>Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
+          </>
+        )}
+      </section>
+
+      {/* CHANGE #2: Variables card moved BELOW templates (closer to composer) */}
       {activeId && (
         <section style={card}>
           <h2 style={{ marginTop: 0 }}>Variables</h2>
@@ -757,53 +835,6 @@ export default function ReservationMessageClient({
           </div>
         </section>
       )}
-
-      {/* Templates header + grid */}
-      <section className="sb-card" style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
-          <strong>Templates</strong>
-          <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Add template</button>
-        </div>
-        {loadingList ? (
-          <div style={{ color: "var(--muted)" }}>Loading…</div>
-        ) : templates.length === 0 ? (
-          <div className="sb-card" style={{ padding: 16, textAlign: "center" }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>No templates yet</div>
-            <div style={{ color: "var(--muted)", marginBottom: 10 }}>Create your first template for this property.</div>
-            <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Create your first template</button>
-          </div>
-        ) : (
-          <>
-            <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
-              {templates.map((t) => (
-                <div
-                  key={t.id}
-                  className="sb-card"
-                  onClick={() => setActiveId(t.id)}
-                  style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12, display: "grid", gap: 6, cursor: "pointer" }}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                    <strong
-                      style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                      dangerouslySetInnerHTML={{ __html: titleToChips(t.title || "(Untitled)") }}
-                    />
-                    <span className="sb-badge" style={{ background: t.status === "published" ? "var(--primary)" : "var(--card)", color: t.status === "published" ? "#0c111b" : "var(--muted)" }}>{t.status}</span>
-                  </div>
-                  <small style={{ color: "var(--muted)" }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); setActiveId(t.id); }}>Edit</button>
-                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); onDuplicate(t.id, t.title); }}>Duplicate</button>
-                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); onDelete(t.id); }}>Delete</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
-          </>
-        )}
-      </section>
 
       {/* Message composer — only when a template is active */}
       {activeId && (
