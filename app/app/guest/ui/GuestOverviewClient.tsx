@@ -981,7 +981,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   {canEditFormBooking && (
                     <button
                       type="button"
-                      {...useTap(() => setEditModal({ propertyId, bookingId: String(it.id) }))}
+                      {...useTap(() => setEditModal({ propertyId, bookingId: String(it.id), confirmOnSave: kind === 'green' }))}
                       style={{
                         ...BTN_TOUCH_STYLE,
                         borderRadius: 21,
@@ -992,9 +992,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         cursor: "pointer",
                         width: isSmall ? "100%" : undefined,
                       }}
-                      title="Confirm booking"
+                      title={kind === 'green' ? "Modify booking" : "Confirm booking"}
                     >
-                      Confirm booking
+                      {kind === 'green' ? 'Modify booking' : 'Confirm booking'}
                     </button>
                   )}
                 </div>
@@ -1111,11 +1111,13 @@ function EditFormBookingModal({
   bookingId,
   onClose,
   onSaved,
+  confirmOnSave,
 }: {
   propertyId: string;
   bookingId: string;
   onClose: () => void;
   onSaved: () => void;
+  confirmOnSave?: boolean;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const isSmall = useIsSmall();
@@ -1126,6 +1128,8 @@ function EditFormBookingModal({
   const [popupMsg, setPopupMsg] = useState<string | null>(null);
   const [popupTitle, setPopupTitle] = useState<string | null>(null);
   const [docs, setDocs] = useState<Array<{ id:string; doc_type:string|null; mime_type:string|null; url:string|null }>>([]);
+  const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
+  const [confirmBusy, setConfirmBusy] = useState<boolean>(false);
 
   // booking fields
   const [startDate, setStartDate] = useState<string>("");
@@ -1219,7 +1223,7 @@ function EditFormBookingModal({
     return true;
   }
 
-  async function onSave() {
+  async function performSave() {
     if (!valid() || saving) return;
     setSaving(true);
     setError(null);
@@ -1283,6 +1287,14 @@ function EditFormBookingModal({
     }
   }
 
+  async function onSave() {
+    if (confirmOnSave) {
+      setConfirmOpen(true);
+      return;
+    }
+    await performSave();
+  }
+
   async function onDelete() {
     if (deleting) return;
     const sure = confirm("Delete this form booking? This cannot be undone.");
@@ -1330,6 +1342,29 @@ function EditFormBookingModal({
           </div>
         </div>
       )}
+      {confirmOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e)=>{ e.stopPropagation(); setConfirmOpen(false); }}
+          style={{ position:'fixed', inset:0, zIndex: 220, display:'grid', placeItems:'center', padding:12, background:'rgba(0,0,0,.55)' }}
+        >
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width: 'min(460px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 8 }}>
+              <strong>Modify reservation?</strong>
+            </div>
+            <div style={{ color:'var(--text)', marginBottom: 12 }}>
+              You are about to modify an existing reservation. Do you want to continue?
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+              <button className="sb-btn" onClick={()=>setConfirmOpen(false)} disabled={confirmBusy}>Close</button>
+              <button className="sb-btn sb-btn--primary" onClick={async ()=>{ setConfirmBusy(true); try { await performSave(); setConfirmOpen(false);} finally { setConfirmBusy(false);} }} disabled={confirmBusy}>
+                {confirmBusy ? 'Saving…' : 'OK'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={card}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:8 }}>
           <strong>Confirm booking</strong>
@@ -1357,9 +1392,22 @@ function EditFormBookingModal({
                 <div>
                   <strong>Phone:</strong> {guestPhone ? (()=>{
                     const digits = String(guestPhone).replace(/\D/g,'');
-                    const wa = digits ? `https://wa.me/${digits}` : '';
+                    const waApp = digits ? `whatsapp://send?phone=${digits}` : '';
+                    const waWeb = digits ? `https://wa.me/${digits}` : '';
+                    const onTap = (e: React.MouseEvent<HTMLAnchorElement>) => {
+                      try {
+                        if (!digits) return;
+                        e.preventDefault();
+                        // Try to open the native app first
+                        (window as any).location.href = waApp;
+                        // Fallback to web after a tiny delay
+                        setTimeout(() => {
+                          try { window.open(waWeb, '_blank'); } catch {}
+                        }, 150);
+                      } catch {}
+                    };
                     return (
-                      <a href={wa} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', textDecoration: 'none', marginLeft: 6 }}>
+                      <a href={waWeb} onClick={onTap} style={{ color: 'var(--primary)', textDecoration: 'none', marginLeft: 6 }}>
                         {guestPhone}
                       </a>
                     );
