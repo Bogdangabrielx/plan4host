@@ -1630,6 +1630,24 @@ function RMContent({ propertyId, row, templateId }: { propertyId: string; row: a
     return out.join("\n");
   }
 
+  // Compute which variables are actually used inside the template blocks (title/body)
+  const usedFieldKeys = useMemo(() => {
+    const set = new Set<string>();
+    try {
+      const blocks: Array<{ type:string; text?:string }> = Array.isArray((tpl as any)?.blocks) ? (tpl as any).blocks : [];
+      const re = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
+      for (const b of blocks) {
+        const s = (b as any)?.text || "";
+        let m: RegExpExecArray | null;
+        while ((m = re.exec(s))) {
+          const k = (m[1] || "").trim();
+          if (k) set.add(k);
+        }
+      }
+    } catch {}
+    return set;
+  }, [tpl]);
+
   // rebuild preview on tpl/valuesPreview/time/date change (only after commit on blur)
   useEffect(() => {
     if (!tpl) { setPreview(""); return; }
@@ -1676,9 +1694,12 @@ function RMContent({ propertyId, row, templateId }: { propertyId: string; row: a
         </div>
       ) : (
         <>
-          {(Array.isArray(tpl.fields) && tpl.fields.length > 0) && (
+          {(Array.isArray(tpl.fields) && tpl.fields.length > 0) && (() => {
+            const fields = (tpl.fields as any[]).filter((f:any) => usedFieldKeys.has(String(f.key || '').trim()));
+            if (fields.length === 0) return null;
+            return (
             <div style={{ display: "grid", gap: 8 }}>
-              {tpl.fields.map((f: any) => (
+              {fields.map((f: any) => (
                 <div key={f.key} style={{ display: "grid", gap: 6 }}>
                   <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{f.label}</label>
                   <input
@@ -1692,7 +1713,8 @@ function RMContent({ propertyId, row, templateId }: { propertyId: string; row: a
                 </div>
               ))}
             </div>
-          )}
+            );
+          })()}
 
           <div
             className="rm-email-preview"
