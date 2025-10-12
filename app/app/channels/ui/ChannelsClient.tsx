@@ -873,6 +873,7 @@ function ManageTypeModal({
   const [url, setUrl] = useState("");
   const [customProvider, setCustomProvider] = useState("");
   const supa = useMemo(() => createClient(), []);
+  const [confirmDel, setConfirmDel] = useState<null | { id: string; provider: string | null }>(null);
 
   // OTA color map (UI-only), persisted per room type
   const [colorMap, setColorMap] = useState<Record<string,string>>({});
@@ -1250,12 +1251,36 @@ function ManageTypeModal({
                   <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontSize: 12 }}>
                     <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> active
                   </label>
-                  <button className="sb-btn" onClick={() => onDelete(ii.id)}>Delete</button>
+                  <button className="sb-btn" onClick={() => setConfirmDel({ id: ii.id, provider: ii.provider || "Unknown" })}>Delete</button>
                 </div>
               </li>
             );
           })}
         </ul>
+      )}
+      {/* Confirm delete overlay */}
+      {confirmDel && (
+        <div role="dialog" aria-modal="true" onClick={() => setConfirmDel(null)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
+            <div style={{ display:'grid', gap:8 }}>
+              <strong>Delete iCal feed</strong>
+              <div style={{ color:'var(--muted)' }}>
+                You are about to delete the iCal link for <strong>{confirmDel.provider || 'Unknown'}</strong>. This action is irreversible.
+              </div>
+              <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
+                <button className="sb-btn" onClick={() => setConfirmDel(null)}>Cancel</button>
+                <button
+                  className="sb-btn sb-btn--primary"
+                  onClick={() => { const id = confirmDel.id; setConfirmDel(null); onDelete(id); }}
+                  style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </InnerModal>
   );
@@ -1276,6 +1301,7 @@ function ManageRoomModal({
   const [url, setUrl] = useState("");
   const [customProvider, setCustomProvider] = useState("");
   const supa = useMemo(() => createClient(), []);
+  const [confirmDel, setConfirmDel] = useState<null | { id: string; provider: string | null }>(null);
 
   // OTA color map (UI-only), persisted per room
   const [colorMap, setColorMap] = useState<Record<string,string>>({});
@@ -1410,7 +1436,7 @@ function ManageRoomModal({
       <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, marginBottom: 12 }}>
         <div style={{ display: "grid", gap: 8 }}>
           <div style={{ display: "grid", gap: 6 }}>
-            <label style={label}>Provider</label>
+            <label style={label}>Select provider</label>
             <select
               className="sb-select"
               value={provider}
@@ -1576,12 +1602,36 @@ function ManageRoomModal({
                   <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontSize: 12 }}>
                     <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> active
                   </label>
-                  <button className="sb-btn" onClick={() => onDelete(ii.id)}>Delete</button>
+                  <button className="sb-btn" onClick={() => setConfirmDel({ id: ii.id, provider: ii.provider || "Unknown" })}>Delete</button>
                 </div>
               </li>
             );
           })}
         </ul>
+      )}
+      {/* Confirm delete overlay */}
+      {confirmDel && (
+        <div role="dialog" aria-modal="true" onClick={() => setConfirmDel(null)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
+            <div style={{ display:'grid', gap:8 }}>
+              <strong>Delete iCal feed</strong>
+              <div style={{ color:'var(--muted)' }}>
+                You are about to delete the iCal link for <strong>{confirmDel.provider || 'Unknown'}</strong>. This action is irreversible.
+              </div>
+              <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
+                <button className="sb-btn" onClick={() => setConfirmDel(null)}>Cancel</button>
+                <button
+                  className="sb-btn sb-btn--primary"
+                  onClick={() => { const id = confirmDel.id; setConfirmDel(null); onDelete(id); }}
+                  style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </InnerModal>
   );
