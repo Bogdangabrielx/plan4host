@@ -63,8 +63,8 @@ function fullName(item: OverviewRow): string {
 
 /** UI labels for statuses */
 const STATUS_LABEL: Record<OverviewRow["status"], string> = {
-  green: "New booking",
-  yellow: "Awaiting",
+  green: "Ready",
+  yellow: "Awaiting room",
   red: "Mismatched booking",
 };
 
@@ -77,19 +77,7 @@ const STATUS_COLOR: Record<OverviewRow["status"], string> = {
 
 function statusTooltip(row: OverviewRow): string | undefined {
   const s = row.status === "green" && !row.room_id ? "yellow" : row.status;
-  if (s === "yellow") {
-    if (row._reason === "waiting_form") return "Awaiting guest check-in form (until 3 days before arrival).";
-    if (row._reason === "waiting_ical") return "Awaiting matching OTA iCal event (up to ~2h after form submission).";
-    return "Awaiting additional information.";
-  }
-  if (s === "red") {
-    if (row._reason === "missing_form") return "No check-in form received for this OTA reservation.";
-    if (row._reason === "no_ota_found") return "Form dates don’t match any OTA reservation.";
-    if (row._reason === "type_conflict") return "Unmatched Room: OTA type and form type differ. Resolve in Calendar.";
-    if (row._reason === "room_required_auto_failed") return "Auto-assignment failed: no free room of the booked type.";
-    if (row._reason === "waiting_ical") return "Form-only for >2h; edit dates/type/name or wait for OTA iCal.";
-    return "Action required.";
-  }
+  if (s === "yellow") return "Select a room to confirm.";
   return undefined;
 }
 
@@ -719,7 +707,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
         {/* Legend with popovers (legendInfo) */}
         <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 12, flexWrap: "wrap" }}>
-          {(["green","yellow","red"] as const).map((k) => (
+          {(["green","yellow"] as const).map((k) => (
             <div key={k} style={{ position: "relative" }} data-legend="keep">
               <span style={badgeStyle(k)}>{STATUS_LABEL[k]}</span>
               <button
@@ -740,15 +728,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               {legendInfo === k && (
                 isSmall ? (
                   <div data-legend="keep" style={{ marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
-                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>New booking — no action required.</div>}
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Ready — no action required.</div>}
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
-                        <strong>Awaiting</strong>
-                        <span>If form only: wait up to 2h for OTA iCal.</span>
-                        <span>If iCal only: wait until 3 days before arrival or resend the form.</span>
+                        <strong>Awaiting room</strong>
+                        <span>Select a room to confirm.</span>
                       </div>
                     )}
-                    {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Mismatched booking — action required.</div>}
                   </div>
                 ) : (
                   <div
@@ -769,14 +755,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     }}
                   >
                     <div style={{ fontWeight: 800, marginBottom: 4 }}>{STATUS_LABEL[k]}</div>
-                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>New booking — no action required.</div>}
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Ready — no action required.</div>}
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
-                        <span>If form only: wait up to 2h for OTA iCal.</span>
-                        <span>If iCal only: wait until 3 days before arrival or resend the form.</span>
+                        <span>Select a room to confirm.</span>
                       </div>
                     )}
-                    {k === "red" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Mismatched booking — action required.</div>}
                   </div>
                 )
               )}
@@ -795,14 +779,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             const propertyId = activePropertyId!;
             const key = `${it.id ?? "noid"}|${it.start_date}|${it.end_date}|${it._room_type_id ?? "null"}`;
 
-            const showCopy =
-              kind !== "green" &&
-              ((kind === "yellow" && it._reason === "waiting_form") ||
-                (kind === "red" && it._reason === "missing_form"));
-
-            // NEW: show edit form booking when FORM ONLY turned RED ( > 2h ) — reasons waiting_ical or no_ota_found
-            const isFormLike = it._reason === "waiting_ical" || it._reason === "no_ota_found" || it._reason === "type_conflict";
-            const canEditFormBooking = kind === "red" && !!it.id && isFormLike;
+            const showCopy = true;
+            const canEditFormBooking = !!it.id;
 
             return (
               <section
@@ -972,46 +950,24 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     </button>
                   )}
 
-                  {kind === "red" && (
-                    <>
-                      <button
-                        type="button"
-                        {...useTap(() => resolveInCalendar(it))}
-                        style={{
-                          ...BTN_TOUCH_STYLE,
-                          borderRadius: 21,
-                          border: "1px solid var(--danger)",
-                          background: "transparent",
-                          color: "var(--text)",
-                          fontWeight: 600,
-                          cursor: "pointer",
-                          width: isSmall ? "100%" : undefined,
-                        }}
-                        title="Resolve in Calendar"
-                      >
-                        Resolve in Calendar
-                      </button>
-
-                      {canEditFormBooking && (
-                        <button
-                          type="button"
-                          {...useTap(() => setEditModal({ propertyId, bookingId: String(it.id) }))}
-                          style={{
-                            ...BTN_TOUCH_STYLE,
-                            borderRadius: 21,
-                            border: "1px solid var(--border)",
-                            background: "var(--card)",
-                            color: "var(--text)",
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            width: isSmall ? "100%" : undefined,
-                          }}
-                          title="Edit form booking"
-                        >
-                          Edit form booking
-                        </button>
-                      )}
-                    </>
+                  {canEditFormBooking && (
+                    <button
+                      type="button"
+                      {...useTap(() => setEditModal({ propertyId, bookingId: String(it.id) }))}
+                      style={{
+                        ...BTN_TOUCH_STYLE,
+                        borderRadius: 21,
+                        border: "1px solid var(--border)",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        width: isSmall ? "100%" : undefined,
+                      }}
+                      title="Edit form booking"
+                    >
+                      Edit form booking
+                    </button>
                   )}
                 </div>
               </section>
@@ -1227,78 +1183,30 @@ function EditFormBookingModal({
     setSaving(true);
     setError(null);
     try {
-      // Pre-check: require at least one event-only (yellow/red) candidate to link this form to.
-      try {
-        const res = await fetch(`/api/guest-overview?property=${encodeURIComponent(propertyId)}`, { cache: 'no-store' });
-        const j = await res.json().catch(() => ({}));
-        const items = Array.isArray(j?.items) ? j.items : [];
-        const isEventReason = (r: string | null | undefined) => r === 'waiting_form' || r === 'missing_form';
-        const candidates = items.filter((it: any) => {
-          if (!it) return false;
-          if (!isEventReason(it._reason)) return false; // only event-only rows (yellow/red)
-          if (it.start_date !== startDate || it.end_date !== endDate) return false;
-          // Allocation: match by room type if property has types; otherwise by room id
-          if (hasRoomTypes) return String(it._room_type_id || '') === String(roomTypeId || '');
-          return String(it.room_id || '') === String(roomId || '');
-        });
-        if (candidates.length === 0) {
-          setPopupTitle('Cannot save');
-          setPopupMsg('There is no calendar reservation matching these dates and type/room.');
-          setSaving(false);
-          return;
-        }
-      } catch { /* if verification fails, continue without blocking */ }
-      // Friendly guard: do not allow selecting a room_id that overlaps an existing confirmed booking (green/intangible)
+      // Guard: do not allow selecting a room that overlaps an existing confirmed booking
       const ci = '14:00'; // informational only; we use date-based overlap at DB level
       const co = '11:00';
       const sDate = startDate;
       const eDate = endDate;
-
-      if (hasRoomTypes) {
-        // If user picked a specific room (even when types exist), check overlap on that room
-        if (roomId) {
-          const q = supabase
-            .from('bookings')
-            .select('id,start_date,end_date,room_id,status')
-            .eq('property_id', propertyId)
-            .eq('room_id', roomId)
-            .eq('status', 'confirmed')
-            .lt('start_date', eDate)
-            .gt('end_date', sDate)
-            .limit(1);
-          const r = await q;
-          if (!r.error && (r.data?.length || 0) > 0) {
-            const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
-            const msg = `Overlaps an existing confirmed reservation on Room ${roomName}.`;
-            setError(msg);
-            setPopupTitle('Cannot save');
-            setPopupMsg(msg);
-            setSaving(false);
-            return;
-          }
-        }
-      } else {
-        // No room types: roomId is the allocation key; check overlap when a room is chosen
-        if (roomId) {
-          const q = supabase
-            .from('bookings')
-            .select('id,start_date,end_date,room_id,status')
-            .eq('property_id', propertyId)
-            .eq('room_id', roomId)
-            .eq('status', 'confirmed')
-            .lt('start_date', eDate)
-            .gt('end_date', sDate)
-            .limit(1);
-          const r = await q;
-          if (!r.error && (r.data?.length || 0) > 0) {
-            const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
-            const msg = `Overlaps an existing confirmed reservation on Room ${roomName}.`;
-            setError(msg);
-            setPopupTitle('Cannot save');
-            setPopupMsg(msg);
-            setSaving(false);
-            return;
-          }
+      if (roomId) {
+        const q = supabase
+          .from('bookings')
+          .select('id,start_date,end_date,room_id,status')
+          .eq('property_id', propertyId)
+          .eq('room_id', roomId)
+          .eq('status', 'confirmed')
+          .lt('start_date', eDate)
+          .gt('end_date', sDate)
+          .limit(1);
+        const r = await q;
+        if (!r.error && (r.data?.length || 0) > 0) {
+          const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
+          const msg = `Overlaps an existing confirmed reservation on Room ${roomName}.`;
+          setError(msg);
+          setPopupTitle('Cannot save');
+          setPopupMsg(msg);
+          setSaving(false);
+          return;
         }
       }
 
@@ -1306,11 +1214,12 @@ function EditFormBookingModal({
         start_date: startDate,
         end_date: endDate,
       };
-      if (hasRoomTypes) {
-        upd.room_type_id = roomTypeId || null;
-        upd.room_id = null; // avoid accidental mismatch
+      upd.room_id = roomId || null;
+      // keep room_type_id in sync for consistency
+      if (roomId) {
+        const rt = rooms.find(r => String(r.id) === String(roomId))?.room_type_id ?? null;
+        upd.room_type_id = rt;
       } else {
-        upd.room_id = roomId || null;
         upd.room_type_id = null;
       }
 
@@ -1324,44 +1233,8 @@ function EditFormBookingModal({
       // refresh parent list but keep modal open; show success pop-up
       try { onSaved(); } catch {}
       setError(null);
-      // After save, if user selected a room type, inform about availability for this type
-      if (roomTypeId) {
-        try {
-          const rRooms = await supabase
-            .from('rooms')
-            .select('id')
-            .eq('property_id', propertyId)
-            .eq('room_type_id', roomTypeId);
-          const ids = (rRooms.data || []).map((x: any) => String(x.id));
-          const total = ids.length;
-          if (total > 0) {
-            const rBusy = await supabase
-              .from('bookings')
-              .select('room_id')
-              .in('room_id', ids)
-              .eq('status', 'confirmed')
-              .lt('start_date', endDate)
-              .gt('end_date', startDate);
-            const busy = new Set<string>((rBusy.data || []).map((b: any) => String(b.room_id)).filter(Boolean)).size;
-            if (busy >= total) {
-              setPopupTitle('No availability');
-              setPopupMsg('All rooms in this type are occupied on the selected dates. Green reservations cannot be changed.');
-            } else {
-              setPopupTitle('Saved');
-              setPopupMsg('Saved');
-            }
-          } else {
-            setPopupTitle('Saved');
-            setPopupMsg('Saved');
-          }
-        } catch {
-          setPopupTitle('Saved');
-          setPopupMsg('Saved');
-        }
-      } else {
-        setPopupTitle('Saved');
-        setPopupMsg('Saved');
-      }
+      setPopupTitle('Saved');
+      setPopupMsg('Saved');
     } catch (e: any) {
       setError(e?.message || "Failed to save changes.");
     } finally {
@@ -1459,35 +1332,19 @@ function EditFormBookingModal({
                 />
               </div>
 
-              {hasRoomTypes ? (
-                <div style={{ display:"grid", gap:6 }}>
-                  <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Room type</label>
-                  <select
-                    value={roomTypeId || ""}
-                    onChange={(e)=>setRoomTypeId((e.target as HTMLSelectElement).value)}
-                    style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
-                  >
-                    <option value="">—</option>
-                    {roomTypes.map(rt => (
-                      <option key={rt.id} value={rt.id}>{rt.name}</option>
-                    ))}
-                  </select>
-                </div>
-              ) : (
-                <div style={{ display:"grid", gap:6 }}>
-                  <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Room name</label>
-                  <select
-                    value={roomId || ""}
-                    onChange={(e)=>setRoomId((e.target as HTMLSelectElement).value)}
-                    style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
-                  >
-                    <option value="">—</option>
-                    {rooms.map(r => (
-                      <option key={r.id} value={r.id}>{r.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              <div style={{ display:"grid", gap:6 }}>
+                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Room name</label>
+                <select
+                  value={roomId || ""}
+                  onChange={(e)=>setRoomId((e.target as HTMLSelectElement).value)}
+                  style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
+                >
+                  <option value="">—</option>
+                  {rooms.map(r => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Actions */}
