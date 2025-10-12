@@ -45,6 +45,10 @@ export default function DayModal({
 }) {
   const supabase = createClient();
 
+  // Local day navigation state (prev/next day)
+  const [day, setDay] = useState<string>(dateStr);
+  useEffect(() => { setDay(dateStr); }, [dateStr]);
+
   const [property, setProperty] = useState<Property | null>(null);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookingsToday, setBookingsToday] = useState<Booking[]>([]);
@@ -76,15 +80,15 @@ export default function DayModal({
           "id,property_id,room_id,start_date,end_date,start_time,end_time,status,source,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address"
         )
         .eq("property_id", propertyId)
-        .lte("start_date", dateStr)
-        .gte("end_date", dateStr)
+        .lte("start_date", day)
+        .gte("end_date", day)
         .neq("status", "cancelled")
         .order("start_date", { ascending: true }),
       supabase
         .from("bookings")
         .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status,source")
         .eq("property_id", propertyId)
-        .gte("start_date", dateStr)
+        .gte("start_date", day)
         .neq("status", "cancelled")
         .order("start_date", { ascending: true })
         .order("start_time", { ascending: true, nullsFirst: true }),
@@ -108,7 +112,7 @@ export default function DayModal({
     setFutureBookings(rFuture.data ?? []);
     setLoading("idle");
     setStatusHint("");
-  }, [supabase, propertyId, dateStr]);
+  }, [supabase, propertyId, day]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -118,12 +122,12 @@ export default function DayModal({
   const activeByRoom = useMemo(() => {
     const map = new Map<string, Booking>();
     for (const b of bookingsToday) {
-      if (b.start_date <= dateStr && dateStr <= b.end_date) {
+      if (b.start_date <= day && day <= b.end_date) {
         if (!map.has(b.room_id)) map.set(b.room_id, b);
       }
     }
     return map;
-  }, [bookingsToday, dateStr]);
+  }, [bookingsToday, day]);
 
   const nextStartByRoom = useMemo(() => {
     const map = new Map<string, { start_date: string; start_time: string | null }>();
@@ -235,9 +239,13 @@ export default function DayModal({
             willChange: "transform",
           }}
         >
-          <strong style={{ letterSpacing: 0.2, fontSize: 16 }}>
-            {dateStr} — Rooms
-          </strong>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <button className="sb-btn sb-btn--icon" aria-label="Previous day" onClick={() => setDay((d)=>{ const nd = new Date(d+"T00:00:00"); nd.setDate(nd.getDate()-1); return nd.toISOString().slice(0,10); })}>◀</button>
+            <strong style={{ letterSpacing: 0.2, fontSize: 16 }}>
+              {day} — Rooms
+            </strong>
+            <button className="sb-btn sb-btn--icon" aria-label="Next day" onClick={() => setDay((d)=>{ const nd = new Date(d+"T00:00:00"); nd.setDate(nd.getDate()+1); return nd.toISOString().slice(0,10); })}>▶</button>
+          </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {loading === "loading" && (
@@ -314,7 +322,7 @@ export default function DayModal({
               const b = activeByRoom.get(room.id) || null;
               const isReserved = !!b && b.status !== "cancelled";
               const fullName = guestFullName(b);
-              const endsToday = isReserved && b!.end_date === dateStr;
+              const endsToday = isReserved && b!.end_date === day;
 
               return (
                 <div
@@ -417,7 +425,7 @@ export default function DayModal({
 
       {openRoom && (
         <RoomDetailModal
-          dateStr={dateStr}
+          dateStr={day}
           propertyId={propertyId}
           room={openRoom}
           onClose={handleRoomModalClose}
@@ -427,12 +435,12 @@ export default function DayModal({
 
       {createRoom && (
         <RoomDetailModal
-          dateStr={dateStr}
+          dateStr={day}
           propertyId={propertyId}
           room={createRoom}
           forceNew={true}
-          defaultStart={{ date: dateStr, time: CI }}
-          defaultEnd={{ date: nextDate(dateStr), time: null }}
+          defaultStart={{ date: day, time: CI }}
+          defaultEnd={{ date: nextDate(day), time: null }}
           onClose={handleCreateModalClose}
           onChanged={handleRoomModalChanged}
         />

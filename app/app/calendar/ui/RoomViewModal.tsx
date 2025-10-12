@@ -233,6 +233,7 @@ export default function RoomViewModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="cal-smoobu"
         style={{
           width: "min(1100px, 100%)",
           maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 48px))",
@@ -328,9 +329,9 @@ function MiniMonthRoom({ year, month, room, colors, onDayClick }: {
               position: "relative",
               height: 28,
               borderRadius: 8,
-              border: "1px solid var(--border)",
+              border: "1px solid var(--cal-brd, var(--border))",
               background: "var(--card)",
-              boxShadow: c.isToday ? "0 0 0 2px var(--cal-today-ring)" : "none",
+              boxShadow: c.isToday ? "0 0 0 2px var(--cal-today-ring, color-mix(in srgb, var(--primary) 60%, #ffffff))" : "none",
               cursor: clickable ? "pointer" : "default",
               overflow: "hidden",
             }}
