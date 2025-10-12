@@ -1414,6 +1414,7 @@ function RMContent({ propertyId, row, templateId }: { propertyId: string; row: a
   // valuesPreview: committed values used to build the preview (updates on blur)
   const [valuesPreview, setValuesPreview] = useState<Record<string,string>>({});
   const [preview, setPreview] = useState<string>("");
+  const [propertyName, setPropertyName] = useState<string>("");
 
   // timpi/interval actuali, LIVE din DB bookings
   const [ciTime, setCiTime] = useState<string | null>(null);
@@ -1462,6 +1463,23 @@ function RMContent({ propertyId, row, templateId }: { propertyId: string; row: a
     })();
     return () => { alive = false; };
   }, [supabase, row?.id]);
+
+  // Fetch property name for preview variables
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("properties")
+          .select("name")
+          .eq("id", propertyId)
+          .maybeSingle();
+        if (!alive) return;
+        if (!error && data) setPropertyName(String((data as any).name || ""));
+      } catch { /* ignore */ }
+    })();
+    return () => { alive = false; };
+  }, [supabase, propertyId]);
 
   // escape helpers
   function _escapeHtml(s: string) { return (s||"").replace(/[&<>"']/g, (c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string)); }
@@ -1538,12 +1556,12 @@ function RMContent({ propertyId, row, templateId }: { propertyId: string; row: a
 
       room_name:      row._room_label || "",
       room_type:      row._room_type_name || "",
-      property_name:  "",
+      property_name:  propertyName || "",
     };
 
     const merged = { ...builtins, ...valuesPreview };
     setPreview(_renderRM(tpl, merged));
-  }, [tpl, valuesPreview, row, ciTime, coTime, startDate, endDate]);
+  }, [tpl, valuesPreview, row, ciTime, coTime, startDate, endDate, propertyName]);
 
   const [copied, setCopied] = useState(false);
   async function onCopyPreview() {
