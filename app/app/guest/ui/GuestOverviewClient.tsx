@@ -287,7 +287,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   useEffect(() => () => { if (copyTimer.current) window.clearTimeout(copyTimer.current); }, []);
 
   // Modals
-  const [modal, setModal] = useState<null | { propertyId: string; dateStr: string; room: Room }>(null);
+  const [modal, setModal] = useState<
+    | null
+    | {
+        propertyId: string;
+        dateStr: string;
+        room: Room;
+        defaultStart?: { date: string; time: string | null };
+        defaultEnd?: { date: string; time: string | null };
+      }
+  >(null);
   const [rmModal, setRmModal] = useState<null | { propertyId: string; item: OverviewRow; templateId?: string | null }>(null);
   const [rmPicker, setRmPicker] = useState<null | { propertyId: string; item: OverviewRow }>(null);
   const [rmPickerItems, setRmPickerItems] = useState<Array<{ id:string; title:string; updated_at?:string; status?:string }>>([]);
@@ -524,7 +533,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (!item.room_id) { alert("This booking has no assigned room yet."); return; }
     const room = roomById.get(String(item.room_id));
     if (!room) { alert("Room not found locally. Try refreshing."); return; }
-    setModal({ propertyId, dateStr: item.start_date, room });
+    setModal({
+      propertyId,
+      dateStr: item.start_date,
+      room,
+      defaultStart: { date: item.start_date, time: null },
+      defaultEnd: { date: item.end_date, time: null },
+    });
   }
 
   // Header pill
@@ -997,6 +1012,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             propertyId={modal.propertyId}
             room={modal.room}
             forceNew={false}
+            defaultStart={modal.defaultStart}
+            defaultEnd={modal.defaultEnd}
             onClose={() => setModal(null)}
             onChanged={() => { refresh(); }}
           />
