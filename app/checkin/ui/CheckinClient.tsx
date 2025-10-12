@@ -197,7 +197,7 @@ export default function CheckinClient() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
-  // selections
+  // selections (deprecated UI; kept for compatibility, not used)
   const [selectedTypeId, setSelectedTypeId] = useState<string>("");
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
 
@@ -685,7 +685,7 @@ export default function CheckinClient() {
     /\S+@\S+\.\S+/.test(email) &&
     phone.trim().length >= 5 &&
     (!dateError && !!startDate && !!endDate) &&
-    (hasTypes ? !!selectedTypeId : !!selectedRoomId) &&
+    // No room/type selection required at check-in
     countryValid &&
     docValid &&
     !!docFile && // document upload obligatoriu
@@ -806,8 +806,8 @@ export default function CheckinClient() {
         address: address.trim(),
         city: city.trim(),
         country: countryToSend,
-        requested_room_type_id: hasTypes ? selectedTypeId : null,
-        requested_room_id:     hasTypes ? null : selectedRoomId,
+        requested_room_type_id: null,
+        requested_room_id:     null,
 
         // document
         doc_type: docType, // "id_card" | "passport"
@@ -976,48 +976,7 @@ export default function CheckinClient() {
               </div>
             )}
 
-            {/* RoomType sau Room */}
-            {types.length > 0 ? (
-              <div style={ROW_1}>
-                <div>
-                  <label htmlFor="checkin-room-type" style={LABEL_ROW}>
-                    <Image src={themedIcon("room")} alt="" width={16} height={16} />
-                    <span>Booked room type*</span>
-                  </label>
-                  <select
-                    id="checkin-room-type"
-                    style={SELECT}
-                    value={selectedTypeId}
-                    onChange={(e) => setSelectedTypeId(e.currentTarget.value)}
-                  >
-                    <option value="" disabled>Select room type…</option>
-                    {types.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            ) : (
-              <div style={ROW_1}>
-                <div>
-                  <label htmlFor="checkin-room" style={LABEL_ROW}>
-                    <Image src={themedIcon("room")} alt="" width={16} height={16} />
-                    <span>Booked room*</span>
-                  </label>
-                  <select
-                    id="checkin-room"
-                    style={SELECT}
-                    value={selectedRoomId}
-                    onChange={(e) => setSelectedRoomId(e.currentTarget.value)}
-                  >
-                    <option value="" disabled>Select room…</option>
-                    {rooms.map((r) => (
-                      <option key={r.id} value={r.id}>{r.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
+            {/* Room selection removed — allocation is managed by the property after confirmation */}
 
             {/* Name */}
             <div style={ROW_2}>
