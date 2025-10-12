@@ -812,13 +812,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   overflow: "hidden",
                 }}
                 onPointerUp={(e) => {
-                  if (!isSmall) return;
                   const target = e.target as HTMLElement;
                   if (target && target.closest('button')) return;
-                  // toggle actions visibility for this card
+                  // toggle actions visibility for this card (one-at-a-time)
                   setOpenActions(prev => {
                     const s = new Set(prev);
-                    if (s.has(key)) s.delete(key); else s.add(key);
+                    if (s.has(key)) {
+                      s.clear();
+                    } else {
+                      s.clear(); s.add(key);
+                    }
                     return s;
                   });
                 }}
@@ -896,8 +899,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     justifyContent: isSmall ? "stretch" : "flex-end",
                     gap: 8,
                     flexWrap: isSmall ? undefined : "wrap",
-                    // hide on mobile unless expanded
-                    display: isSmall ? (openActions.has(key) ? 'grid' : 'none') : 'flex',
+                    // hide by default; show when toggled (mobile + desktop)
+                    display: openActions.has(key) ? (isSmall ? 'grid' : 'flex') : 'none',
                   }}
                 >
                   {/* Desktop: badge shown above (under status) */}
@@ -1432,7 +1435,7 @@ function EditFormBookingModal({
                         <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>ID Document</div>
                         {idDoc && idDoc.url ? (
                           (idDoc.mime_type || '').startsWith('image/') ? (
-                            <img src={idDoc.url} alt="ID" style={{ maxWidth:'100%', borderRadius:8, border:'1px solid var(--border)' }} />
+                            <img src={idDoc.url} alt="ID" style={{ width:160, height:110, objectFit:'contain', objectPosition:'center', borderRadius:8, border:'1px solid var(--border)', background:'#fff' }} />
                           ) : (
                             <a href={idDoc.url} target="_blank" rel="noreferrer" className="sb-btn">View file</a>
                           )
@@ -1444,7 +1447,7 @@ function EditFormBookingModal({
                         <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>Signature</div>
                         {sigDoc && sigDoc.url ? (
                           (sigDoc.mime_type || '').startsWith('image/') ? (
-                            <img src={sigDoc.url} alt="Signature" style={{ maxWidth:'100%', borderRadius:8, border:'1px solid var(--border)' }} />
+                            <img src={sigDoc.url} alt="Signature" style={{ width:160, height:110, objectFit:'contain', objectPosition:'center', borderRadius:8, border:'1px solid var(--border)', background:'#fff' }} />
                           ) : (
                             <a href={sigDoc.url} target="_blank" rel="noreferrer" className="sb-btn">View file</a>
                           )
