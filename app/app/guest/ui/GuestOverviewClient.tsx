@@ -169,7 +169,7 @@ async function copyTextMobileSafe(text: string): Promise<boolean> {
       if (!ok) throw new Error("execCommand failed");
       return true;
     } catch {
-      try { prompt("Copy link:", text); } catch {}
+      // Silent fallback (no prompt UI)
       return false;
     }
   }
@@ -517,13 +517,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const copyCheckinLink = useCallback(async (propertyId: string, key: string) => {
     const link = buildPropertyCheckinLink(propertyId);
     try {
-      await copyTextMobileSafe(link);
-      setCopiedKey(key);
-      if (copyTimer.current) window.clearTimeout(copyTimer.current);
-      copyTimer.current = window.setTimeout(() => setCopiedKey(null), 1500);
-    } catch {
-      prompt("Copy this link:", link);
-    }
+      const ok = await copyTextMobileSafe(link);
+      if (ok) {
+        setCopiedKey(key);
+        if (copyTimer.current) window.clearTimeout(copyTimer.current);
+        copyTimer.current = window.setTimeout(() => setCopiedKey(null), 1500);
+      }
+    } catch { /* silent */ }
   }, []);
 
   function resolveInCalendar(item: OverviewRow) {
@@ -1690,7 +1690,7 @@ function GenerateLinkButton({ propertyId, bookingId, values }:{
     <button
       type="button"
       className="sb-btn sb-btn--primary"
-      onClick={onGenerateAndCopy}
+      {...useTap(onGenerateAndCopy)}
       disabled={busy || !bookingId}
       aria-busy={busy}
       title={bookingId ? "Copy generated link" : "No booking id"}
@@ -1947,7 +1947,7 @@ function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values, temp
       <button
         type="button"
         className="sb-btn"
-        onClick={onCopyPreview}
+        {...useTap(onCopyPreview)}
         style={{ padding: "12px 14px", minHeight: 44, touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
       >
         <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
