@@ -63,7 +63,7 @@ function fullName(item: OverviewRow): string {
 
 /** UI labels for statuses */
 const STATUS_LABEL: Record<OverviewRow["status"], string> = {
-  green: "Ready",
+  green: "Confirmed booking",
   yellow: "Awaiting room",
   red: "Mismatched booking",
 };
@@ -250,6 +250,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [properties, setProperties] = useState<Property[]>(initialProperties || []);
   const [activePropertyId, setActivePropertyId] = usePersistentProperty(properties);
   const [prefReady, setPrefReady] = useState(false);
+  const [openActions, setOpenActions] = useState<Set<string>>(() => new Set());
 
   // Ensure the selected property matches URL/localStorage before first load
   useEffect(() => {
@@ -743,7 +744,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               {legendInfo === k && (
                 isSmall ? (
                   <div data-legend="keep" style={{ marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
-                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Ready — no action required.</div>}
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Confirmed booking — no action required.</div>}
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
                         <strong>Awaiting room</strong>
@@ -770,7 +771,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     }}
                   >
                     <div style={{ fontWeight: 800, marginBottom: 4 }}>{STATUS_LABEL[k]}</div>
-                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Ready — no action required.</div>}
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Confirmed booking — no action required.</div>}
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
                         <span>Select a room to confirm.</span>
@@ -797,7 +798,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             const showCopy = true;
             const canEditFormBooking = !!it.id;
 
-            return (
+  return (
               <section
                 key={key}
                 className="sb-card"
@@ -809,6 +810,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   display: "grid",
                   gap: 8,
                   overflow: "hidden",
+                }}
+                onPointerUp={(e) => {
+                  if (!isSmall) return;
+                  const target = e.target as HTMLElement;
+                  if (target && target.closest('button')) return;
+                  // toggle actions visibility for this card
+                  setOpenActions(prev => {
+                    const s = new Set(prev);
+                    if (s.has(key)) s.delete(key); else s.add(key);
+                    return s;
+                  });
                 }}
               >
                 {/* Header: Badge on small above name; on desktop on the right */}
@@ -885,6 +897,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     justifyContent: isSmall ? "stretch" : "flex-end",
                     gap: 8,
                     flexWrap: isSmall ? undefined : "wrap",
+                    // hide on mobile unless expanded
+                    display: (isSmall && !openActions.has(key)) ? 'none' as any : (isSmall ? 'grid' : 'flex'),
                   }}
                 >
                   {/* Desktop: badge shown above (under status) */}
@@ -979,9 +993,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         cursor: "pointer",
                         width: isSmall ? "100%" : undefined,
                       }}
-                      title="Edit form booking"
+                      title="Confirm booking"
                     >
-                      Edit form booking
+                      Confirm booking
                     </button>
                   )}
                 </div>
@@ -1112,6 +1126,7 @@ function EditFormBookingModal({
   const [error, setError] = useState<string | null>(null);
   const [popupMsg, setPopupMsg] = useState<string | null>(null);
   const [popupTitle, setPopupTitle] = useState<string | null>(null);
+  const [docs, setDocs] = useState<Array<{ id:string; doc_type:string|null; mime_type:string|null; url:string|null }>>([]);
 
   // booking fields
   const [startDate, setStartDate] = useState<string>("");
@@ -1178,6 +1193,14 @@ function EditFormBookingModal({
 
         if (rtRes.error) throw new Error(rtRes.error.message);
         setRoomTypes((rtRes.data || []) as any);
+
+        // Documents (ID + signature)
+        try {
+          const d = await fetch(`/api/bookings/${bookingId}/documents`, { cache: 'no-store' });
+          const j = await d.json().catch(()=>({}));
+          const arr = Array.isArray(j?.documents) ? j.documents : [];
+          setDocs(arr.map((x:any)=>({ id:String(x.id), doc_type: x.doc_type || null, mime_type: x.mime_type || null, url: x.url || null })));
+        } catch { setDocs([]); }
       } catch (e: any) {
         setError(e?.message || "Failed to load booking.");
       } finally {
@@ -1307,7 +1330,7 @@ function EditFormBookingModal({
       )}
       <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={card}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:8 }}>
-          <strong>Edit form booking</strong>
+          <strong>Confirm booking</strong>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <button className="sb-btn" type="button" onClick={onClose} disabled={saving || deleting}>Close</button>
           </div>
@@ -1324,7 +1347,63 @@ function EditFormBookingModal({
               <div style={{ fontSize:12, color:"var(--muted)", fontWeight:800, marginBottom:6 }}>Guest</div>
               <div style={{ display:"grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap:8 }}>
                 <div><strong>Name:</strong> {(guestFirst + " " + guestLast).trim() || "—"}</div>
-                <div><strong>Email:</strong> {guestEmail || "—"}</div>
+                <div>
+                  <strong>Email:</strong> {guestEmail ? (
+                    <a href={`mailto:${guestEmail}`} style={{ color: 'var(--primary)', textDecoration: 'none', marginLeft: 6 }}>{guestEmail}</a>
+                  ) : '—'}
+                </div>
+                <div>
+                  <strong>Phone:</strong> {guestPhone ? (()=>{
+                    const digits = String(guestPhone).replace(/\D/g,'');
+                    const wa = digits ? `https://wa.me/${digits}` : '';
+                    return (
+                      <a href={wa} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', textDecoration: 'none', marginLeft: 6 }}>
+                        {guestPhone}
+                      </a>
+                    );
+                  })() : '—'}
+                </div>
+              </div>
+            </div>
+
+            {/* Documents */}
+            <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)", display:"grid", gap:10 }}>
+              <div style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Documents</div>
+              <div style={{ display:'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 1fr', gap:12 }}>
+                {(() => {
+                  const idDoc = docs.find(d => (d.doc_type || '').toLowerCase() === 'id_card' || (d.doc_type || '').toLowerCase() === 'passport')
+                    || docs.find(d => (d.mime_type || '').startsWith('image/')) || null;
+                  const sigDoc = docs.find(d => (d.doc_type || '').toLowerCase() === 'signature')
+                    || docs.find(d => (!d.doc_type || d.doc_type === null) && (d.mime_type || '').startsWith('image/') && d.id !== (idDoc?.id || '')) || null;
+                  return (
+                    <>
+                      <div>
+                        <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>ID Document</div>
+                        {idDoc && idDoc.url ? (
+                          (idDoc.mime_type || '').startsWith('image/') ? (
+                            <img src={idDoc.url} alt="ID" style={{ maxWidth:'100%', borderRadius:8, border:'1px solid var(--border)' }} />
+                          ) : (
+                            <a href={idDoc.url} target="_blank" rel="noreferrer" className="sb-btn">View file</a>
+                          )
+                        ) : (
+                          <div style={{ color:'var(--muted)' }}>No file</div>
+                        )}
+                      </div>
+                      <div>
+                        <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>Signature</div>
+                        {sigDoc && sigDoc.url ? (
+                          (sigDoc.mime_type || '').startsWith('image/') ? (
+                            <img src={sigDoc.url} alt="Signature" style={{ maxWidth:'100%', borderRadius:8, border:'1px solid var(--border)' }} />
+                          ) : (
+                            <a href={sigDoc.url} target="_blank" rel="noreferrer" className="sb-btn">View file</a>
+                          )
+                        ) : (
+                          <div style={{ color:'var(--muted)' }}>No file</div>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
