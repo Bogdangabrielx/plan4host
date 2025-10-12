@@ -1140,14 +1140,12 @@ function ManageTypeModal({
                 onChange={(e) => setUrl((e.target as HTMLInputElement).value)}
                 placeholder="https://.../calendar.ics"
               />
-              {url.trim() && !(url.trim().toLowerCase().split('?')[0].endsWith('.ics')) && (
-                <small style={{ color: 'var(--danger)' }}>URL must end with .ics</small>
-              )}
+              {/* Removed strict .ics gating per request */}
             </div>
           )}
 
           {/* Add feed (only after valid provider + URL) */}
-          {(provider && url.trim().toLowerCase().split('?')[0].endsWith('.ics')) && (
+          {(provider && url.trim()) && (
             <div>
               <button
                 className="sb-btn sb-btn--primary"
@@ -1520,13 +1518,10 @@ function ManageRoomModal({
             <div style={{ display: "grid", gap: 6 }}>
               <label style={label}>iCal URL</label>
               <input style={input} value={url} onChange={(e) => setUrl((e.target as HTMLInputElement).value)} placeholder="https://.../calendar.ics" />
-              {url.trim() && !(url.trim().toLowerCase().split('?')[0].endsWith('.ics')) && (
-                <small style={{ color: 'var(--danger)' }}>URL must end with .ics</small>
-              )}
             </div>
           )}
 
-          {(provider && url.trim().toLowerCase().split('?')[0].endsWith('.ics')) && (
+          {(provider && url.trim()) && (
             <div>
               <button className="sb-btn sb-btn--primary" onClick={async () => {
               const prov = provider === 'Other' ? customProvider.trim() : provider;
