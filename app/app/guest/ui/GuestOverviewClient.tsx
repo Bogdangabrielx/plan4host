@@ -282,10 +282,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [query, setQuery] = useState("");
   const searchRef = useRef<HTMLInputElement | null>(null);
 
-  // UX small bits
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const copyTimer = useRef<number | null>(null);
-  useEffect(() => () => { if (copyTimer.current) window.clearTimeout(copyTimer.current); }, []);
+  // UX small bits (removed copy link UI)
 
   // Modals
   const [modal, setModal] = useState<
@@ -514,18 +511,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     WebkitTapHighlightColor: "transparent",
   };
 
-  // Actions
-  const copyCheckinLink = useCallback(async (propertyId: string, key: string) => {
-    const link = buildPropertyCheckinLink(propertyId);
-    try {
-      const ok = await copyTextMobileSafe(link);
-      if (ok) {
-        setCopiedKey(key);
-        if (copyTimer.current) window.clearTimeout(copyTimer.current);
-        copyTimer.current = window.setTimeout(() => setCopiedKey(null), 1500);
-      }
-    } catch { /* silent */ }
-  }, []);
+  // Actions (copy link removed)
 
   function resolveInCalendar(item: OverviewRow) {
     if (typeof window !== "undefined") window.location.href = `/app/calendar?date=${item.start_date}`;
@@ -795,7 +781,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             const propertyId = activePropertyId!;
             const key = `${it.id ?? "noid"}|${it.start_date}|${it.end_date}|${it._room_type_id ?? "null"}`;
 
-            const showCopy = true;
+            const showCopy = false;
             const canEditFormBooking = !!it.id;
 
   return (
@@ -956,30 +942,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     </>
                   )}
 
-                  {showCopy && (
-                    <button
-                      type="button"
-                      {...useTap(() => copyCheckinLink(propertyId, key))}
-                      style={{
-                        ...BTN_TOUCH_STYLE,
-                        borderRadius: 21,
-                        border: "1px solid var(--border)",
-                        background: "var(--card)",
-                        color: "var(--text)",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        width: isSmall ? "100%" : undefined,
-                      }}
-                      title="Copy check-in link"
-                    >
-                      <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-                        {copiedKey !== key && (
-                          <img src={iconSrc('copy')} alt="" width={14} height={14} style={{ opacity:.95 }} />
-                        )}
-                        {copiedKey === key ? "Copied!" : "Copy check-in link"}
-                      </span>
-                    </button>
-                  )}
+                  {/* copy check-in link removed */}
 
                   {canEditFormBooking && (
                     <button
