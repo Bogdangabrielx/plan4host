@@ -36,6 +36,9 @@ export default async function CalendarPage({
     check_out_time: p.check_out_time ?? null,
   }));
 
+  // If user has no properties yet, redirect to dashboard
+  if (properties.length === 0) redirect("/app");
+
   // preluăm ?date=YYYY-MM-DD dacă e valid
   const initialDate = isYMD(searchParams?.date) ? (searchParams!.date as string) : undefined;
 

@@ -40,7 +40,14 @@ export async function GET(req: Request) {
     .eq("user_id", user.id)
     .limit(1);
   if (au && au.length > 0) {
-    return NextResponse.redirect(new URL(next, url.origin));
+    // If member logs in and has no properties, land on dashboard
+    try {
+      const { data: props } = await supabase.from('properties').select('id').limit(1);
+      const dest = (props && props.length > 0) ? next : '/app';
+      return NextResponse.redirect(new URL(dest, url.origin));
+    } catch {
+      return NextResponse.redirect(new URL(next, url.origin));
+    }
   }
 
   // 2) Dacă are deja accounts(id=user.id), e admin existent
@@ -51,14 +58,26 @@ export async function GET(req: Request) {
     .maybeSingle();
 
   if (acc?.id) {
-    return NextResponse.redirect(new URL(next, url.origin));
+    try {
+      const { data: props } = await supabase.from('properties').select('id').limit(1);
+      const dest = (props && props.length > 0) ? next : '/app';
+      return NextResponse.redirect(new URL(dest, url.origin));
+    } catch {
+      return NextResponse.redirect(new URL(next, url.origin));
+    }
   }
 
   // 3) Intent handling
   if (intent === "signup") {
     // Nou admin: trigger-ul DB handle_new_user a rulat la crearea userului.
     // Dacă nu a rulat (edge), UI va rămâne funcțional și fără cont până la backfill.
-    return NextResponse.redirect(new URL(next, url.origin));
+    try {
+      const { data: props } = await supabase.from('properties').select('id').limit(1);
+      const dest = (props && props.length > 0) ? next : '/app';
+      return NextResponse.redirect(new URL(dest, url.origin));
+    } catch {
+      return NextResponse.redirect(new URL(next, url.origin));
+    }
   }
 
   // intent=signin dar nu există nici membership, nici tenant → cere Create account

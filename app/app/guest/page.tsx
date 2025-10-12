@@ -30,6 +30,9 @@ export default async function GuestOverviewPage() {
     check_out_time: p.check_out_time ?? null,
   }));
 
+  // If no properties, go to dashboard
+  if (properties.length === 0) redirect("/app");
+
   return (
     <AppShell currentPath="/app/guest" title="Guest Overview">
       <GuestOverviewClient initialProperties={properties} />
