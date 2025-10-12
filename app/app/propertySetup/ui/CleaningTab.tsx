@@ -2,6 +2,8 @@
 
 type TaskDef = { id: string; label: string; sort_index: number };
 
+import { useState } from 'react';
+
 export default function CleaningTab({
   tasks,
   onAdd, onRename, onDelete, onMove
@@ -12,6 +14,7 @@ export default function CleaningTab({
   onDelete: (id: string) => void;
   onMove: (id: string, dir: "up" | "down") => void;
 }) {
+  const [confirmDel, setConfirmDel] = useState<null | { id: string; label: string }>(null);
   return (
     <section className="sb-card" style={{ display: "grid", gap: 12, padding: 12 }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -39,10 +42,28 @@ export default function CleaningTab({
               <button onClick={() => onMove(t.id, "up")}   disabled={idx === 0}                   className="sb-btn" title="Move up">↑</button>
               <button onClick={() => onMove(t.id, "down")} disabled={idx === tasks.length - 1}    className="sb-btn" title="Move down">↓</button>
             </div>
-            <button onClick={() => onDelete(t.id)} className="sb-btn">Delete</button>
+            <button onClick={() => setConfirmDel({ id: t.id, label: t.label })} className="sb-btn">Delete</button>
           </li>
         ))}
       </ul>
+
+      {confirmDel && (
+        <div role="dialog" aria-modal="true" onClick={()=>setConfirmDel(null)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
+            <div style={{ display:'grid', gap:8 }}>
+              <strong>Delete cleaning task</strong>
+              <div style={{ color:'var(--muted)' }}>
+                Are you sure you want to delete “{confirmDel.label}”? This action is irreversible.
+              </div>
+              <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
+                <button className="sb-btn" onClick={()=>setConfirmDel(null)}>Close</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ const id=confirmDel.id; setConfirmDel(null); onDelete(id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

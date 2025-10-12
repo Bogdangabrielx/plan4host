@@ -41,7 +41,7 @@ export default function RoomsTab({
   return (
     <div style={{ display: "grid", gap: 16 }}>
       {/* Section 1: Room Types */}
-      <section className="sb-card" style={{ padding: 12 }}>
+      <section className="sb-card" style={{ padding: 12, border: '1px solid color-mix(in srgb, var(--muted) 40%, transparent)' }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
           <strong>Room types</strong>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -51,18 +51,20 @@ export default function RoomsTab({
               onChange={(e) => setNewType((e.target as HTMLInputElement).value)}
               style={input}
             />
-            <button
-              onClick={() => {
-                const v = newType.trim();
-                if (v) {
-                  onAddType(v);
-                  setNewType("");
-                }
-              }}
-              className="sb-btn sb-btn--primary"
-            >
-              Add
-            </button>
+            {newType.trim() && (
+              <button
+                onClick={() => {
+                  const v = newType.trim();
+                  if (v) {
+                    onAddType(v);
+                    setNewType("");
+                  }
+                }}
+                className="sb-btn sb-btn--primary"
+              >
+                Add
+              </button>
+            )}
           </div>
         </div>
 
@@ -78,7 +80,7 @@ export default function RoomsTab({
       </section>
 
       {/* Section 2: Rooms + type assignment */}
-      <section className="sb-card" style={{ padding: 12 }}>
+      <section className="sb-card" style={{ padding: 12, border: '1px solid color-mix(in srgb, var(--muted) 40%, transparent)' }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
           <strong>Rooms</strong>
           <button onClick={onAddRoom} className="sb-btn sb-btn--primary">Add room</button>
@@ -94,6 +96,7 @@ export default function RoomsTab({
                 style={{
                   background: "var(--card)",
                   borderRadius: 12,
+                  border: '1px solid color-mix(in srgb, var(--muted) 35%, transparent)',
                   padding: 12,
                   gap: 10,
                   overflow: "hidden",
@@ -172,9 +175,10 @@ function TypeRow({
 }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(type.name);
+  const [confirmDel, setConfirmDel] = useState(false);
 
   return (
-    <li className="sb-card" style={{ display: "grid", gap: 8, padding: 12 }}>
+    <li className="sb-card" style={{ display: "grid", gap: 8, padding: 12, border: '1px solid color-mix(in srgb, var(--muted) 35%, transparent)' }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
           {editing ? (
@@ -212,11 +216,27 @@ function TypeRow({
               Rename
             </button>
           )}
-          <button onClick={() => onDelete(type.id)} className="sb-btn">
-            Delete
-          </button>
+          <button onClick={() => setConfirmDel(true)} className="sb-btn">Delete</button>
         </div>
       </div>
+
+      {confirmDel && (
+        <div role="dialog" aria-modal="true" onClick={()=>setConfirmDel(false)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
+            <div style={{ display:'grid', gap:8 }}>
+              <strong>Delete room type</strong>
+              <div style={{ color:'var(--muted)' }}>
+                Are you sure you want to delete “{type.name}”? This action is irreversible.
+              </div>
+              <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
+                <button className="sb-btn" onClick={()=>setConfirmDel(false)}>Close</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ setConfirmDel(false); onDelete(type.id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </li>
   );
 }
