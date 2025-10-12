@@ -302,7 +302,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [rmPicker, setRmPicker] = useState<null | { propertyId: string; item: OverviewRow }>(null);
   const [rmPickerItems, setRmPickerItems] = useState<Array<{ id:string; title:string; updated_at?:string; status?:string }>>([]);
   const [rmPickerLoading, setRmPickerLoading] = useState(false);
-  const [editModal, setEditModal] = useState<null | { propertyId: string; bookingId: string }>(null);
+  const [editModal, setEditModal] = useState<null | { propertyId: string; bookingId: string; confirmOnSave?: boolean }>(null);
 
   // Legend popovers
   const [legendInfo, setLegendInfo] = useState<null | "green" | "yellow" | "red">(null);
@@ -1097,6 +1097,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             bookingId={editModal.bookingId}
             onClose={() => setEditModal(null)}
             onSaved={() => { /* keep modal open after save */ refresh(); }}
+            confirmOnSave={!!editModal.confirmOnSave}
           />
         )}
       </div>
