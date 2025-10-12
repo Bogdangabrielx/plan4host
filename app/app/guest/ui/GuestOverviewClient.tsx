@@ -1469,10 +1469,9 @@ function RMContent({ propertyId, row, templateId }: { propertyId: string; row: a
     if (!html) return "";
     const withVars = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\}\}/g, (_m, k) => {
       const v = vars?.[k];
-      if (v !== undefined && v !== null && String(v).length > 0) return _escapeHtml(String(v));
-      // Render unresolved variable as a chip (like in Automatic Welcome Message)
-      const safe = _escapeHtml(k);
-      return `<span class="rm-token" data-token="${safe}" contenteditable="false">${safe}</span>`;
+      // Show value if present; otherwise empty string (no tokens)
+      if (v !== undefined && v !== null) return _escapeHtml(String(v));
+      return "";
     });
     return withVars.replace(/\r?\n/g, "<br/>");
   }
@@ -1484,11 +1483,7 @@ function RMContent({ propertyId, row, templateId }: { propertyId: string; row: a
       out.push(_escapeHtml(s.slice(last, m.index)));
       const key = m[1];
       const val = vars?.[key];
-      if (val !== undefined && val !== null && String(val).length > 0) out.push(_escapeHtml(String(val)));
-      else {
-        const safe = _escapeHtml(key);
-        out.push(`<span class=\"rm-token\" data-token=\"${safe}\" contenteditable=\"false\">${safe}</span>`);
-      }
+      if (val !== undefined && val !== null) out.push(_escapeHtml(String(val)));
       last = m.index + m[0].length;
     }
     out.push(_escapeHtml(s.slice(last)));
