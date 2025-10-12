@@ -869,7 +869,7 @@ function ManageTypeModal({
   onToggle: (ii: any) => void;
   onUpdate: (id: string, patch: Partial<TypeIntegration>) => void;
 }) {
-  const [provider, setProvider] = useState("Booking");
+  const [provider, setProvider] = useState("");
   const [url, setUrl] = useState("");
   const [customProvider, setCustomProvider] = useState("");
   const supa = useMemo(() => createClient(), []);
@@ -1025,13 +1025,14 @@ function ManageTypeModal({
       <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, marginBottom: 12 }}>
         <div style={{ display: "grid", gap: 8 }}>
           <div style={{ display: "grid", gap: 6 }}>
-            <label style={label}>Provider</label>
+            <label style={label}>Select provider</label>
             <select
               className="sb-select"
               value={provider}
-              onChange={(e) => setProvider((e.target as HTMLSelectElement).value)}
+              onChange={(e) => { setProvider((e.target as HTMLSelectElement).value); setUrl(""); setCustomProvider(""); setPickerFor(null); }}
               style={{ fontFamily: 'inherit' }}
             >
+              <option value="">- Select -</option>
               <option>Booking</option>
               <option>Airbnb</option>
               <option>Expedia</option>
@@ -1042,7 +1043,8 @@ function ManageTypeModal({
             </select>
           </div>
 
-          {/* Logo selector / preview */}
+          {/* Logo selector / preview (hidden until provider selected) */}
+          {provider && (
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <label style={label}>Logo</label>
             {provider !== "Other" ? (
@@ -1091,8 +1093,10 @@ function ManageTypeModal({
               </span>
             )}
           </div>
+          )}
 
-          {/* color selector for current provider */}
+          {/* color selector for current provider (hidden until provider selected) */}
+          {provider && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <label style={label}>Color</label>
             <button
@@ -1116,6 +1120,7 @@ function ManageTypeModal({
               </div>
             )}
           </div>
+          )}
 
           {provider === 'Other' && (
             <div style={{ display: "grid", gap: 6 }}>
@@ -1124,18 +1129,31 @@ function ManageTypeModal({
             </div>
           )}
 
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={label}>iCal URL</label>
-            <input style={input} value={url} onChange={(e) => setUrl((e.target as HTMLInputElement).value)} placeholder="https://..." />
-          </div>
+          {/* URL field (hidden until provider selected) */}
+          {provider && (
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={label}>iCal URL</label>
+              <input
+                style={input}
+                value={url}
+                onChange={(e) => setUrl((e.target as HTMLInputElement).value)}
+                placeholder="https://.../calendar.ics"
+              />
+              {url.trim() && !(url.trim().toLowerCase().split('?')[0].endsWith('.ics')) && (
+                <small style={{ color: 'var(--danger)' }}>URL must end with .ics</small>
+              )}
+            </div>
+          )}
 
-          <div>
-            <button
-              className="sb-btn sb-btn--primary"
-              onClick={async () => {
-                const prov = provider === 'Other' ? customProvider.trim() : provider;
-                if (!prov || !url.trim()) return;
-                const newId = await onAdd(prov, url);
+          {/* Add feed (only after valid provider + URL) */}
+          {(provider && url.trim().toLowerCase().split('?')[0].endsWith('.ics')) && (
+            <div>
+              <button
+                className="sb-btn sb-btn--primary"
+                onClick={async () => {
+                  const prov = provider === 'Other' ? customProvider.trim() : provider;
+                  if (!prov || !url.trim()) return;
+                  const newId = await onAdd(prov, url);
                 if (newId) {
                   // Persist initial color preset
                   const key = norm(prov);
@@ -1161,11 +1179,12 @@ function ManageTypeModal({
                 setUrl("");
                 setCustomProvider("");
               }}
-              disabled={provider === 'Other' && !customProvider.trim()}
-            >
-              Add feed
-            </button>
-          </div>
+                disabled={(provider === 'Other' && !customProvider.trim())}
+              >
+                Add feed
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1253,7 +1272,7 @@ function ManageRoomModal({
   onToggle: (ii: any) => void;
   onUpdate: (id: string, patch: Partial<TypeIntegration>) => void;
 }) {
-  const [provider, setProvider] = useState("Booking");
+  const [provider, setProvider] = useState("");
   const [url, setUrl] = useState("");
   const [customProvider, setCustomProvider] = useState("");
   const supa = useMemo(() => createClient(), []);
@@ -1395,9 +1414,10 @@ function ManageRoomModal({
             <select
               className="sb-select"
               value={provider}
-              onChange={(e) => setProvider((e.target as HTMLSelectElement).value)}
+              onChange={(e) => { setProvider((e.target as HTMLSelectElement).value); setUrl(""); setCustomProvider(""); setPickerFor(null); }}
               style={{ fontFamily: 'inherit' }}
             >
+              <option value="">- Select -</option>
               <option>Booking</option>
               <option>Airbnb</option>
               <option>Expedia</option>
@@ -1408,7 +1428,8 @@ function ManageRoomModal({
             </select>
           </div>
 
-          {/* Logo selector / preview */}
+          {/* Logo selector / preview (hidden until provider selected) */}
+          {provider && (
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <label style={label}>Logo</label>
             {provider !== "Other" ? (
@@ -1447,8 +1468,10 @@ function ManageRoomModal({
               </span>
             )}
           </div>
+          )}
 
-          {/* color selector */}
+          {/* color selector (hidden until provider selected) */}
+          {provider && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <label style={label}>Color</label>
             <button type="button" data-picker="keep" onClick={() => setPickerFor('new')} title="Choose color" style={{ width: 20, height: 20, borderRadius: 999, border: '1px solid var(--border)', background: colorMap[norm(provider === 'Other' ? customProvider || 'other' : provider)] || defaultColor(provider) }} />
@@ -1465,14 +1488,21 @@ function ManageRoomModal({
               </div>
             )}
           </div>
+          )}
 
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={label}>iCal URL</label>
-            <input style={input} value={url} onChange={(e) => setUrl((e.target as HTMLInputElement).value)} placeholder="https://..." />
-          </div>
+          {provider && (
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={label}>iCal URL</label>
+              <input style={input} value={url} onChange={(e) => setUrl((e.target as HTMLInputElement).value)} placeholder="https://.../calendar.ics" />
+              {url.trim() && !(url.trim().toLowerCase().split('?')[0].endsWith('.ics')) && (
+                <small style={{ color: 'var(--danger)' }}>URL must end with .ics</small>
+              )}
+            </div>
+          )}
 
-          <div>
-            <button className="sb-btn sb-btn--primary" onClick={async () => {
+          {(provider && url.trim().toLowerCase().split('?')[0].endsWith('.ics')) && (
+            <div>
+              <button className="sb-btn sb-btn--primary" onClick={async () => {
               const prov = provider === 'Other' ? customProvider.trim() : provider;
               if (!prov || !url.trim()) return;
               const newId = await onAdd(prov, url);
@@ -1492,8 +1522,9 @@ function ManageRoomModal({
                 }
               }
               setUrl(""); setCustomProvider("");
-            }}>Add feed</button>
-          </div>
+            }} disabled={(provider === 'Other' && !customProvider.trim())}>Add feed</button>
+            </div>
+          )}
         </div>
       </div>
 
