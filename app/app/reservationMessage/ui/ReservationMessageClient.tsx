@@ -597,7 +597,7 @@ export default function ReservationMessageClient({
                 style={{ ...btn, background: rvTab === "defs" ? "var(--primary)" : "var(--card)", color: rvTab === "defs" ? "#0c111b" : "var(--text)" }}
                 onClick={() => setRvTab("defs")}
               >
-                Definitions
+                Create Variables
               </button>
 
               {/* status/erori compact */}
