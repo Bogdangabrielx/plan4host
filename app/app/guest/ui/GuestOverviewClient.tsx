@@ -891,14 +891,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 {/* Actions */}
                 <div
                   style={{
-                    display: isSmall ? "grid" : "flex",
                     gridTemplateColumns: isSmall ? "1fr" : undefined,
                     alignItems: "center",
                     justifyContent: isSmall ? "stretch" : "flex-end",
                     gap: 8,
                     flexWrap: isSmall ? undefined : "wrap",
                     // hide on mobile unless expanded
-                    display: (isSmall && !openActions.has(key)) ? 'none' as any : (isSmall ? 'grid' : 'flex'),
+                    display: isSmall ? (openActions.has(key) ? 'grid' : 'none') : 'flex',
                   }}
                 >
                   {/* Desktop: badge shown above (under status) */}
@@ -1138,6 +1137,7 @@ function EditFormBookingModal({
   const [guestFirst, setGuestFirst] = useState<string>("");
   const [guestLast, setGuestLast] = useState<string>("");
   const [guestEmail, setGuestEmail] = useState<string>("");
+  const [guestPhone, setGuestPhone] = useState<string>("");
 
   // property shapes
   const [rooms, setRooms] = useState<Array<{ id: string; name: string; room_type_id: string | null }>>([]);
@@ -1168,7 +1168,7 @@ function EditFormBookingModal({
             .order("name", { ascending: true }),
           supabase
             .from("booking_contacts")
-            .select("email")
+            .select("email,phone")
             .eq("booking_id", bookingId)
             .maybeSingle(),
         ]);
@@ -1187,6 +1187,7 @@ function EditFormBookingModal({
         setGuestFirst(bRes.data.guest_first_name || "");
         setGuestLast(bRes.data.guest_last_name || "");
         setGuestEmail((bRes.data.guest_email || cRes.data?.email || "") as string);
+        setGuestPhone((cRes.data?.phone || "") as string);
 
         if (rRes.error) throw new Error(rRes.error.message);
         setRooms((rRes.data || []) as any);
