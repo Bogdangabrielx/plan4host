@@ -33,6 +33,15 @@ function nextDate(dateStr: string): string {
   const dd = String(dt.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 }
+function prevDate(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map((n) => parseInt(n, 10));
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() - 1);
+  const yyyy = dt.getFullYear();
+  const mm = String(dt.getMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 export default function DayModal({
   dateStr,
@@ -240,11 +249,11 @@ export default function DayModal({
           }}
         >
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <button className="sb-btn sb-btn--icon" aria-label="Previous day" onClick={() => setDay((d)=>{ const nd = new Date(d+"T00:00:00"); nd.setDate(nd.getDate()-1); return nd.toISOString().slice(0,10); })}>◀</button>
+            <button className="sb-btn sb-btn--icon" type="button" aria-label="Previous day" onClick={() => setDay((d)=> prevDate(d))}>◀</button>
             <strong style={{ letterSpacing: 0.2, fontSize: 16 }}>
               {day} — Rooms
             </strong>
-            <button className="sb-btn sb-btn--icon" aria-label="Next day" onClick={() => setDay((d)=>{ const nd = new Date(d+"T00:00:00"); nd.setDate(nd.getDate()+1); return nd.toISOString().slice(0,10); })}>▶</button>
+            <button className="sb-btn sb-btn--icon" type="button" aria-label="Next day" onClick={() => setDay((d)=> nextDate(d))}>▶</button>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

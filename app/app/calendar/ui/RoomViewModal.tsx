@@ -344,9 +344,7 @@ function MiniMonthRoom({ year, month, room, colors, onDayClick }: {
                 {c.dayNum}
               </span>
             )}
-            {c.isToday && (
-              <span aria-hidden style={{ position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: 999, background: 'var(--primary)' }} />
-            )}
+            {/* Today dot removed; keep only the ring via boxShadow */}
           </div>
         );
       })}
