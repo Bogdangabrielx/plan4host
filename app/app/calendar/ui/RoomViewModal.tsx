@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 
-const DayModal: any = dynamic(
-  () => import("./DayModal").then((m: any) => m.default ?? m.DayModal ?? (() => null)),
+const RoomDetailModal: any = dynamic(
+  () => import("./RoomDetailModal").then((m: any) => m.default ?? m.RoomDetailModal ?? (() => null)),
   { ssr: false }
 );
 
@@ -60,6 +60,7 @@ export default function RoomViewModal({
   const [integrations, setIntegrations] = useState<TypeIntegration[]>([]);
   const [loading, setLoading] = useState<"Idle"|"Loading"|"Error">("Idle");
   const [openDate, setOpenDate] = useState<string | null>(null);
+  const [openRoom, setOpenRoom] = useState<Room | null>(null);
 
   // Load rooms + bookings overlapping the month
   useEffect(() => {
@@ -272,9 +273,9 @@ export default function RoomViewModal({
                 <MiniMonthRoom
                   year={year}
                   month={month}
-                  roomId={r.id}
+                  room={r}
                   colors={colorByRoomDate.get(r.id) || new Map<string,string>()}
-                  onDayClick={(dateStr) => setOpenDate(dateStr)}
+                  onDayClick={(room, dateStr) => { setOpenRoom(room); setOpenDate(dateStr); }}
                 />
               </div>
             ))}
@@ -282,30 +283,32 @@ export default function RoomViewModal({
         </div>
       </div>
 
-      {openDate && (
-        <DayModal
+      {openDate && openRoom && (
+        <RoomDetailModal
           dateStr={openDate}
           propertyId={propertyId}
-          canEdit={canEdit}
-          onClose={() => setOpenDate(null)}
+          room={openRoom}
+          onClose={() => { setOpenDate(null); setOpenRoom(null); }}
+          onChanged={() => { /* no-op refresh is handled on reopen */ }}
         />
       )}
     </div>
   );
 }
 
-function MiniMonthRoom({ year, month, roomId, colors, onDayClick }: {
-  year: number; month: number; roomId: string; colors: Map<string,string>;
-  onDayClick: (dateStr: string) => void;
+function MiniMonthRoom({ year, month, room, colors, onDayClick }: {
+  year: number; month: number; room: Room; colors: Map<string,string>;
+  onDayClick: (room: Room, dateStr: string) => void;
 }) {
   const dim = daysInMonth(year, month);
   const fw  = firstWeekday(year, month);
-  const cells: Array<{ dateStr?: string; dayNum?: number; color?: string }> = [];
+  const cells: Array<{ dateStr?: string; dayNum?: number; color?: string; isToday?: boolean }> = [];
+  const todayStr = ymd(new Date());
 
   for (let i = 0; i < fw; i++) cells.push({});
   for (let d = 1; d <= dim; d++) {
     const ds = `${year}-${pad(month+1)}-${pad(d)}`;
-    cells.push({ dateStr: ds, dayNum: d, color: colors.get(ds) });
+    cells.push({ dateStr: ds, dayNum: d, color: colors.get(ds), isToday: ds === todayStr });
   }
   const rows  = Math.ceil(cells.length / 7);
   const total = rows * 7;
@@ -319,7 +322,7 @@ function MiniMonthRoom({ year, month, roomId, colors, onDayClick }: {
         return (
           <div
             key={i}
-            onClick={clickable ? () => onDayClick(c.dateStr!) : undefined}
+            onClick={clickable ? () => onDayClick(room, c.dateStr!) : undefined}
             title={c.dateStr ? (hasColor ? "Reserved" : "Available") : undefined}
             style={{
               position: "relative",
@@ -327,6 +330,7 @@ function MiniMonthRoom({ year, month, roomId, colors, onDayClick }: {
               borderRadius: 8,
               border: "1px solid var(--border)",
               background: "var(--card)",
+              boxShadow: c.isToday ? "0 0 0 2px var(--cal-today-ring)" : "none",
               cursor: clickable ? "pointer" : "default",
               overflow: "hidden",
             }}
@@ -338,6 +342,9 @@ function MiniMonthRoom({ year, month, roomId, colors, onDayClick }: {
               <span style={{ position: "absolute", top: 5, left: 6, fontSize: 11, color: "var(--text)", fontWeight: 800 }}>
                 {c.dayNum}
               </span>
+            )}
+            {c.isToday && (
+              <span aria-hidden style={{ position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: 999, background: 'var(--primary)' }} />
             )}
           </div>
         );
