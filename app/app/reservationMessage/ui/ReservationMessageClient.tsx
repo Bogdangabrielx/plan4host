@@ -626,7 +626,7 @@ export default function ReservationMessageClient({
                 {varDefs.length === 0 ? (
                   <div className="sb-card" style={{ padding: 16, textAlign: "center", border: "1px dashed var(--border)", borderRadius: 10 }}>
                     <div style={{ fontWeight: 700, marginBottom: 6 }}>No variables defined</div>
-                    <div style={{ color: "var(--muted)" }}>Create one in the <em>Definitions</em> tab.</div>
+                    <div style={{ color: "var(--muted)" }}>Create one in the <em>Create Variables</em> tab.</div>
                   </div>
                 ) : (
                   <div style={{ display: "grid", gap: 10 }}>
