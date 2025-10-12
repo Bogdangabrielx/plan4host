@@ -149,7 +149,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     const APP_URL =
       (typeof process !== "undefined" && (process as any).env?.NEXT_PUBLIC_APP_URL) ||
       (typeof window !== "undefined" ? window.location.origin : "https://plan4host.com");
-    const next = nextParam || (desiredPlan ? `/app/subscription?plan=${desiredPlan}&hl=1` : "/app");
+    const next = nextParam || (desiredPlan ? `/app/subscription?plan=${desiredPlan}&hl=1` : "/app/calendar");
     try {
       const intent = mode === "login" ? "signin" : "signup";
       window.location.href = `${APP_URL}/auth/oauth/google?next=${encodeURIComponent(next)}&intent=${intent}`;
