@@ -31,6 +31,7 @@ export default function RoomsTab({
   plan?: 'basic' | 'standard' | 'premium' | null;
 }) {
   const [newType, setNewType] = useState("");
+  const [confirmRoomDel, setConfirmRoomDel] = useState<null | { id: string; name: string }>(null);
 
   const roomsSorted = useMemo(() => {
     return [...rooms].sort((a, b) => a.sort_index - b.sort_index);
@@ -131,13 +132,31 @@ export default function RoomsTab({
                 <div style={actionsArea}>
                   <button onClick={() => onMoveRoom(r.id, "up")} disabled={idx === 0} className="sb-btn">↑</button>
                   <button onClick={() => onMoveRoom(r.id, "down")} disabled={idx === roomsSorted.length - 1} className="sb-btn">↓</button>
-                  <button onClick={() => onDeleteRoom(r.id)} className="sb-btn">Delete</button>
+                  <button onClick={() => setConfirmRoomDel({ id: r.id, name: r.name })} className="sb-btn">Delete</button>
                 </div>
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      {confirmRoomDel && (
+        <div role="dialog" aria-modal="true" onClick={()=>setConfirmRoomDel(null)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
+            <div style={{ display:'grid', gap:8 }}>
+              <strong>Delete room</strong>
+              <div style={{ color:'var(--muted)' }}>
+                Are you sure you want to delete “{confirmRoomDel.name}”? This action is irreversible.
+              </div>
+              <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
+                <button className="sb-btn" onClick={()=>setConfirmRoomDel(null)}>Close</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ const id=confirmRoomDel.id; setConfirmRoomDel(null); onDeleteRoom(id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -231,7 +250,7 @@ function TypeRow({
               </div>
               <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
                 <button className="sb-btn" onClick={()=>setConfirmDel(false)}>Close</button>
-                <button className="sb-btn sb-btn--primary" onClick={()=>{ setConfirmDel(false); onDelete(type.id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>OK</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ setConfirmDel(false); onDelete(type.id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>Delete</button>
               </div>
             </div>
           </div>

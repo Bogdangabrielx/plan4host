@@ -108,7 +108,7 @@ export default function RoomDetailsTab({
                   }}
                   style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}
                 >
-                  OK
+                  Delete
                 </button>
               </div>
             </div>

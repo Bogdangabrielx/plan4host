@@ -58,7 +58,7 @@ export default function CleaningTab({
               </div>
               <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
                 <button className="sb-btn" onClick={()=>setConfirmDel(null)}>Close</button>
-                <button className="sb-btn sb-btn--primary" onClick={()=>{ const id=confirmDel.id; setConfirmDel(null); onDelete(id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>OK</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ const id=confirmDel.id; setConfirmDel(null); onDelete(id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>Delete</button>
               </div>
             </div>
           </div>
