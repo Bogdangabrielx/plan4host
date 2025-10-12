@@ -7,7 +7,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
 
   // Optional: redirect after login (e.g., /app/calendar)
-  const next = url.searchParams.get("next") || "/app";
+  const next = url.searchParams.get("next") || "/app/calendar";
   const intent = url.searchParams.get("intent") || "signin";
 
   // Force consent screen if "?consent=1"

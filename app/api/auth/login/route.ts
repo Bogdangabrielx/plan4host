@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 
     // 3) Succes — UI-ul face redirect dacă găsește x-redirect
     const res = NextResponse.json({ ok: true }, { status: 200 });
-    res.headers.set("x-redirect", "/app");
+    res.headers.set("x-redirect", "/app/calendar");
     return res;
   } catch (e: any) {
     return NextResponse.json(

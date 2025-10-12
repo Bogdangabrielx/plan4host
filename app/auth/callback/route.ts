@@ -7,7 +7,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
 
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") || "/app";
+  const next = url.searchParams.get("next") || "/app/calendar";
   const intent = (url.searchParams.get("intent") || "signin").toLowerCase();
 
   if (!code) {

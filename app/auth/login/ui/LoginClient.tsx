@@ -122,7 +122,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
           nextParam ||
           (desiredPlan ? `/app/subscription?plan=${desiredPlan}&hl=1` : null) ||
           (hdrNext && (/^\//.test(hdrNext) || /^https?:\/\//i.test(hdrNext)) ? hdrNext : null) ||
-          "/app";
+          "/app/calendar";
         location.assign(preferred);
         return;
       }
