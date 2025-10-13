@@ -296,10 +296,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         defaultEnd?: { date: string; time: string | null };
       }
   >(null);
-  const [rmModal, setRmModal] = useState<null | { propertyId: string; item: OverviewRow; templateId?: string | null }>(null);
-  const [rmPicker, setRmPicker] = useState<null | { propertyId: string; item: OverviewRow }>(null);
-  const [rmPickerItems, setRmPickerItems] = useState<Array<{ id:string; title:string; updated_at?:string; status?:string }>>([]);
-  const [rmPickerLoading, setRmPickerLoading] = useState(false);
+  // Automatic messages UI removed per request
   const [editModal, setEditModal] = useState<null | { propertyId: string; bookingId: string; confirmOnSave?: boolean }>(null);
   const [qrModal, setQrModal] = useState<null | { bookingId: string; url: string }>(null);
 
@@ -384,7 +381,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   useEffect(() => {
     // close modals tied to previous property
     setModal(null);
-    setRmModal(null);
     setEditModal(null);
     // clear lists
     setRooms([]);
@@ -893,33 +889,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   {/* Desktop: badge shown above (under status) */}
                   {kind === "green" && (
                     <>
-                      <button
-                        type="button"
-                        {...useTap(async () => {
-                          setRmPicker({ propertyId, item: it });
-                          try {
-                            setRmPickerLoading(true);
-                            const r = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(propertyId)}`, { cache:'no-store' });
-                            const j = await r.json().catch(()=>({}));
-                            const items = Array.isArray(j?.items) ? j.items : [];
-                            const pubs = items.filter((x:any)=>String(x.status||'').toLowerCase()==='published');
-                            setRmPickerItems(pubs.map((x:any)=>({ id:String(x.id), title:String(x.title||''), updated_at:x.updated_at, status:x.status })));
-                          } catch { setRmPickerItems([]); } finally { setRmPickerLoading(false); }
-                        })}
-                        style={{
-                          ...BTN_TOUCH_STYLE,
-                          borderRadius: 21,
-                          border: "1px solid var(--border)",
-                          background: "var(--card)",
-                          color: "var(--text)",
-                          fontWeight: 600,
-                          cursor: "pointer",
-                          width: isSmall ? "100%" : undefined,
-                        }}
-                        title="Reservation message"
-                      >
-                        Automatic message
-                    </button>
+                      {/* Automatic message button removed */}
 
                       <button
                         type="button"
@@ -1018,64 +988,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           />
         )}
 
-        {rmModal && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={() => setRmModal(null)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 60, display: "grid", placeItems: "center", padding: 12 }}
-          >
-            <div
-              onClick={(e)=>e.stopPropagation()}
-              className="sb-card"
-              style={{ width: "min(860px, 100%)", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <strong>Reservation message</strong>
-                <button
-                  type="button"
-                  className="sb-btn"
-                  onClick={() => setRmModal(null)}
-                  {...useTap(()=>setRmModal(null))}
-                  style={{ ...BTN_TOUCH_STYLE }}
-                  aria-label="Close"
-                >
-                  Close
-                </button>
-              </div>
-              <RMContent propertyId={rmModal.propertyId} row={rmModal.item} templateId={rmModal.templateId || undefined} />
-            </div>
-          </div>
-        )}
-
-        {/* Template picker modal (titles list) */}
-        {rmPicker && (
-          <div role="dialog" aria-modal="true" onClick={()=>setRmPicker(null)}
-            style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:70, display:'grid', placeItems:'center', padding:12 }}>
-            <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px,100%)', maxHeight:'calc(100vh - 32px)', overflow:'auto', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-                <strong>Select message</strong>
-                <button className="sb-btn" {...useTap(()=>setRmPicker(null))}>Close</button>
-              </div>
-              {rmPickerLoading ? (
-                <div style={{ color:'var(--muted)' }}>Loading…</div>
-              ) : rmPickerItems.length === 0 ? (
-                <div style={{ color:'var(--muted)' }}>No published messages for this property. Go to Automatic Messages to create one.</div>
-              ) : (
-                <div style={{ display:'grid', gap:8 }}>
-                  {rmPickerItems.map(t => (
-                    <button key={t.id} className="sb-btn" style={{ justifyContent:'space-between' }}
-                      {...useTap(()=>{ setRmPicker(null); setRmModal({ propertyId: rmPicker.propertyId, item: rmPicker.item, templateId: t.id }); })}>
-                      <span style={{ fontWeight:800 }} dangerouslySetInnerHTML={{ __html: rmTitleToChips(t.title || '(Untitled)') }} />
-                      <small style={{ color:'var(--muted)' }}>{t.updated_at ? new Date(t.updated_at).toLocaleString() : ''}</small>
-                    </button>
-                  ))}
-                </div>
-              )}
-              <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
-            </div>
-          </div>
-        )}
+        {/* Automatic messages UI removed */}
 
         {editModal && (
           <EditFormBookingModal
@@ -1142,6 +1055,10 @@ function EditFormBookingModal({
   const [docs, setDocs] = useState<Array<{ id:string; doc_type:string|null; mime_type:string|null; url:string|null }>>([]);
   const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
   const [confirmBusy, setConfirmBusy] = useState<boolean>(false);
+  // New gating before sending email
+  const [sendMailOpen, setSendMailOpen] = useState<boolean>(false);
+  const [sendMailBusy, setSendMailBusy] = useState<boolean>(false);
+  const [sendMailError, setSendMailError] = useState<string | null>(null);
 
   // booking fields
   const [startDate, setStartDate] = useState<string>("");
@@ -1289,26 +1206,9 @@ function EditFormBookingModal({
         throw new Error(isOverlap ? 'Overlaps an existing confirmed reservation on this room.' : msg);
       }
 
-      // After successful save (room confirmed), ensure we generate the public link and send reservation confirmation
-      try {
-        const gen = await fetch('/api/reservation-message/generate', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ property_id: propertyId, booking_id: bookingId })
-        });
-        await gen.json().catch(()=>({}));
-      } catch {}
-      try {
-        await fetch('/api/reservation-message/confirm-room', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ property_id: propertyId, booking_id: bookingId })
-        });
-      } catch {}
-
-      // refresh parent list but keep modal open; show success pop-up
-      try { onSaved(); } catch {}
-      setError(null);
-      setPopupTitle('Saved');
-      setPopupMsg('Saved');
+      // Open gating dialog to confirm emailing guest the room info
+      setSendMailError(null);
+      setSendMailOpen(true);
     } catch (e: any) {
       setError(e?.message || "Failed to save changes.");
     } finally {
@@ -1390,6 +1290,62 @@ function EditFormBookingModal({
               <button className="sb-btn sb-btn--primary" onClick={async ()=>{ setConfirmBusy(true); try { await performSave(); setConfirmOpen(false);} finally { setConfirmBusy(false);} }} disabled={confirmBusy}>
                 {confirmBusy ? 'Saving…' : 'OK'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {sendMailOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e)=>{ e.stopPropagation(); if (!sendMailBusy) setSendMailOpen(false); }}
+          style={{ position:'fixed', inset:0, zIndex: 225, display:'grid', placeItems:'center', padding:12, background:'rgba(0,0,0,.55)' }}
+        >
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width: 'min(520px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+              <strong>Send info email to guest?</strong>
+            </div>
+            <div style={{ color:'var(--text)', marginBottom: 12 }}>
+              We will send an informational email including the assigned room number to the guest. Proceed?
+              {sendMailError && (
+                <div style={{ color:'var(--danger)', marginTop:8 }}>{sendMailError}</div>
+              )}
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+              <button className="sb-btn" onClick={()=>{ if (!sendMailBusy) setSendMailOpen(false); }} disabled={sendMailBusy}>Cancel</button>
+              <button className="sb-btn sb-btn--primary" disabled={sendMailBusy} onClick={async ()=>{
+                setSendMailBusy(true);
+                setSendMailError(null);
+                try {
+                  // Ensure public link exists
+                  try {
+                    const gen = await fetch('/api/reservation-message/generate', {
+                      method: 'POST', headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ property_id: propertyId, booking_id: bookingId })
+                    });
+                    await gen.json().catch(()=>({}));
+                  } catch {}
+                  // Send reservation confirmation (includes link)
+                  const r = await fetch('/api/reservation-message/confirm-room', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ property_id: propertyId, booking_id: bookingId })
+                  });
+                  const jj = await r.json().catch(()=>({}));
+                  setSendMailOpen(false);
+                  try { onSaved(); } catch {}
+                  if (r.ok && (jj?.ok || jj?.sent)) {
+                    setPopupTitle('Email sent');
+                    setPopupMsg('The informational email was sent to the guest.');
+                  } else {
+                    setPopupTitle('Error');
+                    setPopupMsg('Email could not be sent. Please try again in 10 minutes.');
+                  }
+                } catch (er:any) {
+                  setSendMailError(er?.message || 'Failed to send.');
+                } finally {
+                  setSendMailBusy(false);
+                }
+              }}>{sendMailBusy ? 'Sending…' : 'Send'}</button>
             </div>
           </div>
         </div>
