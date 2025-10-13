@@ -72,10 +72,20 @@ export async function GET(req: NextRequest) {
 
       for (const t of tpls) {
         const kind = (t.schedule_kind || 'none').toLowerCase();
-        let due = true;
-        if (kind === 'hour_before_checkin') due = now >= new Date(at(bk.start_date, ciTime).getTime() - 1*60*60*1000);
-        else if (kind === 'hours_before_checkout') due = now >= new Date(at(bk.end_date, coTime).getTime() - 12*60*60*1000);
-        else if (kind === 'on_arrival') due = now >= at(bk.start_date, ciTime);
+        const off = (typeof t.schedule_offset_hours === 'number' && !isNaN(t.schedule_offset_hours)) ? Number(t.schedule_offset_hours) : null;
+        let due = false;
+        if (kind === 'hour_before_checkin') {
+          const h = (off ?? 1);
+          due = now >= new Date(at(bk.start_date, ciTime).getTime() - h*60*60*1000);
+        } else if (kind === 'hours_before_checkout') {
+          const h = (off ?? 12);
+          due = now >= new Date(at(bk.end_date, coTime).getTime() - h*60*60*1000);
+        } else if (kind === 'on_arrival') {
+          due = now >= at(bk.start_date, ciTime);
+        } else {
+          // 'none' or unknown kinds are never due
+          due = false;
+        }
         if (!due) continue;
 
         // Idempotency: skip if already sent for this template
