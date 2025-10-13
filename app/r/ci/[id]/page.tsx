@@ -51,6 +51,11 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   const name = [booking?.guest_first_name, booking?.guest_last_name].filter(Boolean).join(' ');
   const checkinUrl = `${process.env.NEXT_PUBLIC_APP_URL || ''}/r/ci/${bookingId}`;
 
+  // Reuse the same visual language as CheckinClient (dark variant icons)
+  function formIconDark(key: 'email'|'phone'|'address'|'city'|'country'|'firstname'|'lastname') {
+    return `/formular_${key}_fordark.png`;
+  }
+
   function Thumb({ doc, label }: { doc: Doc|null, label: string }) {
     if (!doc || !doc.url) return <div style={{ color:'var(--muted)' }}>No file</div>;
     const img = (doc.mime_type || '').startsWith('image/');
@@ -77,35 +82,51 @@ export default async function CheckinQrView({ params }: { params: { id: string }
         <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
           {/* Table-style details with icons */}
           <div style={{ display:'grid', gridTemplateColumns:'auto 1fr auto', rowGap:8, columnGap:10, alignItems:'center' }}>
-            <div aria-hidden>🏨</div>
+            <div aria-hidden style={{ width:18 }}>
+              <span role="img" aria-label="Property">🏨</span>
+            </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Property</div>
             <div style={{ justifySelf:'start' }}>{property?.name || '—'}</div>
 
-            <div aria-hidden>👤</div>
+            <div aria-hidden style={{ width:18 }}>
+              <img src={formIconDark('firstname')} alt="" width={16} height={16} />
+            </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>First name</div>
             <div>{booking?.guest_first_name || '—'}</div>
 
-            <div aria-hidden>👤</div>
+            <div aria-hidden style={{ width:18 }}>
+              <img src={formIconDark('lastname')} alt="" width={16} height={16} />
+            </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Last name</div>
             <div>{booking?.guest_last_name || '—'}</div>
 
-            <div aria-hidden>✉</div>
+            <div aria-hidden style={{ width:18 }}>
+              <img src={formIconDark('email')} alt="" width={16} height={16} />
+            </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Email</div>
-          <div>{booking?.guest_email || contact?.email || '—'}</div>
+            <div>{booking?.guest_email || contact?.email || '—'}</div>
 
-            <div aria-hidden>☏</div>
+            <div aria-hidden style={{ width:18 }}>
+              <img src={formIconDark('phone')} alt="" width={16} height={16} />
+            </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Phone</div>
             <div>{booking?.guest_phone || contact?.phone || '—'}</div>
 
-            <div aria-hidden>⚐</div>
+            <div aria-hidden style={{ width:18 }}>
+              <img src={formIconDark('address')} alt="" width={16} height={16} />
+            </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Address</div>
             <div>{[contact?.address, contact?.city, contact?.country].filter(Boolean).join(', ') || '—'}</div>
 
-            <div aria-hidden>📅</div>
+            <div aria-hidden style={{ width:18 }}>
+              <span role="img" aria-label="Calendar">📅</span>
+            </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Check‑in date</div>
             <div>{booking?.start_date || '—'}</div>
 
-            <div aria-hidden>📅</div>
+            <div aria-hidden style={{ width:18 }}>
+              <span role="img" aria-label="Calendar">📅</span>
+            </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Check‑out date</div>
             <div>{booking?.end_date || '—'}</div>
           </div>
