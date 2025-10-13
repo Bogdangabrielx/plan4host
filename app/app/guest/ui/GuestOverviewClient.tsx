@@ -1099,7 +1099,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             </div>
             <div style={{ display:'grid', gap:8, justifyItems:'center' }}>
               <QrWithLogo data={qrModal.url} size={240} radius={16} logoSrc="/p4h_logo_round.png" logoAlt="Plan4Host" />
-              <small style={{ color:'var(--muted)', wordBreak:'break-all' }}>{qrModal.url}</small>
+              <small>
+                <a
+                  href={qrModal.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color:'var(--primary)', textDecoration:'none', wordBreak:'break-all' }}
+                >
+                  {qrModal.url}
+                </a>
+              </small>
             </div>
           </div>
         </div>

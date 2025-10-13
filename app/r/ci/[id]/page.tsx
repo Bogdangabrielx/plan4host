@@ -20,7 +20,7 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   try {
     const rB = await admin
       .from('bookings')
-      .select('id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, room_id, room_type_id')
+      .select('id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, room_id, room_type_id, form_submitted_at, created_at')
       .eq('id', bookingId)
       .maybeSingle();
     booking = rB.data || null;
@@ -68,6 +68,19 @@ export default async function CheckinQrView({ params }: { params: { id: string }
     );
   }
 
+  // Validity: 30 days from submission (fallback to created_at)
+  function addDays(d: Date, days: number) { const t = new Date(d.getTime()); t.setDate(t.getDate() + days); return t; }
+  function fmtDate(d: Date): string { const dd = String(d.getDate()).padStart(2,'0'); const mm = String(d.getMonth()+1).padStart(2,'0'); const yy = d.getFullYear(); return `${dd}.${mm}.${yy}`; }
+  const baseTs = (booking?.form_submitted_at || booking?.created_at) as string | undefined;
+  let validUntilText: string | null = null;
+  let isExpired = false;
+  if (baseTs) {
+    const baseDate = new Date(baseTs);
+    const until = addDays(baseDate, 30);
+    validUntilText = fmtDate(until);
+    isExpired = until.getTime() < Date.now();
+  }
+
   function Thumb({ doc, label }: { doc: Doc|null, label: string }) {
     if (!doc || !doc.url) return <div style={{ color:'var(--muted)' }}>No file</div>;
     const img = (doc.mime_type || '').startsWith('image/');
@@ -94,6 +107,13 @@ export default async function CheckinQrView({ params }: { params: { id: string }
           <h1 style={{ margin:0, fontSize:20 }}>Check-in confirmation</h1>
           <ExportPdfButton />
         </div>
+        {isExpired && (
+          <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
+            <div style={{ padding:10, borderRadius:10, background:'var(--danger)', color:'#0c111b', fontWeight:800 }}>
+              Link expired. For privacy, this QR link is only valid for 30 days.
+            </div>
+          </div>
+        )}
           <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
             {/* Table-style details with icons */}
             <div style={{ display:'grid', gridTemplateColumns:'auto 1fr auto', rowGap:8, columnGap:10, alignItems:'center' }}>
@@ -172,6 +192,16 @@ export default async function CheckinQrView({ params }: { params: { id: string }
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Document type</div>
             <div>{(() => { const t = (idDoc?.doc_type || '').toLowerCase(); if (t === 'id_card') return 'ID Card'; if (t === 'passport') return 'Passport'; return '—'; })()}</div>
+            {validUntilText && (
+              <>
+                <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
+                <div aria-hidden style={{ width:18 }}>
+                  <Icon pair={ICON_NIGHT} />
+                </div>
+                <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Valid until</div>
+                <div>{validUntilText}</div>
+              </>
+            )}
           </div>
         </div>
         <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
