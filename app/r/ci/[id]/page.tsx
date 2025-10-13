@@ -19,7 +19,7 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   try {
     const rB = await admin
       .from('bookings')
-      .select('id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, room_id, room_type_id')
+      .select('id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, room_id, room_type_id')
       .eq('id', bookingId)
       .maybeSingle();
     booking = rB.data || null;
@@ -91,11 +91,11 @@ export default async function CheckinQrView({ params }: { params: { id: string }
 
             <div aria-hidden>✉</div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Email</div>
-            <div>{booking?.guest_email || contact?.email || '—'}</div>
+          <div>{booking?.guest_email || contact?.email || '—'}</div>
 
             <div aria-hidden>☏</div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Phone</div>
-            <div>{contact?.phone || '—'}</div>
+            <div>{booking?.guest_phone || contact?.phone || '—'}</div>
 
             <div aria-hidden>⚐</div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Address</div>
