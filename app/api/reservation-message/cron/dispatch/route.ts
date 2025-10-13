@@ -12,7 +12,8 @@ export async function GET(req: NextRequest) {
   try {
     const secret = process.env.CRON_SECRET || "";
     const key = req.headers.get('x-cron-key') || new URL(req.url).searchParams.get('key') || '';
-    const isVercelCron = !!req.headers.get('x-vercel-cron');
+    const ua = (req.headers.get('user-agent') || '').toLowerCase();
+    const isVercelCron = !!req.headers.get('x-vercel-cron') || !!req.headers.get('x-vercel-id') || (ua.includes('vercel') && ua.includes('cron'));
     if (!isVercelCron && (!secret || key !== secret)) return bad(401, { error: 'Unauthorized' });
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;

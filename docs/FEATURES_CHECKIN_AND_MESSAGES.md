@@ -88,6 +88,7 @@ Acest document descrie logică, rute, migrări și fluxuri pentru noile funcțio
     - Once the guest arrives (mapped la **ziua + ora check‑in**) — nu la “confirmare cameră”
     - 12 hours before check out
     - None (nu se afișează pe pagina publică; nu se trimite e‑mail)
+  - Stare implicită: `— select —` (ne‑selectat). Save (draft) permite lipsa scheduler‑ului; Publish cere selectare explicită (nu se publică fără o alegere, inclusiv “None”).
   - Save (Draft): permite `None` implicit; Publish cere selectarea explicită a scheduler‑ului.
 
 ---
@@ -96,7 +97,8 @@ Acest document descrie logică, rute, migrări și fluxuri pentru noile funcțio
 
 - API public `/api/reservation-message/public/[token]` returnează:
   - `details` pentru cardul „Reservation details” (Property/Guest/Stay/Room)
-  - `items[]`: toate templateurile publicate la proprietate; pentru fiecare → `title`, `html_ro`, `html_en`, `schedule_kind`, `visible` (în funcție de timp; pentru `none` → `visible=false`)
+  - `items[]`: toate templateurile publicate la proprietate; pentru fiecare → `title`, `html_ro`, `html_en`, `schedule_kind`, `visible` (în funcție de timp; pentru `none` → `visible=false`). UI afișează doar `visible=true`.
+  - Tema paginii publice este forțată `light`.
 - UI publică: `app/r/[token]/page.tsx` + `app/r/[token]/MessagesView.tsx` + `app/r/[token]/LanguageViewer.tsx`
   - Card “Reservation details” sus (iconuri `*_forlight.png`)
   - Lista carduri mesaje (titlu + cerc “nou” până la prima deschidere, persistat în LocalStorage per token & template)
