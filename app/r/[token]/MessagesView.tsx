@@ -14,10 +14,20 @@ type Details = {
 
 type Item = { id: string; title: string; html_ro: string; html_en: string; visible: boolean };
 
+type PropInfo = {
+  name?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  contact_address?: string | null;
+  presentation_image_url?: string | null;
+  regulation_pdf_url?: string | null;
+};
+
 export default function MessagesView({ token, data }: { token: string; data: any }) {
   const itemsAll: Item[] = Array.isArray(data?.items) ? data.items : [];
   const items: Item[] = itemsAll.filter(it => !!it.visible);
   const details: Details = (data?.details || {}) as Details;
+  const prop: PropInfo = (data?.property || {}) as PropInfo;
 
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [read, setRead] = useState<Record<string, boolean>>({});
@@ -44,6 +54,68 @@ export default function MessagesView({ token, data }: { token: string; data: any
 
   return (
     <>
+      {/* Property contact + image overlay card (glass) */}
+      {(prop && (prop.presentation_image_url || prop.contact_email || prop.contact_phone || prop.contact_address)) && (
+        <section className="rm-card" style={{ padding: 0, marginBottom: 12 }}>
+          {prop.presentation_image_url ? (
+            <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden' }}>
+              <img src={prop.presentation_image_url || ''} alt="Property" style={{ display:'block', width:'100%', height:260, objectFit:'cover' }} />
+              {(prop.contact_email || prop.contact_phone || prop.contact_address) && (
+                <div
+                  style={{
+                    position: 'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)',
+                    width:'calc(100% - 24px)', maxWidth: 380,
+                    background: 'rgba(17,24,39,0.40)', color: '#fff',
+                    WebkitBackdropFilter: 'blur(10px) saturate(140%)', backdropFilter: 'blur(10px) saturate(140%)',
+                    border: '1px solid rgba(255,255,255,0.22)', borderRadius: 12,
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.35)', padding:'12px 14px', display:'grid', gap:6,
+                  }}
+                >
+                  {prop.contact_email && (
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <span aria-hidden>✉</span>
+                      <a href={`mailto:${prop.contact_email}`} style={{ color:'#fff', textDecoration:'none' }}>{prop.contact_email}</a>
+                    </div>
+                  )}
+                  {prop.contact_phone && (
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <span aria-hidden>☏</span>
+                      <a href={`tel:${String(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color:'#fff', textDecoration:'none' }}>{prop.contact_phone}</a>
+                    </div>
+                  )}
+                  {prop.contact_address && (
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <span aria-hidden>⚐</span>
+                      <span>{prop.contact_address}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ padding: 12 }}>
+              {prop.contact_email && (
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <span aria-hidden>✉</span>
+                  <a href={`mailto:${prop.contact_email}`} style={{ color:'var(--primary)', textDecoration:'none' }}>{prop.contact_email}</a>
+                </div>
+              )}
+              {prop.contact_phone && (
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <span aria-hidden>☏</span>
+                  <a href={`tel:${String(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color:'var(--primary)', textDecoration:'none' }}>{prop.contact_phone}</a>
+                </div>
+              )}
+              {prop.contact_address && (
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <span aria-hidden>⚐</span>
+                  <span>{prop.contact_address}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
       {/* Reservation details card */}
       <article className="rm-card" style={{ marginBottom: 12 }}>
         <div className="rm-content">
@@ -58,7 +130,14 @@ export default function MessagesView({ token, data }: { token: string; data: any
             {details.room_name ? (
               <>
                 <div aria-hidden style={{ width:18 }}><img src="/room_forlight.png" alt="" width={16} height={16} /></div>
-                <div><strong>Room</strong>: {details.room_name}</div>
+                <div>
+                  <strong>Room</strong>: {details.room_name}
+                  {prop?.regulation_pdf_url ? (
+                    <div style={{ marginTop: 6 }}>
+                      <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" style={{ color:'var(--primary)', textDecoration:'none', fontWeight:800 }}>House Rules</a>
+                    </div>
+                  ) : null}
+                </div>
               </>
             ) : null}
           </div>

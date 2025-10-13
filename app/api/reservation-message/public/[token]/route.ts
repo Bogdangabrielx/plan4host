@@ -63,7 +63,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
     // booking + property
     const [rBk, rProp] = await Promise.all([
       admin.from('bookings').select('id, property_id, start_date, end_date, start_time, end_time, room_id, status, guest_first_name, guest_last_name').eq('id', msg.booking_id).maybeSingle(),
-      admin.from('properties').select('id, name, timezone, check_in_time, check_out_time').eq('id', msg.property_id).maybeSingle(),
+      admin.from('properties').select('id, name, timezone, check_in_time, check_out_time, contact_email, contact_phone, contact_address, presentation_image_url, regulation_pdf_url').eq('id', msg.property_id).maybeSingle(),
     ]);
     if (rBk.error || !rBk.data) return bad(404, { error: 'Booking not found' });
     if (rProp.error || !rProp.data) return bad(404, { error: 'Property not found' });
@@ -191,6 +191,14 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
     return NextResponse.json(
       { ok: true, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at, items,
         details: { property_name: (prop as any)?.name || '', guest_first_name: booking.guest_first_name || '', guest_last_name: booking.guest_last_name || '', start_date: booking.start_date, end_date: booking.end_date, room_name: roomLabel },
+        property: {
+          name: (prop as any)?.name || null,
+          contact_email: (prop as any)?.contact_email || null,
+          contact_phone: (prop as any)?.contact_phone || null,
+          contact_address: (prop as any)?.contact_address || null,
+          presentation_image_url: (prop as any)?.presentation_image_url || null,
+          regulation_pdf_url: (prop as any)?.regulation_pdf_url || null,
+        },
         ...(wantDebug ? { debug: { tz: propTz, now_key: nowKey, check_in_time: ciTimeRaw, check_out_time: coTimeRaw } } : {})
       },
       { headers: { 'Cache-Control': 'no-store, max-age=0' } }
