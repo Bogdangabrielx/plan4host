@@ -1374,39 +1374,79 @@ export default function CheckinClient() {
 
       {/* Property info (contact + image) */}
       {prop && (
-        <section
-          className="sb-card"
-          style={{ display: "grid", gap: 12 }}
-        >
-          {prop.presentation_image_url && (
-            <img
-              src={prop.presentation_image_url}
-              alt="Property"
-              style={{ width: "100%", maxWidth: 720, height: 280, objectFit: "cover", borderRadius: 12, border: "1px solid var(--border)", background: "#fff", justifySelf: 'center' }}
-            />
-          )}
-          {(prop.contact_email || prop.contact_phone || prop.contact_address) && (
-            <div style={{ display: 'grid', gap: 6 }}>
-              <strong>Contact the property</strong>
-              {prop.contact_email && (
-                <div>
-                  <span style={{ color: 'var(--muted)' }}>Email: </span>
-                  <a href={`mailto:${prop.contact_email}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>{prop.contact_email}</a>
-                </div>
-              )}
-              {prop.contact_phone && (
-                <div>
-                  <span style={{ color: 'var(--muted)' }}>Phone: </span>
-                  <a href={`tel:${(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>{prop.contact_phone}</a>
-                </div>
-              )}
-              {prop.contact_address && (
-                <div>
-                  <span style={{ color: 'var(--muted)' }}>Address: </span>
-                  <span>{prop.contact_address}</span>
+        <section className="sb-card" style={{ padding: 0 }}>
+          {prop.presentation_image_url ? (
+            <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', maxWidth: 900, margin: '0 auto' }}>
+              <img
+                src={prop.presentation_image_url}
+                alt="Property"
+                style={{ display:'block', width: '100%', height: 300, objectFit: 'cover' }}
+              />
+              {(prop.contact_email || prop.contact_phone || prop.contact_address) && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 12,
+                    right: 12,
+                    bottom: 12,
+                    maxWidth: 520,
+                    background: 'rgba(17,24,39,0.55)',
+                    color: '#fff',
+                    WebkitBackdropFilter: 'blur(8px) saturate(140%)',
+                    backdropFilter: 'blur(8px) saturate(140%)',
+                    border: '1px solid rgba(255,255,255,0.22)',
+                    borderRadius: 12,
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+                    padding: '12px 14px',
+                    display: 'grid',
+                    gap: 6,
+                  }}
+                >
+                  {prop.contact_email && (
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <span aria-hidden>✉</span>
+                      <a href={`mailto:${prop.contact_email}`} style={{ color: '#fff', textDecoration: 'none' }}>{prop.contact_email}</a>
+                    </div>
+                  )}
+                  {prop.contact_phone && (
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <span aria-hidden>☏</span>
+                      <a href={`tel:${(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color: '#fff', textDecoration: 'none' }}>{prop.contact_phone}</a>
+                    </div>
+                  )}
+                  {prop.contact_address && (
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <span aria-hidden>⚐</span>
+                      <span>{prop.contact_address}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
+          ) : (
+            // Fallback: fără imagine, afișăm card simplu
+            (prop.contact_email || prop.contact_phone || prop.contact_address) ? (
+              <div style={{ padding: 12, display:'grid', gap:6 }}>
+                {prop.contact_email && (
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <span aria-hidden>✉</span>
+                    <a href={`mailto:${prop.contact_email}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>{prop.contact_email}</a>
+                  </div>
+                )}
+                {prop.contact_phone && (
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <span aria-hidden>☏</span>
+                    <a href={`tel:${(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>{prop.contact_phone}</a>
+                  </div>
+                )}
+                {prop.contact_address && (
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <span aria-hidden>⚐</span>
+                    <span>{prop.contact_address}</span>
+                  </div>
+                )}
+              </div>
+            ) : null
           )}
         </section>
       )}
