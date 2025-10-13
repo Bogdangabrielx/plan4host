@@ -74,13 +74,41 @@ export default async function CheckinQrView({ params }: { params: { id: string }
     <main style={{ minHeight:'100dvh', display:'grid', placeItems:'start center', background:'var(--bg)', color:'var(--text)' }}>
       <div style={{ width:'min(860px, calc(100vw - 32px))', padding:16, display:'grid', gap:12 }}>
         <h1 style={{ margin:0, fontSize:20 }}>Check-in confirmation</h1>
-        <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', display:'grid', gap:10 }}>
-          <div><strong>Property:</strong> {property?.name || '—'}</div>
-          <div><strong>Guest:</strong> {name || contact?.name || '—'}</div>
-          <div><strong>Stay:</strong> {booking?.start_date} → {booking?.end_date}</div>
-          <div><strong>Email:</strong> {booking?.guest_email || contact?.email || '—'}</div>
-          <div><strong>Phone:</strong> {contact?.phone || '—'}</div>
-          <div><strong>Address:</strong> {contact?.address || '—'}, {contact?.city || ''} {contact?.country || ''}</div>
+        <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
+          {/* Table-style details with icons */}
+          <div style={{ display:'grid', gridTemplateColumns:'auto 1fr auto', rowGap:8, columnGap:10, alignItems:'center' }}>
+            <div aria-hidden>🏨</div>
+            <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Property</div>
+            <div style={{ justifySelf:'start' }}>{property?.name || '—'}</div>
+
+            <div aria-hidden>👤</div>
+            <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>First name</div>
+            <div>{booking?.guest_first_name || '—'}</div>
+
+            <div aria-hidden>👤</div>
+            <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Last name</div>
+            <div>{booking?.guest_last_name || '—'}</div>
+
+            <div aria-hidden>✉</div>
+            <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Email</div>
+            <div>{booking?.guest_email || contact?.email || '—'}</div>
+
+            <div aria-hidden>☏</div>
+            <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Phone</div>
+            <div>{contact?.phone || '—'}</div>
+
+            <div aria-hidden>⚐</div>
+            <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Address</div>
+            <div>{[contact?.address, contact?.city, contact?.country].filter(Boolean).join(', ') || '—'}</div>
+
+            <div aria-hidden>📅</div>
+            <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Check‑in date</div>
+            <div>{booking?.start_date || '—'}</div>
+
+            <div aria-hidden>📅</div>
+            <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Check‑out date</div>
+            <div>{booking?.end_date || '—'}</div>
+          </div>
         </div>
         <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
@@ -97,4 +125,3 @@ export default async function CheckinQrView({ params }: { params: { id: string }
     </main>
   );
 }
-
