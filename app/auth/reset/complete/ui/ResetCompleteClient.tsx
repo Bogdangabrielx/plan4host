@@ -48,7 +48,7 @@ export default function ResetCompleteClient() {
       <div style={{ width: 380, background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:18 }}>
         <h1 style={{ marginTop: 0, fontSize: 18 }}>Reset password</h1>
         <p style={{ color:'var(--muted)' }}>Invalid or expired link. Please request a new reset link.</p>
-        <div><a href="/auth/reset" style={{ color:'var(--primary)', fontWeight:800, textDecoration:'none' }}>Request new link</a></div>
+        <div><a href="/auth/reset" style={{ color:'var(--primary)', fontSize:9, fontWeight:600, textDecoration:'none' }}>Request new link</a></div>
       </div>
     );
   }
@@ -70,7 +70,7 @@ export default function ResetCompleteClient() {
           {status==="Updating" ? 'Updating…' : 'Update password'}
         </button>
         <div style={{ display:'flex', justifyContent:'space-between' }}>
-          <a href="/auth/login" style={{ color:'var(--primary)', fontWeight:800, textDecoration:'none' }}>Back to Sign in</a>
+          <a href="/auth/login" style={{ color:'var(--primary)',fontSize: 9, fontWeight:600, textDecoration:'none' }}>Back to Sign in</a>
         </div>
       </div>
     </div>

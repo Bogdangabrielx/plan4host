@@ -401,6 +401,7 @@ export default function CheckinClient() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmStatus, setConfirmStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const [confirmError, setConfirmError] = useState<string>("");
+  const [qrUrl, setQrUrl] = useState<string>("");
 
   // responsive helper: 1 col sub 560px
   const [isNarrow, setIsNarrow] = useState(false);
@@ -856,6 +857,7 @@ export default function CheckinClient() {
       const j = await res.json().catch(() => ({}));
       const booking = (j?.id || null) as string | null;
       if (booking) {
+        try { setQrUrl(`${window.location.origin.replace(/\/+$/, '')}/r/ci/${encodeURIComponent(booking)}`); } catch {}
         setConfirmOpen(true);
         setConfirmStatus("sending");
         setConfirmError("");
@@ -1314,9 +1316,18 @@ export default function CheckinClient() {
               </div>
             )}
             {confirmStatus === 'sent' && (
-              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <span className="sb-badge" style={{ background:'var(--primary)', color:'#0c111b', borderColor:'var(--primary)' }}>Sent</span>
-                <span>We sent a confirmation email to your address.</span>
+              <div style={{ display:'grid', gap:10 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <span className="sb-badge" style={{ background:'var(--primary)', color:'#0c111b', borderColor:'var(--primary)' }}>Sent</span>
+                  <span>We sent a confirmation email to your address.</span>
+                </div>
+                {qrUrl && (
+                  <div style={{ display:'grid', gap:6, justifyItems:'center', border:'1px solid var(--border)', borderRadius:12, padding:12 }}>
+                    <div style={{ fontWeight:800 }}>Your QR code</div>
+                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrUrl)}`} alt="QR" width={240} height={240} />
+                    <small style={{ color:'var(--muted)', wordBreak:'break-all' }}>{qrUrl}</small>
+                  </div>
+                )}
               </div>
             )}
             {confirmStatus === 'error' && (

@@ -118,6 +118,9 @@ export async function POST(req: Request) {
     const iconNight = `${base}/night_forlight.png`;
     const iconGuest = `${base}/logoguest_forlight.png`;
 
+    const qrLink = `${base}/r/ci/${booking_id}`;
+    const qrImg  = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrLink)}`;
+
     const html = `
       <div style="background:#ffffff; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0c111b; line-height:1.5; padding:16px;">
         <h2 style="margin:0 0 12px;">Check-in received${propName ? ` for <span style=\"color:#3ECF8E\">${escapeHtml(propName)}</span>` : ''}</h2>
@@ -128,14 +131,19 @@ export async function POST(req: Request) {
         </div>
         <p style="margin:8px 0; color:#475569;">Once your reservation is confirmed, we’ll inform you which room you’ll be staying in and share any arrival details you’ll need.</p>
         <p style="margin:8px 0; color:#475569;">If you need to make changes, please contact the property directly.</p>
-      </div>
+              <div style=\"margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; text-align:center;\">
+          <div style=\"font-weight:800; margin-bottom:8px;\">Your QR code</div>
+          <img src=\"${qrImg}\" alt=\"QR code\" width=\"240\" height=\"240\" style=\"display:block; margin:0 auto;\"/>
+          <div style=\"font-size:12px; color:#475569; margin-top:8px; word-break:break-all;\">${escapeHtml(qrLink)}</div>
+        </div>
+</div>
     `;
     const lines: string[] = [];
     lines.push(`Check-in received${propName ? ` for ${propName}` : ''}`);
     if (arrival && depart) lines.push(`Stay: ${arrival} -> ${depart}`);
     if (guestFull) lines.push(`Guest: ${guestFull}`);
     lines.push('');
-    lines.push('We’ve received your details and forwarded them to the property.');
+    lines.push('We’ve received your details and forwarded them to the property.\nQR: ${qrLink}');
     lines.push('Once your reservation is confirmed, we will inform you about your room and arrival details.');
     const text = lines.join('\n');
 

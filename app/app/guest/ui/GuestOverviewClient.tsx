@@ -300,6 +300,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [rmPickerItems, setRmPickerItems] = useState<Array<{ id:string; title:string; updated_at?:string; status?:string }>>([]);
   const [rmPickerLoading, setRmPickerLoading] = useState(false);
   const [editModal, setEditModal] = useState<null | { propertyId: string; bookingId: string; confirmOnSave?: boolean }>(null);
+  const [qrModal, setQrModal] = useState<null | { bookingId: string; url: string }>(null);
 
   // Legend popovers
   const [legendInfo, setLegendInfo] = useState<null | "green" | "yellow" | "red">(null);
@@ -918,7 +919,26 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         title="Reservation message"
                       >
                         Automatic message
-                      </button>
+                    </button>
+
+                    {/* See QR code */}
+                    <button
+                      type="button"
+                      {...useTap(() => setQrModal({ bookingId: String(it.id), url: `${window.location.origin}/r/ci/${encodeURIComponent(String(it.id||''))}` }))}
+                      style={{
+                        ...BTN_TOUCH_STYLE,
+                        borderRadius: 21,
+                        border: "1px solid var(--border)",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        width: isSmall ? "100%" : undefined,
+                      }}
+                      title="See QR code"
+                    >
+                      See QR code
+                    </button>
 
                       <button
                         type="button"
@@ -1067,6 +1087,22 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           />
         )}
       </div>
+      {qrModal && (
+        <div role="dialog" aria-modal="true" onClick={()=>setQrModal(null)}
+          style={{ position:'fixed', inset:0, zIndex: 230, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
+                   paddingTop:'calc(var(--safe-top) + 12px)', paddingBottom:'calc(var(--safe-bottom) + 12px)'}}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(420px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <strong>QR code</strong>
+              <button onClick={()=>setQrModal(null)} className="sb-btn">Close</button>
+            </div>
+            <div style={{ display:'grid', gap:8, justifyItems:'center' }}>
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrModal.url)}`} alt="QR" width={240} height={240} />
+              <small style={{ color:'var(--muted)', wordBreak:'break-all' }}>{qrModal.url}</small>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
