@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     try {
       const rB = await admin
         .from('bookings')
-        .select('room_id, room_type_id, start_date, end_date, guest_first_name, guest_last_name')
+        .select('room_id, room_type_id, start_date, end_date, guest_first_name, guest_last_name, form_submitted_at, created_at')
         .eq('id', booking_id)
         .maybeSingle();
       if (!rB.error && rB.data) {
@@ -80,6 +80,16 @@ export async function POST(req: Request) {
         endYMD = b.end_date || null;
         guestFirst = (b.guest_first_name || null);
         guestLast = (b.guest_last_name || null);
+        // compute validity (30 days)
+        const baseTs = (b.form_submitted_at || b.created_at) as string | undefined;
+        if (baseTs) {
+          try {
+            const base = new Date(baseTs);
+            const until = new Date(base.getTime());
+            until.setDate(until.getDate() + 30);
+            validUntil = `${String(until.getDate()).padStart(2,'0')}.${String(until.getMonth()+1).padStart(2,'0')}.${until.getFullYear()}`;
+          } catch {}
+        }
         const rtId = b.room_type_id || null;
         const rId = b.room_id || null;
         if (rtId) {
@@ -112,6 +122,7 @@ export async function POST(req: Request) {
     const arrival = fmt(startYMD);
     const depart = fmt(endYMD);
     const guestFull = [guestFirst, guestLast].filter(Boolean).join(' ').trim() || null;
+    let validUntil: string | null = null;
 
     const base = (process.env.NEXT_PUBLIC_APP_URL || 'https://plan4host.com').toString().replace(/\/+$/, '');
     const iconRoom = `${base}/room_forlight.png`;
@@ -140,6 +151,7 @@ export async function POST(req: Request) {
             </div>
           </div>
           <div style=\"font-size:12px; color:#475569; margin-top:8px; word-break:break-all;\">${escapeHtml(qrLink)}</div>
+          ${validUntil ? `<div style=\"font-size:12px; color:#475569; margin-top:6px;\">Valid for 30 days (until ${validUntil}).</div>` : ''}
         </div>
 </div>
     `;
