@@ -1013,7 +1013,7 @@ export default function CheckinClient() {
                     maxWidth: 380,
                     background: 'rgba(124, 124, 124, 0.17)',
                     color: '#fff',
-                    WebkitBackdropFilter: 'blur(3px) saturate(140%)',
+                    WebkitBackdropFilter: 'blur(1px) saturate(140%)',
                     backdropFilter: 'blur(3px) saturate(140%)',
                     border: '1px solid rgba(255,255,255,0.22)',
                     borderRadius: 12,
