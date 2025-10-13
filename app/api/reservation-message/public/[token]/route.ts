@@ -137,10 +137,11 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
       const html_ro = renderBlocks(arr, 'ro');
       const html_en = renderBlocks(arr, 'en');
       const kind = (t.schedule_kind || 'none').toLowerCase();
-      let visible = true;
+      let visible = false;
       if (kind === 'hour_before_checkin') visible = now >= new Date(at(booking.start_date, ciTime).getTime() - 1*60*60*1000);
       else if (kind === 'hours_before_checkout') visible = now >= new Date(at(booking.end_date, coTime).getTime() - 12*60*60*1000);
       else if (kind === 'on_arrival') visible = now >= at(booking.start_date, ciTime);
+      else if (kind === 'none') visible = false; // explicit: nu afișăm deloc mesajele fără scheduler
       return { id: t.id, title: t.title || 'Message', schedule_kind: t.schedule_kind || 'none', html_ro, html_en, visible };
     });
 

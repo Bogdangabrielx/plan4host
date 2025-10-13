@@ -15,7 +15,8 @@ type Details = {
 type Item = { id: string; title: string; html_ro: string; html_en: string; visible: boolean };
 
 export default function MessagesView({ token, data }: { token: string; data: any }) {
-  const items: Item[] = Array.isArray(data?.items) ? data.items : [];
+  const itemsAll: Item[] = Array.isArray(data?.items) ? data.items : [];
+  const items: Item[] = itemsAll.filter(it => !!it.visible);
   const details: Details = (data?.details || {}) as Details;
 
   const [open, setOpen] = useState<Record<string, boolean>>({});
@@ -91,4 +92,3 @@ export default function MessagesView({ token, data }: { token: string; data: any
     </>
   );
 }
-

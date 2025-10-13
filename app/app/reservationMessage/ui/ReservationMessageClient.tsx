@@ -286,7 +286,7 @@ export default function ReservationMessageClient({
     const current = composeBlocks();
     const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
     const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
-    const next = { ...tpl, status: 'draft' as const, blocks: roBlocks, blocks_en: enBlocks, schedule_kind: scheduler || 'none', schedule_offset_hours: scheduler==='hours_before_checkout' ? 12 : (scheduler==='hour_before_checkin' ? 1 : null) };
+    const next = { ...tpl, status: 'draft' as const, blocks: roBlocks, blocks_en: enBlocks, schedule_kind: (scheduler || undefined) as any, schedule_offset_hours: scheduler==='hours_before_checkout' ? 12 : (scheduler==='hour_before_checkin' ? 1 : null) };
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     setTpl(next);
     const combined = [
@@ -318,6 +318,7 @@ export default function ReservationMessageClient({
         ...(tpl.blocks || []).map(b => ({ ...b, lang: 'ro' } as any)),
         ...(tpl.blocks_en || []).map(b => ({ ...b, lang: 'en' } as any)),
       ];
+      const sk: any = scheduler || tpl.schedule_kind || null;
       const { title } = deriveFromBlocks(roOnly as any);
       const payload: any = {
         id: activeId || undefined,
@@ -326,8 +327,8 @@ export default function ReservationMessageClient({
         status,
         blocks: payloadBlocks.map((b: any) => ({ type: b.type, text: b.text || null, lang: b.lang })),
         fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, default_value: f.defaultValue ?? null })),
-        schedule_kind: scheduler || tpl.schedule_kind || 'none',
-        schedule_offset_hours: (scheduler || tpl.schedule_kind) === 'hours_before_checkout' ? 12 : ((scheduler || tpl.schedule_kind)==='hour_before_checkin' ? 1 : null),
+        schedule_kind: sk,
+        schedule_offset_hours: sk === 'hours_before_checkout' ? 12 : (sk === 'hour_before_checkin' ? 1 : null),
       };
       const res = await fetch("/api/reservation-message/template", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const j = await res.json().catch(() => ({}));
