@@ -1,5 +1,6 @@
 // /r/[token]/page.tsx — public reservation message page (no auth)
 import { cookies } from "next/headers";
+import LanguageViewer from "./LanguageViewer";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -56,31 +57,5 @@ export default async function ReservationPublicPage({ params }: { params: { toke
         </div>
       </body>
     </html>
-  );
-}
-
-// Client component to toggle RO/EN without reloading
-function LanguageViewer({ htmlRo, htmlEn }: { htmlRo: string; htmlEn: string }) {
-  'use client';
-  const [lang, setLang] = React.useState<'ro'|'en'>(() => (htmlRo ? 'ro' : 'en'));
-  const ro = (htmlRo || '').trim();
-  const en = (htmlEn || '').trim();
-  return (
-    <article className="rm-card">
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-        <strong>Message</strong>
-        <div style={{ display:'inline-flex', gap:8 }}>
-          <button onClick={()=>setLang('ro')} className="sb-btn" style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--border)', background: lang==='ro' ? 'var(--primary)' : 'var(--card)', color: lang==='ro' ? '#0c111b' : 'var(--text)', display:'inline-flex', alignItems:'center', gap:6 }}>
-            <img src="/ro.png" alt="RO" width={16} height={16} />
-            <span>Română</span>
-          </button>
-          <button onClick={()=>setLang('en')} className="sb-btn" style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--border)', background: lang==='en' ? 'var(--primary)' : 'var(--card)', color: lang==='en' ? '#0c111b' : 'var(--text)', display:'inline-flex', alignItems:'center', gap:6 }}>
-            <img src="/eng.png" alt="EN" width={16} height={16} />
-            <span>English</span>
-          </button>
-        </div>
-      </div>
-      <div className="rm-content" dangerouslySetInnerHTML={{ __html: (lang==='ro' ? (ro || en) : (en || ro)) }} />
-    </article>
   );
 }
