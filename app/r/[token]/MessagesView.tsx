@@ -65,8 +65,8 @@ export default function MessagesView({ token, data }: { token: string; data: any
                   style={{
                     position: 'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)',
                     width:'calc(100% - 24px)', maxWidth: 380,
-                    background: 'rgba(110, 112, 114, 0.17)', color: '#fff',
-                    WebkitBackdropFilter: 'blur(10px) saturate(140%)', backdropFilter: 'blur(3px) saturate(140%)',
+                    background: 'rgba(156, 156, 156, 0.17)', color: '#fff',
+                    WebkitBackdropFilter: 'blur(10px) saturate(140%)', backdropFilter: 'blur(0.5px) saturate(140%)',
                     border: '1px solid rgba(255,255,255,0.22)', borderRadius: 12,
                     boxShadow: '0 8px 24px rgba(0,0,0,0.35)', padding:'12px 14px', display:'grid', gap:6,
                   }}
