@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import ExportPdfButton from "../ExportPdfButton";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -79,7 +80,10 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   return (
     <main style={{ minHeight:'100dvh', display:'grid', placeItems:'start center', background:'var(--bg)', color:'var(--text)' }}>
       <div style={{ width:'min(860px, calc(100vw - 32px))', padding:16, display:'grid', gap:12 }}>
-        <h1 style={{ margin:0, fontSize:20 }}>Check-in confirmation</h1>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <h1 style={{ margin:0, fontSize:20 }}>Check-in confirmation</h1>
+          <ExportPdfButton />
+        </div>
         <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
           {/* Table-style details with icons */}
           <div style={{ display:'grid', gridTemplateColumns:'auto 1fr auto', rowGap:8, columnGap:10, alignItems:'center' }}>
@@ -156,11 +160,7 @@ export default async function CheckinQrView({ params }: { params: { id: string }
             <Thumb doc={sigDoc} label="Signature" />
           </div>
         </div>
-        <div style={{ display:'grid', gap:6 }}>
-          <div style={{ fontSize:12, color:'var(--muted)' }}>Scan to view this page:</div>
-          <img src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(checkinUrl)}`} alt="QR code" width={240} height={240} />
-          <div style={{ color:'var(--muted)', wordBreak:'break-all' }}>{checkinUrl}</div>
-        </div>
+        {/* QR code removed intentionally; export via PDF is available above */}
       </div>
     </main>
   );
