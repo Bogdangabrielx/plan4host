@@ -41,7 +41,7 @@ function renderHeadingSafe(src: string, vars: Record<string,string>): string {
   return out.join("");
 }
 
-export async function GET(_req: NextRequest, ctx: { params: { token: string } }) {
+export async function GET(req: NextRequest, ctx: { params: { token: string } }) {
   try {
     const tok = (ctx.params.token || '').trim();
     if (!tok) return bad(400, { error: 'Missing token' });
@@ -74,7 +74,7 @@ export async function GET(_req: NextRequest, ctx: { params: { token: string } })
     if (rTpl.error || !rTpl.data) return bad(404, { error: 'Template not configured' });
     const tplId = (rTpl.data as any).id as string;
     const [rBlocks, rFields] = await Promise.all([
-      admin.from('reservation_template_blocks').select('type,text,sort_index').eq('template_id', tplId).order('sort_index', { ascending: true }),
+      admin.from('reservation_template_blocks').select('type,text,sort_index,lang').eq('template_id', tplId).order('sort_index', { ascending: true }),
       admin.from('reservation_template_fields').select('key').eq('template_id', tplId),
     ]);
     if (rBlocks.error) return bad(400, { error: rBlocks.error.message });
@@ -108,17 +108,22 @@ export async function GET(_req: NextRequest, ctx: { params: { token: string } })
     }
     const vars = { ...builtins, ...(msg.manual_values || {}) } as Record<string,string>;
 
-    // Build final HTML from stored blocks (heading escaped, paragraph kept as HTML with vars replaced)
-    const blocks = (rBlocks.data || []) as Array<{ type: string; text?: string; sort_index?: number }>;
-    const parts: string[] = [];
-    for (const b of blocks) {
-      if (b.type === 'divider') parts.push('<hr style="border:1px solid var(--border); opacity:.6;"/>' );
-      else if (b.type === 'heading') parts.push(`<h3 style=\"margin:8px 0 6px;\">${renderHeadingSafe(b.text || '', vars)}</h3>`);
-      else if (b.type === 'paragraph') parts.push(`<div style=\"margin:6px 0; line-height:1.5;\">${replaceVarsInHtml(b.text || '', vars)}</div>`);
+    const allBlocks = (rBlocks.data || []) as Array<{ type: string; text?: string; sort_index?: number; lang?: string }>;
+    function renderFor(lang: 'ro'|'en'): string {
+      const filtered = allBlocks.filter(b => (b.lang || 'ro').toLowerCase() === lang).sort((a,b)=>(a.sort_index||0)-(b.sort_index||0));
+      const parts: string[] = [];
+      for (const b of filtered) {
+        if (b.type === 'divider') parts.push('<hr style="border:1px solid var(--border); opacity:.6;"/>' );
+        else if (b.type === 'heading') parts.push(`<h3 style=\"margin:8px 0 6px;\">${renderHeadingSafe(b.text || '', vars)}</h3>`);
+        else if (b.type === 'paragraph') parts.push(`<div style=\"margin:6px 0; line-height:1.5;\">${replaceVarsInHtml(b.text || '', vars)}</div>`);
+      }
+      return parts.join('\n');
     }
-    const html = parts.join('\n');
+    const html_ro = renderFor('ro');
+    const html_en = renderFor('en');
+    const html = html_ro || html_en || '';
     return NextResponse.json(
-      { ok: true, html, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at },
+      { ok: true, html, html_ro, html_en, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at },
       { headers: { 'Cache-Control': 'no-store, max-age=0' } }
     );
   } catch (e: any) {

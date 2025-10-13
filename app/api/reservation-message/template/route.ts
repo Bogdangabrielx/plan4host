@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
     const [rBlocks, rFields] = await Promise.all([
       supa
         .from("reservation_template_blocks")
-        .select("id,sort_index,type,text")
+        .select("id,sort_index,type,text,lang")
         .eq("template_id", tplId)
         .order("sort_index", { ascending: true }),
       supa
@@ -119,6 +119,7 @@ export async function POST(req: NextRequest) {
         sort_index: i,
         type: (b.type || '').toLowerCase(),
         text: b.text ?? null,
+        lang: (b as any).lang ? String((b as any).lang).toLowerCase() : 'ro',
       }));
       if (rows.length) {
         const ins = await supa.from("reservation_template_blocks").insert(rows).select("id");

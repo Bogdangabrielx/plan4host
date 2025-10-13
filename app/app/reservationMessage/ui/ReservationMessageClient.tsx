@@ -101,6 +101,7 @@ export default function ReservationMessageClient({
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
+  const [lang, setLang] = useState<'ro'|'en'>('ro');
   const [templates, setTemplates] = useState<Array<{ id: string; title: string; status: "draft" | "published"; updated_at: string }>>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loadingList, setLoadingList] = useState<boolean>(false);
@@ -161,10 +162,11 @@ export default function ReservationMessageClient({
     try {
       const raw = localStorage.getItem(keySnapshot);
       const parsed: TemplateState | null = raw ? JSON.parse(raw) : null;
-      const base = parsed || EMPTY;
+      const base = { ...EMPTY, ...(parsed || {}) } as TemplateState;
       if (!cancelled && keySnapshot === storageKey) {
         setTpl(base);
-        const { title, body } = deriveFromBlocks(base.blocks);
+        const blocksForLang = (lang === 'ro' ? (base.blocks || []) : (base.blocks_en || base.blocks || []));
+        const { title, body } = deriveFromBlocks(blocksForLang);
         if (titleRef.current) tokensTextToChips(titleRef.current, title);
         if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
       }
@@ -183,13 +185,15 @@ export default function ReservationMessageClient({
         if (!res.ok) return;
         const j = await res.json();
         const t = j?.template; if (!t) return;
-        const blocks: Block[] = (t.blocks as any[]).map((b) => ({ id: uid(), type: b.type, text: b.text ?? "" }));
+        const fromServer: any[] = Array.isArray(t.blocks) ? t.blocks : [];
+        const roBlocks: Block[] = fromServer.filter((b:any)=>String((b.lang||'ro')).toLowerCase()==='ro').map((b:any)=>({ id: uid(), type: b.type, text: b.text ?? '' }));
+        const enBlocks: Block[] = fromServer.filter((b:any)=>String((b.lang||'ro')).toLowerCase()==='en').map((b:any)=>({ id: uid(), type: b.type, text: b.text ?? '' }));
         const fields: ManualField[] = (t.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label, defaultValue: (f as any).default_value ?? null }));
-        const next: TemplateState = { status: (t.status || "draft") as any, blocks, fields };
+        const next: TemplateState = { status: (t.status || 'draft') as any, blocks: roBlocks, blocks_en: enBlocks, fields };
         if (!cancelled && keySnapshot === storageKey) {
           setTpl(next);
           try { localStorage.setItem(keySnapshot, JSON.stringify(next)); } catch {}
-          const { title, body } = deriveFromBlocks(blocks);
+          const { title, body } = deriveFromBlocks(lang==='ro' ? roBlocks : enBlocks);
           if (titleRef.current) tokensTextToChips(titleRef.current, title);
           if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
         }
@@ -839,11 +843,41 @@ export default function ReservationMessageClient({
       {/* Message composer — only when a template is active */}
       {activeId && (
         <section style={card}>
-          <h2 style={{ marginTop: 0 }}>Message</h2>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+            <h2 style={{ margin: 0 }}>Message</h2>
+            <div style={{ display:'inline-flex', gap:8 }}>
+              <button onClick={() => {
+                const cur = composeBlocks();
+                setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) }));
+                setLang('ro');
+                const { title, body } = deriveFromBlocks((tpl.blocks||[]));
+                if (titleRef.current) tokensTextToChips(titleRef.current, title);
+                if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
+              }}
+                className="sb-btn"
+                style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--border)', background: lang==='ro' ? 'var(--primary)' : 'var(--card)', color: lang==='ro' ? '#0c111b' : 'var(--text)', display:'inline-flex', alignItems:'center', gap:6 }}>
+                <img src="/ro.png" alt="RO" width={16} height={16} />
+                <span>Română</span>
+              </button>
+              <button onClick={() => {
+                const cur = composeBlocks();
+                setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) }));
+                setLang('en');
+                const { title, body } = deriveFromBlocks((tpl.blocks_en||[]));
+                if (titleRef.current) tokensTextToChips(titleRef.current, title);
+                if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
+              }}
+                className="sb-btn"
+                style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--border)', background: lang==='en' ? 'var(--primary)' : 'var(--card)', color: lang==='en' ? '#0c111b' : 'var(--text)', display:'inline-flex', alignItems:'center', gap:6 }}>
+                <img src="/eng.png" alt="EN" width={16} height={16} />
+                <span>English</span>
+              </button>
+            </div>
+          </div>
 
           <div style={{ display: "grid", gap: 8 }}>
             <div>
-              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Title</label>
+              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Title ({lang.toUpperCase()})</label>
               <ContentEditableStable
                 ref={titleRef}
                 onFocus={() => setFocusedInput("title")}
@@ -852,7 +886,7 @@ export default function ReservationMessageClient({
               />
             </div>
             <div>
-              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Message</label>
+              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Message ({lang.toUpperCase()})</label>
               <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
                 <small style={{ color: "var(--muted)" }}>Formatting:</small>
                 <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyBold(); }} disabled={!isAdmin}><strong>B</strong></button>
@@ -874,8 +908,8 @@ export default function ReservationMessageClient({
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-            <button style={btn} onClick={saveDraft} disabled={!isAdmin}>Save</button>
-            <button style={btnPri} onClick={publish} disabled={!isAdmin}>Publish</button>
+            <button style={btn} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); saveDraft(); }} disabled={!isAdmin}>Save</button>
+            <button style={btnPri} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); publish(); }} disabled={!isAdmin}>Publish</button>
           </div>
         </section>
       )}
