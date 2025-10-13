@@ -68,6 +68,7 @@ export async function POST(req: Request) {
     let endYMD: string | null = null;
     let guestFirst: string | null = null;
     let guestLast: string | null = null;
+    let validUntil: string | null = null;
     try {
       const rB = await admin
         .from('bookings')
@@ -121,7 +122,7 @@ export async function POST(req: Request) {
     const arrival = fmt(startYMD);
     const depart = fmt(endYMD);
     const guestFull = [guestFirst, guestLast].filter(Boolean).join(' ').trim() || null;
-    let validUntil: string | null = null;
+    // validUntil already computed above when we loaded booking (based on start_date)
 
     const base = (process.env.NEXT_PUBLIC_APP_URL || 'https://plan4host.com').toString().replace(/\/+$/, '');
     const iconRoom = `${base}/room_forlight.png`;
