@@ -68,7 +68,21 @@ export async function GET(req: NextRequest) {
       const ciTime = bk.start_time || prop.check_in_time || '14:00';
       const coTime = bk.end_time || prop.check_out_time || '11:00';
       const now = new Date();
-      function at(dateStr: string, timeStr: string){ return new Date(`${dateStr}T${timeStr}:00`); }
+      function normalizeTime(t: string){
+        const s = (t || '').trim();
+        if (!s) return '00:00:00';
+        if (/^\d{2}:\d{2}:\d{2}$/.test(s)) return s;
+        if (/^\d{2}:\d{2}$/.test(s)) return `${s}:00`;
+        const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+        if (m) {
+          const hh = String(Number(m[1])||0).padStart(2,'0');
+          const mm = String(Number(m[2])||0).padStart(2,'0');
+          const ss = String(Number(m[3]||'0')||0).padStart(2,'0');
+          return `${hh}:${mm}:${ss}`;
+        }
+        return '00:00:00';
+      }
+      function at(dateStr: string, timeStr: string){ return new Date(`${dateStr}T${normalizeTime(timeStr)}`); }
 
       for (const t of tpls) {
         const kind = (t.schedule_kind || 'none').toLowerCase();

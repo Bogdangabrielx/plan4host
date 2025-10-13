@@ -130,7 +130,21 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
     const ciTime = booking.start_time || (prop as any)?.check_in_time || '14:00';
     const coTime = booking.end_time || (prop as any)?.check_out_time || '11:00';
     const now = new Date(); // naive; server timezone, but acceptable for now
-    function at(d:string,t:string){ return new Date(`${d}T${t}:00`); }
+    function normalizeTime(t: string){
+      const s = (t || '').trim();
+      if (!s) return '00:00:00';
+      if (/^\d{2}:\d{2}:\d{2}$/.test(s)) return s;
+      if (/^\d{2}:\d{2}$/.test(s)) return `${s}:00`;
+      const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+      if (m) {
+        const hh = String(Number(m[1])||0).padStart(2,'0');
+        const mm = String(Number(m[2])||0).padStart(2,'0');
+        const ss = String(Number(m[3]||'0')||0).padStart(2,'0');
+        return `${hh}:${mm}:${ss}`;
+      }
+      return '00:00:00';
+    }
+    function at(d:string,t:string){ return new Date(`${d}T${normalizeTime(t)}`); }
 
     const items = templates.map(t => {
       const arr = byTpl.get(t.id) || [];
