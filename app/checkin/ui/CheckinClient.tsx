@@ -1014,7 +1014,7 @@ export default function CheckinClient() {
                     background: 'rgba(156, 156, 156, 0.17)',
                     color: '#fff',
                     WebkitBackdropFilter: 'blur(0.8px) saturate(140%)',
-                    backdropFilter: 'blur(3px) saturate(140%)',
+                    backdropFilter: 'blur(0.8px) saturate(140%)',
                     border: '1px solid rgba(255,255,255,0.22)',
                     borderRadius: 12,
                     boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
