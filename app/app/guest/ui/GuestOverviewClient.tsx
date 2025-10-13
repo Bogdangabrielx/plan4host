@@ -1276,6 +1276,8 @@ function EditFormBookingModal({
       if (roomId) {
         const rt = rooms.find(r => String(r.id) === String(roomId))?.room_type_id ?? null;
         upd.room_type_id = rt;
+        // Selecting a room confirms the reservation
+        upd.status = 'confirmed';
       } else {
         upd.room_type_id = null;
       }
