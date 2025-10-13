@@ -1011,7 +1011,7 @@ export default function CheckinClient() {
                     transform: 'translate(-50%, -50%)',
                     width: 'calc(100% - 24px)',
                     maxWidth: 380,
-                    background: 'rgba(110, 112, 114, 0.17)',
+                    background: 'rgba(124, 124, 124, 0.17)',
                     color: '#fff',
                     WebkitBackdropFilter: 'blur(3px) saturate(140%)',
                     backdropFilter: 'blur(3px) saturate(140%)',
