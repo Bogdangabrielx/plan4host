@@ -36,6 +36,26 @@ const FIELD: React.CSSProperties = {
   fontFamily: "inherit",
 };
 
+function Info({ title }: { title: string }) {
+  return (
+    <span
+      title={title}
+      aria-label="Info"
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        width: 20, height: 20, borderRadius: 999,
+        border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--muted)',
+        fontSize: 12, fontWeight: 800, cursor: 'help', userSelect: 'none'
+      }}
+    >
+      i
+    </span>
+  );
+}
+
+const IMAGE_INFO = "Recommended: 3:1 banner, min 1200×400 (ideal 1800×600), JPG/WebP, under ~500 KB. Keep the subject centered; image is cropped (cover).";
+const PDF_INFO = "PDF (House Rules), preferably under 5 MB. A4 portrait recommended; keep text readable.";
+
 export default function CheckinEditorClient({ initialProperties }: { initialProperties: Array<{ id: string; name: string }> }) {
   const supabase = useMemo(() => createClient(), []);
   const { setTitle, setPill } = useHeader();
@@ -256,6 +276,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                 <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" className="sb-btn sb-btn--primary">Open</a>
                 <button className="sb-btn" onClick={triggerPdfUpload}>Replace PDF</button>
+                <Info title={PDF_INFO} />
                 <small style={{ color:'var(--muted)' }}>
                   Uploaded {prop.regulation_pdf_uploaded_at ? new Date(prop.regulation_pdf_uploaded_at).toLocaleString() : ''}
                 </small>
@@ -264,6 +285,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                 <span style={{ color:'var(--muted)' }}>No PDF uploaded.</span>
                 <button className="sb-btn" onClick={triggerPdfUpload}>Upload PDF</button>
+                <Info title={PDF_INFO} />
               </div>
             )}
           </section>
@@ -320,12 +342,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                     <a href={prop.presentation_image_url} target="_blank" rel="noreferrer" className="sb-btn">Open full</a>
                     <button className="sb-btn" onClick={triggerImageUpload}>Replace image</button>
+                    <Info title={IMAGE_INFO} />
                   </div>
                 </div>
               ) : (
                 <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                   <span style={{ color:'var(--muted)' }}>No image uploaded.</span>
                   <button className="sb-btn" onClick={triggerImageUpload}>Upload image</button>
+                  <Info title={IMAGE_INFO} />
                 </div>
               )}
             </div>
