@@ -45,6 +45,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   useEffect(() => { setPill(status === 'Saving…' ? 'Saving…' : status === 'Synced' ? 'Synced' : status === 'Error' ? 'Error' : 'Idle'); }, [status, setPill]);
 
   const [prop, setProp] = useState<Property | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function refresh() {
     if (!propertyId) { setProp(null); return; }
@@ -103,6 +104,34 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
   }
 
+  // Build absolute check-in link for selected property
+  function getCheckinBase(): string {
+    const v1 = (process.env.NEXT_PUBLIC_CHECKIN_BASE || "").toString().trim();
+    if (v1) return v1.replace(/\/+$/, "");
+    const v2 = (process.env.NEXT_PUBLIC_APP_URL || "").toString().trim();
+    if (v2) return v2.replace(/\/+$/, "");
+    if (typeof window !== "undefined" && window.location?.origin) return window.location.origin.replace(/\/+$/, "");
+    return "";
+  }
+  function buildCheckinLink(propertyId: string): string {
+    const base = getCheckinBase();
+    try {
+      const u = new URL(base);
+      const normalizedPath = u.pathname.replace(/\/+$/, "");
+      u.pathname = `${normalizedPath}/checkin`;
+      u.search = new URLSearchParams({ property: propertyId }).toString();
+      return u.toString();
+    } catch {
+      return `${base}/checkin?property=${encodeURIComponent(propertyId)}`;
+    }
+  }
+  async function copyLink() {
+    if (!prop) return;
+    const url = buildCheckinLink(prop.id);
+    try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1600); }
+    catch { prompt('Copy this link:', url); }
+  }
+
   async function triggerImageUpload() {
     if (!propertyId) return;
     const input = document.createElement('input');
@@ -143,6 +172,17 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 
       {prop && (
         <>
+          {/* Check-in Link */}
+          <section style={card}>
+            <h3 style={{ marginTop: 0 }}>Check-in Link</h3>
+            <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
+              <button className="sb-btn sb-btn--primary" onClick={copyLink} disabled={!prop?.regulation_pdf_url} title={prop?.regulation_pdf_url ? 'Copy check-in link' : 'Upload House Rules PDF first'}>
+                {copied ? 'Copied!' : 'Copy check-in link'}
+              </button>
+              <small style={{ color:'var(--muted)' }}>{buildCheckinLink(prop.id)}</small>
+            </div>
+          </section>
+
           {/* House Rules PDF */}
           <section style={card}>
             <h3 style={{ marginTop: 0 }}>House Rules PDF</h3>

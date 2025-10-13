@@ -377,9 +377,6 @@ export default function DashboardClient({
         ) : (
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 10 }}>
             {list.map((p) => {
-              const isWarn = needsPdfId === p.id;
-              const isCopied = copiedId === p.id;
-
               return (
                 <li
                   key={p.id}
@@ -414,37 +411,6 @@ export default function DashboardClient({
 
                   {/* Actions */}
                   <div className={`propActions ${openPropId === p.id ? 'open' : ''}`} style={{ gap: 8, flexWrap: "wrap" }}>
-                    {/* Copy property check-in link */}
-                    <button
-                      onClick={() => copyPropertyCheckinLink(p)}
-                      title={
-                        p.regulation_pdf_url ? "Copy property check-in link" : "Upload House Rules PDF first"
-                      }
-                      data-checkin-link={buildPropertyCheckinLink(p)}
-                      style={{
-                        padding: "8px 12px",
-                        borderRadius: 10,
-                        border: "1px solid var(--border)",
-                        background: isWarn ? "var(--danger)" : "var(--panel)",
-                        color: isWarn ? "#0c111b" : "var(--text)",
-                        fontWeight: 800,
-                        cursor: "pointer",
-                      }}
-                    >
-                      <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
-                        {(!isWarn && !isCopied) && (
-                          <img
-                            src={isDark ? '/copy_fordark.png' : '/copy_forlight.png'}
-                            alt=""
-                            width={14}
-                            height={14}
-                            style={{ opacity: .95 }}
-                          />
-                        )}
-                        {isWarn ? "Upload rules first" : isCopied ? "Copied!" : "Copy check-in link"}
-                      </span>
-                    </button>
-
                     <button
                       onClick={() => openPropertySetup(p.id)}
                       style={{
@@ -476,61 +442,7 @@ export default function DashboardClient({
                     </button>
                   </div>
 
-                  {/* Footer line */}
-                  <div
-                    style={{
-                      gridColumn: "1 / -1",
-                      color: "var(--muted)",
-                      fontSize: 12,
-                      marginTop: 6,
-                    }}
-                  >
-                    {p.regulation_pdf_url ? (
-                      <span>
-                        Regulations PDF uploaded
-                        {p.regulation_pdf_uploaded_at
-                          ? ` • ${new Date(p.regulation_pdf_uploaded_at).toLocaleString()}`
-                          : ""}
-                        {" • "}
-                        <a
-                          href={p.regulation_pdf_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{ color: "var(--primary)", textDecoration: "none" }}
-                        >
-                          Open
-                        </a>
-                        {" • "}
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            triggerHouseRulesUpload(p.id);
-                          }}
-                          style={{ color: "var(--primary)", textDecoration: "none" }}
-                          title="Change / re-upload House Rules PDF"
-                        >
-                          Change
-                        </a>
-                      </span>
-                    ) : (
-                      <span>
-                        No Regulations PDF uploaded
-                        {" • "}
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            triggerHouseRulesUpload(p.id);
-                          }}
-                          style={{ color: "var(--primary)", textDecoration: "none" }}
-                          title="Upload House Rules PDF"
-                        >
-                          Upload
-                        </a>
-                      </span>
-                    )}
-                  </div>
+                  {/* Footer line removed: Regulations PDF upload/status moved to Check-in Editor */}
                 </li>
               );
             })}
