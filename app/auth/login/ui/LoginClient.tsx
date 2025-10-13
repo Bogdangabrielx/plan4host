@@ -284,7 +284,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
               </div>
               {mode === 'login' && (
                 <div>
-                  <a href="#" onClick={(e)=>{ e.preventDefault(); setResetOpen(true); setResetEmail(email); setResetMsg(''); }} style={{ color:'var(--primary)', fontWeight: 800, textDecoration:'none' }}>
+                  <a href="#" onClick={(e)=>{ e.preventDefault(); setResetOpen(true); setResetEmail(email); setResetMsg(''); }} style={{ color:'var(--primary)', fontSize:9,fontWeight: 600, textDecoration:'none' }}>
                     Reset password
                   </a>
                 </div>
