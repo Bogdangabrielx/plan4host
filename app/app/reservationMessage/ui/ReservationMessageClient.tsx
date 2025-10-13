@@ -22,7 +22,8 @@ type ManualField = {
 };
 
 type TemplateState = {
-  blocks: Block[];
+  blocks: Block[];          // Romanian variant (legacy default)
+  blocks_en?: Block[];      // English variant
   fields: ManualField[];
   status: "draft" | "published";
 };
@@ -42,7 +43,7 @@ const BUILTIN_VARS: Array<{ key: string; label: string }> = [
   { key: "property_name", label: "Property name" },
 ];
 
-const EMPTY: TemplateState = { blocks: [], fields: [], status: "draft" };
+const EMPTY: TemplateState = { blocks: [], blocks_en: [], fields: [], status: "draft" };
 
 /** ---------------- Utils ---------------- */
 function lsKey(pid: string) { return `p4h:rm:template:${pid}`; }
