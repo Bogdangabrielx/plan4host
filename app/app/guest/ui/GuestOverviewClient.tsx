@@ -459,7 +459,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (p.includes("trivago")) return "/trivago.png";
     if (p.includes("lastminute")) return "/lastminute.png";
     if (p.includes("travelminit")) return "/travelminit.png";
-    return null;
+    if (p.includes("manual") || !p) return "/P4H_ota.png"; // Manual fallback logo
+    return "/P4H_ota.png"; // unknown → manual logo as safe default
   }
   function defaultOtaColor(provider?: string | null): string {
     const s = (provider || "").toLowerCase();
@@ -469,7 +470,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (s.includes("trivago")) return "linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)";
     if (s.includes("lastminute")) return "#d493baff";
     if (s.includes("travelminit")) return "#a4579f";
-    return "rgba(139,92,246,0.81)"; // violet fallback
+    if (s.includes("manual") || !s) return "#6CCC4C"; // Manual green
+    return "#6CCC4C"; // unknown → manual green as safe default
   }
   function OtaBadge({ provider, color, logo, fullWidth }: { provider?: string | null; color?: string | null; logo?: string | null; fullWidth?: boolean }) {
     const show = !!(provider || logo);
@@ -497,14 +499,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   }
 
   // Derive OTA badge meta (including temporary manual fallback for testing)
-  function otaMetaForRow(it: OverviewRow, kind: OverviewRow["status"]): { provider?: string | null; color?: string | null; logo?: string | null } | null {
+  function otaMetaForRow(it: OverviewRow, _kind: OverviewRow["status"]): { provider?: string | null; color?: string | null; logo?: string | null } | null {
     const hasOta = !!(it._ota_provider || it._ota_color || it._ota_logo_url);
     if (hasOta) return { provider: it._ota_provider, color: it._ota_color as any, logo: it._ota_logo_url as any };
-    // TEMP test: manual reservation badge — show only for manual-green (no reason, no OTA)
-    if (!it._reason && kind === 'green') {
-      return { provider: 'Manual', color: '#6CCC4C', logo: '/P4H_ota.png' };
-    }
-    return null;
+    // Fallback: Manual (green) with Plan4Host OTA logo
+    return { provider: 'Manual', color: '#6CCC4C', logo: '/P4H_ota.png' };
   }
   const BTN_TOUCH_STYLE: React.CSSProperties = {
     padding: "12px 14px",

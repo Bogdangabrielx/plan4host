@@ -276,34 +276,50 @@ export default function ReservationMessageClient({
     return () => { alive = false; };
   }, [propertyId, selectedRoomId, varDefs]);
 
-  /** --------- Save/publish actions --------- */
+  /** --------- Save/publish actions (per-language, no cross-overwrite) --------- */
   function saveDraft() {
     if (!propertyId) return;
-    const blocks = composeBlocks();
-    const next = { ...tpl, status: "draft" as const, blocks };
+    const current = composeBlocks();
+    const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
+    const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
+    const next = { ...tpl, status: 'draft' as const, blocks: roBlocks, blocks_en: enBlocks };
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     setTpl(next);
-    syncToServer("draft", blocks);
+    const combined = [
+      ...roBlocks.map(b => ({ ...b, lang: 'ro' as const })),
+      ...enBlocks.map(b => ({ ...b, lang: 'en' as const })),
+    ];
+    syncToServer('draft', combined);
   }
   function publish() {
     if (!propertyId) return;
-    const blocks = composeBlocks();
-    const next = { ...tpl, status: "published" as const, blocks };
+    const current = composeBlocks();
+    const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
+    const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
+    const next = { ...tpl, status: 'published' as const, blocks: roBlocks, blocks_en: enBlocks };
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     setTpl(next);
-    syncToServer("published", blocks);
+    const combined = [
+      ...roBlocks.map(b => ({ ...b, lang: 'ro' as const })),
+      ...enBlocks.map(b => ({ ...b, lang: 'en' as const })),
+    ];
+    syncToServer('published', combined);
   }
-  async function syncToServer(status: "draft" | "published", blocks?: Block[]) {
+  async function syncToServer(status: "draft" | "published", combined?: Array<{ type: string; text?: string|null; lang: 'ro'|'en' }>) {
     try {
       setSaving("Saving…");
-      const blk = blocks ?? composeBlocks();
-      const { title } = deriveFromBlocks(blk);
+      const roOnly = (combined ? combined.filter(b => b.lang === 'ro') : (tpl.blocks || [])).map(({ lang, ...rest }: any) => rest);
+      const payloadBlocks = combined ?? [
+        ...(tpl.blocks || []).map(b => ({ ...b, lang: 'ro' } as any)),
+        ...(tpl.blocks_en || []).map(b => ({ ...b, lang: 'en' } as any)),
+      ];
+      const { title } = deriveFromBlocks(roOnly as any);
       const payload: any = {
         id: activeId || undefined,
         property_id: propertyId,
         title,
         status,
-        blocks: blk.map((b: any) => ({ type: b.type, text: b.text || null })),
+        blocks: payloadBlocks.map((b: any) => ({ type: b.type, text: b.text || null, lang: b.lang })),
         fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, default_value: f.defaultValue ?? null })),
       };
       const res = await fetch("/api/reservation-message/template", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
@@ -849,9 +865,10 @@ export default function ReservationMessageClient({
             <div style={{ display:'inline-flex', gap:8 }}>
               <button onClick={() => {
                 const cur = composeBlocks();
-                setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) }));
+                const next = { ...tpl, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) } as TemplateState;
+                setTpl(next);
                 setLang('ro');
-                const { title, body } = deriveFromBlocks((tpl.blocks||[]));
+                const { title, body } = deriveFromBlocks(next.blocks || []);
                 if (titleRef.current) tokensTextToChips(titleRef.current, title);
                 if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
               }}
@@ -862,9 +879,10 @@ export default function ReservationMessageClient({
               </button>
               <button onClick={() => {
                 const cur = composeBlocks();
-                setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) }));
+                const next = { ...tpl, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) } as TemplateState;
+                setTpl(next);
                 setLang('en');
-                const { title, body } = deriveFromBlocks((tpl.blocks_en||[]));
+                const { title, body } = deriveFromBlocks(next.blocks_en || []);
                 if (titleRef.current) tokensTextToChips(titleRef.current, title);
                 if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
               }}
