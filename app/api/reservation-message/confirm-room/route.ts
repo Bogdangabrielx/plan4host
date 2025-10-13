@@ -19,23 +19,14 @@ export async function POST(req: Request) {
     const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
     const admin = createClient(url, service, { auth: { persistSession: false } });
 
-    // 1) Ensure there is a reservation_messages token
+    // 1) Ensure there is a reservation_messages token (server-side, no external fetch)
     const rMsg = await admin
       .from('reservation_messages')
-      .select('id, token')
+      .select('id, token, status')
       .eq('property_id', property_id)
       .eq('booking_id', booking_id)
       .maybeSingle();
     let token: string | null = (rMsg.data as any)?.token || null;
-    if (!token) {
-      const gen = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/reservation-message/generate`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ property_id, booking_id })
-      });
-      const jj = await gen.json().catch(()=>({}));
-      if (!gen.ok || !jj?.url) return bad(500, { error: jj?.error || 'Failed to generate link' });
-      token = (jj.url as string).split('/').pop() || null;
-    }
 
     // 2) Fetch booking + property + contact
     const [rBk, rProp, rContact] = await Promise.all([
@@ -49,6 +40,25 @@ export async function POST(req: Request) {
     if (!email) return bad(400, { error: 'missing_email' });
 
     const bk: any = rBk.data;
+    // If token is missing, create it now using service role
+    if (!token) {
+      // compute expiry: day after checkout
+      const endDate: string | null = bk?.end_date || null;
+      let expiresAt: string | null = null;
+      if (endDate) {
+        const ex = new Date(`${endDate}T00:00:00Z`);
+        ex.setUTCDate(ex.getUTCDate() + 1);
+        expiresAt = ex.toISOString();
+      }
+      const newToken = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 10);
+      const up = await admin
+        .from('reservation_messages')
+        .insert({ property_id, booking_id, token: newToken, status: 'active', expires_at: expiresAt, manual_values: {} })
+        .select('token')
+        .single();
+      if (up.error || !up.data) return bad(500, { error: up.error?.message || 'Failed to create link' });
+      token = (up.data as any).token as string;
+    }
     const propName = (rProp.data as any)?.name || '';
     let roomName: string | null = null;
     if (bk.room_id) {
@@ -114,4 +124,3 @@ function wrapEmailHtml(subjectPlain: string, innerHtml: string): string {
     </table></td></tr></table>
     </body></html>`;
 }
-
