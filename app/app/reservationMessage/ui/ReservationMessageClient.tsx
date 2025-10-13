@@ -297,7 +297,7 @@ export default function ReservationMessageClient({
   }
   function publish() {
     if (!propertyId) return;
-    if (!scheduler || scheduler==='') { alert('Select a Scheduler before publishing.'); return; }
+    if (!scheduler) { alert('Select a Scheduler before publishing.'); return; }
     const current = composeBlocks();
     const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
     const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
