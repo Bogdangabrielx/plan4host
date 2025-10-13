@@ -52,9 +52,10 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   const checkinUrl = `${process.env.NEXT_PUBLIC_APP_URL || ''}/r/ci/${bookingId}`;
 
   // Reuse the same visual language as CheckinClient (dark variant icons)
-  function formIconDark(key: 'email'|'phone'|'address'|'city'|'country'|'firstname'|'lastname') {
+  function formIconDark(key: 'email'|'phone'|'address'|'city'|'country'|'firstname'|'lastname'|'id') {
     return `/formular_${key}_fordark.png`;
   }
+  const nightIcon = '/night_fordark.png';
 
   function Thumb({ doc, label }: { doc: Doc|null, label: string }) {
     if (!doc || !doc.url) return <div style={{ color:'var(--muted)' }}>No file</div>;
@@ -83,7 +84,7 @@ export default async function CheckinQrView({ params }: { params: { id: string }
           {/* Table-style details with icons */}
           <div style={{ display:'grid', gridTemplateColumns:'auto 1fr auto', rowGap:8, columnGap:10, alignItems:'center' }}>
             <div aria-hidden style={{ width:18 }}>
-              <span role="img" aria-label="Property">🏨</span>
+              <img src="/dashboard_fordark.png" alt="" width={16} height={16} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Property</div>
             <div style={{ justifySelf:'start' }}>{property?.name || '—'}</div>
@@ -113,22 +114,40 @@ export default async function CheckinQrView({ params }: { params: { id: string }
             <div>{booking?.guest_phone || contact?.phone || '—'}</div>
 
             <div aria-hidden style={{ width:18 }}>
+              <img src={formIconDark('city')} alt="" width={16} height={16} />
+            </div>
+            <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>City</div>
+            <div>{contact?.city || '—'}</div>
+
+            <div aria-hidden style={{ width:18 }}>
+              <img src={formIconDark('country')} alt="" width={16} height={16} />
+            </div>
+            <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Country</div>
+            <div>{contact?.country || '—'}</div>
+
+            <div aria-hidden style={{ width:18 }}>
               <img src={formIconDark('address')} alt="" width={16} height={16} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Address</div>
-            <div>{[contact?.address, contact?.city, contact?.country].filter(Boolean).join(', ') || '—'}</div>
+            <div>{contact?.address || '—'}</div>
 
             <div aria-hidden style={{ width:18 }}>
-              <span role="img" aria-label="Calendar">📅</span>
+              <img src={nightIcon} alt="" width={16} height={16} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Check‑in date</div>
             <div>{booking?.start_date || '—'}</div>
 
             <div aria-hidden style={{ width:18 }}>
-              <span role="img" aria-label="Calendar">📅</span>
+              <img src={nightIcon} alt="" width={16} height={16} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Check‑out date</div>
             <div>{booking?.end_date || '—'}</div>
+
+            <div aria-hidden style={{ width:18 }}>
+              <img src={formIconDark('id')} alt="" width={16} height={16} />
+            </div>
+            <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Document type</div>
+            <div>{(() => { const t = (idDoc?.doc_type || '').toLowerCase(); if (t === 'id_card') return 'ID Card'; if (t === 'passport') return 'Passport'; return '—'; })()}</div>
           </div>
         </div>
         <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
