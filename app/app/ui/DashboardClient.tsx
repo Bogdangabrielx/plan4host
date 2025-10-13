@@ -60,6 +60,8 @@ export default function DashboardClient({
 
   const [toDelete, setToDelete] = useState<Property | null>(null);
   const [plan, setPlan] = useState<"basic" | "standard" | "premium" | null>(null);
+  // Toggle actions per property (one-at-a-time)
+  const [openPropId, setOpenPropId] = useState<string | null>(null);
 
   // Copied! state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -330,7 +332,11 @@ export default function DashboardClient({
             <select value={country} onChange={(e) => setCountry(e.currentTarget.value)} style={FIELD_STYLE}>
               <option value="">— select —</option>
               {TZ_COUNTRIES.slice()
-                .sort((a, b) => a.name.localeCompare(b.name))
+                .sort((a, b) => {
+                  if (a.code === 'RO') return -1;
+                  if (b.code === 'RO') return 1;
+                  return a.name.localeCompare(b.name);
+                })
                 .map((c) => (
                   <option key={c.code} value={c.code}>
                     {countryLabel(c.code)}
@@ -388,6 +394,11 @@ export default function DashboardClient({
                     borderRadius: 10,
                     padding: 12,
                   }}
+                  onPointerUp={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (target && (target.closest('button') || target.closest('a'))) return;
+                    setOpenPropId(prev => prev === p.id ? null : p.id);
+                  }}
                 >
                   {/* Info */}
                   <div>
@@ -402,7 +413,7 @@ export default function DashboardClient({
                   </div>
 
                   {/* Actions */}
-                  <div className="propActions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <div className={`propActions ${openPropId === p.id ? 'open' : ''}`} style={{ gap: 8, flexWrap: "wrap" }}>
                     {/* Copy property check-in link */}
                     <button
                       onClick={() => copyPropertyCheckinLink(p)}
@@ -601,26 +612,15 @@ export default function DashboardClient({
         </>
       )}
 
-      {/* ⬇️ CSS pentru layout-ul pe mobil */}
+      {/* ⬇️ CSS: actions hidden by default; show on open. Mobile stacks buttons. */}
       <style jsx>{`
+        .propActions { display: none; }
+        .propActions.open { display: flex; }
         @media (max-width: 720px) {
-          .propItem {
-            grid-template-columns: 1fr; /* totul pe o coloană */
-            align-items: start;
-          }
-          .propActions {
-            grid-column: 1 / -1; /* mută acțiunile sub meta */
-            display: grid !important; /* suprascrie inline flex */
-            grid-template-columns: 1fr; /* butoanele unul sub altul */
-            gap: 8px;
-            margin-top: 4px;
-            width: 100%;
-          }
-          .propActions > button {
-            width: 100%; /* fiecare buton umple coloana */
-            border-radius: 29px !important; /* cerință: radius 29 pe mobil */
-            min-height: 44px; /* touch-friendly */
-          }
+          .propItem { grid-template-columns: 1fr; align-items: start; }
+          .propActions { grid-column: 1 / -1; width: 100%; }
+          .propActions.open { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 4px; }
+          .propActions > button { width: 100%; border-radius: 29px !important; min-height: 44px; }
         }
       `}</style>
     </div>
