@@ -94,7 +94,7 @@ export async function GET(req: Request) {
       .from("bookings")
       .select(`
         id, property_id, room_id, room_type_id,
-        start_date, end_date, status, source,
+        start_date, end_date, status, source, ota_provider,
         guest_first_name, guest_last_name, guest_name,
         created_at
       `)
@@ -122,7 +122,7 @@ export async function GET(req: Request) {
         _room_type_name: null,
         _reason: status === 'yellow' ? 'waiting_room' : null,
         _cutoff_ts: null,
-        _ota_provider: f.ota_provider ?? null,
+        _ota_provider: (f as any).ota_provider ?? null,
         _ota_color: null,
         _ota_logo_url: null,
         _guest_first_name: f.guest_first_name ?? null,
