@@ -1386,11 +1386,12 @@ export default function CheckinClient() {
                 <div
                   style={{
                     position: 'absolute',
-                    left: 12,
-                    right: 12,
-                    bottom: 12,
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 'calc(100% - 24px)',
                     maxWidth: 520,
-                    background: 'rgba(17,24,39,0.55)',
+                    background: 'rgba(17,24,39,0.40)',
                     color: '#fff',
                     WebkitBackdropFilter: 'blur(8px) saturate(140%)',
                     backdropFilter: 'blur(8px) saturate(140%)',
