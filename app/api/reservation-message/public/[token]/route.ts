@@ -43,6 +43,8 @@ function renderHeadingSafe(src: string, vars: Record<string,string>): string {
 
 export async function GET(req: NextRequest, ctx: { params: { token: string } }) {
   try {
+    const urlObj = new URL(req.url);
+    const wantDebug = (urlObj.searchParams.get('debug') === '1');
     const tok = (ctx.params.token || '').trim();
     if (!tok) return bad(400, { error: 'Missing token' });
 
@@ -146,6 +148,9 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
     }
     function at(d:string,t:string){ return new Date(`${d}T${normalizeTime(t)}`); }
 
+    const ciAt = at(booking.start_date, ciTime);
+    const coAt = at(booking.end_date, coTime);
+
     const items = templates.map(t => {
       const arr = byTpl.get(t.id) || [];
       const html_ro = renderBlocks(arr, 'ro');
@@ -153,16 +158,20 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
       const kind = (t.schedule_kind || 'none').toLowerCase();
       let visible = false;
       const off = (typeof t.schedule_offset_hours === 'number' && !isNaN(t.schedule_offset_hours)) ? Number(t.schedule_offset_hours) : null;
-      if (kind === 'hour_before_checkin') visible = now >= new Date(at(booking.start_date, ciTime).getTime() - (off ?? 1)*60*60*1000);
-      else if (kind === 'hours_before_checkout') visible = now >= new Date(at(booking.end_date, coTime).getTime() - (off ?? 12)*60*60*1000);
-      else if (kind === 'on_arrival') visible = now >= at(booking.start_date, ciTime);
+      let dueAt: Date | null = null;
+      if (kind === 'hour_before_checkin') { const h = (off ?? 1); dueAt = new Date(ciAt.getTime() - h*60*60*1000); visible = now >= dueAt; }
+      else if (kind === 'hours_before_checkout') { const h = (off ?? 12); dueAt = new Date(coAt.getTime() - h*60*60*1000); visible = now >= dueAt; }
+      else if (kind === 'on_arrival') { dueAt = ciAt; visible = now >= dueAt; }
       else if (kind === 'none') visible = false; // explicit: nu afișăm deloc mesajele fără scheduler
-      return { id: t.id, title: t.title || 'Message', schedule_kind: t.schedule_kind || 'none', html_ro, html_en, visible };
+      const base = { id: t.id, title: t.title || 'Message', schedule_kind: t.schedule_kind || 'none', html_ro, html_en, visible } as any;
+      if (wantDebug) base.debug = { now: now.toISOString(), ci_at: ciAt.toISOString(), co_at: coAt.toISOString(), due_at: dueAt ? dueAt.toISOString() : null, offset_hours: off ?? null };
+      return base;
     });
 
     return NextResponse.json(
       { ok: true, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at, items,
-        details: { property_name: (prop as any)?.name || '', guest_first_name: booking.guest_first_name || '', guest_last_name: booking.guest_last_name || '', start_date: booking.start_date, end_date: booking.end_date, room_name: roomLabel }
+        details: { property_name: (prop as any)?.name || '', guest_first_name: booking.guest_first_name || '', guest_last_name: booking.guest_last_name || '', start_date: booking.start_date, end_date: booking.end_date, room_name: roomLabel },
+        ...(wantDebug ? { debug: { now: now.toISOString(), check_in_time: ciTime, check_out_time: coTime } } : {})
       },
       { headers: { 'Cache-Control': 'no-store, max-age=0' } }
     );
