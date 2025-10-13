@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
+import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
 
 type Property = {
@@ -160,6 +161,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 
   return (
     <div style={{ display:'grid', gap:16 }}>
+      <PlanHeaderBadge title="Check-in Editor" slot="header-right" />
       {/* Property selector */}
       <section style={card}>
         <h2 style={{ marginTop: 0 }}>Select Property</h2>
