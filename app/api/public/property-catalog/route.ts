@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     // 1) Property — acum includem și check_in_time / check_out_time (și păstrăm câmpurile vechi)
     const rProp = await admin
       .from("properties")
-      .select("id,name,regulation_pdf_url,check_in_time,check_out_time,timezone")
+      .select("id,name,regulation_pdf_url,check_in_time,check_out_time,timezone,contact_email,contact_phone,contact_address,presentation_image_url")
       .eq("id", propertyId)
       .maybeSingle();
 
@@ -63,6 +63,10 @@ export async function GET(req: NextRequest) {
         check_in_time: rProp.data.check_in_time ?? null,
         check_out_time: rProp.data.check_out_time ?? null,
         timezone: rProp.data.timezone ?? null,
+        contact_email: rProp.data.contact_email ?? null,
+        contact_phone: rProp.data.contact_phone ?? null,
+        contact_address: rProp.data.contact_address ?? null,
+        presentation_image_url: rProp.data.presentation_image_url ?? null,
       },
       room_types: rTypes.data ?? [],
       rooms: rRooms.data ?? [],

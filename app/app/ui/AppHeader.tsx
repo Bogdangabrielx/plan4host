@@ -8,6 +8,7 @@ const NAV_BASE = [
   { href: "/app", label: "Dashboard", emoji: "🏠", scope: "dashboard" },
   { href: "/app/calendar", label: "Calendar", emoji: "📅", scope: "calendar" },
   { href: "/app/propertySetup", label: "Property Setup", emoji: "⚙️", scope: "property_setup" },
+  { href: "/app/checkinEditor", label: "Check-in Editor", emoji: "📝", scope: "checkin_editor" },
   { href: "/app/cleaning", label: "Cleaning Board", emoji: "🧹", scope: "cleaning" },
   { href: "/app/channels", label: "Sync Calendars", emoji: "🔗", scope: "channels" },
   { href: "/app/reservationMessage", label: "Automatic Messages", emoji: "✉️", scope: "reservation_message" },

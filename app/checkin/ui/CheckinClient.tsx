@@ -9,6 +9,10 @@ type PropertyInfo = {
   id: string;
   name: string;
   regulation_pdf_url?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  contact_address?: string | null;
+  presentation_image_url?: string | null;
 };
 
 type RoomType = { id: string; name: string };
@@ -1367,6 +1371,45 @@ export default function CheckinClient() {
           </form>
         )}
       </section>
+
+      {/* Property info (contact + image) */}
+      {prop && (
+        <section
+          className="sb-card"
+          style={{ display: "grid", gap: 12 }}
+        >
+          {prop.presentation_image_url && (
+            <img
+              src={prop.presentation_image_url}
+              alt="Property"
+              style={{ width: "100%", maxWidth: 720, height: 280, objectFit: "cover", borderRadius: 12, border: "1px solid var(--border)", background: "#fff", justifySelf: 'center' }}
+            />
+          )}
+          {(prop.contact_email || prop.contact_phone || prop.contact_address) && (
+            <div style={{ display: 'grid', gap: 6 }}>
+              <strong>Contact the property</strong>
+              {prop.contact_email && (
+                <div>
+                  <span style={{ color: 'var(--muted)' }}>Email: </span>
+                  <a href={`mailto:${prop.contact_email}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>{prop.contact_email}</a>
+                </div>
+              )}
+              {prop.contact_phone && (
+                <div>
+                  <span style={{ color: 'var(--muted)' }}>Phone: </span>
+                  <a href={`tel:${(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>{prop.contact_phone}</a>
+                </div>
+              )}
+              {prop.contact_address && (
+                <div>
+                  <span style={{ color: 'var(--muted)' }}>Address: </span>
+                  <span>{prop.contact_address}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Confirmation email modal */}
       {confirmOpen && (
