@@ -171,7 +171,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 <input
                   type="email"
                   value={prop.contact_email ?? ''}
-                  onChange={(e) => setProp(prev => prev ? { ...prev, contact_email: e.currentTarget.value } : prev)}
+                  onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_email: v } : prev); }}
                   placeholder="example@hotel.com"
                   style={FIELD}
                 />
@@ -179,8 +179,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               <div>
                 <label style={{ display:'block', marginBottom:6 }}>Phone</label>
                 <input
+                  type="tel"
                   value={prop.contact_phone ?? ''}
-                  onChange={(e) => setProp(prev => prev ? { ...prev, contact_phone: e.currentTarget.value } : prev)}
+                  onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_phone: v } : prev); }}
                   placeholder="+40 712 345 678"
                   style={FIELD}
                 />
@@ -189,7 +190,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 <label style={{ display:'block', marginBottom:6 }}>Address</label>
                 <input
                   value={prop.contact_address ?? ''}
-                  onChange={(e) => setProp(prev => prev ? { ...prev, contact_address: e.currentTarget.value } : prev)}
+                  onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_address: v } : prev); }}
                   placeholder="Street, city, optional details"
                   style={FIELD}
                 />
@@ -228,4 +229,3 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     </div>
   );
 }
-
