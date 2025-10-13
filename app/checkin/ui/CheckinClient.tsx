@@ -17,6 +17,29 @@ type SubmitState = "idle" | "submitting" | "success" | "error";
 
 type Country = { iso2: string; name: string; nationality_en?: string | null };
 
+// Small helper to render emoji flags from ISO country code
+function flagEmoji(cc: string | null | undefined): string {
+  if (!cc) return "";
+  const up = cc.toUpperCase();
+  if (up.length !== 2) return "";
+  const A = 0x1f1e6;
+  const code1 = up.charCodeAt(0) - 65 + A;
+  const code2 = up.charCodeAt(1) - 65 + A;
+  return String.fromCodePoint(code1, code2);
+}
+
+// Dial code options shown in the inline dropdown
+const DIAL_OPTIONS: Array<{ cc: string; code: string; name: string }> = [
+  { cc: 'RO', code: '+40', name: 'Romania' },
+  { cc: 'DE', code: '+49', name: 'Germany' },
+  { cc: 'IT', code: '+39', name: 'Italy' },
+  { cc: 'FR', code: '+33', name: 'France' },
+  { cc: 'ES', code: '+34', name: 'Spain' },
+  { cc: 'GB', code: '+44', name: 'United Kingdom' },
+  { cc: 'AT', code: '+43', name: 'Austria' },
+  { cc: 'US', code: '+1',  name: 'United States' },
+];
+
 function getQueryParam(k: string): string | null {
   if (typeof window === "undefined") return null;
   const u = new URL(window.location.href);
@@ -465,6 +488,11 @@ export default function CheckinClient() {
     if (attr === "light") return false;
     return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false;
   });
+  // Small screen / mobile detection for layout tweaks
+  const [isSmall, setIsSmall] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia?.('(max-width: 560px), (pointer: coarse)')?.matches ?? false;
+  });
   useEffect(() => {
     const m = window.matchMedia?.("(prefers-color-scheme: dark)");
     const onChange = (e: MediaQueryListEvent) => setIsDark(e.matches);
@@ -472,6 +500,12 @@ export default function CheckinClient() {
     return () => {
       try { m?.removeEventListener("change", onChange); } catch { m?.removeListener?.(onChange); }
     };
+  }, []);
+  useEffect(() => {
+    const mq = window.matchMedia?.('(max-width: 560px), (pointer: coarse)');
+    const on = (e: MediaQueryListEvent) => setIsSmall(e.matches);
+    try { mq?.addEventListener('change', on); } catch { mq?.addListener?.(on); }
+    return () => { try { mq?.removeEventListener('change', on); } catch { mq?.removeListener?.(on); } };
   }, []);
   useEffect(() => {
     const root = document.documentElement;
@@ -1015,7 +1049,7 @@ export default function CheckinClient() {
             </div>
 
             {/* Contact */}
-            <div style={ROW_2}>
+            <div style={isSmall ? ROW_1 : ROW_2}>
               <div>
                 <label htmlFor="checkin-email" style={LABEL_ROW}>
                   <Image src={formIcon("email")} alt="" width={16} height={16} />
@@ -1032,15 +1066,18 @@ export default function CheckinClient() {
                   <button type="button" onClick={()=>setDialOpen(v=>!v)} aria-label="Dial code"
                     style={{ position:'absolute', left:8, top:'50%', transform:'translateY(-50%)', zIndex:2,
                              border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)', borderRadius:8, padding:'6px 8px', fontWeight:800, cursor:'pointer' }}>
+                    <span style={{ marginRight:6 }}>{flagEmoji((DIAL_OPTIONS.find(d=>d.code===phoneDial)?.cc) || 'RO')}</span>
                     {phoneDial}
                   </button>
                   <input id="checkin-phone" style={{ ...INPUT, paddingLeft: 90 }} value={phone} onChange={e => setPhone(e.currentTarget.value)} placeholder="700 000 000" type="tel" inputMode="numeric" pattern="[0-9]*" />
                   {dialOpen && (
-                    <div role="listbox" style={{ position:'absolute', left:8, top:'calc(100% + 6px)', zIndex:3, background:'var(--panel)', border:'1px solid var(--border)', borderRadius:10, padding:6, display:'grid', gap:4 }}>
-                      {["+40","+49","+39","+33","+34","+44","+43","+1"].map(dc => (
-                        <button key={dc} type="button" onClick={()=>{ setPhoneDial(dc); setDialOpen(false); }}
-                          style={{ padding:'6px 8px', borderRadius:8, border:'1px solid var(--border)', background: dc===phoneDial? 'var(--primary)':'var(--card)', color: dc===phoneDial? '#0c111b':'var(--text)', fontWeight:800, cursor:'pointer' }}>
-                          {dc}
+                    <div role="listbox" style={{ position:'absolute', left:8, top:'calc(100% + 6px)', zIndex:3, background:'var(--panel)', border:'1px solid var(--border)', borderRadius:10, padding:6, display:'grid', gap:4, maxHeight:220, overflow:'auto' }}>
+                      {DIAL_OPTIONS.map(opt => (
+                        <button key={opt.code} type="button" onClick={()=>{ setPhoneDial(opt.code); setDialOpen(false); }}
+                          style={{ padding:'6px 8px', borderRadius:8, border:'1px solid var(--border)', background: opt.code===phoneDial? 'var(--primary)':'var(--card)', color: opt.code===phoneDial? '#0c111b':'var(--text)', fontWeight:800, cursor:'pointer', display:'flex', alignItems:'center', gap:8 }}>
+                          <span>{flagEmoji(opt.cc)}</span>
+                          <span style={{ width:56, display:'inline-block' }}>{opt.code}</span>
+                          <span style={{ color:'var(--muted)', fontWeight:600 }}>{opt.name}</span>
                         </button>
                       ))}
                     </div>
