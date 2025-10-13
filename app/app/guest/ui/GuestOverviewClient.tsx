@@ -921,25 +921,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         Automatic message
                     </button>
 
-                    {/* See QR code */}
-                    <button
-                      type="button"
-                      {...useTap(() => setQrModal({ bookingId: String(it.id), url: `${window.location.origin}/r/ci/${encodeURIComponent(String(it.id||''))}` }))}
-                      style={{
-                        ...BTN_TOUCH_STYLE,
-                        borderRadius: 21,
-                        border: "1px solid var(--border)",
-                        background: "var(--card)",
-                        color: "var(--text)",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        width: isSmall ? "100%" : undefined,
-                      }}
-                      title="See QR code"
-                    >
-                      See QR code
-                    </button>
-
                       <button
                         type="button"
                         {...useTap(() => openReservation(it, propertyId))}
@@ -983,6 +964,25 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       {kind === 'green' ? 'Modify booking' : 'Confirm booking'}
                     </button>
                   )}
+
+                  {/* See QR code (available for both statuses) */}
+                  <button
+                    type="button"
+                    {...useTap(() => setQrModal({ bookingId: String(it.id), url: `${window.location.origin}/r/ci/${encodeURIComponent(String(it.id||''))}` }))}
+                    style={{
+                      ...BTN_TOUCH_STYLE,
+                      borderRadius: 21,
+                      border: "1px solid var(--border)",
+                      background: "var(--card)",
+                      color: "var(--text)",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      width: isSmall ? "100%" : undefined,
+                    }}
+                    title="See QR code"
+                  >
+                    See QR code
+                  </button>
                 </div>
               </section>
             );
