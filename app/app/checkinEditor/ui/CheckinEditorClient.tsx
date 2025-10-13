@@ -36,19 +36,52 @@ const FIELD: React.CSSProperties = {
   fontFamily: "inherit",
 };
 
-function Info({ title }: { title: string }) {
+function Info({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useMemo(() => ({ current: null as null | HTMLSpanElement }), []);
+  useEffect(() => {
+    if (!open) return;
+    function onDoc(e: Event) {
+      const t = e.target as Node | null;
+      if (ref.current && t && !ref.current.contains(t)) setOpen(false);
+    }
+    document.addEventListener('pointerdown', onDoc, { capture: true });
+    document.addEventListener('keydown', (ev) => { if ((ev as KeyboardEvent).key === 'Escape') setOpen(false); }, { capture: true });
+    return () => {
+      document.removeEventListener('pointerdown', onDoc, { capture: true } as any);
+    };
+  }, [open, ref]);
   return (
-    <span
-      title={title}
-      aria-label="Info"
-      style={{
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        width: 20, height: 20, borderRadius: 999,
-        border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--muted)',
-        fontSize: 12, fontWeight: 800, cursor: 'help', userSelect: 'none'
-      }}
-    >
-      i
+    <span ref={(el)=>{ (ref as any).current = el; }} style={{ position:'relative', display:'inline-block' }}>
+      <button
+        type="button"
+        aria-label="Info"
+        aria-expanded={open}
+        onClick={()=>setOpen(v=>!v)}
+        style={{
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          width: 20, height: 20, borderRadius: 999,
+          border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--muted)',
+          fontSize: 12, fontWeight: 800, cursor: 'pointer', userSelect: 'none',
+          padding: 0, lineHeight: 1
+        }}
+      >
+        i
+      </button>
+      {open && (
+        <div
+          role="tooltip"
+          style={{
+            position:'absolute', top: 26, right: 0, zIndex: 10,
+            maxWidth: 360,
+            background: 'var(--panel)', color: 'var(--text)',
+            border: '1px solid var(--border)', borderRadius: 10,
+            padding: '8px 10px', boxShadow: '0 10px 30px rgba(0,0,0,.20)'
+          }}
+        >
+          <div style={{ fontSize: 12, lineHeight: 1.5 }}>{text}</div>
+        </div>
+      )}
     </span>
   );
 }
@@ -276,7 +309,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                 <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" className="sb-btn sb-btn--primary">Open</a>
                 <button className="sb-btn" onClick={triggerPdfUpload}>Replace PDF</button>
-                <Info title={PDF_INFO} />
+                <Info text={PDF_INFO} />
                 <small style={{ color:'var(--muted)' }}>
                   Uploaded {prop.regulation_pdf_uploaded_at ? new Date(prop.regulation_pdf_uploaded_at).toLocaleString() : ''}
                 </small>
@@ -285,7 +318,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                 <span style={{ color:'var(--muted)' }}>No PDF uploaded.</span>
                 <button className="sb-btn" onClick={triggerPdfUpload}>Upload PDF</button>
-                <Info title={PDF_INFO} />
+                <Info text={PDF_INFO} />
               </div>
             )}
           </section>
@@ -342,14 +375,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                     <a href={prop.presentation_image_url} target="_blank" rel="noreferrer" className="sb-btn">Open full</a>
                     <button className="sb-btn" onClick={triggerImageUpload}>Replace image</button>
-                    <Info title={IMAGE_INFO} />
+                    <Info text={IMAGE_INFO} />
                   </div>
                 </div>
               ) : (
                 <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                   <span style={{ color:'var(--muted)' }}>No image uploaded.</span>
                   <button className="sb-btn" onClick={triggerImageUpload}>Upload image</button>
-                  <Info title={IMAGE_INFO} />
+                  <Info text={IMAGE_INFO} />
                 </div>
               )}
             </div>
