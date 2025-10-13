@@ -3,6 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState, useImperativeHandle } from "react";
 import Image from "next/image";
+import QrWithLogo from "@/components/QrWithLogo";
 import homeStyles from "../../home.module.css";
 
 type PropertyInfo = {
@@ -1489,7 +1490,7 @@ export default function CheckinClient() {
                 {qrUrl && (
                   <div style={{ display:'grid', gap:6, justifyItems:'center', border:'1px solid var(--border)', borderRadius:12, padding:12 }}>
                     <div style={{ fontWeight:800 }}>Your QR code</div>
-                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrUrl)}`} alt="QR" width={240} height={240} />
+                    <QrWithLogo data={qrUrl} size={240} radius={16} logoSrc="/p4h_logo_round.png" logoAlt="Plan4Host" />
                     <small style={{ color:'var(--muted)', wordBreak:'break-all' }}>{qrUrl}</small>
                   </div>
                 )}

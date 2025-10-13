@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import QrWithLogo from "@/components/QrWithLogo";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
@@ -1097,7 +1098,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               <button onClick={()=>setQrModal(null)} className="sb-btn">Close</button>
             </div>
             <div style={{ display:'grid', gap:8, justifyItems:'center' }}>
-              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrModal.url)}`} alt="QR" width={240} height={240} />
+              <QrWithLogo data={qrModal.url} size={240} radius={16} logoSrc="/p4h_logo_round.png" logoAlt="Plan4Host" />
               <small style={{ color:'var(--muted)', wordBreak:'break-all' }}>{qrModal.url}</small>
             </div>
           </div>

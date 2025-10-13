@@ -53,10 +53,20 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   const checkinUrl = `${process.env.NEXT_PUBLIC_APP_URL || ''}/r/ci/${bookingId}`;
 
   // Reuse the same visual language as CheckinClient (dark variant icons)
-  function formIconDark(key: 'email'|'phone'|'address'|'city'|'country'|'firstname'|'lastname'|'id') {
-    return `/formular_${key}_fordark.png`;
+  function iconPairForForm(key: 'email'|'phone'|'address'|'city'|'country'|'firstname'|'lastname'|'id') {
+    return { dark: `/formular_${key}_fordark.png`, light: `/formular_${key}_forlight.png` };
   }
-  const nightIcon = '/night_fordark.png';
+  const ICON_PROPERTY = { dark: '/dashboard_fordark.png', light: '/dashboard_forlight.png' } as const;
+  const ICON_NIGHT = { dark: '/night_fordark.png', light: '/night_forlight.png' } as const;
+
+  function Icon({ pair, size = 16 }: { pair: { dark: string; light: string }; size?: number }) {
+    return (
+      <picture>
+        <source media="print" srcSet={pair.light} />
+        <img src={pair.dark} alt="" width={size} height={size} />
+      </picture>
+    );
+  }
 
   function Thumb({ doc, label }: { doc: Doc|null, label: string }) {
     if (!doc || !doc.url) return <div style={{ color:'var(--muted)' }}>No file</div>;
@@ -84,71 +94,81 @@ export default async function CheckinQrView({ params }: { params: { id: string }
           <h1 style={{ margin:0, fontSize:20 }}>Check-in confirmation</h1>
           <ExportPdfButton />
         </div>
-        <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
-          {/* Table-style details with icons */}
-          <div style={{ display:'grid', gridTemplateColumns:'auto 1fr auto', rowGap:8, columnGap:10, alignItems:'center' }}>
+          <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
+            {/* Table-style details with icons */}
+            <div style={{ display:'grid', gridTemplateColumns:'auto 1fr auto', rowGap:8, columnGap:10, alignItems:'center' }}>
             <div aria-hidden style={{ width:18 }}>
-              <img src="/dashboard_fordark.png" alt="" width={16} height={16} />
+              <Icon pair={ICON_PROPERTY} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Property</div>
             <div style={{ justifySelf:'start' }}>{property?.name || '—'}</div>
+            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
-              <img src={formIconDark('firstname')} alt="" width={16} height={16} />
+              <Icon pair={iconPairForForm('firstname')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>First name</div>
             <div>{booking?.guest_first_name || '—'}</div>
+            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
-              <img src={formIconDark('lastname')} alt="" width={16} height={16} />
+              <Icon pair={iconPairForForm('lastname')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Last name</div>
             <div>{booking?.guest_last_name || '—'}</div>
+            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
-              <img src={formIconDark('email')} alt="" width={16} height={16} />
+              <Icon pair={iconPairForForm('email')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Email</div>
             <div>{booking?.guest_email || contact?.email || '—'}</div>
+            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
-              <img src={formIconDark('phone')} alt="" width={16} height={16} />
+              <Icon pair={iconPairForForm('phone')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Phone</div>
             <div>{booking?.guest_phone || contact?.phone || '—'}</div>
+            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
-              <img src={formIconDark('city')} alt="" width={16} height={16} />
+              <Icon pair={iconPairForForm('city')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>City</div>
             <div>{contact?.city || '—'}</div>
+            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
-              <img src={formIconDark('country')} alt="" width={16} height={16} />
+              <Icon pair={iconPairForForm('country')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Country</div>
             <div>{contact?.country || '—'}</div>
+            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
-              <img src={formIconDark('address')} alt="" width={16} height={16} />
+              <Icon pair={iconPairForForm('address')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Address</div>
             <div>{contact?.address || '—'}</div>
+            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
-              <img src={nightIcon} alt="" width={16} height={16} />
+              <Icon pair={ICON_NIGHT} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Check‑in date</div>
             <div>{booking?.start_date || '—'}</div>
+            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
-              <img src={nightIcon} alt="" width={16} height={16} />
+              <Icon pair={ICON_NIGHT} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Check‑out date</div>
             <div>{booking?.end_date || '—'}</div>
+            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
-              <img src={formIconDark('id')} alt="" width={16} height={16} />
+              <Icon pair={iconPairForForm('id')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Document type</div>
             <div>{(() => { const t = (idDoc?.doc_type || '').toLowerCase(); if (t === 'id_card') return 'ID Card'; if (t === 'passport') return 'Passport'; return '—'; })()}</div>

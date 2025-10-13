@@ -133,7 +133,12 @@ export async function POST(req: Request) {
         <p style="margin:8px 0; color:#475569;">If you need to make changes, please contact the property directly.</p>
               <div style=\"margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; text-align:center;\">
           <div style=\"font-weight:800; margin-bottom:8px;\">Your QR code</div>
-          <img src=\"${qrImg}\" alt=\"QR code\" width=\"240\" height=\"240\" style=\"display:block; margin:0 auto;\"/>
+          <div style=\"display:block; margin:0 auto; width:240px;\">
+            <div style=\"position:relative; width:240px; height:240px; border-radius:16px; overflow:hidden; margin:0 auto;\">
+              <img src=\"${qrImg}\" alt=\"QR code\" width=\"240\" height=\"240\" style=\"display:block;\"/>
+              <img src=\"${base}/p4h_logo_round.png\" alt=\"Logo\" width=\"72\" height=\"72\" style=\"position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:9999px; background:#ffffff; border:4px solid #ffffff;\"/>
+            </div>
+          </div>
           <div style=\"font-size:12px; color:#475569; margin-top:8px; word-break:break-all;\">${escapeHtml(qrLink)}</div>
         </div>
 </div>
