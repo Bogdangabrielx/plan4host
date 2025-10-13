@@ -3,6 +3,7 @@
   "crons": [
     { "path": "/api/cron/ical/autosync", "schedule": "*/5 * * * *" },
     { "path": "/api/cron/ical/cleanup", "schedule": "*/15 * * * *" },
-    { "path": "/api/cron/cleanup-id-images", "schedule": "0 4 * * *" }
+    { "path": "/api/cron/cleanup-id-images", "schedule": "0 4 * * *" },
+    { "path": "/api/reservation-message/cron/dispatch", "schedule": "*/15 * * * *" }
   ]
 }

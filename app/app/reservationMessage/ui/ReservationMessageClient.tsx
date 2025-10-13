@@ -26,6 +26,8 @@ type TemplateState = {
   blocks_en?: Block[];      // English variant
   fields: ManualField[];
   status: "draft" | "published";
+  schedule_kind?: 'hour_before_checkin' | 'on_arrival' | 'hours_before_checkout' | 'none' | '';
+  schedule_offset_hours?: number | null;
 };
 
 type Room = { id: string; name: string };
@@ -103,6 +105,7 @@ export default function ReservationMessageClient({
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
   const [lang, setLang] = useState<'ro'|'en'>('ro');
+  const [scheduler, setScheduler] = useState<TemplateState['schedule_kind']>('');
   const [templates, setTemplates] = useState<Array<{ id: string; title: string; status: "draft" | "published"; updated_at: string }>>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loadingList, setLoadingList] = useState<boolean>(false);
@@ -190,9 +193,10 @@ export default function ReservationMessageClient({
         const roBlocks: Block[] = fromServer.filter((b:any)=>String((b.lang||'ro')).toLowerCase()==='ro').map((b:any)=>({ id: uid(), type: b.type, text: b.text ?? '' }));
         const enBlocks: Block[] = fromServer.filter((b:any)=>String((b.lang||'ro')).toLowerCase()==='en').map((b:any)=>({ id: uid(), type: b.type, text: b.text ?? '' }));
         const fields: ManualField[] = (t.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label, defaultValue: (f as any).default_value ?? null }));
-        const next: TemplateState = { status: (t.status || 'draft') as any, blocks: roBlocks, blocks_en: enBlocks, fields };
+        const next: TemplateState = { status: (t.status || 'draft') as any, blocks: roBlocks, blocks_en: enBlocks, fields, schedule_kind: (t.schedule_kind || '') as any, schedule_offset_hours: (t.schedule_offset_hours ?? null) };
         if (!cancelled && keySnapshot === storageKey) {
           setTpl(next);
+          setScheduler((next.schedule_kind || '') as any);
           try { localStorage.setItem(keySnapshot, JSON.stringify(next)); } catch {}
           const { title, body } = deriveFromBlocks(lang==='ro' ? roBlocks : enBlocks);
           if (titleRef.current) tokensTextToChips(titleRef.current, title);
@@ -282,7 +286,7 @@ export default function ReservationMessageClient({
     const current = composeBlocks();
     const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
     const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
-    const next = { ...tpl, status: 'draft' as const, blocks: roBlocks, blocks_en: enBlocks };
+    const next = { ...tpl, status: 'draft' as const, blocks: roBlocks, blocks_en: enBlocks, schedule_kind: scheduler || 'none', schedule_offset_hours: scheduler==='hours_before_checkout' ? 12 : (scheduler==='hour_before_checkin' ? 1 : null) };
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     setTpl(next);
     const combined = [
@@ -293,10 +297,11 @@ export default function ReservationMessageClient({
   }
   function publish() {
     if (!propertyId) return;
+    if (!scheduler || scheduler==='') { alert('Select a Scheduler before publishing.'); return; }
     const current = composeBlocks();
     const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
     const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
-    const next = { ...tpl, status: 'published' as const, blocks: roBlocks, blocks_en: enBlocks };
+    const next = { ...tpl, status: 'published' as const, blocks: roBlocks, blocks_en: enBlocks, schedule_kind: scheduler || 'none', schedule_offset_hours: scheduler==='hours_before_checkout' ? 12 : (scheduler==='hour_before_checkin' ? 1 : null) };
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     setTpl(next);
     const combined = [
@@ -321,6 +326,8 @@ export default function ReservationMessageClient({
         status,
         blocks: payloadBlocks.map((b: any) => ({ type: b.type, text: b.text || null, lang: b.lang })),
         fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, default_value: f.defaultValue ?? null })),
+        schedule_kind: scheduler || tpl.schedule_kind || 'none',
+        schedule_offset_hours: (scheduler || tpl.schedule_kind) === 'hours_before_checkout' ? 12 : ((scheduler || tpl.schedule_kind)==='hour_before_checkin' ? 1 : null),
       };
       const res = await fetch("/api/reservation-message/template", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const j = await res.json().catch(() => ({}));
@@ -892,6 +899,18 @@ export default function ReservationMessageClient({
                 <span>English</span>
               </button>
             </div>
+          </div>
+
+          {/* Scheduler selector */}
+          <div style={{ display:'grid', gap:6, marginTop:10, maxWidth: 360 }}>
+            <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>Scheduler (required before Publish)</label>
+            <select className="sb-select" value={scheduler || ''} onChange={(e)=>setScheduler(e.currentTarget.value as any)}>
+              <option value="">— select —</option>
+              <option value="hour_before_checkin">One hour before reservation</option>
+              <option value="on_arrival">Once the guest arrives (check-in time)</option>
+              <option value="hours_before_checkout">12 hours before check out</option>
+              <option value="none">None</option>
+            </select>
           </div>
 
           <div style={{ display: "grid", gap: 8 }}>

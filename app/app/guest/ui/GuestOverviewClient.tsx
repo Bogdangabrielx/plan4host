@@ -1287,6 +1287,21 @@ function EditFormBookingModal({
         throw new Error(isOverlap ? 'Overlaps an existing confirmed reservation on this room.' : msg);
       }
 
+      // After successful save (room confirmed), ensure we generate the public link and send reservation confirmation
+      try {
+        const gen = await fetch('/api/reservation-message/generate', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ property_id: propertyId, booking_id: bookingId })
+        });
+        await gen.json().catch(()=>({}));
+      } catch {}
+      try {
+        await fetch('/api/reservation-message/confirm-room', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ property_id: propertyId, booking_id: bookingId })
+        });
+      } catch {}
+
       // refresh parent list but keep modal open; show success pop-up
       try { onSaved(); } catch {}
       setError(null);

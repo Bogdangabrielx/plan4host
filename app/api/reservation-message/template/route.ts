@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
     // Re-fetch template header for completeness
     const rHead = await supa
       .from("reservation_templates")
-      .select("id, property_id, title, status, updated_at")
+      .select("id, property_id, title, status, updated_at, schedule_kind, schedule_offset_hours")
       .eq("id", tplId)
       .maybeSingle();
     if (rHead.error || !rHead.data) return bad(400, { error: rHead.error?.message || "Template not found" });
@@ -82,6 +82,8 @@ export async function POST(req: NextRequest) {
     const id: string | undefined = body?.id || undefined;
     const property_id: string | undefined = body?.property_id;
     const title: string = (body?.title || "").toString();
+    const schedule_kind: string | undefined = body?.schedule_kind || undefined; // 'hour_before_checkin' | 'on_arrival' | 'hours_before_checkout' | 'none'
+    const schedule_offset_hours: number | null | undefined = (body?.schedule_offset_hours ?? null);
     const status: "draft"|"published" = (body?.status || "draft").toLowerCase();
     const blocks: Array<{ type: string; text?: string }>|undefined = body?.blocks;
     const fields: Array<{ key: string; label: string; required?: boolean; multiline?: boolean; placeholder?: string; default_value?: string | null }>|undefined = body?.fields;
@@ -92,7 +94,7 @@ export async function POST(req: NextRequest) {
       // Update existing template header
       const up = await supa
         .from("reservation_templates")
-        .update({ title, status, updated_at: new Date().toISOString() as any })
+        .update({ title, status, updated_at: new Date().toISOString() as any, schedule_kind: schedule_kind ?? null, schedule_offset_hours })
         .eq("id", id)
         .eq("property_id", property_id)
         .select("id")
@@ -103,7 +105,7 @@ export async function POST(req: NextRequest) {
       // Create new template
       const ins = await supa
         .from("reservation_templates")
-        .insert({ property_id, title, status })
+        .insert({ property_id, title, status, schedule_kind: schedule_kind ?? null, schedule_offset_hours })
         .select("id")
         .single();
       if (ins.error || !ins.data) return bad(400, { error: ins.error?.message || "Failed to create template" });
