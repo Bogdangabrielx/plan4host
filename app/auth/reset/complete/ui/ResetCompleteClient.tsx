@@ -20,8 +20,17 @@ export default function ResetCompleteClient() {
     })();
   }, [sb]);
 
+  function strongEnough(p: string): string | null {
+    if (p.length < 8) return 'Password must be at least 8 characters.';
+    if (!/[A-Z]/.test(p)) return 'Password must include at least one uppercase letter.';
+    if (!/[0-9]/.test(p)) return 'Password must include at least one number.';
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(p)) return 'Password must include at least one symbol.';
+    return null;
+  }
+
   async function submit() {
-    if (pass.length < 6) { setErr('Use at least 6 characters.'); setStatus('Error'); return; }
+    const policy = strongEnough(pass);
+    if (policy) { setErr(policy); setStatus('Error'); return; }
     if (pass !== conf) { setErr('Passwords do not match.'); setStatus('Error'); return; }
     setErr(''); setStatus('Updating');
     try {
@@ -70,4 +79,3 @@ export default function ResetCompleteClient() {
 
 const input: React.CSSProperties = { padding: '10px 12px', background:'var(--bg)', color:'var(--text)', border:'1px solid var(--border)', borderRadius:8 };
 const primaryBtn: React.CSSProperties = { padding:'10px 14px', borderRadius:10, border:'1px solid var(--border)', background:'var(--primary)', color:'#0c111b', fontWeight:800, cursor:'pointer' };
-

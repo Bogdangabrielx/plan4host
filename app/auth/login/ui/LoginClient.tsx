@@ -19,6 +19,11 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
 
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [mounted, setMounted] = useState(false);
+  // Reset password modal
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetMsg, setResetMsg] = useState("");
 
   // ————— helpers null-safe —————
   const asStr = (v: unknown) => (typeof v === "string" ? v : v == null ? "" : String(v));
@@ -144,6 +149,28 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     }
   }
 
+  async function requestReset() {
+    setResetMsg("");
+    const emailTrim = asStr(resetEmail || email).trim();
+    if (!emailTrim) { setResetMsg("Please enter your email."); return; }
+    if (!isEmail(emailTrim)) { setResetMsg("Please enter a valid email address."); return; }
+    setResetBusy(true);
+    try {
+      const res = await fetch('/api/auth/reset/request', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailTrim })
+      });
+      if (!res.ok) {
+        const j = await safeJson(res);
+        setResetMsg(j?.error || 'Failed to send reset email.');
+        return;
+      }
+      setResetMsg('We sent a reset link to your email. Please check your inbox.');
+    } catch (e:any) {
+      setResetMsg(e?.message || 'Unexpected error.');
+    } finally { setResetBusy(false); }
+  }
+
   // ✅ OAuth Google (folosește domeniul tău)
   function signInWithGoogle() {
     const APP_URL =
@@ -255,6 +282,13 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                   />
                 </button>
               </div>
+              {mode === 'login' && (
+                <div>
+                  <a href="#" onClick={(e)=>{ e.preventDefault(); setResetOpen(true); setResetEmail(email); setResetMsg(''); }} style={{ color:'var(--primary)', fontWeight: 800, textDecoration:'none' }}>
+                    Reset password
+                  </a>
+                </div>
+              )}
             </div>
 
           {err && <div style={{ color: "var(--text)", fontSize: 13 }}>{err}</div>}
@@ -310,6 +344,29 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
           </form>
         </div>
       </div>
+      {resetOpen && (
+        <div role="dialog" aria-modal="true" onClick={()=>setResetOpen(false)}
+          style={{ position:'fixed', inset:0, zIndex:130, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:'12px',
+                   paddingTop:'calc(var(--safe-top) + 12px)', paddingBottom:'calc(var(--safe-bottom) + 12px)'}}>
+          <div onClick={(e)=>e.stopPropagation()} style={{ width:'min(420px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+              <strong>Reset password</strong>
+              <button onClick={()=>setResetOpen(false)} style={{ border:0, background:'transparent', cursor:'pointer', color:'var(--muted)' }}>✕</button>
+            </div>
+            <div style={{ display:'grid', gap:10 }}>
+              <label style={{ fontSize:12, color:'var(--muted)' }}>Email</label>
+              <input type="email" value={resetEmail} onChange={(e)=>setResetEmail(e.currentTarget.value)} placeholder="name@example.com" style={input} />
+              {resetMsg && <div style={{ color:'var(--text)', fontSize: 13 }}>{resetMsg}</div>}
+              <button onClick={requestReset} disabled={resetBusy} style={primaryBtn}>
+                {resetBusy ? 'Sending…' : 'Send reset link'}
+              </button>
+              <small style={{ color:'var(--muted)' }}>
+                You’ll receive a secure link to set a new password. For security, setting the password requires verification via email.
+              </small>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
