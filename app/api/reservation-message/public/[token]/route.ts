@@ -127,29 +127,47 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
       return parts.join('\n');
     }
 
-    // Visibility calculations
+    // Visibility calculations (timezone-aware)
     const propTz = (prop as any)?.timezone || 'Europe/Bucharest';
-    const ciTime = booking.start_time || (prop as any)?.check_in_time || '14:00';
-    const coTime = booking.end_time || (prop as any)?.check_out_time || '11:00';
-    const now = new Date(); // naive; server timezone, but acceptable for now
-    function normalizeTime(t: string){
+    const ciTimeRaw = booking.start_time || (prop as any)?.check_in_time || '14:00';
+    const coTimeRaw = booking.end_time || (prop as any)?.check_out_time || '11:00';
+    function parseTime(t: string){
       const s = (t || '').trim();
-      if (!s) return '00:00:00';
-      if (/^\d{2}:\d{2}:\d{2}$/.test(s)) return s;
-      if (/^\d{2}:\d{2}$/.test(s)) return `${s}:00`;
-      const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-      if (m) {
-        const hh = String(Number(m[1])||0).padStart(2,'0');
-        const mm = String(Number(m[2])||0).padStart(2,'0');
-        const ss = String(Number(m[3]||'0')||0).padStart(2,'0');
-        return `${hh}:${mm}:${ss}`;
-      }
-      return '00:00:00';
+      const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+      if (!m) return { h: 0, m: 0, s: 0 };
+      return { h: Math.min(23, Math.max(0, Number(m[1])||0)), m: Math.min(59, Math.max(0, Number(m[2])||0)), s: Math.min(59, Math.max(0, Number(m[3]||'0')||0)) };
     }
-    function at(d:string,t:string){ return new Date(`${d}T${normalizeTime(t)}`); }
+    function parseDate(d: string){
+      const m = (d||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return { y: 1970, m: 1, d: 1 } as any;
+      return { y: Number(m[1]), m: Number(m[2]), d: Number(m[3]) };
+    }
+    function toKey(y:number,m:number,d:number,h:number,mi:number,s:number){
+      const p = (n:number, w=2)=>String(n).padStart(w,'0');
+      return `${p(y,4)}${p(m)}${p(d)}${p(h)}${p(mi)}${p(s)}`;
+    }
+    function addHoursLocal(parts: { y:number;m:number;d:number;h:number;mi:number;s:number }, hours: number){
+      const dt = new Date(Date.UTC(parts.y, parts.m-1, parts.d, parts.h, parts.mi, parts.s));
+      dt.setUTCHours(dt.getUTCHours() + hours);
+      return { y: dt.getUTCFullYear(), m: dt.getUTCMonth()+1, d: dt.getUTCDate(), h: dt.getUTCHours(), mi: dt.getUTCMinutes(), s: dt.getUTCSeconds() };
+    }
+    function nowLocalParts(tz: string){
+      const dtf = new Intl.DateTimeFormat('en-CA', { timeZone: tz, hour12: false, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+      const parts = dtf.formatToParts(new Date());
+      const map = Object.fromEntries(parts.map(p=>[p.type,p.value]));
+      return { y: Number(map.year), m: Number(map.month), d: Number(map.day), h: Number(map.hour), mi: Number(map.minute), s: Number(map.second) };
+    }
+    const nowL = nowLocalParts(propTz);
+    const nowKey = toKey(nowL.y, nowL.m, nowL.d, nowL.h, nowL.mi, nowL.s);
 
-    const ciAt = at(booking.start_date, ciTime);
-    const coAt = at(booking.end_date, coTime);
+    const ciD = parseDate(booking.start_date);
+    const coD = parseDate(booking.end_date);
+    const ciT = parseTime(ciTimeRaw);
+    const coT = parseTime(coTimeRaw);
+    const ciLocal = { y: ciD.y, m: ciD.m, d: ciD.d, h: ciT.h, mi: ciT.m, s: ciT.s };
+    const coLocal = { y: coD.y, m: coD.m, d: coD.d, h: coT.h, mi: coT.m, s: coT.s };
+    const ciKey = toKey(ciLocal.y, ciLocal.m, ciLocal.d, ciLocal.h, ciLocal.mi, ciLocal.s);
+    const coKey = toKey(coLocal.y, coLocal.m, coLocal.d, coLocal.h, coLocal.mi, coLocal.s);
 
     const items = templates.map(t => {
       const arr = byTpl.get(t.id) || [];
@@ -158,20 +176,22 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
       const kind = (t.schedule_kind || 'none').toLowerCase();
       let visible = false;
       const off = (typeof t.schedule_offset_hours === 'number' && !isNaN(t.schedule_offset_hours)) ? Number(t.schedule_offset_hours) : null;
-      let dueAt: Date | null = null;
-      if (kind === 'hour_before_checkin') { const h = (off ?? 1); dueAt = new Date(ciAt.getTime() - h*60*60*1000); visible = now >= dueAt; }
-      else if (kind === 'hours_before_checkout') { const h = (off ?? 12); dueAt = new Date(coAt.getTime() - h*60*60*1000); visible = now >= dueAt; }
-      else if (kind === 'on_arrival') { dueAt = ciAt; visible = now >= dueAt; }
-      else if (kind === 'none') visible = false; // explicit: nu afișăm deloc mesajele fără scheduler
+      let dueLocal = null as null | { y:number;m:number;d:number;h:number;mi:number;s:number };
+      let dueKey = '';
+      if (kind === 'hour_before_checkin') { const h = (off ?? 1); dueLocal = addHoursLocal(ciLocal, -h); }
+      else if (kind === 'hours_before_checkout') { const h = (off ?? 12); dueLocal = addHoursLocal(coLocal, -h); }
+      else if (kind === 'on_arrival') { dueLocal = ciLocal; }
+      else if (kind === 'none') { visible = false; }
+      if (dueLocal) { dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); visible = nowKey >= dueKey; }
       const base = { id: t.id, title: t.title || 'Message', schedule_kind: t.schedule_kind || 'none', html_ro, html_en, visible } as any;
-      if (wantDebug) base.debug = { now: now.toISOString(), ci_at: ciAt.toISOString(), co_at: coAt.toISOString(), due_at: dueAt ? dueAt.toISOString() : null, offset_hours: off ?? null };
+      if (wantDebug) base.debug = { tz: propTz, now_key: nowKey, ci_key: ciKey, co_key: coKey, due_key: dueKey || null, offset_hours: off ?? null, check_in_time: ciTimeRaw, check_out_time: coTimeRaw };
       return base;
     });
 
     return NextResponse.json(
       { ok: true, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at, items,
         details: { property_name: (prop as any)?.name || '', guest_first_name: booking.guest_first_name || '', guest_last_name: booking.guest_last_name || '', start_date: booking.start_date, end_date: booking.end_date, room_name: roomLabel },
-        ...(wantDebug ? { debug: { now: now.toISOString(), check_in_time: ciTime, check_out_time: coTime } } : {})
+        ...(wantDebug ? { debug: { tz: propTz, now_key: nowKey, check_in_time: ciTimeRaw, check_out_time: coTimeRaw } } : {})
       },
       { headers: { 'Cache-Control': 'no-store, max-age=0' } }
     );

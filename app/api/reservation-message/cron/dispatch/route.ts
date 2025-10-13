@@ -65,41 +65,34 @@ export async function GET(req: NextRequest) {
       const email = (rContact.data as any)?.email || null; if (!email) continue;
 
       const bk: any = rBk.data; const prop: any = rProp.data;
-      const ciTime = bk.start_time || prop.check_in_time || '14:00';
-      const coTime = bk.end_time || prop.check_out_time || '11:00';
-      const now = new Date();
-      function normalizeTime(t: string){
+      const tz = prop.timezone || 'Europe/Bucharest';
+      const ciTimeRaw = bk.start_time || prop.check_in_time || '14:00';
+      const coTimeRaw = bk.end_time || prop.check_out_time || '11:00';
+      function parseTime(t: string){
         const s = (t || '').trim();
-        if (!s) return '00:00:00';
-        if (/^\d{2}:\d{2}:\d{2}$/.test(s)) return s;
-        if (/^\d{2}:\d{2}$/.test(s)) return `${s}:00`;
-        const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-        if (m) {
-          const hh = String(Number(m[1])||0).padStart(2,'0');
-          const mm = String(Number(m[2])||0).padStart(2,'0');
-          const ss = String(Number(m[3]||'0')||0).padStart(2,'0');
-          return `${hh}:${mm}:${ss}`;
-        }
-        return '00:00:00';
+        const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+        if (!m) return { h: 0, m: 0, s: 0 };
+        return { h: Math.min(23, Math.max(0, Number(m[1])||0)), m: Math.min(59, Math.max(0, Number(m[2])||0)), s: Math.min(59, Math.max(0, Number(m[3]||'0')||0)) };
       }
-      function at(dateStr: string, timeStr: string){ return new Date(`${dateStr}T${normalizeTime(timeStr)}`); }
+      function parseDate(d: string){ const m = (d||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); return { y: Number(m?.[1]||1970), m: Number(m?.[2]||1), d: Number(m?.[3]||1) }; }
+      function toKey(y:number,m:number,d:number,h:number,mi:number,s:number){ const p=(n:number,w=2)=>String(n).padStart(w,'0'); return `${p(y,4)}${p(m)}${p(d)}${p(h)}${p(mi)}${p(s)}`; }
+      function addHoursLocal(parts: { y:number;m:number;d:number;h:number;mi:number;s:number }, hours: number){ const dt = new Date(Date.UTC(parts.y, parts.m-1, parts.d, parts.h, parts.mi, parts.s)); dt.setUTCHours(dt.getUTCHours() + hours); return { y: dt.getUTCFullYear(), m: dt.getUTCMonth()+1, d: dt.getUTCDate(), h: dt.getUTCHours(), mi: dt.getUTCMinutes(), s: dt.getUTCSeconds() }; }
+      function nowLocalParts(timeZone: string){ const dtf = new Intl.DateTimeFormat('en-CA', { timeZone, hour12:false, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' }); const parts = dtf.formatToParts(new Date()); const map=Object.fromEntries(parts.map(p=>[p.type,p.value])); return { y:Number(map.year), m:Number(map.month), d:Number(map.day), h:Number(map.hour), mi:Number(map.minute), s:Number(map.second) }; }
+      const nowL = nowLocalParts(tz);
+      const nowKey = toKey(nowL.y, nowL.m, nowL.d, nowL.h, nowL.mi, nowL.s);
+      const ciD = parseDate(bk.start_date); const coD = parseDate(bk.end_date);
+      const ciT = parseTime(ciTimeRaw); const coT = parseTime(coTimeRaw);
+      const ciLocal = { y: ciD.y, m: ciD.m, d: ciD.d, h: ciT.h, mi: ciT.m, s: ciT.s };
+      const coLocal = { y: coD.y, m: coD.m, d: coD.d, h: coT.h, mi: coT.m, s: coT.s };
 
       for (const t of tpls) {
         const kind = (t.schedule_kind || 'none').toLowerCase();
         const off = (typeof t.schedule_offset_hours === 'number' && !isNaN(t.schedule_offset_hours)) ? Number(t.schedule_offset_hours) : null;
         let due = false;
-        if (kind === 'hour_before_checkin') {
-          const h = (off ?? 1);
-          due = now >= new Date(at(bk.start_date, ciTime).getTime() - h*60*60*1000);
-        } else if (kind === 'hours_before_checkout') {
-          const h = (off ?? 12);
-          due = now >= new Date(at(bk.end_date, coTime).getTime() - h*60*60*1000);
-        } else if (kind === 'on_arrival') {
-          due = now >= at(bk.start_date, ciTime);
-        } else {
-          // 'none' or unknown kinds are never due
-          due = false;
-        }
+        if (kind === 'hour_before_checkin') { const h = (off ?? 1); const dueLocal = addHoursLocal(ciLocal, -h); const dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); due = nowKey >= dueKey; }
+        else if (kind === 'hours_before_checkout') { const h = (off ?? 12); const dueLocal = addHoursLocal(coLocal, -h); const dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); due = nowKey >= dueKey; }
+        else if (kind === 'on_arrival') { const dueKey = toKey(ciLocal.y, ciLocal.m, ciLocal.d, ciLocal.h, ciLocal.mi, ciLocal.s); due = nowKey >= dueKey; }
+        else { due = false; }
         if (!due) continue;
 
         // Idempotency: skip if already sent for this template
