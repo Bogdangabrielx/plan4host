@@ -206,6 +206,9 @@ export default function CheckinClient() {
   const [lastName,  setLastName]  = useState("");
   const [email,     setEmail]     = useState("");
   const [phone,     setPhone]     = useState("");
+  const [phoneDial, setPhoneDial] = useState<string>("+40");
+  const [dialOpen,  setDialOpen]  = useState<boolean>(false);
+  const dialWrapRef = useRef<HTMLDivElement | null>(null);
   const [address,   setAddress]   = useState("");
   const [city,      setCity]      = useState("");
 
@@ -217,6 +220,18 @@ export default function CheckinClient() {
   // Refs to read the current draft (non-committed) text without re-render
   const countryRef = useRef<ComboboxHandle | null>(null);
   const nationalityRef = useRef<ComboboxHandle | null>(null);
+
+  // click-away to close dial dropdown
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!dialWrapRef.current) return;
+      if (t && dialWrapRef.current.contains(t)) return;
+      setDialOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
 
   // Document section
   type DocType = "" | "id_card" | "passport";
@@ -678,13 +693,14 @@ export default function CheckinClient() {
     return false;
   })();
 
+  const normalizedPhone = `${phoneDial}${(phone || '').replace(/\D/g, '')}`;
   const canSubmit =
     !!propertyId &&
     !!prop?.id &&
     firstName.trim().length >= 1 &&
     lastName.trim().length  >= 1 &&
     /\S+@\S+\.\S+/.test(email) &&
-    phone.trim().length >= 5 &&
+    normalizedPhone.replace(/\D/g,'').length >= 8 &&
     (!dateError && !!startDate && !!endDate) &&
     // No room/type selection required at check-in
     countryValid &&
@@ -803,7 +819,7 @@ export default function CheckinClient() {
         guest_first_name: firstName.trim(),
         guest_last_name:  lastName.trim(),
         email: email.trim(),
-        phone: phone.trim(),
+        phone: normalizedPhone,
         address: address.trim(),
         city: city.trim(),
         country: countryToSend,
@@ -1012,7 +1028,24 @@ export default function CheckinClient() {
                   <Image src={formIcon("phone")} alt="" width={16} height={16} />
                   <span>Phone*</span>
                 </label>
-                <input id="checkin-phone" style={INPUT} value={phone} onChange={e => setPhone(e.currentTarget.value)} placeholder="+40 700 000 000" />
+                <div ref={dialWrapRef} style={{ position:'relative' }}>
+                  <button type="button" onClick={()=>setDialOpen(v=>!v)} aria-label="Dial code"
+                    style={{ position:'absolute', left:8, top:'50%', transform:'translateY(-50%)', zIndex:2,
+                             border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)', borderRadius:8, padding:'6px 8px', fontWeight:800, cursor:'pointer' }}>
+                    {phoneDial}
+                  </button>
+                  <input id="checkin-phone" style={{ ...INPUT, paddingLeft: 90 }} value={phone} onChange={e => setPhone(e.currentTarget.value)} placeholder="700 000 000" type="tel" inputMode="numeric" pattern="[0-9]*" />
+                  {dialOpen && (
+                    <div role="listbox" style={{ position:'absolute', left:8, top:'calc(100% + 6px)', zIndex:3, background:'var(--panel)', border:'1px solid var(--border)', borderRadius:10, padding:6, display:'grid', gap:4 }}>
+                      {["+40","+49","+39","+33","+34","+44","+43","+1"].map(dc => (
+                        <button key={dc} type="button" onClick={()=>{ setPhoneDial(dc); setDialOpen(false); }}
+                          style={{ padding:'6px 8px', borderRadius:8, border:'1px solid var(--border)', background: dc===phoneDial? 'var(--primary)':'var(--card)', color: dc===phoneDial? '#0c111b':'var(--text)', fontWeight:800, cursor:'pointer' }}>
+                          {dc}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
