@@ -217,6 +217,7 @@ export default function CheckinClient() {
   // strict pe ?property=<id>
   const [propertyId, setPropertyId] = useState<string | null>(null);
   const [bookingId, setBookingId]   = useState<string | null>(null); // opțional
+  const [providerHint, setProviderHint] = useState<string | null>(null);
 
   // catalog încărcat prin endpoint public (bypass RLS)
   const [prop, setProp]   = useState<PropertyInfo | null>(null);
@@ -258,6 +259,14 @@ export default function CheckinClient() {
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
+
+  // Read provider/source hint from URL (?source=...)
+  useEffect(() => {
+    try {
+      const src = getQueryParam('source');
+      setProviderHint(src ? src.toString() : null);
+    } catch {}
   }, []);
 
   // Document section
@@ -887,6 +896,7 @@ export default function CheckinClient() {
             mime_type: uploadedSig.mime,
           }] : []),
         ],
+        ota_provider_hint: providerHint || null,
       };
 
       const res = await fetch("/api/checkin/submit", {

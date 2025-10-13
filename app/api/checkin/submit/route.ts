@@ -224,56 +224,9 @@ export async function POST(req: NextRequest) {
       (await normalizeRoomTypeId(requested_room_type_id, property_id)) ??
       (await roomTypeFromRoom(form_room_id));
 
-    /* ========= STRICT MATCH cu EXISTING BOOKING (iCal sau manual) =========
-       Reguli:
-       - dates trebuie să fie egale (ambele perechi)
-       - Dacă formularul are room_id -> match doar cu booking cu același room_id
-       - altfel, dacă are room_type_id -> match doar cu booking de același type (room_type_id direct sau derivat din room_id)
-    */
+    // Matching cu rezervări existente — dezactivat (camera o selectează hostul)
     let matchedBookingId: string | null = null;
     let matchedIsIcal = false;
-
-    if (isYMD(start_date) && isYMD(end_date) && (form_room_id || form_room_type_id)) {
-      // 1) candidate iCal-ish
-      const rIcal = await admin
-        .from("bookings")
-        .select("id,room_id,room_type_id,start_date,end_date,status,source,ical_uid")
-        .eq("property_id", property_id)
-        .eq("start_date", start_date)
-        .eq("end_date", end_date)
-        .neq("status", "cancelled")
-        .or("source.eq.ical,ical_uid.not.is.null");
-
-      if (!rIcal.error && Array.isArray(rIcal.data) && rIcal.data.length) {
-        for (const b of rIcal.data) {
-          if (!datesEqual(b.start_date, start_date) || !datesEqual(b.end_date, end_date)) continue;
-          if (await matchesFormCriteria({ room_id: form_room_id, room_type_id: form_room_type_id }, { room_id: b.room_id ?? null, room_type_id: b.room_type_id ?? null })) {
-            matchedBookingId = String(b.id); matchedIsIcal = true; break;
-          }
-        }
-      }
-
-      // 2) candidate manual (non-ical-ish)
-      if (!matchedBookingId) {
-        const rManual = await admin
-          .from("bookings")
-          .select("id,room_id,room_type_id,start_date,end_date,status,source,ical_uid")
-          .eq("property_id", property_id)
-          .eq("start_date", start_date)
-          .eq("end_date", end_date)
-          .neq("status", "cancelled");
-
-        if (!rManual.error && Array.isArray(rManual.data) && rManual.data.length) {
-          const pool = rManual.data.filter(b => (b.source || "").toLowerCase() !== "ical" && !b.ical_uid);
-          for (const b of pool) {
-            if (!datesEqual(b.start_date, start_date) || !datesEqual(b.end_date, end_date)) continue;
-            if (await matchesFormCriteria({ room_id: form_room_id, room_type_id: form_room_type_id }, { room_id: b.room_id ?? null, room_type_id: b.room_type_id ?? null })) {
-              matchedBookingId = String(b.id); matchedIsIcal = false; break;
-            }
-          }
-        }
-      }
-    }
 
     if (matchedBookingId) {
       // Nu permite atașarea la o rezervare deja "verde" (locked)
@@ -421,6 +374,20 @@ export async function POST(req: NextRequest) {
 
     const displayAddress = [address, city, country].map(v => (v ?? "").trim()).filter(Boolean).join(", ") || null;
 
+    // Map ota_provider hint (slug) to display label
+    function mapProviderLabel(hint?: any): string | null {
+      const s = (hint || '').toString().trim().toLowerCase();
+      if (!s) return null;
+      if (s === 'manual') return 'Manual';
+      if (s.includes('booking')) return 'Booking.com';
+      if (s.includes('airbnb')) return 'Airbnb';
+      if (s.includes('expedia')) return 'Expedia';
+      if (s.includes('trivago')) return 'Trivago';
+      if (s.includes('lastminute')) return 'Lastminute';
+      if (s.includes('travelminit')) return 'Travelminit';
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
     const basePayload: any = {
       property_id,
       room_id: null,
@@ -437,6 +404,7 @@ export async function POST(req: NextRequest) {
       guest_address:    displayAddress,
       form_submitted_at: new Date().toISOString(),
       source: "form",
+      ota_provider: mapProviderLabel((body as any)?.ota_provider_hint),
     };
 
     let ins = await admin.from("bookings").insert(basePayload).select("id").single();

@@ -18,6 +18,8 @@ type Property = {
   presentation_image_uploaded_at?: string | null;
 };
 
+type ProviderItem = { slug: string; label: string; logo?: string | null };
+
 const card: React.CSSProperties = {
   background: "var(--panel)",
   border: "1px solid var(--border)",
@@ -47,6 +49,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 
   const [prop, setProp] = useState<Property | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showSrc, setShowSrc] = useState(false);
+  const [providers, setProviders] = useState<ProviderItem[]>([]);
 
   async function refresh() {
     if (!propertyId) { setProp(null); return; }
@@ -126,11 +130,71 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       return `${base}/checkin?property=${encodeURIComponent(propertyId)}`;
     }
   }
-  async function copyLink() {
+  function sourceSlug(p?: string | null): string {
+    const s = (p || '').toString().trim().toLowerCase();
+    if (!s) return '';
+    if (s.includes('booking')) return 'booking';
+    if (s.includes('airbnb')) return 'airbnb';
+    if (s.includes('expedia')) return 'expedia';
+    if (s.includes('trivago')) return 'trivago';
+    if (s.includes('lastminute')) return 'lastminute';
+    if (s.includes('travelminit')) return 'travelminit';
+    return s.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  }
+  function providerBuiltinLogo(provider?: string | null): string | null {
+    const p = (provider || '').toLowerCase();
+    if (p.includes('booking')) return '/booking.png';
+    if (p.includes('airbnb')) return '/airbnb.png';
+    if (p.includes('expedia')) return '/expedia.png';
+    if (p.includes('trivago')) return '/trivago.png';
+    if (p.includes('lastminute')) return '/lastminute.png';
+    if (p.includes('travelminit')) return '/travelminit.png';
+    return null;
+  }
+  function providerLabel(p: string): string {
+    const s = p.toLowerCase();
+    if (s === 'booking' || s.includes('booking')) return 'Booking.com';
+    if (s === 'airbnb' || s.includes('airbnb')) return 'Airbnb';
+    if (s === 'expedia' || s.includes('expedia')) return 'Expedia';
+    if (s === 'trivago' || s.includes('trivago')) return 'Trivago';
+    if (s === 'lastminute' || s.includes('lastminute')) return 'Lastminute';
+    if (s === 'travelminit' || s.includes('travelminit')) return 'Travelminit';
+    return p;
+  }
+  async function openSourcePicker() {
+    if (!propertyId) return;
+    setShowSrc(true);
+    try {
+      const r = await supabase
+        .from('ical_type_integrations')
+        .select('provider,logo_url,is_active')
+        .eq('property_id', propertyId as string);
+      const seen = new Set<string>();
+      const out: ProviderItem[] = [
+        { slug: 'manual', label: 'Manual', logo: '/P4H_ota.png' },
+      ];
+      if (!r.error && Array.isArray(r.data)) {
+        for (const row of r.data as any[]) {
+          const prov = String(row.provider || '').trim(); if (!prov) continue;
+          const slug = sourceSlug(prov);
+          if (seen.has(slug)) continue;
+          seen.add(slug);
+          const builtin = providerBuiltinLogo(prov);
+          out.push({ slug, label: providerLabel(prov), logo: row.logo_url || builtin });
+        }
+      }
+      setProviders(out);
+    } catch {
+      setProviders([{ slug: 'manual', label: 'Manual', logo: '/P4H_ota.png' }]);
+    }
+  }
+  async function pickProvider(slug: string) {
     if (!prop) return;
-    const url = buildCheckinLink(prop.id);
+    const base = buildCheckinLink(prop.id);
+    const url = slug ? `${base}${base.includes('?') ? '&' : '?'}source=${encodeURIComponent(slug)}` : base;
     try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1600); }
     catch { prompt('Copy this link:', url); }
+    setShowSrc(false);
   }
 
   async function triggerImageUpload() {
@@ -178,10 +242,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           <section style={card}>
             <h3 style={{ marginTop: 0 }}>Check-in Link</h3>
             <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-              <button className="sb-btn sb-btn--primary" onClick={copyLink} disabled={!prop?.regulation_pdf_url} title={prop?.regulation_pdf_url ? 'Copy check-in link' : 'Upload House Rules PDF first'}>
+              <button className="sb-btn sb-btn--primary" onClick={openSourcePicker} disabled={!prop?.regulation_pdf_url} title={prop?.regulation_pdf_url ? 'Copy check-in link' : 'Upload House Rules PDF first'}>
                 {copied ? 'Copied!' : 'Copy check-in link'}
               </button>
-              <small style={{ color:'var(--muted)' }}>{buildCheckinLink(prop.id)}</small>
+              <small style={{ color:'var(--muted)' }}>You can choose a source before copying.</small>
             </div>
           </section>
 
@@ -267,6 +331,30 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             </div>
           </section>
         </>
+      )}
+      {/* Source picker modal */}
+      {showSrc && (
+        <div role="dialog" aria-modal="true" onClick={()=>setShowSrc(false)}
+          style={{ position:'fixed', inset:0, zIndex: 260, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', padding:16 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+              <strong>Select Check‑in Source</strong>
+              <button className="sb-btn" onClick={()=>setShowSrc(false)}>Close</button>
+            </div>
+            <div style={{ display:'grid', gap:8 }}>
+              {providers.map(p => (
+                <button key={p.slug} className="sb-btn" onClick={()=>pickProvider(p.slug)} style={{ display:'flex', alignItems:'center', gap:10, justifyContent:'flex-start' }}>
+                  {p.logo ? (
+                    <img src={p.logo} alt="" width={18} height={18} style={{ borderRadius:4 }} />
+                  ) : (
+                    <span aria-hidden>🔗</span>
+                  )}
+                  <span>{p.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
