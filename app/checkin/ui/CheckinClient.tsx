@@ -999,7 +999,7 @@ export default function CheckinClient() {
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
                     width: 'calc(100% - 24px)',
-                    maxWidth: 420,
+                    maxWidth: 380,
                     background: 'rgba(17,24,39,0.40)',
                     color: '#fff',
                     WebkitBackdropFilter: 'blur(10px) saturate(140%)',
