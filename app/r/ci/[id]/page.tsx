@@ -68,14 +68,15 @@ export default async function CheckinQrView({ params }: { params: { id: string }
     );
   }
 
-  // Validity: 30 days from submission (fallback to created_at)
-  function addDays(d: Date, days: number) { const t = new Date(d.getTime()); t.setDate(t.getDate() + days); return t; }
-  function fmtDate(d: Date): string { const dd = String(d.getDate()).padStart(2,'0'); const mm = String(d.getMonth()+1).padStart(2,'0'); const yy = d.getFullYear(); return `${dd}.${mm}.${yy}`; }
-  const baseTs = (booking?.form_submitted_at || booking?.created_at) as string | undefined;
+  // Validity: 30 days after reservation start_date (supports bookings made far in advance)
+  function addDays(d: Date, days: number) { const t = new Date(d.getTime()); t.setUTCDate(t.getUTCDate() + days); return t; }
+  function ymdToDate(ymd: string): Date { return new Date(`${ymd}T00:00:00Z`); }
+  function fmtDate(d: Date): string { const dd = String(d.getUTCDate()).padStart(2,'0'); const mm = String(d.getUTCMonth()+1).padStart(2,'0'); const yy = d.getUTCFullYear(); return `${dd}.${mm}.${yy}`; }
+  const baseStart = (booking?.start_date as string | undefined);
   let validUntilText: string | null = null;
   let isExpired = false;
-  if (baseTs) {
-    const baseDate = new Date(baseTs);
+  if (baseStart && /^\d{4}-\d{2}-\d{2}$/.test(baseStart)) {
+    const baseDate = ymdToDate(baseStart);
     const until = addDays(baseDate, 30);
     validUntilText = fmtDate(until);
     isExpired = until.getTime() < Date.now();

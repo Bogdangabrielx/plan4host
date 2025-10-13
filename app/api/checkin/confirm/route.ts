@@ -80,14 +80,13 @@ export async function POST(req: Request) {
         endYMD = b.end_date || null;
         guestFirst = (b.guest_first_name || null);
         guestLast = (b.guest_last_name || null);
-        // compute validity (30 days)
-        const baseTs = (b.form_submitted_at || b.created_at) as string | undefined;
-        if (baseTs) {
+        // compute validity: 30 days AFTER start_date (works for bookings made months ahead)
+        if (startYMD && /^\d{4}-\d{2}-\d{2}$/.test(startYMD)) {
           try {
-            const base = new Date(baseTs);
+            const base = new Date(`${startYMD}T00:00:00Z`);
             const until = new Date(base.getTime());
-            until.setDate(until.getDate() + 30);
-            validUntil = `${String(until.getDate()).padStart(2,'0')}.${String(until.getMonth()+1).padStart(2,'0')}.${until.getFullYear()}`;
+            until.setUTCDate(until.getUTCDate() + 30);
+            validUntil = `${String(until.getUTCDate()).padStart(2,'0')}.${String(until.getUTCMonth()+1).padStart(2,'0')}.${until.getUTCFullYear()}`;
           } catch {}
         }
         const rtId = b.room_type_id || null;
