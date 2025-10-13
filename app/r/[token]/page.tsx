@@ -21,7 +21,7 @@ export default async function ReservationPublicPage({ params }: { params: { toke
   const token = params.token;
   const { ok, data } = await load(token);
   const cookieStore = cookies();
-t  const theme: 'light' = 'light'; // forțăm mereu tema light pentru această pagină
+  const theme: 'light' = 'light'; // forțăm mereu tema light pentru această pagină
   const accent = cookieStore.get("app_accent")?.value ?? "base";
 
   return (
