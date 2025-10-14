@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useHeader } from "../_components/HeaderContext";
 
 /* ---------------- Navigation model ---------------- */
@@ -56,6 +56,7 @@ function drawerTitleStyle(): React.CSSProperties {
 /* ---------------- Component ---------------- */
 export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const { title, pill, right } = useHeader();
+  const headerRef = useRef<HTMLElement | null>(null);
 
   // UI state
   const [open, setOpen] = useState(false);             // left drawer (Navigation)
@@ -116,6 +117,27 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     }
     window.addEventListener("themechange" as any, onThemeChange);
     return () => window.removeEventListener("themechange" as any, onThemeChange);
+  }, []);
+
+  // Keep header pinned to visual viewport during pinch-zoom only (no adjustment for pull/keyboard)
+  useEffect(() => {
+    const vv = (typeof window !== 'undefined' ? (window as any).visualViewport : null);
+    const el = headerRef.current as any;
+    if (!vv || !el) return;
+    const onVv = () => {
+      try {
+        const scale = vv.scale || 1;
+        if (scale && Math.abs(scale - 1) > 0.02) {
+          el.style.transform = `translate3d(${Math.round(vv.offsetLeft)}px, ${Math.round(vv.offsetTop)}px, 0)`;
+        } else {
+          el.style.transform = '';
+        }
+      } catch {}
+    };
+    onVv();
+    vv.addEventListener('resize', onVv);
+    vv.addEventListener('scroll', onVv);
+    return () => { try { vv.removeEventListener('resize', onVv); vv.removeEventListener('scroll', onVv); } catch {} };
   }, []);
 
   // Escape closes drawers
@@ -278,6 +300,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
       {/* Top App Bar */}
       <header
+        ref={headerRef as any}
         style={{
           position: isSmall ? "fixed" : "sticky",
           top: isSmall ? "var(--safe-top)" : 0,
