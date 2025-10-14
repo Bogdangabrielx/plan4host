@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
@@ -38,21 +38,36 @@ const FIELD: React.CSSProperties = {
 
 function Info({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
-  const ref = useMemo(() => ({ current: null as null | HTMLSpanElement }), []);
+  const [placement, setPlacement] = useState<'below'|'above'>('below');
+  const ref = useRef<HTMLSpanElement | null>(null);
   useEffect(() => {
     if (!open) return;
     function onDoc(e: Event) {
       const t = e.target as Node | null;
       if (ref.current && t && !ref.current.contains(t)) setOpen(false);
     }
-    document.addEventListener('pointerdown', onDoc, { capture: true });
-    document.addEventListener('keydown', (ev) => { if ((ev as KeyboardEvent).key === 'Escape') setOpen(false); }, { capture: true });
+    function onKey(ev: KeyboardEvent) { if (ev.key === 'Escape') setOpen(false); }
+    document.addEventListener('pointerdown', onDoc, true);
+    document.addEventListener('keydown', onKey, true);
+    // Decide placement (above on small screens if not enough space below)
+    try {
+      const rect = ref.current?.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      if (rect) {
+        const spaceBelow = vh - rect.bottom;
+        const spaceAbove = rect.top;
+        const minTooltipH = 140; // approx height
+        setPlacement(spaceBelow < minTooltipH && spaceAbove > spaceBelow ? 'above' : 'below');
+      }
+    } catch {}
     return () => {
-      document.removeEventListener('pointerdown', onDoc, { capture: true } as any);
+      document.removeEventListener('pointerdown', onDoc, true);
+      document.removeEventListener('keydown', onKey, true);
     };
-  }, [open, ref]);
+  }, [open]);
+  const posStyle = placement === 'above' ? { bottom: 26, right: 0 } as const : { top: 26, right: 0 } as const;
   return (
-    <span ref={(el)=>{ (ref as any).current = el; }} style={{ position:'relative', display:'inline-block' }}>
+    <span ref={ref} style={{ position:'relative', display:'inline-block' }}>
       <button
         type="button"
         aria-label="Info"
@@ -72,11 +87,11 @@ function Info({ text }: { text: string }) {
         <div
           role="tooltip"
           style={{
-            position:'absolute', top: 26, right: 0, zIndex: 10,
-            maxWidth: 360,
+            position:'absolute', zIndex: 10, maxWidth: 360,
             background: 'var(--panel)', color: 'var(--text)',
             border: '1px solid var(--border)', borderRadius: 10,
-            padding: '8px 10px', boxShadow: '0 10px 30px rgba(0,0,0,.20)'
+            padding: '8px 10px', boxShadow: '0 10px 30px rgba(0,0,0,.20)',
+            ...posStyle,
           }}
         >
           <div style={{ fontSize: 12, lineHeight: 1.5 }}>{text}</div>
