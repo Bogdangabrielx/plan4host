@@ -17,6 +17,10 @@ type Property = {
   presentation_image_url?: string | null;
   presentation_image_uploaded_at?: string | null;
   contact_overlay_position?: 'top'|'center'|'down' | null;
+  social_facebook?: string | null;
+  social_instagram?: string | null;
+  social_tiktok?: string | null;
+  social_website?: string | null;
 };
 
 type ProviderItem = { slug: string; label: string; logo?: string | null };
@@ -125,7 +129,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     if (!propertyId) { setProp(null); return; }
     const { data, error } = await supabase
       .from("properties")
-      .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position")
+      .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position,social_facebook,social_instagram,social_tiktok,social_website")
       .eq("id", propertyId)
       .maybeSingle();
     if (error) { setProp(null); }
@@ -394,6 +398,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <Info text={'These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom.'} />
                 </div>
               </div>
+
+              {/* Social links quick editor */}
+              <SocialLinksEditor prop={prop} setProp={setProp} supabase={supabase} setStatus={setStatus} />
             </form>
           </section>
 
@@ -446,6 +453,134 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               ))}
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
+  prop: Property;
+  setProp: React.Dispatch<React.SetStateAction<Property | null>>;
+  supabase: ReturnType<typeof createClient>;
+  setStatus: React.Dispatch<React.SetStateAction<"Idle" | "Saving…" | "Synced" | "Error">>;
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  type Key = 'facebook'|'instagram'|'tiktok'|'website';
+  const [active, setActive] = useState<Key | null>(null);
+  const [draft, setDraft] = useState<string>("");
+
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const attr = document.documentElement.getAttribute('data-theme');
+    if (attr === 'dark') return true; if (attr === 'light') return false;
+    return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false;
+  });
+  useEffect(() => {
+    const m = window.matchMedia?.('(prefers-color-scheme: dark)');
+    const onChange = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    try { m?.addEventListener('change', onChange); } catch { m?.addListener?.(onChange); }
+    const root = document.documentElement;
+    const mo = new MutationObserver(() => {
+      const t = root.getAttribute('data-theme');
+      if (t === 'dark') setIsDark(true); else if (t === 'light') setIsDark(false);
+    });
+    mo.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => { try { m?.removeEventListener('change', onChange); } catch { m?.removeListener?.(onChange); } mo.disconnect(); };
+  }, []);
+
+  function icon(name: Key) {
+    const suffix = isDark ? 'fordark' : 'forlight';
+    return `/${name}_${suffix}.png`;
+  }
+
+  function getVal(k: Key): string {
+    if (!prop) return '';
+    if (k === 'facebook') return prop.social_facebook || '';
+    if (k === 'instagram') return prop.social_instagram || '';
+    if (k === 'tiktok') return prop.social_tiktok || '';
+    return prop.social_website || '';
+  }
+  function patchLocal(k: Key, v: string | null) {
+    setProp(prev => prev ? {
+      ...prev,
+      social_facebook: k === 'facebook' ? (v || null) : prev.social_facebook ?? null,
+      social_instagram: k === 'instagram' ? (v || null) : prev.social_instagram ?? null,
+      social_tiktok: k === 'tiktok' ? (v || null) : prev.social_tiktok ?? null,
+      social_website: k === 'website' ? (v || null) : prev.social_website ?? null,
+    } : prev);
+  }
+  async function save(k: Key, val: string) {
+    if (!prop) return;
+    setStatus('Saving…');
+    const update: Record<string, string | null> = {};
+    const normalized = (val || '').trim() || null;
+    update[
+      k === 'facebook' ? 'social_facebook'
+      : k === 'instagram' ? 'social_instagram'
+      : k === 'tiktok' ? 'social_tiktok'
+      : 'social_website'
+    ] = normalized;
+    const { error } = await supabase.from('properties').update(update).eq('id', prop.id);
+    if (error) { setStatus('Error'); return; }
+    patchLocal(k, normalized);
+    setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
+  }
+
+  async function commitActive() {
+    if (!active) return;
+    const current = getVal(active);
+    if ((current || '') === (draft || '')) return; // no change
+    await save(active, draft);
+  }
+
+  function onPick(k: Key) {
+    // save previous draft before switching
+    commitActive();
+    setActive(k);
+    setDraft(getVal(k));
+  }
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      const t = e.target as Node | null;
+      if (containerRef.current && t && !containerRef.current.contains(t)) {
+        commitActive();
+      }
+    }
+    document.addEventListener('mousedown', onDoc, true);
+    return () => document.removeEventListener('mousedown', onDoc, true);
+  }, [active, draft]);
+
+  return (
+    <div ref={containerRef}>
+      <label style={{ display:'block', marginBottom:6 }}>Social Links</label>
+      <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
+        {(['facebook','instagram','tiktok','website'] as Key[]).map(k => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => onPick(k)}
+            title={k.charAt(0).toUpperCase() + k.slice(1)}
+            style={{ background:'transparent', border:'none', padding:0, cursor:'pointer', lineHeight:0, outline:'none' }}
+          >
+            <img src={icon(k)} alt={k} width={24} height={24} />
+          </button>
+        ))}
+      </div>
+      {active && (
+        <div style={{ marginTop:8 }}>
+          <input
+            autoFocus
+            placeholder={`Paste ${active} URL`}
+            value={draft}
+            onChange={(e)=>setDraft(e.currentTarget.value)}
+            onBlur={()=>commitActive()}
+            style={FIELD}
+          />
+          <small style={{ color:'var(--muted)' }}>
+            Tip: Clear the field to remove the link. It saves automatically on click away.
+          </small>
         </div>
       )}
     </div>

@@ -22,6 +22,10 @@ type PropInfo = {
   presentation_image_url?: string | null;
   regulation_pdf_url?: string | null;
   contact_overlay_position?: 'top' | 'center' | 'down' | null;
+  social_facebook?: string | null;
+  social_instagram?: string | null;
+  social_tiktok?: string | null;
+  social_website?: string | null;
 };
 
 export default function MessagesView({ token, data }: { token: string; data: any }) {
@@ -102,6 +106,25 @@ export default function MessagesView({ token, data }: { token: string; data: any
     );
   }
 
+  function SocialIcons({ prop }: { prop: PropInfo }) {
+    const links = [
+      { key: 'facebook', url: prop.social_facebook || null, icon: '/facebook_forlight.png', label: 'Facebook' },
+      { key: 'instagram', url: prop.social_instagram || null, icon: '/instagram_forlight.png', label: 'Instagram' },
+      { key: 'tiktok', url: prop.social_tiktok || null, icon: '/tiktok_forlight.png', label: 'TikTok' },
+      { key: 'site', url: prop.social_website || null, icon: '/site_forlight.png', label: 'Website' },
+    ].filter(x => !!x.url);
+    if (links.length === 0) return null;
+    return (
+      <div style={{ display:'flex', alignItems:'center', gap:10, padding:12, justifyContent:'center' }}>
+        {links.map(l => (
+          <a key={l.key} href={l.url!} target="_blank" rel="noreferrer" title={l.label} style={{ lineHeight:0 }}>
+            <img src={l.icon} alt={l.label} width={22} height={22} />
+          </a>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <>
       
@@ -151,10 +174,13 @@ export default function MessagesView({ token, data }: { token: string; data: any
       {(prop && (prop.presentation_image_url || prop.contact_email || prop.contact_phone || prop.contact_address)) && (
         <section className="rm-card" style={{ padding: 0, marginBottom: 12 }}>
           {prop.presentation_image_url ? (
-            <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden' }}>
-              <img src={prop.presentation_image_url || ''} alt="Property" style={{ display:'block', width:'100%', height:260, objectFit:'cover' }} />
-              <ContactOverlay prop={prop} />
-            </div>
+            <>
+              <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden' }}>
+                <img src={prop.presentation_image_url || ''} alt="Property" style={{ display:'block', width:'100%', height:260, objectFit:'cover' }} />
+                <ContactOverlay prop={prop} />
+              </div>
+              <SocialIcons prop={prop} />
+            </>
           ) : (
             <div style={{ padding: 12 }}>
               {prop.contact_email && (
@@ -175,6 +201,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
                   <span>{prop.contact_address}</span>
                 </div>
               )}
+              <SocialIcons prop={prop} />
             </div>
           )}
         </section>
