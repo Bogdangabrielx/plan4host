@@ -281,36 +281,34 @@ export default function ReservationMessageClient({
   }, [propertyId, selectedRoomId, varDefs]);
 
   /** --------- Save/publish actions (per-language, no cross-overwrite) --------- */
-  function saveKeepState() {
+  function saveDraft() {
     if (!propertyId) return;
     const current = composeBlocks();
     const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
     const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
-    const next = { ...tpl, status: (tpl.status || 'draft') as 'draft' | 'published', blocks: roBlocks, blocks_en: enBlocks, schedule_kind: (scheduler || undefined) as any, schedule_offset_hours: scheduler==='hours_before_checkout' ? 12 : (scheduler==='hour_before_checkin' ? 1 : null) };
+    const next = { ...tpl, status: 'draft' as const, blocks: roBlocks, blocks_en: enBlocks, schedule_kind: (scheduler || undefined) as any, schedule_offset_hours: scheduler==='hours_before_checkout' ? 12 : (scheduler==='hour_before_checkin' ? 1 : null) };
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     setTpl(next);
     const combined = [
       ...roBlocks.map(b => ({ ...b, lang: 'ro' as const })),
       ...enBlocks.map(b => ({ ...b, lang: 'en' as const })),
     ];
-    // Persist with current status (no state change)
-    syncToServer(next.status, combined as any);
+    syncToServer('draft', combined);
   }
-  function toggleActive() {
+  function publish() {
     if (!propertyId) return;
+    if (!scheduler) { alert('Select a Scheduler before publishing.'); return; }
     const current = composeBlocks();
     const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
     const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
-    const targetStatus: 'draft' | 'published' = (tpl.status === 'published') ? 'draft' : 'published';
-    if (targetStatus === 'published' && !scheduler) { alert('Select a Scheduler before activating.'); return; }
-    const next = { ...tpl, status: targetStatus as 'draft' | 'published', blocks: roBlocks, blocks_en: enBlocks, schedule_kind: (targetStatus==='published' ? (scheduler || 'none') : (scheduler || tpl.schedule_kind || 'none')) as any, schedule_offset_hours: scheduler==='hours_before_checkout' ? 12 : (scheduler==='hour_before_checkin' ? 1 : null) };
+    const next = { ...tpl, status: 'published' as const, blocks: roBlocks, blocks_en: enBlocks, schedule_kind: scheduler || 'none', schedule_offset_hours: scheduler==='hours_before_checkout' ? 12 : (scheduler==='hour_before_checkin' ? 1 : null) };
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     setTpl(next);
     const combined = [
       ...roBlocks.map(b => ({ ...b, lang: 'ro' as const })),
       ...enBlocks.map(b => ({ ...b, lang: 'en' as const })),
     ];
-    syncToServer(targetStatus, combined);
+    syncToServer('published', combined);
   }
   async function syncToServer(status: "draft" | "published", combined?: Array<{ type: string; text?: string|null; lang: 'ro'|'en' }>) {
     try {
@@ -806,7 +804,7 @@ export default function ReservationMessageClient({
                         color: t.status === "published" ? "#0c111b" : "var(--muted)"
                       }}
                     >
-                      {t.status === 'published' ? 'Active' : 'Inactive'}
+                      {t.status}
                     </span>
                   </div>
                   <small style={{ color: "var(--muted)" }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
@@ -864,7 +862,7 @@ export default function ReservationMessageClient({
 
           {/* Scheduler selector */}
           <div style={{ display:'grid', gap:6, marginTop:10, maxWidth: 360 }}>
-            <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>Scheduler (required to activate)</label>
+            <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>Scheduler (required before Publish)</label>
             <select className="sb-select" value={scheduler || ''} onChange={(e)=>setScheduler(e.currentTarget.value as any)}>
               <option value="">— select —</option>
               <option value="hour_before_checkin">One hour before reservation</option>
@@ -946,8 +944,8 @@ export default function ReservationMessageClient({
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-            <button style={btn} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); saveKeepState(); }} disabled={!isAdmin}>Save</button>
-            <button style={btnPri} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); toggleActive(); }} disabled={!isAdmin}>{tpl.status === 'published' ? 'Make Inactive' : 'Make Active'}</button>
+            <button style={btn} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); saveDraft(); }} disabled={!isAdmin}>Save</button>
+            <button style={btnPri} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); publish(); }} disabled={!isAdmin}>Publish</button>
           </div>
         </section>
       )}
