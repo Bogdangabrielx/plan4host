@@ -32,6 +32,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Prevent iOS Safari from auto-zooming focused inputs by ensuring >=16px font-size */
+html { -webkit-text-size-adjust: 100%; }
+@media (max-width: 640px) {
+  :root[data-os="ios"] input:not([type="checkbox"]):not([type="radio"]),
+  :root[data-os="ios"] select,
+  :root[data-os="ios"] textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* ✅ Dark-only ambient gradient (Safari-safe)
    - sRGB (nu OKLAB)
    - fără background-attachment: fixed (iOS Safari bug) */
@@ -331,4 +341,3 @@ select:not(.sb-select){ /* opțional */
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 }
-
