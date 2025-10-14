@@ -21,6 +21,7 @@ type PropInfo = {
   contact_address?: string | null;
   presentation_image_url?: string | null;
   regulation_pdf_url?: string | null;
+  contact_overlay_position?: 'top' | 'center' | 'down' | null;
 };
 
 export default function MessagesView({ token, data }: { token: string; data: any }) {
@@ -66,9 +67,44 @@ export default function MessagesView({ token, data }: { token: string; data: any
     });
   }
 
+  function ContactOverlay({ prop }: { prop: PropInfo }) {
+    if (!prop.contact_email && !prop.contact_phone && !prop.contact_address) return null;
+    const pos = (prop.contact_overlay_position || 'center') as 'top'|'center'|'down';
+    const base: React.CSSProperties = {
+      position: 'absolute', left:'50%', transform:'translateX(-50%)', width:'calc(100% - 24px)', maxWidth: 380,
+      background: 'rgba(23, 25, 36, 0.29)', color: '#fff', WebkitBackdropFilter: 'blur(5px) saturate(140%)', backdropFilter: 'blur(5px) saturate(140%)',
+      border: '1px solid rgba(255,255,255,0.22)', borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.35)', padding:'12px 14px', display:'grid', gap:6,
+    };
+    if (pos === 'top') Object.assign(base, { top: 12, transform:'translateX(-50%)' });
+    else if (pos === 'down') Object.assign(base, { bottom: 12, transform:'translateX(-50%)' });
+    else Object.assign(base, { top: '50%', transform:'translate(-50%, -50%)' });
+    return (
+      <div style={base}>
+        {prop.contact_email && (
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <span aria-hidden>✉</span>
+            <a href={`mailto:${prop.contact_email}`} style={{ color:'#fff', textDecoration:'none' }}>{prop.contact_email}</a>
+          </div>
+        )}
+        {prop.contact_phone && (
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <span aria-hidden>☏</span>
+            <a href={`tel:${String(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color:'#fff', textDecoration:'none' }}>{prop.contact_phone}</a>
+          </div>
+        )}
+        {prop.contact_address && (
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <span aria-hidden>⚐</span>
+            <span>{prop.contact_address}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <>
-      {/* Global language toggle */}
+      
       <div
         className="rm-card"
         style={{ marginBottom: 12, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
@@ -117,38 +153,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
           {prop.presentation_image_url ? (
             <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden' }}>
               <img src={prop.presentation_image_url || ''} alt="Property" style={{ display:'block', width:'100%', height:260, objectFit:'cover' }} />
-              {(prop.contact_email || prop.contact_phone || prop.contact_address) && (()=>{
-                const pos = (prop.contact_overlay_position || 'center') as 'top'|'center'|'down';
-                const base: React.CSSProperties = {
-                  position: 'absolute', left:'50%', transform:'translateX(-50%)', width:'calc(100% - 24px)', maxWidth: 380,
-                  background: 'rgba(23, 25, 36, 0.29)', color: '#fff', WebkitBackdropFilter: 'blur(5px) saturate(140%)', backdropFilter: 'blur(5px) saturate(140%)',
-                  border: '1px solid rgba(255,255,255,0.22)', borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.35)', padding:'12px 14px', display:'grid', gap:6,
-                };
-                if (pos === 'top') Object.assign(base, { top: 12, transform:'translateX(-50%)' });
-                else if (pos === 'down') Object.assign(base, { bottom: 12, transform:'translateX(-50%)' });
-                else Object.assign(base, { top: '50%', transform:'translate(-50%, -50%)' });
-                return (
-                <div style={base}>
-                  {prop.contact_email && (
-                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                      <span aria-hidden>✉</span>
-                      <a href={`mailto:${prop.contact_email}`} style={{ color:'#fff', textDecoration:'none' }}>{prop.contact_email}</a>
-                    </div>
-                  )}
-                  {prop.contact_phone && (
-                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                      <span aria-hidden>☏</span>
-                      <a href={`tel:${String(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color:'#fff', textDecoration:'none' }}>{prop.contact_phone}</a>
-                    </div>
-                  )}
-                  {prop.contact_address && (
-                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                      <span aria-hidden>⚐</span>
-                      <span>{prop.contact_address}</span>
-                    </div>
-                  )}
-                </div>
-              )()}
+              <ContactOverlay prop={prop} />
             </div>
           ) : (
             <div style={{ padding: 12 }}>
