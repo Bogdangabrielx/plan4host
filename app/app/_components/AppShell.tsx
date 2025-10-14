@@ -74,7 +74,8 @@ export default function AppShell({ title, currentPath, children }: Props) {
         <PullToRefresh />
         <style dangerouslySetInnerHTML={{ __html: `
           @media (max-width: 640px) {
-            #app-main{ padding-top: calc(64px + var(--safe-top)) !important; }
+            /* Offset only the fixed header height on mobile; safe-top is already applied by layout */
+            #app-main{ padding-top: 56px !important; }
           }
         ` }} />
         <main id="app-main" style={{ padding: 16, paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))', maxWidth: 1200, margin: "0 auto", width: "100%" }}>
