@@ -206,6 +206,54 @@ function useTap(handler: () => void) {
   };
 }
 
+/* ───────────────── Small Info tooltip (smart placement) ───────────────── */
+function InfoBadge({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  const [placement, setPlacement] = useState<'below'|'above'>('below');
+  const ref = useRef<HTMLSpanElement | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    function onDoc(e: Event) {
+      const t = e.target as Node | null;
+      if (ref.current && t && !ref.current.contains(t)) setOpen(false);
+    }
+    function onKey(ev: KeyboardEvent) { if (ev.key === 'Escape') setOpen(false); }
+    document.addEventListener('pointerdown', onDoc, true);
+    document.addEventListener('keydown', onKey, true);
+    try {
+      const rect = ref.current?.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      if (rect) {
+        const below = vh - rect.bottom;
+        const above = rect.top;
+        const minH = 120;
+        setPlacement(below < minH && above > below ? 'above' : 'below');
+      }
+    } catch {}
+    return () => {
+      document.removeEventListener('pointerdown', onDoc, true);
+      document.removeEventListener('keydown', onKey, true);
+    };
+  }, [open]);
+  const posStyle = placement === 'above' ? { bottom: 28, left: 0 } as const : { top: 28, left: 0 } as const;
+  return (
+    <span ref={ref} style={{ position:'relative', display:'inline-block' }}>
+      <button type="button" aria-label="Info" onClick={()=>setOpen(v=>!v)}
+        style={{ width: 22, height: 22, padding: 0, lineHeight: 1,
+          display:'inline-flex', alignItems:'center', justifyContent:'center',
+          border:'1px solid var(--border)', background:'var(--card)', color:'var(--muted)', borderRadius:6, cursor:'pointer' }}
+      >i</button>
+      {open && (
+        <div role="tooltip" style={{ position:'absolute', zIndex:9, maxWidth: 280,
+          background:'var(--panel)', color:'var(--text)', border:'1px solid var(--border)', borderRadius:10,
+          padding:'8px 10px', boxShadow:'0 10px 30px rgba(0,0,0,.20)', ...posStyle }}>
+          <div style={{ fontSize:12, lineHeight:1.5 }}>{text}</div>
+        </div>
+      )}
+    </span>
+  );
+}
+
 /* ───────────────── Component ───────────────── */
 
 export default function GuestOverviewClient({ initialProperties }: { initialProperties: Property[] }) {
@@ -820,12 +868,15 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 >
                   <div style={{ display: "grid", gap: 4, lineHeight: 1.25, minWidth: 0 }}>
                     {isSmall && (
-                      <span
-                        style={{ ...badgeStyle(kind), marginBottom: 2, justifySelf: "start", width: "max-content" }}
-                        title={statusTooltip(it)}
-                      >
-                        {STATUS_LABEL[kind]}
-                      </span>
+                      <div style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+                        <span
+                          style={{ ...badgeStyle(kind), marginBottom: 2, justifySelf: "start", width: "max-content" }}
+                          title={statusTooltip(it)}
+                        >
+                          {STATUS_LABEL[kind]}
+                        </span>
+                        <InfoBadge text={kind==='green' ? 'Confirmed booking — no action required.' : 'Select a room to confirm.'} />
+                      </div>
                     )}
                     {/* OTA badge will be rendered under the dates (see below) */}
 
@@ -857,9 +908,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
                   {!isSmall && (
                     <div style={{ justifySelf: "end", display: "grid", gap: 6, justifyItems: "end" }}>
-                      <span style={badgeStyle(kind)} title={statusTooltip(it)}>
-                        {STATUS_LABEL[kind]}
-                      </span>
+                      <div style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+                        <span style={badgeStyle(kind)} title={statusTooltip(it)}>
+                          {STATUS_LABEL[kind]}
+                        </span>
+                        <InfoBadge text={kind==='green' ? 'Confirmed booking — no action required.' : 'Select a room to confirm.'} />
+                      </div>
                       {(() => { const meta = otaMetaForRow(it, kind); return meta ? (
                         <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} />
                       ) : null; })()}
