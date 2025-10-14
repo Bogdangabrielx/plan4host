@@ -54,7 +54,7 @@ export default function CleaningTab({
             <div style={{ display:'grid', gap:8 }}>
               <strong>Delete cleaning task</strong>
               <div style={{ color:'var(--muted)' }}>
-                Are you sure you want to delete “{confirmDel.label}”? This action is irreversible.
+                Are you sure you want to delete “{confirmDel.label}”?<br> </br>This action is irreversible.
               </div>
               <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
                 <button className="sb-btn" onClick={()=>setConfirmDel(null)}>Close</button>

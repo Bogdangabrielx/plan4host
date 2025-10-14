@@ -1264,7 +1264,7 @@ function ManageTypeModal({
             <div style={{ display:'grid', gap:8 }}>
               <strong>Delete iCal feed</strong>
               <div style={{ color:'var(--muted)' }}>
-                You are about to delete the iCal link for <strong>{confirmDel.provider || 'Unknown'}</strong>. This action is irreversible.
+                You are about to delete the iCal link for <strong>{confirmDel.provider || 'Unknown'}</strong>. <br> </br>This action is irreversible.
               </div>
               <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
                 <button className="sb-btn" onClick={() => setConfirmDel(null)}>Cancel</button>
@@ -1612,7 +1612,7 @@ function ManageRoomModal({
             <div style={{ display:'grid', gap:8 }}>
               <strong>Delete iCal feed</strong>
               <div style={{ color:'var(--muted)' }}>
-                You are about to delete the iCal link for <strong>{confirmDel.provider || 'Unknown'}</strong>. This action is irreversible.
+                You are about to delete the iCal link for <strong>{confirmDel.provider || 'Unknown'}</strong>. <br> </br>This action is irreversible.
               </div>
               <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
                 <button className="sb-btn" onClick={() => setConfirmDel(null)}>Cancel</button>
