@@ -8,12 +8,14 @@ export default function PullToRefresh() {
   const [dragPx, setDragPx] = useState(0);
   const [active, setActive] = useState(false);
   const startY = useRef(0);
+  const startAt = useRef(0);     // timestamp when potential pull started
   const arming = useRef(false);   // potential pull (at top), not yet dragging
   const dragging = useRef(false); // true only when pulling down beyond threshold
   const dragRef = useRef(0);
   useEffect(()=>{ dragRef.current = dragPx; }, [dragPx]);
 
   const THRESHOLD = 70; // px to trigger refresh
+  const MAX_DURATION_MS = 1500; // must complete pull within 1.5s to refresh
 
   useEffect(() => {
     // Only enable on small/mobile viewports
@@ -38,6 +40,7 @@ export default function PullToRefresh() {
         arming.current = true; // wait to see direction
         dragging.current = false;
         startY.current = y;
+        startAt.current = Date.now();
         setActive(false);
         setDragPx(0);
       } catch {}
@@ -56,6 +59,7 @@ export default function PullToRefresh() {
           // user is scrolling up → cancel arming to allow normal scroll
           arming.current = false;
           dragging.current = false;
+          startAt.current = 0;
           return;
         } else {
           return;
@@ -72,7 +76,9 @@ export default function PullToRefresh() {
       arming.current = false;
       setActive(false);
       setDragPx(0);
-      if (final >= THRESHOLD) {
+      const tookMs = startAt.current ? (Date.now() - startAt.current) : Number.POSITIVE_INFINITY;
+      startAt.current = 0;
+      if (final >= THRESHOLD && tookMs <= MAX_DURATION_MS) {
         try { (router as any)?.refresh?.(); } catch {}
         setTimeout(() => { try { window.location.reload(); } catch {} }, 50);
       }
