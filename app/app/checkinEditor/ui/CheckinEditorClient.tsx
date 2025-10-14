@@ -16,6 +16,7 @@ type Property = {
   contact_address?: string | null;
   presentation_image_url?: string | null;
   presentation_image_uploaded_at?: string | null;
+  contact_overlay_position?: 'top'|'center'|'down' | null;
 };
 
 type ProviderItem = { slug: string; label: string; logo?: string | null };
@@ -124,7 +125,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     if (!propertyId) { setProp(null); return; }
     const { data, error } = await supabase
       .from("properties")
-      .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at")
+      .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position")
       .eq("id", propertyId)
       .maybeSingle();
     if (error) { setProp(null); }
@@ -164,6 +165,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   async function saveContacts(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!prop) return;
+    // Require overlay position selection
+    if (!prop.contact_overlay_position) { alert('Please select the overlay position for the property banner.'); return; }
     setStatus('Saving…');
     const { error } = await supabase
       .from('properties')
@@ -171,6 +174,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         contact_email: prop.contact_email ?? null,
         contact_phone: prop.contact_phone ?? null,
         contact_address: prop.contact_address ?? null,
+        contact_overlay_position: prop.contact_overlay_position ?? null,
       })
       .eq('id', prop.id);
     if (error) { setStatus('Error'); return; }
@@ -373,6 +377,22 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               </div>
               <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
                 <button type="submit" className="sb-btn sb-btn--primary">Save</button>
+              </div>
+              <div>
+                <label style={{ display:'block', marginBottom:6 }}>Overlay position on banner</label>
+                <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                  <select
+                    value={prop.contact_overlay_position ?? ''}
+                    onChange={(e)=>{ const v = (e.currentTarget.value || '') as any; setProp(prev => prev ? { ...prev, contact_overlay_position: (v || null) } : prev); }}
+                    style={{ ...FIELD, maxWidth: 240 }}
+                  >
+                    <option value="">- select -</option>
+                    <option value="top">top</option>
+                    <option value="center">center</option>
+                    <option value="down">down</option>
+                  </select>
+                  <Info text={'These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom.'} />
+                </div>
               </div>
             </form>
           </section>

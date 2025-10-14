@@ -1002,27 +1002,20 @@ export default function CheckinClient() {
                 alt="Property"
                 style={{ display:'block', width: '100%', height: 300, objectFit: 'cover' }}
               />
-              {(prop.contact_email || prop.contact_phone || prop.contact_address) && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: 'calc(100% - 24px)',
-                    maxWidth: 380,
-                    background: 'rgba(23, 25, 37, 0.29)',
-                    color: '#fff',
-                    WebkitBackdropFilter: 'blur(5px) saturate(140%)',
-                    backdropFilter: 'blur(5px) saturate(140%)',
-                    border: '1px solid rgba(255,255,255,0.22)',
-                    borderRadius: 12,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
-                    padding: '12px 14px',
-                    display: 'grid',
-                    gap: 6,
-                  }}
-                >
+              {(prop.contact_email || prop.contact_phone || prop.contact_address) && (()=>{
+                const pos = (prop as any).contact_overlay_position || 'center';
+                const base: React.CSSProperties = {
+                  position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+                  width: 'calc(100% - 24px)', maxWidth: 380, background: 'rgba(23, 25, 37, 0.29)', color: '#fff',
+                  WebkitBackdropFilter: 'blur(5px) saturate(140%)', backdropFilter: 'blur(5px) saturate(140%)',
+                  border: '1px solid rgba(255,255,255,0.22)', borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+                  padding: '12px 14px', display: 'grid', gap: 6,
+                };
+                if (pos === 'top') Object.assign(base, { top: 14, transform: 'translateX(-50%)' });
+                else if (pos === 'down') Object.assign(base, { bottom: 14, transform: 'translateX(-50%)' });
+                else Object.assign(base, { top: '50%', transform: 'translate(-50%, -50%)' });
+                return (
+                <div style={base}>
                   {prop.contact_email && (
                     <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                       <span aria-hidden>✉</span>
@@ -1042,7 +1035,7 @@ export default function CheckinClient() {
                     </div>
                   )}
                 </div>
-              )}
+              )()}
             </div>
           ) : (
             (prop.contact_email || prop.contact_phone || prop.contact_address) ? (
