@@ -8,7 +8,10 @@ export default function PullToRefresh() {
   const [dragPx, setDragPx] = useState(0);
   const [active, setActive] = useState(false);
   const startY = useRef(0);
-  const dragging = useRef(false);
+  const arming = useRef(false);   // potential pull (at top), not yet dragging
+  const dragging = useRef(false); // true only when pulling down beyond threshold
+  const dragRef = useRef(0);
+  useEffect(()=>{ dragRef.current = dragPx; }, [dragPx]);
 
   const THRESHOLD = 70; // px to trigger refresh
 
@@ -29,28 +32,45 @@ export default function PullToRefresh() {
 
     function onDown(ev: TouchEvent | PointerEvent) {
       try {
-        if (window.scrollY > 0) return; // must be at top
+        if (window.scrollY > 0) { arming.current = false; dragging.current = false; return; } // must be at top
         const y = getY(ev);
         if (!y) return;
-        dragging.current = true;
+        arming.current = true; // wait to see direction
+        dragging.current = false;
         startY.current = y;
-        setActive(true);
+        setActive(false);
         setDragPx(0);
       } catch {}
     }
     function onMove(ev: TouchEvent | PointerEvent) {
-      if (!dragging.current) return;
       const y = getY(ev);
       if (!y) return;
-      const dy = Math.max(0, y - startY.current);
-      // Reduce scroll while pulling
+      if (!arming.current && !dragging.current) return;
+      const dyRaw = y - startY.current;
+      if (!dragging.current) {
+        // decide direction
+        if (dyRaw > 8 && window.scrollY === 0) {
+          dragging.current = true;
+          setActive(true);
+        } else if (dyRaw < 0) {
+          // user is scrolling up → cancel arming to allow normal scroll
+          arming.current = false;
+          dragging.current = false;
+          return;
+        } else {
+          return;
+        }
+      }
+      // dragging: only when pulling down
+      const dy = Math.max(0, dyRaw);
       try { (ev as any).preventDefault?.(); } catch {}
       setDragPx(Math.min(140, dy));
     }
     function onUp() {
-      if (!dragging.current) return;
-      const final = dragPx;
+      if (!dragging.current) { arming.current = false; return; }
+      const final = dragRef.current;
       dragging.current = false;
+      arming.current = false;
       setActive(false);
       setDragPx(0);
       if (final >= THRESHOLD) {
@@ -76,7 +96,7 @@ export default function PullToRefresh() {
       window.removeEventListener('pointermove', onMove as any);
       window.removeEventListener('pointerup', onUp as any);
     };
-  }, [router, dragPx]);
+  }, [router]);
 
   // Visual indicator (small bar at top)
   const show = active || dragPx > 0;
@@ -110,4 +130,3 @@ export default function PullToRefresh() {
     </div>
   );
 }
-
