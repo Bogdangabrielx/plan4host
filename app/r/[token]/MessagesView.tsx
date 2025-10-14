@@ -69,14 +69,43 @@ export default function MessagesView({ token, data }: { token: string; data: any
   return (
     <>
       {/* Global language toggle */}
-      <div className="rm-card" style={{ marginBottom: 12, padding:12, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+      <div
+        className="rm-card"
+        style={{ marginBottom: 12, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+      >
         <strong>Messages</strong>
-        <div style={{ display:'inline-flex', gap:8 }}>
-          <button onClick={()=>setLang('ro')} className="sb-btn" style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--border)', background: lang==='ro' ? 'var(--primary)' : 'var(--card)', color: lang==='ro' ? '#0c111b' : 'var(--text)', display:'inline-flex', alignItems:'center', gap:6 }}>
+        <div style={{ display: 'inline-flex', gap: 8 }}>
+          <button
+            onClick={() => setLang('ro')}
+            className="sb-btn"
+            style={{
+              padding: '6px 10px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              background: lang === 'ro' ? 'var(--primary)' : 'var(--card)',
+              color: lang === 'ro' ? '#0c111b' : 'var(--text)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
             <img src="/ro.png" alt="RO" width={16} height={16} />
             <span>Română</span>
           </button>
-          <button onClick={()=>setLang('en')} className="sb-btn" style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--border)', background: lang==='en' ? 'var(--primary)' : 'var(--card)', color: lang==='en' ? '#0c111b' : 'var(--text)', display:'inline-flex', alignItems:'center', gap:6 }}>
+          <button
+            onClick={() => setLang('en')}
+            className="sb-btn"
+            style={{
+              padding: '6px 10px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              background: lang === 'en' ? 'var(--primary)' : 'var(--card)',
+              color: lang === 'en' ? '#0c111b' : 'var(--text)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
             <img src="/eng.png" alt="EN" width={16} height={16} />
             <span>English</span>
           </button>
@@ -144,7 +173,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
           )}
         </section>
       )}
-      {/* Reservation details card */
+      
       <article className="rm-card" style={{ marginBottom: 12 }}>
         <div className="rm-content">
           <h3>{labels.details}</h3>
