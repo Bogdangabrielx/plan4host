@@ -147,7 +147,7 @@ export default function RoomsTab({
             <div style={{ display:'grid', gap:8 }}>
               <strong>Delete room</strong>
               <div style={{ color:'var(--muted)' }}>
-                Are you sure you want to delete “{confirmRoomDel.name}”? <br> This action is irreversible. </br>
+                Are you sure you want to delete “{confirmRoomDel.name}”? This action is irreversible. 
               </div>
               <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
                 <button className="sb-btn" onClick={()=>setConfirmRoomDel(null)}>Close</button>
