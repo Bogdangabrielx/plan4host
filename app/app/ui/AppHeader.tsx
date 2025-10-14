@@ -279,18 +279,18 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       {/* Top App Bar */}
       <header
         style={{
-          position: "sticky",
-          top: 0,                  // lipit de viewport; safe-area e în paddingTop
-          zIndex: 100,             // peste conținut, sub drawer-uri/modale
+          position: isSmall ? "fixed" : "sticky",
+          top: isSmall ? "var(--safe-top)" : 0,
+          left: isSmall ? 0 : undefined,
+          right: isSmall ? 0 : undefined,
+          zIndex: 100,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: isSmall ? 6 : 6,
-          // padding include safe-area top
+          gap: 6,
           paddingRight: isSmall ? 10 : 14,
-          paddingBottom: isSmall ? 16 : 10,
+          paddingBottom: isSmall ? 12 : 10,
           paddingLeft: isSmall ? 10 : 14,
-          flexWrap: "nowrap",
           background: "var(--panel)",
           borderBottom: "1px solid var(--border)",
         }}

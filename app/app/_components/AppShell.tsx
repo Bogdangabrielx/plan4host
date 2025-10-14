@@ -72,7 +72,12 @@ export default function AppShell({ title, currentPath, children }: Props) {
       >
         <AppHeader currentPath={currentPath} />
         <PullToRefresh />
-        <main style={{ padding: 16, paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))', maxWidth: 1200, margin: "0 auto", width: "100%" }}>
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media (max-width: 640px) {
+            #app-main{ padding-top: calc(64px + var(--safe-top)) !important; }
+          }
+        ` }} />
+        <main id="app-main" style={{ padding: 16, paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))', maxWidth: 1200, margin: "0 auto", width: "100%" }}>
           {children}
         </main>
         <BottomNav />
