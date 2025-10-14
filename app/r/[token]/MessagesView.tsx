@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import LanguageViewer from "./LanguageViewer";
 
 type Details = {
@@ -31,6 +31,12 @@ export default function MessagesView({ token, data }: { token: string; data: any
 
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [read, setRead] = useState<Record<string, boolean>>({});
+  const [lang, setLang] = useState<'ro'|'en'>(() => {
+    const prefer = (typeof localStorage !== 'undefined' ? localStorage.getItem('p4h:rm:lang') : null) as 'ro'|'en'|null;
+    if (prefer === 'ro' || prefer === 'en') return prefer;
+    return (itemsAll.find(i=>i.html_ro?.trim()) ? 'ro' : 'en');
+  });
+  useEffect(() => { try { localStorage.setItem('p4h:rm:lang', lang); } catch {} }, [lang]);
 
   useEffect(() => {
     try {
@@ -54,6 +60,20 @@ export default function MessagesView({ token, data }: { token: string; data: any
 
   return (
     <>
+      {/* Global language toggle */}
+      <div className="rm-card" style={{ marginBottom: 12, padding:12, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <strong>Messages</strong>
+        <div style={{ display:'inline-flex', gap:8 }}>
+          <button onClick={()=>setLang('ro')} className="sb-btn" style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--border)', background: lang==='ro' ? 'var(--primary)' : 'var(--card)', color: lang==='ro' ? '#0c111b' : 'var(--text)', display:'inline-flex', alignItems:'center', gap:6 }}>
+            <img src="/ro.png" alt="RO" width={16} height={16} />
+            <span>Română</span>
+          </button>
+          <button onClick={()=>setLang('en')} className="sb-btn" style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--border)', background: lang==='en' ? 'var(--primary)' : 'var(--card)', color: lang==='en' ? '#0c111b' : 'var(--text)', display:'inline-flex', alignItems:'center', gap:6 }}>
+            <img src="/eng.png" alt="EN" width={16} height={16} />
+            <span>English</span>
+          </button>
+        </div>
+      </div>
       {/* Property contact + image overlay card (glass) */}
       {(prop && (prop.presentation_image_url || prop.contact_email || prop.contact_phone || prop.contact_address)) && (
         <section className="rm-card" style={{ padding: 0, marginBottom: 12 }}>
@@ -148,10 +168,18 @@ export default function MessagesView({ token, data }: { token: string; data: any
         <article className="rm-card"><div className="rm-content">No messages available.</div></article>
       ) : (
         <div style={{ display:'grid', gap:12 }}>
-          {items.map(it => (
+          {items.map(it => {
+            const titleFromHtml = (() => {
+              const src = (lang==='ro' ? (it.html_ro || it.html_en) : (it.html_en || it.html_ro)) || '';
+              const m = src.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i);
+              if (!m) return it.title || (lang==='ro' ? 'Mesaj' : 'Message');
+              const tmp = m[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g,' ').trim();
+              return tmp || it.title || (lang==='ro' ? 'Mesaj' : 'Message');
+            })();
+            return (
             <article key={it.id} className="rm-card" style={{ padding:0 }}>
               <header style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:12, borderBottom:'1px solid var(--border)' }}>
-                <strong>{it.title || 'Message'}</strong>
+                <strong>{titleFromHtml}</strong>
                 <button className="sb-btn" onClick={()=>toggle(it.id)} style={{ position:'relative' }}>
                   {open[it.id] ? 'Hide' : 'Open'}
                   {it.visible && !read[it.id] && (
@@ -161,11 +189,11 @@ export default function MessagesView({ token, data }: { token: string; data: any
               </header>
               {open[it.id] && (
                 <div style={{ padding:12 }}>
-                  <LanguageViewer htmlRo={it.html_ro} htmlEn={it.html_en} />
+                  <LanguageViewer htmlRo={it.html_ro} htmlEn={it.html_en} lang={lang} showToggle={false} />
                 </div>
               )}
             </article>
-          ))}
+          );})}
         </div>
       )}
     </>
