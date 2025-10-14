@@ -137,7 +137,12 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       if (typeof detail?.count === "number") setInboxCount(detail.count);
     };
     window.addEventListener("p4h:inboxCount", onInbox as EventListener);
-    return () => window.removeEventListener("p4h:inboxCount", onInbox as EventListener);
+    const onOpenMgmt = () => { setOpenRight(true); setOpen(false); };
+    window.addEventListener("p4h:openManagement" as any, onOpenMgmt as any);
+    return () => {
+      window.removeEventListener("p4h:inboxCount", onInbox as EventListener);
+      window.removeEventListener("p4h:openManagement" as any, onOpenMgmt as any);
+    };
   }, []);
 
   // Build base origin
@@ -291,6 +296,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       >
         {/* Left: menu + title */}
         <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
+          {!isSmall && (
           <button
             onClick={() => {
               setOpen(true);
@@ -320,6 +326,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <>≡</>
             )}
           </button>
+          )}
 
           <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
             <h1 style={{ ...titleStyle(isSmall), whiteSpace: isSmall ? 'normal' : 'nowrap' }}>
@@ -350,6 +357,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           }}
         >
           {right}
+          {!isSmall && (
           <button
             onClick={() => {
               setOpenRight(true);
@@ -379,6 +387,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <>≡</>
             )}
           </button>
+          )}
         </div>
       </header>
       {/* Notifications modal removed; now a dedicated page under /app/notifications */}

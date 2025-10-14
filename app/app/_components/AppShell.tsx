@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import AppHeader from "../ui/AppHeader";
+import BottomNav from "../ui/BottomNav";
 import { HeaderProvider } from "./HeaderContext";
 
 type Props = {
@@ -69,9 +70,10 @@ export default function AppShell({ title, currentPath, children }: Props) {
         }}
       >
         <AppHeader currentPath={currentPath} />
-        <main style={{ padding: 16, maxWidth: 1200, margin: "0 auto", width: "100%" }}>
+        <main style={{ padding: 16, paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))', maxWidth: 1200, margin: "0 auto", width: "100%" }}>
           {children}
         </main>
+        <BottomNav />
       </div>
     </HeaderProvider>
   );
