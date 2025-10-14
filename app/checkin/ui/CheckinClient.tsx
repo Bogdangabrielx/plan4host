@@ -575,8 +575,10 @@ export default function CheckinClient() {
   }), []);
   const INPUT_DATE: React.CSSProperties = useMemo(() => ({
     ...INPUT,
-    maxWidth: 260,
-  }), [INPUT]);
+    // Desktop: full width like First/Last Name (no maxWidth)
+    // Mobile/narrow: keep a reasonable cap for layout
+    ...(isNarrow ? { maxWidth: 260 } : {}),
+  }), [INPUT, isNarrow]);
   const SELECT: React.CSSProperties = INPUT;
   const LABEL: React.CSSProperties = useMemo(() => ({
     fontSize: 12, fontWeight: 800, color: "var(--muted)", marginBottom: 6, display: "block",
