@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import AppHeader from "../ui/AppHeader";
 import BottomNav from "../ui/BottomNav";
+import PullToRefresh from "./PullToRefresh";
 import { HeaderProvider } from "./HeaderContext";
 
 type Props = {
@@ -70,6 +71,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
         }}
       >
         <AppHeader currentPath={currentPath} />
+        <PullToRefresh />
         <main style={{ padding: 16, paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))', maxWidth: 1200, margin: "0 auto", width: "100%" }}>
           {children}
         </main>
