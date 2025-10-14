@@ -30,7 +30,13 @@ export default function BottomNav() {
     if (!vv) return;
     const apply = () => {
       try {
-        const offsetBottom = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+        const inner = window.innerHeight || 0;
+        const vvHeight = vv.height || inner;
+        const vvTop = vv.offsetTop || 0;
+        const delta = inner - vvHeight;
+        // Consider only large deltas (virtual keyboard) to adjust bottom; avoid rubber-band/scroll effects
+        const keyboardLikely = delta > 150; // px
+        const offsetBottom = keyboardLikely ? Math.max(0, Math.round(inner - (vvHeight + vvTop))) : 0;
         document.documentElement.style.setProperty('--p4h-vv-bottom', `${offsetBottom}px`);
       } catch {}
     };
