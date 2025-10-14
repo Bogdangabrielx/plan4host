@@ -37,6 +37,14 @@ export default function MessagesView({ token, data }: { token: string; data: any
     return (itemsAll.find(i=>i.html_ro?.trim()) ? 'ro' : 'en');
   });
   useEffect(() => { try { localStorage.setItem('p4h:rm:lang', lang); } catch {} }, [lang]);
+  const labels = useMemo(() => ({
+    details: lang === 'ro' ? 'Detalii rezervare' : 'Reservation details',
+    property: lang === 'ro' ? 'Locatie' : 'Property',
+    guest: lang === 'ro' ? 'Oaspete' : 'Guest',
+    stay: lang === 'ro' ? 'Perioada' : 'Stay',
+    room: lang === 'ro' ? 'Unitate' : 'Room',
+    houseRules: lang === 'ro' ? 'Regulament' : 'House Rules',
+  }), [lang]);
 
   useEffect(() => {
     try {
@@ -136,25 +144,25 @@ export default function MessagesView({ token, data }: { token: string; data: any
           )}
         </section>
       )}
-      {/* Reservation details card */}
+      {/* Reservation details card */
       <article className="rm-card" style={{ marginBottom: 12 }}>
         <div className="rm-content">
-          <h3>Reservation details</h3>
+          <h3>{labels.details}</h3>
           <div style={{ display:'grid', gridTemplateColumns:'auto 1fr', rowGap:8, columnGap:10, alignItems:'center' }}>
             <div aria-hidden style={{ width:18 }}><img src="/dashboard_forlight.png" alt="" width={16} height={16} /></div>
-            <div><strong>Property</strong>: {details.property_name || '—'}</div>
+            <div><strong>{labels.property}</strong>: {details.property_name || '—'}</div>
             <div aria-hidden style={{ width:18 }}><img src="/logoguest_forlight.png" alt="" width={16} height={16} /></div>
-            <div><strong>Guest</strong>: {[details.guest_first_name||'', details.guest_last_name||''].filter(Boolean).join(' ') || '—'}</div>
+            <div><strong>{labels.guest}</strong>: {[details.guest_first_name||'', details.guest_last_name||''].filter(Boolean).join(' ') || '—'}</div>
             <div aria-hidden style={{ width:18 }}><img src="/night_forlight.png" alt="" width={16} height={16} /></div>
-            <div><strong>Stay</strong>: {details.start_date || '—'} → {details.end_date || '—'}</div>
+            <div><strong>{labels.stay}</strong>: {details.start_date || '—'} → {details.end_date || '—'}</div>
             {details.room_name ? (
               <>
                 <div aria-hidden style={{ width:18 }}><img src="/room_forlight.png" alt="" width={16} height={16} /></div>
                 <div>
-                  <strong>Room</strong>: {details.room_name}
+                  <strong>{labels.room}</strong>: {details.room_name}
                   {prop?.regulation_pdf_url ? (
                     <div style={{ marginTop: 6 }}>
-                      <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" style={{ color:'var(--primary)', textDecoration:'none', fontWeight:800 }}>House Rules</a>
+                      <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" style={{ color:'var(--primary)', textDecoration:'none', fontWeight:800 }}>{labels.houseRules}</a>
                     </div>
                   ) : null}
                 </div>
