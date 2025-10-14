@@ -456,7 +456,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     Uploaded {prop.presentation_image_uploaded_at ? new Date(prop.presentation_image_uploaded_at).toLocaleString() : ''}
                   </small>
                   <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-                    <a href={prop.presentation_image_url} target="_blank" rel="noreferrer" className="sb-btn">Open full</a>
+                    <a href={prop.presentation_image_url} target="_blank" rel="noreferrer" className="sb-btn">Preview</a>
                     <button className="sb-btn" onClick={triggerImageUpload}>Replace image</button>
                     <Info text={IMAGE_INFO} />
                   </div>
