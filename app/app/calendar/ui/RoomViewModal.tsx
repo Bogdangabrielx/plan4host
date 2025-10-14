@@ -110,7 +110,7 @@ export default function RoomViewModal({
   function normalizeProvider(s?: string | null) {
     const p = (s || "").toLowerCase();
     if (!p) return "manual"; // null/empty → manual
-    if (p.includes("manual") || p.includes("native") || p.includes("internal")) return "manual";
+    if (p.includes("manual") || p.includes("native") || p.includes("internal") || p.includes("form") || p.includes("direct")) return "manual";
     if (p.includes("airbnb")) return "airbnb";
     if (p.includes("booking")) return "booking";
     if (p.includes("expedia")) return "expedia";
