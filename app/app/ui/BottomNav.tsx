@@ -24,32 +24,6 @@ export default function BottomNav() {
     return () => { window.removeEventListener('themechange' as any, onTheme); window.removeEventListener('popstate', onPop); };
   }, []);
 
-  // Keep bar visually pinned to the bottom on mobile browsers with dynamic UI (iOS Safari)
-  useEffect(() => {
-    const vv: any = (typeof window !== 'undefined' ? (window as any).visualViewport : null);
-    if (!vv) return;
-    const apply = () => {
-      try {
-        const inner = window.innerHeight || 0;
-        const vvHeight = vv.height || inner;
-        const vvTop = vv.offsetTop || 0;
-        const delta = inner - vvHeight;
-        // Consider only large deltas (virtual keyboard) to adjust bottom; avoid rubber-band/scroll effects
-        const keyboardLikely = delta > 150; // px
-        const offsetBottom = keyboardLikely ? Math.max(0, Math.round(inner - (vvHeight + vvTop))) : 0;
-        document.documentElement.style.setProperty('--p4h-vv-bottom', `${offsetBottom}px`);
-      } catch {}
-    };
-    apply();
-    vv.addEventListener('resize', apply);
-    vv.addEventListener('scroll', apply);
-    window.addEventListener('orientationchange', apply);
-    return () => {
-      try { vv.removeEventListener('resize', apply); vv.removeEventListener('scroll', apply); } catch {}
-      window.removeEventListener('orientationchange', apply);
-    };
-  }, []);
-
   const items = useMemo(() => ([
     { href: '/app/calendar', label: 'Calendar', icon: theme==='light' ? '/calendar_forlight.png' : '/calendar_fordark.png' },
     { href: '/app/cleaning', label: 'Cleaning Board', icon: theme==='light' ? '/cleaning_forlight.png' : '/cleaning_fordark.png' },
@@ -62,7 +36,7 @@ export default function BottomNav() {
     <nav
       aria-label="Bottom navigation"
       style={{
-        position: 'fixed', left: 0, right: 0, bottom: 'var(--p4h-vv-bottom, 0px)',
+        position: 'fixed', left: 0, right: 0, bottom: 0,
         background: 'var(--panel)', borderTop: '1px solid var(--border)',
         padding: '8px 10px', paddingBottom: `calc(8px + env(safe-area-inset-bottom, 0px))`,
         zIndex: 90,
