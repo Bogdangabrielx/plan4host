@@ -14,7 +14,7 @@ export default function QrWithLogo({
   data,
   size = 240,
   radius = 16,
-  logoSrc = "/p4h_logo_round.png",
+  logoSrc = "/p4h_logo_round_QR.png",
   logoAlt = "Plan4Host",
   logoSizePct = 0.28,
   logoRingPx = 4,
@@ -58,4 +58,3 @@ export default function QrWithLogo({
     </div>
   );
 }
-

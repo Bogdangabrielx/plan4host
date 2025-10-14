@@ -1010,7 +1010,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               <button onClick={()=>setQrModal(null)} className="sb-btn">Close</button>
             </div>
             <div style={{ display:'grid', gap:8, justifyItems:'center' }}>
-              <QrWithLogo data={qrModal.url} size={240} radius={16} logoSrc="/p4h_logo_round.png" logoAlt="Plan4Host" />
+              <QrWithLogo data={qrModal.url} size={240} radius={16} logoSrc="/p4h_logo_round_QR.png" logoAlt="Plan4Host" />
               <small>
                 <a
                   href={qrModal.url}

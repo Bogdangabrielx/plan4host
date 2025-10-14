@@ -130,7 +130,7 @@ export async function POST(req: Request) {
     const iconGuest = `${base}/logoguest_forlight.png`;
 
     const qrLink = `${base}/r/ci/${booking_id}`;
-    const qrImg  = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrLink)}`;
+    const qrImg  = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&ecc=H&data=${encodeURIComponent(qrLink)}`;
 
     const html = `
       <div style="background:#ffffff; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0c111b; line-height:1.5; padding:16px;">
@@ -147,7 +147,7 @@ export async function POST(req: Request) {
           <div style=\"display:block; margin:0 auto; width:240px;\">
             <div style=\"position:relative; width:240px; height:240px; border-radius:16px; overflow:hidden; margin:0 auto;\">
               <img src=\"${qrImg}\" alt=\"QR code\" width=\"240\" height=\"240\" style=\"display:block;\"/>
-              <img src=\"${base}/p4h_logo_round.png\" alt=\"Logo\" width=\"72\" height=\"72\" style=\"position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:9999px; background:#ffffff; border:4px solid #ffffff;\"/>
+              <img src=\"${base}/p4h_logo_round_QR.png\" alt=\"Logo\" width=\"72\" height=\"72\" style=\"position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:9999px; background:#ffffff; border:4px solid #ffffff;\"/>
             </div>
           </div>
           <div style=\"font-size:12px; color:#475569; margin-top:8px; word-break:break-all;\">${escapeHtml(qrLink)}</div>

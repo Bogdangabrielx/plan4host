@@ -1490,7 +1490,7 @@ export default function CheckinClient() {
                 {qrUrl && (
                   <div style={{ display:'grid', gap:6, justifyItems:'center', border:'1px solid var(--border)', borderRadius:12, padding:12 }}>
                     <div style={{ fontWeight:800 }}>Your QR code</div>
-                    <QrWithLogo data={qrUrl} size={240} radius={16} logoSrc="/p4h_logo_round.png" logoAlt="Plan4Host" />
+                    <QrWithLogo data={qrUrl} size={240} radius={16} logoSrc="/p4h_logo_round_QR.png" logoAlt="Plan4Host" />
                     <small style={{ color:'var(--muted)', wordBreak:'break-all' }}>{qrUrl}</small>
                   </div>
                 )}

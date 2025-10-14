@@ -8,6 +8,51 @@ export const runtime = "nodejs";
 
 function bad(status: number, body: any) { return NextResponse.json(body, { status }); }
 
+function wrapEmailHtml(subjectPlain: string, innerHtml: string): string {
+  const border = '#e2e8f0';
+  const text = '#0f172a';
+  const muted = '#64748b';
+  const primary = '#16b981';
+  return `<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${subjectPlain || 'New message'}</title>
+    <style>
+      body { margin:0; padding:0; background:#ffffff; }
+      img { border:0; outline:none; text-decoration:none; max-width:100%; height:auto; display:block; }
+      a { color:${primary}; text-decoration:none; }
+      .p4h h1,.p4h h2,.p4h h3{ margin:0 0 12px; line-height:1.25; }
+      .p4h p, .p4h div { line-height:1.6; }
+      .p4h hr { border:0; border-top:1px solid ${border}; margin:14px 0; opacity:.9; }
+      .p4h-muted { color:${muted}; font-size:12px; }
+      @media (prefers-color-scheme: dark) { body { background:#ffffff !important; } }
+    </style>
+  </head>
+  <body>
+    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background:#ffffff;">
+      <tr>
+        <td align="center" style="padding:16px; background:#f5f8fb;">
+          <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:640px; background:#ffffff; border:1px solid ${border}; border-radius:12px;">
+            <tr>
+              <td style="padding:24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:${text}; font-size:16px; line-height:1.6;">
+                <div class="p4h">${innerHtml}</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:12px 24px; border-top:1px solid ${border};">
+                <div class="p4h-muted" style="font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Powered by Plan4Host</div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>`;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const secret = process.env.CRON_SECRET || "";
@@ -110,13 +155,13 @@ export async function GET(req: NextRequest) {
         const link = `${base}/r/${m.token}`;
         const propName = (prop?.name || '').toString().trim() || 'Your property';
         const subject = `[Reservation messages] New message — ${propName} ${subjTag}`;
-        const html = `
-          <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:#0f172a; line-height:1.6;">
-            <p>You have a new message from <strong>${(prop.name || '').toString()}</strong>.</p>
-            <p><a href="${link}" target="_blank" style="display:inline-block; padding:10px 14px; background:#16b981; color:#0c111b; text-decoration:none; border-radius:10px; font-weight:800;">Open Reservation messages</a></p>
-            <p style="color:#64748b; font-size:12px;">This link shows all messages for your reservation.</p>
-          </div>
+        const htmlInner = `
+          <h2 style="margin:0 0 12px;">New message from <span style=\"color:#16b981;\">${(prop.name || '').toString()}</span></h2>
+          <p>You have a new message regarding your reservation.</p>
+          <p><a href="${link}" target="_blank" style="display:inline-block; padding:10px 14px; background:#16b981; color:#0c111b; text-decoration:none; border-radius:10px; font-weight:800;">Open reservation messages</a></p>
+          <p style="color:#64748b; font-size:12px;">This link shows all messages for your reservation.</p>
         `;
+        const html = wrapEmailHtml(subject.replace(/\s*\[tpl:[^\]]+\]\s*$/, ''), htmlInner);
 
         // Send + outbox
         try {
