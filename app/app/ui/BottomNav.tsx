@@ -40,6 +40,7 @@ export default function BottomNav() {
     if (!vv || !el) return;
     const onVv = () => {
       try {
+        if (document?.documentElement?.hasAttribute('data-no-vv')) { el.style.transform = ''; return; }
         const scale = vv.scale || 1;
         if (scale && Math.abs(scale - 1) > 0.02) {
           const inner = window.innerHeight || 0;
