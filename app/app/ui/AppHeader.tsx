@@ -279,18 +279,16 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       {/* Top App Bar */}
       <header
         style={{
-          position: isSmall ? "fixed" : "sticky",
-          top: isSmall ? "var(--safe-top)" : 0,
-          left: isSmall ? 0 : undefined,
-          right: isSmall ? 0 : undefined,
+          position: "sticky",
+          top: 0,
           zIndex: 100,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: 6,
-          paddingRight: isSmall ? 10 : 14,
-          paddingBottom: isSmall ? 12 : 10,
-          paddingLeft: isSmall ? 10 : 14,
+          paddingRight: 14,
+          paddingBottom: 10,
+          paddingLeft: 14,
           background: "var(--panel)",
           borderBottom: "1px solid var(--border)",
         }}
