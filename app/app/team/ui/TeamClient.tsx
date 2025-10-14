@@ -20,7 +20,8 @@ export default function TeamClient() {
   const [showPwd, setShowPwd] = useState(false);
   const [isDark, setIsDark] = useState(false);
   // Nou: default role = "editor" (nu mai folosim "member")
-  const [role, setRole] = useState<Role>("editor");
+  const [role, setRole] = useState<Role | "">("");
+  const [roleError, setRoleError] = useState<boolean>(false);
   const [scopes, setScopes] = useState<string[]>([]);
 
   async function load() {
@@ -57,6 +58,7 @@ export default function TeamClient() {
 
   async function createUser() {
     if (!email || !password) return;
+    if (!role) { setRoleError(true); alert('Please select a Role.'); return; }
     setLoading(true);
     const res = await fetch("/api/team/user/create", {
       method: "POST",
@@ -78,7 +80,7 @@ export default function TeamClient() {
     }
     setEmail("");
     setPassword("");
-    setRole("editor");
+    setRole("");
     setScopes([]);
     await load();
   }
@@ -200,21 +202,22 @@ export default function TeamClient() {
               />
             </button>
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <label style={label}>Role</label>
+          <div style={{ display: 'grid', gap: 6 }}>
+            <label style={{ ...label, fontWeight: 800, color: roleError ? 'var(--danger)' : 'var(--muted)' }}>Role</label>
             <select
               value={role}
-              onChange={(e)=>setRole((e.target as HTMLSelectElement).value as Role)}
-              style={select}
+              onChange={(e)=>{ setRole(e.currentTarget.value as any); setRoleError(false); }}
+              style={{ ...select, width:'100%', borderColor: roleError ? 'var(--danger)' : 'var(--border)' }}
               disabled={loading}
             >
+              <option value="">- select -</option>
               <option value="editor">editor</option>
               <option value="viewer">viewer</option>
             </select>
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <div className="scopesWrap">
             {allScopes.map(({ key, title }) => (
-              <label key={key} style={{ display: "flex", gap: 6, alignItems: "center", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 8 }}>
+              <label key={key} className="scopeItem">
                 <input type="checkbox" checked={scopes.includes(key)} onChange={()=>toggleScope(key)} disabled={loading} /> {title}
               </label>
             ))}
@@ -302,6 +305,17 @@ export default function TeamClient() {
             border-radius: 29px !important;
             min-height: 44px; /* touch friendly */
           }
+          .scopesWrap {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+          }
+          .scopeItem {
+            display: flex; gap: 6px; align-items: center;
+            border: 1px solid var(--border); padding: 6px 8px; border-radius: 8px;
+          }
+        }
+        @media (min-width: 721px) {
+          .scopesWrap { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
+          .scopeItem { display: flex; gap: 6px; align-items: center; border: 1px solid var(--border); padding: 6px 8px; border-radius: 8px; }
         }
       `}</style>
     </div>
