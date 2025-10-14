@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 export default function BottomNav() {
-  const navRef = useRef<HTMLElement | null>(null);
   const [isSmall, setIsSmall] = useState(false);
   const [theme, setTheme] = useState<'light'|'dark'>('light');
   const [path, setPath] = useState<string>('');
@@ -33,33 +32,8 @@ export default function BottomNav() {
 
   if (!isSmall) return null;
 
-  // Keep nav pinned to visual viewport during pinch-zoom only (no adjustment for pull/keyboard)
-  useEffect(() => {
-    const vv = (typeof window !== 'undefined' ? (window as any).visualViewport : null);
-    const el = navRef.current as any;
-    if (!vv || !el) return;
-    const onVv = () => {
-      try {
-        if (document?.documentElement?.hasAttribute('data-no-vv')) { el.style.transform = ''; return; }
-        const scale = vv.scale || 1;
-        if (scale && Math.abs(scale - 1) > 0.02) {
-          const inner = window.innerHeight || 0;
-          const offsetBottom = Math.max(0, inner - (vv.height + vv.offsetTop));
-          el.style.transform = `translate3d(${Math.round(vv.offsetLeft)}px, ${-Math.round(offsetBottom)}px, 0)`;
-        } else {
-          el.style.transform = '';
-        }
-      } catch {}
-    };
-    onVv();
-    vv.addEventListener('resize', onVv);
-    vv.addEventListener('scroll', onVv);
-    return () => { try { vv.removeEventListener('resize', onVv); vv.removeEventListener('scroll', onVv); } catch {} };
-  }, []);
-
   return (
     <nav
-      ref={navRef as any}
       aria-label="Bottom navigation"
       style={{
         position: 'fixed', left: 0, right: 0, bottom: 0,

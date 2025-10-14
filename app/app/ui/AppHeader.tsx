@@ -126,7 +126,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     if (!vv || !el) return;
     const onVv = () => {
       try {
-        if (document?.documentElement?.hasAttribute('data-no-vv')) { el.style.transform = ''; return; }
         const scale = vv.scale || 1;
         if (scale && Math.abs(scale - 1) > 0.02) {
           el.style.transform = `translate3d(${Math.round(vv.offsetLeft)}px, ${Math.round(vv.offsetTop)}px, 0)`;
