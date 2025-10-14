@@ -63,7 +63,6 @@ export default function PullToRefresh() {
       }
       // dragging: only when pulling down
       const dy = Math.max(0, dyRaw);
-      try { (ev as any).preventDefault?.(); } catch {}
       setDragPx(Math.min(140, dy));
     }
     function onUp() {
@@ -80,7 +79,7 @@ export default function PullToRefresh() {
     }
 
     // Attach listeners (touch + pointer for broader support)
-    const optsMove: AddEventListenerOptions = { passive: false } as any;
+    const optsMove: AddEventListenerOptions = { passive: true } as any;
     window.addEventListener('touchstart', onDown as any, { passive: true } as any);
     window.addEventListener('touchmove', onMove as any, optsMove);
     window.addEventListener('touchend', onUp as any, { passive: true } as any);
