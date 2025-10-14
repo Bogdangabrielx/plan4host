@@ -89,6 +89,9 @@
 .mobileLink:hover { background: color-mix(in srgb, var(--card) 85%, transparent); }
 
 @media (max-width: 900px) {
+  /* Keep header fixed on phones */
+  .landing { padding-top: calc(68px + var(--safe-top)); }
+  .nav { position: fixed; top: var(--safe-top); left: 0; right: 0; z-index: 60; }
   .menu { display: none; }
   .menuToggle {
     display: inline-flex;
