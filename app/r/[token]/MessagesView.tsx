@@ -73,7 +73,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
         className="rm-card"
         style={{ marginBottom: 12, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
       >
-        <strong>Messages</strong>
+        <img src="/p4h_logo_rotund.png" alt="P4H" width={28} height={28} style={{ display:'block' }} />
         <div style={{ display: 'inline-flex', gap: 8 }}>
           <button
             onClick={() => setLang('ro')}
@@ -189,11 +189,14 @@ export default function MessagesView({ token, data }: { token: string; data: any
                 <div aria-hidden style={{ width:18 }}><img src="/room_forlight.png" alt="" width={16} height={16} /></div>
                 <div>
                   <strong>{labels.room}</strong>: {details.room_name}
-                  {prop?.regulation_pdf_url ? (
-                    <div style={{ marginTop: 6 }}>
-                      <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" style={{ color:'var(--primary)', textDecoration:'none', fontWeight:800 }}>{labels.houseRules}</a>
-                    </div>
-                  ) : null}
+                </div>
+              </>
+            ) : null}
+            {prop?.regulation_pdf_url ? (
+              <>
+                <div aria-hidden style={{ width:18 }} />
+                <div style={{ marginTop: 2 }}>
+                  <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" style={{ color:'var(--primary)', textDecoration:'none', fontWeight:800 }}>{labels.houseRules}</a>
                 </div>
               </>
             ) : null}
@@ -213,12 +216,14 @@ export default function MessagesView({ token, data }: { token: string; data: any
               const tmp = m[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g,' ').trim();
               return tmp || it.title || (lang==='ro' ? 'Mesaj' : 'Message');
             })();
+            const btnOpen = lang === 'ro' ? 'Deschide' : 'Open';
+            const btnHide = lang === 'ro' ? 'Ascunde' : 'Hide';
             return (
             <article key={it.id} className="rm-card" style={{ padding:0 }}>
               <header style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:12, borderBottom:'1px solid var(--border)' }}>
                 <strong>{titleFromHtml}</strong>
                 <button className="sb-btn" onClick={()=>toggle(it.id)} style={{ position:'relative' }}>
-                  {open[it.id] ? 'Hide' : 'Open'}
+                  {open[it.id] ? btnHide : btnOpen}
                   {it.visible && !read[it.id] && (
                     <span style={{ position:'absolute', top:-4, right:-4, width:10, height:10, borderRadius:999, background:'var(--primary)' }} />
                   )}
