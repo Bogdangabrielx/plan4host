@@ -821,49 +821,7 @@ export default function ReservationMessageClient({
         )}
       </section>
 
-      {/* Variables card BELOW templates (closer to composer) */}
-      {activeId && (
-        <section style={card}>
-          <h2 style={{ marginTop: 0 }}>Variables</h2>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-            <small style={{ color: "var(--muted)" }}>Insert:</small>
-            {BUILTIN_VARS.map((v) => (
-              <button key={v.key} style={btn} onClick={() => insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
-            ))}
-            {hasRoomTypes && (
-              <button key="room_type" style={btn} onClick={() => insertVarIntoFocused(`{{room_type}}`)} title="Room type">room_type</button>
-            )}
-            {/* GLOBAL ROOM VARS */}
-            {varDefs.map((v) => (
-              <button key={`global:${v.key}`} style={btn} onClick={() => insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
-            ))}
-            {/* OLD per-template custom vars (kept) */}
-            {tpl.fields.map((f) => (
-              <span key={f.uid} className="rm-token" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <button style={btn} onClick={() => insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
-                {typeof f.defaultValue === "string" && (<small style={{ color: "var(--muted)" }}>= {f.defaultValue || '""'}</small>)}
-                <button
-                  style={{ ...btn, border: "1px solid var(--border)" }}
-                  onClick={() => {
-                    try {
-                      const cur = typeof f.defaultValue === "string" ? f.defaultValue : "";
-                      const ans = prompt("Setează valoarea implicită", cur);
-                      if (ans !== null) {
-                        setTpl((prev) => ({ ...prev, fields: prev.fields.map((x) => x.uid === f.uid ? { ...x, defaultValue: ans } : x) }));
-                      }
-                    } catch {}
-                  }}
-                  title="Set default value"
-                >
-                  ✎
-                </button>
-                <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={() => removeFieldByUid(f.uid)} title="Remove">×</button>
-              </span>
-            ))}
-            <AddVarInline onAdd={(name) => addFieldFromName(name)} disabled={!isAdmin} />
-          </div>
-        </section>
-      )}
+      {/* Variables now live inside the Message composer for easier access while writing */}
 
       {/* Message composer — only when a template is active */}
       {activeId && (
@@ -943,6 +901,45 @@ export default function ReservationMessageClient({
                 [data-placeholder]:empty:before{ content: attr(data-placeholder); color: var(--muted); }
                 .rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }
               `}}/>
+              {/* Inline Variables bar (moved here) */}
+              <div style={{ display: "grid", gap: 6, marginTop: 10 }}>
+                <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>Variables</label>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                  <small style={{ color: "var(--muted)" }}>Insert:</small>
+                  {BUILTIN_VARS.map((v) => (
+                    <button key={v.key} style={btn} onClick={() => insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
+                  ))}
+                  {hasRoomTypes && (
+                    <button key="room_type" style={btn} onClick={() => insertVarIntoFocused(`{{room_type}}`)} title="Room type">room_type</button>
+                  )}
+                  {varDefs.map((v) => (
+                    <button key={`global:${v.key}`} style={btn} onClick={() => insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
+                  ))}
+                  {tpl.fields.map((f) => (
+                    <span key={f.uid} className="rm-token" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <button style={btn} onClick={() => insertVarIntoFocused(`{{${f.key}}}`)} title={f.label}>{f.key}</button>
+                      {typeof f.defaultValue === "string" && (<small style={{ color: "var(--muted)" }}>= {f.defaultValue || '""'}</small>)}
+                      <button
+                        style={{ ...btn, border: "1px solid var(--border)" }}
+                        onClick={() => {
+                          try {
+                            const cur = typeof f.defaultValue === "string" ? f.defaultValue : "";
+                            const ans = prompt("Setează valoarea implicită", cur);
+                            if (ans !== null) {
+                              setTpl((prev) => ({ ...prev, fields: prev.fields.map((x) => x.uid === f.uid ? { ...x, defaultValue: ans } : x) }));
+                            }
+                          } catch {}
+                        }}
+                        title="Set default value"
+                      >
+                        ✎
+                      </button>
+                      <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={() => removeFieldByUid(f.uid)} title="Remove">×</button>
+                    </span>
+                  ))}
+                  <AddVarInline onAdd={(name) => addFieldFromName(name)} disabled={!isAdmin} />
+                </div>
+              </div>
             </div>
           </div>
 

@@ -108,7 +108,8 @@ export async function GET(req: NextRequest) {
 
         const base = (process.env.NEXT_PUBLIC_APP_URL || 'https://plan4host.com').toString().replace(/\/+$/, '');
         const link = `${base}/r/${m.token}`;
-        const subject = `[Reservation messages] New message — ${t.title || 'Message'} ${subjTag}`;
+        const propName = (prop?.name || '').toString().trim() || 'Your property';
+        const subject = `[Reservation messages] New message — ${propName} ${subjTag}`;
         const html = `
           <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:#0f172a; line-height:1.6;">
             <p>You have a new message from <strong>${(prop.name || '').toString()}</strong>.</p>
