@@ -868,7 +868,6 @@ export default function ReservationMessageClient({
               <option value="hour_before_checkin">One hour before reservation</option>
               <option value="on_arrival">Once the guest arrives (check-in time)</option>
               <option value="hours_before_checkout">12 hours before check out</option>
-              <option value="none">None</option>
             </select>
           </div>
 
