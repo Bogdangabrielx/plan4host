@@ -804,7 +804,7 @@ export default function ReservationMessageClient({
                         color: t.status === "published" ? "#0c111b" : "var(--muted)"
                       }}
                     >
-                      {t.status}
+                      {t.status === 'published' ? 'Active' : (t.status || '').replace(/^./, c => c.toUpperCase())}
                     </span>
                   </div>
                   <small style={{ color: "var(--muted)" }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
