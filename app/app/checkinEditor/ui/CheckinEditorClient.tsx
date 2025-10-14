@@ -125,6 +125,22 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [showSrc, setShowSrc] = useState(false);
   const [providers, setProviders] = useState<ProviderItem[]>([]);
 
+  // Responsive helper: treat phones/narrow screens differently for layout
+  const [isNarrow, setIsNarrow] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia?.('(max-width: 560px)')?.matches ?? false;
+  });
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia?.('(max-width: 560px)');
+    const onChange = (e: MediaQueryListEvent) => setIsNarrow(e.matches);
+    try { mq?.addEventListener('change', onChange); } catch { mq?.addListener?.(onChange as any); }
+    setIsNarrow(mq?.matches ?? false);
+    return () => {
+      try { mq?.removeEventListener('change', onChange); } catch { mq?.removeListener?.(onChange as any); }
+    };
+  }, []);
+
   async function refresh() {
     if (!propertyId) { setProp(null); return; }
     const { data, error } = await supabase
@@ -379,25 +395,50 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   style={FIELD}
                 />
               </div>
-              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-                <button type="submit" className="sb-btn sb-btn--primary">Save</button>
-              </div>
-              <div>
-                <label style={{ display:'block', marginBottom:6 }}>Overlay position on banner</label>
-                <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                  <select
-                    value={prop.contact_overlay_position ?? ''}
-                    onChange={(e)=>{ const v = (e.currentTarget.value || '') as any; setProp(prev => prev ? { ...prev, contact_overlay_position: (v || null) } : prev); }}
-                    style={{ ...FIELD, maxWidth: 240 }}
-                  >
-                    <option value="">- select -</option>
-                    <option value="top">top</option>
-                    <option value="center">center</option>
-                    <option value="down">down</option>
-                  </select>
-                  <Info text={'These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom.'} />
+              {/* Overlay selector + Save: desktop on one row; mobile stacked with full-width Save */}
+              {isNarrow ? (
+                <div style={{ display:'grid', gap:8 }}>
+                  <div>
+                    <label style={{ display:'block', marginBottom:6 }}>Overlay position on banner</label>
+                    <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                      <select
+                        value={prop.contact_overlay_position ?? ''}
+                        onChange={(e)=>{ const v = (e.currentTarget.value || '') as any; setProp(prev => prev ? { ...prev, contact_overlay_position: (v || null) } : prev); }}
+                        style={{ ...FIELD, maxWidth: 240 }}
+                      >
+                        <option value="">- select -</option>
+                        <option value="top">top</option>
+                        <option value="center">center</option>
+                        <option value="down">down</option>
+                      </select>
+                      <Info text={'These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom.'} />
+                    </div>
+                  </div>
+                  <div>
+                    <button type="submit" className="sb-btn sb-btn--primary" style={{ width:'100%' }}>Save</button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, flexWrap:'wrap' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                    <label style={{ display:'block', margin:0 }}>Overlay position on banner</label>
+                    <select
+                      value={prop.contact_overlay_position ?? ''}
+                      onChange={(e)=>{ const v = (e.currentTarget.value || '') as any; setProp(prev => prev ? { ...prev, contact_overlay_position: (v || null) } : prev); }}
+                      style={{ ...FIELD, maxWidth: 240 }}
+                    >
+                      <option value="">- select -</option>
+                      <option value="top">top</option>
+                      <option value="center">center</option>
+                      <option value="down">down</option>
+                    </select>
+                    <Info text={'These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom.'} />
+                  </div>
+                  <div>
+                    <button type="submit" className="sb-btn sb-btn--primary">Save</button>
+                  </div>
+                </div>
+              )}
 
               {/* Social links quick editor */}
               <SocialLinksEditor prop={prop} setProp={setProp} supabase={supabase} setStatus={setStatus} />
