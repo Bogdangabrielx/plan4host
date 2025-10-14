@@ -9,13 +9,14 @@ export default function PullToRefresh() {
   const [active, setActive] = useState(false);
   const startY = useRef(0);
   const startAt = useRef(0);     // timestamp when potential pull started
+  const crossedAt = useRef(0);   // timestamp when threshold was first crossed
   const arming = useRef(false);   // potential pull (at top), not yet dragging
   const dragging = useRef(false); // true only when pulling down beyond threshold
   const dragRef = useRef(0);
   useEffect(()=>{ dragRef.current = dragPx; }, [dragPx]);
 
   const THRESHOLD = 70; // px to trigger refresh
-  const MAX_DURATION_MS = 1500; // must complete pull within 1.5s to refresh
+  const MIN_HOLD_MS = 1500; // must hold above threshold for at least 1.5s
 
   useEffect(() => {
     // Only enable on small/mobile viewports
@@ -41,6 +42,7 @@ export default function PullToRefresh() {
         dragging.current = false;
         startY.current = y;
         startAt.current = Date.now();
+        crossedAt.current = 0;
         setActive(false);
         setDragPx(0);
       } catch {}
@@ -68,6 +70,12 @@ export default function PullToRefresh() {
       // dragging: only when pulling down
       const dy = Math.max(0, dyRaw);
       setDragPx(Math.min(140, dy));
+      // track when threshold is crossed and held
+      if (dy >= THRESHOLD) {
+        if (!crossedAt.current) crossedAt.current = Date.now();
+      } else {
+        crossedAt.current = 0; // reset if user dips below threshold
+      }
     }
     function onUp() {
       if (!dragging.current) { arming.current = false; return; }
@@ -76,9 +84,11 @@ export default function PullToRefresh() {
       arming.current = false;
       setActive(false);
       setDragPx(0);
-      const tookMs = startAt.current ? (Date.now() - startAt.current) : Number.POSITIVE_INFINITY;
+      const heldMs = crossedAt.current ? (Date.now() - crossedAt.current) : 0;
       startAt.current = 0;
-      if (final >= THRESHOLD && tookMs <= MAX_DURATION_MS) {
+      const ok = final >= THRESHOLD && heldMs >= MIN_HOLD_MS;
+      crossedAt.current = 0;
+      if (ok) {
         try { (router as any)?.refresh?.(); } catch {}
         setTimeout(() => { try { window.location.reload(); } catch {} }, 50);
       }
