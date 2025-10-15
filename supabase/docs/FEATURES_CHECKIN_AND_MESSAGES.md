@@ -211,4 +211,35 @@ Acest document descrie logică, rute, migrări și fluxuri pentru noile funcțio
 
 ---
 
+## Appendix — Snapshot Items (schelet înghețat)
+
+Structura salvată în `reservation_messages.snapshot_items` la confirmare cameră (un array JSON per token):
+
+```json
+[
+  {
+    "id": "<template_uuid>",
+    "title": "Arrival info for {{guest_first_name}}",
+    "schedule_kind": "hour_before_checkin",
+    "schedule_offset_hours": 1,
+    "blocks": [
+      { "sort_index": 0, "type": "heading",   "lang": "ro", "text": "Bun venit, {{guest_first_name}}" },
+      { "sort_index": 1, "type": "paragraph", "lang": "ro", "text": "Camera ta este: {{room_name}}." },
+      { "sort_index": 2, "type": "divider",   "lang": "ro", "text": null },
+      { "sort_index": 3, "type": "paragraph", "lang": "en", "text": "Your room is: {{room_name}}." }
+    ]
+  }
+]
+```
+
+Observații:
+- Setul este înghețat: tokenul va folosi numai aceste template‑uri, chiar dacă apar template‑uri noi după confirmare.
+- Conținutul (blocurile) este scheletul sursă cu tokeni `{{VAR}}` — se randă dinamic la fiecare view, înlocuind variabilele actuale (ex. `{{room_name}}`, date check‑in/out).
+- Programarea (`schedule_kind`/`schedule_offset_hours`) este înghețată; vizibilitatea se calculează dinamic în funcție de datele curente (timezone proprietate + start/end rezervare).
+
+Flow pe scurt:
+- La confirmare cameră: triggerul `trg_snapshot_rm_for_booking` apelează `snapshot_rm_for_booking()` care salvează structura de mai sus în `reservation_messages.snapshot_items` pentru tokenul rezervării (dacă tokenul există și nu are snapshot deja).
+- `/api/reservation-message/public/[token]`: dacă există snapshot → randăm din el; altfel, fallback la șabloane live (compatibilitate pentru tokenuri vechi).
+- Cron: folosește snapshotul când există; altfel, șabloane live.
+
 Dacă vrei localizare completă a e‑mailurilor în română sau ajustări de copy/branding, pot integra rapid (subiect/textele butoanelor/culori).
