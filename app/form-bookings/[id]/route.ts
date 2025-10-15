@@ -144,7 +144,20 @@ export async function PATCH(
     }
 
     // Dacă se setează room_id → prevenim suprapunerea cu alte formulare pe aceeași cameră
+    // și sincronizăm camera și în bookings (dacă există un booking deja legat)
     let targetBooking: any | null = null;
+
+    // Preferă booking-ul deja legat (dacă există)
+    let linkedBooking: any | null = null;
+    try {
+      const rLinked = await admin
+        .from('bookings')
+        .select('id,room_id,room_type_id,start_date,end_date,status,form_id')
+        .eq('form_id', id)
+        .maybeSingle();
+      if (!rLinked.error && rLinked.data) linkedBooking = rLinked.data;
+    } catch {}
+
     if (room_id) {
       const rForms = await admin
         .from('form_bookings')
@@ -166,6 +179,7 @@ export async function PATCH(
           .eq('property_id', propertyId)
           .eq('room_id', room_id)
           .in('status', ['confirmed','checked_in'])
+          .neq('id', linkedBooking?.id || '')
           .lt('start_date', end_date)
           .gt('end_date', start_date)
           .limit(1);
@@ -174,21 +188,26 @@ export async function PATCH(
         }
       } catch {}
 
-      // Opțional: încercăm să găsim un eveniment existent pentru link (dacă există); nu este obligatoriu
-      try {
-        const rEv = await admin
-          .from('bookings')
-          .select('id,room_id,start_date,end_date,status,source,form_id,guest_first_name,guest_last_name,guest_email,guest_phone')
-          .eq('property_id', propertyId)
-          .eq('room_id', room_id)
-          .eq('start_date', start_date)
-          .eq('end_date', end_date)
-          .neq('status', 'cancelled')
-          .is('form_id', null)
-          .neq('source', 'form')
-          .maybeSingle();
-        if (!rEv.error && rEv.data) targetBooking = rEv.data;
-      } catch {}
+      if (linkedBooking) {
+        // Dacă există deja un booking legat, îl folosim ca țintă (îi vom actualiza camera)
+        targetBooking = linkedBooking;
+      } else {
+        // Opțional: încearcă să găsești un eveniment existent pentru link; nu este obligatoriu
+        try {
+          const rEv = await admin
+            .from('bookings')
+            .select('id,room_id,start_date,end_date,status,source,form_id,guest_first_name,guest_last_name,guest_email,guest_phone')
+            .eq('property_id', propertyId)
+            .eq('room_id', room_id)
+            .eq('start_date', start_date)
+            .eq('end_date', end_date)
+            .neq('status', 'cancelled')
+            .is('form_id', null)
+            .neq('source', 'form')
+            .maybeSingle();
+          if (!rEv.error && rEv.data) targetBooking = rEv.data;
+        } catch {}
+      }
     }
 
     // a) Update form
@@ -203,12 +222,23 @@ export async function PATCH(
     const uForm = await admin.from('form_bookings').update(patchForm).eq('id', id).select('id').maybeSingle();
     if (uForm.error) return bad(500, { error: uForm.error.message });
 
-    // b) If a target booking exists, link it and confirm
+    // b) If a target booking exists, link/update it and confirm
     if (room_id && targetBooking) {
-      if (targetBooking.form_id) return bad(409, { error: 'Target booking already linked to a form.' });
+      if (targetBooking.form_id && String(targetBooking.form_id) !== String(id)) {
+        return bad(409, { error: 'Target booking already linked to a different form.' });
+      }
       // Bring non-empty guest fields from form onto booking, without overwriting existing non-empty values
       const fb = booking as any;
-      const upd: any = { form_id: id, status: 'confirmed' };
+      const upd: any = { form_id: id, status: 'confirmed', start_date, end_date };
+      // sincronizează camera și type pe booking
+      if (room_id) {
+        upd.room_id = room_id;
+        // derive room_type_id from selected room
+        try {
+          const rRm = await admin.from('rooms').select('room_type_id').eq('id', room_id).maybeSingle();
+          if (!rRm.error) upd.room_type_id = (rRm.data as any)?.room_type_id ?? null;
+        } catch {}
+      }
       const has = (v: any) => typeof v === 'string' ? v.trim().length > 0 : !!v;
       if (has(fb.guest_first_name) && !has((targetBooking as any).guest_first_name)) upd.guest_first_name = fb.guest_first_name;
       if (has(fb.guest_last_name)  && !has((targetBooking as any).guest_last_name))  upd.guest_last_name  = fb.guest_last_name;
@@ -255,9 +285,14 @@ export async function PATCH(
           await admin.from('form_documents').delete().eq('form_id', id);
         }
       } catch {}
+    } else if (linkedBooking) {
+      // No target booking change (e.g., no room change), but dates changed → sync dates to linked booking
+      try {
+        await admin.from('bookings').update({ start_date, end_date }).eq('id', linkedBooking.id);
+      } catch {}
     }
 
-    return ok({ ok: true, booking_id: targetBooking ? String(targetBooking.id) : null });
+    return ok({ ok: true, booking_id: targetBooking ? String(targetBooking.id) : (linkedBooking ? String(linkedBooking.id) : null) });
   } catch (e: any) {
     return bad(500, { error: "Server error", details: e?.message ?? String(e) });
   }
