@@ -50,7 +50,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
 
     const rMsg = await admin
       .from('reservation_messages')
-      .select('id, property_id, booking_id, status, manual_values, expires_at')
+      .select('id, property_id, booking_id, status, manual_values, expires_at, snapshot_items')
       .eq('token', tok)
       .maybeSingle();
     if (rMsg.error) return bad(400, { error: rMsg.error.message });
@@ -70,6 +70,10 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
 
     const booking = rBk.data as any;
     const prop = rProp.data as any;
+
+    // Prepare snapshot content if present
+    let snapshotItems: Array<{ id:string; title?:string; html_ro?:string; html_en?:string }> | null = null;
+    try { snapshotItems = (msg as any)?.snapshot_items || null; } catch {}
 
     // all published templates for this property
     const rTpls = await admin.from('reservation_templates').select('id,title,status,schedule_kind,schedule_offset_hours').eq('property_id', msg.property_id).eq('status','published');
@@ -171,8 +175,10 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
 
     const items = templates.map(t => {
       const arr = byTpl.get(t.id) || [];
-      const html_ro = renderBlocks(arr, 'ro');
-      const html_en = renderBlocks(arr, 'en');
+      // Use snapshot content if available; otherwise render now
+      const snap = (snapshotItems || []).find(s => s.id === t.id) || null;
+      const html_ro = snap?.html_ro ?? renderBlocks(arr, 'ro');
+      const html_en = snap?.html_en ?? renderBlocks(arr, 'en');
       const kind = (t.schedule_kind || 'none').toLowerCase();
       let visible = false;
       const off = (typeof t.schedule_offset_hours === 'number' && !isNaN(t.schedule_offset_hours)) ? Number(t.schedule_offset_hours) : null;
@@ -183,10 +189,18 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
       else if (kind === 'on_arrival') { dueLocal = ciLocal; }
       else if (kind === 'none') { visible = false; }
       if (dueLocal) { dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); visible = nowKey >= dueKey; }
-      const base = { id: t.id, title: t.title || 'Message', schedule_kind: t.schedule_kind || 'none', html_ro, html_en, visible } as any;
+      const base = { id: t.id, title: (snap?.title || t.title || 'Message'), schedule_kind: t.schedule_kind || 'none', html_ro, html_en, visible } as any;
       if (wantDebug) base.debug = { tz: propTz, now_key: nowKey, ci_key: ciKey, co_key: coKey, due_key: dueKey || null, offset_hours: off ?? null, check_in_time: ciTimeRaw, check_out_time: coTimeRaw };
       return base;
     });
+
+    // Persist snapshot at first view (content only; visibility remains dynamic)
+    if (!snapshotItems) {
+      try {
+        const snap = items.map(it => ({ id: it.id, title: it.title, html_ro: it.html_ro, html_en: it.html_en }));
+        await admin.from('reservation_messages').update({ snapshot_items: snap as any }).eq('id', msg.id);
+      } catch {}
+    }
 
     return NextResponse.json(
       { ok: true, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at, items,
