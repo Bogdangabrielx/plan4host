@@ -1,6 +1,7 @@
 // app/api/form-bookings/[id]/route.ts
 import { NextResponse } from "next/server";
 import { createClient as createRls } from "@/lib/supabase/server";
+import { createClient as createAdmin } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,6 +13,9 @@ function bad(status: number, body: any) {
 function ok(body: any) { return NextResponse.json(body, { status: 200 }); }
 
 type UUID = string;
+const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const admin = createAdmin(URL, SERVICE, { auth: { persistSession: false } });
 
 function isValidUUID(v?: string | null) {
   return !!v && /^[0-9a-f-]{36}$/i.test(v);
@@ -32,21 +36,18 @@ export async function GET(
     if (!auth?.user) return bad(401, { error: "Not authenticated" });
 
     const id = params?.id;
-    if (!isValidUUID(id)) return bad(400, { error: "Invalid booking id" });
+    if (!isValidUUID(id)) return bad(400, { error: "Invalid form id" });
 
-    // load booking + property
+    // load form + property
     const { data: booking, error: e1 } = await supa
-      .from("bookings")
-      .select("id,property_id,source,status,start_date,end_date,room_id,room_type_id,guest_first_name,guest_last_name,guest_email,guest_phone,created_at,form_submitted_at,ical_uid")
+      .from("form_bookings")
+      .select("id,property_id,state as status,start_date,end_date,room_id,room_type_id,guest_first_name,guest_last_name,guest_email,guest_phone,created_at,submitted_at")
       .eq("id", id)
       .single();
 
     if (e1 || !booking) return bad(404, { error: "Booking not found" });
 
-    // edit doar pentru form-only
-    if ((booking as any).source !== "form") {
-      return bad(409, { error: "Only form-only bookings can be edited here" });
-    }
+    // forms only
 
     const propertyId = (booking as any).property_id as UUID;
 
@@ -84,7 +85,7 @@ export async function PATCH(
     if (!auth?.user) return bad(401, { error: "Not authenticated" });
 
     const id = params?.id;
-    if (!isValidUUID(id)) return bad(400, { error: "Invalid booking id" });
+    if (!isValidUUID(id)) return bad(400, { error: "Invalid form id" });
 
     const body = await req.json().catch(() => ({}));
     const start_date = String(body?.start_date || "").trim();
@@ -99,17 +100,14 @@ export async function PATCH(
       return bad(400, { error: "end_date cannot be before start_date" });
     }
 
-    // load booking + property
+    // load form + property
     const { data: booking, error: e1 } = await supa
-      .from("bookings")
-      .select("id,property_id,source,start_date,end_date,room_id,room_type_id,status")
+      .from("form_bookings")
+      .select("id,property_id,start_date,end_date,room_id,room_type_id,state")
       .eq("id", id)
       .single();
 
-    if (e1 || !booking) return bad(404, { error: "Booking not found" });
-    if ((booking as any).source !== "form") {
-      return bad(409, { error: "Only form-only bookings can be edited here" });
-    }
+    if (e1 || !booking) return bad(404, { error: "Form not found" });
 
     const propertyId = (booking as any).property_id as UUID;
 
@@ -143,50 +141,76 @@ export async function PATCH(
       if (!r) return bad(400, { error: "Invalid room_id for this property" });
     }
 
-    // dacă se setează room_id → verificăm conflicte de capacitate (overlap)
+    // Dacă se setează room_id → trebuie să existe un eveniment (booking) potrivit pentru acele date, nelipit de alt form
+    let targetBooking: any | null = null;
     if (room_id) {
-      const { data: conflicts } = await supa
+      const rEv = await admin
         .from("bookings")
-        .select("id,start_date,end_date,start_time,end_time,status,source")
+        .select("id,room_id,start_date,end_date,status,source,form_id,guest_first_name,guest_last_name,guest_email,guest_phone")
         .eq("property_id", propertyId)
         .eq("room_id", room_id)
-        // Blochează doar rezervările active (confirmed); HOLD/pendente sunt ignorate
-        .in("status", ["confirmed","checked_in"]) 
-        .neq("id", id);
-
-      const conflictHit = (conflicts || []).find((b: any) => overlap(start_date, end_date, b.start_date, b.end_date));
-      if (conflictHit) {
-        const src = (conflictHit.source || '').toString() || 'manual';
-        const msg = `Target room is occupied by an active reservation (source: ${src}) from ${conflictHit.start_date} to ${conflictHit.end_date}.`;
-        return bad(409, { error: msg, conflict: { id: conflictHit.id, source: conflictHit.source, start_date: conflictHit.start_date, end_date: conflictHit.end_date, start_time: conflictHit.start_time, end_time: conflictHit.end_time } });
+        .eq("start_date", start_date)
+        .eq("end_date", end_date)
+        .neq("status", "cancelled")
+        .is("form_id", null)
+        .neq("source", "form")
+        .maybeSingle();
+      if (rEv.error || !rEv.data) {
+        return bad(409, { error: "No matching event found for this room and dates." });
       }
+      targetBooking = rEv.data;
     }
 
-    // build update payload (NU modificăm source/status/guest fields etc.)
-    const patch: any = {
+    // a) Update form
+    const patchForm: any = {
       start_date,
       end_date,
-      // dacă proprietatea are types: putem seta type; altfel lăsăm null (sau existent)
       room_type_id: hasTypes ? (room_type_id ?? null) : null,
       room_id: room_id ?? null,
       updated_at: new Date().toISOString(),
     };
-    // Dacă s-a lipit pe o cameră → confirmă rezervarea provenită din formular
-    if (room_id) {
-      patch.status = 'confirmed';
+    if (room_id && targetBooking) patchForm.state = 'linked';
+    const uForm = await admin.from('form_bookings').update(patchForm).eq('id', id).select('id').maybeSingle();
+    if (uForm.error) return bad(500, { error: uForm.error.message });
+
+    // b) If a target booking exists, link it and confirm
+    if (room_id && targetBooking) {
+      if (targetBooking.form_id) return bad(409, { error: 'Target booking already linked to a form.' });
+      const upd: any = { form_id: id, status: 'confirmed' };
+      if (!targetBooking.guest_first_name) upd.guest_first_name = (booking as any).guest_first_name ?? null;
+      if (!targetBooking.guest_last_name)  upd.guest_last_name  = (booking as any).guest_last_name  ?? null;
+      if (!targetBooking.guest_email)      upd.guest_email      = (booking as any).guest_email      ?? null;
+      if (!targetBooking.guest_phone)      upd.guest_phone      = (booking as any).guest_phone      ?? null;
+      const uBk = await admin.from('bookings').update(upd).eq('id', targetBooking.id).select('id').maybeSingle();
+      if (uBk.error) return bad(500, { error: uBk.error.message });
+
+      // move documents form → booking
+      try {
+        const { data: fdocs } = await admin
+          .from('form_documents')
+          .select('id,storage_bucket,storage_path,doc_type,mime_type,size_bytes,doc_series,doc_number,doc_nationality')
+          .eq('form_id', id);
+        if ((fdocs?.length || 0) > 0) {
+          const rows = (fdocs || []).map((d: any) => ({
+            property_id: propertyId,
+            booking_id: targetBooking.id,
+            storage_bucket: d.storage_bucket,
+            storage_path: d.storage_path,
+            doc_type: d.doc_type,
+            mime_type: d.mime_type,
+            size_bytes: d.size_bytes,
+            uploaded_at: new Date().toISOString(),
+            doc_series: d.doc_series,
+            doc_number: d.doc_number,
+            doc_nationality: d.doc_nationality,
+          }));
+          await admin.from('booking_documents').insert(rows);
+          await admin.from('form_documents').delete().eq('form_id', id);
+        }
+      } catch {}
     }
 
-    const { error: eUpd } = await supa.from("bookings").update(patch).eq("id", id);
-    if (eUpd) return bad(500, { error: eUpd.message });
-
-    // return updated snapshot
-    const { data: updated } = await supa
-      .from("bookings")
-      .select("id,property_id,source,status,start_date,end_date,room_id,room_type_id")
-      .eq("id", id)
-      .single();
-
-    return ok({ ok: true, booking: updated });
+    return ok({ ok: true });
   } catch (e: any) {
     return bad(500, { error: "Server error", details: e?.message ?? String(e) });
   }

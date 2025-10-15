@@ -1074,6 +1074,7 @@ function EditFormBookingModal({
 
   // property shapes
   const [rooms, setRooms] = useState<Array<{ id: string; name: string; room_type_id: string | null }>>([]);
+  const [eligibleRooms, setEligibleRooms] = useState<Set<string>>(new Set());
   const [roomTypes, setRoomTypes] = useState<Array<{ id: string; name: string }>>([]);
   const hasRoomTypes = roomTypes.length > 0;
 
@@ -1085,8 +1086,8 @@ function EditFormBookingModal({
       try {
         const [bRes, rRes, rtRes, cRes] = await Promise.all([
           supabase
-            .from("bookings")
-            .select("id,property_id,start_date,end_date,room_id,room_type_id,source,status,guest_first_name,guest_last_name,guest_email")
+            .from("form_bookings")
+            .select("id,property_id,start_date,end_date,room_id,room_type_id,state,guest_first_name,guest_last_name,guest_email,guest_phone")
             .eq("id", bookingId)
             .maybeSingle(),
           supabase
@@ -1109,7 +1110,7 @@ function EditFormBookingModal({
         if (!alive) return;
 
         if (bRes.error) throw new Error(bRes.error.message);
-        if (!bRes.data || String(bRes.data.property_id) !== String(propertyId)) {
+        if (!bRes.data || String((bRes.data as any).property_id) !== String(propertyId)) {
           throw new Error("Booking not found for this property.");
         }
 
@@ -1120,7 +1121,7 @@ function EditFormBookingModal({
         setGuestFirst(bRes.data.guest_first_name || "");
         setGuestLast(bRes.data.guest_last_name || "");
         setGuestEmail((bRes.data.guest_email || cRes.data?.email || "") as string);
-        setGuestPhone((cRes.data?.phone || "") as string);
+        setGuestPhone(((bRes.data as any).guest_phone || cRes.data?.phone || "") as string);
 
         if (rRes.error) throw new Error(rRes.error.message);
         setRooms((rRes.data || []) as any);
@@ -1130,7 +1131,7 @@ function EditFormBookingModal({
 
         // Documents (ID + signature)
         try {
-          const d = await fetch(`/api/bookings/${bookingId}/documents`, { cache: 'no-store' });
+          const d = await fetch(`/api/form-bookings/${bookingId}/documents`, { cache: 'no-store' });
           const j = await d.json().catch(()=>({}));
           const arr = Array.isArray(j?.documents) ? j.documents : [];
           setDocs(arr.map((x:any)=>({ id:String(x.id), doc_type: x.doc_type || null, mime_type: x.mime_type || null, url: x.url || null })));
@@ -1152,36 +1153,48 @@ function EditFormBookingModal({
     return true;
   }
 
+  // Compute eligible rooms (have an event for the exact form dates and no form attached)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!propertyId || !startDate || !endDate) return;
+        const r = await supabase
+          .from('bookings')
+          .select('room_id,source,form_id,status')
+          .eq('property_id', propertyId)
+          .eq('start_date', startDate)
+          .eq('end_date', endDate)
+          .neq('status', 'cancelled')
+          .is('form_id', null)
+          .neq('source', 'form');
+        if (!r.error) {
+          const set = new Set<string>();
+          for (const row of (r.data || [])) {
+            const rid = String((row as any).room_id || '');
+            if (rid) set.add(rid);
+          }
+          if (!cancelled) setEligibleRooms(set);
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, [supabase, propertyId, startDate, endDate]);
+
   async function performSave() {
     if (!valid() || saving) return;
     setSaving(true);
     setError(null);
     try {
-      // Guard: do not allow selecting a room that overlaps an existing confirmed booking
-      const ci = '14:00'; // informational only; we use date-based overlap at DB level
-      const co = '11:00';
-      const sDate = startDate;
-      const eDate = endDate;
-      if (roomId) {
-        const q = supabase
-          .from('bookings')
-          .select('id,start_date,end_date,room_id,status')
-          .eq('property_id', propertyId)
-          .eq('room_id', roomId)
-          .eq('status', 'confirmed')
-          .lt('start_date', eDate)
-          .gt('end_date', sDate)
-          .limit(1);
-        const r = await q;
-        if (!r.error && (r.data?.length || 0) > 0) {
-          const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
-          const msg = `Overlaps an existing confirmed reservation on Room ${roomName}.`;
-          setError(msg);
-          setPopupTitle('Cannot save');
-          setPopupMsg(msg);
-          setSaving(false);
-          return;
-        }
+      // Gate: selected room must have a matching event for these dates
+      if (roomId && !eligibleRooms.has(String(roomId))) {
+        const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
+        const msg = `No matching event on ${roomName} for the selected dates.`;
+        setError(msg);
+        setPopupTitle('Cannot save');
+        setPopupMsg(msg);
+        setSaving(false);
+        return;
       }
 
       const upd: any = {
@@ -1246,7 +1259,7 @@ function EditFormBookingModal({
     setDeleting(true);
     setError(null);
     try {
-      const { error: e1 } = await supabase.from("bookings").delete().eq("id", bookingId);
+      const { error: e1 } = await supabase.from("form_bookings").delete().eq("id", bookingId);
       if (e1) throw new Error(e1.message);
       onSaved();
     } catch (e: any) {
@@ -1486,9 +1499,14 @@ function EditFormBookingModal({
                   style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
                 >
                   <option value="">—</option>
-                  {rooms.map(r => (
-                    <option key={r.id} value={r.id}>{r.name}</option>
-                  ))}
+                  {rooms.map(r => {
+                    const eligible = eligibleRooms.has(String(r.id));
+                    return (
+                      <option key={r.id} value={r.id} disabled={!eligible}>
+                        {r.name}{eligible ? '' : ' — no event'}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
             </div>

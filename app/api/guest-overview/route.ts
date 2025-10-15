@@ -10,53 +10,26 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const admin = createClient(url, service, { auth: { persistSession: false } });
 
-type BRow = {
+type FRow = {
   id: string;
   property_id: string;
   room_id: string | null;
   room_type_id: string | null;
   start_date: string; // yyyy-mm-dd
   end_date: string;   // yyyy-mm-dd
-  status: string | null;
-  source: string | null;
-  ical_uid: string | null;
-  ota_integration_id?: string | null;
-  ota_provider?: string | null;
+  state: string | null;
   guest_first_name: string | null;
   guest_last_name: string | null;
-  guest_name: string | null;
-  form_submitted_at?: string | null;
+  submitted_at?: string | null;
   created_at?: string | null;
 };
 
 type Room = { id: string; room_type_id: string | null; name: string | null };
 type RoomType = { id: string; name: string | null };
 
-const safeLower = (s?: string | null) => (s ?? "").toLowerCase();
 const ymdToDate = (ymd: string) => new Date(`${ymd}T00:00:00Z`);
 const addDays = (d: Date, days: number) => { const x = new Date(d.getTime()); x.setUTCDate(x.getUTCDate() + days); return x; };
 const nowUtc = () => new Date();
-
-function isIcalish(b: BRow) {
-  const src = safeLower(b.source);
-  return !!b.ical_uid || ["ical","ota","airbnb","booking","booking.com","expedia","channel_manager"].includes(src);
-}
-function isFormish(b: any) {
-  const src = (b?.source || "").toString().toLowerCase();
-  // Form-urile reale au source='form' sau status temporar hold/pending.
-  // NU clasificăm ca "form" doar pe baza form_submitted_at, pentru că iCal/manual pot primi acest timestamp după merge.
-  return src === "form" || b?.status === "hold" || b?.status === "pending";
-}
-function isManual(b: BRow) {
-  return !isIcalish(b) && !isFormish(b);
-}
-
-function hasAnyName(b: Pick<BRow, "guest_first_name"|"guest_last_name"|"guest_name">) {
-  const f = (b.guest_first_name ?? "").trim();
-  const l = (b.guest_last_name ?? "").trim();
-  const gn = (b.guest_name ?? "").trim();
-  return (f.length + l.length) > 0 || gn.length > 0;
-}
 
 export async function GET(req: Request) {
   try {
@@ -89,27 +62,20 @@ export async function GET(req: Request) {
     const roomNameById = new Map<string, string>();
     for (const r of (roomRows ?? []) as any[]) roomNameById.set(String(r.id), String(r.name ?? ''));
 
-    // All bookings (past/present/future), non-cancelled → filter to forms only
-    const rBookings = await admin
-      .from("bookings")
-      .select(`
-        id, property_id, room_id, room_type_id,
-        start_date, end_date, status, source, ota_provider,
-        guest_first_name, guest_last_name, guest_name,
-        created_at
-      `)
+    // Load forms from dedicated table (open or linked)
+    const rForms = await admin
+      .from("form_bookings")
+      .select("id,property_id,room_id,room_type_id,start_date,end_date,state,guest_first_name,guest_last_name,created_at,submitted_at")
       .eq("property_id", property_id)
-      .neq("status", "cancelled")
       .order("start_date", { ascending: true });
-    if (rBookings.error) return NextResponse.json({ error: rBookings.error.message }, { status: 500 });
-
-    const forms = ((rBookings.data ?? []) as BRow[]).filter(isFormish);
+    if (rForms.error) return NextResponse.json({ error: rForms.error.message }, { status: 500 });
+    const forms = (rForms.data ?? []) as FRow[];
 
     // Build rows: yellow if no room selected; green once a room_id is set
     const rows = forms.map((f) => {
       const rid = f.room_id ? String(f.room_id) : null;
       const roomLabel = rid ? (roomNameById.get(rid) ?? `#${rid.slice(0,4)}`) : null;
-      const status = (rid ? 'green' : 'yellow') as 'green' | 'yellow';
+      const status = (rid || (f.state || '').toLowerCase() === 'linked') ? 'green' : 'yellow';
       return {
         id: f.id,
         property_id,
@@ -122,7 +88,7 @@ export async function GET(req: Request) {
         _room_type_name: null,
         _reason: status === 'yellow' ? 'waiting_room' : null,
         _cutoff_ts: null,
-        _ota_provider: (f as any).ota_provider ?? null,
+        _ota_provider: null,
         _ota_color: null,
         _ota_logo_url: null,
         _guest_first_name: f.guest_first_name ?? null,

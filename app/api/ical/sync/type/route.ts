@@ -228,7 +228,7 @@ async function createOrUpdateFromEvent(
       ota_integration_id: feed.id,
       ota_provider: feed.provider ?? null,
       start_date, end_date, start_time, end_time,
-      status: "confirmed",
+      status: "hold",
     }).eq("id", bookingId);
 
   } else {
@@ -246,7 +246,7 @@ async function createOrUpdateFromEvent(
       room_id: room_id_final,
       room_type_id: room_type_id_final,
       start_date, end_date, start_time, end_time,
-      status: "confirmed",
+      status: "hold",
       source: "ical",
       ical_uid: ev.uid ?? null,
       ota_integration_id: feed.id,
@@ -299,13 +299,7 @@ async function createOrUpdateFromEvent(
     }
   } catch {}
 
-  await mergeFormIntoIcal(supa, {
-    property_id: feed.property_id,
-    icalBookingId: bookingId,
-    icalRoomId: room_id_final,
-    icalRoomTypeId: room_type_id_final,
-    start_date, end_date,
-  });
+  // Auto merge disabled: manual matching only
 
   return { ok: true, bookingId };
 }

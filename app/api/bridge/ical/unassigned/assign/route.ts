@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     room_id: roomId,
     start_date: ev.data.start_date, end_date: ev.data.end_date,
     start_time: ev.data.start_time ?? null, end_time: ev.data.end_time ?? null,
-    status: "confirmed",
+    status: "hold",
     source: 'ical',
     ical_uid: ev.data.uid ?? null,
     ota_integration_id: ev.data.integration_id ?? null,

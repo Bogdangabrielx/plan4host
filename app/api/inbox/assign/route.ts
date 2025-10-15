@@ -157,7 +157,7 @@ export async function POST(req: Request) {
       end_date: ev.end_date,
       start_time: ev.start_time,
       end_time: ev.end_time,
-      status: "confirmed",
+      status: "hold",
     })
     .select()
     .maybeSingle();

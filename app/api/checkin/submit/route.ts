@@ -364,7 +364,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    /* ========= FĂRĂ MATCH → creăm „form booking” (va fi galben 2h, apoi roșu) ========= */
+    /* ========= FĂRĂ MATCH → creăm „form booking” în form_bookings (fără auto-match) ========= */
     if (!isYMD(start_date) || !isYMD(end_date)) {
       return NextResponse.json({ error: "Missing/invalid dates" }, { status: 400 });
     }
@@ -394,40 +394,20 @@ export async function POST(req: NextRequest) {
       room_type_id: form_room_type_id ?? null,
       start_date,
       end_date,
-      start_time,
-      end_time,
-      status: "hold",               // fallback la "pending" dacă enum-ul nu conține "hold"
       guest_first_name: guest_first_name ?? null,
       guest_last_name:  guest_last_name  ?? null,
       guest_email:      email ?? null,
       guest_phone:      phone ?? null,
       guest_address:    displayAddress,
-      form_submitted_at: new Date().toISOString(),
-      source: "form",
-      ota_provider: mapProviderLabel((body as any)?.ota_provider_hint),
+      submitted_at: new Date().toISOString(),
+      state: 'open',
+      ota_provider_hint: mapProviderLabel((body as any)?.ota_provider_hint),
     };
 
-    let ins = await admin.from("bookings").insert(basePayload).select("id").single();
-    if (ins.error && looksEnumHoldError(ins.error.message)) {
-      basePayload.status = "pending";
-      ins = await admin.from("bookings").insert(basePayload).select("id").single();
-    }
+    const ins = await admin.from("form_bookings").insert(basePayload).select("id").single();
     if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 });
 
     const newId = ins.data.id as string;
-
-    if (email || phone || address || city || country) {
-      try {
-        await admin
-          .from("booking_contacts")
-          .upsert(
-            { booking_id: newId, email: email ?? null, phone: phone ?? null, address: address ?? null, city: city ?? null, country: country ?? null },
-            { onConflict: "booking_id" }
-          )
-          .select("booking_id")
-          .single();
-      } catch {}
-    }
 
     const docsArray: Array<any> = Array.isArray(docs) ? docs : [];
     if (!docsArray.length && (doc_type || doc_file_path || doc_file_mime)) {
@@ -468,7 +448,21 @@ export async function POST(req: NextRequest) {
 
       if (rows.length) {
         try {
-          const insDocs = await admin.from("booking_documents").insert(rows).select("id");
+          const insDocs = await admin.from("form_documents").insert(
+            rows.map(r => ({
+              form_id: newId,
+              property_id,
+              storage_bucket: r.storage_bucket,
+              storage_path: r.storage_path,
+              doc_type: r.doc_type,
+              mime_type: r.mime_type,
+              size_bytes: r.size_bytes,
+              uploaded_at: r.uploaded_at,
+              doc_series: r.doc_series,
+              doc_number: r.doc_number,
+              doc_nationality: r.doc_nationality,
+            }))
+          ).select("id");
           if (!insDocs.error) documents_saved = insDocs.data?.length ?? 0;
         } catch {}
       }
