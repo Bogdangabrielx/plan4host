@@ -1059,6 +1059,7 @@ function EditFormBookingModal({
   const [sendMailOpen, setSendMailOpen] = useState<boolean>(false);
   const [sendMailBusy, setSendMailBusy] = useState<boolean>(false);
   const [sendMailError, setSendMailError] = useState<string | null>(null);
+  const [emailBookingId, setEmailBookingId] = useState<string | null>(null);
 
   // booking fields
   const [startDate, setStartDate] = useState<string>("");
@@ -1275,9 +1276,14 @@ function EditFormBookingModal({
         return;
       }
 
-      // Open gating dialog to confirm emailing guest the room info
+      // Prepare email booking id (only open dialog if we have a concrete booking)
       setSendMailError(null);
-      setSendMailOpen(true);
+      let linkedId: string | null = null;
+      try { linkedId = jj?.booking_id ? String(jj.booking_id) : null; } catch { linkedId = null; }
+      setEmailBookingId(linkedId);
+      if (linkedId) {
+        setSendMailOpen(true);
+      }
     } catch (e: any) {
       setError(e?.message || "Failed to save changes.");
     } finally {
@@ -1390,14 +1396,14 @@ function EditFormBookingModal({
                   try {
                     const gen = await fetch('/api/reservation-message/generate', {
                       method: 'POST', headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ property_id: propertyId, booking_id: bookingId })
+                      body: JSON.stringify({ property_id: propertyId, booking_id: emailBookingId || bookingId })
                     });
                     await gen.json().catch(()=>({}));
                   } catch {}
                   // Send reservation confirmation (includes link)
                   const r = await fetch('/api/reservation-message/confirm-room', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ property_id: propertyId, booking_id: bookingId })
+                    body: JSON.stringify({ property_id: propertyId, booking_id: emailBookingId || bookingId })
                   });
                   const jj = await r.json().catch(()=>({}));
                   setSendMailOpen(false);

@@ -142,6 +142,17 @@ async function createOrUpdateFromEvent(
 ) {
   const propTZ = feed.properties.timezone || "UTC";
   const { start_date, end_date, start_time, end_time } = normalizeEvent(ev, propTZ);
+  // Force property check-in/out times
+  let CI = "14:00"; let CO = "11:00";
+  try {
+    const rProp = await supa.from('properties').select('check_in_time,check_out_time').eq('id', feed.property_id).maybeSingle();
+    if (!rProp.error && rProp.data) {
+      CI = (rProp.data as any).check_in_time || CI;
+      CO = (rProp.data as any).check_out_time || CO;
+    }
+  } catch {}
+  const effStartTime = CI;
+  const effEndTime = CO;
 
   const icsStatus = String((ev as any).status || "").toUpperCase();
   if (icsStatus === "CANCELLED" && ev.uid) {
@@ -227,7 +238,7 @@ async function createOrUpdateFromEvent(
       ical_uid: ev.uid ?? icalBooking.ical_uid ?? null,
       ota_integration_id: feed.id,
       ota_provider: feed.provider ?? null,
-      start_date, end_date, start_time, end_time,
+      start_date, end_date, start_time: effStartTime, end_time: effEndTime,
       status: "hold",
     }).eq("id", bookingId);
 
@@ -245,7 +256,7 @@ async function createOrUpdateFromEvent(
       property_id: feed.property_id,
       room_id: room_id_final,
       room_type_id: room_type_id_final,
-      start_date, end_date, start_time, end_time,
+      start_date, end_date, start_time: effStartTime, end_time: effEndTime,
       status: "hold",
       source: "ical",
       ical_uid: ev.uid ?? null,

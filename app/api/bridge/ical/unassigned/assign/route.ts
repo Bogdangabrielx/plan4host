@@ -31,12 +31,22 @@ export async function POST(req: Request) {
     if (!rI.error && rI.data) provider = (rI.data as any).provider ?? null;
   }
 
-  // creează booking
+  // property CI/CO
+  let CI = '14:00', CO = '11:00';
+  try {
+    const rProp = await supabase.from('properties').select('check_in_time,check_out_time').eq('id', ev.data.property_id).maybeSingle();
+    if (!rProp.error && rProp.data) {
+      CI = (rProp.data as any).check_in_time || CI;
+      CO = (rProp.data as any).check_out_time || CO;
+    }
+  } catch {}
+
+  // creează booking (override times to property defaults)
   const ins = await supabase.from("bookings").insert({
     property_id: ev.data.property_id,
     room_id: roomId,
     start_date: ev.data.start_date, end_date: ev.data.end_date,
-    start_time: ev.data.start_time ?? null, end_time: ev.data.end_time ?? null,
+    start_time: CI, end_time: CO,
     status: "hold",
     source: 'ical',
     ical_uid: ev.data.uid ?? null,

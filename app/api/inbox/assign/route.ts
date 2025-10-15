@@ -147,7 +147,9 @@ export async function POST(req: Request) {
     );
   }
 
-  // 5) creăm booking
+  // 5) creăm booking (set times to property CI/CO)
+  let CI = prop.data.check_in_time || "14:00";
+  let CO = prop.data.check_out_time || "11:00";
   const ins = await supabase
     .from("bookings")
     .insert({
@@ -155,8 +157,8 @@ export async function POST(req: Request) {
       room_id: roomId,
       start_date: ev.start_date,
       end_date: ev.end_date,
-      start_time: ev.start_time,
-      end_time: ev.end_time,
+      start_time: CI,
+      end_time: CO,
       status: "hold",
     })
     .select()

@@ -103,7 +103,9 @@ export async function PATCH(
     // load form + property
     const { data: booking, error: e1 } = await supa
       .from("form_bookings")
-      .select("id,property_id,start_date,end_date,room_id,room_type_id,state")
+      .select(
+        "id,property_id,start_date,end_date,room_id,room_type_id,state,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address,guest_city,guest_country"
+      )
       .eq("id", id)
       .single();
 
@@ -204,25 +206,29 @@ export async function PATCH(
     // b) If a target booking exists, link it and confirm
     if (room_id && targetBooking) {
       if (targetBooking.form_id) return bad(409, { error: 'Target booking already linked to a form.' });
+      // Bring non-empty guest fields from form onto booking, without overwriting existing non-empty values
+      const fb = booking as any;
       const upd: any = { form_id: id, status: 'confirmed' };
-      if (!targetBooking.guest_first_name) upd.guest_first_name = (booking as any).guest_first_name ?? null;
-      if (!targetBooking.guest_last_name)  upd.guest_last_name  = (booking as any).guest_last_name  ?? null;
-      if (!targetBooking.guest_email)      upd.guest_email      = (booking as any).guest_email      ?? null;
-      if (!targetBooking.guest_phone)      upd.guest_phone      = (booking as any).guest_phone      ?? null;
+      const has = (v: any) => typeof v === 'string' ? v.trim().length > 0 : !!v;
+      if (has(fb.guest_first_name) && !has((targetBooking as any).guest_first_name)) upd.guest_first_name = fb.guest_first_name;
+      if (has(fb.guest_last_name)  && !has((targetBooking as any).guest_last_name))  upd.guest_last_name  = fb.guest_last_name;
+      if (has(fb.guest_email)      && !has((targetBooking as any).guest_email))      upd.guest_email      = fb.guest_email;
+      if (has(fb.guest_phone)      && !has((targetBooking as any).guest_phone))      upd.guest_phone      = fb.guest_phone;
+      if (has(fb.guest_address)    && !has((targetBooking as any).guest_address))    upd.guest_address    = fb.guest_address;
       const uBk = await admin.from('bookings').update(upd).eq('id', targetBooking.id).select('id').maybeSingle();
       if (uBk.error) return bad(500, { error: uBk.error.message });
 
       // Upsert contact from form into booking_contacts
       try {
-        const contactPayload = {
-          booking_id: targetBooking.id,
-          email:   (booking as any).guest_email   ?? null,
-          phone:   (booking as any).guest_phone   ?? null,
-          address: (booking as any).guest_address ?? null,
-          city:    (booking as any).guest_city    ?? null,
-          country: (booking as any).guest_country ?? null,
-        } as any;
-        await admin.from('booking_contacts').upsert(contactPayload, { onConflict: 'booking_id' });
+        const cp: any = { booking_id: targetBooking.id };
+        if (has(fb.guest_email))   cp.email   = fb.guest_email;
+        if (has(fb.guest_phone))   cp.phone   = fb.guest_phone;
+        if (has(fb.guest_address)) cp.address = fb.guest_address;
+        if (has(fb.guest_city))    cp.city    = fb.guest_city;
+        if (has(fb.guest_country)) cp.country = fb.guest_country;
+        if (Object.keys(cp).length > 1) {
+          await admin.from('booking_contacts').upsert(cp, { onConflict: 'booking_id' });
+        }
       } catch {}
 
       // move documents form → booking
@@ -251,7 +257,7 @@ export async function PATCH(
       } catch {}
     }
 
-    return ok({ ok: true });
+    return ok({ ok: true, booking_id: targetBooking ? String(targetBooking.id) : null });
   } catch (e: any) {
     return bad(500, { error: "Server error", details: e?.message ?? String(e) });
   }
