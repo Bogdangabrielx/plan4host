@@ -242,20 +242,21 @@ async function createOrUpdateFromEvent(
     } catch {}
   }
 
-  // 1) match by UID
+  // 1) match by UID (or synthetic key for UID-less events)
   let icalBooking: any | null = null;
-  if (ev.uid) {
-    const rMap = await supa.from("ical_uid_map").select("booking_id").eq("property_id", feed.property_id).eq("uid", ev.uid).maybeSingle();
+  const uidKey = ev.uid || `no-uid:${feed.id}:${start_date}:${end_date}`;
+  try {
+    const rMap = await supa.from('ical_uid_map').select('booking_id').eq('property_id', feed.property_id).eq('uid', uidKey).maybeSingle();
     if (!rMap.error && rMap.data?.booking_id) {
-      const rBk = await supa.from("bookings").select("id,room_id,room_type_id,source,ical_uid,ota_integration_id").eq("id", rMap.data.booking_id).maybeSingle();
+      const rBk = await supa.from('bookings').select('id,room_id,room_type_id,source,ical_uid,ota_integration_id').eq('id', rMap.data.booking_id).maybeSingle();
       if (!rBk.error && rBk.data) icalBooking = rBk.data;
     }
-    if (!icalBooking) {
-      const rBk = await supa.from("bookings")
-        .select("id,room_id,room_type_id,source,ical_uid,ota_integration_id")
-        .eq("property_id", feed.property_id).eq("ical_uid", ev.uid).maybeSingle();
-      if (!rBk.error && rBk.data) icalBooking = rBk.data;
-    }
+  } catch {}
+  if (!icalBooking && ev.uid) {
+    const rBk = await supa.from('bookings')
+      .select('id,room_id,room_type_id,source,ical_uid,ota_integration_id')
+      .eq('property_id', feed.property_id).eq('ical_uid', ev.uid).maybeSingle();
+    if (!rBk.error && rBk.data) icalBooking = rBk.data;
   }
 
   // 2) fallback: aceleași date + (room_id|room_type_id) și source=ical
@@ -357,21 +358,19 @@ async function createOrUpdateFromEvent(
   }
 
   // 4) Upsert UID map
-  if (ev.uid) {
-    try {
-      await supa.from("ical_uid_map").upsert({
-        property_id: feed.property_id,
-        room_type_id: room_type_id_final ?? null,
-        room_id: room_id_final ?? null,
-        booking_id: bookingId,
-        uid: ev.uid,
-        source: feed.provider || "ical",
-        start_date, end_date, start_time: start_time ?? null, end_time: end_time ?? null,
-        integration_id: feed.id,
-        last_seen: new Date().toISOString(),
-      }, { onConflict: "property_id,uid" });
-    } catch {}
-  }
+  try {
+    await supa.from('ical_uid_map').upsert({
+      property_id: feed.property_id,
+      room_type_id: room_type_id_final ?? null,
+      room_id: room_id_final ?? null,
+      booking_id: bookingId,
+      uid: uidKey,
+      source: feed.provider || 'ical',
+      start_date, end_date, start_time: start_time ?? null, end_time: end_time ?? null,
+      integration_id: feed.id,
+      last_seen: new Date().toISOString(),
+    }, { onConflict: 'property_id,uid' });
+  } catch {}
 
   // 5) rezolvăm unassigned (best-effort)
   try {
