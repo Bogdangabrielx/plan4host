@@ -22,12 +22,19 @@ export async function POST(req: Request) {
     const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
     const admin = createClient(url, service, { auth: { persistSession: false } });
 
-    // 1) Resolve destination email (prefer client-provided, else booking_contacts.email, else bookings.guest_email)
+    // 1) Resolve destination email (prefer client-provided, else booking_contacts.email, else form_bookings.guest_email, else bookings.guest_email)
     let toEmail: string | null = (emailFromClient || "").trim() || null;
     if (!toEmail) {
       try {
         const r = await admin.from('booking_contacts').select('email').eq('booking_id', booking_id).maybeSingle();
         if (!r.error && r.data) toEmail = ((r.data as any).email || '').trim() || null;
+      } catch {}
+    }
+    if (!toEmail) {
+      // try form_bookings
+      try {
+        const r = await admin.from('form_bookings').select('guest_email').eq('id', booking_id).maybeSingle();
+        if (!r.error && r.data) toEmail = ((r.data as any).guest_email || '').trim() || null;
       } catch {}
     }
     if (!toEmail) {
@@ -61,7 +68,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ sent: true, duplicate: true });
       }
     } catch { /* ignore */ }
-    // Enrich email with booking details (room/type, stay interval, guest)
+    // Enrich email with details (prefer form_bookings; fallback to bookings)
     let roomTypeName: string | null = null;
     let roomName: string | null = null;
     let startYMD: string | null = null;
@@ -70,18 +77,18 @@ export async function POST(req: Request) {
     let guestLast: string | null = null;
     let validUntil: string | null = null;
     try {
-      const rB = await admin
-        .from('bookings')
-        .select('room_id, room_type_id, start_date, end_date, guest_first_name, guest_last_name, form_submitted_at, created_at')
+      // Try form_bookings first
+      const rF = await admin
+        .from('form_bookings')
+        .select('room_id, room_type_id, start_date, end_date, guest_first_name, guest_last_name, submitted_at, created_at')
         .eq('id', booking_id)
         .maybeSingle();
-      if (!rB.error && rB.data) {
-        const b: any = rB.data;
+      if (!rF.error && rF.data) {
+        const b: any = rF.data;
         startYMD = b.start_date || null;
         endYMD = b.end_date || null;
         guestFirst = (b.guest_first_name || null);
         guestLast = (b.guest_last_name || null);
-        // compute validity: 30 days AFTER start_date (works for bookings made months ahead)
         if (startYMD && /^\d{4}-\d{2}-\d{2}$/.test(startYMD)) {
           try {
             const base = new Date(`${startYMD}T00:00:00Z`);
@@ -109,6 +116,48 @@ export async function POST(req: Request) {
               }
             }
           } catch {}
+        }
+      } else {
+        // fallback: bookings
+        const rB = await admin
+          .from('bookings')
+          .select('room_id, room_type_id, start_date, end_date, guest_first_name, guest_last_name, form_submitted_at, created_at')
+          .eq('id', booking_id)
+          .maybeSingle();
+        if (!rB.error && rB.data) {
+          const b: any = rB.data;
+          startYMD = b.start_date || null;
+          endYMD = b.end_date || null;
+          guestFirst = (b.guest_first_name || null);
+          guestLast = (b.guest_last_name || null);
+          if (startYMD && /^\d{4}-\d{2}-\d{2}$/.test(startYMD)) {
+            try {
+              const base = new Date(`${startYMD}T00:00:00Z`);
+              const until = new Date(base.getTime());
+              until.setUTCDate(until.getUTCDate() + 30);
+              validUntil = `${String(until.getUTCDate()).padStart(2,'0')}.${String(until.getUTCMonth()+1).padStart(2,'0')}.${until.getUTCFullYear()}`;
+            } catch {}
+          }
+          const rtId = b.room_type_id || null;
+          const rId = b.room_id || null;
+          if (rtId) {
+            try {
+              const rT = await admin.from('room_types').select('name').eq('id', rtId).maybeSingle();
+              if (!rT.error && rT.data) roomTypeName = ((rT.data as any).name || null) as string | null;
+            } catch {}
+          }
+          if (rId) {
+            try {
+              const rR = await admin.from('rooms').select('name,room_type_id').eq('id', rId).maybeSingle();
+              if (!rR.error && rR.data) {
+                roomName = ((rR.data as any).name || null) as string | null;
+                if (!roomTypeName && (rR.data as any).room_type_id) {
+                  const rT2 = await admin.from('room_types').select('name').eq('id', (rR.data as any).room_type_id).maybeSingle();
+                  if (!rT2.error && rT2.data) roomTypeName = ((rT2.data as any).name || null) as string | null;
+                }
+              }
+            } catch {}
+          }
         }
       }
     } catch {}

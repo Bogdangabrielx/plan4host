@@ -65,7 +65,7 @@ export async function GET(req: Request) {
     // Load forms from dedicated table (open or linked)
     const rForms = await admin
       .from("form_bookings")
-      .select("id,property_id,room_id,room_type_id,start_date,end_date,state,guest_first_name,guest_last_name,created_at,submitted_at")
+      .select("id,property_id,room_id,room_type_id,start_date,end_date,state,guest_first_name,guest_last_name,created_at,submitted_at,ota_provider_hint")
       .eq("property_id", property_id)
       .order("start_date", { ascending: true });
     if (rForms.error) return NextResponse.json({ error: rForms.error.message }, { status: 500 });
@@ -88,7 +88,7 @@ export async function GET(req: Request) {
         _room_type_name: null,
         _reason: status === 'yellow' ? 'waiting_room' : null,
         _cutoff_ts: null,
-        _ota_provider: null,
+        _ota_provider: (f as any).ota_provider_hint ?? null,
         _ota_color: null,
         _ota_logo_url: null,
         _guest_first_name: f.guest_first_name ?? null,

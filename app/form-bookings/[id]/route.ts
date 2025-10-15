@@ -184,6 +184,19 @@ export async function PATCH(
       const uBk = await admin.from('bookings').update(upd).eq('id', targetBooking.id).select('id').maybeSingle();
       if (uBk.error) return bad(500, { error: uBk.error.message });
 
+      // Upsert contact from form into booking_contacts
+      try {
+        const contactPayload = {
+          booking_id: targetBooking.id,
+          email:   (booking as any).guest_email   ?? null,
+          phone:   (booking as any).guest_phone   ?? null,
+          address: (booking as any).guest_address ?? null,
+          city:    (booking as any).guest_city    ?? null,
+          country: (booking as any).guest_country ?? null,
+        } as any;
+        await admin.from('booking_contacts').upsert(contactPayload, { onConflict: 'booking_id' });
+      } catch {}
+
       // move documents form → booking
       try {
         const { data: fdocs } = await admin

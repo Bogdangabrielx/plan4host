@@ -372,7 +372,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "end_date must be after start_date" }, { status: 400 });
     }
 
-    const displayAddress = [address, city, country].map(v => (v ?? "").trim()).filter(Boolean).join(", ") || null;
+    const displayAddress = [address].map(v => (v ?? "").trim()).filter(Boolean).join(", ") || null;
 
     // Map ota_provider hint (slug) to display label
     function mapProviderLabel(hint?: any): string | null {
@@ -399,6 +399,8 @@ export async function POST(req: NextRequest) {
       guest_email:      email ?? null,
       guest_phone:      phone ?? null,
       guest_address:    displayAddress,
+      guest_city:       city ?? null,
+      guest_country:    country ?? null,
       submitted_at: new Date().toISOString(),
       state: 'open',
       ota_provider_hint: mapProviderLabel((body as any)?.ota_provider_hint),
