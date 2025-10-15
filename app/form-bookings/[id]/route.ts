@@ -141,24 +141,52 @@ export async function PATCH(
       if (!r) return bad(400, { error: "Invalid room_id for this property" });
     }
 
-    // Dacă se setează room_id → trebuie să existe un eveniment (booking) potrivit pentru acele date, nelipit de alt form
+    // Dacă se setează room_id → prevenim suprapunerea cu alte formulare pe aceeași cameră
     let targetBooking: any | null = null;
     if (room_id) {
-      const rEv = await admin
-        .from("bookings")
-        .select("id,room_id,start_date,end_date,status,source,form_id,guest_first_name,guest_last_name,guest_email,guest_phone")
-        .eq("property_id", propertyId)
-        .eq("room_id", room_id)
-        .eq("start_date", start_date)
-        .eq("end_date", end_date)
-        .neq("status", "cancelled")
-        .is("form_id", null)
-        .neq("source", "form")
-        .maybeSingle();
-      if (rEv.error || !rEv.data) {
-        return bad(409, { error: "No matching event found for this room and dates." });
+      const rForms = await admin
+        .from('form_bookings')
+        .select('id,start_date,end_date,state,room_id')
+        .eq('property_id', propertyId)
+        .eq('room_id', room_id)
+        .neq('id', id)
+        .neq('state', 'cancelled')
+        .lt('start_date', end_date)
+        .gt('end_date', start_date);
+      if (!rForms.error && (rForms.data?.length || 0) > 0) {
+        return bad(409, { error: 'Another form overlaps on this room.' });
       }
-      targetBooking = rEv.data;
+      // Anti-overlap cu rezervări active (confirmed / checked_in) pe aceeași cameră
+      try {
+        const rBk = await admin
+          .from('bookings')
+          .select('id,start_date,end_date,status')
+          .eq('property_id', propertyId)
+          .eq('room_id', room_id)
+          .in('status', ['confirmed','checked_in'])
+          .lt('start_date', end_date)
+          .gt('end_date', start_date)
+          .limit(1);
+        if (!rBk.error && (rBk.data?.length || 0) > 0) {
+          return bad(409, { error: 'Target room has an active confirmed reservation overlap.' });
+        }
+      } catch {}
+
+      // Opțional: încercăm să găsim un eveniment existent pentru link (dacă există); nu este obligatoriu
+      try {
+        const rEv = await admin
+          .from('bookings')
+          .select('id,room_id,start_date,end_date,status,source,form_id,guest_first_name,guest_last_name,guest_email,guest_phone')
+          .eq('property_id', propertyId)
+          .eq('room_id', room_id)
+          .eq('start_date', start_date)
+          .eq('end_date', end_date)
+          .neq('status', 'cancelled')
+          .is('form_id', null)
+          .neq('source', 'form')
+          .maybeSingle();
+        if (!rEv.error && rEv.data) targetBooking = rEv.data;
+      } catch {}
     }
 
     // a) Update form

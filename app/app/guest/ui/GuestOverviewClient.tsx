@@ -1074,7 +1074,7 @@ function EditFormBookingModal({
 
   // property shapes
   const [rooms, setRooms] = useState<Array<{ id: string; name: string; room_type_id: string | null }>>([]);
-  const [eligibleRooms, setEligibleRooms] = useState<Set<string>>(new Set());
+  const [formBusyRooms, setFormBusyRooms] = useState<Set<string>>(new Set());
   const [roomTypes, setRoomTypes] = useState<Array<{ id: string; name: string }>>([]);
   const hasRoomTypes = roomTypes.length > 0;
 
@@ -1153,6 +1153,35 @@ function EditFormBookingModal({
     return true;
   }
 
+  // Warn-only: compute rooms that already have another active form overlapping the selected dates
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!propertyId || !startDate || !endDate) { if (!cancelled) setFormBusyRooms(new Set()); return; }
+        const r = await supabase
+          .from('form_bookings')
+          .select('room_id,id,state,start_date,end_date')
+          .eq('property_id', propertyId)
+          .neq('id', bookingId)
+          .neq('state', 'cancelled')
+          .lt('start_date', endDate)
+          .gt('end_date', startDate);
+        if (!r.error) {
+          const set = new Set<string>();
+          for (const row of (r.data || [])) {
+            const rid = String((row as any).room_id || '');
+            if (rid) set.add(rid);
+          }
+          if (!cancelled) setFormBusyRooms(set);
+        }
+      } catch {
+        if (!cancelled) setFormBusyRooms(new Set());
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [supabase, propertyId, startDate, endDate, bookingId]);
+
   // Compute eligible rooms (have an event for the exact form dates and no form attached)
   useEffect(() => {
     let cancelled = false;
@@ -1186,15 +1215,27 @@ function EditFormBookingModal({
     setSaving(true);
     setError(null);
     try {
-      // Gate: selected room must have a matching event for these dates
-      if (roomId && !eligibleRooms.has(String(roomId))) {
-        const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
-        const msg = `No matching event on ${roomName} for the selected dates.`;
-        setError(msg);
-        setPopupTitle('Cannot save');
-        setPopupMsg(msg);
-        setSaving(false);
-        return;
+      // Prevent overlap with another active form on the same room (partial or full)
+      if (roomId) {
+        const r = await supabase
+          .from('form_bookings')
+          .select('id')
+          .eq('property_id', propertyId)
+          .eq('room_id', roomId)
+          .neq('id', bookingId)
+          .neq('state', 'cancelled')
+          .lt('start_date', endDate)
+          .gt('end_date', startDate)
+          .limit(1);
+        if (!r.error && (r.data?.length || 0) > 0) {
+          const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
+          const msg = `Cannot save: another form overlaps on room ${roomName}.`;
+          setError(msg);
+          setPopupTitle('Cannot save');
+          setPopupMsg(msg);
+          setSaving(false);
+          return;
+        }
       }
 
       const upd: any = {
@@ -1500,10 +1541,10 @@ function EditFormBookingModal({
                 >
                   <option value="">—</option>
                   {rooms.map(r => {
-                    const eligible = eligibleRooms.has(String(r.id));
+                    const busy = formBusyRooms.has(String(r.id));
                     return (
-                      <option key={r.id} value={r.id} disabled={!eligible}>
-                        {r.name}{eligible ? '' : ' — no event'}
+                      <option key={r.id} value={r.id}>
+                        {r.name}{busy ? ' — has form' : ''}
                       </option>
                     );
                   })}
@@ -2120,4 +2161,8 @@ function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values, temp
       )}
     </>
   );
+}
+
+function setEligibleRooms(set: Set<string>) {
+  throw new Error("Function not implemented.");
 }
