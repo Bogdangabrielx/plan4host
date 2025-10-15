@@ -173,28 +173,51 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
     const ciKey = toKey(ciLocal.y, ciLocal.m, ciLocal.d, ciLocal.h, ciLocal.mi, ciLocal.s);
     const coKey = toKey(coLocal.y, coLocal.m, coLocal.d, coLocal.h, coLocal.mi, coLocal.s);
 
-    const items = templates.map(t => {
-      const snap = (snapshotItems || []).find(s => s.id === t.id) || null;
-      // Prefer snapshot blocks (frozen content with token placeholders); fallback to live blocks
-      const arr = (snap?.blocks && Array.isArray(snap.blocks) && snap.blocks.length > 0) ? snap.blocks : (byTpl.get(t.id) || []);
-      // Use snapshot content if available; otherwise render now
-      const html_ro = snap?.html_ro ?? renderBlocks(arr, 'ro');
-      const html_en = snap?.html_en ?? renderBlocks(arr, 'en');
-      const kind = ((snap?.schedule_kind || t.schedule_kind || 'none') as string).toLowerCase();
-      let visible = false;
-      const offRaw: any = (snap?.schedule_offset_hours ?? t.schedule_offset_hours);
-      const off = (typeof offRaw === 'number' && !isNaN(offRaw)) ? Number(offRaw) : null;
-      let dueLocal = null as null | { y:number;m:number;d:number;h:number;mi:number;s:number };
-      let dueKey = '';
-      if (kind === 'hour_before_checkin') { const h = (off ?? 1); dueLocal = addHoursLocal(ciLocal, -h); }
-      else if (kind === 'hours_before_checkout') { const h = (off ?? 12); dueLocal = addHoursLocal(coLocal, -h); }
-      else if (kind === 'on_arrival') { dueLocal = ciLocal; }
-      else if (kind === 'none') { visible = false; }
-      if (dueLocal) { dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); visible = nowKey >= dueKey; }
-      const base = { id: t.id, title: (snap?.title || t.title || 'Message'), schedule_kind: (snap?.schedule_kind || t.schedule_kind || 'none'), html_ro, html_en, visible } as any;
-      if (wantDebug) base.debug = { tz: propTz, now_key: nowKey, ci_key: ciKey, co_key: coKey, due_key: dueKey || null, offset_hours: off ?? null, check_in_time: ciTimeRaw, check_out_time: coTimeRaw };
-      return base;
-    });
+    const items = (snapshotItems && snapshotItems.length > 0)
+      ? (() => {
+          // Build items STRICTLY from snapshot set (freeze skeleton); variables remain dynamic at render
+          return (snapshotItems as Array<{ id:string; title?:string; schedule_kind?:string|null; schedule_offset_hours?:number|null; blocks?:any[] }>)
+            .map((snap) => {
+              const arr = Array.isArray(snap.blocks) ? snap.blocks : [];
+              const html_ro = renderBlocks(arr, 'ro');
+              const html_en = renderBlocks(arr, 'en');
+              const kind = String(snap.schedule_kind || 'none').toLowerCase();
+              const offRaw: any = snap.schedule_offset_hours;
+              const off = (typeof offRaw === 'number' && !isNaN(offRaw)) ? Number(offRaw) : null;
+              let visible = false;
+              let dueLocal = null as null | { y:number;m:number;d:number;h:number;mi:number;s:number };
+              let dueKey = '';
+              if (kind === 'hour_before_checkin') { const h = (off ?? 1); dueLocal = addHoursLocal(ciLocal, -h); }
+              else if (kind === 'hours_before_checkout') { const h = (off ?? 12); dueLocal = addHoursLocal(coLocal, -h); }
+              else if (kind === 'on_arrival') { dueLocal = ciLocal; }
+              else if (kind === 'none') { visible = false; }
+              if (dueLocal) { dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); visible = nowKey >= dueKey; }
+              const base = { id: String(snap.id), title: (snap.title || 'Message'), schedule_kind: (snap.schedule_kind || 'none'), html_ro, html_en, visible } as any;
+              if (wantDebug) base.debug = { tz: propTz, now_key: nowKey, ci_key: ciKey, co_key: coKey, due_key: dueKey || null, offset_hours: off ?? null, check_in_time: ciTimeRaw, check_out_time: coTimeRaw };
+              return base;
+            });
+        })()
+      : (
+          // No snapshot: use LIVE templates (backward compatibility)
+          templates.map(t => {
+            const arr = byTpl.get(t.id) || [];
+            const html_ro = renderBlocks(arr, 'ro');
+            const html_en = renderBlocks(arr, 'en');
+            const kind = (t.schedule_kind || 'none').toLowerCase();
+            let visible = false;
+            const off = (typeof t.schedule_offset_hours === 'number' && !isNaN(t.schedule_offset_hours)) ? Number(t.schedule_offset_hours) : null;
+            let dueLocal = null as null | { y:number;m:number;d:number;h:number;mi:number;s:number };
+            let dueKey = '';
+            if (kind === 'hour_before_checkin') { const h = (off ?? 1); dueLocal = addHoursLocal(ciLocal, -h); }
+            else if (kind === 'hours_before_checkout') { const h = (off ?? 12); dueLocal = addHoursLocal(coLocal, -h); }
+            else if (kind === 'on_arrival') { dueLocal = ciLocal; }
+            else if (kind === 'none') { visible = false; }
+            if (dueLocal) { dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); visible = nowKey >= dueKey; }
+            const base = { id: t.id, title: t.title || 'Message', schedule_kind: t.schedule_kind || 'none', html_ro, html_en, visible } as any;
+            if (wantDebug) base.debug = { tz: propTz, now_key: nowKey, ci_key: ciKey, co_key: coKey, due_key: dueKey || null, offset_hours: off ?? null, check_in_time: ciTimeRaw, check_out_time: coTimeRaw };
+            return base;
+          })
+        );
 
     return NextResponse.json(
       { ok: true, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at, items,
