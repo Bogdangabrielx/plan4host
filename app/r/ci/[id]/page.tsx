@@ -19,7 +19,7 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   let docs: Doc[] = [];
   try {
     const rB = await admin
-      .from('bookings')
+      .from('form_bookings')
       .select('id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, room_id, room_type_id, form_submitted_at, created_at')
       .eq('id', bookingId)
       .maybeSingle();
