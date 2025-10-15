@@ -72,7 +72,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
     const prop = rProp.data as any;
 
     // Prepare snapshot content if present
-    let snapshotItems: Array<{ id:string; title?:string; html_ro?:string; html_en?:string }> | null = null;
+    let snapshotItems: Array<{ id:string; title?:string; html_ro?:string; html_en?:string; schedule_kind?: string | null; schedule_offset_hours?: number | null; blocks?: Array<{ sort_index:number; type:string; lang?:string; text?:string | null }> }> | null = null;
     try { snapshotItems = (msg as any)?.snapshot_items || null; } catch {}
 
     // all published templates for this property
@@ -174,14 +174,16 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
     const coKey = toKey(coLocal.y, coLocal.m, coLocal.d, coLocal.h, coLocal.mi, coLocal.s);
 
     const items = templates.map(t => {
-      const arr = byTpl.get(t.id) || [];
-      // Use snapshot content if available; otherwise render now
       const snap = (snapshotItems || []).find(s => s.id === t.id) || null;
+      // Prefer snapshot blocks (frozen content with token placeholders); fallback to live blocks
+      const arr = (snap?.blocks && Array.isArray(snap.blocks) && snap.blocks.length > 0) ? snap.blocks : (byTpl.get(t.id) || []);
+      // Use snapshot content if available; otherwise render now
       const html_ro = snap?.html_ro ?? renderBlocks(arr, 'ro');
       const html_en = snap?.html_en ?? renderBlocks(arr, 'en');
-      const kind = (t.schedule_kind || 'none').toLowerCase();
+      const kind = ((snap?.schedule_kind || t.schedule_kind || 'none') as string).toLowerCase();
       let visible = false;
-      const off = (typeof t.schedule_offset_hours === 'number' && !isNaN(t.schedule_offset_hours)) ? Number(t.schedule_offset_hours) : null;
+      const offRaw: any = (snap?.schedule_offset_hours ?? t.schedule_offset_hours);
+      const off = (typeof offRaw === 'number' && !isNaN(offRaw)) ? Number(offRaw) : null;
       let dueLocal = null as null | { y:number;m:number;d:number;h:number;mi:number;s:number };
       let dueKey = '';
       if (kind === 'hour_before_checkin') { const h = (off ?? 1); dueLocal = addHoursLocal(ciLocal, -h); }
@@ -189,18 +191,10 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
       else if (kind === 'on_arrival') { dueLocal = ciLocal; }
       else if (kind === 'none') { visible = false; }
       if (dueLocal) { dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); visible = nowKey >= dueKey; }
-      const base = { id: t.id, title: (snap?.title || t.title || 'Message'), schedule_kind: t.schedule_kind || 'none', html_ro, html_en, visible } as any;
+      const base = { id: t.id, title: (snap?.title || t.title || 'Message'), schedule_kind: (snap?.schedule_kind || t.schedule_kind || 'none'), html_ro, html_en, visible } as any;
       if (wantDebug) base.debug = { tz: propTz, now_key: nowKey, ci_key: ciKey, co_key: coKey, due_key: dueKey || null, offset_hours: off ?? null, check_in_time: ciTimeRaw, check_out_time: coTimeRaw };
       return base;
     });
-
-    // Persist snapshot at first view (content only; visibility remains dynamic)
-    if (!snapshotItems) {
-      try {
-        const snap = items.map(it => ({ id: it.id, title: it.title, html_ro: it.html_ro, html_en: it.html_en }));
-        await admin.from('reservation_messages').update({ snapshot_items: snap as any }).eq('id', msg.id);
-      } catch {}
-    }
 
     return NextResponse.json(
       { ok: true, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at, items,

@@ -65,10 +65,10 @@ export async function GET(req: NextRequest) {
     const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
     const admin = createClient(url, service, { auth: { persistSession: false } });
 
-    // Load active reservation messages (tokens)
-    const rMsgs = await admin.from('reservation_messages').select('id,property_id,booking_id,token,status').eq('status','active');
+    // Load active reservation messages (tokens) — include snapshot_items for freeze
+    const rMsgs = await admin.from('reservation_messages').select('id,property_id,booking_id,token,status,snapshot_items').eq('status','active');
     if (rMsgs.error) return bad(400, { error: rMsgs.error.message });
-    const messages = (rMsgs.data || []) as Array<{ id:string; property_id:string; booking_id:string; token:string; }>;
+    const messages = (rMsgs.data || []) as Array<{ id:string; property_id:string; booking_id:string; token:string; snapshot_items?: any }>; 
 
     // Preload templates per property
     const propIds = Array.from(new Set(messages.map(m => m.property_id)));
@@ -96,7 +96,11 @@ export async function GET(req: NextRequest) {
     let sentCount = 0;
 
     for (const m of messages) {
-      const tpls = byPropTpl.get(m.property_id) || [];
+      // Use snapshot templates for this message if present; otherwise published templates
+      const snap = (m as any).snapshot_items as Array<{ id:string; schedule_kind?: string|null; schedule_offset_hours?: number|null }> | null | undefined;
+      const tpls = (snap && Array.isArray(snap) && snap.length > 0)
+        ? snap
+        : (byPropTpl.get(m.property_id) || []);
       if (tpls.length === 0) continue;
 
       // booking + property + contact
@@ -131,8 +135,9 @@ export async function GET(req: NextRequest) {
       const coLocal = { y: coD.y, m: coD.m, d: coD.d, h: coT.h, mi: coT.m, s: coT.s };
 
       for (const t of tpls) {
-        const kind = (t.schedule_kind || 'none').toLowerCase();
-        const off = (typeof t.schedule_offset_hours === 'number' && !isNaN(t.schedule_offset_hours)) ? Number(t.schedule_offset_hours) : null;
+        const kind = (String((t as any).schedule_kind || 'none')).toLowerCase();
+        const offRaw: any = (t as any).schedule_offset_hours;
+        const off = (typeof offRaw === 'number' && !isNaN(offRaw)) ? Number(offRaw) : null;
         let due = false;
         if (kind === 'hour_before_checkin') { const h = (off ?? 1); const dueLocal = addHoursLocal(ciLocal, -h); const dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); due = nowKey >= dueKey; }
         else if (kind === 'hours_before_checkout') { const h = (off ?? 12); const dueLocal = addHoursLocal(coLocal, -h); const dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); due = nowKey >= dueKey; }
@@ -141,7 +146,7 @@ export async function GET(req: NextRequest) {
         if (!due) continue;
 
         // Idempotency: skip if already sent for this template
-        const subjTag = `[tpl:${t.id}]`;
+        const subjTag = `[tpl:${(t as any).id}]`;
         const rOut = await admin
           .from('email_outbox')
           .select('id')

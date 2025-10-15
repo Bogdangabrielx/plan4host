@@ -24,6 +24,18 @@ Acest document descrie logică, rute, migrări și fluxuri pentru noile funcțio
 - `supabase/migrations/2025-10-13_reservation_template_schedule.sql`
   - `reservation_templates`: `schedule_kind text` (una dintre: `hour_before_checkin`, `on_arrival`, `hours_before_checkout`, `none`), `schedule_offset_hours integer` (ex: 1h înainte de check‑in, 12h înainte de check‑out).
 
+- `supabase/migrations/2025-10-14_property_contact_overlay_position.sql`
+  - `properties`: `contact_overlay_position text check (in 'top'|'center'|'down')` — poziționare card contact (glass) în banner.
+
+- `supabase/migrations/2025-10-14_property_social_links.sql`
+  - `properties`: `social_facebook`, `social_instagram`, `social_tiktok`, `social_website` — linkuri sociale (opționale) afișate în Messages View sub imaginea de prezentare.
+
+- `supabase/migrations/2025-10-15_reservation_message_snapshots.sql`
+  - `reservation_messages`: `snapshot_items jsonb` — snapshot per token al șabloanelor publicate la momentul confirmării camerei (set înghețat: titlu + blocuri sursă + programare).
+
+- `supabase/migrations/2025-10-15_reservation_message_snapshot_trigger.sql`
+  - Funcție `public.snapshot_rm_for_booking(b_id uuid)` + trigger AFTER INSERT/UPDATE pe `public.bookings` (când `status='confirmed'` și `room_id` nu e null) — salvează snapshot dacă tokenul există și nu are încă snapshot.
+
 ---
 
 ## 2) API — rute noi/actualizate (server)
@@ -31,15 +43,21 @@ Acest document descrie logică, rute, migrări și fluxuri pentru noile funcțio
 - Upload poză prezentare proprietate: `app/api/property/profile/upload/route.ts`
 - Upload PDF Regulament (existent): `app/api/property/regulation/upload/route.ts`
 - Public catalog proprietate extins cu contact + imagine: `app/api/public/property-catalog/route.ts`
+  - Include: `contact_overlay_position` (poziționare card) și linkuri sociale (dacă sunt definite).
 - Public message page (token) extins:
   - `app/api/reservation-message/public/[token]/route.ts` → returnează:
     - `details` (property_name, guest_first_name/last_name, start_date, end_date, room_name)
-    - `items[]` (lista template‑uri publicate: `id, title, schedule_kind, html_ro, html_en, visible`)
+    - `items[]`:
+      - Dacă există `snapshot_items` pentru token → lista vine din snapshot (set înghețat la confirmare)
+      - Altfel → din șabloanele publicate live
+      - Pentru fiecare item: `id, title, schedule_kind, html_ro, html_en, visible`
+      - Variabilele se înlocuiesc dinamic la randare (titlu + corp), din blocurile sursă cu tokeni
 - Confirmare cameră → e‑mail de confirmare rezervare + generare token (dacă lipsește):
   - `app/api/reservation-message/confirm-room/route.ts`
 - Cron de trimitere mesaje programate (e‑mail):
   - `app/api/reservation-message/cron/dispatch/route.ts`
   - Autorizare: header `x-vercel-cron` (Vercel Cron) sau `?key=CRON_SECRET`.
+  - Folosește `snapshot_items` când există (set înghețat + programare înghețată); altfel șabloanele publicate live.
 - Template GET/POST extins cu `lang` și `schedule_*`: `app/api/reservation-message/template/route.ts`
 
 ---
@@ -54,6 +72,8 @@ Acest document descrie logică, rute, migrări și fluxuri pentru noile funcțio
     - Editare date contact proprietate: email, telefon, adresă
     - Upload / Replace poză de prezentare (bucket `property-media`)
     - Copiere “Check‑in link” (cu popup de selectare sursă: Manual + provideri ical agregați), linkul include `?source=<slug>`
+    - Poziționare card contact în banner: selector `top | center | down` (persistat în `properties.contact_overlay_position`)
+    - Linkuri sociale: Facebook, Instagram, TikTok, Website — editor icon‑only care deschide un textbox; salvează automat la click‑away sau când comuți între butoane; Messages View afișează iconurile doar dacă există link
 
 - Check‑in (public): `app/checkin/ui/CheckinClient.tsx`
   - Afișează card “Property info” (imagine prezentare + contact) ca **glass overlay** centrat peste poză; vizibil permanent.
