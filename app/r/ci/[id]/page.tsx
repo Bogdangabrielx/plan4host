@@ -58,6 +58,7 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   }
   const ICON_PROPERTY = { dark: '/dashboard_fordark.png', light: '/dashboard_forlight.png' } as const;
   const ICON_NIGHT = { dark: '/night_fordark.png', light: '/night_forlight.png' } as const;
+  const ICON_QR = { dark: '/QR_fordark.png', light: '/QR_forlight.png' } as const;
 
   function Icon({ pair, size = 16 }: { pair: { dark: string; light: string }; size?: number }) {
     return (
@@ -197,9 +198,9 @@ export default async function CheckinQrView({ params }: { params: { id: string }
               <>
                 <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
                 <div aria-hidden style={{ width:18 }}>
-                  <Icon pair={ICON_NIGHT} />
+                  <Icon pair={ICON_QR} />
                 </div>
-                <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Valid until</div>
+                <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>QR valid until</div>
                 <div>{validUntilText}</div>
               </>
             )}

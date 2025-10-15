@@ -1,6 +1,6 @@
 # Plan4Host — Referință Obiecte DB (funcții, RLS, triggere, RPC, tabele)
 
-Ultima actualizare: 2025‑09‑13
+Ultima actualizare: 2025‑10‑15
 
 Acest document descrie obiectele principale din schema `public` (și `auth` acolo unde e cazul), modelul de izolare pe tenant, regulile de acces (RLS) și fluxurile de onboarding/trial. Este un companion practic pentru debugging și evoluții ulterioare.
 
@@ -32,6 +32,13 @@ Acest document descrie obiectele principale din schema `public` (și `auth` acol
 - iCal/sync:
   - `account_can_sync_now_v2(p_account_id uuid, p_event_type text) -> jsonb`
   - `account_register_sync_usage_v2(p_account_id uuid, p_event_type text) -> void`
+  
+- Reservation Messages (freeze schelet la confirmare):
+  - `snapshot_rm_for_booking(b_id uuid) -> void`
+    - Generează snapshot în `reservation_messages.snapshot_items` pentru tokenul rezervării (dacă există) la momentul confirmării camerei.
+    - Snapshotul conține setul înghețat de șabloane publicate (id, title cu tokeni), programarea (schedule_kind/offset) și blocurile sursă (RO/EN) cu tokeni ({{VAR}}).
+  - `trg_snapshot_rm_for_booking() RETURNS trigger`
+    - Funcție wrapper pentru trigger, apelează `snapshot_rm_for_booking(NEW.id)` și `RETURN NEW`.
 
 ## 2) Tabele cheie
 - `accounts(id, plan, valid_until, trial_ends_at, created_at, …)`
@@ -43,6 +50,9 @@ Acest document descrie obiectele principale din schema `public` (și `auth` acol
 - Cleaning: `cleaning_task_defs`, `cleaning_progress`
 - iCal/Channels: `ical_type_integrations`, `ical_unassigned_events`, `ical_uid_map`, `ical_type_sync_logs`
 - Guests: `checkin_forms`, `booking_contacts`, `booking_documents`
+  
+- Reservation Messages: `reservation_templates`, `reservation_template_blocks`, `reservation_template_fields`, `reservation_messages(snapshot_items jsonb)`
+  - `reservation_messages.snapshot_items`: array JSON cu scheletul înghețat (set de șabloane + titluri + blocuri sursă + programare) pentru token; variabilele rămân dinamice la randare.
 
 ## 3) RLS (izolare pe tenant + rol/scope)
 - Principii:
@@ -78,7 +88,11 @@ Acest document descrie obiectele principale din schema `public` (și `auth` acol
 ## 4) Triggere active
 - `auth.users` → `public.handle_new_user()` (AFTER INSERT)
   - Creează tenant + admin + trial pentru user nou (signup/OAuth), sare pentru sub_users.
-- (Nu folosim triggere custom pentru Team sau Cleaning; gatingul e în RLS).
+  - (Nu folosim triggere custom pentru Team sau Cleaning; gatingul e în RLS).
+  
+- `bookings` → `public.trg_snapshot_rm_for_booking()` (AFTER INSERT OR UPDATE)
+  - When: `NEW.status='confirmed' AND NEW.room_id IS NOT NULL`
+  - Efect: dacă există rând în `reservation_messages` pentru acest booking și `snapshot_items` e null, apelează `snapshot_rm_for_booking(NEW.id)` pentru a salva scheletul înghețat.
 
 ## 5) RPC / Endpoints (server)
 - Convenabile UI:
@@ -103,6 +117,10 @@ select * from public.properties limit 5;
 ```
 
 ## 7) Changelog (scurt)
+- 2025‑10‑15
+  - Freeze schelet mesaje la confirmare cameră: coloană `reservation_messages.snapshot_items`, funcție `snapshot_rm_for_booking`, trigger `trg_snapshot_rm_for_booking`.
+  - API public `/r/[token]` randare din snapshot (blocuri sursă cu tokeni) + variabile dinamice; vizibilitatea calculată din programarea înghețată.
+  - Cron e‑mail: folosește snapshot-ul când există; fallback la șabloane live pentru token-uri fără snapshot.
 - 2025‑09‑13
   - Eliminat `public.account_plan` și funcțiile derivate; consolidat pe `accounts.plan`.
   - Adăugat `accounts.trial_ends_at` și actualizat `account_grant_trial()`.
