@@ -455,6 +455,15 @@ export default function CheckinClient() {
   const [confirmStatus, setConfirmStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const [confirmError, setConfirmError] = useState<string>("");
   const [qrUrl, setQrUrl] = useState<string>("");
+  const confirmCardRef = useRef<HTMLDivElement | null>(null);
+
+  // Ensure the confirmation modal is visible and focused when opened
+  useEffect(() => {
+    if (confirmOpen) {
+      try { window.scrollTo({ top: 0, left: 0, behavior: 'smooth' }); } catch {}
+      try { confirmCardRef.current?.focus(); } catch {}
+    }
+  }, [confirmOpen]);
 
   // responsive helper: 1 col sub 560px
   const [isNarrow, setIsNarrow] = useState(false);
@@ -1452,7 +1461,13 @@ export default function CheckinClient() {
       {confirmOpen && (
         <div role="dialog" aria-modal="true" onClick={()=>{ if (confirmStatus !== 'sending') setConfirmOpen(false); }}
           style={{ position:'fixed', inset:0, zIndex: 300, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(540px, 100%)', padding:16 }}>
+          <div
+            ref={confirmCardRef}
+            tabIndex={-1}
+            onClick={(e)=>e.stopPropagation()}
+            className="sb-card"
+            style={{ width:'min(540px, 100%)', padding:16 }}
+          >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <strong>Confirmation Email</strong>
               {confirmStatus !== 'sending' && (
@@ -1460,9 +1475,12 @@ export default function CheckinClient() {
               )}
             </div>
             {confirmStatus === 'sending' && (
-              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <span style={{ width:10, height:10, borderRadius:999, background:'var(--primary)', animation:'p4h-pulse 1.2s infinite' }} />
-                <span>Sending…</span>
+              <div aria-live="polite" style={{ display:'grid', gap:8 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <span style={{ width:10, height:10, borderRadius:999, background:'var(--primary)', animation:'p4h-pulse 1.2s infinite' }} />
+                  <span>Sending…</span>
+                </div>
+                <small style={{ color:'var(--muted)' }}>Please wait while we send your confirmation email.</small>
               </div>
             )}
             {confirmStatus === 'sent' && (
