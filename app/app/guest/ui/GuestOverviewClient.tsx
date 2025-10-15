@@ -1550,7 +1550,7 @@ function EditFormBookingModal({
                     const busy = formBusyRooms.has(String(r.id));
                     return (
                       <option key={r.id} value={r.id}>
-                        {r.name}{busy ? ' — has form' : ''}
+                        {r.name}{busy ? ' — booked' : ''}
                       </option>
                     );
                   })}
