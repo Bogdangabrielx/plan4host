@@ -111,7 +111,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
       { key: 'facebook', url: prop.social_facebook || null, icon: '/facebook_forlight.png', label: 'Facebook' },
       { key: 'instagram', url: prop.social_instagram || null, icon: '/instagram_forlight.png', label: 'Instagram' },
       { key: 'tiktok', url: prop.social_tiktok || null, icon: '/tiktok_forlight.png', label: 'TikTok' },
-      { key: 'site', url: prop.social_website || null, icon: '/site_forlight.png', label: 'Website' },
+      { key: 'site', url: prop.social_website || null, icon: '/website_forlight.png', label: 'Website' },
     ].filter(x => !!x.url);
     if (links.length === 0) return null;
     return (
