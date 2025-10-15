@@ -604,23 +604,6 @@ export default function CheckinClient() {
     display: "grid", gap: 12, gridTemplateColumns: "1fr",
   }), []);
 
-  // Sparkle border trigger for submit CTA (mobile)
-  const sparkleRef = useRef<HTMLButtonElement | null>(null);
-  const sparkleTimerRef = useRef<number | null>(null);
-  function triggerSparkle() {
-    try {
-      const isTouch = typeof window !== 'undefined' && window.matchMedia?.('(hover: none)')?.matches;
-      if (!isTouch) return;
-      const el = sparkleRef.current;
-      if (!el) return;
-      el.setAttribute('data-animate', 'true');
-      if (sparkleTimerRef.current) window.clearTimeout(sparkleTimerRef.current);
-      sparkleTimerRef.current = window.setTimeout(() => {
-        el.removeAttribute('data-animate');
-        sparkleTimerRef.current = null;
-      }, 1600); // keep the animation visible a bit longer on tap
-    } catch {}
-  }
 
   // 1) URL params
   useEffect(() => {
@@ -884,6 +867,10 @@ export default function CheckinClient() {
 
     setSubmitState("submitting");
     setErrorMsg("");
+    // Show confirmation modal immediately to indicate progress
+    setConfirmOpen(true);
+    setConfirmStatus("sending");
+    setConfirmError("");
 
     // asigură „commit” din combobox-uri înainte de trimis
     countryRef.current?.commit();
@@ -951,6 +938,7 @@ export default function CheckinClient() {
         const msg = j?.error || j?.message || "Submission failed. Please try again.";
         setErrorMsg(msg);
         setSubmitState("error");
+        setConfirmOpen(false);
         return;
       }
 
@@ -963,9 +951,6 @@ export default function CheckinClient() {
       const booking = (j?.id || null) as string | null;
       if (booking) {
         try { setQrUrl(`${window.location.origin.replace(/\/+$/, '')}/r/ci/${encodeURIComponent(booking)}`); } catch {}
-        setConfirmOpen(true);
-        setConfirmStatus("sending");
-        setConfirmError("");
         try {
           const r = await fetch('/api/checkin/confirm', {
             method: 'POST',
@@ -984,6 +969,7 @@ export default function CheckinClient() {
     } catch (err: any) {
       setErrorMsg(err?.message || "Unexpected error. Please try again.");
       setSubmitState("error");
+      setConfirmOpen(false);
     }
   }
 
@@ -1448,10 +1434,8 @@ export default function CheckinClient() {
                 Cancel
               </button>
               <button
-                ref={sparkleRef}
                 type="submit"
                 disabled={!canSubmit}
-                onPointerDown={triggerSparkle}
                 className={`${homeStyles.btn} ${homeStyles.btnText} ${homeStyles.btnPrimary}`}
                 style={{ opacity: canSubmit ? 1 : 0.6, cursor: canSubmit ? "pointer" : "not-allowed" }}
               >
