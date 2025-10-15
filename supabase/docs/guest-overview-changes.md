@@ -12,6 +12,12 @@ Acest document descrie modificările recente ale ecranului Guest Overview și re
 - „Open reservation” deschide Room Detail pentru camera alocată, cu datele rezervării drept default.
 - La „Automatic Message”, după ce selectezi un template, preview‑ul înlocuiește variabilele cu valori (fără „chip-uri” când lipsesc valori).
 
+### Reguli de confirmare și mutare
+- Confirmarea unei rezervări provenite din formular se face EXCLUSIV la selectarea unei camere (`room_id`):
+  - Dacă nu există suprapunere cu alte rezervări active pe cameră (status IN ('confirmed','checked_in')) → setăm `status='confirmed'` pentru formularul respectiv.
+  - Rezervările cu status HOLD/PENDING nu blochează alocarea (pot coexista în aceeași fereastră până la confirmarea form‑ului).
+- Mutarea unei rezervări confirmate (schimbarea camerei) este permisă DOAR dacă, pe noua cameră, NU există nicio suprapunere (parțială sau completă) cu o altă rezervare activă (`status IN ('confirmed','checked_in')`). NICIODATĂ nu se mută „peste” o rezervare confirmată.
+
 ## Detalii de comportament
 ### Ce se afișează
 - Doar rânduri care provin din formulare de check-in (fără evenimente OTA/iCal). 
@@ -25,7 +31,7 @@ Acest document descrie modificările recente ale ecranului Guest Overview și re
 - Din acțiunea „Edit form booking”:
   - Poți schimba intervalul de ședere (start_date/end_date).
   - Poți selecta o cameră (direct pe `room_id`).
-  - La salvare, aplicăm un guard de suprapunere: dacă există o rezervare `confirmed` pe aceeași cameră și interval, salvarea este blocată cu mesaj explicit.
+  - La salvare, aplicăm un guard de suprapunere: dacă există o rezervare activă (`status IN ('confirmed','checked_in')`) pe aceeași cameră și interval, salvarea este blocată cu mesaj explicit; altfel formularul devine `status='confirmed'` odată lipit de cameră.
   - Dacă salvarea reușește, rezervarea este „mutată” pe noua cameră (camera veche rămâne liberă deoarece booking-ul nu mai aparține de ea).
 
 ### Open reservation
@@ -55,4 +61,3 @@ Acest document descrie modificările recente ale ecranului Guest Overview și re
 ## Posibile extinderi
 - Setarea automată a `bookings.status = 'confirmed'` la alegerea camerei (după trecerea de validarea de suprapunere), dacă se dorește formalizarea stării în DB.
 - Filtre/ordonări suplimentare (ex: doar viitoare, doar fără cameră, etc.).
-

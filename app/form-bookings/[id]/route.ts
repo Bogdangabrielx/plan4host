@@ -147,17 +147,18 @@ export async function PATCH(
     if (room_id) {
       const { data: conflicts } = await supa
         .from("bookings")
-        .select("id,start_date,end_date,status")
+        .select("id,start_date,end_date,start_time,end_time,status,source")
         .eq("property_id", propertyId)
         .eq("room_id", room_id)
-        .neq("status", "cancelled")
+        // Blochează doar rezervările active (confirmed); HOLD/pendente sunt ignorate
+        .in("status", ["confirmed","checked_in"]) 
         .neq("id", id);
 
-      const conflict = (conflicts || []).some(
-        (b: any) => overlap(start_date, end_date, b.start_date, b.end_date)
-      );
-      if (conflict) {
-        return bad(409, { error: "Selected room is not available for the chosen dates" });
+      const conflictHit = (conflicts || []).find((b: any) => overlap(start_date, end_date, b.start_date, b.end_date));
+      if (conflictHit) {
+        const src = (conflictHit.source || '').toString() || 'manual';
+        const msg = `Target room is occupied by an active reservation (source: ${src}) from ${conflictHit.start_date} to ${conflictHit.end_date}.`;
+        return bad(409, { error: msg, conflict: { id: conflictHit.id, source: conflictHit.source, start_date: conflictHit.start_date, end_date: conflictHit.end_date, start_time: conflictHit.start_time, end_time: conflictHit.end_time } });
       }
     }
 
@@ -170,6 +171,10 @@ export async function PATCH(
       room_id: room_id ?? null,
       updated_at: new Date().toISOString(),
     };
+    // Dacă s-a lipit pe o cameră → confirmă rezervarea provenită din formular
+    if (room_id) {
+      patch.status = 'confirmed';
+    }
 
     const { error: eUpd } = await supa.from("bookings").update(patch).eq("id", id);
     if (eUpd) return bad(500, { error: eUpd.message });

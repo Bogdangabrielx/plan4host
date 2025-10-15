@@ -36,6 +36,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const body = await req.json().catch(() => ({}));
     const wantEndDate: string | undefined = body?.end_date;
     const wantEndTime: string | undefined = body?.end_time;
+    const wantRoomId: string | undefined = body?.room_id ? String(body.room_id) : undefined;
 
     // 0) Booking + Property (pt. CI/CO)
     const rBk = await admin
@@ -87,7 +88,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         .from("bookings")
         .select("id,start_date,start_time,end_date,end_time,status")
         .eq("room_id", b.room_id)
-        .neq("status", "cancelled")
+        // Blochează doar rezervările active (confirmate / checked_in)
+        .in("status", ["confirmed", "checked_in"]) 
         .neq("id", id);
 
       if (rOthers.error) {
@@ -108,10 +110,41 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       }
     }
 
-    // 4) Persistă
+    // 4) Mutare în altă cameră (opțional), cu guard anti-overlap
+    let patch: any = { end_date: newEndDate, end_time: newEndTime };
+    if (typeof wantRoomId === 'string' && wantRoomId && wantRoomId !== (b.room_id || '')) {
+      // a) Validare că noua cameră aparține aceleiași proprietăți
+      const rRoom = await admin.from('rooms').select('id, property_id, room_type_id').eq('id', wantRoomId).maybeSingle();
+      if (rRoom.error || !rRoom.data) return NextResponse.json({ error: 'Target room not found' }, { status: 404 });
+      if ((rRoom.data as any).property_id !== b.property_id) {
+        return NextResponse.json({ error: 'Target room is not in the same property' }, { status: 400 });
+      }
+      // b) Anti-overlap cu rezervări active în camera nouă, pe noul interval
+      const rConf = await admin
+        .from('bookings')
+        .select('id,start_date,start_time,end_date,end_time,status')
+        .eq('room_id', wantRoomId)
+        .in('status', ['confirmed','checked_in']);
+      if (rConf.error) {
+        return NextResponse.json({ error: rConf.error.message || 'Conflict check failed' }, { status: 400 });
+      }
+      for (const ob of (rConf.data ?? []) as Array<{ id:string; start_date:string; start_time:string|null; end_date:string; end_time:string|null; status:string|null }>) {
+        if (String(ob.id) === String(id)) continue;
+        const os = toDateTime(ob.start_date, ob.start_time, CI);
+        const oe = toDateTime(ob.end_date, ob.end_time, CO);
+        if (overlaps(startDT, newEndDT, os, oe)) {
+          return NextResponse.json({ error: `Target room has an active booking overlap (${ob.start_date} ${ob.start_time ?? ''} → ${ob.end_date} ${ob.end_time ?? ''})` }, { status: 409 });
+        }
+      }
+      // c) Permitem mutarea: setăm room_id și, opțional, sincronizăm room_type_id cu noua cameră
+      patch.room_id = wantRoomId;
+      patch.room_type_id = (rRoom.data as any).room_type_id ?? null;
+    }
+
+    // 5) Persistă
     const upd = await admin
       .from("bookings")
-      .update({ end_date: newEndDate, end_time: newEndTime })
+      .update(patch)
       .eq("id", id)
       .select("id")
       .maybeSingle();

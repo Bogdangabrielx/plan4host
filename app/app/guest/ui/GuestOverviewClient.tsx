@@ -1199,11 +1199,26 @@ function EditFormBookingModal({
         upd.room_type_id = null;
       }
 
-      const { error: e1 } = await supabase.from("bookings").update(upd).eq("id", bookingId);
-      if (e1) {
-        const msg = (e1 as any)?.message || '';
-        const isOverlap = /bookings_no_overlap|exclusion|23P01/i.test(msg || '');
-        throw new Error(isOverlap ? 'Overlaps an existing confirmed reservation on this room.' : msg);
+      // Send to server API to enforce anti-overlap and include conflict source in 409
+      const res = await fetch(`/form-bookings/${encodeURIComponent(bookingId)}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ start_date: startDate, end_date: endDate, room_id: roomId || null, room_type_id: roomTypeId || null })
+      });
+      const jj = await res.json().catch(()=>({}));
+      if (!res.ok) {
+        const roomName = rooms.find(rm => String(rm.id) === String(roomId || ''))?.name || '#Room';
+        let msg = jj?.error || 'Failed to save.';
+        if (res.status === 409) {
+          const src = (jj?.conflict?.source || '').toString() || 'manual';
+          const sd = jj?.conflict?.start_date || startDate;
+          const ed = jj?.conflict?.end_date || endDate;
+          msg = `Cannot save: target room ${roomName} has an active reservation overlap (source: ${src}) from ${sd} to ${ed}.`;
+        }
+        setError(msg);
+        setPopupTitle('Cannot save');
+        setPopupMsg(msg);
+        setSaving(false);
+        return;
       }
 
       // Open gating dialog to confirm emailing guest the room info
