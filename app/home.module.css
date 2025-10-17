@@ -608,7 +608,27 @@ html[data-standalone="true"] .skipLink { display: none !important; }
     pointer-events: none;
   }
 
+   .landing {
+  position: relative;
+  z-index: 0;          /* creează context de stivuire pentru pseudo-element */
+  isolation: isolate;  /* separă clar straturile interne */
+}
 
+/* Backdrop fix pe tot ecranul, sub conținut */
+.landing::before {
+  content: "";
+  position: fixed;
+  inset: 0;                 /* top/right/bottom/left: 0 */
+  background: var(--bg);    /* fundalul dorit */
+  z-index: 0;               /* sub conținutul landing-ului */
+  pointer-events: none;     /* să nu intercepteze click/touch */
+}
+
+/* Asigură-te că conținutul e peste backdrop */
+.landing > * {
+  position: relative;
+  z-index: 1;
+}
 
   
   /* Home-indicator bottom */
