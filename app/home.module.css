@@ -55,7 +55,14 @@
   gap: 20px; padding: 14px 20px;
   background: color-mix(in srgb, var(--bg) 92%, transparent);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--border);
+  /* Evită “ruperea” vizuală la scroll/compositing */
+border-bottom: none;
+box-shadow: 0 1px 0 var(--border) inset;
+/* Stabilizează layer-ul pe iOS/Safari în timpul scroll-ului */
+transform: translateZ(0);
+will-change: transform;
+ backface-visibility: hidden;
+ contain: paint;
 }
 .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; min-width: 0; }
 .brand strong { white-space: nowrap; font-weight: 800; max-width: 28ch; overflow: hidden; text-overflow: ellipsis; }
