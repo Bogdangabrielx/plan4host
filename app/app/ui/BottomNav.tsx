@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 export default function BottomNav() {
@@ -10,6 +10,7 @@ export default function BottomNav() {
   const [kbOpen, setKbOpen] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -19,10 +20,19 @@ export default function BottomNav() {
     const mq = window.matchMedia("(max-width: 640px)");
     const update = () => setIsMobile(mq.matches);
     update();
-    mq.addEventListener ? mq.addEventListener("change", update) : mq.addListener(update);
-    return () => {
-      mq.removeEventListener ? mq.removeEventListener("change", update) : mq.removeListener(update);
-    };
+    // TS-safe add/remove
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", update);
+      return () => mq.removeEventListener("change", update);
+    } else {
+      // Safari < 14 fallback
+      // @ts-ignore
+      mq.addListener(update);
+      return () => {
+        // @ts-ignore
+        mq.removeListener(update);
+      };
+    }
   }, []);
 
   useEffect(() => {
@@ -61,6 +71,37 @@ export default function BottomNav() {
     };
   }, []);
 
+  // scrie înălțimea reală a barei în :root ca --nav-h
+  useEffect(() => {
+    if (!mounted) return;
+    const el = navRef.current;
+    if (!el) return;
+
+    const write = () => {
+      const h = el.offsetHeight || 88;
+      document.documentElement.style.setProperty("--nav-h", `${h}px`);
+    };
+
+    write();
+
+    let ro: ResizeObserver | undefined;
+    const RO = (window as any).ResizeObserver as typeof ResizeObserver | undefined;
+    if (RO) {
+      ro = new RO(() => write());
+      ro.observe(el);
+    }
+    window.addEventListener("orientationchange", write);
+    window.addEventListener("resize", write);
+    const tid = window.setTimeout(write, 120);
+
+    return () => {
+      window.clearTimeout(tid);
+      ro?.disconnect();
+      window.removeEventListener("orientationchange", write);
+      window.removeEventListener("resize", write);
+    };
+  }, [mounted]);
+
   const items = useMemo(() => ([
     { href: "/app/calendar", label: "Calendar", icon: theme==="light" ? "/calendar_forlight.png" : "/calendar_fordark.png" },
     { href: "/app/cleaning", label: "Cleaning Board", icon: theme==="light" ? "/cleaning_forlight.png" : "/cleaning_fordark.png" },
@@ -71,6 +112,7 @@ export default function BottomNav() {
 
   const nav = (
     <nav
+      ref={(n) => { navRef.current = n; }}  // ✅ returnează void
       aria-label="Bottom navigation"
       className="p4h-bottom-nav"
       style={{
@@ -78,19 +120,21 @@ export default function BottomNav() {
         left: 0,
         right: 0,
 
-        // browser mobil: flush la muchie; PWA iOS: respectă safe-area
+        // Browser mobil: flush la muchie; PWA iOS: respectă safe-area
         bottom: isStandalone ? 0 : "calc(-1 * env(safe-area-inset-bottom, 0px))",
 
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
         padding: "8px 10px",
-        // paddingBottom: isStandalone ? "calc(8px + env(safe-area-inset-bottom, 0px))" : undefined,
+        paddingBottom: isStandalone ? "calc(12px + env(safe-area-inset-bottom, 0px))" : undefined,
 
-        zIndex: 99999,          // foarte sus, nimic din content nu o mai acoperă
+        zIndex: 2147483000,
         overflowAnchor: "none",
+        isolation: "isolate",
+        contain: "layout paint",
       }}
     >
-      <div style={{  display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
         {items.map((it) => {
           const active = path === it.href || path.startsWith(it.href + "/");
           return (
@@ -129,9 +173,12 @@ export default function BottomNav() {
           aria-label="Open management"
         >
           <img src={theme==="light" ? "/configurator_forlight.png" : "/configurator_fordark.png"} alt="" width={22} height={22} style={{ display: "block" }} />
-          <small style={{  fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
+          <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
         </button>
       </div>
+
+      {/* desktop off */}
+      <style>{`@media (min-width: 641px) { .p4h-bottom-nav { display: none; } }`}</style>
     </nav>
   );
 

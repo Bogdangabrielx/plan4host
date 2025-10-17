@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function AppShell({ title, currentPath, children }: Props) {
-  // (toată logica ta existentă rămâne la fel)
+  // (logica ta existentă rămâne identică)
   useEffect(() => {
     if (typeof window === "undefined") return;
     let asked = false;
@@ -67,7 +67,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
-  // no-zoom etc. (neseparate aici ca să nu te inund, rămân identice)
+  // no-zoom etc. (identic)
   useEffect(() => {
     const preventGesture = (e: Event) => { e.preventDefault(); };
     document.addEventListener("gesturestart", preventGesture as EventListener, { passive: false });
@@ -91,6 +91,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
+  // guard rubber-band
   useEffect(() => {
     const main = document.getElementById("app-main");
     if (!main) return;
@@ -108,9 +109,10 @@ export default function AppShell({ title, currentPath, children }: Props) {
             __html: `
               :root{
                 --app-h: 100dvh;
-                --nav-h: 88px;          /* înălțimea barei fixe de jos */
-                --extra-bottom: 120px;  /* extra scroll sub conținut (invizibil) */
-                --extra-top: 0px;       /* opțional, extra sus */
+                /* --nav-h e setată dinamic de BottomNav; 88px e fallback */
+                --nav-h: 88px;
+                --extra-bottom: 120px;
+                --extra-top: 0px;
               }
               @supports (height: 100svh) { :root{ --app-h: 100svh; } }
 
@@ -139,32 +141,32 @@ export default function AppShell({ title, currentPath, children }: Props) {
           <PullToRefresh />
 
           <main
-  id="app-main"
-  style={{
-    padding: 16,
-    paddingBottom: "var(--nav-h)",   // rezervă doar înălțimea barei
-    maxWidth: 1200,
-    margin: "0 auto",
-    width: "100%",
-    boxSizing: "border-box",
+            id="app-main"
+            style={{
+              padding: 16,
+              // rezervă înălțimea REALĂ a barei
+              paddingBottom: "var(--nav-h)",
+              maxWidth: 1200,
+              margin: "0 auto",
+              width: "100%",
+              boxSizing: "border-box",
 
-    height: "100%",
-    overflowY: "auto",
-    WebkitOverflowScrolling: "touch",
-    overscrollBehaviorY: "contain",
-    overflowAnchor: "auto",
+              height: "100%",
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
+              overscrollBehaviorY: "contain",
+              overflowAnchor: "auto",
 
-    // ⬇️ IMPORTANT: să nu mai „coloreze” banda din spatele barei
-    background: "transparent",
-    position: "relative",
-    zIndex: 0,
-  }}
->
-  {children}
-  {/* spacer-ul rămâne, pentru extra scroll invizibil */}
-  <div aria-hidden="true" style={{ height: "var(--extra-bottom)" }} />
-</main>
-
+              // important: transparent ca să nu coloreze „spatele” barei
+              background: "transparent",
+              position: "relative",
+              zIndex: 0,
+            }}
+          >
+            {children}
+            {/* extra scroll invizibil la final (opțional) */}
+            <div aria-hidden="true" style={{ height: "var(--extra-bottom)" }} />
+          </main>
 
           <BottomNav />
         </div>
