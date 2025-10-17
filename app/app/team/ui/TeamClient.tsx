@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 
 type Role = "admin" | "editor" | "viewer";
 type Member = {
@@ -152,6 +153,7 @@ export default function TeamClient() {
 
   return (
     <div style={{ display: "grid", gap: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+      <PlanHeaderBadge title="Team" slot="header-right" />
       <section style={card}>
         <h3 style={{ margin: 0 }}>Add user</h3>
         <div style={{ display: "grid", gap: 8 }}>
