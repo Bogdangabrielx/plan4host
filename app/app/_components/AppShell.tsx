@@ -1,3 +1,4 @@
+// app/app/_components/AppShell.tsx
 "use client";
 import React, { useEffect } from "react";
 import AppHeader from "../ui/AppHeader";
@@ -16,7 +17,9 @@ export default function AppShell({ title, currentPath, children }: Props) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     let asked = false;
-    try { asked = localStorage.getItem("p4h:push:asked") === "1"; } catch {}
+    try {
+      asked = localStorage.getItem("p4h:push:asked") === "1";
+    } catch {}
     if (asked) return;
 
     const handler = () => {
@@ -50,7 +53,9 @@ export default function AppShell({ title, currentPath, children }: Props) {
               const ua = navigator.userAgent || "";
               const os = document.documentElement.getAttribute("data-os") || "";
               let property_id: string | null = null;
-              try { property_id = localStorage.getItem("p4h:selectedPropertyId"); } catch {}
+              try {
+                property_id = localStorage.getItem("p4h:selectedPropertyId");
+              } catch {}
 
               await fetch("/api/push/subscribe", {
                 method: "POST",
@@ -60,7 +65,9 @@ export default function AppShell({ title, currentPath, children }: Props) {
             }
           } finally {
             if (perm !== "default") {
-              try { localStorage.setItem("p4h:push:asked", "1"); } catch {}
+              try {
+                localStorage.setItem("p4h:push:asked", "1");
+              } catch {}
             }
           }
         });
@@ -93,7 +100,10 @@ export default function AppShell({ title, currentPath, children }: Props) {
         <style
           dangerouslySetInnerHTML={{
             __html: `
-              :root{ --nav-h: 88px; } /* fallback — e rescris dinamic de BottomNav */
+              :root{
+                --nav-h: 88px;          /* fallback — e rescris dinamic de BottomNav */
+                --scroll-extra: 40px;   /* spațiu suplimentar la finalul zonei scrollabile */
+              }
               input, textarea, select, button { font-size: 16px; }
               html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
               @media (max-width: 640px) {
@@ -118,8 +128,12 @@ export default function AppShell({ title, currentPath, children }: Props) {
             overflowAnchor: "auto",
 
             padding: 16,
-            // spațiu real pentru bottom-nav (fără safe-area)
-            paddingBottom: "var(--nav-h)",
+            // spațiu real pentru bottom-nav + safe-area + o mică zonă de "respirație"
+            paddingBottom:
+              "calc(var(--nav-h) + var(--safe-bottom, 0px) + var(--scroll-extra, 40px))",
+
+            // ancorele/scrollIntoView nu vor mai ancora ultimul element chiar la margine
+            scrollPaddingBottom: "var(--scroll-extra, 40px)",
 
             maxWidth: 1200,
             margin: "0 auto",
@@ -129,6 +143,15 @@ export default function AppShell({ title, currentPath, children }: Props) {
           }}
         >
           {children}
+
+          {/* Spacer suplimentar (fallback la padding). Poți elimina dacă preferi doar padding. */}
+          <div
+            aria-hidden
+            style={{
+              height: "calc(var(--safe-bottom, 0px) + var(--scroll-extra, 40px))",
+              pointerEvents: "none",
+            }}
+          />
         </main>
 
         {/* Stă fix în body (portal), deci nu afectează grid-ul */}
