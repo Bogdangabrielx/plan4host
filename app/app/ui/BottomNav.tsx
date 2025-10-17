@@ -20,7 +20,6 @@ export default function BottomNav() {
     const mq = window.matchMedia("(max-width: 640px)");
     const update = () => setIsMobile(mq.matches);
     update();
-    // TS-safe add/remove
     if (typeof mq.addEventListener === "function") {
       mq.addEventListener("change", update);
       return () => mq.removeEventListener("change", update);
@@ -71,7 +70,7 @@ export default function BottomNav() {
     };
   }, []);
 
-  // scrie înălțimea reală a barei în :root ca --nav-h
+  // scrie înălțimea reală a barei în :root ca --nav-h (inclusiv spacer-ul)
   useEffect(() => {
     if (!mounted) return;
     const el = navRef.current;
@@ -112,7 +111,7 @@ export default function BottomNav() {
 
   const nav = (
     <nav
-      ref={(n) => { navRef.current = n; }}  // ✅ returnează void
+      ref={(n) => { navRef.current = n; }}
       aria-label="Bottom navigation"
       className="p4h-bottom-nav"
       style={{
@@ -120,18 +119,23 @@ export default function BottomNav() {
         left: 0,
         right: 0,
 
-        // Browser mobil: flush la muchie; PWA iOS: respectă safe-area
-
+        // ✅ edge-hug: nu mai lăsăm “banda” gri sub bară
+        bottom: isStandalone ? 0 : "calc(-1 * env(safe-area-inset-bottom, 0px))",
 
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
         padding: "8px 10px",
+        // ❌ NU mai folosim paddingBottom; provocă artefacte în PWA iOS
 
+        // compositing ajutător
+        transform: "translateZ(0)",
+        willChange: "transform",
+        backfaceVisibility: "hidden",
+        isolation: "isolate",
+        contain: "layout paint",
 
         zIndex: 2147483000,
         overflowAnchor: "none",
-        isolation: "isolate",
-        contain: "layout paint",
       }}
     >
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
@@ -176,6 +180,15 @@ export default function BottomNav() {
           <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
         </button>
       </div>
+
+      {/* ✅ spacer intern pentru safe-area în PWA (înlocuiește paddingBottom) */}
+      <div
+        aria-hidden
+        style={{
+          height: isStandalone ? "env(safe-area-inset-bottom, 0px)" : 0,
+          pointerEvents: "none",
+        }}
+      />
 
       {/* desktop off */}
       <style>{`@media (min-width: 641px) { .p4h-bottom-nav { display: none; } }`}</style>
