@@ -172,7 +172,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
             }}
           >
             {children}
-            <div aria-hidden="true" style={{ height: "var(--extra-bottom)" }} />
+            <div aria-hidden="true" />
           </main>
 
           <BottomNav />
