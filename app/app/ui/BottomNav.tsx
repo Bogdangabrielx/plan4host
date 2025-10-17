@@ -31,13 +31,16 @@ export default function BottomNav() {
     };
   }, []);
 
-  // Anti-drift: când apare tastatura pe iOS/Android, compensăm doar offsetTop-ul vizual
+  // 🛡️ Anti-drift: compensăm offset-ul vizual DOAR când tastatura este deschisă
   useEffect(() => {
     const vv = (typeof window !== "undefined") ? window.visualViewport : null;
     if (!vv) return;
 
     const applyShift = () => {
-      const shift = Math.max(0, vv.offsetTop || 0);
+      // când tastatura e deschisă, height-ul vizual e mai mic; threshold ~120px funcționează pe iOS/Android
+      const keyboardHeight = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
+      const isKeyboardOpen = keyboardHeight > 120;
+      const shift = isKeyboardOpen ? Math.max(0, vv.offsetTop || 0) : 0;
       document.documentElement.style.setProperty("--vv-shift", `${shift}px`);
     };
 
@@ -88,7 +91,7 @@ export default function BottomNav() {
         padding: "8px 10px",
         paddingBottom: "calc(8px + env(safe-area-inset-bottom, 0px))",
         zIndex: 9999,
-        // nu urcăm bara; doar anulăm driftul când browserul schimbă vizual viewport-ul
+        // ✅ nu mai „urcă” la hide/show de toolbar; compensăm doar când e tastatura
         transform: "translateY(calc(var(--vv-shift, 0px) * -1))",
         willChange: "transform",
         overflowAnchor: "none",
@@ -133,9 +136,7 @@ export default function BottomNav() {
         <button
           type="button"
           onClick={() => {
-            try {
-              window.dispatchEvent(new CustomEvent("p4h:openManagement"));
-            } catch {}
+            try { window.dispatchEvent(new CustomEvent("p4h:openManagement")); } catch {}
           }}
           style={{
             border: "1px solid var(--border)",
@@ -163,7 +164,7 @@ export default function BottomNav() {
         </button>
       </div>
 
-      {/* Mobile-only visibility driven by CSS (nu depinde de innerWidth în JS) */}
+      {/* Mobile-only visibility driven by CSS */}
       <style>{`
         @media (min-width: 641px) { .p4h-bottom-nav { display: none; } }
       `}</style>

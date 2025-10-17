@@ -102,25 +102,35 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
+  // 🚫 Previne extra-scroll/rubber-band când #app-main nu are overflow
+  useEffect(() => {
+    const main = document.getElementById("app-main");
+    if (!main) return;
+
+    const shouldBlock = () => main.scrollHeight <= main.clientHeight + 1;
+
+    const stopIfNoScroll = (e: TouchEvent) => {
+      if (!shouldBlock()) return;
+      e.preventDefault(); // nu lăsăm gestul să afecteze toolbarele / body
+    };
+
+    document.addEventListener("touchmove", stopIfNoScroll as EventListener, { passive: false });
+    return () => {
+      document.removeEventListener("touchmove", stopIfNoScroll as EventListener);
+    };
+  }, []);
+
   return (
     <HeaderProvider initialTitle={title ?? ""}>
-      <div
-        // Root: ocupă tot viewportul și BLOCHĂM scroll-ul paginii; doar #app-main scrollează
-        style={{
-          height: "100dvh",
-          minHeight: "100dvh",
-          display: "grid",
-          gridTemplateRows: "auto 1fr",
-          background: "var(--bg)",
-          color: "var(--text)",
-          overflow: "hidden",           // ⬅️ blochează scroll pe containerul paginii
-          overscrollBehavior: "none",   // oprește bounce pe body
-        }}
-      >
-        {/* Global: anti-zoom la focus + padding top pentru header pe mobile */}
+      <>
+        {/* Fallback dinamic pt. înălțimea viewport-ului: preferăm 100svh, altfel 100dvh */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
+              :root{ --app-h: 100dvh; }
+              @supports (height: 100svh) { :root{ --app-h: 100svh; } }
+
+              /* Global: anti-zoom la focus + padding top pt. header pe mobile */
               input, textarea, select, button { font-size: 16px; }
               html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
               @media (max-width: 640px) {
@@ -130,33 +140,47 @@ export default function AppShell({ title, currentPath, children }: Props) {
           }}
         />
 
-        <AppHeader currentPath={currentPath} />
-        <PullToRefresh />
-
-        {/* Singura zonă scrollabilă */}
-        <main
-          id="app-main"
+        <div
+          // Root: ocupă tot viewportul, nu scrollează; doar #app-main scrollează
           style={{
-            padding: 16,
-            paddingBottom: "calc(88px + env(safe-area-inset-bottom, 0px))", // loc pt bottom-nav
-            maxWidth: 1200,
-            margin: "0 auto",
-            width: "100%",
-            boxSizing: "border-box",
-
-            height: "100%",
-            overflowY: "auto",                  // ⬅️ scroll doar aici
-            WebkitOverflowScrolling: "touch",
-            overscrollBehaviorY: "contain",     // nu „trage” body-ul
-            overflowAnchor: "auto",
+            height: "var(--app-h)",
+            minHeight: "var(--app-h)",
+            display: "grid",
+            gridTemplateRows: "auto 1fr",
+            background: "var(--bg)",
+            color: "var(--text)",
+            overflow: "hidden",
+            overscrollBehavior: "none",
           }}
         >
-          {children}
-        </main>
+          <AppHeader currentPath={currentPath} />
+          <PullToRefresh />
 
-        {/* BottomNav e în portal -> fix, nu scrollează */}
-        <BottomNav />
-      </div>
+          {/* Singura zonă scrollabilă */}
+          <main
+            id="app-main"
+            style={{
+              padding: 16,
+              paddingBottom: "calc(88px + env(safe-area-inset-bottom, 0px))", // loc pt bottom-nav
+              maxWidth: 1200,
+              margin: "0 auto",
+              width: "100%",
+              boxSizing: "border-box",
+
+              height: "100%",
+              overflowY: "auto",              // ⬅️ scroll doar aici
+              WebkitOverflowScrolling: "touch",
+              overscrollBehaviorY: "contain", // nu „trage” body-ul
+              overflowAnchor: "auto",
+            }}
+          >
+            {children}
+          </main>
+
+          {/* BottomNav e în portal -> fix, nu scrollează */}
+          <BottomNav />
+        </div>
+      </>
     </HeaderProvider>
   );
 }
