@@ -196,7 +196,9 @@ html[data-page-visible="false"] * { animation-play-state: paused !important; }
           }}
         />
 
-        
+        <div style={{  }}>
+          {children}
+        </div>
 
         {/* Host global pentru modalul “emoji” (deschis din OpenCookieSettingsButton / AutoOpenOnLanding) */}
         <ConsentOverlayHost />
