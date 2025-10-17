@@ -148,6 +148,22 @@ html, body { background: var(--bg); color: var(--text); }
 :root[data-os="ios"][data-theme="dark"] body{
   background-attachment: scroll, scroll, scroll, scroll;
 }
+  
+/* iOS PWA only: acoperă fâșia de safe-area cu culoarea panelului aplicației */
+:root[data-standalone="true"] body::after{
+  content:"";
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: max(env(safe-area-inset-bottom, 0px), 0px);
+  background: var(--panel);      /* aceeași culoare ca bara */
+  pointer-events: none;
+  z-index: 0;                    /* sub orice UI al tău */
+}
+
+/* Ca să nu mai bage nimeni padding global din variabile în PWA */
+:root[data-standalone="true"]{
+  --safe-bottom: 0px !important;
+}
 
 /* accents */
 :root[data-theme="dark"][data-accent="base"]   { --primary:#3ECF8E; }
@@ -193,6 +209,7 @@ html[data-page-visible="false"] * { animation-play-state: paused !important; }
 .safe-top-sticky{ position: sticky; top: 0; }
 .safe-top-fixed{ position: fixed; top: var(--safe-top); }
 `,
+
           }}
         />
 
