@@ -121,12 +121,12 @@ export default function BottomNav() {
         right: 0,
 
         // Browser mobil: flush la muchie; PWA iOS: respectă safe-area
-        bottom: isStandalone ? 0 : "calc(-1 * env(safe-area-inset-bottom, 0px))",
+
 
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
         padding: "8px 10px",
-        
+
 
         zIndex: 2147483000,
         overflowAnchor: "none",
