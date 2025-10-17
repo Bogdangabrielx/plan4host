@@ -7,13 +7,13 @@ export default function BottomNav() {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [path, setPath] = useState<string>("");
-  const [kbOpen, setKbOpen] = useState(false);        // ascunde bara când e tastatura
-  const [isStandalone, setIsStandalone] = useState(false); // PWA / Add to Home Screen
-  const [isMobile, setIsMobile] = useState(false);     // randăm doar pe mobil
+  const [kbOpen, setKbOpen] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
-  // detectează mobil (randăm doar sub 641px)
+  // doar mobil (<= 640px)
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mq = window.matchMedia("(max-width: 640px)");
@@ -25,7 +25,6 @@ export default function BottomNav() {
     };
   }, []);
 
-  // theme, path, standalone
   useEffect(() => {
     try { setTheme((document.documentElement.getAttribute("data-theme") as any) || "light"); } catch {}
     const onTheme = (e: any) => { if (e?.detail?.theme) setTheme(e.detail.theme); };
@@ -35,7 +34,6 @@ export default function BottomNav() {
     const onPop = () => setPath(window.location.pathname);
     window.addEventListener("popstate", onPop);
 
-    // flag-ul pus de layout.tsx
     setIsStandalone(document.documentElement.getAttribute("data-standalone") === "true");
 
     return () => {
@@ -80,9 +78,7 @@ export default function BottomNav() {
         left: 0,
         right: 0,
 
-        // — iOS PWA overlay fix —
-        // în standalone folosim safe-area (nu mai apare acel „gri” peste butoane)
-        // în browser mobil, edge-hug (lipit de muchia ecranului)
+        // browser mobil: flush la muchie; PWA iOS: respectă safe-area
         bottom: isStandalone ? 0 : "calc(-1 * env(safe-area-inset-bottom, 0px))",
 
         background: "var(--panel)",
@@ -90,7 +86,7 @@ export default function BottomNav() {
         padding: "8px 10px",
         paddingBottom: isStandalone ? "calc(8px + env(safe-area-inset-bottom, 0px))" : undefined,
 
-        zIndex: 10000,
+        zIndex: 2147483000,          // foarte sus, nimic din content nu o mai acoperă
         overflowAnchor: "none",
       }}
     >
