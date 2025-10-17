@@ -7,10 +7,25 @@ export default function BottomNav() {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [path, setPath] = useState<string>("");
-  const [kbOpen, setKbOpen] = useState(false); // ascundem bara când tastatura e deschisă
+  const [kbOpen, setKbOpen] = useState(false);        // ascunde bara când e tastatura
+  const [isStandalone, setIsStandalone] = useState(false); // PWA / Add to Home Screen
+  const [isMobile, setIsMobile] = useState(false);     // randăm doar pe mobil
 
   useEffect(() => { setMounted(true); }, []);
 
+  // detectează mobil (randăm doar sub 641px)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 640px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener ? mq.addEventListener("change", update) : mq.addListener(update);
+    return () => {
+      mq.removeEventListener ? mq.removeEventListener("change", update) : mq.removeListener(update);
+    };
+  }, []);
+
+  // theme, path, standalone
   useEffect(() => {
     try { setTheme((document.documentElement.getAttribute("data-theme") as any) || "light"); } catch {}
     const onTheme = (e: any) => { if (e?.detail?.theme) setTheme(e.detail.theme); };
@@ -20,13 +35,16 @@ export default function BottomNav() {
     const onPop = () => setPath(window.location.pathname);
     window.addEventListener("popstate", onPop);
 
+    // flag-ul pus de layout.tsx
+    setIsStandalone(document.documentElement.getAttribute("data-standalone") === "true");
+
     return () => {
       window.removeEventListener("themechange" as any, onTheme);
       window.removeEventListener("popstate", onPop);
     };
   }, []);
 
-  // Detectăm tastatura -> ascundem bara (fără transform/anti-drift)
+  // ascunde bara când tastatura e deschisă
   useEffect(() => {
     const vv = typeof window !== "undefined" ? window.visualViewport : null;
     if (!vv) return;
@@ -51,6 +69,8 @@ export default function BottomNav() {
     { href: "/app/guest", label: "Guest Overview", icon: theme==="light" ? "/guest_forlight.png" : "/guest_fordark.png" },
   ]), [theme]);
 
+  if (!mounted || !isMobile || kbOpen) return null;
+
   const nav = (
     <nav
       aria-label="Bottom navigation"
@@ -59,14 +79,18 @@ export default function BottomNav() {
         position: "fixed",
         left: 0,
         right: 0,
-        // ✅ Edge-hug: coboară bară peste safe area → nu mai rămâne bandă jos
-        bottom: "calc(-1 * env(safe-area-inset-bottom, 0px))",
+
+        // — iOS PWA overlay fix —
+        // în standalone folosim safe-area (nu mai apare acel „gri” peste butoane)
+        // în browser mobil, edge-hug (lipit de muchia ecranului)
+        bottom: isStandalone ? 0 : "calc(-1 * env(safe-area-inset-bottom, 0px))",
+
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
-        // padding normal (fără env)
         padding: "8px 10px",
-        zIndex: 9999,
-        display: kbOpen ? "none" : "block",
+        paddingBottom: isStandalone ? "calc(8px + env(safe-area-inset-bottom, 0px))" : undefined,
+
+        zIndex: 10000,
         overflowAnchor: "none",
       }}
     >
@@ -112,12 +136,8 @@ export default function BottomNav() {
           <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
         </button>
       </div>
-
-      <style>{`@media (min-width: 641px) { .p4h-bottom-nav { display: none; } }`}</style>
     </nav>
   );
 
-  if (!mounted) return null;
   return createPortal(nav, document.body);
 }
-
