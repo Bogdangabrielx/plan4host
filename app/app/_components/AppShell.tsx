@@ -16,9 +16,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     let asked = false;
-    try {
-      asked = localStorage.getItem("p4h:push:asked") === "1";
-    } catch {}
+    try { asked = localStorage.getItem("p4h:push:asked") === "1"; } catch {}
     if (asked) return;
 
     const handler = () => {
@@ -29,19 +27,19 @@ export default function AppShell({ title, currentPath, children }: Props) {
             if (perm === "granted") {
               if (!("serviceWorker" in navigator)) return;
               const reg = await navigator.serviceWorker.register("/sw.js");
-              const keyB64 =
-                (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-                  (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-                  ""
-                ).toString();
+              const keyB64 = (
+                process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+                (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+                ""
+              ).toString();
 
               const urlBase64ToUint8Array = (base64: string) => {
                 const padding = "=".repeat((4 - (base64.length % 4)) % 4);
-                const base64Safe = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
-                const rawData = atob(base64Safe);
-                const outputArray = new Uint8Array(rawData.length);
-                for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
-                return outputArray;
+                const safe = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
+                const raw = atob(safe);
+                const out = new Uint8Array(raw.length);
+                for (let i = 0; i < raw.length; ++i) out[i] = raw.charCodeAt(i);
+                return out;
               };
 
               const sub = await reg.pushManager.subscribe({
@@ -52,9 +50,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
               const ua = navigator.userAgent || "";
               const os = document.documentElement.getAttribute("data-os") || "";
               let property_id: string | null = null;
-              try {
-                property_id = localStorage.getItem("p4h:selectedPropertyId");
-              } catch {}
+              try { property_id = localStorage.getItem("p4h:selectedPropertyId"); } catch {}
 
               await fetch("/api/push/subscribe", {
                 method: "POST",
@@ -64,9 +60,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
             }
           } finally {
             if (perm !== "default") {
-              try {
-                localStorage.setItem("p4h:push:asked", "1");
-              } catch {}
+              try { localStorage.setItem("p4h:push:asked", "1"); } catch {}
             }
           }
         });
@@ -84,19 +78,22 @@ export default function AppShell({ title, currentPath, children }: Props) {
   return (
     <HeaderProvider initialTitle={title ?? ""}>
       <div
-        // NOTE: keep root clean — no transform/filter/perspective here
+        // root: nu scroll-ează; doar definește rama dintre header și main
         style={{
+          height: "100dvh",
           minHeight: "100dvh",
           display: "grid",
           gridTemplateRows: "auto 1fr",
           background: "var(--bg)",
           color: "var(--text)",
+          overflow: "hidden",
         }}
       >
-        {/* Global anti-zoom for inputs (iOS), once for all pages under AppShell */}
+        {/* anti-zoom iOS + padding top doar pe mobil (dacă header e fix) */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
+              :root{ --nav-h: 88px; } /* fallback — e rescris dinamic de BottomNav */
               input, textarea, select, button { font-size: 16px; }
               html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
               @media (max-width: 640px) {
@@ -105,24 +102,36 @@ export default function AppShell({ title, currentPath, children }: Props) {
             `,
           }}
         />
+
         <AppHeader currentPath={currentPath} />
         <PullToRefresh />
+
+        {/* singurul container scrollabil */}
         <main
           id="app-main"
           style={{
+            position: "relative",
+            height: "100%",
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
+            overscrollBehaviorY: "contain",
+            overflowAnchor: "auto",
+
             padding: 16,
-            // leave space for the fixed bottom nav on mobile
-            paddingBottom: "calc(88px + env(safe-area-inset-bottom, 0px))",
+            // spațiu real pentru bottom-nav (fără safe-area)
+            paddingBottom: "var(--nav-h)",
+
             maxWidth: 1200,
             margin: "0 auto",
             width: "100%",
             boxSizing: "border-box",
+            background: "transparent",
           }}
         >
           {children}
         </main>
 
-        {/* Rendered via portal into document.body, stays fixed regardless of ancestors */}
+        {/* Stă fix în body (portal), deci nu afectează grid-ul */}
         <BottomNav />
       </div>
     </HeaderProvider>
