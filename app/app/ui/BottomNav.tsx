@@ -70,7 +70,7 @@ export default function BottomNav() {
     };
   }, []);
 
-  // scrie --nav-h pe root (ca AppShell să știe paddingBottom real)
+  // scrie --nav-h pe root (AppShell folosește paddingBottom real)
   useEffect(() => {
     if (!mounted) return;
     const el = navRef.current;
@@ -112,6 +112,26 @@ export default function BottomNav() {
   const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
   const isIOSStandalone = isStandalone && isIOS;
 
+  // Underlay **doar** pentru iOS PWA: colorează safe-area din spatele barei
+  const underlay = isIOSStandalone ? (
+    <div
+      aria-hidden
+      style={{
+        position: "fixed",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: "max(env(safe-area-inset-bottom, 0px), 0px)",
+        background: "var(--panel)",
+        zIndex: 2147482999,
+        pointerEvents: "none",
+        transform: "translateZ(0)",
+        WebkitTransform: "translateZ(0)" as any,
+        contain: "strict",
+      }}
+    />
+  ) : null;
+
   const nav = (
     <nav
       ref={(n) => { navRef.current = n; }}
@@ -122,7 +142,7 @@ export default function BottomNav() {
         left: 0,
         right: 0,
 
-        // Browser mobil: “lipit” de margine; PWA iOS: respectăm safe-area (dar cu underlay dedesubt)
+        // Browser mobil: lipit de muchie; iOS PWA: respectă safe-area (cu padding intern)
         bottom: isStandalone ? 0 : "calc(-1 * env(safe-area-inset-bottom, 0px))",
 
         background: "var(--panel)",
@@ -130,11 +150,11 @@ export default function BottomNav() {
         padding: "8px 10px",
         paddingBottom: isStandalone ? "calc(12px + env(safe-area-inset-bottom, 0px))" : undefined,
 
-        // 👉 iOS PWA compositing fixes
+        // iOS PWA compositing fixes
         transform: "translateZ(0)",
-        WebkitTransform: "translateZ(0)",
+        WebkitTransform: "translateZ(0)" as any,
         willChange: "transform",
-        backfaceVisibility: "hidden" as any,
+        backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden" as any,
         contain: "layout paint",
         isolation: "isolate",
@@ -190,26 +210,6 @@ export default function BottomNav() {
       <style>{`@media (min-width: 641px) { .p4h-bottom-nav { display: none; } }`}</style>
     </nav>
   );
-
-  // Underlay **doar** pentru iOS PWA (standalone): stă SUB bară, oprește “banda” bg peste butoane
-  const underlay = isIOSStandalone ? (
-    <div
-      aria-hidden
-      style={{
-        position: "fixed",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height: "max(env(safe-area-inset-bottom, 0px), 0px)",
-        background: "var(--panel)",
-        zIndex: 2147482999,
-        pointerEvents: "none",
-        transform: "translateZ(0)",
-        WebkitTransform: "translateZ(0)",
-        contain: "strict",
-      }}
-    />
-  ) : null;
 
   return createPortal(
     <>
