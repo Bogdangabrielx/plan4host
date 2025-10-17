@@ -337,22 +337,7 @@ select:not(.sb-select){ /* opțional */
 
 :root{
   --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 }
 
-/* Prevent next-route-announcer from painting in iOS PWA */
-next-route-announcer{
-  position:absolute !important;
-  left:0 !important; top:0 !important;
-  width:1px !important; height:1px !important;
-  overflow:hidden !important;
-  clip: rect(0 0 0 0) !important;
-  clip-path: inset(100%) !important;
-  white-space:nowrap !important;
-  border:0 !important; padding:0 !important; margin:-1px !important;
-  background: transparent !important;
-  pointer-events:none !important;
-  z-index:-1 !important;
-}
