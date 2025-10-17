@@ -183,20 +183,20 @@ html[data-page-visible="false"] * { animation-play-state: paused !important; }
 @supports (padding-top: constant(safe-area-inset-top)){
   :root{
     --safe-top: constant(safe-area-inset-top);
-    --safe-bottom: constant(safe-area-inset-bottom);
+  
     --safe-left: constant(safe-area-inset-left);
     --safe-right: constant(safe-area-inset-right);
   }
 }
 .safe-top-pad{ padding-top: calc(var(--safe-top) + 8px); }
-.safe-bottom-pad{ padding-bottom: var(--safe-bottom); }
+
 .safe-top-sticky{ position: sticky; top: 0; }
 .safe-top-fixed{ position: fixed; top: var(--safe-top); }
 `,
           }}
         />
 
-        <div style={{ paddingTop: "var(--safe-top)" }}>
+        <div style={{ paddingTop: "var(--safe-top)",  }}>
           {children}
         </div>
 
