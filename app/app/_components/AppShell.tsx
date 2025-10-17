@@ -67,7 +67,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
-  // no-zoom etc. (neseparate aici ca să nu te inund, rămân identice)
+  // no-zoom etc. (identic)
   useEffect(() => {
     const preventGesture = (e: Event) => { e.preventDefault(); };
     document.addEventListener("gesturestart", preventGesture as EventListener, { passive: false });
@@ -91,6 +91,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
+  // rubber-band guard
   useEffect(() => {
     const main = document.getElementById("app-main");
     if (!main) return;
@@ -109,8 +110,8 @@ export default function AppShell({ title, currentPath, children }: Props) {
               :root{
                 --app-h: 100dvh;
                 --nav-h: 88px;          /* înălțimea barei fixe de jos */
-                --extra-bottom: 120px;  /* extra scroll sub conținut (invizibil) */
-                --extra-top: 0px;       /* opțional, extra sus */
+                --extra-bottom: 120px;  /* extra scroll invizibil */
+                --extra-top: 0px;
               }
               @supports (height: 100svh) { :root{ --app-h: 100svh; } }
 
@@ -118,6 +119,48 @@ export default function AppShell({ title, currentPath, children }: Props) {
               html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
               @media (max-width: 640px) {
                 #app-main { padding-top: calc(64px + var(--safe-top, 0px) + var(--extra-top)) !important; }
+              }
+
+              /* ─────────────────────────────────────────────
+                 Anti-overlay mobil — acoperă cazurile inline
+                 (sticky/fixed bottom:0) + fade-uri decorative
+                 ───────────────────────────────────────────── */
+              @media (max-width: 640px){
+                /* STICKY bottom:0 cu stil inline sau clase arbitrare */
+                #app-main [style*="position:sticky"][style*="bottom:0"],
+                #app-main [style*="position: sticky"][style*="bottom:0"],
+                #app-main [style*="position:sticky"][style*="bottom: 0"],
+                #app-main [style*="position: sticky"][style*="bottom: 0"],
+                #app-main .sticky-bottom,
+                #app-main [data-sticky-bottom],
+                #app-main .form-sticky-actions,
+                #app-main [data-role="sticky-actions"],
+                #app-main .actions-sticky,
+                #app-main .footer-sticky {
+                  position: sticky !important;
+                  bottom: var(--nav-h) !important;
+                  z-index: 9 !important;               /* sub BottomNav */
+                  background: var(--panel, var(--bg));
+                }
+
+                /* FIXED bottom:0 suprapus peste bară (CTA, helper, fade etc.) */
+                #app-main [style*="position:fixed"][style*="bottom:0"],
+                #app-main [style*="position: fixed"][style*="bottom:0"],
+                #app-main [style*="position:fixed"][style*="bottom: 0"],
+                #app-main [style*="position: fixed"][style*="bottom: 0"],
+                #app-main .fixed-bottom,
+                #app-main [data-fixed-bottom]{
+                  position: fixed !important;
+                  bottom: var(--nav-h) !important;
+                  z-index: 9 !important;
+                }
+
+                /* fade/overlays decorative jos */
+                #app-main .content-bottom-fade,
+                #app-main .pull-to-refresh-bottom,
+                #app-main .p4h-bottom-fade {
+                  display: none !important;
+                }
               }
             `,
           }}
@@ -139,32 +182,29 @@ export default function AppShell({ title, currentPath, children }: Props) {
           <PullToRefresh />
 
           <main
-  id="app-main"
-  style={{
-    padding: 16,
-    paddingBottom: "var(--nav-h)",   // rezervă doar înălțimea barei
-    maxWidth: 1200,
-    margin: "0 auto",
-    width: "100%",
-    boxSizing: "border-box",
+            id="app-main"
+            style={{
+              padding: 16,
+              paddingBottom: "var(--nav-h)",  // rezervă locul pentru bară
+              maxWidth: 1200,
+              margin: "0 auto",
+              width: "100%",
+              boxSizing: "border-box",
 
-    height: "100%",
-    overflowY: "auto",
-    WebkitOverflowScrolling: "touch",
-    overscrollBehaviorY: "contain",
-    overflowAnchor: "auto",
+              height: "100%",
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
+              overscrollBehaviorY: "contain",
+              overflowAnchor: "auto",
 
-    // ⬇️ IMPORTANT: să nu mai „coloreze” banda din spatele barei
-    background: "transparent",
-    position: "relative",
-    zIndex: 0,
-  }}
->
-  {children}
-  {/* spacer-ul rămâne, pentru extra scroll invizibil */}
-  <div aria-hidden="true" style={{ height: "var(--extra-bottom)" }} />
-</main>
-
+              background: "transparent",
+              position: "relative",
+              zIndex: 0,
+            }}
+          >
+            {children}
+            <div aria-hidden="true" style={{ height: "var(--extra-bottom)" }} />
+          </main>
 
           <BottomNav />
         </div>
