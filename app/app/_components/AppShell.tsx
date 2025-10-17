@@ -157,10 +157,18 @@ export default function AppShell({ title, currentPath, children }: Props) {
               overscrollBehaviorY: "contain",
               overflowAnchor: "auto",
 
-              // important: transparent ca să nu coloreze „spatele” barei
+              // important: să nu coloreze “spatele” barei
               background: "transparent",
               position: "relative",
               zIndex: 0,
+
+              // 👇 iOS PWA compositing fix pentru containerul scrollabil
+              transform: "translateZ(0)",
+              WebkitTransform: "translateZ(0)" as any,
+              willChange: "transform",
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden" as any,
+              contain: "layout paint",
             }}
           >
             {children}
