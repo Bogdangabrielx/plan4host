@@ -1,0 +1,2 @@
+id,property_id,start_date,end_date,room_id,room_type_id,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address,submitted_at,created_at,updated_at,state,ota_provider_hint,guest_city,guest_country
+c31b9aa7-2fb7-4679-a240-1a194084d6a4,3a604c44-89b9-400a-8ccb-8d2bba9d9e42,2025-11-11,2025-11-13,02ebea4a-7d3d-4e9a-b262-a4969b4ca542,,Bogdan,Enica,bogdangabriel94@gmail.com,+40987984214,asd,2025-10-15 21:38:02.802+00,2025-10-15 21:38:02.904223+00,2025-10-15 21:40:42.36+00,linked,Airbnb,asd,Afghanistan
