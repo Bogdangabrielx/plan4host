@@ -106,33 +106,12 @@ export default function AppShell({ title, currentPath, children }: Props) {
   return (
     <HeaderProvider initialTitle={title ?? ""}>
       <>
-        {/* iOS PWA: ascund complet announcer-ul Next.js ca să nu poată picta sub bară */}
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-              next-route-announcer{
-                position:absolute !important;
-                left:0 !important; top:0 !important;
-                width:1px !important; height:1px !important;
-                overflow:hidden !important;
-                clip: rect(0 0 0 0) !important;
-                clip-path: inset(100%) !important;
-                white-space:nowrap !important;
-                border:0 !important; padding:0 !important; margin:-1px !important;
-                background: transparent !important;
-                pointer-events:none !important;
-                z-index:-1 !important;
-              }
-            `,
-          }}
-        />
-
         <style
           dangerouslySetInnerHTML={{
             __html: `
               :root{
                 --app-h: 100dvh;
-                --nav-h: 88px;          /* fallback — rescris dinamic de BottomNav */
+                --nav-h: 88px;          /* fallback — e rescris dinamic de BottomNav */
                 --extra-bottom: 120px;
                 --extra-top: 0px;
               }
@@ -183,8 +162,13 @@ export default function AppShell({ title, currentPath, children }: Props) {
               position: "relative",
               zIndex: 0,
 
-              // ❌ IMPORTANT: fără transform/willChange/contain pe containerul scrollabil
-              // (acestea cauzau banda în iOS PWA)
+              // iOS PWA compositing fix
+              transform: "translateZ(0)",
+              WebkitTransform: "translateZ(0)" as any,
+              willChange: "transform",
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden" as any,
+              contain: "layout paint",
             }}
           >
             {children}
