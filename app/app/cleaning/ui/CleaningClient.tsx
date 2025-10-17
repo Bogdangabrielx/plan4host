@@ -397,107 +397,176 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
     );
   }
 
-  /* ─── UI principal ─────────────────────────────────────────────────── */
+  /* ─── UI principal (scroll conținut, header/bottom fixe în AppShell) ─ */
   return (
-    <div style={{ display: "grid", gap: 12, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateRows: "auto 1fr",
+        gap: 12,
+        fontFamily:
+          "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
+        height: "calc(100dvh - var(--safe-top,0px) - var(--safe-bottom,0px))",
+      }}
+    >
       <PlanHeaderBadge title="Cleaning Board" slot="header-right" />
-      {/* Toolbar */}
-      <div className="sb-toolbar" style={{ gap: 12 }}>
-        <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
-          Property
-        </label>
-        <select
-          className="sb-select"
-          value={propertyId}
-          onChange={(e) => setPropertyId(e.currentTarget.value)}
-          style={{ minWidth: 220, fontFamily: "inherit" }}
-        >
-          {properties.map((p) => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button type="button" className="sb-btn sb-btn--icon" aria-label="Previous day" onClick={() => setDateStr(addDaysStr(dateStr, -1))}>◀</button>
-          <input
-            type="date"
-            value={dateStr}
-            onChange={(e) => setDateStr(e.currentTarget.value)}
+      <div
+        data-scroll
+        style={{
+          overflow: "auto",
+          WebkitOverflowScrolling: "touch",
+          overscrollBehavior: "contain",
+          paddingBottom:
+            "calc(var(--bottom-nav-h,56px) + 12px + var(--safe-bottom,0px))",
+        }}
+      >
+        {/* Toolbar */}
+        <div className="sb-toolbar" style={{ gap: 12 }}>
+          <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
+            Property
+          </label>
+          <select
             className="sb-select"
-            style={{ padding: "8px 12px", fontFamily: "inherit" }}
+            value={propertyId}
+            onChange={(e) => setPropertyId(e.currentTarget.value)}
+            style={{ minWidth: 220, fontFamily: "inherit" }}
+          >
+            {properties.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              type="button"
+              className="sb-btn sb-btn--icon"
+              aria-label="Previous day"
+              onClick={() => setDateStr(addDaysStr(dateStr, -1))}
+            >
+              ◀
+            </button>
+            <input
+              type="date"
+              value={dateStr}
+              onChange={(e) => setDateStr(e.currentTarget.value)}
+              className="sb-select"
+              style={{ padding: "8px 12px", fontFamily: "inherit" }}
+            />
+            <button
+              type="button"
+              className="sb-btn sb-btn--icon"
+              aria-label="Next day"
+              onClick={() => setDateStr(addDaysStr(dateStr, 1))}
+            >
+              ▶
+            </button>
+          </div>
+        </div>
+
+        {tdefs.length === 0 ? (
+          <div style={{ color: "var(--muted)" }}>
+            No cleaning checklist defined. Configure tasks in{" "}
+            <a href="/app/propertySetup" style={{ color: "var(--primary)" }}>
+              Property Setup → Cleaning
+            </a>
+            .
+          </div>
+        ) : items.length === 0 ? (
+          <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
+        ) : (
+          <ul
+            style={{
+              listStyle: "none",
+              padding: 0,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+              gap: 10,
+            }}
+          >
+            {items.map((it) => {
+              const key = `${it.room.id}|${it.cleanDate}`;
+              const prog = cleaningMap[key] || {};
+              const doneCount = tdefs.filter((t) => !!prog[t.id]).length;
+              const total = tdefs.length;
+              const cleaned = total > 0 && doneCount === total;
+              const cleanedBy = cleanedByMap[key];
+              const isCleaned = cleaned || !!cleanedBy;
+
+              return (
+                <li
+                  key={it.room.id + "|" + it.cleanDate}
+                  onClick={
+                    !canWrite || isCleaned ? undefined : () => setOpenItem(it)
+                  }
+                  className="sb-card"
+                  style={{
+                    aspectRatio: "1.2 / 1",
+                    padding: 10,
+                    cursor: isCleaned ? "default" : "pointer",
+                    display: "grid",
+                    placeItems: "center",
+                    gap: 6,
+                    opacity: isCleaned ? 0.66 : 1,
+                  }}
+                  title={isCleaned ? "Cleaned" : "Open cleaning tasks"}
+                >
+                  <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
+                    {/* Icon above room name, theme-aware */}
+                    <Image
+                      src={roomIconSrc}
+                      alt=""
+                      width={29}
+                      height={29}
+                      style={{ margin: "0 auto", opacity: 0.95, pointerEvents: "none" }}
+                    />
+
+                    <strong
+                      style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {it.room.name}
+                    </strong>
+
+                    <small style={{ color: "var(--muted)" }}>
+                      {it.mode === "carry"
+                        ? `carry-over • ${it.cleanDate}`
+                        : it.statusLine}
+                    </small>
+
+                    {isCleaned ? (
+                      <span className="sb-badge">
+                        {cleanedBy ? `Cleaned by ${cleanedBy}` : "Cleaned"}
+                      </span>
+                    ) : (
+                      <span className="sb-badge">
+                        {doneCount}/{total}
+                      </span>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {openItem && (
+          <CleanTaskModal
+            item={openItem}
+            tasks={tdefs}
+            propertyId={propertyId}
+            progress={cleaningMap[`${openItem.room.id}|${openItem.cleanDate}`] || {}}
+            onClose={() => setOpenItem(null)}
+            onLocalProgress={onLocalProgress}
+            onComplete={onComplete}
+            onCleanedBy={onCleanedBy}
           />
-          <button type="button" className="sb-btn sb-btn--icon" aria-label="Next day" onClick={() => setDateStr(addDaysStr(dateStr, 1))}>▶</button>
-        </div>
+        )}
       </div>
-
-      {tdefs.length === 0 ? (
-        <div style={{ color: "var(--muted)" }}>
-          No cleaning checklist defined. Configure tasks in{" "}
-          <a href="/app/propertySetup" style={{ color: "var(--primary)" }}>Property Setup → Cleaning</a>.
-        </div>
-      ) : items.length === 0 ? (
-        <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
-          {items.map((it) => {
-            const key = `${it.room.id}|${it.cleanDate}`;
-            const prog = cleaningMap[key] || {};
-            const doneCount = tdefs.filter((t) => !!prog[t.id]).length;
-            const total = tdefs.length;
-            const cleaned = total > 0 && doneCount === total;
-            const cleanedBy = cleanedByMap[key];
-            const isCleaned = cleaned || !!cleanedBy;
-
-            return (
-              <li
-                key={it.room.id + "|" + it.cleanDate}
-                onClick={(!canWrite || isCleaned) ? undefined : () => setOpenItem(it)}
-                className="sb-card"
-                style={{ aspectRatio: "1.2 / 1", padding: 10, cursor: isCleaned ? "default" : "pointer", display: "grid", placeItems: "center", gap: 6, opacity: isCleaned ? .66 : 1 }}
-                title={isCleaned ? "Cleaned" : "Open cleaning tasks"}
-              >
-                <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
-                  {/* Icon above room name, theme-aware */}
-                  <Image
-                    src={roomIconSrc}
-                    alt=""
-                    width={29}
-                    height={29}
-                    style={{ margin: "0 auto", opacity: 0.95, pointerEvents: "none" }}
-                  />
-
-                  <strong style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {it.room.name}
-                  </strong>
-
-                  <small style={{ color: "var(--muted)" }}>
-                    {it.mode === "carry" ? `carry-over • ${it.cleanDate}` : it.statusLine}
-                  </small>
-
-                  {isCleaned ? (
-                    <span className="sb-badge">{cleanedBy ? `Cleaned by ${cleanedBy}` : "Cleaned"}</span>
-                  ) : (
-                    <span className="sb-badge">{doneCount}/{total}</span>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {openItem && (
-        <CleanTaskModal
-          item={openItem}
-          tasks={tdefs}
-          propertyId={propertyId}
-          progress={cleaningMap[`${openItem.room.id}|${openItem.cleanDate}`] || {}}
-          onClose={() => setOpenItem(null)}
-          onLocalProgress={onLocalProgress}
-          onComplete={onComplete}
-          onCleanedBy={onCleanedBy}
-        />
-      )}
     </div>
   );
 }
