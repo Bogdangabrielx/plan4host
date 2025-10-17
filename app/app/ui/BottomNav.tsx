@@ -90,7 +90,7 @@ export default function BottomNav() {
         overflowAnchor: "none",
       }}
     >
-      <div style={{ pointerEvents: "auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+      <div style={{  display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
         {items.map((it) => {
           const active = path === it.href || path.startsWith(it.href + "/");
           return (
