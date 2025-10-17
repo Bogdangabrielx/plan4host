@@ -23,7 +23,7 @@ export default function BottomNav() {
       mq.addEventListener("change", update);
       return () => mq.removeEventListener("change", update);
     } else {
-      // Safari vechi
+      // Safari < 14 fallback
       // @ts-ignore
       mq.addListener(update);
       return () => {
@@ -33,6 +33,7 @@ export default function BottomNav() {
     }
   }, []);
 
+  // theme & path
   useEffect(() => {
     try { setTheme((document.documentElement.getAttribute("data-theme") as any) || "light"); } catch {}
     const onTheme = (e: any) => { if (e?.detail?.theme) setTheme(e.detail.theme); };
@@ -48,13 +49,13 @@ export default function BottomNav() {
     };
   }, []);
 
-  // doar detectăm tastatura (fără safe area / fără a influența layout-ul)
+  // detectează tastatura (iOS/Android) prin VisualViewport
   useEffect(() => {
     const vv = typeof window !== "undefined" ? window.visualViewport : null;
     if (!vv) return;
     const apply = () => {
-      const opened = Math.max(0, window.innerHeight - vv.height - vv.offsetTop) > 120;
-      setKbOpen(opened);
+      const keyboardHeight = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
+      setKbOpen(keyboardHeight > 120);
     };
     vv.addEventListener("resize", apply);
     vv.addEventListener("scroll", apply);
@@ -67,9 +68,10 @@ export default function BottomNav() {
     };
   }, []);
 
-  // scrie înălțimea REALĂ a barei în :root ca --nav-h (fără safe-area)
+  // scrie înălțimea reală a barei în :root ca --nav-h
+  // IMPORTANT: nu o schimbăm când tastatura e deschisă, ca să nu „sară” layout-ul.
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || kbOpen) return;
     const el = navRef.current;
     if (!el) return;
 
@@ -79,7 +81,6 @@ export default function BottomNav() {
     };
 
     write();
-
     let ro: ResizeObserver | undefined;
     const RO = (window as any).ResizeObserver as typeof ResizeObserver | undefined;
     if (RO) {
@@ -94,7 +95,7 @@ export default function BottomNav() {
       window.removeEventListener("orientationchange", write);
       window.removeEventListener("resize", write);
     };
-  }, [mounted]);
+  }, [mounted, kbOpen]);
 
   const items = useMemo(() => ([
     { href: "/app/calendar", label: "Calendar", icon: theme==="light" ? "/calendar_forlight.png" : "/calendar_fordark.png" },
@@ -102,21 +103,26 @@ export default function BottomNav() {
     { href: "/app/guest", label: "Guest Overview", icon: theme==="light" ? "/guest_forlight.png" : "/guest_fordark.png" },
   ]), [theme]);
 
-  if (!mounted || !isMobile || kbOpen) return null;
+  if (!mounted || !isMobile) return null;
 
   const nav = (
     <nav
-      ref={(n) => { navRef.current = n; }}   // ✅ callback ref care returnează void
+      ref={(n) => { navRef.current = n; }}
       aria-label="Bottom navigation"
       className="p4h-bottom-nav"
       style={{
         position: "fixed",
         left: 0,
         right: 0,
-        bottom: 0,                    // ✅ lipit de marginea ecranului
+        bottom: 0,                 // ancorat de muchia fizică
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
-        padding: "8px 10px",          // ✅ fără env(safe-area-inset-bottom)
+        padding: "8px 10px",
+
+        // când tastatura e deschisă, NU mai urcă: îl scot în jos din viewport
+        transform: kbOpen ? "translateY(100%)" : "translateY(0)",
+        transition: "transform .18s ease",
+
         zIndex: 2147483000,
         overflowAnchor: "none",
         isolation: "isolate",
