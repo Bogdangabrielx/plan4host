@@ -251,7 +251,7 @@ export default function DayModal({
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
             <button className="sb-btn sb-btn--icon" type="button" aria-label="Previous day" onClick={() => setDay((d)=> prevDate(d))}>◀</button>
             <strong style={{ letterSpacing: 0.2, fontSize: 16 }}>
-              {day} — Rooms
+              {day} 
             </strong>
             <button className="sb-btn sb-btn--icon" type="button" aria-label="Next day" onClick={() => setDay((d)=> nextDate(d))}>▶</button>
           </div>
