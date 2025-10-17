@@ -139,29 +139,32 @@ export default function AppShell({ title, currentPath, children }: Props) {
           <PullToRefresh />
 
           <main
-            id="app-main"
-            style={{
-              padding: 16,
-              /* doar locul pentru bară; extra-ul îl punem ca spacer la final */
-              paddingBottom: "var(--nav-h)",
-              maxWidth: 1200,
-              margin: "0 auto",
-              width: "100%",
-              boxSizing: "border-box",
+  id="app-main"
+  style={{
+    padding: 16,
+    paddingBottom: "var(--nav-h)",   // rezervă doar înălțimea barei
+    maxWidth: 1200,
+    margin: "0 auto",
+    width: "100%",
+    boxSizing: "border-box",
 
-              height: "100%",
-              overflowY: "auto",
-              WebkitOverflowScrolling: "touch",
-              overscrollBehaviorY: "contain",
-              overflowAnchor: "auto",
-              background: "var(--bg)",  // asigurăm fondul, să nu vezi artefacte
-            }}
-          >
-            {children}
+    height: "100%",
+    overflowY: "auto",
+    WebkitOverflowScrolling: "touch",
+    overscrollBehaviorY: "contain",
+    overflowAnchor: "auto",
 
-            {/* spacer scrollabil invizibil, ca să „se mai ducă un pic” */}
-            <div aria-hidden="true" style={{ height: "var(--extra-bottom)" }} />
-          </main>
+    // ⬇️ IMPORTANT: să nu mai „coloreze” banda din spatele barei
+    background: "transparent",
+    position: "relative",
+    zIndex: 0,
+  }}
+>
+  {children}
+  {/* spacer-ul rămâne, pentru extra scroll invizibil */}
+  <div aria-hidden="true" style={{ height: "var(--extra-bottom)" }} />
+</main>
+
 
           <BottomNav />
         </div>
