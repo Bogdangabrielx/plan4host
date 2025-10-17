@@ -433,7 +433,7 @@ export default function HomePage() {
   const year = new Date().getFullYear();
 
   return (
-    <main className={styles.landing}>
+    <main className={styles.landing} style={{ paddingBottom: "var(--safe-bottom, 0px)" }}>
       {/* Safe-area cover (iOS notch) — landing only */}
       <div
         aria-hidden
