@@ -8,7 +8,6 @@ export default function BottomNav() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [path, setPath] = useState<string>("");
   const [kbOpen, setKbOpen] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
 
@@ -24,7 +23,7 @@ export default function BottomNav() {
       mq.addEventListener("change", update);
       return () => mq.removeEventListener("change", update);
     } else {
-      // Safari < 14 fallback
+      // Safari vechi
       // @ts-ignore
       mq.addListener(update);
       return () => {
@@ -35,15 +34,15 @@ export default function BottomNav() {
   }, []);
 
   useEffect(() => {
-    try { setTheme((document.documentElement.getAttribute("data-theme") as any) || "light"); } catch {}
+    try {
+      setTheme((document.documentElement.getAttribute("data-theme") as any) || "light");
+    } catch {}
     const onTheme = (e: any) => { if (e?.detail?.theme) setTheme(e.detail.theme); };
     window.addEventListener("themechange" as any, onTheme);
 
     setPath(window.location.pathname);
     const onPop = () => setPath(window.location.pathname);
     window.addEventListener("popstate", onPop);
-
-    setIsStandalone(document.documentElement.getAttribute("data-standalone") === "true");
 
     return () => {
       window.removeEventListener("themechange" as any, onTheme);
@@ -70,7 +69,7 @@ export default function BottomNav() {
     };
   }, []);
 
-  // scrie înălțimea reală a barei în :root ca --nav-h (inclusiv spacer-ul)
+  // scrie înălțimea reală a barei în :root ca --nav-h (fără safe-area)
   useEffect(() => {
     if (!mounted) return;
     const el = navRef.current;
@@ -118,24 +117,16 @@ export default function BottomNav() {
         position: "fixed",
         left: 0,
         right: 0,
-
-        // ✅ edge-hug: nu mai lăsăm “banda” gri sub bară
-        bottom: isStandalone ? 0 : "calc(-1 * env(safe-area-inset-bottom, 0px))",
-
+        bottom: 0,                      // ✅ mereu lipit de marginea ecranului
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
         padding: "8px 10px",
-        // ❌ NU mai folosim paddingBottom; provocă artefacte în PWA iOS
-
-        // compositing ajutător
-        transform: "translateZ(0)",
-        willChange: "transform",
-        backfaceVisibility: "hidden",
-        isolation: "isolate",
-        contain: "layout paint",
+        // ❌ fără paddingBottom / fără env(safe-area-inset-bottom)
 
         zIndex: 2147483000,
         overflowAnchor: "none",
+        isolation: "isolate",
+        contain: "layout paint",
       }}
     >
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
@@ -180,15 +171,6 @@ export default function BottomNav() {
           <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
         </button>
       </div>
-
-      {/* ✅ spacer intern pentru safe-area în PWA (înlocuiește paddingBottom) */}
-      <div
-        aria-hidden
-        style={{
-          height: isStandalone ? "env(safe-area-inset-bottom, 0px)" : 0,
-          pointerEvents: "none",
-        }}
-      />
 
       {/* desktop off */}
       <style>{`@media (min-width: 641px) { .p4h-bottom-nav { display: none; } }`}</style>
