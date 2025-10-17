@@ -150,7 +150,7 @@ export default function BottomNav() {
         padding: "8px 10px",
         paddingBottom: isStandalone ? "calc(12px + env(safe-area-inset-bottom, 0px))" : undefined,
 
-        // iOS PWA compositing fixes
+        // iOS PWA compositing fixes (ok să rămână pe bară)
         transform: "translateZ(0)",
         WebkitTransform: "translateZ(0)" as any,
         willChange: "transform",

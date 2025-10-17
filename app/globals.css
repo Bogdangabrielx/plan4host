@@ -342,7 +342,7 @@ select:not(.sb-select){ /* opțional */
   --safe-right: env(safe-area-inset-right, 0px);
 }
 
-/* Force-hide Next.js route announcer to avoid bg band in iOS PWA */
+/* Prevent next-route-announcer from painting in iOS PWA */
 next-route-announcer{
   position:absolute !important;
   left:0 !important; top:0 !important;
