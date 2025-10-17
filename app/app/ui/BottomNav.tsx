@@ -9,7 +9,6 @@ export default function BottomNav() {
   const [path, setPath] = useState<string>("");
   const [kbOpen, setKbOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [saBottom, setSaBottom] = useState(0); // safe-area bottom în px
   const navRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
@@ -49,40 +48,33 @@ export default function BottomNav() {
     };
   }, []);
 
-  // detectăm keyboard + safe-area via VisualViewport și ținem bara ascunsă când apare tastatura
+  // doar detectăm tastatura (fără safe area / fără a influența layout-ul)
   useEffect(() => {
     const vv = typeof window !== "undefined" ? window.visualViewport : null;
     if (!vv) return;
-
-    const measure = () => {
-      // cât e "marginea" nefolosibilă jos (safe area + eventual UI)
-      const bottomInset = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
-      setSaBottom(bottomInset);
-
-      // keyboard deschis?
-      setKbOpen(bottomInset > 120);
+    const apply = () => {
+      const opened = Math.max(0, window.innerHeight - vv.height - vv.offsetTop) > 120;
+      setKbOpen(opened);
     };
-
-    vv.addEventListener("resize", measure);
-    vv.addEventListener("scroll", measure);
-    window.addEventListener("orientationchange", measure);
-    measure();
-
+    vv.addEventListener("resize", apply);
+    vv.addEventListener("scroll", apply);
+    window.addEventListener("orientationchange", apply);
+    apply();
     return () => {
-      vv.removeEventListener("resize", measure);
-      vv.removeEventListener("scroll", measure);
-      window.removeEventListener("orientationchange", measure);
+      vv.removeEventListener("resize", apply);
+      vv.removeEventListener("scroll", apply);
+      window.removeEventListener("orientationchange", apply);
     };
   }, []);
 
-  // scrie înălțimea REALĂ a barei în :root ca --nav-h (include safe-area pentru spațierea din AppShell)
+  // scrie înălțimea REALĂ a barei în :root ca --nav-h (fără safe-area)
   useEffect(() => {
     if (!mounted) return;
     const el = navRef.current;
     if (!el) return;
 
     const write = () => {
-      const h = (el.offsetHeight || 88) + (kbOpen ? 0 : saBottom);
+      const h = el.offsetHeight || 88;
       document.documentElement.style.setProperty("--nav-h", `${h}px`);
     };
 
@@ -102,7 +94,7 @@ export default function BottomNav() {
       window.removeEventListener("orientationchange", write);
       window.removeEventListener("resize", write);
     };
-  }, [mounted, saBottom, kbOpen]);
+  }, [mounted]);
 
   const items = useMemo(() => ([
     { href: "/app/calendar", label: "Calendar", icon: theme==="light" ? "/calendar_forlight.png" : "/calendar_fordark.png" },
@@ -114,17 +106,17 @@ export default function BottomNav() {
 
   const nav = (
     <nav
-      ref={(n) => { navRef.current = n; }}
+      ref={(n) => { navRef.current = n; }}   // ✅ callback ref care returnează void
       aria-label="Bottom navigation"
       className="p4h-bottom-nav"
       style={{
         position: "fixed",
         left: 0,
         right: 0,
-        bottom: 0,                            // ✅ lipit de marginea fizică
+        bottom: 0,                    // ✅ lipit de marginea ecranului
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
-        padding: "8px 10px",                  // ✅ fără env() aici
+        padding: "8px 10px",          // ✅ fără env(safe-area-inset-bottom)
         zIndex: 2147483000,
         overflowAnchor: "none",
         isolation: "isolate",
@@ -179,22 +171,5 @@ export default function BottomNav() {
     </nav>
   );
 
-  // filler: colorează DOAR sub bară cât safe-area, fără să mute bara (nu "plutește")
-  const filler = saBottom > 0 ? (
-    <div
-      aria-hidden
-      style={{
-        position: "fixed",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height: saBottom,
-        background: "var(--panel)",
-        zIndex: 2147482999,
-        pointerEvents: "none",
-      }}
-    />
-  ) : null;
-
-  return createPortal(<>{filler}{nav}</>, document.body);
+  return createPortal(nav, document.body);
 }
