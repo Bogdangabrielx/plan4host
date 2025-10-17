@@ -196,7 +196,7 @@ html[data-page-visible="false"] * { animation-play-state: paused !important; }
           }}
         />
 
-        <div style={{ paddingTop: "var(--safe-top)", }}>
+        <div style={{ paddingTop: "var(--safe-top)", paddingBottom: "var(safe-bottom)" }}>
           {children}
         </div>
 
