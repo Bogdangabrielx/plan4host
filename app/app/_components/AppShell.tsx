@@ -12,13 +12,11 @@ type Props = {
 };
 
 export default function AppShell({ title, currentPath, children }: Props) {
-  // Global one-time push prompt on first user gesture across /app
+  // Prompt web push pe primul gest
   useEffect(() => {
     if (typeof window === "undefined") return;
     let asked = false;
-    try {
-      asked = localStorage.getItem("p4h:push:asked") === "1";
-    } catch {}
+    try { asked = localStorage.getItem("p4h:push:asked") === "1"; } catch {}
     if (asked) return;
 
     const handler = () => {
@@ -29,19 +27,19 @@ export default function AppShell({ title, currentPath, children }: Props) {
             if (perm === "granted") {
               if (!("serviceWorker" in navigator)) return;
               const reg = await navigator.serviceWorker.register("/sw.js");
-              const keyB64 =
-                (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-                  (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-                  ""
-                ).toString();
+              const keyB64 = (
+                process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+                (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+                ""
+              ).toString();
 
               const urlBase64ToUint8Array = (base64: string) => {
                 const padding = "=".repeat((4 - (base64.length % 4)) % 4);
-                const base64Safe = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
-                const rawData = atob(base64Safe);
-                const outputArray = new Uint8Array(rawData.length);
-                for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
-                return outputArray;
+                const safe = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
+                const raw = atob(safe);
+                const out = new Uint8Array(raw.length);
+                for (let i = 0; i < raw.length; ++i) out[i] = raw.charCodeAt(i);
+                return out;
               };
 
               const sub = await reg.pushManager.subscribe({
@@ -52,9 +50,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
               const ua = navigator.userAgent || "";
               const os = document.documentElement.getAttribute("data-os") || "";
               let property_id: string | null = null;
-              try {
-                property_id = localStorage.getItem("p4h:selectedPropertyId");
-              } catch {}
+              try { property_id = localStorage.getItem("p4h:selectedPropertyId"); } catch {}
 
               await fetch("/api/push/subscribe", {
                 method: "POST",
@@ -64,9 +60,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
             }
           } finally {
             if (perm !== "default") {
-              try {
-                localStorage.setItem("p4h:push:asked", "1");
-              } catch {}
+              try { localStorage.setItem("p4h:push:asked", "1"); } catch {}
             }
           }
         });
@@ -81,10 +75,43 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
+  // 🔒 No-zoom (atenție la accesibilitate)
+  useEffect(() => {
+    // iOS Safari: prevenim pinch-zoom și gesture zoom
+    const preventGesture = (e: Event) => { e.preventDefault(); };
+    document.addEventListener("gesturestart", preventGesture as EventListener, { passive: false });
+    document.addEventListener("gesturechange", preventGesture as EventListener, { passive: false });
+    document.addEventListener("gestureend", preventGesture as EventListener, { passive: false });
+
+    // Double-tap zoom (iOS WebKit): blocăm dublu-tap <300ms
+    let lastTouchEnd = 0;
+    const onTouchEnd = (e: TouchEvent) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    };
+    document.addEventListener("touchend", onTouchEnd as EventListener, { passive: false });
+
+    // Android/Chrome (rare): ctrl+wheel pe desktop — nu e cazul pe mobil, dar defensiv:
+    const onWheel = (e: WheelEvent) => {
+      if ((e as any).ctrlKey) e.preventDefault();
+    };
+    window.addEventListener("wheel", onWheel as EventListener, { passive: false });
+
+    return () => {
+      document.removeEventListener("gesturestart", preventGesture as EventListener);
+      document.removeEventListener("gesturechange", preventGesture as EventListener);
+      document.removeEventListener("gestureend", preventGesture as EventListener);
+      document.removeEventListener("touchend", onTouchEnd as EventListener);
+      window.removeEventListener("wheel", onWheel as EventListener);
+    };
+  }, []);
+
   return (
     <HeaderProvider initialTitle={title ?? ""}>
       <div
-        // NOTE: keep root clean — no transform/filter/perspective here
         style={{
           minHeight: "100dvh",
           display: "grid",
@@ -93,7 +120,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
           color: "var(--text)",
         }}
       >
-        {/* Global anti-zoom for inputs (iOS), once for all pages under AppShell */}
+        {/* Global anti-zoom pentru inputuri (prevenim auto-zoom-ul iOS la focus) */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
@@ -111,7 +138,6 @@ export default function AppShell({ title, currentPath, children }: Props) {
           id="app-main"
           style={{
             padding: 16,
-            // leave space for the fixed bottom nav on mobile
             paddingBottom: "calc(88px + env(safe-area-inset-bottom, 0px))",
             maxWidth: 1200,
             margin: "0 auto",
@@ -121,8 +147,6 @@ export default function AppShell({ title, currentPath, children }: Props) {
         >
           {children}
         </main>
-
-        {/* Rendered via portal into document.body, stays fixed regardless of ancestors */}
         <BottomNav />
       </div>
     </HeaderProvider>
