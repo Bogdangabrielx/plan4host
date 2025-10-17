@@ -20,11 +20,12 @@ export default function BottomNav() {
     const mq = window.matchMedia("(max-width: 640px)");
     const update = () => setIsMobile(mq.matches);
     update();
-    if (mq.addEventListener) {
+    // TS-safe add/remove
+    if (typeof mq.addEventListener === "function") {
       mq.addEventListener("change", update);
       return () => mq.removeEventListener("change", update);
     } else {
-      // Safari vechi
+      // Safari < 14 fallback
       // @ts-ignore
       mq.addListener(update);
       return () => {
@@ -70,7 +71,7 @@ export default function BottomNav() {
     };
   }, []);
 
-  // scrie --nav-h pe root (AppShell folosește paddingBottom real)
+  // scrie înălțimea reală a barei în :root ca --nav-h
   useEffect(() => {
     if (!mounted) return;
     const el = navRef.current;
@@ -109,32 +110,9 @@ export default function BottomNav() {
 
   if (!mounted || !isMobile || kbOpen) return null;
 
-  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
-  const isIOSStandalone = isStandalone && isIOS;
-
-  // Underlay **doar** pentru iOS PWA: colorează safe-area din spatele barei
-  const underlay = isIOSStandalone ? (
-    <div
-      aria-hidden
-      style={{
-        position: "fixed",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height: "max(env(safe-area-inset-bottom, 0px), 0px)",
-        background: "var(--panel)",
-        zIndex: 2147482999,
-        pointerEvents: "none",
-        transform: "translateZ(0)",
-        WebkitTransform: "translateZ(0)" as any,
-        contain: "strict",
-      }}
-    />
-  ) : null;
-
   const nav = (
     <nav
-      ref={(n) => { navRef.current = n; }}
+      ref={(n) => { navRef.current = n; }}  // ✅ returnează void
       aria-label="Bottom navigation"
       className="p4h-bottom-nav"
       style={{
@@ -142,23 +120,18 @@ export default function BottomNav() {
         left: 0,
         right: 0,
 
-        // Browser mobil: lipit de muchie; iOS PWA: respectă safe-area (cu padding intern)
+        // Browser mobil: flush la muchie; PWA iOS: respectă safe-area
         bottom: isStandalone ? 0 : "calc(-1 * env(safe-area-inset-bottom, 0px))",
 
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
+        padding: "8px 10px",
         
-        // iOS PWA compositing fixes (ok să rămână pe bară)
-        transform: "translateZ(0)",
-        WebkitTransform: "translateZ(0)" as any,
-        willChange: "transform",
-        backfaceVisibility: "hidden",
-        WebkitBackfaceVisibility: "hidden" as any,
-        contain: "layout paint",
-        isolation: "isolate",
 
         zIndex: 2147483000,
         overflowAnchor: "none",
+        isolation: "isolate",
+        contain: "layout paint",
       }}
     >
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
@@ -209,11 +182,5 @@ export default function BottomNav() {
     </nav>
   );
 
-  return createPortal(
-    <>
-      {underlay}
-      {nav}
-    </>,
-    document.body
-  );
+  return createPortal(nav, document.body);
 }
