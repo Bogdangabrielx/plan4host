@@ -77,7 +77,7 @@ export default function BottomNav() {
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
         padding: "8px 10px",
-        paddingBottom: "calc(8px + env(safe-area-inset-bottom, 0px))",
+        paddingBottom: "calc(8px, 0px))",
         zIndex: 9999,
         // anti-drift
         transform: "translateY(calc(var(--vv-shift, 0px) * -1))",
