@@ -123,18 +123,23 @@ export default function AppShell({ title, currentPath, children }: Props) {
   return (
     <HeaderProvider initialTitle={title ?? ""}>
       <>
-        {/* Fallback dinamic pt. înălțimea viewport-ului: preferăm 100svh, altfel 100dvh */}
+        {/* Viewport + variabile pentru spațiul între header și bottom */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
-              :root{ --app-h: 100dvh; }
+              :root{
+                --app-h: 100dvh;
+                --nav-h: 88px;          /* înălțimea barei de jos */
+                --extra-bottom: 120px;  /* spațiu suplimentar la finalul paginii */
+                --extra-top: 0px;       /* spațiu suplimentar la începutul paginii (opțional) */
+              }
               @supports (height: 100svh) { :root{ --app-h: 100svh; } }
 
-              /* Global: anti-zoom la focus + padding top pt. header pe mobile */
+              /* Global: anti-zoom la focus + safe-top pentru header pe mobile */
               input, textarea, select, button { font-size: 16px; }
               html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
               @media (max-width: 640px) {
-                #app-main { padding-top: calc(64px + var(--safe-top, 0px)) !important; }
+                #app-main { padding-top: calc(64px + var(--safe-top, 0px) + var(--extra-top)) !important; }
               }
             `,
           }}
@@ -161,7 +166,8 @@ export default function AppShell({ title, currentPath, children }: Props) {
             id="app-main"
             style={{
               padding: 16,
-              paddingBottom: "calc(88px + env(safe-area-inset-bottom, 0px))", // loc pt bottom-nav
+              /* rezervăm locul pentru bară + extra scroll sub conținut */
+              paddingBottom: "calc(var(--nav-h) + var(--extra-bottom))",
               maxWidth: 1200,
               margin: "0 auto",
               width: "100%",
