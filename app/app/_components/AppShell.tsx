@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import AppHeader from "../ui/AppHeader";
 import BottomNav from "../ui/BottomNav";
 import PullToRefresh from "./PullToRefresh";
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function AppShell({ title, currentPath, children }: Props) {
-  // (logica existentă rămâne)
+  // ————— logică existentă (push, no-zoom, rubber-band guard) —————
   useEffect(() => {
     if (typeof window === "undefined") return;
     let asked = false;
@@ -39,18 +39,9 @@ export default function AppShell({ title, currentPath, children }: Props) {
                 for (let i = 0; i < raw.length; ++i) out[i] = raw.charCodeAt(i);
                 return out;
               };
-              const sub = await reg.pushManager.subscribe({
+              await reg.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(keyB64),
-              });
-              const ua = navigator.userAgent || "";
-              const os = document.documentElement.getAttribute("data-os") || "";
-              let property_id: string | null = null;
-              try { property_id = localStorage.getItem("p4h:selectedPropertyId"); } catch {}
-              await fetch("/api/push/subscribe", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ subscription: sub.toJSON(), property_id, ua, os }),
               });
             }
           } finally {
@@ -93,7 +84,6 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
-  // guard rubber-band
   useEffect(() => {
     const main = document.getElementById("app-main");
     if (!main) return;
@@ -103,36 +93,23 @@ export default function AppShell({ title, currentPath, children }: Props) {
     return () => { document.removeEventListener("touchmove", stopIfNoScroll as EventListener); };
   }, []);
 
+  // —— detectăm PWA/standalone pentru backdrop/cover —
+  const [standalone, setStandalone] = useState(false);
+  useEffect(() => {
+    try {
+      setStandalone(document.documentElement.getAttribute("data-standalone") === "true");
+    } catch {}
+  }, []);
+
   return (
     <HeaderProvider initialTitle={title ?? ""}>
       <>
-        {/* iOS PWA: ascund complet announcer-ul Next.js ca să nu poată picta sub bară */}
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-              next-route-announcer{
-                position:absolute !important;
-                left:0 !important; top:0 !important;
-                width:1px !important; height:1px !important;
-                overflow:hidden !important;
-                clip: rect(0 0 0 0) !important;
-                clip-path: inset(100%) !important;
-                white-space:nowrap !important;
-                border:0 !important; padding:0 !important; margin:-1px !important;
-                background: transparent !important;
-                pointer-events:none !important;
-                z-index:-1 !important;
-              }
-            `,
-          }}
-        />
-
         <style
           dangerouslySetInnerHTML={{
             __html: `
               :root{
                 --app-h: 100dvh;
-                --nav-h: 88px;          /* fallback — rescris dinamic de BottomNav */
+                --nav-h: 88px;          /* fallback — BottomNav o rescrie dinamic */
                 --extra-bottom: 120px;
                 --extra-top: 0px;
               }
@@ -143,17 +120,54 @@ export default function AppShell({ title, currentPath, children }: Props) {
               @media (max-width: 640px) {
                 #app-main { padding-top: calc(64px + var(--safe-top, 0px) + var(--extra-top)) !important; }
               }
+
+              /* Next.js route announcer să fie complet în afara fluxului */
+              next-route-announcer { position:absolute !important; left:-9999px !important; top:auto !important; width:1px; height:1px; overflow:hidden; }
             `,
           }}
         />
 
+        {/* Backdrop + bounce-cover doar în PWA (standalone) */}
+        {standalone && (
+          <>
+            <div
+              aria-hidden
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "var(--bg)",
+                zIndex: 0,
+                pointerEvents: "none",
+              }}
+            />
+            {/* extinde fundalul sub marginea de jos, ca să acopere rubber-band-ul */}
+            <div
+              aria-hidden
+              style={{
+                position: "fixed",
+                left: 0,
+                right: 0,
+                bottom: -120,
+                height: 160,
+                background: "var(--bg)",
+                zIndex: 0,
+                pointerEvents: "none",
+              }}
+            />
+          </>
+        )}
+
+        {/* App container peste backdrop */}
         <div
           style={{
+            position: "relative",
+            zIndex: 1,
+
             height: "var(--app-h)",
             minHeight: "var(--app-h)",
             display: "grid",
             gridTemplateRows: "auto 1fr",
-            background: "var(--bg)",
+            background: "transparent",
             color: "var(--text)",
             overflow: "hidden",
             overscrollBehavior: "none",
@@ -178,13 +192,14 @@ export default function AppShell({ title, currentPath, children }: Props) {
               overscrollBehaviorY: "contain",
               overflowAnchor: "auto",
 
-              // să nu coloreze spatele barei
               background: "transparent",
               position: "relative",
-              zIndex: 0,
 
-              // ❌ IMPORTANT: fără transform/willChange/contain pe containerul scrollabil
-              // (acestea cauzau banda în iOS PWA)
+              // iOS PWA compositing hints
+              transform: "translateZ(0)",
+              willChange: "transform",
+              backfaceVisibility: "hidden",
+              contain: "layout paint",
             }}
           >
             {children}
