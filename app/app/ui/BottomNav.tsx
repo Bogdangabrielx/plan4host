@@ -90,7 +90,7 @@ export default function BottomNav() {
         overflowAnchor: "none",
       }}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+      <div style={{ pointerEvents: "auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
         {items.map((it) => {
           const active = path === it.href || path.startsWith(it.href + "/");
           return (
@@ -129,7 +129,7 @@ export default function BottomNav() {
           aria-label="Open management"
         >
           <img src={theme==="light" ? "/configurator_forlight.png" : "/configurator_fordark.png"} alt="" width={22} height={22} style={{ display: "block" }} />
-          <small style={{ pointerEvents: "auto", fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
+          <small style={{  fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
         </button>
       </div>
     </nav>
