@@ -7,17 +7,12 @@ export default function BottomNav() {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [path, setPath] = useState<string>("");
+  const [kbOpen, setKbOpen] = useState(false); // ascundem bara când tastatura e deschisă
 
   useEffect(() => { setMounted(true); }, []);
 
-  // Theme + path tracking
   useEffect(() => {
-    try {
-      setTheme(
-        (document.documentElement.getAttribute("data-theme") as any) || "light"
-      );
-    } catch {}
-
+    try { setTheme((document.documentElement.getAttribute("data-theme") as any) || "light"); } catch {}
     const onTheme = (e: any) => { if (e?.detail?.theme) setTheme(e.detail.theme); };
     window.addEventListener("themechange" as any, onTheme);
 
@@ -31,40 +26,31 @@ export default function BottomNav() {
     };
   }, []);
 
-  // 🛡️ Anti-drift: compensăm offset-ul vizual DOAR când tastatura este deschisă
+  // Detectăm tastatura -> ascundem bara (fără transform/anti-drift)
   useEffect(() => {
-    const vv = (typeof window !== "undefined") ? window.visualViewport : null;
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
     if (!vv) return;
-
-    const applyShift = () => {
+    const apply = () => {
       const keyboardHeight = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
-      const isKeyboardOpen = keyboardHeight > 120; // prag sigur iOS/Android
-      const shift = isKeyboardOpen ? Math.max(0, vv.offsetTop || 0) : 0;
-      document.documentElement.style.setProperty("--vv-shift", `${shift}px`);
+      setKbOpen(keyboardHeight > 120);
     };
-
-    vv.addEventListener("resize", applyShift);
-    vv.addEventListener("scroll", applyShift);
-    window.addEventListener("orientationchange", applyShift);
-    applyShift();
-
+    vv.addEventListener("resize", apply);
+    vv.addEventListener("scroll", apply);
+    window.addEventListener("orientationchange", apply);
+    apply();
     return () => {
-      vv.removeEventListener("resize", applyShift);
-      vv.removeEventListener("scroll", applyShift);
-      window.removeEventListener("orientationchange", applyShift);
+      vv.removeEventListener("resize", apply);
+      vv.removeEventListener("scroll", apply);
+      window.removeEventListener("orientationchange", apply);
     };
   }, []);
 
-  const items = useMemo(
-    () => [
-      { href: "/app/calendar", label: "Calendar", icon: theme === "light" ? "/calendar_forlight.png" : "/calendar_fordark.png" },
-      { href: "/app/cleaning", label: "Cleaning Board", icon: theme === "light" ? "/cleaning_forlight.png" : "/cleaning_fordark.png" },
-      { href: "/app/guest", label: "Guest Overview", icon: theme === "light" ? "/guest_forlight.png" : "/guest_fordark.png" },
-    ],
-    [theme]
-  );
+  const items = useMemo(() => ([
+    { href: "/app/calendar", label: "Calendar", icon: theme==="light" ? "/calendar_forlight.png" : "/calendar_fordark.png" },
+    { href: "/app/cleaning", label: "Cleaning Board", icon: theme==="light" ? "/cleaning_forlight.png" : "/cleaning_fordark.png" },
+    { href: "/app/guest", label: "Guest Overview", icon: theme==="light" ? "/guest_forlight.png" : "/guest_fordark.png" },
+  ]), [theme]);
 
-  // Bara propriu-zisă (mutată în sus doar când e tastatura deschisă)
   const nav = (
     <nav
       aria-label="Bottom navigation"
@@ -73,25 +59,18 @@ export default function BottomNav() {
         position: "fixed",
         left: 0,
         right: 0,
-        bottom: 0,
+        // ✅ Edge-hug: coboară bară peste safe area → nu mai rămâne bandă jos
+        bottom: "calc(-1 * env(safe-area-inset-bottom, 0px))",
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
+        // padding normal (fără env)
         padding: "8px 10px",
-        paddingBottom: "calc(8px, 0px))",
         zIndex: 9999,
-        // anti-drift
-        transform: "translateY(calc(var(--vv-shift, 0px) * -1))",
-        willChange: "transform",
+        display: kbOpen ? "none" : "block",
         overflowAnchor: "none",
       }}
     >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: 6,
-        }}
-      >
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
         {items.map((it) => {
           const active = path === it.href || path.startsWith(it.href + "/");
           return (
@@ -107,25 +86,15 @@ export default function BottomNav() {
                 touchAction: "manipulation",
               }}
             >
-              <img
-                src={it.icon}
-                alt=""
-                width={22}
-                height={22}
-                style={{ display: "block", opacity: active ? 1 : 0.9 }}
-              />
-              <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>
-                {it.label}
-              </small>
+              <img src={it.icon} alt="" width={22} height={22} style={{ display: "block", opacity: active ? 1 : 0.9 }} />
+              <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>{it.label}</small>
             </a>
           );
         })}
 
         <button
           type="button"
-          onClick={() => {
-            try { window.dispatchEvent(new CustomEvent("p4h:openManagement")); } catch {}
-          }}
+          onClick={() => { try { window.dispatchEvent(new CustomEvent("p4h:openManagement")); } catch {} }}
           style={{
             border: "1px solid var(--border)",
             background: "var(--card)",
@@ -139,20 +108,11 @@ export default function BottomNav() {
           }}
           aria-label="Open management"
         >
-          <img
-            src={theme === "light" ? "/configurator_forlight.png" : "/configurator_fordark.png"}
-            alt=""
-            width={22}
-            height={22}
-            style={{ display: "block" }}
-          />
-          <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>
-            Management
-          </small>
+          <img src={theme==="light" ? "/configurator_forlight.png" : "/configurator_fordark.png"} alt="" width={22} height={22} style={{ display: "block" }} />
+          <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
         </button>
       </div>
 
-      {/* doar mobile */}
       <style>{`@media (min-width: 641px) { .p4h-bottom-nav { display: none; } }`}</style>
     </nav>
   );
