@@ -196,9 +196,7 @@ html[data-page-visible="false"] * { animation-play-state: paused !important; }
           }}
         />
 
-        <div style={{ paddingTop: "var(--safe-top)", }}>
-          {children}
-        </div>
+        
 
         {/* Host global pentru modalul “emoji” (deschis din OpenCookieSettingsButton / AutoOpenOnLanding) */}
         <ConsentOverlayHost />
