@@ -12,12 +12,15 @@ type Props = {
 };
 
 export default function AppShell({ title, currentPath, children }: Props) {
-  // (toată logica ta existentă rămâne la fel)
+  // Global one-time push prompt on first user gesture across /app
   useEffect(() => {
     if (typeof window === "undefined") return;
     let asked = false;
-    try { asked = localStorage.getItem("p4h:push:asked") === "1"; } catch {}
+    try {
+      asked = localStorage.getItem("p4h:push:asked") === "1";
+    } catch {}
     if (asked) return;
+
     const handler = () => {
       try {
         if (!("Notification" in window)) return;
@@ -26,27 +29,33 @@ export default function AppShell({ title, currentPath, children }: Props) {
             if (perm === "granted") {
               if (!("serviceWorker" in navigator)) return;
               const reg = await navigator.serviceWorker.register("/sw.js");
-              const keyB64 = (
-                process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-                (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-                ""
-              ).toString();
+              const keyB64 =
+                (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+                  (window as any).NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+                  ""
+                ).toString();
+
               const urlBase64ToUint8Array = (base64: string) => {
                 const padding = "=".repeat((4 - (base64.length % 4)) % 4);
-                const safe = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
-                const raw = atob(safe);
-                const out = new Uint8Array(raw.length);
-                for (let i = 0; i < raw.length; ++i) out[i] = raw.charCodeAt(i);
-                return out;
+                const base64Safe = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
+                const rawData = atob(base64Safe);
+                const outputArray = new Uint8Array(rawData.length);
+                for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+                return outputArray;
               };
+
               const sub = await reg.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(keyB64),
               });
+
               const ua = navigator.userAgent || "";
               const os = document.documentElement.getAttribute("data-os") || "";
               let property_id: string | null = null;
-              try { property_id = localStorage.getItem("p4h:selectedPropertyId"); } catch {}
+              try {
+                property_id = localStorage.getItem("p4h:selectedPropertyId");
+              } catch {}
+
               await fetch("/api/push/subscribe", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -54,11 +63,16 @@ export default function AppShell({ title, currentPath, children }: Props) {
               });
             }
           } finally {
-            if (perm !== "default") { try { localStorage.setItem("p4h:push:asked", "1"); } catch {} }
+            if (perm !== "default") {
+              try {
+                localStorage.setItem("p4h:push:asked", "1");
+              } catch {}
+            }
           }
         });
       } catch {}
     };
+
     window.addEventListener("pointerdown", handler, { once: true });
     window.addEventListener("keydown", handler, { once: true });
     return () => {
@@ -67,105 +81,50 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
-  // no-zoom etc. (neseparate aici ca să nu te inund, rămân identice)
-  useEffect(() => {
-    const preventGesture = (e: Event) => { e.preventDefault(); };
-    document.addEventListener("gesturestart", preventGesture as EventListener, { passive: false });
-    document.addEventListener("gesturechange", preventGesture as EventListener, { passive: false });
-    document.addEventListener("gestureend", preventGesture as EventListener, { passive: false });
-    let lastTouchEnd = 0;
-    const onTouchEnd = (e: TouchEvent) => {
-      const now = Date.now();
-      if (now - lastTouchEnd <= 300) e.preventDefault();
-      lastTouchEnd = now;
-    };
-    document.addEventListener("touchend", onTouchEnd as EventListener, { passive: false });
-    const onWheel = (e: WheelEvent) => { if ((e as any).ctrlKey) e.preventDefault(); };
-    window.addEventListener("wheel", onWheel as EventListener, { passive: false });
-    return () => {
-      document.removeEventListener("gesturestart", preventGesture as EventListener);
-      document.removeEventListener("gesturechange", preventGesture as EventListener);
-      document.removeEventListener("gestureend", preventGesture as EventListener);
-      document.removeEventListener("touchend", onTouchEnd as EventListener);
-      window.removeEventListener("wheel", onWheel as EventListener);
-    };
-  }, []);
-
-  useEffect(() => {
-    const main = document.getElementById("app-main");
-    if (!main) return;
-    const shouldBlock = () => main.scrollHeight <= main.clientHeight + 1;
-    const stopIfNoScroll = (e: TouchEvent) => { if (!shouldBlock()) return; e.preventDefault(); };
-    document.addEventListener("touchmove", stopIfNoScroll as EventListener, { passive: false });
-    return () => { document.removeEventListener("touchmove", stopIfNoScroll as EventListener); };
-  }, []);
-
   return (
     <HeaderProvider initialTitle={title ?? ""}>
-      <>
+      <div
+        // NOTE: keep root clean — no transform/filter/perspective here
+        style={{
+          minHeight: "100dvh",
+          display: "grid",
+          gridTemplateRows: "auto 1fr",
+          background: "var(--bg)",
+          color: "var(--text)",
+        }}
+      >
+        {/* Global anti-zoom for inputs (iOS), once for all pages under AppShell */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
-              :root{
-                --app-h: 100dvh;
-                --nav-h: 88px;          /* înălțimea barei fixe de jos */
-                --extra-bottom: 120px;  /* extra scroll sub conținut (invizibil) */
-                --extra-top: 0px;       /* opțional, extra sus */
-              }
-              @supports (height: 100svh) { :root{ --app-h: 100svh; } }
-
               input, textarea, select, button { font-size: 16px; }
               html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
               @media (max-width: 640px) {
-                #app-main { padding-top: calc(64px + var(--safe-top, 0px) + var(--extra-top)) !important; }
+                #app-main { padding-top: calc(64px + var(--safe-top, 0px)) !important; }
               }
             `,
           }}
         />
-
-        <div
+        <AppHeader currentPath={currentPath} />
+        <PullToRefresh />
+        <main
+          id="app-main"
           style={{
-            height: "var(--app-h)",
-            minHeight: "var(--app-h)",
-            display: "grid",
-            gridTemplateRows: "auto 1fr",
-            background: "var(--bg)",
-            color: "var(--text)",
-            overflow: "hidden",
-            overscrollBehavior: "none",
+            padding: 16,
+            // leave space for the fixed bottom nav on mobile
+            paddingBottom: "calc(88px + env(safe-area-inset-bottom, 0px))",
+            maxWidth: 1200,
+            margin: "0 auto",
+            width: "100%",
+            boxSizing: "border-box",
           }}
         >
-          <AppHeader currentPath={currentPath} />
-          <PullToRefresh />
+          {children}
+        </main>
 
-          <main
-            id="app-main"
-            style={{
-              padding: 16,
-              /* doar locul pentru bară; extra-ul îl punem ca spacer la final */
-              paddingBottom: "var(--nav-h)",
-              maxWidth: 1200,
-              margin: "0 auto",
-              width: "100%",
-              boxSizing: "border-box",
-
-              height: "100%",
-              overflowY: "auto",
-              WebkitOverflowScrolling: "touch",
-              overscrollBehaviorY: "contain",
-              overflowAnchor: "auto",
-              background: "var(--bg)",  // asigurăm fondul, să nu vezi artefacte
-            }}
-          >
-            {children}
-
-            {/* spacer scrollabil invizibil, ca să „se mai ducă un pic” */}
-            <div aria-hidden="true" style={{ height: "var(--extra-bottom)" }} />
-          </main>
-
-          <BottomNav />
-        </div>
-      </>
+        {/* Rendered via portal into document.body, stays fixed regardless of ancestors */}
+        <BottomNav />
+      </div>
     </HeaderProvider>
   );
 }
