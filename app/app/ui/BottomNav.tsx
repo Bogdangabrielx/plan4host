@@ -32,17 +32,15 @@ export default function BottomNav() {
     };
   }, []);
 
-  // 🛡️ Detectăm tastatura și ascundem bara; nu mai facem niciun transform (anti-drift by hiding)
+  // Detectăm tastatura și ascundem bara (logica ta, neschimbată)
   useEffect(() => {
     const vv = (typeof window !== "undefined") ? window.visualViewport : null;
     if (!vv) return;
 
     const apply = () => {
-      // când tastatura e deschisă, vizual viewport e mai mic; threshold ~120px e safe pe iOS/Android
       const keyboardHeight = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
-      const isOpen = keyboardHeight > 120;
+      const isOpen = keyboardHeight > 120; // prag safe iOS/Android
       setKbOpen(isOpen);
-      // păstrăm variabila doar dacă îți mai trebuie în altă parte
       document.documentElement.style.setProperty("--vv-shift", `${Math.max(0, vv.offsetTop || 0)}px`);
     };
 
@@ -75,14 +73,14 @@ export default function BottomNav() {
         position: "fixed",
         left: 0,
         right: 0,
-        bottom: 0,
+        // ⬇️ „edge-hug”: coborâm bara peste safe-area (fără spațiu vizibil jos)
+        bottom: "calc(-1 * env(safe-area-inset-bottom, 0px))",
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
+        // padding intern normal (fără env)
         padding: "8px 10px",
-        paddingBottom: "calc(8px + env(safe-area-inset-bottom, 0px))",
         zIndex: 9999,
-        // ❌ fără transform, fără „urcare”, fără tail
-        display: kbOpen ? "none" : "block", // ✅ ascuns când tastatura e deschisă
+        display: kbOpen ? "none" : "block", // ✅ ascunsă la tastatură (ca înainte)
         overflowAnchor: "none",
       }}
     >

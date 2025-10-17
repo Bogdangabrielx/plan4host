@@ -161,7 +161,8 @@ export default function AppShell({ title, currentPath, children }: Props) {
             id="app-main"
             style={{
               padding: 16,
-              paddingBottom: "calc(88px + env(safe-area-inset-bottom, 0px))", // loc pt bottom-nav
+              // ⬇️ doar loc fix pentru bară, fără safe-area jos
+              paddingBottom: 88,
               maxWidth: 1200,
               margin: "0 auto",
               width: "100%",
