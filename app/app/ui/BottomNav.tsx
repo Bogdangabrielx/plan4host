@@ -67,7 +67,22 @@ export default function BottomNav() {
       window.removeEventListener("orientationchange", apply);
     };
   }, []);
+useEffect(() => {
+  const el = navRef.current;
+  if (!el) return;
 
+  // blochează „pan/scroll” în interiorul barei (iOS + Android)
+  const stop = (e: Event) => e.preventDefault();
+
+  // pe touch + wheel (pasive:false ca să putem preveni)
+  el.addEventListener("touchmove", stop, { passive: false });
+  el.addEventListener("wheel", stop, { passive: false });
+
+  return () => {
+    el.removeEventListener("touchmove", stop as any);
+    el.removeEventListener("wheel", stop as any);
+  };
+}, []);
   // scrie înălțimea reală a barei în :root ca --nav-h
   // IMPORTANT: nu o schimbăm când tastatura e deschisă, ca să nu „sară” layout-ul.
   useEffect(() => {
