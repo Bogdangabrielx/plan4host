@@ -7,6 +7,7 @@ export default function BottomNav() {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [path, setPath] = useState<string>("");
+  const [kbOpen, setKbOpen] = useState(false); // ✅ ascundem bara când tastatura e deschisă
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -31,27 +32,29 @@ export default function BottomNav() {
     };
   }, []);
 
-  // 🛡️ Anti-drift: compensăm offset-ul vizual DOAR când tastatura este deschisă
+  // 🛡️ Detectăm tastatura și ascundem bara; nu mai facem niciun transform (anti-drift by hiding)
   useEffect(() => {
     const vv = (typeof window !== "undefined") ? window.visualViewport : null;
     if (!vv) return;
 
-    const applyShift = () => {
+    const apply = () => {
+      // când tastatura e deschisă, vizual viewport e mai mic; threshold ~120px e safe pe iOS/Android
       const keyboardHeight = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
-      const isKeyboardOpen = keyboardHeight > 120; // prag sigur iOS/Android
-      const shift = isKeyboardOpen ? Math.max(0, vv.offsetTop || 0) : 0;
-      document.documentElement.style.setProperty("--vv-shift", `${shift}px`);
+      const isOpen = keyboardHeight > 120;
+      setKbOpen(isOpen);
+      // păstrăm variabila doar dacă îți mai trebuie în altă parte
+      document.documentElement.style.setProperty("--vv-shift", `${Math.max(0, vv.offsetTop || 0)}px`);
     };
 
-    vv.addEventListener("resize", applyShift);
-    vv.addEventListener("scroll", applyShift);
-    window.addEventListener("orientationchange", applyShift);
-    applyShift();
+    vv.addEventListener("resize", apply);
+    vv.addEventListener("scroll", apply);
+    window.addEventListener("orientationchange", apply);
+    apply();
 
     return () => {
-      vv.removeEventListener("resize", applyShift);
-      vv.removeEventListener("scroll", applyShift);
-      window.removeEventListener("orientationchange", applyShift);
+      vv.removeEventListener("resize", apply);
+      vv.removeEventListener("scroll", apply);
+      window.removeEventListener("orientationchange", apply);
     };
   }, []);
 
@@ -64,7 +67,6 @@ export default function BottomNav() {
     [theme]
   );
 
-  // Bara propriu-zisă (mutată în sus doar când e tastatura deschisă)
   const nav = (
     <nav
       aria-label="Bottom navigation"
@@ -79,9 +81,8 @@ export default function BottomNav() {
         padding: "8px 10px",
         paddingBottom: "calc(8px + env(safe-area-inset-bottom, 0px))",
         zIndex: 9999,
-        // NU vrem "plutire": nav se mută, dar completăm golul cu un tail separat (vezi mai jos)
-        transform: "translateY(calc(var(--vv-shift, 0px) * -1))",
-        willChange: "transform",
+        // ❌ fără transform, fără „urcare”, fără tail
+        display: kbOpen ? "none" : "block", // ✅ ascuns când tastatura e deschisă
         overflowAnchor: "none",
       }}
     >
@@ -152,35 +153,11 @@ export default function BottomNav() {
         </button>
       </div>
 
-      {/* Mobile-only visibility driven by CSS */}
-      <style>{`@media (min-width: 641px) { .p4h-bottom-nav { display: none; } }`}</style>
+      {/* doar mobile */}
+      <style>{`@media (min-width: 641px) { .p4h-bottom-nav { display: none !important; } }`}</style>
     </nav>
   );
 
-  // 🧵 Tail-ul care „umple” spațiul sub bară când aceasta este translată în sus
-  const tail = (
-    <div
-      aria-hidden="true"
-      className="p4h-bottom-nav-tail"
-      style={{
-        position: "fixed",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height: "var(--vv-shift, 0px)", // exact cât a fost mutată bara
-        background: "var(--panel)",     // aceeași culoare cu bara
-        zIndex: 9998,                    // sub bară
-        pointerEvents: "none",           // nu captează clickuri
-      }}
-    />
-  );
-
   if (!mounted) return null;
-  return createPortal(
-    <>
-      {nav}
-      {tail}
-    </>,
-    document.body
-  );
+  return createPortal(nav, document.body);
 }
