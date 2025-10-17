@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function AppShell({ title, currentPath, children }: Props) {
-  // (logica existentă rămâne)
+  // (toată logica ta existentă rămâne la fel)
   useEffect(() => {
     if (typeof window === "undefined") return;
     let asked = false;
@@ -67,12 +67,12 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
+  // no-zoom etc. (neseparate aici ca să nu te inund, rămân identice)
   useEffect(() => {
     const preventGesture = (e: Event) => { e.preventDefault(); };
     document.addEventListener("gesturestart", preventGesture as EventListener, { passive: false });
     document.addEventListener("gesturechange", preventGesture as EventListener, { passive: false });
     document.addEventListener("gestureend", preventGesture as EventListener, { passive: false });
-
     let lastTouchEnd = 0;
     const onTouchEnd = (e: TouchEvent) => {
       const now = Date.now();
@@ -80,10 +80,8 @@ export default function AppShell({ title, currentPath, children }: Props) {
       lastTouchEnd = now;
     };
     document.addEventListener("touchend", onTouchEnd as EventListener, { passive: false });
-
     const onWheel = (e: WheelEvent) => { if ((e as any).ctrlKey) e.preventDefault(); };
     window.addEventListener("wheel", onWheel as EventListener, { passive: false });
-
     return () => {
       document.removeEventListener("gesturestart", preventGesture as EventListener);
       document.removeEventListener("gesturechange", preventGesture as EventListener);
@@ -93,7 +91,6 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
-  // guard rubber-band
   useEffect(() => {
     const main = document.getElementById("app-main");
     if (!main) return;
@@ -111,9 +108,9 @@ export default function AppShell({ title, currentPath, children }: Props) {
             __html: `
               :root{
                 --app-h: 100dvh;
-                --nav-h: 88px;          /* fallback — e rescris dinamic de BottomNav */
-                --extra-bottom: 120px;
-                --extra-top: 0px;
+                --nav-h: 88px;          /* înălțimea barei fixe de jos */
+                --extra-bottom: 120px;  /* extra scroll sub conținut (invizibil) */
+                --extra-top: 0px;       /* opțional, extra sus */
               }
               @supports (height: 100svh) { :root{ --app-h: 100svh; } }
 
@@ -145,6 +142,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
             id="app-main"
             style={{
               padding: 16,
+              /* doar locul pentru bară; extra-ul îl punem ca spacer la final */
               paddingBottom: "var(--nav-h)",
               maxWidth: 1200,
               margin: "0 auto",
@@ -156,23 +154,13 @@ export default function AppShell({ title, currentPath, children }: Props) {
               WebkitOverflowScrolling: "touch",
               overscrollBehaviorY: "contain",
               overflowAnchor: "auto",
-
-              // să nu coloreze spatele barei
-              background: "transparent",
-              position: "relative",
-              zIndex: 0,
-
-              // iOS PWA compositing fix
-              transform: "translateZ(0)",
-              WebkitTransform: "translateZ(0)" as any,
-              willChange: "transform",
-              backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility: "hidden" as any,
-              contain: "layout paint",
+              background: "var(--bg)",  // asigurăm fondul, să nu vezi artefacte
             }}
           >
             {children}
-            <div aria-hidden="true" />
+
+            {/* spacer scrollabil invizibil, ca să „se mai ducă un pic” */}
+            <div aria-hidden="true" style={{ height: "var(--extra-bottom)" }} />
           </main>
 
           <BottomNav />
