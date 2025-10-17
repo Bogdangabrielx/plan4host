@@ -148,7 +148,7 @@ html, body { background: var(--bg); color: var(--text); }
 :root[data-os="ios"][data-theme="dark"] body{
   background-attachment: scroll, scroll, scroll, scroll;
 }
-  
+
 /* iOS PWA only: acoperă fâșia de safe-area cu culoarea panelului aplicației */
 :root[data-standalone="true"] body::after{
   content:"";
@@ -213,9 +213,9 @@ html[data-page-visible="false"] * { animation-play-state: paused !important; }
           }}
         />
 
-        <div style={{ paddingTop: "var(--safe-top)", }}>
-          {children}
-        </div>
+        <div style={{ paddingTop: "var(--safe-top)", position: "relative", zIndex: 1 }}>
+  {children}
+</div>
 
         {/* Host global pentru modalul “emoji” (deschis din OpenCookieSettingsButton / AutoOpenOnLanding) */}
         <ConsentOverlayHost />
