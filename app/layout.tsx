@@ -176,20 +176,20 @@ html[data-page-visible="false"] * { animation-play-state: paused !important; }
 /* Safe areas */
 :root{
   --safe-top: env(safe-area-inset-top, 0px);
-
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 }
 @supports (padding-top: constant(safe-area-inset-top)){
   :root{
     --safe-top: constant(safe-area-inset-top);
-
+    --safe-bottom: constant(safe-area-inset-bottom);
     --safe-left: constant(safe-area-inset-left);
     --safe-right: constant(safe-area-inset-right);
   }
 }
 .safe-top-pad{ padding-top: calc(var(--safe-top) + 8px); }
-
+.safe-bottom-pad{ padding-bottom: var(--safe-bottom); }
 .safe-top-sticky{ position: sticky; top: 0; }
 .safe-top-fixed{ position: fixed; top: var(--safe-top); }
 `,
