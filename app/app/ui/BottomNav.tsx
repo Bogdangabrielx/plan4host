@@ -9,6 +9,7 @@ export default function BottomNav() {
   const [path, setPath] = useState<string>("");
   const [kbOpen, setKbOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [saBottom, setSaBottom] = useState(0); // safe-area bottom în px
   const navRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
@@ -34,9 +35,7 @@ export default function BottomNav() {
   }, []);
 
   useEffect(() => {
-    try {
-      setTheme((document.documentElement.getAttribute("data-theme") as any) || "light");
-    } catch {}
+    try { setTheme((document.documentElement.getAttribute("data-theme") as any) || "light"); } catch {}
     const onTheme = (e: any) => { if (e?.detail?.theme) setTheme(e.detail.theme); };
     window.addEventListener("themechange" as any, onTheme);
 
@@ -50,33 +49,40 @@ export default function BottomNav() {
     };
   }, []);
 
-  // ascunde bara când tastatura e deschisă
+  // detectăm keyboard + safe-area via VisualViewport și ținem bara ascunsă când apare tastatura
   useEffect(() => {
     const vv = typeof window !== "undefined" ? window.visualViewport : null;
     if (!vv) return;
-    const apply = () => {
-      const keyboardHeight = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
-      setKbOpen(keyboardHeight > 120);
+
+    const measure = () => {
+      // cât e "marginea" nefolosibilă jos (safe area + eventual UI)
+      const bottomInset = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
+      setSaBottom(bottomInset);
+
+      // keyboard deschis?
+      setKbOpen(bottomInset > 120);
     };
-    vv.addEventListener("resize", apply);
-    vv.addEventListener("scroll", apply);
-    window.addEventListener("orientationchange", apply);
-    apply();
+
+    vv.addEventListener("resize", measure);
+    vv.addEventListener("scroll", measure);
+    window.addEventListener("orientationchange", measure);
+    measure();
+
     return () => {
-      vv.removeEventListener("resize", apply);
-      vv.removeEventListener("scroll", apply);
-      window.removeEventListener("orientationchange", apply);
+      vv.removeEventListener("resize", measure);
+      vv.removeEventListener("scroll", measure);
+      window.removeEventListener("orientationchange", measure);
     };
   }, []);
 
-  // scrie înălțimea reală a barei în :root ca --nav-h (fără safe-area)
+  // scrie înălțimea REALĂ a barei în :root ca --nav-h (include safe-area pentru spațierea din AppShell)
   useEffect(() => {
     if (!mounted) return;
     const el = navRef.current;
     if (!el) return;
 
     const write = () => {
-      const h = el.offsetHeight || 88;
+      const h = (el.offsetHeight || 88) + (kbOpen ? 0 : saBottom);
       document.documentElement.style.setProperty("--nav-h", `${h}px`);
     };
 
@@ -90,15 +96,13 @@ export default function BottomNav() {
     }
     window.addEventListener("orientationchange", write);
     window.addEventListener("resize", write);
-    const tid = window.setTimeout(write, 120);
 
     return () => {
-      window.clearTimeout(tid);
       ro?.disconnect();
       window.removeEventListener("orientationchange", write);
       window.removeEventListener("resize", write);
     };
-  }, [mounted]);
+  }, [mounted, saBottom, kbOpen]);
 
   const items = useMemo(() => ([
     { href: "/app/calendar", label: "Calendar", icon: theme==="light" ? "/calendar_forlight.png" : "/calendar_fordark.png" },
@@ -117,12 +121,10 @@ export default function BottomNav() {
         position: "fixed",
         left: 0,
         right: 0,
-        bottom: 0,                      // ✅ mereu lipit de marginea ecranului
+        bottom: 0,                            // ✅ lipit de marginea fizică
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
-        padding: "8px 10px",
-        // ❌ fără paddingBottom / fără env(safe-area-inset-bottom)
-
+        padding: "8px 10px",                  // ✅ fără env() aici
         zIndex: 2147483000,
         overflowAnchor: "none",
         isolation: "isolate",
@@ -177,5 +179,22 @@ export default function BottomNav() {
     </nav>
   );
 
-  return createPortal(nav, document.body);
+  // filler: colorează DOAR sub bară cât safe-area, fără să mute bara (nu "plutește")
+  const filler = saBottom > 0 ? (
+    <div
+      aria-hidden
+      style={{
+        position: "fixed",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: saBottom,
+        background: "var(--panel)",
+        zIndex: 2147482999,
+        pointerEvents: "none",
+      }}
+    />
+  ) : null;
+
+  return createPortal(<>{filler}{nav}</>, document.body);
 }
