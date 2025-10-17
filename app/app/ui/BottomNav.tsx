@@ -86,7 +86,7 @@ export default function BottomNav() {
         padding: "8px 10px",
         paddingBottom: isStandalone ? "calc(8px + env(safe-area-inset-bottom, 0px))" : undefined,
 
-        zIndex: 2147483000,          // foarte sus, nimic din content nu o mai acoperă
+        zIndex: 99999,          // foarte sus, nimic din content nu o mai acoperă
         overflowAnchor: "none",
       }}
     >
