@@ -217,7 +217,7 @@ export default function HomePageRO() {
   const year = new Date().getFullYear();
 
   return (
-    <main className={styles.landing}>
+    <main className={styles.landing} style={{ paddingBottom: "var(--safe-bottom, 0px)" }}>
       <AutoOpenOnLanding delay={150} />
 
       {/* Bară safe-area iOS */}
