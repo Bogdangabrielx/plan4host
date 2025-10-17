@@ -67,7 +67,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
-  // no-zoom etc. (neseparate aici ca să nu te inund, rămân identice)
+  // no-zoom etc. (identic)
   useEffect(() => {
     const preventGesture = (e: Event) => { e.preventDefault(); };
     document.addEventListener("gesturestart", preventGesture as EventListener, { passive: false });
@@ -91,6 +91,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
     };
   }, []);
 
+  // blochează rubber-band pe body când #app-main nu are de scroll
   useEffect(() => {
     const main = document.getElementById("app-main");
     if (!main) return;
@@ -109,7 +110,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
               :root{
                 --app-h: 100dvh;
                 --nav-h: 88px;          /* înălțimea barei fixe de jos */
-                --extra-bottom: 120px;  /* extra scroll sub conținut (invizibil) */
+                --extra-bottom: 120px;  /* extra scroll invizibil sub conținut */
                 --extra-top: 0px;       /* opțional, extra sus */
               }
               @supports (height: 100svh) { :root{ --app-h: 100svh; } }
@@ -118,6 +119,25 @@ export default function AppShell({ title, currentPath, children }: Props) {
               html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
               @media (max-width: 640px) {
                 #app-main { padding-top: calc(64px + var(--safe-top, 0px) + var(--extra-top)) !important; }
+              }
+
+              /* ── Anti-overlay pe mobil: footere/toolbar-uri sticky din content nu trec peste BottomNav ── */
+              @media (max-width: 640px){
+                #app-main .sticky-bottom,
+                #app-main [data-sticky-bottom],
+                #app-main .form-sticky-actions,
+                #app-main [data-role="sticky-actions"],
+                #app-main .actions-sticky,
+                #app-main .footer-sticky {
+                  position: sticky !important;
+                  bottom: var(--nav-h) !important;   /* stai deasupra barei fixe */
+                  z-index: 9 !important;              /* sub .p4h-bottom-nav (care e enorm) */
+                  background: var(--panel, var(--bg));
+                }
+                /* neutralizează fade/overlay-uri decorative care ar putea acoperi bara */
+                #app-main .content-bottom-fade,
+                #app-main .pull-to-refresh-bottom,
+                #app-main .p4h-bottom-fade { display: none !important; }
               }
             `,
           }}
@@ -139,32 +159,30 @@ export default function AppShell({ title, currentPath, children }: Props) {
           <PullToRefresh />
 
           <main
-  id="app-main"
-  style={{
-    padding: 16,
-    paddingBottom: "var(--nav-h)",   // rezervă doar înălțimea barei
-    maxWidth: 1200,
-    margin: "0 auto",
-    width: "100%",
-    boxSizing: "border-box",
+            id="app-main"
+            style={{
+              padding: 16,
+              paddingBottom: "var(--nav-h)",  // rezervă doar locul pentru bară
+              maxWidth: 1200,
+              margin: "0 auto",
+              width: "100%",
+              boxSizing: "border-box",
 
-    height: "100%",
-    overflowY: "auto",
-    WebkitOverflowScrolling: "touch",
-    overscrollBehaviorY: "contain",
-    overflowAnchor: "auto",
+              height: "100%",
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
+              overscrollBehaviorY: "contain",
+              overflowAnchor: "auto",
 
-    // ⬇️ IMPORTANT: să nu mai „coloreze” banda din spatele barei
-    background: "transparent",
-    position: "relative",
-    zIndex: 0,
-  }}
->
-  {children}
-  {/* spacer-ul rămâne, pentru extra scroll invizibil */}
-  <div aria-hidden="true" style={{ height: "var(--extra-bottom)" }} />
-</main>
-
+              background: "transparent",  // ca să nu apară bandă de culoare sub bară
+              position: "relative",
+              zIndex: 0,
+            }}
+          >
+            {children}
+            {/* extra spațiu scroll invizibil, rămâne */}
+            <div aria-hidden="true" style={{ height: "var(--extra-bottom)" }} />
+          </main>
 
           <BottomNav />
         </div>
