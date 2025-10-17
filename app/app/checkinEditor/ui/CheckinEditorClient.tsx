@@ -466,9 +466,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <span style={{ color:'var(--muted)' }}>No image uploaded.</span>
                   <button className="sb-btn" onClick={triggerImageUpload}>Upload image</button>
                   <Info text={IMAGE_INFO} />
-                  <div>
-                    
-                  </div>
                 </div>
               )}
             </div>
