@@ -20,12 +20,11 @@ export default function BottomNav() {
     const mq = window.matchMedia("(max-width: 640px)");
     const update = () => setIsMobile(mq.matches);
     update();
-    // TS-safe add/remove
-    if (typeof mq.addEventListener === "function") {
+    if (mq.addEventListener) {
       mq.addEventListener("change", update);
       return () => mq.removeEventListener("change", update);
     } else {
-      // Safari < 14 fallback
+      // Safari vechi
       // @ts-ignore
       mq.addListener(update);
       return () => {
@@ -71,7 +70,7 @@ export default function BottomNav() {
     };
   }, []);
 
-  // scrie înălțimea reală a barei în :root ca --nav-h
+  // scrie --nav-h pe root (ca AppShell să știe paddingBottom real)
   useEffect(() => {
     if (!mounted) return;
     const el = navRef.current;
@@ -110,9 +109,12 @@ export default function BottomNav() {
 
   if (!mounted || !isMobile || kbOpen) return null;
 
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
+  const isIOSStandalone = isStandalone && isIOS;
+
   const nav = (
     <nav
-      ref={(n) => { navRef.current = n; }}  // ✅ returnează void
+      ref={(n) => { navRef.current = n; }}
       aria-label="Bottom navigation"
       className="p4h-bottom-nav"
       style={{
@@ -120,7 +122,7 @@ export default function BottomNav() {
         left: 0,
         right: 0,
 
-        // Browser mobil: flush la muchie; PWA iOS: respectă safe-area
+        // Browser mobil: “lipit” de margine; PWA iOS: respectăm safe-area (dar cu underlay dedesubt)
         bottom: isStandalone ? 0 : "calc(-1 * env(safe-area-inset-bottom, 0px))",
 
         background: "var(--panel)",
@@ -128,10 +130,17 @@ export default function BottomNav() {
         padding: "8px 10px",
         paddingBottom: isStandalone ? "calc(12px + env(safe-area-inset-bottom, 0px))" : undefined,
 
+        // 👉 iOS PWA compositing fixes
+        transform: "translateZ(0)",
+        WebkitTransform: "translateZ(0)",
+        willChange: "transform",
+        backfaceVisibility: "hidden" as any,
+        WebkitBackfaceVisibility: "hidden" as any,
+        contain: "layout paint",
+        isolation: "isolate",
+
         zIndex: 2147483000,
         overflowAnchor: "none",
-        isolation: "isolate",
-        contain: "layout paint",
       }}
     >
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
@@ -182,5 +191,31 @@ export default function BottomNav() {
     </nav>
   );
 
-  return createPortal(nav, document.body);
+  // Underlay **doar** pentru iOS PWA (standalone): stă SUB bară, oprește “banda” bg peste butoane
+  const underlay = isIOSStandalone ? (
+    <div
+      aria-hidden
+      style={{
+        position: "fixed",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: "max(env(safe-area-inset-bottom, 0px), 0px)",
+        background: "var(--panel)",
+        zIndex: 2147482999,
+        pointerEvents: "none",
+        transform: "translateZ(0)",
+        WebkitTransform: "translateZ(0)",
+        contain: "strict",
+      }}
+    />
+  ) : null;
+
+  return createPortal(
+    <>
+      {underlay}
+      {nav}
+    </>,
+    document.body
+  );
 }
