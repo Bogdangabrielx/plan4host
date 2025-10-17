@@ -129,7 +129,7 @@ export default function BottomNav() {
           aria-label="Open management"
         >
           <img src={theme==="light" ? "/configurator_forlight.png" : "/configurator_fordark.png"} alt="" width={22} height={22} style={{ display: "block" }} />
-          <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
+          <small style={{ pointerEvents: "auto", fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
         </button>
       </div>
     </nav>
