@@ -77,27 +77,20 @@ export default function AppShell({ title, currentPath, children }: Props) {
 
   // 🔒 No-zoom (atenție la accesibilitate)
   useEffect(() => {
-    // iOS Safari: prevenim pinch-zoom și gesture zoom
     const preventGesture = (e: Event) => { e.preventDefault(); };
     document.addEventListener("gesturestart", preventGesture as EventListener, { passive: false });
     document.addEventListener("gesturechange", preventGesture as EventListener, { passive: false });
     document.addEventListener("gestureend", preventGesture as EventListener, { passive: false });
 
-    // Double-tap zoom (iOS WebKit): blocăm dublu-tap <300ms
     let lastTouchEnd = 0;
     const onTouchEnd = (e: TouchEvent) => {
       const now = Date.now();
-      if (now - lastTouchEnd <= 300) {
-        e.preventDefault();
-      }
+      if (now - lastTouchEnd <= 300) e.preventDefault();
       lastTouchEnd = now;
     };
     document.addEventListener("touchend", onTouchEnd as EventListener, { passive: false });
 
-    // Android/Chrome (rare): ctrl+wheel pe desktop — nu e cazul pe mobil, dar defensiv:
-    const onWheel = (e: WheelEvent) => {
-      if ((e as any).ctrlKey) e.preventDefault();
-    };
+    const onWheel = (e: WheelEvent) => { if ((e as any).ctrlKey) e.preventDefault(); };
     window.addEventListener("wheel", onWheel as EventListener, { passive: false });
 
     return () => {
@@ -112,15 +105,19 @@ export default function AppShell({ title, currentPath, children }: Props) {
   return (
     <HeaderProvider initialTitle={title ?? ""}>
       <div
+        // Root: ocupă tot viewportul și BLOCHĂM scroll-ul paginii; doar #app-main scrollează
         style={{
+          height: "100dvh",
           minHeight: "100dvh",
           display: "grid",
           gridTemplateRows: "auto 1fr",
           background: "var(--bg)",
           color: "var(--text)",
+          overflow: "hidden",           // ⬅️ blochează scroll pe containerul paginii
+          overscrollBehavior: "none",   // oprește bounce pe body
         }}
       >
-        {/* Global anti-zoom pentru inputuri (prevenim auto-zoom-ul iOS la focus) */}
+        {/* Global: anti-zoom la focus + padding top pentru header pe mobile */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
@@ -132,21 +129,32 @@ export default function AppShell({ title, currentPath, children }: Props) {
             `,
           }}
         />
+
         <AppHeader currentPath={currentPath} />
         <PullToRefresh />
+
+        {/* Singura zonă scrollabilă */}
         <main
           id="app-main"
           style={{
             padding: 16,
-            paddingBottom: "calc(88px + env(safe-area-inset-bottom, 0px))",
+            paddingBottom: "calc(88px + env(safe-area-inset-bottom, 0px))", // loc pt bottom-nav
             maxWidth: 1200,
             margin: "0 auto",
             width: "100%",
             boxSizing: "border-box",
+
+            height: "100%",
+            overflowY: "auto",                  // ⬅️ scroll doar aici
+            WebkitOverflowScrolling: "touch",
+            overscrollBehaviorY: "contain",     // nu „trage” body-ul
+            overflowAnchor: "auto",
           }}
         >
           {children}
         </main>
+
+        {/* BottomNav e în portal -> fix, nu scrollează */}
         <BottomNav />
       </div>
     </HeaderProvider>
