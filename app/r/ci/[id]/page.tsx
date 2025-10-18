@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 import ExportPdfButton from "../ExportPdfButton";
 
 export const dynamic = "force-dynamic";
@@ -147,7 +148,8 @@ export default async function CheckinQrView({ params }: { params: { id: string }
     return (
       <picture>
         <source media="print" srcSet={pair.light} />
-        <img src={pair.dark} alt="" width={size} height={size} />
+        {/* Force light variant on-screen */}
+        <img src={pair.light} alt="" width={size} height={size} />
       </picture>
     );
   }
@@ -185,12 +187,24 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   const idDoc = docs.find(d => (d.doc_type||'').toLowerCase()==='id_card' || (d.doc_type||'').toLowerCase()==='passport') || docs.find(d => (d.mime_type||'').startsWith('image/')) || null;
   const sigDoc = docs.find(d => (d.doc_type||'').toLowerCase()==='signature') || docs.find(d => (!d.doc_type || d.doc_type===null) && (d.mime_type||'').startsWith('image/') && d.id !== (idDoc?.id||'')) || null;
 
+  // Force page to light theme (like /r/[token]/page.tsx)
+  const cookieStore = cookies();
+  const theme: 'light' = 'light';
+  const accent = cookieStore.get("app_accent")?.value ?? "base";
+
   return (
+    <html lang="en" data-theme={theme} data-accent={accent}>
+      <body style={{ margin: 0 }}>
     <main style={{ minHeight:'100dvh', display:'grid', placeItems:'start center', background:'var(--bg)', color:'var(--text)' }}>
       <div style={{ width:'min(860px, calc(100vw - 32px))', padding:16, display:'grid', gap:12 }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <h1 style={{ margin:0, fontSize:20 }}>Check-in confirmation</h1>
-          <ExportPdfButton />
+        <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:29, background:'var(--panel)' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <img src="/p4h_logo_rotund.png" alt="Plan4Host" width={28} height={28} style={{ display:'block', borderRadius:999 }} />
+              <h1 style={{ margin:0, fontSize:20 }}>Check-in confirmation</h1>
+            </div>
+            <ExportPdfButton />
+          </div>
         </div>
         {isExpired && (
           <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)' }}>
@@ -298,5 +312,7 @@ export default async function CheckinQrView({ params }: { params: { id: string }
         {/* QR code removed intentionally; export via PDF is available above */}
       </div>
     </main>
+      </body>
+    </html>
   );
 }
