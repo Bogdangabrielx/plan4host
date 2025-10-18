@@ -107,9 +107,8 @@ export async function POST(req: Request) {
       : '';
     const thankYou = 'Thank you for your patience — your reservation has been confirmed.';
     const inner = `
-      <div style="margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-        <p style="margin:0 0 10px;">${escapeHtml(thankYou)}</p>
-        <h3 style="margin:8px 0 10px;">Reservation details</h3>
+      <p style="margin:0 0 12px;">${escapeHtml(thankYou)}</p>
+      <div style="margin:0 0 12px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
         <div style=\"display:grid; grid-template-columns:auto 1fr; row-gap:8px; column-gap:10px; align-items:center;\">
           <div aria-hidden style=\"width:18px\"><img src=\"${iconGuest}\" alt=\"guest\" width=\"16\" height=\"16\"/></div>
           <div><strong>Guest:</strong> <span>${escapeHtml(guestFull)}</span></div>
@@ -117,12 +116,12 @@ export async function POST(req: Request) {
           <div><strong>Stay:</strong> <span>${escapeHtml(sd)} → ${escapeHtml(ed)}</span></div>
           ${roomName ? `<div aria-hidden style=\\\"width:18px\\\"><img src=\\\"${iconRoom}\\\" alt=\\\"room\\\" width=\\\"16\\\" height=\\\"16\\\"/></div><div><strong>Room:</strong> <span>${escapeHtml(roomName)}</span></div>` : ''}
         </div>
-        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-          <a href="${link}" target="_blank" style="display:inline-block; padding:10px 14px; background:#16b981; color:#0c111b; text-decoration:none; border-radius:10px; font-weight:800;">Open Reservation messages</a>
-          ${gcal ? `<a href=\"${gcal}\" target=\"_blank\" style=\"display:inline-block; padding:10px 14px; background:#0ea5e9; color:#0c111b; text-decoration:none; border-radius:10px; font-weight:800;\">Add to calendar</a>` : ''}
-        </div>
-        <p style="margin:10px 0 0; color:#64748b; font-size:12px;">An .ics file is attached for your calendar.</p>
       </div>
+      <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="${link}" target="_blank" style="display:inline-block; padding:10px 14px; background:#ffffff; border:1px solid #e2e8f0; color:#16b981; text-decoration:none; border-radius:10px; font-weight:800;">Open Reservation messages</a>
+        ${gcal ? `<a href=\"${gcal}\" target=\"_blank\" style=\"display:inline-block; padding:10px 14px; background:#ffffff; border:1px solid #e2e8f0; color:#16b981; text-decoration:none; border-radius:10px; font-weight:800;\">Add to calendar</a>` : ''}
+      </div>
+      <p style="margin:10px 0 0; color:#64748b; font-size:12px;">An .ics file is attached for your calendar.</p>
     `;
     const html = wrapEmailHtml(subjectPlain, inner);
 
