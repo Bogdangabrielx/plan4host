@@ -44,22 +44,26 @@ begin
       and room_type_id = p_room_type_id
     order by name asc, id asc
   ) loop
-    begin
-      -- Try to assign and confirm in one shot so the exclusion constraint arbiters conflicts
-      update public.bookings
-         set room_id = cand,
-             status  = case when status = 'checked_in' then status else 'confirmed' end
-       where id = p_booking_id;
-
-      -- If exclusion violation occurs (another booking already blocks this room),
-      -- control jumps to the EXCEPTION block and we try the next candidate.
-      return cand;
-
-    exception when exclusion_violation then
-      -- pick next candidate
+    -- skip candidate if another non-cancelled booking overlaps this range
+    if exists (
+      select 1
+      from public.bookings b
+      where b.property_id = p_property_id
+        and b.room_id = cand
+        and b.id <> p_booking_id
+        and coalesce(b.status, '') <> 'cancelled'
+        and b.start_date < p_end_date
+        and b.end_date   > p_start_date
+    ) then
       continue;
-    when others then
-      -- best-effort: try next as well
+    end if;
+
+    begin
+      update public.bookings
+         set room_id = cand
+       where id = p_booking_id;
+      return cand;
+    exception when others then
       continue;
     end;
   end loop;
@@ -67,4 +71,3 @@ begin
   return null;
 end;
 $$;
-

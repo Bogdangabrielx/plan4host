@@ -96,7 +96,7 @@ async function findFreeRoomForType(
     .from("bookings")
     .select("room_id,start_date,end_date,status")
     .in("room_id", candIds)
-    .in("status", ["confirmed", "checked_in"])
+    .neq("status", "cancelled")
     .lt("start_date", end_date)
     .gt("end_date", start_date);
 

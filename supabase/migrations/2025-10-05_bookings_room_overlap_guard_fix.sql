@@ -79,14 +79,26 @@ begin
       and room_type_id = p_room_type_id
     order by name asc, id asc
   ) loop
+    -- skip if another booking (any non-cancelled status) overlaps on this room
+    if exists (
+      select 1
+      from public.bookings b
+      where b.property_id = p_property_id
+        and b.room_id = cand
+        and b.id <> p_booking_id
+        and coalesce(b.status, '') <> 'cancelled'
+        and b.start_date < p_end_date
+        and b.end_date   > p_start_date
+    ) then
+      continue;
+    end if;
+
     begin
       update public.bookings
          set room_id = cand
        where id = p_booking_id;
       return cand;
-    exception when exclusion_violation then
-      continue;
-    when others then
+    exception when others then
       continue;
     end;
   end loop;
@@ -94,4 +106,3 @@ begin
   return null;
 end;
 $$;
-
