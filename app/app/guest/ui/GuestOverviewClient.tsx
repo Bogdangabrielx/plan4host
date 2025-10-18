@@ -1317,7 +1317,20 @@ function EditFormBookingModal({
   }
 
   // Overlay above AppHeader (AppHeader overlays use z-index up to 121)
-  const wrap: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 200, display: "grid", placeItems: "center", padding: 12 };
+  const wrap: React.CSSProperties = {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.55)",
+    zIndex: 200,
+    display: "grid",
+    placeItems: "center",
+    padding: 12,
+    // Make overlay itself scrollable on iOS/PWA
+    overflowY: "auto",
+    WebkitOverflowScrolling: "touch",
+    overscrollBehavior: "contain",
+    touchAction: "pan-y",
+  };
   const card: React.CSSProperties = {
     width: "min(680px, 100%)",
     maxHeight: "calc(100dvh - 32px)",
