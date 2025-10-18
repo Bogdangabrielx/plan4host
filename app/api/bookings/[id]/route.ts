@@ -197,7 +197,27 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   try { await admin.from("booking_contacts").delete().eq("booking_id", id); } catch {}
   try { await admin.from("booking_check_values").delete().eq("booking_id", id); } catch {}
   try { await admin.from("booking_text_values").delete().eq("booking_id", id); } catch {}
-  // Notă: nu ștergem documentele aici (păstrează trail-ul); ajustează dacă vrei cleanup complet.
+  // Încearcă să ștergi fișierele din storage pentru documentele asociate
+  try {
+    const rDocs = await admin
+      .from('booking_documents')
+      .select('storage_bucket,storage_path')
+      .eq('booking_id', id);
+    if (!rDocs.error && Array.isArray(rDocs.data)) {
+      const byBucket: Record<string, string[]> = {};
+      for (const row of (rDocs.data as any[])) {
+        const b = String(row.storage_bucket || '').trim();
+        const p = String(row.storage_path || '').trim();
+        if (!b || !p) continue;
+        (byBucket[b] ||= []).push(p);
+      }
+      for (const [bucket, paths] of Object.entries(byBucket)) {
+        try { await (admin as any).storage.from(bucket).remove(paths); } catch {}
+      }
+    }
+  } catch {}
+  // Șterge și documentele asociate rezervării (cleanup complet)
+  try { await admin.from("booking_documents").delete().eq("booking_id", id); } catch {}
 
   const del = await admin.from("bookings").delete().eq("id", id).select("id").maybeSingle();
   if (del.error) return NextResponse.json({ error: del.error.message }, { status: 400 });

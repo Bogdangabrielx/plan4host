@@ -1359,11 +1359,11 @@ function EditFormBookingModal({
         throw new Error(jj?.error || 'Failed to cancel booking.');
       }
 
-      // 3) Reset form state to open and clear room selection so it shows as awaiting room
+      // 3) Șterge formularul de check-in (va șterge și form_documents prin ON DELETE CASCADE)
       try {
         await supabase
           .from('form_bookings')
-          .update({ state: 'open', room_id: null })
+          .delete()
           .eq('id', bookingId);
       } catch { /* non-fatal */ }
 
@@ -1467,7 +1467,7 @@ function EditFormBookingModal({
               <strong>Cancel booking?</strong>
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
-              This action is irreversible. The reservation will be removed. Do you want to continue?
+              This action is irreversible. The reservation and all associated check-in form data will be deleted. Do you want to continue?
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
               <button className="sb-btn" onClick={()=>setCancelOpen(false)} disabled={cancelBusy}>Close</button>
