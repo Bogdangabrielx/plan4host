@@ -1673,10 +1673,10 @@ function EditFormBookingModal({
                   value={roomId || ""}
                   onChange={(e)=>{
                     const next = String((e.target as HTMLSelectElement).value || '');
-                    if (next && !eligibleRooms.has(next)) {
+                    // Gating doar pentru "Confirm booking" (nu și pentru "Modify booking")
+                    if (!confirmOnSave && next && !eligibleRooms.has(next)) {
                       setPopupTitle('Room not available');
                       setPopupMsg('No event exists for the selected room and dates.');
-                      // nu schimbăm selecția dacă e invalidă
                       return;
                     }
                     setRoomId(next);
