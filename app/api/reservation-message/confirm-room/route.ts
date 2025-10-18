@@ -115,7 +115,13 @@ export async function POST(req: Request) {
           <div><strong>Guest:</strong> <span>${escapeHtml(guestFull)}</span></div>
           <div aria-hidden style=\"width:18px\"><img src=\"${iconNight}\" alt=\"stay\" width=\"16\" height=\"16\"/></div>
           <div><strong>Stay:</strong> <span>${escapeHtml(sd)} → ${escapeHtml(ed)}</span></div>
-          ${roomName ? `<div aria-hidden style=\\\"width:18px\\\"><img src=\\\"${iconRoom}\\\" alt=\\\"room\\\" width=\\\"16\\\" height=\\\"16\\\"/></div><div><strong>Room:</strong> <span>${escapeHtml(roomName)}</span></div>` : ''}
+          ${roomName ? `
+            <div style="display:flex; align-items:center; gap:8px;">
+              <img src="${iconRoom}" alt="room" width="16" height="16" />
+              <strong style="margin-right:6px;">Room:</strong>
+              <span>${escapeHtml(roomName)}</span>
+            </div>
+          ` : ''}
         </div>
       </div>
       <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap;">
