@@ -1503,7 +1503,7 @@ function EditFormBookingModal({
               )}
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-              <button className="sb-btn" onClick={()=>{ if (!sendMailBusy) setSendMailOpen(false); }} disabled={sendMailBusy}>Cancel</button>
+              <button className="sb-btn" onClick={()=>{ if (!sendMailBusy) setSendMailOpen(false); }} disabled={sendMailBusy}>Skip this time</button>
               <button className="sb-btn sb-btn--primary" disabled={sendMailBusy} onClick={async ()=>{
                 setSendMailBusy(true);
                 setSendMailError(null);
