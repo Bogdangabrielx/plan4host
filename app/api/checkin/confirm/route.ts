@@ -184,11 +184,10 @@ export async function POST(req: Request) {
     const html = `
       <div style="background:#ffffff; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0c111b; line-height:1.5; padding:16px;">
         <h2 style="margin:0 0 12px;">Check-in received${propName ? ` for <span style=\"color:#3ECF8E\">${escapeHtml(propName)}</span>` : ''}</h2>
-        <p style="margin:6px 0; font-size:14px; color:#475569;">Thank you for submitting your check-in details${propName ? ` for <strong style=\"color:#3ECF8E\">${escapeHtml(propName)}</strong>` : ''}. We’ve forwarded your information to the property.</p>
+        <p style="margin:8px 0;">Thank you for submitting your check-in details${propName ? ` for <strong>${escapeHtml(propName)}</strong>` : ''}. We’ve forwarded your information to the property.</p>
         <div style="margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:grid; gap:10px;">
           ${guestFull ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconGuest}\" alt=\"guest\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Guest:</strong> <span>${escapeHtml(guestFull)}</span></div>` : ''}
           ${(arrival && depart) ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconNight}\" alt=\"stay\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Stay:</strong> <span>${arrival} → ${depart}</span></div>` : ''}
-          ${roomName ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconRoom}\" alt=\"room\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Room:</strong> <span>${escapeHtml(roomName)}</span></div>` : ''}
         </div>
         <p style="margin:8px 0; color:#475569;">Once your reservation is confirmed, we’ll inform you which room you’ll be staying in and share any arrival details you’ll need.</p>
         <p style="margin:8px 0; color:#475569;">If you need to make changes, please contact the property directly.</p>
