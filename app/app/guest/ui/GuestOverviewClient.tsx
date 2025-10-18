@@ -1099,6 +1099,8 @@ function EditFormBookingModal({
   const [formBusyRooms, setFormBusyRooms] = useState<Set<string>>(new Set());
   const [roomTypes, setRoomTypes] = useState<Array<{ id: string; name: string }>>([]);
   const hasRoomTypes = roomTypes.length > 0;
+  // Camere eligibile: au un eveniment în bookings pentru intervalul formularului (fără form atașat)
+  const [eligibleRooms, setEligibleRooms] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let alive = true;
@@ -1669,7 +1671,16 @@ function EditFormBookingModal({
                 <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Room name</label>
                 <select
                   value={roomId || ""}
-                  onChange={(e)=>setRoomId((e.target as HTMLSelectElement).value)}
+                  onChange={(e)=>{
+                    const next = String((e.target as HTMLSelectElement).value || '');
+                    if (next && !eligibleRooms.has(next)) {
+                      setPopupTitle('Room not available');
+                      setPopupMsg('No event exists for the selected room and dates.');
+                      // nu schimbăm selecția dacă e invalidă
+                      return;
+                    }
+                    setRoomId(next);
+                  }}
                   style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
                 >
                   <option value="">—</option>
@@ -2309,6 +2320,4 @@ function RightGroup({ onCopyPreview, copied, propertyId, bookingId, values, temp
   );
 }
 
-function setEligibleRooms(set: Set<string>) {
-  throw new Error("Function not implemented.");
-}
+// setEligibleRooms is provided by React state above
