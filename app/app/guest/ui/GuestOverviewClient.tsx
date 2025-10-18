@@ -1450,7 +1450,7 @@ function EditFormBookingModal({
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
               <button className="sb-btn" onClick={()=>setConfirmOpen(false)} disabled={confirmBusy}>Close</button>
               <button className="sb-btn sb-btn--primary" onClick={async ()=>{ setConfirmBusy(true); try { await performSave(); setConfirmOpen(false);} finally { setConfirmBusy(false);} }} disabled={confirmBusy}>
-                {confirmBusy ? 'Saving…' : 'OK'}
+                {confirmBusy ? 'Saving…' : 'Yes'}
               </button>
             </div>
           </div>
