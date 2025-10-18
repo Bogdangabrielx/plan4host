@@ -1166,11 +1166,7 @@ export default function RoomDetailModal({
                   </button>
                 )}
 
-                {on && canExtend && (
-                  <button onClick={extendUntil} style={baseBtn} disabled={saving !== false && saving !== "extending"}>
-                    Extend until
-                  </button>
-                )}
+                {/* Extend until — removed from UI by request */}
 
                 {!on && active && (
                   <button onClick={releaseBooking} style={dangerBtn} disabled={saving !== false && saving !== "releasing"}>
