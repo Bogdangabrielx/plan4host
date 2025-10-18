@@ -110,17 +110,14 @@ export async function POST(req: Request) {
       <h2 style=\"margin:0 0 12px;\">Reservation confirmation — <span style=\"color:#3ECF8E\">${escapeHtml(propName)}</span></h2>
       <p style=\"margin:6px 0; font-size:14px; color:#475569;\">${escapeHtml(thankYou)}</p>
       <div style="margin:0 0 12px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-        <div style=\"display:grid; grid-template-columns:auto 1fr; row-gap:8px; column-gap:10px; align-items:center;\">
-          <div aria-hidden style=\"width:18px\"><img src=\"${iconGuest}\" alt=\"guest\" width=\"16\" height=\"16\"/></div>
+        <div style=\"display:grid; grid-template-columns:auto 1fr; row-gap:8px; column-gap:8px; align-items:center;\">
+          <div aria-hidden style=\"width:16px\"><img src=\"${iconGuest}\" alt=\"guest\" width=\"16\" height=\"16\"/></div>
           <div><strong>Guest:</strong> <span>${escapeHtml(guestFull)}</span></div>
-          <div aria-hidden style=\"width:18px\"><img src=\"${iconNight}\" alt=\"stay\" width=\"16\" height=\"16\"/></div>
+          <div aria-hidden style=\"width:16px\"><img src=\"${iconNight}\" alt=\"stay\" width=\"16\" height=\"16\"/></div>
           <div><strong>Stay:</strong> <span>${escapeHtml(sd)} → ${escapeHtml(ed)}</span></div>
           ${roomName ? `
-            <div style="display:flex; align-items:center; gap:8px;">
-              <img src="${iconRoom}" alt="room" width="16" height="16" />
-              <strong style="margin-right:6px;">Room:</strong>
-              <span>${escapeHtml(roomName)}</span>
-            </div>
+            <div aria-hidden style=\"width:16px\"><img src=\"${iconRoom}\" alt=\"room\" width=\"16\" height=\"16\"/></div>
+            <div><strong>Room:</strong> <span>${escapeHtml(roomName)}</span></div>
           ` : ''}
         </div>
       </div>
