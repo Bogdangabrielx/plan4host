@@ -13,43 +13,126 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   const bookingId = params.id;
   const admin = createClient(URL, SERVICE, { auth: { persistSession: false } });
 
+  let form: any = null;
   let booking: any = null;
-  let contact: any = null;
   let property: any = null;
+  let bookingContact: any = null;
   let docs: Doc[] = [];
-  try {
-    const rB = await admin
-      .from('bookings')
-      .select('id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, room_id, room_type_id, form_submitted_at, created_at')
-      .eq('id', bookingId)
-      .maybeSingle();
-    booking = rB.data || null;
+  const DEFAULT_BUCKET = (process.env.NEXT_PUBLIC_DEFAULT_DOCS_BUCKET || "guest_docs").toString();
 
-    if (booking?.property_id) {
-      const rP = await admin.from('properties').select('id,name').eq('id', booking.property_id).maybeSingle();
-      property = rP.data || null;
-    }
-    const rC = await admin.from('booking_contacts').select('email,phone,address,city,country').eq('booking_id', bookingId).maybeSingle();
-    contact = rC.data || null;
-    // documents
-    const rD = await admin.from('booking_documents').select('id,doc_type,mime_type,storage_bucket,storage_path').eq('booking_id', bookingId).order('uploaded_at', { ascending: false });
-    const arr = rD.data || [];
-    // sign URLs
-    const bucket = (process.env.NEXT_PUBLIC_DEFAULT_DOCS_BUCKET || 'guest_docs').toString();
-    for (const d of arr) {
+  async function resolveDocs(
+    table: "form_documents" | "booking_documents",
+    key: "form_id" | "booking_id",
+    id: string,
+    prefix: string
+  ): Promise<Doc[]> {
+    const r = await admin
+      .from(table)
+      .select("id,doc_type,mime_type,storage_bucket,storage_path")
+      .eq(key, id)
+      .order("uploaded_at", { ascending: false });
+    const rows = r.data || [];
+    const out: Doc[] = [];
+    for (const d of rows) {
       const path = (d as any).storage_path as string | null;
       let url: string | null = null;
       if (path) {
         try {
-          const s = await admin.storage.from((d as any).storage_bucket || bucket).createSignedUrl(path, 600);
-          url = s.data?.signedUrl || null;
-        } catch { url = null; }
+          const bucket = ((d as any).storage_bucket || DEFAULT_BUCKET) as string;
+          const signed = await admin.storage.from(bucket).createSignedUrl(path, 600);
+          url = signed.data?.signedUrl ?? null;
+        } catch {
+          url = null;
+        }
       }
-      docs.push({ id: String((d as any).id), doc_type: (d as any).doc_type || null, mime_type: (d as any).mime_type || null, url });
+      out.push({
+        id: `${prefix}${String((d as any).id)}`,
+        doc_type: (d as any).doc_type || null,
+        mime_type: (d as any).mime_type || null,
+        url,
+      });
+    }
+    return out;
+  }
+
+  try {
+    const rForm = await admin
+      .from("form_bookings")
+      .select(
+        "id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, guest_address, guest_city, guest_country, room_id, room_type_id, created_at, submitted_at"
+      )
+      .eq("id", bookingId)
+      .maybeSingle();
+    form = rForm.data || null;
+  } catch {}
+
+  try {
+    const rBooking = await admin
+      .from("bookings")
+      .select(
+        "id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, guest_address, room_id, room_type_id, form_id, form_submitted_at, created_at"
+      )
+      .eq("id", bookingId)
+      .maybeSingle();
+    booking = rBooking.data || null;
+
+    if (!booking && form?.id) {
+      const rLinked = await admin
+        .from("bookings")
+        .select(
+          "id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, guest_address, room_id, room_type_id, form_id, form_submitted_at, created_at"
+        )
+        .eq("form_id", form.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      booking = rLinked.data || null;
     }
   } catch {}
 
-  const name = [booking?.guest_first_name, booking?.guest_last_name].filter(Boolean).join(' ');
+  const propertyId = form?.property_id ?? booking?.property_id ?? null;
+  if (propertyId) {
+    try {
+      const rP = await admin.from("properties").select("id,name").eq("id", propertyId).maybeSingle();
+      property = rP.data || null;
+    } catch {}
+  }
+
+  if (booking?.id) {
+    try {
+      const rC = await admin
+        .from("booking_contacts")
+        .select("email,phone,address,city,country")
+        .eq("booking_id", booking.id)
+        .maybeSingle();
+      bookingContact = rC.data || null;
+    } catch {}
+  }
+
+  if (form?.id) {
+    try {
+      docs.push(...(await resolveDocs("form_documents", "form_id", form.id, "form-")));
+    } catch {}
+  }
+  if (booking?.id) {
+    try {
+      docs.push(...(await resolveDocs("booking_documents", "booking_id", booking.id, "booking-")));
+    } catch {}
+  }
+
+  const guestFirstName = form?.guest_first_name ?? booking?.guest_first_name ?? null;
+  const guestLastName = form?.guest_last_name ?? booking?.guest_last_name ?? null;
+  const startDate = form?.start_date ?? booking?.start_date ?? null;
+  const endDate = form?.end_date ?? booking?.end_date ?? null;
+
+  const contact = {
+    email: form?.guest_email ?? booking?.guest_email ?? bookingContact?.email ?? null,
+    phone: form?.guest_phone ?? booking?.guest_phone ?? bookingContact?.phone ?? null,
+    city: form?.guest_city ?? bookingContact?.city ?? null,
+    country: form?.guest_country ?? bookingContact?.country ?? null,
+    address: form?.guest_address ?? booking?.guest_address ?? bookingContact?.address ?? null,
+  };
+
   const checkinUrl = `${process.env.NEXT_PUBLIC_APP_URL || ''}/r/ci/${bookingId}`;
 
   // Reuse the same visual language as CheckinClient (dark variant icons)
@@ -73,7 +156,7 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   function addDays(d: Date, days: number) { const t = new Date(d.getTime()); t.setUTCDate(t.getUTCDate() + days); return t; }
   function ymdToDate(ymd: string): Date { return new Date(`${ymd}T00:00:00Z`); }
   function fmtDate(d: Date): string { const dd = String(d.getUTCDate()).padStart(2,'0'); const mm = String(d.getUTCMonth()+1).padStart(2,'0'); const yy = d.getUTCFullYear(); return `${dd}.${mm}.${yy}`; }
-  const baseStart = (booking?.start_date as string | undefined);
+  const baseStart = (startDate as string | undefined);
   let validUntilText: string | null = null;
   let isExpired = false;
   if (baseStart && /^\d{4}-\d{2}-\d{2}$/.test(baseStart)) {
@@ -130,63 +213,63 @@ export default async function CheckinQrView({ params }: { params: { id: string }
               <Icon pair={iconPairForForm('firstname')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>First name</div>
-            <div>{booking?.guest_first_name || '—'}</div>
+            <div>{guestFirstName || '—'}</div>
             <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
               <Icon pair={iconPairForForm('lastname')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Last name</div>
-            <div>{booking?.guest_last_name || '—'}</div>
+            <div>{guestLastName || '—'}</div>
             <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
               <Icon pair={iconPairForForm('email')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Email</div>
-            <div>{booking?.guest_email || contact?.email || '—'}</div>
+            <div>{contact.email || '—'}</div>
             <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
               <Icon pair={iconPairForForm('phone')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Phone</div>
-            <div>{booking?.guest_phone || contact?.phone || '—'}</div>
+            <div>{contact.phone || '—'}</div>
             <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
               <Icon pair={iconPairForForm('city')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>City</div>
-            <div>{contact?.city || '—'}</div>
+            <div>{contact.city || '—'}</div>
             <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
               <Icon pair={iconPairForForm('country')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Country</div>
-            <div>{contact?.country || '—'}</div>
+            <div>{contact.country || '—'}</div>
             <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
               <Icon pair={iconPairForForm('address')} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Address</div>
-            <div>{contact?.address || '—'}</div>
+            <div>{contact.address || '—'}</div>
             <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
               <Icon pair={ICON_NIGHT} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Check‑in date</div>
-            <div>{booking?.start_date || '—'}</div>
+            <div>{startDate || '—'}</div>
             <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
               <Icon pair={ICON_NIGHT} />
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Check‑out date</div>
-            <div>{booking?.end_date || '—'}</div>
+            <div>{endDate || '—'}</div>
             <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
 
             <div aria-hidden style={{ width:18 }}>
