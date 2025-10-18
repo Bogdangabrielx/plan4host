@@ -219,6 +219,7 @@ export async function PATCH(
       updated_at: new Date().toISOString(),
     };
     if (room_id && targetBooking) patchForm.state = 'linked';
+    else if (!room_id) patchForm.state = 'open';
     const uForm = await admin.from('form_bookings').update(patchForm).eq('id', id).select('id').maybeSingle();
     if (uForm.error) return bad(500, { error: uForm.error.message });
 
@@ -286,13 +287,22 @@ export async function PATCH(
         }
       } catch {}
     } else if (linkedBooking) {
-      // No target booking change (e.g., no room change), but dates changed → sync dates to linked booking
-      try {
-        await admin.from('bookings').update({ start_date, end_date }).eq('id', linkedBooking.id);
-      } catch {}
+      if (!room_id) {
+        // Unlink: remove form association and revert booking status to 'hold'
+        try { await admin.from('bookings').update({ form_id: null, status: 'hold' }).eq('id', linkedBooking.id); } catch {}
+      } else {
+        // No room change, but dates changed → sync dates to linked booking
+        try { await admin.from('bookings').update({ start_date, end_date }).eq('id', linkedBooking.id); } catch {}
+      }
     }
 
-    return ok({ ok: true, booking_id: targetBooking ? String(targetBooking.id) : (linkedBooking ? String(linkedBooking.id) : null) });
+    // Decide what booking_id to return (used by UI to open email modal)
+    let bookingIdOut: string | null = null;
+    if (room_id && targetBooking) bookingIdOut = String(targetBooking.id);
+    else if (!room_id && linkedBooking) bookingIdOut = null; // unlink -> no booking id returned
+    else if (linkedBooking) bookingIdOut = String(linkedBooking.id);
+
+    return ok({ ok: true, booking_id: bookingIdOut });
   } catch (e: any) {
     return bad(500, { error: "Server error", details: e?.message ?? String(e) });
   }
