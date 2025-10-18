@@ -30,13 +30,27 @@ export async function POST(req: Request) {
 
     // 2) Fetch booking + property + contact
     const [rBk, rProp, rContact] = await Promise.all([
-      admin.from('bookings').select('start_date,end_date,start_time,end_time,guest_first_name,guest_last_name,room_id').eq('id', booking_id).maybeSingle(),
+      admin.from('bookings').select('start_date,end_date,start_time,end_time,guest_first_name,guest_last_name,guest_email,form_id,room_id').eq('id', booking_id).maybeSingle(),
       admin.from('properties').select('name').eq('id', property_id).maybeSingle(),
       admin.from('booking_contacts').select('email').eq('booking_id', booking_id).maybeSingle(),
     ]);
     if (rBk.error || !rBk.data) return bad(404, { error: 'Booking not found' });
     if (rProp.error || !rProp.data) return bad(404, { error: 'Property not found' });
-    const email = (rContact.data as any)?.email || null;
+    // Resolve recipient email with robust fallback
+    let email: string | null = ((rContact.data as any)?.email || '').trim() || null;
+    if (!email) {
+      const bkAny: any = rBk.data;
+      // try form_bookings via bookings.form_id
+      const formId = (bkAny?.form_id || null) as string | null;
+      if (formId) {
+        try {
+          const rF = await admin.from('form_bookings').select('guest_email').eq('id', formId).maybeSingle();
+          if (!rF.error && rF.data) email = (((rF.data as any)?.guest_email || '') as string).trim() || null;
+        } catch {}
+      }
+      // fallback to bookings.guest_email
+      if (!email) email = (((bkAny?.guest_email || '') as string).trim() || null);
+    }
     if (!email) return bad(400, { error: 'missing_email' });
 
     const bk: any = rBk.data;
