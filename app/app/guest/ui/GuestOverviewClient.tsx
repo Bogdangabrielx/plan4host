@@ -1318,7 +1318,15 @@ function EditFormBookingModal({
 
   // Overlay above AppHeader (AppHeader overlays use z-index up to 121)
   const wrap: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 200, display: "grid", placeItems: "center", padding: 12 };
-  const card: React.CSSProperties = { width: "min(680px, 100%)", maxHeight: "calc(100vh - 32px)", overflow: "auto", padding: 16 };
+  const card: React.CSSProperties = {
+    width: "min(680px, 100%)",
+    maxHeight: "calc(100dvh - 32px)",
+    overflowY: "auto",
+    WebkitOverflowScrolling: "touch",
+    overscrollBehavior: "contain",
+    touchAction: "pan-y",
+    padding: 16,
+  };
 
   return (
     <div role="dialog" aria-modal="true" onClick={() => { if (!popupMsg) onClose(); }} style={wrap}>
