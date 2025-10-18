@@ -166,12 +166,21 @@ export async function GET(req: NextRequest) {
           <p><a href="${link}" target="_blank" style="display:inline-block; padding:10px 14px; background:#16b981; color:#0c111b; text-decoration:none; border-radius:10px; font-weight:800;">Open reservation messages</a></p>
           <p style="color:#64748b; font-size:12px;">This link shows all messages for your reservation.</p>
         `;
-        const html = wrapEmailHtml(subject.replace(/\s*\[tpl:[^\]]+\]\s*$/, ''), htmlInner);
+        const subjectVisible = subject.replace(/\s*\[tpl:[^\]]+\]\s*$/, '');
+        const subjectTagged = subject;
+        const html = wrapEmailHtml(subjectVisible, `
+          <h2 style="margin:0 0 12px;">New message from <span style="color:#16b981;">${(prop.name || '').toString()}</span></h2>
+          <div style="margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+            <p style="margin:8px 0;">You have a new message regarding your reservation.</p>
+            <p style="margin:10px 0;"><a href="${link}" target="_blank" style="display:inline-block; padding:10px 14px; background:#16b981; color:#0c111b; text-decoration:none; border-radius:10px; font-weight:800;">Open reservation messages</a></p>
+            <p style="margin:8px 0; color:#64748b; font-size:12px;">This link shows all messages for your reservation.</p>
+          </div>
+        `);
 
         // Send + outbox
         try {
-          const info = await transporter.sendMail({ from: `${fromName} <${fromEmail}>`, to: email, subject, html });
-          await admin.from('email_outbox').insert({ booking_id: m.booking_id, property_id: m.property_id, to_email: email, subject, html, status: 'sent', sent_at: new Date().toISOString(), provider_message_id: info?.messageId || null });
+          const info = await transporter.sendMail({ from: `${fromName} <${fromEmail}>`, to: email, subject: subjectVisible, html });
+          await admin.from('email_outbox').insert({ booking_id: m.booking_id, property_id: m.property_id, to_email: email, subject: subjectTagged, html, status: 'sent', sent_at: new Date().toISOString(), provider_message_id: info?.messageId || null });
           sentCount++;
         } catch {}
       }
