@@ -33,8 +33,13 @@ export default function PullToRefresh() {
       return pe.clientY || 0;
     }
 
+    function modalOpen(): boolean {
+      try { return document.documentElement.getAttribute('data-modal-open') === '1'; } catch { return false; }
+    }
+
     function onDown(ev: TouchEvent | PointerEvent) {
       try {
+        if (modalOpen()) { arming.current = false; dragging.current = false; return; }
         if (window.scrollY > 0) { arming.current = false; dragging.current = false; return; } // must be at top
         const y = getY(ev);
         if (!y) return;
@@ -48,6 +53,7 @@ export default function PullToRefresh() {
       } catch {}
     }
     function onMove(ev: TouchEvent | PointerEvent) {
+      if (modalOpen()) { return; }
       const y = getY(ev);
       if (!y) return;
       if (!arming.current && !dragging.current) return;
@@ -78,6 +84,7 @@ export default function PullToRefresh() {
       }
     }
     function onUp() {
+      if (modalOpen()) { arming.current = false; dragging.current = false; setActive(false); setDragPx(0); return; }
       if (!dragging.current) { arming.current = false; return; }
       const final = dragRef.current;
       dragging.current = false;

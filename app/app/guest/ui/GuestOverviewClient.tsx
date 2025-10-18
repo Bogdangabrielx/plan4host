@@ -1045,6 +1045,22 @@ function EditFormBookingModal({
   confirmOnSave?: boolean;
 }) {
   const supabase = useMemo(() => createClient(), []);
+  // Mark modal-open for PWA/iOS to disable global pull-to-refresh and background scroll
+  useEffect(() => {
+    try {
+      const el = document.documentElement;
+      el.setAttribute('data-modal-open', '1');
+      const prevHtmlOverflow = document.documentElement.style.overflow;
+      const prevBodyOverflow = document.body.style.overflow;
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+      return () => {
+        try { el.removeAttribute('data-modal-open'); } catch {}
+        document.documentElement.style.overflow = prevHtmlOverflow;
+        document.body.style.overflow = prevBodyOverflow;
+      };
+    } catch { /* noop */ }
+  }, []);
   const isSmall = useIsSmall();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1330,6 +1346,7 @@ function EditFormBookingModal({
     WebkitOverflowScrolling: "touch",
     overscrollBehavior: "contain",
     touchAction: "pan-y",
+    height: '100dvh',
   };
   const card: React.CSSProperties = {
     width: "min(680px, 100%)",
