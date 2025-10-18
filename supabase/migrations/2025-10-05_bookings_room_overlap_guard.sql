@@ -60,10 +60,15 @@ begin
 
     begin
       update public.bookings
-         set room_id = cand
+         set room_id = cand,
+             status  = case when status = 'checked_in' then status else 'confirmed' end
        where id = p_booking_id;
-      return cand;
-    exception when others then
+      if found then
+        return cand;
+      end if;
+    exception when exclusion_violation then
+      continue;
+    when others then
       continue;
     end;
   end loop;

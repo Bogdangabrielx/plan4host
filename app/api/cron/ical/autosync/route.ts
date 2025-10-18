@@ -259,6 +259,18 @@ async function createOrUpdateFromEvent(
     if (!rBk.error && rBk.data) icalBooking = rBk.data;
   }
 
+  // STRICT UID POLICY: if UID exists, do not update (except CANCELLED handled above)
+  if (ev.uid && icalBooking && icsStatus !== 'CANCELLED') {
+    try {
+      await supa.from('ical_uid_map').upsert(
+        { property_id: feed.property_id, uid: ev.uid, integration_id: feed.id, last_seen: new Date().toISOString() },
+        { onConflict: 'property_id,uid' }
+      );
+    } catch {}
+    try { await supa.from('ical_unassigned_events').update({ resolved: true }).eq('property_id', feed.property_id).eq('uid', ev.uid); } catch {}
+    return { ok: true, skipped: true, reason: 'uid_exists_no_update' };
+  }
+
   // 2) fallback: aceleași date + (room_id|room_type_id) și source=ical
   if (!icalBooking) {
     const orConds: string[] = [];
@@ -274,6 +286,35 @@ async function createOrUpdateFromEvent(
         .maybeSingle();
       if (!rBk.error && rBk.data) icalBooking = rBk.data;
     }
+  }
+
+  // 2b) fallback suplimentar pentru evenimente fără UID: caută un booking iCal "aproape" (overlap/parțial) pe același feed și tip/cameră
+  if (!icalBooking && !ev.uid) {
+    try {
+      // interval extins cu ±2 zile pentru a prinde prelungiri/scurtări
+      const nearStart = (() => { const d = new Date(`${start_date}T00:00:00Z`); d.setUTCDate(d.getUTCDate() - 2); return fmtDate(d, propTZ); })();
+      const nearEnd   = (() => { const d = new Date(`${end_date}T00:00:00Z`);   d.setUTCDate(d.getUTCDate() + 2); return fmtDate(d, propTZ); })();
+      let q = supa
+        .from('bookings')
+        .select('id,room_id,room_type_id,source,ical_uid,ota_integration_id,start_date,end_date,form_submitted_at,guest_first_name,guest_last_name,guest_name')
+        .eq('property_id', feed.property_id)
+        .eq('source', 'ical')
+        .eq('ota_integration_id', feed.id)
+        .lt('start_date', nearEnd)
+        .gt('end_date', nearStart);
+      if (feed.room_id) q = (q as any).eq('room_id', feed.room_id);
+      else if (feed.room_type_id) q = (q as any).eq('room_type_id', feed.room_type_id);
+      const rNear = await q;
+      if (!rNear.error && (rNear.data?.length || 0) > 0) {
+        // pick cel mai apropiat ca dată de start
+        const best = [...(rNear.data as any[])].sort((a, b) => {
+          const da = Math.abs(new Date(`${a.start_date}T00:00:00Z`).getTime() - new Date(`${start_date}T00:00:00Z`).getTime());
+          const db = Math.abs(new Date(`${b.start_date}T00:00:00Z`).getTime() - new Date(`${start_date}T00:00:00Z`).getTime());
+          return da - db;
+        })[0];
+        if (best) icalBooking = best;
+      }
+    } catch {}
   }
 
   // 3) create/update
@@ -303,6 +344,13 @@ async function createOrUpdateFromEvent(
           });
           if (!rAssign.error) room_id_final = (rAssign.data as any) || null;
         } catch {}
+      }
+      if (!room_id_final && feed.room_type_id) {
+        const picked = await findFreeRoomForType(supa, { property_id: feed.property_id, room_type_id: String(feed.room_type_id), start_date, end_date });
+        if (picked) {
+          await supa.from('bookings').update({ room_id: picked }).eq('id', bookingId);
+          room_id_final = picked;
+        }
       }
     }
 
@@ -342,7 +390,7 @@ async function createOrUpdateFromEvent(
     if (ins.error || !ins.data) throw new Error(ins.error?.message || "create_booking_failed");
     bookingId = String(ins.data.id);
 
-    // dacă e pe room_type, încearcă alocare atomică prin RPC după insert
+    // dacă e pe room_type, încearcă alocare atomică prin RPC, apoi fallback manual
     if (!room_id_final && room_type_id_final) {
       try {
         const rAssign = await supa.rpc('assign_room_for_type', {
@@ -354,6 +402,18 @@ async function createOrUpdateFromEvent(
         });
         if (!rAssign.error) room_id_final = (rAssign.data as any) || null;
       } catch {}
+      if (!room_id_final) {
+        const picked = await findFreeRoomForType(supa, {
+          property_id: feed.property_id,
+          room_type_id: String(room_type_id_final),
+          start_date,
+          end_date,
+        });
+        if (picked) {
+          await supa.from('bookings').update({ room_id: picked }).eq('id', bookingId);
+          room_id_final = picked;
+        }
+      }
     }
   }
 

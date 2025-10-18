@@ -189,6 +189,18 @@ async function createOrUpdateFromEvent(
     if (!rBk.error && rBk.data) icalBooking = rBk.data;
   }
 
+  // STRICT UID POLICY: dacă avem deja acest UID, nu updatăm nimic (în afară de CANCELLED, tratat mai sus)
+  if (ev.uid && icalBooking && icsStatus !== 'CANCELLED') {
+    try {
+      await supa.from('ical_uid_map').upsert(
+        { property_id: feed.property_id, uid: ev.uid, integration_id: feed.id, last_seen: new Date().toISOString() },
+        { onConflict: 'property_id,uid' }
+      );
+    } catch {}
+    try { await supa.from('ical_unassigned_events').update({ resolved: true }).eq('property_id', feed.property_id).eq('uid', ev.uid); } catch {}
+    return { ok: true, skipped: true, reason: 'uid_exists_no_update' };
+  }
+
   // fallback by dates + (room_id|room_type_id) & source=ical
   if (!icalBooking) {
     const orConds: string[] = [];
@@ -222,8 +234,23 @@ async function createOrUpdateFromEvent(
     if (!room_id_final) {
       const typeForAuto = room_type_id_final ?? feed.room_type_id ?? null;
       if (typeForAuto) {
-        const picked = await findFreeRoomForType(supa, { property_id: feed.property_id, room_type_id: String(typeForAuto), start_date, end_date });
-        if (picked) { await supa.from("bookings").update({ room_id: picked }).eq("id", bookingId); room_id_final = picked; }
+        try {
+          const rAssign = await supa.rpc('assign_room_for_type', {
+            p_property_id: feed.property_id,
+            p_room_type_id: String(typeForAuto),
+            p_start_date: start_date,
+            p_end_date: end_date,
+            p_booking_id: bookingId,
+          });
+          if (!rAssign.error) room_id_final = (rAssign.data as any) || null;
+        } catch {}
+      }
+      if (!room_id_final && feed.room_type_id) {
+        const picked = await findFreeRoomForType(supa, { property_id: feed.property_id, room_type_id: String(feed.room_type_id), start_date, end_date });
+        if (picked) {
+          await supa.from('bookings').update({ room_id: picked }).eq('id', bookingId);
+          room_id_final = picked;
+        }
       }
     }
 
@@ -260,7 +287,7 @@ async function createOrUpdateFromEvent(
     if (ins.error || !ins.data) throw new Error(ins.error?.message || "create_booking_failed");
     bookingId = String(ins.data.id);
 
-    // atomic assign for type-based feeds
+    // atomic assign for type-based feeds (RPC + fallback)
     if (!room_id_final && room_type_id_final) {
       try {
         const rAssign = await supa.rpc('assign_room_for_type', {
@@ -272,6 +299,18 @@ async function createOrUpdateFromEvent(
         });
         if (!rAssign.error) room_id_final = (rAssign.data as any) || null;
       } catch {}
+      if (!room_id_final) {
+        const picked = await findFreeRoomForType(supa, {
+          property_id: feed.property_id,
+          room_type_id: String(room_type_id_final),
+          start_date,
+          end_date,
+        });
+        if (picked) {
+          await supa.from('bookings').update({ room_id: picked }).eq('id', bookingId);
+          room_id_final = picked;
+        }
+      }
     }
   }
 
