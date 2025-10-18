@@ -1073,6 +1073,9 @@ function EditFormBookingModal({
   const [docsOpen, setDocsOpen] = useState<boolean>(() => !isSmall);
   const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
   const [confirmBusy, setConfirmBusy] = useState<boolean>(false);
+  // Cancel booking dialog (for already-confirmed/linked forms)
+  const [cancelOpen, setCancelOpen] = useState<boolean>(false);
+  const [cancelBusy, setCancelBusy] = useState<boolean>(false);
   // New gating before sending email
   const [sendMailOpen, setSendMailOpen] = useState<boolean>(false);
   const [sendMailBusy, setSendMailBusy] = useState<boolean>(false);
@@ -1329,8 +1332,50 @@ function EditFormBookingModal({
       onSaved();
     } catch (e: any) {
       setError(e?.message || "Failed to delete.");
+    } finally { setDeleting(false); }
+  }
+
+  async function performCancelBooking() {
+    if (cancelBusy) return;
+    setCancelBusy(true);
+    setError(null);
+    try {
+      // 1) Find linked booking by form_id
+      const r = await supabase
+        .from('bookings')
+        .select('id,form_id')
+        .eq('form_id', bookingId)
+        .maybeSingle();
+      if (r.error) throw new Error(r.error.message);
+      const linked = r.data as { id?: string | null } | null;
+      if (!linked || !linked.id) {
+        throw new Error('No linked booking found for this form.');
+      }
+
+      // 2) Call server API to delete booking (handles children + iCal suppression)
+      const res = await fetch(`/api/bookings/${encodeURIComponent(String(linked.id))}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const jj = await res.json().catch(() => ({} as any));
+        throw new Error(jj?.error || 'Failed to cancel booking.');
+      }
+
+      // 3) Reset form state to open and clear room selection so it shows as awaiting room
+      try {
+        await supabase
+          .from('form_bookings')
+          .update({ state: 'open', room_id: null })
+          .eq('id', bookingId);
+      } catch { /* non-fatal */ }
+
+      setCancelOpen(false);
+      // Închide modalul după anulare și dă refresh listei
+      onSaved();
+      onClose();
+    } catch (e: any) {
+      setPopupTitle('Cannot cancel');
+      setPopupMsg(e?.message || 'Failed to cancel booking.');
     } finally {
-      setDeleting(false);
+      setCancelBusy(false);
     }
   }
 
@@ -1409,6 +1454,35 @@ function EditFormBookingModal({
           </div>
         </div>
       )}
+
+      {cancelOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e)=>{ e.stopPropagation(); setCancelOpen(false); }}
+          style={{ position:'fixed', inset:0, zIndex: 225, display:'grid', placeItems:'center', padding:12, background:'rgba(0,0,0,.55)' }}
+        >
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width: 'min(460px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 8 }}>
+              <strong>Cancel booking?</strong>
+            </div>
+            <div style={{ color:'var(--text)', marginBottom: 12 }}>
+              This action is irreversible. The reservation will be removed. Do you want to continue?
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+              <button className="sb-btn" onClick={()=>setCancelOpen(false)} disabled={cancelBusy}>Close</button>
+              <button
+                className="sb-btn"
+                onClick={performCancelBooking}
+                disabled={cancelBusy}
+                style={{ borderColor:"var(--danger)", color:"var(--danger)" }}
+              >
+                {cancelBusy ? 'Cancelling…' : 'Cancel booking'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {sendMailOpen && (
         <div
           role="dialog"
@@ -1467,7 +1541,7 @@ function EditFormBookingModal({
       )}
       <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={card}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:8 }}>
-          <strong>Confirm booking</strong>
+          <strong>{confirmOnSave ? 'Modify booking' : 'Confirm booking'}</strong>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <button className="sb-btn" type="button" onClick={onClose} disabled={saving || deleting}>Close</button>
           </div>
@@ -1625,16 +1699,29 @@ function EditFormBookingModal({
                 </button>
               </div>
               <div>
-                <button
-                  type="button"
-                  className="sb-btn"
-                  onClick={onDelete}
-                  disabled={saving || deleting}
-                  style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)" }}
-                  title="Delete this form booking"
-                >
-                  {deleting ? "Deleting…" : "Delete form"}
-                </button>
+                {confirmOnSave ? (
+                  <button
+                    type="button"
+                    className="sb-btn"
+                    onClick={() => setCancelOpen(true)}
+                    disabled={saving || deleting}
+                    style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)" }}
+                    title="Cancel this booking"
+                  >
+                    Cancel booking
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="sb-btn"
+                    onClick={onDelete}
+                    disabled={saving || deleting}
+                    style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)" }}
+                    title="Delete this form booking"
+                  >
+                    {deleting ? "Deleting…" : "Delete form"}
+                  </button>
+                )}
               </div>
             </div>
 
