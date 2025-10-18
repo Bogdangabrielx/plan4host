@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     const st = String(bk.start_time || '14:00');
     const ed = String(bk.end_date || sd);
     const et = String(bk.end_time || '11:00');
-    function toUtcGCal(ymd, hm){
+    function toUtcGCal(ymd: string, hm: string){
       const m1 = (ymd||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); const m2 = (hm||'').match(/^(\d{2}):(\d{2})$/);
       if (!m1 || !m2) return '';
       const dt = new Date(Date.UTC(+m1[1], +m1[2]-1, +m1[3], +m2[1], +m2[2], 0));
@@ -127,8 +127,8 @@ export async function POST(req: Request) {
     const html = wrapEmailHtml(subjectPlain, inner);
 
     // 3b) ICS attachment
-    function pad(n){ return String(n).padStart(2,'0'); }
-    function toIcsUtc(ymd, hm){
+    function pad(n: number){ return String(n).padStart(2,'0'); }
+    function toIcsUtc(ymd: string, hm: string){
       const m1 = (ymd||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); const m2 = (hm||'').match(/^(\d{2}):(\d{2})$/);
       if (!m1 || !m2) return '';
       const dt = new Date(Date.UTC(+m1[1], +m1[2]-1, +m1[3], +m2[1], +m2[2], 0));

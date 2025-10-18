@@ -1069,6 +1069,8 @@ function EditFormBookingModal({
   const [popupMsg, setPopupMsg] = useState<string | null>(null);
   const [popupTitle, setPopupTitle] = useState<string | null>(null);
   const [docs, setDocs] = useState<Array<{ id:string; doc_type:string|null; mime_type:string|null; url:string|null }>>([]);
+  // On mobile, collapse Documents by default to reduce modal height
+  const [docsOpen, setDocsOpen] = useState<boolean>(() => !isSmall);
   const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
   const [confirmBusy, setConfirmBusy] = useState<boolean>(false);
   // New gating before sending email
@@ -1514,45 +1516,58 @@ function EditFormBookingModal({
               </div>
             </div>
 
-            {/* Documents */}
+            {/* Documents (collapsible on mobile) */}
             <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)", display:"grid", gap:10 }}>
-              <div style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Documents</div>
-              <div style={{ display:'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 1fr', gap:12 }}>
-                {(() => {
-                  const idDoc = docs.find(d => (d.doc_type || '').toLowerCase() === 'id_card' || (d.doc_type || '').toLowerCase() === 'passport')
-                    || docs.find(d => (d.mime_type || '').startsWith('image/')) || null;
-                  const sigDoc = docs.find(d => (d.doc_type || '').toLowerCase() === 'signature')
-                    || docs.find(d => (!d.doc_type || d.doc_type === null) && (d.mime_type || '').startsWith('image/') && d.id !== (idDoc?.id || '')) || null;
-                  return (
-                    <>
-                      <div>
-                        <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>ID Document</div>
-                        {idDoc && idDoc.url ? (
-                          (idDoc.mime_type || '').startsWith('image/') ? (
-                            <img src={idDoc.url} alt="ID" style={{ width:160, height:110, objectFit:'contain', objectPosition:'center', borderRadius:8, border:'1px solid var(--border)', background:'#fff' }} />
+              <button
+                type="button"
+                onClick={() => setDocsOpen(v => !v)}
+                aria-expanded={docsOpen}
+                style={{
+                  width:'100%', textAlign:'left', background:'transparent', border:'none', padding:0, cursor:'pointer',
+                  display:'flex', alignItems:'center', justifyContent:'space-between'
+                }}
+              >
+                <span style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Documents</span>
+                <span aria-hidden style={{ color:'var(--muted)', fontWeight:800 }}>{docsOpen ? '▾' : '▸'}</span>
+              </button>
+              {docsOpen && (
+                <div style={{ display:'grid', gridTemplateColumns: isSmall ? '1fr' : '1fr 1fr', gap:12 }}>
+                  {(() => {
+                    const idDoc = docs.find(d => (d.doc_type || '').toLowerCase() === 'id_card' || (d.doc_type || '').toLowerCase() === 'passport')
+                      || docs.find(d => (d.mime_type || '').startsWith('image/')) || null;
+                    const sigDoc = docs.find(d => (d.doc_type || '').toLowerCase() === 'signature')
+                      || docs.find(d => (!d.doc_type || d.doc_type === null) && (d.mime_type || '').startsWith('image/') && d.id !== (idDoc?.id || '')) || null;
+                    return (
+                      <>
+                        <div>
+                          <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>ID Document</div>
+                          {idDoc && idDoc.url ? (
+                            (idDoc.mime_type || '').startsWith('image/') ? (
+                              <img src={idDoc.url} alt="ID" style={{ width:160, height:110, objectFit:'contain', objectPosition:'center', borderRadius:8, border:'1px solid var(--border)', background:'#fff' }} />
+                            ) : (
+                              <a href={idDoc.url} target="_blank" rel="noreferrer" className="sb-btn">View file</a>
+                            )
                           ) : (
-                            <a href={idDoc.url} target="_blank" rel="noreferrer" className="sb-btn">View file</a>
-                          )
-                        ) : (
-                          <div style={{ color:'var(--muted)' }}>No file</div>
-                        )}
-                      </div>
-                      <div>
-                        <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>Signature</div>
-                        {sigDoc && sigDoc.url ? (
-                          (sigDoc.mime_type || '').startsWith('image/') ? (
-                            <img src={sigDoc.url} alt="Signature" style={{ width:160, height:110, objectFit:'contain', objectPosition:'center', borderRadius:8, border:'1px solid var(--border)', background:'#fff' }} />
+                            <div style={{ color:'var(--muted)' }}>No file</div>
+                          )}
+                        </div>
+                        <div>
+                          <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>Signature</div>
+                          {sigDoc && sigDoc.url ? (
+                            (sigDoc.mime_type || '').startsWith('image/') ? (
+                              <img src={sigDoc.url} alt="Signature" style={{ width:160, height:110, objectFit:'contain', objectPosition:'center', borderRadius:8, border:'1px solid var(--border)', background:'#fff' }} />
+                            ) : (
+                              <a href={sigDoc.url} target="_blank" rel="noreferrer" className="sb-btn">View file</a>
+                            )
                           ) : (
-                            <a href={sigDoc.url} target="_blank" rel="noreferrer" className="sb-btn">View file</a>
-                          )
-                        ) : (
-                          <div style={{ color:'var(--muted)' }}>No file</div>
-                        )}
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
+                            <div style={{ color:'var(--muted)' }}>No file</div>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
 
             {/* Editable fields */}
