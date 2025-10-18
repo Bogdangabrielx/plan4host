@@ -23,8 +23,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       .order("uploaded_at", { ascending: false });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    const documents = await Promise.all(
-      (data ?? []).map(async (d: any) => {
+    async function signRows(rows: any[], prefix: string) {
+      return Promise.all(rows.map(async (d: any) => {
         const bucket = (d.storage_bucket as string | null) || DEFAULT_BUCKET;
         const objectPath = (d.storage_path as string | null) || null;
         let url: string | null = null;
@@ -35,7 +35,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
           } catch { url = null; }
         }
         return {
-          id: String(d.id),
+          id: `${prefix}${String(d.id)}`,
           doc_type: d.doc_type as string | null,
           doc_series: d.doc_series as string | null,
           doc_number: d.doc_number as string | null,
@@ -46,8 +46,34 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
           path: objectPath,
           url,
         };
-      })
-    );
+      }));
+    }
+
+    let documents = await signRows(data ?? [], "form-");
+
+    // Fallback: if no form documents found, try booking_documents linked via bookings.form_id
+    if (!documents.length) {
+      try {
+        const rLink = await admin
+          .from('bookings')
+          .select('id')
+          .eq('form_id', id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        const bid = rLink.data?.id as string | undefined;
+        if (bid) {
+          const rBD = await admin
+            .from('booking_documents')
+            .select('id,doc_type,mime_type,storage_bucket,storage_path,uploaded_at,size_bytes,doc_series,doc_number,doc_nationality')
+            .eq('booking_id', bid)
+            .order('uploaded_at', { ascending: false });
+          if (!rBD.error) {
+            documents = await signRows(rBD.data || [], "booking-");
+          }
+        }
+      } catch {}
+    }
 
     return NextResponse.json({ documents }, { status: 200, headers: { "Cache-Control": "no-store, max-age=0" } });
   } catch (e: any) {
