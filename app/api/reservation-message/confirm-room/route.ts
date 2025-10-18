@@ -107,7 +107,8 @@ export async function POST(req: Request) {
       : '';
     const thankYou = 'Thank you for your patience — your reservation has been confirmed.';
     const inner = `
-      <p style="margin:0 0 12px;">${escapeHtml(thankYou)}</p>
+      <h2 style=\"margin:0 0 12px;\">Reservation confirmation — <span style=\"color:#3ECF8E\">${escapeHtml(propName)}</span></h2>
+      <p style=\"margin:6px 0; font-size:14px; color:#475569;\">${escapeHtml(thankYou)}</p>
       <div style="margin:0 0 12px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
         <div style=\"display:grid; grid-template-columns:auto 1fr; row-gap:8px; column-gap:10px; align-items:center;\">
           <div aria-hidden style=\"width:18px\"><img src=\"${iconGuest}\" alt=\"guest\" width=\"16\" height=\"16\"/></div>
