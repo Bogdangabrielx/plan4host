@@ -71,6 +71,18 @@ export async function POST(
       return NextResponse.json({ error: up.error.message }, { status: 500 });
     }
 
+    // Mirror only email to linked form (booking -> form), with simple validation
+    try {
+      const email = (payload.email || '').trim();
+      if (email && email.includes('@')) {
+        const rBk = await admin.from('bookings').select('form_id').eq('id', id).maybeSingle();
+        const formId = (rBk.data as any)?.form_id ? String((rBk.data as any).form_id) : null;
+        if (formId) {
+          await admin.from('form_bookings').update({ guest_email: email }).eq('id', formId);
+        }
+      }
+    } catch { /* best-effort */ }
+
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "Unexpected error" }, { status: 500 });
