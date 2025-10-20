@@ -1077,6 +1077,9 @@ function EditFormBookingModal({
   // Cancel booking dialog (for already-confirmed/linked forms)
   const [cancelOpen, setCancelOpen] = useState<boolean>(false);
   const [cancelBusy, setCancelBusy] = useState<boolean>(false);
+  // Delete form dialog (custom confirm)
+  const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
+  const [deleteBusy, setDeleteBusy] = useState<boolean>(false);
   // New gating before sending email
   const [sendMailOpen, setSendMailOpen] = useState<boolean>(false);
   const [sendMailBusy, setSendMailBusy] = useState<boolean>(false);
@@ -1359,17 +1362,7 @@ function EditFormBookingModal({
 
   async function onDelete() {
     if (deleting) return;
-    const sure = confirm("Delete this form booking? This cannot be undone.");
-    if (!sure) return;
-    setDeleting(true);
-    setError(null);
-    try {
-      const { error: e1 } = await supabase.from("form_bookings").delete().eq("id", bookingId);
-      if (e1) throw new Error(e1.message);
-      onSaved();
-    } catch (e: any) {
-      setError(e?.message || "Failed to delete.");
-    } finally { setDeleting(false); }
+    setDeleteOpen(true);
   }
 
   async function performCancelBooking() {
@@ -1517,6 +1510,55 @@ function EditFormBookingModal({
                 style={{ borderColor:"var(--danger)", color:"var(--danger)" }}
               >
                 {cancelBusy ? 'Cancelling…' : 'Cancel booking'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {deleteOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e)=>{ e.stopPropagation(); setDeleteOpen(false); /* close and refresh on choice handled by buttons */ }}
+          style={{ position:'fixed', inset:0, zIndex: 225, display:'grid', placeItems:'center', padding:12, background:'rgba(0,0,0,.55)' }}
+        >
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width: 'min(460px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 8 }}>
+              <strong>Delete form?</strong>
+            </div>
+            <div style={{ color:'var(--text)', marginBottom: 12 }}>
+              Delete this form booking? This cannot be undone.
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+              <button
+                className="sb-btn"
+                onClick={()=>{ if (deleteBusy) return; setDeleteOpen(false); try { onSaved(); } catch {} try { onClose(); } catch {} }}
+                disabled={deleteBusy}
+              >
+                Cancel
+              </button>
+              <button
+                className="sb-btn"
+                onClick={async ()=>{
+                  if (deleteBusy) return;
+                  setDeleteBusy(true);
+                  setError(null);
+                  try {
+                    const { error: e1 } = await supabase.from('form_bookings').delete().eq('id', bookingId);
+                    if (e1) throw new Error(e1.message);
+                    setDeleteOpen(false);
+                    try { onSaved(); } catch {}
+                    try { onClose(); } catch {}
+                  } catch (e:any) {
+                    setPopupTitle('Cannot delete');
+                    setPopupMsg(e?.message || 'Failed to delete.');
+                  } finally { setDeleteBusy(false); }
+                }}
+                disabled={deleteBusy}
+                style={{ borderColor:'var(--danger)', color:'var(--danger)' }}
+                title="Delete this form booking"
+              >
+                {deleteBusy ? 'Deleting…' : 'Please delete'}
               </button>
             </div>
           </div>
