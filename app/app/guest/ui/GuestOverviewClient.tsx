@@ -1082,6 +1082,9 @@ function EditFormBookingModal({
   const [sendMailBusy, setSendMailBusy] = useState<boolean>(false);
   const [sendMailError, setSendMailError] = useState<string | null>(null);
   const [emailBookingId, setEmailBookingId] = useState<string | null>(null);
+  // Baseline valori pentru detectarea modificărilor
+  const baselineSetRef = useRef(false);
+  const baselineRef = useRef<{ sd: string; ed: string; roomId: string; roomTypeId: string }>({ sd: '', ed: '', roomId: '', roomTypeId: '' });
 
   // booking fields
   const [startDate, setStartDate] = useState<string>("");
@@ -1139,10 +1142,18 @@ function EditFormBookingModal({
           throw new Error("Booking not found for this property.");
         }
 
-        setStartDate(bRes.data.start_date || "");
-        setEndDate(bRes.data.end_date || "");
-        setRoomId(bRes.data.room_id || "");
-        setRoomTypeId(bRes.data.room_type_id || "");
+        const sd0 = bRes.data.start_date || "";
+        const ed0 = bRes.data.end_date || "";
+        const rid0 = String(bRes.data.room_id || "");
+        const rtid0 = String(bRes.data.room_type_id || "");
+        setStartDate(sd0);
+        setEndDate(ed0);
+        setRoomId(rid0);
+        setRoomTypeId(rtid0);
+        if (!baselineSetRef.current) {
+          baselineRef.current = { sd: sd0, ed: ed0, roomId: rid0, roomTypeId: rtid0 };
+          baselineSetRef.current = true;
+        }
         setGuestFirst(bRes.data.guest_first_name || "");
         setGuestLast(bRes.data.guest_last_name || "");
         setGuestEmail((bRes.data.guest_email || cRes.data?.email || "") as string);
@@ -1177,6 +1188,22 @@ function EditFormBookingModal({
     // When property has *no* room types → user may pick a room (optional).
     return true;
   }
+
+  // Afișează butonul "Save changes" doar când există modificări; reține starea "Saved" până la închiderea modalului
+  const hasChanges = useMemo(() => {
+    const b = baselineRef.current;
+    return (
+      startDate !== b.sd ||
+      endDate !== b.ed ||
+      String(roomId || '') !== String(b.roomId || '') ||
+      String(roomTypeId || '') !== String(b.roomTypeId || '')
+    );
+  }, [startDate, endDate, roomId, roomTypeId]);
+
+  // Dacă apar noi schimbări după un save, ieșim din starea "Saved"
+  useEffect(() => {
+    if (hasChanges) setJustSaved(false);
+  }, [hasChanges]);
 
   // Warn-only: compute rooms that already have another active form overlapping the selected dates
   useEffect(() => {
@@ -1305,9 +1332,9 @@ function EditFormBookingModal({
       let linkedId: string | null = null;
       try { linkedId = jj?.booking_id ? String(jj.booking_id) : null; } catch { linkedId = null; }
       setEmailBookingId(linkedId);
-      // Afișează confirmarea vizuală pe buton
+      // Actualizează baseline (noua stare salvată) și marchează Saved până la închiderea modalului
+      baselineRef.current = { sd: startDate, ed: endDate, roomId: String(roomId || ''), roomTypeId: String(roomTypeId || '') };
       setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 1500);
       if (linkedId) {
         setSendMailOpen(true);
       } else {
@@ -1705,15 +1732,17 @@ function EditFormBookingModal({
             {/* Actions */}
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, flexWrap:"wrap" }}>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <button
-                  type="button"
-                  className="sb-btn sb-btn--primary"
-                  disabled={!valid() || saving || deleting}
-                  onClick={onSave}
-                  style={{ minHeight:44 }}
-                >
-                  {saving ? "Saving…" : (justSaved ? "Saved" : "Save changes")}
-                </button>
+                {(hasChanges || justSaved || saving) && (
+                  <button
+                    type="button"
+                    className="sb-btn sb-btn--primary"
+                    disabled={!valid() || saving || deleting || (!hasChanges && justSaved)}
+                    onClick={onSave}
+                    style={{ minHeight:44 }}
+                  >
+                    {saving ? "Saving…" : (justSaved ? "Saved" : "Save changes")}
+                  </button>
+                )}
               </div>
               <div>
                 {confirmOnSave ? (
