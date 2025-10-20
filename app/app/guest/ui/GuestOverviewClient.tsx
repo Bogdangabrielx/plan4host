@@ -1480,7 +1480,8 @@ function EditFormBookingModal({
               <strong>Modify reservation?</strong>
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
-              You are about to modify an existing reservation. Do you want to continue?
+              You are about to modify an existing reservation.<br/>
+              Do you want to continue?
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
               <button className="sb-btn" onClick={()=>setConfirmOpen(false)} disabled={confirmBusy}>Close</button>
@@ -1504,7 +1505,8 @@ function EditFormBookingModal({
               <strong>Cancel booking?</strong>
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
-              This action is irreversible. The reservation and all associated check-in form data will be deleted. Do you want to continue?
+              This action is irreversible. The reservation and all associated check-in form data will be deleted.<br/>
+              Do you want to continue?
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
               <button className="sb-btn" onClick={()=>setCancelOpen(false)} disabled={cancelBusy}>Close</button>
@@ -1532,7 +1534,8 @@ function EditFormBookingModal({
               <strong>Send info email to guest?</strong>
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
-              We will send an informational email including the assigned room number to the guest. Proceed?
+              We will send an informational email including the assigned room number to the guest.<br/>
+              Proceed?
               {sendMailError && (
                 <div style={{ color:'var(--danger)', marginTop:8 }}>{sendMailError}</div>
               )}
