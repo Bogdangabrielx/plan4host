@@ -71,14 +71,22 @@ export async function POST(
       return NextResponse.json({ error: up.error.message }, { status: 500 });
     }
 
-    // Mirror only email to linked form (booking -> form), with simple validation
+    // Mirror only email and phone to linked form (booking -> form), with simple validation
     try {
       const email = (payload.email || '').trim();
+      const phone = (payload.phone || '').trim();
       if (email && email.includes('@')) {
         const rBk = await admin.from('bookings').select('form_id').eq('id', id).maybeSingle();
         const formId = (rBk.data as any)?.form_id ? String((rBk.data as any).form_id) : null;
         if (formId) {
           await admin.from('form_bookings').update({ guest_email: email }).eq('id', formId);
+        }
+      }
+      if (phone) {
+        const rBk2 = await admin.from('bookings').select('form_id').eq('id', id).maybeSingle();
+        const formId2 = (rBk2.data as any)?.form_id ? String((rBk2.data as any).form_id) : null;
+        if (formId2) {
+          await admin.from('form_bookings').update({ guest_phone: phone }).eq('id', formId2);
         }
       }
     } catch { /* best-effort */ }

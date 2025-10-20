@@ -517,6 +517,22 @@ export default function RoomDetailModal({
       setSaving(false); return;
     }
 
+    // Mirror dates to linked form, if any
+    try {
+      const { data: linkRow } = await supabase
+        .from('bookings')
+        .select('form_id')
+        .eq('id', active.id)
+        .maybeSingle();
+      const formId = (linkRow as any)?.form_id ? String((linkRow as any).form_id) : null;
+      if (formId) {
+        await supabase
+          .from('form_bookings')
+          .update({ start_date: startDate, end_date: endDate })
+          .eq('id', formId);
+      }
+    } catch { /* best-effort mirror */ }
+
     setSaving(false); setStatus("Saved"); setStatusHint("Dates & times updated.");
     await onChanged(); onClose();
   }
