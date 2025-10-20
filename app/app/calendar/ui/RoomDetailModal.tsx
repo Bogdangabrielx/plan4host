@@ -164,7 +164,24 @@ export default function RoomDetailModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      return res.ok;
+      if (!res.ok) return false;
+      // Mirror contact to linked form, if any
+      try {
+        const { data: b } = await supabase
+          .from('bookings')
+          .select('form_id')
+          .eq('id', bookingId)
+          .maybeSingle();
+        const formId = (b as any)?.form_id ? String((b as any).form_id) : null;
+        if (formId) {
+          await fetch(`/form-bookings/${encodeURIComponent(formId)}/contact`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+        }
+      } catch { /* best-effort mirror */ }
+      return true;
     } catch {
       return false;
     }
