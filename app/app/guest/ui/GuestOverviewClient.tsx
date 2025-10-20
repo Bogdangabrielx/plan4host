@@ -1068,6 +1068,7 @@ function EditFormBookingModal({
   const [error, setError] = useState<string | null>(null);
   const [popupMsg, setPopupMsg] = useState<string | null>(null);
   const [popupTitle, setPopupTitle] = useState<string | null>(null);
+  const [justSaved, setJustSaved] = useState<boolean>(false);
   const [docs, setDocs] = useState<Array<{ id:string; doc_type:string|null; mime_type:string|null; url:string|null }>>([]);
   // On mobile, collapse Documents by default to reduce modal height
   const [docsOpen, setDocsOpen] = useState<boolean>(() => !isSmall);
@@ -1304,8 +1305,15 @@ function EditFormBookingModal({
       let linkedId: string | null = null;
       try { linkedId = jj?.booking_id ? String(jj.booking_id) : null; } catch { linkedId = null; }
       setEmailBookingId(linkedId);
+      // Afișează confirmarea vizuală pe buton
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 1500);
       if (linkedId) {
         setSendMailOpen(true);
+      } else {
+        // Închide modalul și dă refresh dacă nu avem pasul de email
+        try { onSaved(); } catch {}
+        try { onClose(); } catch {}
       }
     } catch (e: any) {
       setError(e?.message || "Failed to save changes.");
@@ -1503,7 +1511,7 @@ function EditFormBookingModal({
               )}
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-              <button className="sb-btn" onClick={()=>{ if (!sendMailBusy) setSendMailOpen(false); }} disabled={sendMailBusy}>Skip this time</button>
+              <button className="sb-btn" onClick={()=>{ if (sendMailBusy) return; setSendMailOpen(false); try { onSaved(); } catch {} try { onClose(); } catch {} }} disabled={sendMailBusy}>Skip this time</button>
               <button className="sb-btn sb-btn--primary" disabled={sendMailBusy} onClick={async ()=>{
                 setSendMailBusy(true);
                 setSendMailError(null);
@@ -1522,14 +1530,12 @@ function EditFormBookingModal({
                     body: JSON.stringify({ property_id: propertyId, booking_id: emailBookingId || bookingId })
                   });
                   const jj = await r.json().catch(()=>({}));
-                  setSendMailOpen(false);
-                  try { onSaved(); } catch {}
                   if (r.ok && (jj?.ok || jj?.sent)) {
-                    setPopupTitle('Email sent');
-                    setPopupMsg('The informational email was sent to the guest.');
+                    setSendMailOpen(false);
+                    try { onSaved(); } catch {}
+                    try { onClose(); } catch {}
                   } else {
-                    setPopupTitle('Error');
-                    setPopupMsg('Email could not be sent. Please try again in 10 minutes.');
+                    setSendMailError('Email could not be sent. Please try again in 10 minutes.');
                   }
                 } catch (er:any) {
                   setSendMailError(er?.message || 'Failed to send.');
@@ -1706,7 +1712,7 @@ function EditFormBookingModal({
                   onClick={onSave}
                   style={{ minHeight:44 }}
                 >
-                  {saving ? "Saving…" : "Save changes"}
+                  {saving ? "Saving…" : (justSaved ? "Saved" : "Save changes")}
                 </button>
               </div>
               <div>
