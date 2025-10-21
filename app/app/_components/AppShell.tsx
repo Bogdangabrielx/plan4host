@@ -85,7 +85,6 @@ export default function AppShell({ title, currentPath, children }: Props) {
   return (
     <HeaderProvider initialTitle={title ?? ""}>
       <div
-        id="p4h-appshell"
         // root: nu scroll-ează; doar definește rama dintre header și main
         style={{
           height: "100dvh",
@@ -109,10 +108,6 @@ export default function AppShell({ title, currentPath, children }: Props) {
               html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
               @media (max-width: 640px) {
                 #app-main { padding-top: calc(64px + var(--safe-top, 0px)) !important; }
-              }
-              /* Prefer visual viewport height on modern browsers to avoid iOS keyboard jumps */
-              @supports (height: 100svh) {
-                #p4h-appshell { height: 100svh; min-height: 100svh; }
               }
             `,
           }}

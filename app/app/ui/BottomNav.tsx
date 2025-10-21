@@ -134,8 +134,8 @@ useEffect(() => {
         borderTop: "1px solid var(--border)",
         padding: "8px 10px",
 
-        // când tastatura e deschisă, NU mai urcă: îl scot în jos din viewport (except /app/guest unde rămâne stabil)
-        transform: (kbOpen && path !== '/app/guest') ? "translateY(100%)" : "translateY(0)",
+        // când tastatura e deschisă, NU mai urcă: îl scot în jos din viewport
+        transform: kbOpen ? "translateY(100%)" : "translateY(0)",
         transition: "transform .18s ease",
 
         zIndex: 2147483000,

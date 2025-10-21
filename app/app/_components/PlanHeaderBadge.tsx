@@ -13,11 +13,12 @@ function planLabel(plan: Plan) {
 function planBadgeStyle(plan: Plan): React.CSSProperties {
   const base: React.CSSProperties = {
     display: "inline-block",
-    padding: "2px 10px",
+    padding: "4px 10px",
     borderRadius: 999,
-    background: "transparent",
-    color: "var(--muted)",
-    border: "1px solid #94a3b8",
+    // Always white background, no border, dark gray text in both themes
+    background: "#ffffff",
+    color: "#334155", // dark gray for readability on white
+    border: "none",
     fontSize: 10,
     fontWeight: 800,
     letterSpacing: 0.2,
