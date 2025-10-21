@@ -483,8 +483,6 @@ function MiniMonth({
     <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
       {cells.map((c, i) => {
         const clickable = !!c.dateStr;
-        const dayNum = typeof c.dayNum === 'number' ? c.dayNum : NaN;
-        const zebra = Number.isFinite(dayNum) && (dayNum % 2 === 1);
         return (
           <div
             key={i}
@@ -494,8 +492,8 @@ function MiniMonth({
               position: "relative",
               height: 26,
               borderRadius: 6,
-              border: "1px solid var(--cal-brd, var(--border))",
-              background: zebra ? "color-mix(in srgb, var(--card) 92%, var(--border) 8%)" : "var(--card)",
+              border: "1px solid var(--border)",
+              background: "var(--card)",
               cursor: clickable ? "pointer" : "default",
               overflow: "hidden",
             }}
@@ -574,8 +572,6 @@ function MonthView({
         {days.map((c, i) => {
           const clickable = !!c.dateStr;
           const weekend = c.dateStr ? (()=>{ const d=new Date(c.dateStr+"T00:00:00"); const w=d.getDay(); return w===0||w===6; })() : false;
-          const dayNum = c.dateStr ? parseInt(c.dateStr.slice(-2), 10) : NaN;
-          const zebra = Number.isFinite(dayNum) && (dayNum % 2 === 1);
           return (
             <div
               className="cal-day"
@@ -586,8 +582,8 @@ function MonthView({
                 position: "relative",
                 height: isSmall ? 66 : 88,
                 borderRadius: 10,
-                border: "1px solid var(--cal-brd, var(--border))",
-                background: zebra ? "color-mix(in srgb, var(--card) 92%, var(--border) 8%)" : "var(--card)",
+                border: "1px solid var(--cal-brd)",
+                background: "var(--card)",
                 cursor: clickable ? "pointer" : "default",
                 overflow: "hidden",
                 boxShadow: c.isToday ? "0 0 0 2px var(--cal-today-ring)" : "none",
