@@ -1048,16 +1048,15 @@ function EditFormBookingModal({
   // Mark modal-open for PWA/iOS to disable global pull-to-refresh and background scroll
   useEffect(() => {
     try {
-      const el = document.documentElement;
-      el.setAttribute('data-modal-open', '1');
-      const prevHtmlOverflow = document.documentElement.style.overflow;
-      const prevBodyOverflow = document.body.style.overflow;
-      document.documentElement.style.overflow = 'hidden';
-      document.body.style.overflow = 'hidden';
+      // Prefer locking only the AppShell scroll container to avoid iOS viewport quirks
+      const root = document.documentElement;
+      root.setAttribute('data-modal-open', '1');
+      const main = document.getElementById('app-main') as HTMLElement | null;
+      const prevMainOverflow = main ? main.style.overflowY : '';
+      if (main) main.style.overflowY = 'hidden';
       return () => {
-        try { el.removeAttribute('data-modal-open'); } catch {}
-        document.documentElement.style.overflow = prevHtmlOverflow;
-        document.body.style.overflow = prevBodyOverflow;
+        try { root.removeAttribute('data-modal-open'); } catch {}
+        if (main) main.style.overflowY = prevMainOverflow;
       };
     } catch { /* noop */ }
   }, []);
