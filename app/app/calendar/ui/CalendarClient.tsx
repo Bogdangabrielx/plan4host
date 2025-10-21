@@ -491,7 +491,7 @@ function MiniMonth({
             style={{
               position: "relative",
               height: 26,
-              borderRadius: 6,
+              borderRadius: 0,
               border: "1px solid var(--border)",
               background: "var(--card)",
               cursor: clickable ? "pointer" : "default",
