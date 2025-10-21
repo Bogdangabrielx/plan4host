@@ -590,7 +590,7 @@ function MonthView({
                 background: zebra ? "color-mix(in srgb, var(--card) 92%, var(--border) 8%)" : "var(--card)",
                 cursor: clickable ? "pointer" : "default",
                 overflow: "hidden",
-                boxShadow: c.isToday ? "0 0 0 2px var(--cal-today-ring, color-mix(in srgb, var(--primary) 60%, #ffffff))" : "none",
+                boxShadow: c.isToday ? "0 0 0 2px var(--cal-today-ring)" : "none",
                 transition: "border-color .15s ease, box-shadow .15s ease, transform .05s ease",
               }}
               onMouseDown={(e)=>{ (e.currentTarget as HTMLDivElement).style.transform='scale(0.99)'; }}
