@@ -84,7 +84,7 @@ will-change: transform;
 .btn:active { transform: scale(0.99); }
 .btnPrimary {
   background: var(--card); color: #ffffff; border-color: var(--border);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 35%, transparent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 21%, transparent);
 }
 .btnPrimary:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); }
 .btnGhost { background: transparent; color: var(--text); }

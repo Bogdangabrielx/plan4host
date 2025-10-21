@@ -1445,7 +1445,7 @@ export default function CheckinClient() {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className={`${homeStyles.btn} ${homeStyles.btnText} ${homeStyles.btnPrimary}`}
+                className={`${homeStyles.btn} ${homeStyles.btnChoose} ${homeStyles.btnPrimary}`}
                 style={{ opacity: canSubmit ? 1 : 0.6, cursor: canSubmit ? "pointer" : "not-allowed" }}
               >
                 {submitState === "submitting" ? "Submitting…" : "Submit check-in"}
