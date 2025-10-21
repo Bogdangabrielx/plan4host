@@ -1753,7 +1753,7 @@ function EditFormBookingModal({
                     // Gating doar pentru "Confirm booking" (nu și pentru "Modify booking")
                     if (!confirmOnSave && next && !eligibleRooms.has(next)) {
                       setPopupTitle('Room not available');
-                      setPopupMsg('No event exists for the selected room and dates.');
+                      setPopupMsg('No event exists yet for the selected room and dates.');
                       return;
                     }
                     setRoomId(next);
