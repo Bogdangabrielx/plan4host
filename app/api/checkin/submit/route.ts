@@ -1,6 +1,7 @@
 // app/api/checkin/submit/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createTransport } from "nodemailer";
 import webpush from "web-push";
 
 export const dynamic = "force-dynamic";
@@ -199,7 +200,7 @@ export async function POST(req: NextRequest) {
     // property defaults & suspended account check
     const rProp = await admin
       .from("properties")
-      .select("id,account_id,check_in_time,check_out_time,timezone")
+      .select("id,account_id,check_in_time,check_out_time,timezone,name")
       .eq("id", property_id)
       .maybeSingle();
 
@@ -471,6 +472,53 @@ export async function POST(req: NextRequest) {
     }
 
     try { broadcastNewGuestOverview(admin, property_id, start_date, end_date); } catch {}
+
+    // Email admin/owner: New check-in submitted — awaiting room
+    try {
+      const account_id = (rProp.data as any)?.account_id as string | null;
+      const propName = ((rProp.data as any)?.name || '').toString();
+      if (account_id) {
+        const rAdmin = await admin
+          .from('account_users')
+          .select('user_id,role,disabled')
+          .eq('account_id', account_id)
+          .eq('role', 'admin')
+          .eq('disabled', false)
+          .maybeSingle();
+        const uid = (rAdmin.data as any)?.user_id as string | null;
+        if (uid) {
+          const { data: u } = await admin.auth.admin.getUserById(uid);
+          const to = u?.user?.email || '';
+          if (to) {
+            const transporter = createTransport({
+              host: process.env.SMTP_HOST,
+              port: Number(process.env.SMTP_PORT || 587),
+              secure: String(process.env.SMTP_SECURE || 'false') === 'true',
+              auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+            });
+            const fromEmail = process.env.FROM_EMAIL || 'office@plan4host.com';
+            const fromName  = process.env.FROM_NAME  || 'Plan4Host';
+            const appBase = (process.env.NEXT_PUBLIC_APP_URL || '').toString().replace(/\/+$/, '');
+            const link = `${appBase}/app/guest?property=${encodeURIComponent(property_id)}`;
+            const subject = `New check-in submitted — awaiting room${propName ? ` — ${propName}` : ''}`;
+            const html = `
+              <div style="background:#ffffff; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0c111b; line-height:1.6; padding:16px;">
+                <h2 style="margin:0 0 12px;">New check-in submitted${propName ? ` for <span style=\"color:#3ECF8E\">${propName.replace(/[&<>\"]/g,'')}</span>` : ''}</h2>
+                <p style="margin:8px 0;">A guest completed the check-in form and the reservation is now <strong>awaiting room assignment</strong>.</p>
+                <div style="margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:grid; gap:10px;">
+                  <div style="display:flex; align-items:center; gap:8px;"><strong style="margin-right:6px;">Stay:</strong> <span>${start_date} → ${end_date}</span></div>
+                </div>
+                <p style="margin:8px 0; color:#475569;">Open Guest Overview to assign a room and confirm the reservation.</p>
+                <div style="margin-top:10px;">
+                  <a href="${link}" target="_blank" style="display:inline-block; padding:10px 14px; background:#ffffff; border:1px solid #e2e8f0; color:#16b981; text-decoration:none; border-radius:10px; font-weight:800;">Open Guest Overview</a>
+                </div>
+              </div>
+            `;
+            try { await transporter.sendMail({ from: `${fromName} <${fromEmail}>`, to, subject, html }); } catch {}
+          }
+        }
+      }
+    } catch {}
 
     return NextResponse.json({
       ok: true,
