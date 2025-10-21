@@ -1577,7 +1577,7 @@ function EditFormBookingModal({
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
               We will send an informational email including the assigned room number to the guest.<br/>
-              Proceed?
+              Do you want to send this email to the guest?
               {sendMailError && (
                 <div style={{ color:'var(--danger)', marginTop:8 }}>{sendMailError}</div>
               )}
