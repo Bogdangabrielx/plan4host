@@ -123,6 +123,25 @@ function FeatureCarousel() {
     <div className={styles.featureCarousel} ref={wrapRef}>
       <button type="button" aria-label="Previous features" className={`${styles.carouselBtn} ${styles.carouselBtnLeft}`} onClick={prev}>‹</button>
       <div className={styles.featureTrack} ref={trackRef}>
+        {/* 1) Secured Check-in Form (first) */}
+        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+          <div className={styles.featureHead}>
+            <img src="/guest_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+            <h3>Secured Check-in Form</h3>
+          </div>
+          <p>Collect guest details safely before arrival—identity document upload, consent and instant email confirmation—all in a streamlined, GDPR‑friendly flow.</p>
+        </article>
+
+        {/* 2) Automatic Sync (second) */}
+        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+          <div className={styles.featureHead}>
+            <img src="/ical_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+            <h3>Automatic Sync</h3>
+          </div>
+          <p>Sync reservations with Airbnb, Booking.com and more; according to your subscription plan—keeping calendars always up to date, effortlessly.</p>
+        </article>
+
+        {/* 3+) Rest in original order */}
         <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
           <div className={styles.featureHead}>
             <img src="/dashboard_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
@@ -145,22 +164,6 @@ function FeatureCarousel() {
             <h3>Adaptive Calendar</h3>
           </div>
           <p>Your calendar, your way. Customize views, organize reservations, and keep everything visible at a glance.</p>
-        </article>
-
-        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-          <div className={styles.featureHead}>
-            <img src="/ical_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-            <h3>Automatic Sync</h3>
-          </div>
-          <p>Sync reservations with Airbnb, Booking.com and more; according to your subscription plan—keeping calendars always up to date, effortlessly.</p>
-        </article>
-
-        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-          <div className={styles.featureHead}>
-            <img src="/guest_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-            <h3>Secured Check-in Form</h3>
-          </div>
-          <p>Collect guest details safely before arrival—identity document upload, consent and instant email confirmation—all in a streamlined, GDPR‑friendly flow.</p>
         </article>
 
         <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>

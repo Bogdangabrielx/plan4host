@@ -88,6 +88,23 @@ function FeatureCarousel() {
     <div className={styles.featureCarousel} ref={wrapRef}>
       <button type="button" aria-label="Previous features" className={`${styles.carouselBtn} ${styles.carouselBtnLeft}`} onClick={prev}>‹</button>
       <div className={styles.featureTrack} ref={trackRef}>
+        {/* 1) Formular check-in sigur */}
+        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+          <div className={styles.featureHead}>
+            <img src="/guest_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+            <h3>Formular check‑in sigur</h3>
+          </div>
+          <p>Colectezi datele oaspeților în siguranță înainte de sosire — upload act identitate, consimțământ și confirmare instant pe email — totul într‑un flux prietenos GDPR.</p>
+        </article>
+        {/* 2) Sincronizare automată */}
+        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+          <div className={styles.featureHead}>
+            <img src="/ical_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
+            <h3>Sincronizare automată</h3>
+          </div>
+          <p>Sincronizezi rezervările cu Airbnb, Booking.com și altele prin iCal, conform planului — calendarele rămân actualizate fără efort.</p>
+        </article>
+        {/* 3+) Restul în ordinea existentă */}
         <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
           <div className={styles.featureHead}>
             <img src="/dashboard_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
@@ -108,20 +125,6 @@ function FeatureCarousel() {
             <h3>Calendar adaptiv</h3>
           </div>
           <p>Calendarul tău, pe stilul tău: vizualizări personalizabile, rezervări organizate și totul la vedere dintr‑o privire.</p>
-        </article>
-        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-          <div className={styles.featureHead}>
-            <img src="/ical_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-            <h3>Sincronizare automată</h3>
-          </div>
-          <p>Sincronizezi rezervările cu Airbnb, Booking.com și altele prin iCal, conform planului — calendarele rămân actualizate fără efort.</p>
-        </article>
-        <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
-          <div className={styles.featureHead}>
-            <img src="/guest_forlight.png" alt="" aria-hidden="true" className={styles.featureIcon} />
-            <h3>Formular check‑in sigur</h3>
-          </div>
-          <p>Colectezi datele oaspeților în siguranță înainte de sosire — upload act identitate, consimțământ și confirmare instant pe email — totul într‑un flux prietenos GDPR.</p>
         </article>
         <article data-card className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
           <div className={styles.featureHead}>
@@ -233,7 +236,7 @@ export default function HomePageRO() {
       <nav className={styles.nav} data-open={navOpen ? "true" : "false"} aria-label="Primary">
         <div className={styles.brandWrap}>
           <Link href="/ro" className={`${styles.brand} ${styles.focusable}`}>
-            <img src="/logo_forlight.png" alt="Plan4host" className={styles.logoDark} />
+            <img src="/Logo_Landing.png" alt="Plan4host" className={styles.logoDark} />
           </Link>
           {/* Switch limbă (lipit de logo) */}
           <Link href="/" className={`${styles.btnLang} ${styles.focusable}`} aria-label="Switch to English">
@@ -381,7 +384,7 @@ export default function HomePageRO() {
         <div className={styles.footerGrid}>
           <div className={styles.footerCol}>
             <div className={styles.footerBrand}>
-              <img src="/logo_forlight.png" alt="" aria-hidden="true" className={styles.logoDark} />
+              <img src="/Logo_Landing.png" alt="" aria-hidden="true" className={styles.logoDark} />
               <strong>Plan4Host</strong>
             </div>
             <p className={styles.footerCopy}>Calendar de rezervări ușor și sincronizare canale pentru unități mici de cazare.</p>
@@ -487,7 +490,7 @@ export default function HomePageRO() {
             "@type": "Organization",
             name: "Plan4Host",
             url: "https://www.plan4host.com",
-            logo: "https://www.plan4host.com/logo_forlight.png",
+            logo: "https://www.plan4host.com/Logo_Landing.png",
             sameAs: [
               "https://www.plan4host.com"
             ],
