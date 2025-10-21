@@ -466,7 +466,7 @@ export default function HomePage() {
       >
         <div className={styles.brandWrap}>
           <Link href="/" className={`${styles.brand} ${styles.focusable}`}>
-            <img src="/logo_forlight.png" alt="Plan4host" className={styles.logoDark} />
+            <img src="/p4h_logo_rotund.png" alt="Plan4host" className={styles.logoDark} />
           </Link>
           {/* Language near logo (mobile-friendly, no border) */}
           <Link href="/ro" className={`${styles.btnLang} ${styles.focusable}`} aria-label="Schimbă limba în română">
@@ -702,7 +702,7 @@ export default function HomePage() {
         <div className={styles.footerGrid}>
           <div className={styles.footerCol}>
             <div className={styles.footerBrand}>
-              <img src="/logo_forlight.png" alt="" aria-hidden="true" className={styles.logoDark} />
+              <img src="/p4h_logo_rotund.png" alt="" aria-hidden="true" className={styles.logoDark} />
               <strong>Plan4Host</strong>
             </div>
             <p className={styles.footerCopy}>
@@ -813,7 +813,7 @@ export default function HomePage() {
             "@type": "Organization",
             name: "Plan4Host",
             url: "https://www.plan4host.com",
-            logo: "https://www.plan4host.com/logo_forlight.png",
+            logo: "https://www.plan4host.com/p4h_logo_rotund.png",
             sameAs: [
               "https://www.plan4host.com"
             ],
