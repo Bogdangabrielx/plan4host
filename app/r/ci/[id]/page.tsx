@@ -196,6 +196,15 @@ export default async function CheckinQrView({ params }: { params: { id: string }
     <html lang="en" data-theme={theme} data-accent={accent}>
       <body style={{ margin: 0 }}>
     <main style={{ minHeight:'100dvh', display:'grid', placeItems:'start center', background:'var(--bg)', color:'var(--text)' }}>
+      <style>{`
+        @page { size: A4; margin: 16mm; }
+        @media print {
+          html, body, main { background: #ffffff !important; }
+          .sb-card { box-shadow: none !important; background: #ffffff !important; }
+          .no-print { display: none !important; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+      `}</style>
       <div style={{ width:'min(860px, calc(100vw - 32px))', padding:16, display:'grid', gap:12 }}>
         <div className="sb-card" style={{ padding:12, border:'1px solid var(--border)', borderRadius:29, background:'var(--panel)' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
@@ -203,7 +212,12 @@ export default async function CheckinQrView({ params }: { params: { id: string }
               <img src="/p4h_logo_rotund.png" alt="Plan4Host" width={28} height={28} style={{ display:'block', borderRadius:999 }} />
               <h1 style={{ margin:0, fontSize:20 }}>Check-in confirmation</h1>
             </div>
-            <ExportPdfButton />
+            <ExportPdfButton filename={(function(){
+              const name = [guestFirstName||'', guestLastName||''].filter(Boolean).join(' ').trim() || 'Guest';
+              const period = [startDate||'', endDate||''].filter(Boolean).join(' to ');
+              const raw = `${name} — ${period || 'reservation'}`;
+              return raw.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g,' ').trim();
+            })()} />
           </div>
         </div>
         {isExpired && (
