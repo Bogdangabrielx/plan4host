@@ -245,7 +245,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   const hasStandardOrBetter = plan === "standard" || plan === "premium";
 
   return (
-    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+    <div id="pscope" style={{ fontFamily: 'Times New Roman, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
       <div style={{ margin: '0 auto', width: 'min(1200px, calc(100vw - 32px))' }}>
         <PlanHeaderBadge title="Property Setup" slot="header-right" />
 
@@ -495,6 +495,65 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         </section>
       </div>
       </div>
+
+      {/* Scoped design system for Property Setup (visual only) */}
+      <style jsx>{`
+        /* Layout & container */
+        #pscope{ background: var(--bg); color: var(--text); }
+        #pscope .config-grid{ display:grid; grid-template-columns: 280px 1fr; gap: 24px; }
+        @media (max-width: 1024px){ #pscope .config-grid{ grid-template-columns: 1fr; gap:16px; } }
+        @media (max-width: 640px){ #pscope .config-grid{ gap:12px; } }
+
+        /* Typography */
+        #pscope h1{ font-size: 30px; font-weight:700; letter-spacing:-0.01em; margin:0 0 12px; }
+        #pscope h2{ font-size: 24px; font-weight:700; margin:0 0 12px; }
+        #pscope h3{ font-size: 18px; font-weight:600; margin:0 0 10px; }
+        #pscope p, #pscope li, #pscope label, #pscope input, #pscope select, #pscope button, #pscope small{
+          font-size: 14px; line-height: 1.55;
+        }
+        #pscope small{ font-size:12px; font-weight:500; color: var(--muted); }
+
+        /* Cards */
+        #pscope .sb-card{
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 0 0 1px var(--border);
+        }
+        #pscope .sb-card:hover{ box-shadow: 0 8px 24px rgba(0,0,0,.18), 0 0 0 1px var(--border); transition: box-shadow 200ms cubic-bezier(0.2,0.8,0.2,1); }
+
+        /* Buttons */
+        #pscope .sb-btn{
+          padding: 8px 12px; min-height:40px; border-radius:8px; border:1px solid var(--border);
+          background: var(--card); color: var(--text); font-weight:700; cursor:pointer;
+          transition: transform 150ms cubic-bezier(0.2,0.8,0.2,1), box-shadow 180ms;
+        }
+        #pscope .sb-btn:hover{ transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+        #pscope .sb-btn:active{ transform: translateY(0) scale(0.99); }
+        #pscope .sb-btn:disabled{ opacity:.6; cursor:not-allowed; }
+        #pscope .sb-btn--primary{ background: var(--primary); border-color: var(--primary); color:#0c111b; }
+        #pscope .sb-btn--primary:hover{ box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+
+        /* Inputs & selects */
+        #pscope input, #pscope select{ background: var(--card); color: var(--text); border:1px solid var(--border); border-radius:8px; }
+        #pscope input:focus, #pscope select:focus{ outline:2px solid var(--primary); outline-offset:2px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent); }
+
+        /* Tabs */
+        #pscope .psTabsBar{ border-bottom: 1px solid var(--border); }
+        #pscope .psTabsBar .psTabBtn{ position:relative; }
+        #pscope .psTabsBar .psTabBtn:hover{ transform: translateY(-1px); }
+        /* active indicator is handled inline; complement it with underline when background is primary */
+        #pscope .psTabsBar .psTabBtn[style*="var(--primary)"]::after{
+          content:""; position:absolute; left:12px; right:12px; bottom:-10px; height:2px; background: var(--primary);
+        }
+
+        /* Lists and rows */
+        #pscope .propItem{ transition: box-shadow 180ms; }
+        #pscope .propItem:hover{ box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+
+        /* Meta */
+        #pscope .meta{ color: var(--muted); font-size:12px; }
+      `}</style>
     </div>
   );
 }
