@@ -16,9 +16,9 @@ function planBadgeStyle(plan: Plan): React.CSSProperties {
     padding: "4px 10px",
     borderRadius: 999,
     // Always white background, no border, dark gray text in both themes
-    background: "#ffffff",
-    color: "#334155", // dark gray for readability on white
-    border: "none",
+    background: "#343a42ff",
+    color: "#ffffff", // dark gray for readability on white
+    border: "1px solid var(--border)",
     fontSize: 10,
     fontWeight: 800,
     letterSpacing: 0.2,
