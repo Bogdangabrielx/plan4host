@@ -124,6 +124,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [copied, setCopied] = useState(false);
   const [showSrc, setShowSrc] = useState(false);
   const [providers, setProviders] = useState<ProviderItem[]>([]);
+  // House Rules gating
+  const [noPdfOpen, setNoPdfOpen] = useState(false);
+  const [highlightUpload, setHighlightUpload] = useState(false);
+  const uploadBtnRef = useRef<HTMLButtonElement | null>(null);
 
   // Responsive helper: treat phones/narrow screens differently for layout
   const [isNarrow, setIsNarrow] = useState<boolean>(() => {
@@ -334,7 +338,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           <section style={card}>
             <h3 style={{ marginTop: 0 }}>Check-in Link</h3>
             <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-              <button className="sb-btn sb-btn--primary" onClick={openSourcePicker} disabled={!prop?.regulation_pdf_url} title={prop?.regulation_pdf_url ? 'Copy check-in link' : 'Upload House Rules PDF first'}>
+              <button
+                className="sb-btn sb-btn--primary"
+                onClick={() => {
+                  if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
+                  openSourcePicker();
+                }}
+                title={prop?.regulation_pdf_url ? 'Copy check-in link' : 'Upload House Rules PDF first'}
+              >
                 {copied ? 'Copied!' : 'Copy check-in link'}
               </button>
               <small style={{ color:'var(--muted)' }}>You can choose a source before copying.</small>
@@ -356,11 +367,53 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             ) : (
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                 <span style={{ color:'var(--muted)' }}>No PDF uploaded.</span>
-                <button className="sb-btn" onClick={triggerPdfUpload}>Upload PDF</button>
+                <button
+                  className="sb-btn"
+                  onClick={() => { setHighlightUpload(false); triggerPdfUpload(); }}
+                  ref={uploadBtnRef}
+                  style={{
+                    border: highlightUpload ? '2px solid var(--primary)' : undefined,
+                    boxShadow: highlightUpload ? '0 0 0 4px color-mix(in srgb, var(--primary) 25%, transparent)' : undefined,
+                    transition: 'box-shadow 160ms ease, border-color 160ms ease',
+                  }}
+                >
+                  Upload PDF
+                </button>
                 <Info text={PDF_INFO} />
               </div>
             )}
           </section>
+
+          {noPdfOpen && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              onClick={(e)=>{ e.stopPropagation(); /* require OK */ }}
+              style={{ position:'fixed', inset:0, zIndex: 240, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
+                       paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
+              <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                  <strong>House Rules required</strong>
+                </div>
+                <div style={{ color:'var(--text)' }}>
+                  To share the online check-in form, please upload your property's House Rules PDF first so guests can read and acknowledge it.
+                </div>
+                <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                  <button
+                    className="sb-btn sb-btn--primary"
+                    onClick={() => {
+                      setNoPdfOpen(false);
+                      setHighlightUpload(true);
+                      try {
+                        uploadBtnRef.current?.focus();
+                        uploadBtnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      } catch {}
+                    }}
+                  >OK</button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Contact details */}
           <section style={card}>
