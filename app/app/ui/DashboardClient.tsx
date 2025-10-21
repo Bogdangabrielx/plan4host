@@ -180,6 +180,15 @@ export default function DashboardClient({
         return;
       }
 
+      const j = await res.json().catch(() => ({} as any));
+      const createdId: string | undefined = j?.property?.id;
+
+      // If this is the first property, redirect straight to Property Setup with guidance popup
+      if (createdId && list.length === 0) {
+        window.location.href = `/app/propertySetup?property=${encodeURIComponent(createdId)}&guide=rooms`;
+        return;
+      }
+
       const { data: refreshed } = await supabase
         .from("properties")
         .select(

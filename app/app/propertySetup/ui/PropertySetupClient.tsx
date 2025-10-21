@@ -36,9 +36,18 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 
   const [plan, setPlan] = useState<Plan | null>(null);
   const selected = properties.find(p => p.id === selectedId) || null;
+  // First-time guidance modal (after first property creation)
+  const [showRoomsGuide, setShowRoomsGuide] = useState<boolean>(false);
 
   const { setTitle, setPill } = useHeader();
   useEffect(() => { setTitle("Property Setup"); }, [setTitle]);
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href);
+      const guide = (u.searchParams.get('guide') || '').toLowerCase();
+      if (guide === 'rooms') setShowRoomsGuide(true);
+    } catch { /* noop */ }
+  }, []);
 
   // Detect small screens (fallback override if CSS not applied yet on device)
   useEffect(() => {
@@ -239,6 +248,27 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
       <div style={{ margin: '0 auto', width: 'min(1200px, calc(100vw - 32px))' }}>
         <PlanHeaderBadge title="Property Setup" slot="header-right" />
+
+        {showRoomsGuide && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={(e)=>{ e.stopPropagation(); /* require OK */ }}
+            style={{ position:'fixed', inset:0, zIndex: 240, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
+                     paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
+            <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                <strong>Next steps</strong>
+              </div>
+              <div style={{ color:'var(--text)' }}>
+                Please add your rooms and, if you use them, define room types.
+              </div>
+              <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                <button className="sb-btn sb-btn--primary" onClick={()=>setShowRoomsGuide(false)}>OK</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* minimalist layout */}
         <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>
