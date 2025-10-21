@@ -264,7 +264,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                 Please add your rooms and, if you use them, define room types.
               </div>
               <div style={{ display:'flex', justifyContent:'flex-end' }}>
-                <button className="sb-btn sb-btn--primary" onClick={()=>setShowRoomsGuide(false)}>OK</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ setShowRoomsGuide(false); try { (window as any).__p4h_highlight_rooms = true; } catch {} }}>OK</button>
               </div>
             </div>
           </div>
@@ -499,17 +499,34 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   );
 }
 
-function Tabs({ settings, rooms, roomDetails, cleaning }:{
+function Tabs({ settings, rooms, roomDetails, cleaning, highlightRooms, onTabSelect }:{
   settings: React.ReactNode; rooms: React.ReactNode; roomDetails: React.ReactNode; cleaning: React.ReactNode;
+  highlightRooms?: boolean; onTabSelect?: (tab: 'settings'|'rooms'|'roomdetails'|'cleaning') => void;
 }) {
   const [tab, setTab] = useState<"settings" | "rooms" | "roomdetails" | "cleaning">("settings");
+  // late init highlight (from window flag set by guide OK)
+  useEffect(() => {
+    try {
+      if ((window as any).__p4h_highlight_rooms) {
+        (window as any).__p4h_highlight_rooms = false;
+        // trigger parent clear via onTabSelect when user switches
+      }
+    } catch { /* noop */ }
+  }, []);
   return (
     <div style={{ display: "grid", gap: 12 }} className="psTabs">
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} className="psTabsBar">
-        <button onClick={() => setTab("settings")}    style={tabBtn(tab === "settings")} className="psTabBtn">Check-in/out Time</button>
-        <button onClick={() => setTab("rooms")}       style={tabBtn(tab === "rooms")} className="psTabBtn">Rooms</button>
-        <button onClick={() => setTab("roomdetails")} style={tabBtn(tab === "roomdetails")} className="psTabBtn">Room details</button>
-        <button onClick={() => setTab("cleaning")}    style={tabBtn(tab === "cleaning")} className="psTabBtn">Cleaning</button>
+        <button onClick={() => { setTab("settings"); onTabSelect?.('settings'); }}    style={tabBtn(tab === "settings")} className="psTabBtn">Check-in/out Time</button>
+        <button
+          onClick={() => { setTab("rooms"); onTabSelect?.('rooms'); }}
+          style={{
+            ...tabBtn(tab === "rooms"),
+            ...(highlightRooms && tab !== 'rooms' ? { border: '2px solid var(--primary)', boxShadow: '0 0 0 4px color-mix(in srgb, var(--primary) 25%, transparent)' } : null),
+          }}
+          className="psTabBtn"
+        >Rooms</button>
+        <button onClick={() => { setTab("roomdetails"); onTabSelect?.('roomdetails'); }} style={tabBtn(tab === "roomdetails")} className="psTabBtn">Room details</button>
+        <button onClick={() => { setTab("cleaning"); onTabSelect?.('cleaning'); }}    style={tabBtn(tab === "cleaning")} className="psTabBtn">Cleaning</button>
       </div>
       <div>
         {tab === "settings"    && settings}
