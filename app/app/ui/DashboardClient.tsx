@@ -62,6 +62,11 @@ export default function DashboardClient({
   const [plan, setPlan] = useState<"basic" | "standard" | "premium" | null>(null);
   // Toggle actions per property (one-at-a-time)
   const [openPropId, setOpenPropId] = useState<string | null>(null);
+  // First-property guidance
+  const [showFirstPropertyGuide, setShowFirstPropertyGuide] = useState<boolean>(false);
+  const [highlightName, setHighlightName] = useState<boolean>(false);
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+  const guideShownRef = useRef<boolean>(false);
 
   // Copied! state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -114,9 +119,26 @@ export default function DashboardClient({
           "id,name,country_code,timezone,check_in_time,check_out_time,regulation_pdf_url,regulation_pdf_uploaded_at"
         )
         .order("created_at", { ascending: true });
-      if (!error && data) setList(data as Property[]);
+      if (!error && data) {
+        setList(data as Property[]);
+        if (!guideShownRef.current && (data?.length ?? 0) === 0) {
+          guideShownRef.current = true;
+          setShowFirstPropertyGuide(true);
+        }
+      }
     })();
   }, [supabase]);
+
+  // Show guidance popup if initial SSR reported zero properties
+  useEffect(() => {
+    try {
+      if (!guideShownRef.current && (initialProperties?.length ?? 0) === 0) {
+        guideShownRef.current = true;
+        setShowFirstPropertyGuide(true);
+      }
+    } catch { /* noop */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load plan
   useEffect(() => {
@@ -323,7 +345,13 @@ export default function DashboardClient({
               value={name}
               onChange={(e) => setName(e.currentTarget.value)}
               placeholder="e.g. JADE Guesthouse"
-              style={FIELD_STYLE}
+              ref={nameInputRef}
+              style={{
+                ...FIELD_STYLE,
+                border: highlightName ? ('2px solid var(--primary)') : FIELD_STYLE.border,
+                boxShadow: highlightName ? '0 0 0 4px color-mix(in srgb, var(--primary) 25%, transparent)' : undefined,
+                transition: 'box-shadow 160ms ease, border-color 160ms ease',
+              }}
             />
           </div>
 
@@ -367,6 +395,38 @@ export default function DashboardClient({
           </small>
         </div>
       </section>
+
+      {/* First-time guidance modal */}
+      {showFirstPropertyGuide && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e)=>{ e.stopPropagation(); /* require button to dismiss */ }}
+          style={{ position:'fixed', inset:0, zIndex: 240, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
+                   paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <strong>Getting started</strong>
+            </div>
+            <div style={{ color:'var(--text)' }}>
+              As a first step, please add the property name you want to register and select its country.
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end' }}>
+              <button
+                className="sb-btn sb-btn--primary"
+                onClick={() => {
+                  setShowFirstPropertyGuide(false);
+                  setHighlightName(true);
+                  try {
+                    nameInputRef.current?.focus();
+                    nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  } catch {}
+                }}
+              >OK</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Your properties */}
       <section style={card}>
