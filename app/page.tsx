@@ -470,7 +470,7 @@ export default function HomePage() {
           </Link>
           {/* Language near logo (mobile-friendly, no border) */}
           <Link href="/ro" className={`${styles.btnLang} ${styles.focusable}`} aria-label="Schimbă limba în română">
-            <img src="/ro.png" alt="" width={22} height={22} style={{ display: 'block' }} />
+            <img src="/eng.png" alt="" width={22} height={22} style={{ display: 'block' }} />
           </Link>
         </div>
 

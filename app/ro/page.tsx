@@ -237,7 +237,7 @@ export default function HomePageRO() {
           </Link>
           {/* Switch limbă (lipit de logo) */}
           <Link href="/" className={`${styles.btnLang} ${styles.focusable}`} aria-label="Switch to English">
-            <img src="/eng.png" alt="" width={22} height={22} style={{ display: 'block' }} />
+            <img src="/ro.png" alt="" width={22} height={22} style={{ display: 'block' }} />
           </Link>
         </div>
         <div className={styles.menu} id="nav-menu">
