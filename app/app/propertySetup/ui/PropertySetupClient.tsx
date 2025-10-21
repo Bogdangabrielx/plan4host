@@ -264,7 +264,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                 Please add your rooms and, if you use them, define room types.
               </div>
               <div style={{ display:'flex', justifyContent:'flex-end' }}>
-                <button className="sb-btn sb-btn--primary" onClick={()=>{ setShowRoomsGuide(false); try { (window as any).__p4h_highlight_rooms = true; } catch {} }}>OK</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ setShowRoomsGuide(false); try { window.dispatchEvent(new CustomEvent('p4h:activateRoomsTab')); } catch {} }}>OK</button>
               </div>
             </div>
           </div>
@@ -499,20 +499,32 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   );
 }
 
-function Tabs({ settings, rooms, roomDetails, cleaning, highlightRooms, onTabSelect }:{
+function Tabs({ settings, rooms, roomDetails, cleaning, highlightRooms, onTabSelect, activateRooms }:{
   settings: React.ReactNode; rooms: React.ReactNode; roomDetails: React.ReactNode; cleaning: React.ReactNode;
-  highlightRooms?: boolean; onTabSelect?: (tab: 'settings'|'rooms'|'roomdetails'|'cleaning') => void;
+  highlightRooms?: boolean; onTabSelect?: (tab: 'settings'|'rooms'|'roomdetails'|'cleaning') => void; activateRooms?: number;
 }) {
   const [tab, setTab] = useState<"settings" | "rooms" | "roomdetails" | "cleaning">("settings");
-  // late init highlight (from window flag set by guide OK)
+  const [hl, setHl] = useState<boolean>(false);
+  // Prop-driven highlight
+  useEffect(() => { if (highlightRooms) setHl(true); }, [highlightRooms]);
+  // Event-driven activation + highlight
   useEffect(() => {
-    try {
-      if ((window as any).__p4h_highlight_rooms) {
-        (window as any).__p4h_highlight_rooms = false;
-        // trigger parent clear via onTabSelect when user switches
-      }
-    } catch { /* noop */ }
-  }, []);
+    function onActivate() {
+      setTab('rooms');
+      onTabSelect?.('rooms');
+      setHl(true);
+    }
+    window.addEventListener('p4h:activateRoomsTab', onActivate);
+    return () => window.removeEventListener('p4h:activateRoomsTab', onActivate);
+  }, [onTabSelect]);
+  // Counter-driven activation (if parent passes a tick)
+  useEffect(() => {
+    if (activateRooms && activateRooms > 0) {
+      setTab('rooms');
+      onTabSelect?.('rooms');
+      setHl(true);
+    }
+  }, [activateRooms, onTabSelect]);
   return (
     <div style={{ display: "grid", gap: 12 }} className="psTabs">
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} className="psTabsBar">
@@ -521,7 +533,7 @@ function Tabs({ settings, rooms, roomDetails, cleaning, highlightRooms, onTabSel
           onClick={() => { setTab("rooms"); onTabSelect?.('rooms'); }}
           style={{
             ...tabBtn(tab === "rooms"),
-            ...(highlightRooms && tab !== 'rooms' ? { border: '2px solid var(--primary)', boxShadow: '0 0 0 4px color-mix(in srgb, var(--primary) 25%, transparent)' } : null),
+            ...((hl || highlightRooms) && tab !== 'rooms' ? { border: '2px solid var(--primary)', boxShadow: '0 0 0 4px color-mix(in srgb, var(--primary) 25%, transparent)' } : null),
           }}
           className="psTabBtn"
         >Rooms</button>
