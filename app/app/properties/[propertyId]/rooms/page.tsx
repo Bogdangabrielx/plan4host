@@ -22,6 +22,10 @@ export default async function RoomsPage({ params }: { params: { propertyId: stri
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
+  // Guard: if account requires billing, route to Subscription area
+  const mode = await supabase.rpc("account_access_mode");
+  if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
+
   const propertyId = params.propertyId;
 
   // Verify property

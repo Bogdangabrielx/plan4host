@@ -13,6 +13,10 @@ export default async function CheckinEditorPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
+  // Block app access when billing is required; allow only Subscription page
+  const mode = await supabase.rpc("account_access_mode");
+  if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
+
   // Load properties for selector
   let properties: Array<{ id: string; name: string }> = [];
   try {
@@ -29,4 +33,3 @@ export default async function CheckinEditorPage() {
     </AppShell>
   );
 }
-

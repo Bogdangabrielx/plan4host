@@ -13,6 +13,10 @@ export default async function ReservationMessagePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
+  // Billing-only guard: redirect to Subscription if plan is not active
+  const mode = await supabase.rpc("account_access_mode");
+  if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
+
   // Determine role: admin if user owns an account (id == user.id) or has admin role in membership
   let isAdmin = false;
   try {
