@@ -186,7 +186,7 @@ export default function CleanTaskModal({
           <small style={{ color: "var(--muted)" }}>{saving ? "Saving…" : locked ? "Cleaned" : "Synced"}</small>
           <div style={{ display: "flex", gap: 8 }}>
             {!locked && (
-              <button onClick={markAllDone} className="sb-btn sb-btn--primary">Mark as cleaned</button>
+              <button onClick={markAllDone} className="sb-btn sb-btn--primary">Mark room as cleaned</button>
             )}
           </div>
         </div>
