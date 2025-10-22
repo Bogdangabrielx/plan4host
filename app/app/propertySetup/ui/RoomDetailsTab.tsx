@@ -22,11 +22,38 @@ export default function RoomDetailsTab({
   onMoveText: (id: string, dir: "up" | "down") => void;
 }) {
   const [confirmDel, setConfirmDel] = useState<null | { kind: 'check'|'text'; id: string; label: string }>(null);
+  const [showChecksInfo, setShowChecksInfo] = useState<boolean>(false);
+  const [showNotesInfo, setShowNotesInfo] = useState<boolean>(false);
   return (
     <div style={{ display: "grid", gap: 16 }}>
       {/* Checks */}
       <section className="sb-card" style={{ padding: 12, border: "1px solid color-mix(in srgb, var(--muted) 40%, transparent)" }}>
-        <header style={head}><h3 style={{ margin: 0 }}>Checklist Item</h3><button onClick={onAddCheck} className="sb-btn sb-btn--primary">+ Add</button></header>
+        <header style={head}>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <h3 style={{ margin: 0 }}>Checklist Item</h3>
+            <button
+              type="button"
+              aria-label="About checklist items"
+              aria-expanded={showChecksInfo ? true : undefined}
+              onClick={() => setShowChecksInfo(v => !v)}
+              className="sb-btn"
+              title="What are checklist items?"
+              style={{ padding:'4px 8px', borderRadius:8 }}
+            >
+              i
+            </button>
+          </div>
+          <button onClick={onAddCheck} className="sb-btn sb-btn--primary">+ Add</button>
+        </header>
+        {showChecksInfo && (
+          <div id="checks-info" className="sb-card" style={infoBox}>
+            <strong style={{ display:'block', marginBottom:6 }}>What are checklist items?</strong>
+            <div style={{ color:'var(--muted)' }}>
+              Define yes/no preferences that staff can toggle per reservation. Examples: breakfast, daily towel change, extra bed.
+              Set a default state here; the values can be adjusted later when managing each booking.
+            </div>
+          </div>
+        )}
         {checks.length === 0 && <p style={{ color: "var(--muted)" }}>No checklist item defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...checks].sort((a,b) => a.sort_index - b.sort_index).map((c, idx) => (
@@ -56,7 +83,31 @@ export default function RoomDetailsTab({
 
       {/* Text fields */}
       <section className="sb-card" style={{ padding: 12, border: "1px solid color-mix(in srgb, var(--muted) 40%, transparent)" }}>
-        <header style={head}><h3 style={{ margin: 0 }}>Notes Tab</h3><button onClick={onAddText} className="sb-btn sb-btn--primary">+ Add</button></header>
+        <header style={head}>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <h3 style={{ margin: 0 }}>Notes Tab</h3>
+            <button
+              type="button"
+              aria-label="About notes tabs"
+              aria-expanded={showNotesInfo ? true : undefined}
+              onClick={() => setShowNotesInfo(v => !v)}
+              className="sb-btn"
+              title="What are notes tabs?"
+              style={{ padding:'4px 8px', borderRadius:8 }}
+            >
+              i
+            </button>
+          </div>
+          <button onClick={onAddText} className="sb-btn sb-btn--primary">+ Add</button>
+        </header>
+        {showNotesInfo && (
+          <div id="notes-info" className="sb-card" style={infoBox}>
+            <strong style={{ display:'block', marginBottom:6 }}>What are notes tabs?</strong>
+            <div style={{ color:'var(--muted)' }}>
+              Private, staff‑only areas attached to each reservation. Use them to track internal instructions or comments (e.g., housekeeping notes, front desk reminders). Guests cannot see these notes.
+            </div>
+          </div>
+        )}
         {texts.length === 0 && <p style={{ color: "var(--muted)" }}>No notes tab defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...texts].sort((a,b) => a.sort_index - b.sort_index).map((t, idx) => (
@@ -133,3 +184,11 @@ const rowBase: React.CSSProperties  = {
 };
 const textInput: React.CSSProperties = { padding: 8, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, fontFamily: 'inherit' };
 // buttons now use sb-btn classes
+const infoBox: React.CSSProperties = {
+  border: "1px solid var(--border)",
+  background: "var(--panel)",
+  color: "var(--text)",
+  borderRadius: 10,
+  padding: 10,
+  marginBottom: 8,
+};
