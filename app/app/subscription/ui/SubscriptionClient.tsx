@@ -218,6 +218,14 @@ export default function SubscriptionClient({
     return () => { document.body.style.overflow = prev; };
   }, [pendingSelect]);
 
+  // Is current plan active (validity in the future)?
+  const isActive = useMemo(() => {
+    try {
+      const ms = validUntilISO ? Date.parse(validUntilISO) : NaN;
+      return Number.isFinite(ms) && ms > Date.now();
+    } catch { return false; }
+  }, [validUntilISO]);
+
   function choosePlan(slug: Plan["slug"]) {
     if (role !== "admin") return;
     if (trialActive) { setPendingSelect(slug); return; }
@@ -259,15 +267,22 @@ export default function SubscriptionClient({
     <div className={styles.container}>
       {/* Header bar: current plan */}
       <div className={styles.headerRow}>
-        {cancelled ? (
-          <>
-            <span className={styles.badge}>Still active until:</span>
-            <span className={styles.muted}>{validUntil ? `${validUntil}` : "—"}</span>
-          </>
+        {isActive ? (
+          cancelled ? (
+            <>
+              <span className={styles.badge}>Still active until:</span>
+              <span className={styles.muted}>{validUntil ? `${validUntil}` : "—"}</span>
+            </>
+          ) : (
+            <>
+              <span className={styles.badge}>Active now: {planLabel(currentPlan)}</span>
+              <span className={styles.muted}>{validUntil ? `until ${validUntil}` : "—"}</span>
+            </>
+          )
         ) : (
           <>
-            <span className={styles.badge}>Active now: {planLabel(currentPlan)}</span>
-            <span className={styles.muted}>{validUntil ? `until ${validUntil}` : "—"}</span>
+            <span className={styles.badge}>Last active plan: {planLabel(currentPlan)}</span>
+            <span className={styles.muted}>{validUntil ? `expired at ${validUntil}` : 'expired'}</span>
           </>
         )}
         {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
@@ -326,7 +341,7 @@ export default function SubscriptionClient({
                     >
                       Manage Account
                     </button>
-                    <span className={styles.currentBadge}>Active plan</span>
+                    <span className={styles.currentBadge}>{isActive ? 'Active plan' : 'Last active plan'}</span>
                   </div>
                 ) : (
                   <button
