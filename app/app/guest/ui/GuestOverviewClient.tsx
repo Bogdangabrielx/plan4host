@@ -779,7 +779,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             const key = `${it.id ?? "noid"}|${it.start_date}|${it.end_date}|${it._room_type_id ?? "null"}`;
 
             const showCopy = false;
-            const canEditFormBooking = !!it.id;
+            // Row-level actions allowed only for admin/editor (viewers are read-only)
+            const canEditFormBooking = canEditGuest && !!it.id;
 
   return (
               <section
@@ -795,6 +796,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   overflow: "hidden",
                 }}
                 onPointerUp={(e) => {
+                  // Viewers: no action toggling
+                  if (!canEditGuest) return;
                   const target = e.target as HTMLElement;
                   if (target && target.closest('button')) return;
                   // toggle actions visibility for this card (one-at-a-time)
@@ -883,7 +886,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     gap: 8,
                     flexWrap: isSmall ? undefined : "wrap",
                     // hide by default; show when toggled (mobile + desktop)
-                    display: openActions.has(key) ? (isSmall ? 'grid' : 'flex') : 'none',
+                    display: (canEditGuest && openActions.has(key)) ? (isSmall ? 'grid' : 'flex') : 'none',
                   }}
                 >
                   {/* Desktop: badge shown above (under status) */}
