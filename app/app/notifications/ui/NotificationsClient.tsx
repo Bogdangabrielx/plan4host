@@ -101,6 +101,8 @@ export default function NotificationsClient() {
       const os = (document.documentElement.getAttribute('data-os') || '');
       let property_id: string | null = null; try { property_id = localStorage.getItem('p4h:selectedPropertyId'); } catch {}
       subscribeInDB(sub, property_id, ua, os);
+      // Re-check DB status shortly after subscribing (non-blocking)
+      try { setTimeout(() => { refreshActive().catch(()=>{}); }, 500); } catch {}
     } finally {
       finalize();
     }
@@ -160,12 +162,9 @@ export default function NotificationsClient() {
         <button className="sb-btn" onClick={sendTest} disabled={loading || !active}>Send test</button>
       </div>
       <div style={{ display: 'grid', gap: 4 }}>
-        {status ? (
-          <small style={{ color:'var(--muted)' }}>{status}</small>
-        ) : null}
-        {!status && !loading && !active ? (
-          <small style={{ color:'var(--muted)' }}>Your notifications are currently off.</small>
-        ) : null}
+        <small style={{ color:'var(--muted)' }}>
+          {status === 'Loading...' ? 'Loading...' : `Your notifications are currently ${active ? 'ON' : 'OFF'}.`}
+        </small>
       </div>
     </div>
   );

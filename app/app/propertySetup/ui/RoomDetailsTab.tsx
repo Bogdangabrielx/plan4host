@@ -36,9 +36,23 @@ export default function RoomDetailsTab({
               aria-label="About checklist items"
               aria-expanded={showChecksInfo ? true : undefined}
               onClick={() => setShowChecksInfo(v => !v)}
-              className="sb-btn"
               title="What are checklist items?"
-              style={{ padding:'4px 8px', borderRadius:8 }}
+              style={{
+                width: 22,
+                height: 22,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                border: '1px solid var(--text)',
+                background: 'transparent',
+                color: 'var(--text)',
+                padding: 0,
+                lineHeight: 1,
+                fontSize: 12,
+                fontWeight: 800,
+                cursor: 'pointer',
+              }}
             >
               i
             </button>
@@ -91,9 +105,23 @@ export default function RoomDetailsTab({
               aria-label="About notes tabs"
               aria-expanded={showNotesInfo ? true : undefined}
               onClick={() => setShowNotesInfo(v => !v)}
-              className="sb-btn"
               title="What are notes tabs?"
-              style={{ padding:'4px 8px', borderRadius:8 }}
+              style={{
+                width: 22,
+                height: 22,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                border: '1px solid var(--text)',
+                background: 'transparent',
+                color: 'var(--text)',
+                padding: 0,
+                lineHeight: 1,
+                fontSize: 12,
+                fontWeight: 800,
+                cursor: 'pointer',
+              }}
             >
               i
             </button>
