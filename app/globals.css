@@ -124,10 +124,20 @@ textarea:focus-visible {
     opacity: .32;
   }
 
-  /* Elevation: soft -> lifted with accent warmth */
-  .sb-card{ box-shadow:
-      0 8px 24px 0 oklch(calc(var(--card-L)) calc(var(--card-C)) var(--card-h-ok) / .16),
+  /* Elevation: make lifted shadow always on (theme-tuned) */
+  :root[data-theme="dark"] .sb-card{
+    box-shadow:
+      0 8px 20px 0 oklch(calc(var(--card-L)) calc(var(--card-C)) var(--card-h-ok) / .16),
+      /* neutral light lift on dark */
+      0 6px 14px 0 oklch(calc(min(1, var(--bg-L) + 0.35)) 0 var(--bg-h-ok) / .14),
       0 1px 0 0 oklch(calc(var(--border-L)) calc(var(--border-C)) var(--border-h-ok) / .6) inset;
+  }
+  :root[data-theme="light"] .sb-card{
+    box-shadow:
+      0 8px 20px 0 oklch(calc(var(--card-L)) calc(var(--card-C)) var(--card-h-ok) / .14),
+      /* neutral dark lift on light */
+      0 6px 14px 0 oklch(calc(max(0, var(--bg-L) - 0.35)) 0 var(--bg-h-ok) / .10),
+      0 1px 0 0 oklch(calc(var(--border-L)) calc(var(--border-C)) var(--border-h-ok) / .55) inset;
   }
   /* Lifted state: neutral, smaller shadow (no primary tint) */
   :root[data-theme="dark"] .sb-card:hover,
@@ -155,6 +165,17 @@ textarea:focus-visible {
   .sb-card{
     /* Soft elevation */
     box-shadow: 0 6px 18px 0 hsla(var(--card-h) var(--card-s) var(--card-l) / .12);
+  }
+  /* Always-on lifted shadow in fallback */
+  :root[data-theme="dark"] .sb-card{
+    box-shadow:
+      0 8px 20px 0 hsla(var(--card-h) var(--card-s) var(--card-l) / .16),
+      0 6px 14px 0 hsla(0 0% 100% / .14);
+  }
+  :root[data-theme="light"] .sb-card{
+    box-shadow:
+      0 8px 20px 0 hsla(var(--card-h) var(--card-s) var(--card-l) / .14),
+      0 6px 14px 0 hsla(0 0% 0% / .10);
   }
   .sb-card--fx::before{
     content: ""; position: absolute; left:0; right:0; top:0; height:3px; pointer-events: none;
