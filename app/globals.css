@@ -283,12 +283,16 @@ textarea:focus-visible {
       color-mix(in srgb, var(--card) 96%, var(--bg) 4%),
       color-mix(in srgb, var(--card) 88%, var(--bg) 12%)
     );
-  /* inner highlight + crisp edge + soft lift */
+  /* inner highlight + crisp edge + ultra subtle lift */
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--bg) 46%, transparent) inset,
+    /* glossy top edge */
+    0 1px 0 color-mix(in srgb, #fff 22%, var(--card)) inset,
+    /* lower inner edge */
     0 -1px 0 color-mix(in srgb, var(--border) 45%, transparent) inset,
+    /* pill outline */
     0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent) inset,
-    0 8px 24px color-mix(in srgb, var(--primary) 12%, transparent);
+    /* very small external shadow */
+    0 1px 2px color-mix(in srgb, var(--bg) 12%, transparent);
 }
 .sb-select:hover{
   background:
@@ -298,10 +302,12 @@ textarea:focus-visible {
       color-mix(in srgb, var(--card) 86%, var(--bg) 14%)
     );
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--bg) 50%, transparent) inset,
+    /* slightly stronger glossy top edge on hover */
+    0 1px 0 color-mix(in srgb, #fff 26%, var(--card)) inset,
     0 -1px 0 color-mix(in srgb, var(--border) 48%, transparent) inset,
     0 0 0 1px color-mix(in srgb, var(--border) 65%, transparent) inset,
-    0 12px 32px color-mix(in srgb, var(--primary) 16%, transparent);
+    /* still very subtle external */
+    0 2px 4px color-mix(in srgb, var(--bg) 14%, transparent);
 }
 
 /* Inside cards, elevate fields slightly (lighter than card on dark; slightly lighter than card on light) */
