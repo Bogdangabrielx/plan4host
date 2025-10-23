@@ -685,7 +685,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 key={t.id}
                 onClick={() => setActiveTypeId(t.id)}
                 className="sb-card"
-                style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)",background: "var(--panel)", }}
+                style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)", }}
                 title={t.name}
               >
                 <span style={tileTitle}>{t.name}</span>
