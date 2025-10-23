@@ -101,8 +101,7 @@ function CircleProgress({
         transform={`rotate(-90 ${cx} ${cy})`}
         filter={`url(#${glowId})`}
       />
-      {/* Inner dark glass (fills center without covering stroke) */}
-      <circle cx={cx} cy={cy} r={r - strokeWidth / 2} fill="color-mix(in srgb, var(--panel) 85%, transparent)" />
+      {/* No center fill — keep middle transparent */}
       {/* Label */}
       <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" fontWeight={800} fontSize={size * 0.34} fill={textColor}>
         {label}
