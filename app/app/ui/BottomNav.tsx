@@ -9,7 +9,6 @@ export default function BottomNav() {
   const [path, setPath] = useState<string>("");
   const [kbOpen, setKbOpen] = useState(false);
   const [forceHide, setForceHide] = useState(false);
-  const [stickOnKb, setStickOnKb] = useState(false); // keep visible even when keyboard opens (visual only)
   const [isMobile, setIsMobile] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
 
@@ -35,21 +34,15 @@ export default function BottomNav() {
     }
   }, []);
 
-  // Allow pages (e.g., search inputs) to explicitly hide/show or stick nav on focus/blur
+  // Allow pages (e.g., search inputs) to explicitly hide/show nav on focus/blur
   useEffect(() => {
     const onHide = () => setForceHide(true);
     const onShow = () => setForceHide(false);
-    const onStick = () => setStickOnKb(true);
-    const onUnstick = () => setStickOnKb(false);
     window.addEventListener('p4h:nav:hide' as any, onHide);
     window.addEventListener('p4h:nav:show' as any, onShow);
-    window.addEventListener('p4h:nav:stick' as any, onStick);
-    window.addEventListener('p4h:nav:unstick' as any, onUnstick);
     return () => {
       window.removeEventListener('p4h:nav:hide' as any, onHide);
       window.removeEventListener('p4h:nav:show' as any, onShow);
-      window.removeEventListener('p4h:nav:stick' as any, onStick);
-      window.removeEventListener('p4h:nav:unstick' as any, onUnstick);
     };
   }, []);
 
@@ -154,15 +147,13 @@ useEffect(() => {
         borderTop: "1px solid var(--border)",
         padding: "8px 10px",
 
-        // când tastatura e deschisă: dacă e "stick" activ, păstrăm vizual nav, altfel îl coborâm jos
-        transform: (forceHide || (kbOpen && !stickOnKb)) ? "translateY(100%)" : "translateY(0)",
+        // când tastatura e deschisă, NU mai urcă: îl scot în jos din viewport
+        transform: (kbOpen || forceHide) ? "translateY(100%)" : "translateY(0)",
         transition: "transform .18s ease",
 
         zIndex: 2147483000,
         overflowAnchor: "none",
         isolation: "isolate",
-        // Când tastatura e deschisă și nav e "stick", îl facem neinteractiv ca să nu blocheze focusul/scrollul iOS
-        pointerEvents: (kbOpen && stickOnKb) ? 'none' : 'auto',
         contain: "layout paint",
       }}
     >

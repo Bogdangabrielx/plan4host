@@ -419,8 +419,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     margin: "0 auto",
     width: "min(960px, 100%)",
     padding: isSmall ? "10px 12px 16px" : "16px",
-    // Reserve space for BottomNav on mobile so it never overlaps content/search
-    paddingBottom: "calc(16px + var(--safe-bottom) + var(--nav-h, 0px))",
+    paddingBottom: "calc(16px + var(--safe-bottom))",
   };
   const FIELD_STYLE: React.CSSProperties = {
     minWidth: isSmall ? "100%" : 220,
@@ -664,8 +663,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.currentTarget.value)}
-                onFocus={() => { try { window.dispatchEvent(new Event('p4h:nav:stick')); } catch {} }}
-                onBlur={() => { try { window.dispatchEvent(new Event('p4h:nav:unstick')); } catch {} }}
+                onFocus={() => { try { window.dispatchEvent(new Event('p4h:nav:hide')); } catch {} }}
+                onBlur={() => { try { window.dispatchEvent(new Event('p4h:nav:show')); } catch {} }}
                 placeholder="Search guest name…"
                 aria-label="Search guest name"
                 style={{
@@ -679,8 +678,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   fontFamily: "inherit",
                   outline: "none",
                   minHeight: 44,
-                  // Ensure when scrolled into view, input stays above BottomNav
-                  scrollMarginBottom: "calc(var(--nav-h, 88px) + var(--safe-bottom) + 12px)",
                 }}
               />
               {query && (
