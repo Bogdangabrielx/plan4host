@@ -625,15 +625,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <button
-              className="sb-btn"
-              {...useTap(refresh)}
-              style={{ ...BTN_TOUCH_STYLE, borderRadius: 10 }}
-              title="Refresh"
-              type="button"
-            >
-              Refresh
-            </button>
+            {false && (
+              <button
+                className="sb-btn"
+                {...useTap(refresh)}
+                style={{ ...BTN_TOUCH_STYLE, borderRadius: 10 }}
+                title="Refresh"
+                type="button"
+              >
+                Refresh
+              </button>
+            )}
           </div>
 
           {showIosHint && (
