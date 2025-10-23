@@ -473,6 +473,9 @@ export default function DashboardClient({
               flex: isDesktop ? 1 : undefined,
               minHeight: isDesktop ? 0 : undefined,
               overflowY: isDesktop ? "auto" : undefined,
+              // Keep item rows at natural height; do not stretch when there's extra space
+              alignContent: isDesktop ? "start" : undefined,
+              alignItems: isDesktop ? "start" : undefined,
             }}
           >
             {list.map((p) => {
