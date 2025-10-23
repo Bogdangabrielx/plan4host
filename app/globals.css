@@ -353,6 +353,12 @@ select:not(.sb-select){ /* opțional */
 .rd-row { display: grid; grid-template-columns: 1fr 160px 90px 90px; gap: 8px; align-items: center; }
 @media (max-width: 480px) { .rd-row { grid-template-columns: 1fr; } }
 
+/* Cleaning board defaults: slightly narrower, taller cards */
+.cleaning-grid {
+  --clean-card-min: 180px;    /* was 200px */
+  --clean-card-aspect: 3 / 4; /* taller shape */
+}
+
 /* Cleaning board: force 2 columns on phones with small gap */
 @media (max-width: 480px) {
   .cleaning-grid {

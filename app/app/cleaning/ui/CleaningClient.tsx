@@ -535,7 +535,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               padding: 0,
               display: "grid",
               gridTemplateColumns:
-                "var(--clean-grid-cols, repeat(auto-fill, minmax(200px, 1fr)))",
+                "var(--clean-grid-cols, repeat(auto-fill, minmax(var(--clean-card-min, 180px), 1fr)))",
               gap: "var(--clean-grid-gap, 10px)",
             }}
           >
@@ -556,7 +556,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                   }
                   className="sb-card"
                   style={{
-                    aspectRatio: "1.2 / 1",
+                    aspectRatio: "var(--clean-card-aspect, 3 / 4)",
                     padding: 10,
                     cursor: isCleaned ? "default" : "pointer",
                     display: "grid",
