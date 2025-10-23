@@ -488,3 +488,10 @@ select:not(.sb-select){ /* opțional */
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 }
+
+/* Cards: remove elevation shadow on dark theme */
+:root[data-theme="dark"] .sb-card,
+:root[data-theme="dark"] .sb-card:hover,
+:root[data-theme="dark"] .sb-card:focus-within{
+  box-shadow: none !important;
+}
