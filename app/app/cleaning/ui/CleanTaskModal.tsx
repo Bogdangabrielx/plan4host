@@ -125,7 +125,7 @@ export default function CleanTaskModal({
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 50 }} />
 
       {/* Modal */}
-      <div role="dialog" aria-modal="true" className="sb-card" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(640px, calc(100vw - 32px))", maxHeight: "calc(100dvh - 32px)", overflow: "auto", WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', zIndex: 51, display: "grid", gridTemplateRows: "auto 1fr auto", padding: 0, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+      <div role="dialog" aria-modal="true" className="sb-card" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(640px, calc(100vw - 32px))", maxHeight: "calc(100dvh - 32px)", overflow: "hidden", zIndex: 51, display: "grid", gridTemplateRows: "auto 1fr auto", padding: 0, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
 {/* HEADER — sticky, centered room name */}
 <div style={{ position:'sticky', top:0, zIndex:2, padding: 16, paddingBottom: 8, background:'var(--panel)', borderTopLeftRadius: 12, borderTopRightRadius: 12, borderBottom: "1px solid var(--border)", transform:'translateZ(0)', willChange:'transform' }}>
   <div
@@ -156,8 +156,8 @@ export default function CleanTaskModal({
 </div>
 
 
-        {/* Body */}
-        <div style={{ padding: 14, display: "grid", gap: 10 }}>
+        {/* Body (scrolls independently) */}
+        <div style={{ padding: 14, display: "grid", gap: 10, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {tasks.length === 0 ? (
             <p style={{ color: "var(--muted)",}}>No cleaning checklist defined for this property.</p>
           ) : (
