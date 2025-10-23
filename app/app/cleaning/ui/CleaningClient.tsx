@@ -85,22 +85,8 @@ function CircleProgress({
       </defs>
       {/* Outer gradient ring (border) */}
       <circle cx={cx} cy={cy} r={r} stroke={`url(#${gradId})`} strokeWidth={Math.max(2, strokeWidth - 3)} fill="none" />
-      {/* Track (subtle) */}
+      {/* Track only (no filling as tasks complete) */}
       <circle cx={cx} cy={cy} r={r} stroke="var(--border)" strokeWidth={strokeWidth} fill="none" opacity={0.25} />
-      {/* Progress */}
-      <circle
-        cx={cx}
-        cy={cy}
-        r={r}
-        stroke="var(--primary)"
-        strokeWidth={strokeWidth}
-        fill="none"
-        strokeDasharray={c}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${cx} ${cy})`}
-        filter={`url(#${glowId})`}
-      />
       {/* No center fill — keep middle transparent */}
       {/* Label */}
       <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" fontWeight={800} fontSize={size * 0.34} fill={textColor}>
