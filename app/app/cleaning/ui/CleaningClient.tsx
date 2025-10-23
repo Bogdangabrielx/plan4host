@@ -529,12 +529,14 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
           <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
         ) : (
           <ul
+            className="cleaning-grid"
             style={{
               listStyle: "none",
               padding: 0,
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: 10,
+              gridTemplateColumns:
+                "var(--clean-grid-cols, repeat(auto-fill, minmax(200px, 1fr)))",
+              gap: "var(--clean-grid-gap, 10px)",
             }}
           >
             {items.map((it) => {
