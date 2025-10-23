@@ -136,15 +136,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 :root[data-theme="light"]{
   /* HSL components */
   /* Slight cool grey canvas with clearer separation of surfaces */
-  --bg-h: 0; --bg-s: 0%; --bg-l: 100%;
+  --bg-h: 0; --bg-s: 0%; --bg-l: 96%;
   --text-h: 210; --text-s: 22%; --text-l: 14%;
   --muted-h: 215; --muted-s: 20%; --muted-l: 56%;
   --panel-h: 0; --panel-s: 0%; --panel-l: 97.5%;
   --card-h: 0; --card-s: 0%; --card-l: 98%;
   --border-h: 210; --border-s: 32%; --border-l: 85%;
 
-  /* Primary derived from accent-h (keep S/L stable across accents) */
-  --primary-h: var(--accent-h); --primary-s: 90%; --primary-l: 58%;
+  /* Primary derived from accent-h — stronger chroma for clearer accent */
+  --primary-h: var(--accent-h); --primary-s: 95%; --primary-l: 56%;
   --danger-h: 15; --danger-s: 80%; --danger-l: 52%;
   --success-h: 140; --success-s: 60%; --success-l: 52%;
 
@@ -155,7 +155,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --panel-L: 0.975; --panel-C: 0.00; --panel-h-ok: 0;
   --card-L: 0.985; --card-C: 0.00; --card-h-ok: 0;
   --border-L: 0.86; --border-C: 0.01; --border-h-ok: 230;
-  --primary-L: 0.72; --primary-C: 0.14; --primary-h-ok: var(--accent-h);
+  --primary-L: 0.70; --primary-C: 0.20; --primary-h-ok: var(--accent-h);
   --danger-L: 0.66; --danger-C: 0.16; --danger-h-ok: 25;
   --success-L: 0.68; --success-C: 0.12; --success-h-ok: 145;
 }
@@ -170,8 +170,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --card-h: 220;  --card-s: 3%; --card-l: 18%;
   --border-h: 220; --border-s: 4%; --border-l: 28%;
 
-  /* Primary derived from accent-h */
-  --primary-h: var(--accent-h); --primary-s: 85%; --primary-l: 55%;
+  /* Primary derived from accent-h — stronger chroma for clearer accent */
+  --primary-h: var(--accent-h); --primary-s: 92%; --primary-l: 58%;
   --danger-h: 6; --danger-s: 78%; --danger-l: 56%;
   --success-h: 135; --success-s: 58%; --success-l: 58%;
 
@@ -183,7 +183,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --panel-L: 0.22; --panel-C: 0.01; --panel-h-ok: 250;
   --card-L: 0.26;  --card-C: 0.01; --card-h-ok: 250;
   --border-L: 0.36; --border-C: 0.01; --border-h-ok: 250;
-  --primary-L: 0.70; --primary-C: 0.13; --primary-h-ok: var(--accent-h);
+  --primary-L: 0.70; --primary-C: 0.18; --primary-h-ok: var(--accent-h);
   --danger-L: 0.63; --danger-C: 0.16; --danger-h-ok: 25;
   --success-L: 0.66; --success-C: 0.12; --success-h-ok: 145;
 }
@@ -201,8 +201,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --success: hsl(var(--success-h) var(--success-s) var(--success-l));
 
   /* secondary/tertiary accents (HSL fallback) */
-  --accent1: hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 6%)));
-  --accent2: hsl(var(--primary-h) calc((var(--primary-s) - 30%)) calc((var(--primary-l) - 22%)));
+  --accent1: hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 10%)));
+  --accent2: hsl(var(--primary-h) calc((var(--primary-s) - 25%)) calc((var(--primary-l) - 16%)));
+  /* Accent scale (HSL fallback) */
+  --primary-weak:  hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 12%)));
+  --primary-strong:hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 8%)));
 
   /* Action field surface (fallback) — lighter than card on dark; slightly lighter than card on light */
   --field: hsl(var(--card-h) var(--card-s) calc((var(--card-l) + 2%)));
@@ -221,9 +224,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     --danger: oklch(var(--danger-L) var(--danger-C) var(--danger-h-ok));
     --success: oklch(var(--success-L) var(--success-C) var(--success-h-ok));
 
-    /* derived accents via relative color */
-    --accent1: oklch(from var(--primary) calc(min(1, var(--primary-L) + 0.06)) calc(max(0, var(--primary-C) - 0.04)) var(--primary-h-ok));
-    --accent2: oklch(from var(--bg)      calc(max(0, var(--bg-L) - 0.06))        calc(var(--bg-C))                  var(--bg-h-ok));
+    /* derived accents via relative color (stronger separation) */
+    --accent1: oklch(from var(--primary) calc(min(1, var(--primary-L) + 0.10)) calc(max(0, var(--primary-C) - 0.05)) var(--primary-h-ok));
+    --accent2: oklch(from var(--bg)      calc(max(0, var(--bg-L) - 0.04))        calc(var(--bg-C))                  var(--bg-h-ok));
+    /* Accent scale */
+    --primary-weak:   oklch(from var(--primary) calc(min(1, var(--primary-L) + 0.12)) var(--primary-C) var(--primary-h-ok));
+    --primary-strong: oklch(from var(--primary) calc(max(0, var(--primary-L) - 0.08)) calc(min(1, var(--primary-C) + 0.02)) var(--primary-h-ok));
 
     /* Field surface derived from card */
     --field: oklch(from var(--card) calc(min(1, var(--card-L) + 0.02)) var(--card-C) var(--card-h-ok));
