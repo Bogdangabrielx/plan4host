@@ -136,7 +136,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 :root[data-theme="light"]{
   /* HSL components */
   /* Slight cool grey canvas with clearer separation of surfaces */
-  --bg-h: 0; --bg-s: 0%; --bg-l: 90%;
+  --bg-h: 0; --bg-s: 0%; --bg-l: 100%;
   --text-h: 210; --text-s: 22%; --text-l: 14%;
   --muted-h: 215; --muted-s: 20%; --muted-l: 56%;
   --panel-h: 0; --panel-s: 0%; --panel-l: 97.5%;
