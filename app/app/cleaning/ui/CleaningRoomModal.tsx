@@ -108,32 +108,14 @@ export default function CleaningRoomModal({
       style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.6)", display: "grid", placeItems: "center" }}>
       <div onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(680px, calc(100vw - 32px))",
-          maxHeight: "calc(100vh - 32px)",
+          width: "min(680px, calc(100vw - 32px))", maxHeight: "calc(100vh - 32px)", overflow: "auto",
           background: "var(--panel)", color: "var(--text)",
-          border: "1px solid var(--border)", borderRadius: 12,
-          padding: 16,
-          display: 'grid',
-          gridTemplateRows: 'auto 1fr auto',
-          overflow: 'hidden',
+          border: "1px solid var(--border)", borderRadius: 12, padding: 16,
           fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif'
         }}>
 
-        {/* Header (sticky) */}
-        <div
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 2,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 10,
-            padding: "8px 0",
-            background: "var(--panel)",
-            boxShadow: "0 1px 0 var(--border)",
-          }}
-        >
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <strong>{roomName} — Cleaning — {cleanDate}</strong>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <StatusPill />
@@ -145,46 +127,44 @@ export default function CleaningRoomModal({
           </div>
         </div>
 
-        {/* Scrollable content: progress + checklist */}
-        <div style={{ overflowY: 'auto', paddingRight: 4, WebkitOverflowScrolling: 'touch' }}>
-          {/* Progress bar */}
-          {total > 0 && (
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ height: 8, background: "#1b2230", borderRadius: 6, overflow: "hidden", border: "1px solid var(--border)" }}>
-                <div style={{ width: `${Math.round((doneCount/total)*100)}%`, height: "100%", background: "var(--primary)" }} />
-              </div>
-              <small style={{ color: "var(--muted)" }}>{doneCount}/{total} tasks</small>
+        {/* Progress bar */}
+        {total > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ height: 8, background: "#1b2230", borderRadius: 6, overflow: "hidden", border: "1px solid var(--border)" }}>
+              <div style={{ width: `${Math.round((doneCount/total)*100)}%`, height: "100%", background: "var(--primary)" }} />
             </div>
-          )}
+            <small style={{ color: "var(--muted)" }}>{doneCount}/{total} tasks</small>
+          </div>
+        )}
 
-          {/* Checklist (2 coloane pe desktop) */}
-          {total === 0 ? (
-            <p style={{ color: "var(--muted)" }}>No cleaning checklist defined for this property.</p>
-          ) : (
-            <ul style={{
-              listStyle: "none", padding: 0,
-              display: "grid", gap: 10,
-              gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))"
-            }}>
-              {sorted.map(t => {
-                const checked = !!progress[t.id];
-                return (
-                  <li key={t.id} style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10, padding: 10
-                  }}>
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={(e) => toggleTask(t.id, (e.target as HTMLInputElement).checked)}
-                    />
-                    <span>{t.label}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
+        {/* Checklist (2 coloane pe desktop) */}
+        {total === 0 ? (
+          <p style={{ color: "var(--muted)" }}>No cleaning checklist defined for this property.</p>
+        ) : (
+          <ul style={{
+            listStyle: "none", padding: 0,
+            display: "grid", gap: 10, 
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))"
+            
+          }}>
+            {sorted.map(t => {
+              const checked = !!progress[t.id];
+              return (
+                <li key={t.id} style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10, padding: 10
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => toggleTask(t.id, (e.target as HTMLInputElement).checked)}
+                  />
+                  <span>{t.label}</span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
         {/* Actions */}
         <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end", gap: 8 }}>
