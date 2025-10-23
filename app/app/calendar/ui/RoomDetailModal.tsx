@@ -123,6 +123,10 @@ export default function RoomDetailModal({
   const [guestCountry, setGuestCountry] = useState<string>("");
 
   const [showGuest, setShowGuest] = useState<boolean>(false);
+  // Auto-collapse Guest Details when Reservation is OFF
+  useEffect(() => {
+    if (!on) setShowGuest(false);
+  }, [on]);
 
   // Custom fields
   const [checkDefs, setCheckDefs] = useState<CheckDef[]>([]);
@@ -133,6 +137,7 @@ export default function RoomDetailModal({
 
   // Docs
   const [docs, setDocs] = useState<BookingDoc[]>([]);
+  const [releaseConfirmOpen, setReleaseConfirmOpen] = useState<boolean>(false);
 
   // Dirty tracking
   const initialGuestRef   = useRef<{ first: string; last: string }>({ first: "", last: "" });
@@ -740,13 +745,15 @@ export default function RoomDetailModal({
               {on ? "ON" : "OFF"}
             </button>
 
-             <button
-  onClick={() => setShowGuest(v => !v)}
-  style={showGuest ? baseBtn : baseBtnGuest}
-  title={showGuest ? "Hide guest details" : "Add guest details"}
->
-  {showGuest ? "Hide guest details" : "Guest details"}
-</button>
+            {on && (
+              <button
+                onClick={() => setShowGuest(v => !v)}
+                style={showGuest ? baseBtn : baseBtnGuest}
+                title={showGuest ? "Hide guest details" : "Add guest details"}
+              >
+                {showGuest ? "Hide guest details" : "Guest details"}
+              </button>
+            )}
              </div>
 
           {/* Dates row */}
@@ -831,7 +838,7 @@ export default function RoomDetailModal({
           </div>
 
           {/* Guest details */}
-          {showGuest && (
+          {on && showGuest && (
             <div
               style={{
                 marginTop: 6,
@@ -1163,7 +1170,7 @@ export default function RoomDetailModal({
           {/* Actions */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 6 }}>
             {!active && (
-              <button onClick={saveCreated} style={primaryBtn} disabled={saving !== false}>
+              <button onClick={saveCreated} style={primaryBtn} disabled={saving !== false || !on}>
                 Confirm reservation
               </button>
             )}
@@ -1185,7 +1192,7 @@ export default function RoomDetailModal({
                 {/* Extend until — removed from UI by request */}
 
                 {!on && active && (
-                  <button onClick={releaseBooking} style={dangerBtn} disabled={saving !== false && saving !== "releasing"}>
+                  <button onClick={() => setReleaseConfirmOpen(true)} style={dangerBtn} disabled={saving !== false && saving !== "releasing"}>
                     Confirm release
                   </button>
                 )}
@@ -1196,6 +1203,39 @@ export default function RoomDetailModal({
           </div>
         </div>
       </div>
+      {releaseConfirmOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e)=>{ e.stopPropagation(); setReleaseConfirmOpen(false); }}
+          style={{ position:'fixed', inset:0, zIndex: 260, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12 }}
+        >
+          <div
+            onClick={(e)=>e.stopPropagation()}
+            className="sb-card"
+            style={{ width:'min(520px,100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}
+          >
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <strong>Delete reservation</strong>
+              <button className="sb-btn" onClick={()=>setReleaseConfirmOpen(false)}>✕</button>
+            </div>
+            <div style={{ color:'var(--muted)' }}>
+              Are you sure you want to delete this reservation? This frees the room for the selected dates and removes guest details from this booking card. This action cannot be undone.
+            </div>
+            <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+              <button className="sb-btn" onClick={()=>setReleaseConfirmOpen(false)} disabled={saving !== false}>Cancel</button>
+              <button
+                className="sb-btn sb-btn--primary"
+                onClick={async ()=>{ setReleaseConfirmOpen(false); await releaseBooking(); }}
+                disabled={saving !== false}
+                style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
