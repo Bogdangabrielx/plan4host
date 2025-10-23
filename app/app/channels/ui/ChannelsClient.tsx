@@ -704,7 +704,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   <a className="sb-btn" href={url} target="_blank" rel="noreferrer">Open</a>
                 </div>
                 <p style={{ fontSize: 12, color: "var(--muted)", margin: "8px 0 0" }}>
-                  *Add this URL to your OTA room-type listing.
+                  *Paste into your room-type calendar on Booking.com, Airbnb, etc.
                 </p>
               </InnerModal>
             );
