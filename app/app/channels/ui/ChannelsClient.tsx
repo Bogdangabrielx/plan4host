@@ -641,13 +641,13 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         <Modal title="Export · Rooms" onClose={() => { setShowRoomsModal(false); setActiveRoomId(null); }}>
           <div style={tileGrid}>
             {rooms.length === 0 ? (
-              <p style={{ color: "var(--text)", gridColumn: "1 / -1",background: "var(--panel)",}}>No rooms in this property.</p>
+              <p style={{ color: "var(--text)", gridColumn: "1 / -1", }}>No rooms in this property.</p>
             ) : rooms.map(r => (
               <button
                 key={r.id}
                 onClick={() => setActiveRoomId(r.id)}
                 className="sb-card"
-                style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
+                style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)",background: "var(--card)", }}
                 title={r.name}
               >
                 <span style={tileTitle}>{r.name}</span>
@@ -717,7 +717,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         <Modal title="Import" onClose={() => { setShowImportModal(false); setManageTypeId(null); }}>
           {types.length === 0 ? (
             <div style={{ display: 'grid', gap: 10 }}>
-              <p style={{ color: "var(--text)", margin: 0 }}>No room types defined.</p>
+              <p style={{ color: "var(--text)", margin: 0 , background: "var(--card)",}}>No room types defined.</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <button
                   className="sb-btn sb-btn--primary"
