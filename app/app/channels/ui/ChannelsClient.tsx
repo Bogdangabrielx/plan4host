@@ -679,7 +679,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         <Modal title="Export · Room Types" onClose={() => { setShowTypesModal(false); setActiveTypeId(null); }}>
           <div style={tileGrid}>
             {types.length === 0 ? (
-              <p style={{ color: "var(--text)", gridColumn: "1 / -1",background: "var(--panel)" }}>No room types defined.</p>
+              <p style={{ color: "var(--text)", gridColumn: "1 / -1", }}>No room types defined.</p>
             ) : types.map(t => (
               <button
                 key={t.id}
