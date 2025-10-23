@@ -420,45 +420,95 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             "calc(var(--bottom-nav-h,56px) + 12px + var(--safe-bottom,0px))",
         }}
       >
-        {/* Toolbar */}
+        {/* Toolbar: property/date selector pill with glow (dark theme friendly) */}
         <div className="sb-toolbar" style={{ gap: 12 }}>
-          <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
-            Property
-          </label>
-          <select
-            className="sb-select"
-            value={propertyId}
-            onChange={(e) => setPropertyId(e.currentTarget.value)}
-            style={{ minWidth: 220, fontFamily: "inherit" }}
+          <div
+            className="clean-pill"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "8px 10px",
+              borderRadius: 9999,
+              background: "rgba(28, 45, 85, 0.6)", // blue glass
+              border: "1px solid rgba(96, 165, 250, 0.4)", // neon subtle
+              boxShadow: "0 0 18px rgba(96, 165, 250, 0.25)", // outer glow
+              backdropFilter: "blur(4px)",
+            }}
           >
-            {properties.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
               type="button"
-              className="sb-btn sb-btn--icon"
               aria-label="Previous day"
               onClick={() => setDateStr(addDaysStr(dateStr, -1))}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 9999,
+                border: "1px solid rgba(96,165,250,0.25)",
+                background: "rgba(24, 36, 64, 0.65)",
+                color: "rgba(255,255,255,0.8)",
+                display: "grid",
+                placeItems: "center",
+                cursor: "pointer",
+              }}
             >
               ◀
             </button>
+
+            <select
+              value={propertyId}
+              onChange={(e) => setPropertyId(e.currentTarget.value)}
+              style={{
+                minWidth: 220,
+                fontFamily: "inherit",
+                background: "transparent",
+                color: "rgba(255,255,255,1)",
+                border: 0,
+                outline: "none",
+                fontWeight: 800,
+                padding: "6px 4px",
+                WebkitAppearance: "none",
+                MozAppearance: "none",
+                appearance: "none",
+              }}
+            >
+              {properties.map((p) => (
+                <option key={p.id} value={p.id} style={{ color: "#0c111b" }}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+
             <input
               type="date"
               value={dateStr}
               onChange={(e) => setDateStr(e.currentTarget.value)}
-              className="sb-select"
-              style={{ padding: "8px 12px", fontFamily: "inherit" }}
+              style={{
+                padding: "6px 8px",
+                fontFamily: "inherit",
+                background: "transparent",
+                color: "rgba(255,255,255,1)",
+                border: 0,
+                outline: "none",
+                fontWeight: 800,
+              }}
             />
+
             <button
               type="button"
-              className="sb-btn sb-btn--icon"
               aria-label="Next day"
               onClick={() => setDateStr(addDaysStr(dateStr, 1))}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 9999,
+                border: "1px solid rgba(96,165,250,0.25)",
+                background: "rgba(24, 36, 64, 0.65)",
+                color: "rgba(255,255,255,0.8)",
+                display: "grid",
+                placeItems: "center",
+                cursor: "pointer",
+              }}
             >
               ▶
             </button>
@@ -503,16 +553,50 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                   className="sb-card"
                   style={{
                     aspectRatio: "1.2 / 1",
-                    padding: 10,
+                    padding: 12,
                     cursor: isCleaned ? "default" : "pointer",
                     display: "grid",
                     placeItems: "center",
-                    gap: 6,
-                    opacity: isCleaned ? 0.66 : 1,
+                    gap: 8,
+                    opacity: isCleaned ? 0.72 : 1,
+                    background: "linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%)",
+                    border: "1px solid rgba(96,165,250,0.25)",
+                    boxShadow: "0 12px 28px rgba(0,0,0,0.35)",
                   }}
                   title={isCleaned ? "Cleaned" : "Open cleaning tasks"}
                 >
-                  <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
+                  <div style={{ textAlign: "center", display: "grid", gap: 8 }}>
+                    {/* Progress ring */}
+                    <div
+                      aria-hidden
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 9999,
+                        padding: 2,
+                        background: "linear-gradient(180deg, rgba(96, 165, 250, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%)",
+                        boxShadow: "0 0 10px rgba(96,165,250,0.15)",
+                        margin: "0 auto",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 9999,
+                          background: "rgba(17,24,39,0.85)",
+                          display: "grid",
+                          placeItems: "center",
+                          color: "rgba(228,234,243,1)",
+                          fontSize: 12,
+                          fontWeight: 800,
+                          boxShadow: "inset 0 0 10px rgba(96,165,250,0.15)",
+                        }}
+                      >
+                        {doneCount}/{total}
+                      </div>
+                    </div>
+
                     {/* Icon above room name, theme-aware */}
                     <Image
                       src={roomIconSrc}
@@ -532,19 +616,14 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                       {it.room.name}
                     </strong>
 
-                    <small style={{ color: "var(--muted)" }}>
+                    <small style={{ color: "rgba(154, 164, 175, 1)" }}>
                       {it.mode === "carry"
                         ? `carry-over • ${it.cleanDate}`
                         : it.statusLine}
                     </small>
-
-                    {isCleaned ? (
+                    {isCleaned && (
                       <span className="sb-badge">
                         {cleanedBy ? `Cleaned by ${cleanedBy}` : "Cleaned"}
-                      </span>
-                    ) : (
-                      <span className="sb-badge">
-                        {doneCount}/{total}
                       </span>
                     )}
                   </div>

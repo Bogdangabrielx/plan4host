@@ -32,6 +32,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* New dark theme RGBA palette override (kept in globals for consistency) */
+:root[data-theme="dark"]{
+  --bg: rgba(12, 17, 27, 1);
+  --panel: rgba(17, 24, 39, 0.95);
+  --card: rgba(15, 23, 42, 0.95);
+  --border: rgba(96, 165, 250, 0.25);
+  --primary: rgba(96, 165, 250, 1);
+  --muted: rgba(154, 164, 175, 1);
+  --text: rgba(248, 250, 252, 1);
+}
+
 /* Prevent iOS Safari from auto-zooming focused inputs by ensuring >=16px font-size */
 html { -webkit-text-size-adjust: 100%; }
 @media (max-width: 640px) {
