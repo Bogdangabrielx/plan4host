@@ -194,10 +194,11 @@ export default function CleanTaskModal({
       <style jsx>{`
         @media (max-width: 720px) {
           .ct-modal{
-            top: calc(var(--safe-top) + 88px) !important;           /* sub AppHeader */
-            transform: translateX(-50%) !important;                 /* fără translateY pentru a evita sub-header */
-            max-height: calc(100dvh - (var(--safe-top) + 120px)) !important; /* spațiu suficient pentru scroll */
-            width: min(640px, calc(100vw - 16px));
+            top: calc(var(--safe-top) + 72px) !important;                 /* mai jos sub AppHeader */
+            transform: translateX(-50%) !important;                     /* fără translateY pentru a evita sub-header */
+            /* rezervă loc pentru BottomNav (var(--nav-h), fallback 88px) + spațiu de respirație */
+            max-height: calc(100dvh - (var(--safe-top) + var(--nav-h, 88px) + 48px)) !important;
+            width: min(560px, calc(100vw - 12px));
           }
         }
         /* Visible task area height hint (approx ~8 on desktop, ~6 on mobile) */
