@@ -145,7 +145,10 @@ useEffect(() => {
         bottom: 0,                 // ancorat de muchia fizică
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
         padding: "8px 10px",
+        overflow: "hidden",
 
         // când tastatura e deschisă, NU mai urcă: îl scot în jos din viewport
         transform: (kbOpen || forceHide) ? "translateY(100%)" : "translateY(0)",
@@ -166,14 +169,18 @@ useEffect(() => {
               href={it.href}
               style={{
                 textDecoration: "none",
-                color: active ? "var(--primary)" : "var(--muted)",
+                border: "1px solid var(--border)",
+                background: "var(--card)",
+                color: "var(--text)",
+                borderRadius: 10,
                 display: "grid",
                 placeItems: "center",
                 gap: 4,
+                padding: "6px 4px",
                 touchAction: "manipulation",
               }}
             >
-              <img src={it.icon} alt="" width={22} height={22} style={{ display: "block", opacity: active ? 1 : 0.9 }} />
+              <img src={it.icon} alt="" width={22} height={22} style={{ display: "block", opacity: active ? 1 : 0.95 }} />
               <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>{it.label}</small>
             </a>
           );

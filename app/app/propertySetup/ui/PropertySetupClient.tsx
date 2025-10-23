@@ -273,7 +273,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         {/* minimalist layout */}
         <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>
           <PropertySidebar properties={properties} selectedId={selectedId} onSelect={setSelectedId} status={status} />
-          <section className="sb-card psMain" style={{ padding: 16 }}>
+          <section className="sb-card" style={{ padding: 16 }}>
             {!selected ? (
               <p>Please select a property on the left.</p>
             ) : (
@@ -493,14 +493,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
             />
           )}
         </section>
-        <style jsx>{`
-          /* Desktop-only: narrow the main setup card width */
-          @media (min-width: 1025px) {
-            /* Slightly narrower than full column (~904px at max container) */
-            .psMain { max-width: 880px; width: auto; justify-self: start; }
-          }
-        `}</style>
-        </div>
+      </div>
       </div>
     </div>
   );
