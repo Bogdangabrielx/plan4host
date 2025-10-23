@@ -162,12 +162,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 :root[data-theme="dark"]{
   /* HSL components */
   /* Slightly cool greys (reduce warm/brown perception) */
-  --bg-h: 220;   --bg-s: 3%;  --bg-l: 8%;
+  --bg-h: 220;   --bg-s: 3%;  --bg-l: 10%;
   --text-h: 0;   --text-s: 0%; --text-l: 92%;
-  --muted-h: 220; --muted-s: 3%; --muted-l: 64%;
-  --panel-h: 220; --panel-s: 3%; --panel-l: 12%;
-  --card-h: 220;  --card-s: 3%; --card-l: 14%;
-  --border-h: 220; --border-s: 4%; --border-l: 22%;
+  --muted-h: 220; --muted-s: 3%; --muted-l: 68%;
+  --panel-h: 220; --panel-s: 3%; --panel-l: 15%;
+  --card-h: 220;  --card-s: 3%; --card-l: 18%;
+  --border-h: 220; --border-s: 4%; --border-l: 28%;
 
   /* Primary derived from accent-h */
   --primary-h: var(--accent-h); --primary-s: 85%; --primary-l: 55%;
@@ -176,12 +176,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   /* OKLCH components */
   /* OKLCH: tiny cool bias to counter warm OLED/SDR casts */
-  --bg-L: 0.16;   --bg-C: 0.01; --bg-h-ok: 250;
+  --bg-L: 0.19;   --bg-C: 0.01; --bg-h-ok: 250;
   --text-L: 0.94; --text-C: 0.00; --text-h-ok: 0;
-  --muted-L: 0.72; --muted-C: 0.01; --muted-h-ok: 250;
-  --panel-L: 0.19; --panel-C: 0.01; --panel-h-ok: 250;
-  --card-L: 0.22;  --card-C: 0.01; --card-h-ok: 250;
-  --border-L: 0.32; --border-C: 0.01; --border-h-ok: 250;
+  --muted-L: 0.75; --muted-C: 0.01; --muted-h-ok: 250;
+  --panel-L: 0.22; --panel-C: 0.01; --panel-h-ok: 250;
+  --card-L: 0.26;  --card-C: 0.01; --card-h-ok: 250;
+  --border-L: 0.36; --border-C: 0.01; --border-h-ok: 250;
   --primary-L: 0.70; --primary-C: 0.13; --primary-h-ok: var(--accent-h);
   --danger-L: 0.63; --danger-C: 0.16; --danger-h-ok: 25;
   --success-L: 0.66; --success-C: 0.12; --success-h-ok: 145;
