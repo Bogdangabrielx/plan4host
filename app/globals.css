@@ -129,11 +129,22 @@ textarea:focus-visible {
       0 8px 24px 0 oklch(calc(var(--card-L)) calc(var(--card-C)) var(--card-h-ok) / .16),
       0 1px 0 0 oklch(calc(var(--border-L)) calc(var(--border-C)) var(--border-h-ok) / .6) inset;
   }
-  .sb-card:hover, .sb-card:focus-within{
+  /* Lifted state: neutral, smaller shadow (no primary tint) */
+  :root[data-theme="dark"] .sb-card:hover,
+  :root[data-theme="dark"] .sb-card:focus-within{
     box-shadow:
-      0 10px 28px 0 oklch(calc(var(--card-L)) calc(var(--card-C)) var(--card-h-ok) / .18),
-      0 10px 32px 0 oklch(calc(var(--primary-L)) calc(var(--primary-C)) var(--primary-h-ok) / .18),
+      0 8px 20px 0 oklch(calc(var(--card-L)) calc(var(--card-C)) var(--card-h-ok) / .16),
+      /* neutral light lift on dark */
+      0 6px 14px 0 oklch(calc(min(1, var(--bg-L) + 0.35)) 0 var(--bg-h-ok) / .14),
       0 1px 0 0 oklch(calc(var(--border-L)) calc(var(--border-C)) var(--border-h-ok) / .6) inset;
+  }
+  :root[data-theme="light"] .sb-card:hover,
+  :root[data-theme="light"] .sb-card:focus-within{
+    box-shadow:
+      0 8px 20px 0 oklch(calc(var(--card-L)) calc(var(--card-C)) var(--card-h-ok) / .14),
+      /* neutral dark lift on light */
+      0 6px 14px 0 oklch(calc(max(0, var(--bg-L) - 0.35)) 0 var(--bg-h-ok) / .10),
+      0 1px 0 0 oklch(calc(var(--border-L)) calc(var(--border-C)) var(--border-h-ok) / .55) inset;
   }
 }
 
@@ -168,10 +179,15 @@ textarea:focus-visible {
       transparent 62%);
     opacity:.32;
   }
-  .sb-card:hover, .sb-card:focus-within{
+  :root[data-theme="dark"] .sb-card:hover, :root[data-theme="dark"] .sb-card:focus-within{
     box-shadow:
-      0 10px 26px 0 hsla(var(--card-h) var(--card-s) var(--card-l) / .14),
-      0 10px 32px 0 hsla(var(--primary-h) var(--primary-s) var(--primary-l) / .20);
+      0 8px 20px 0 hsla(var(--card-h) var(--card-s) var(--card-l) / .16),
+      0 6px 14px 0 hsla(0 0% 100% / .14);
+  }
+  :root[data-theme="light"] .sb-card:hover, :root[data-theme="light"] .sb-card:focus-within{
+    box-shadow:
+      0 8px 20px 0 hsla(var(--card-h) var(--card-s) var(--card-l) / .14),
+      0 6px 14px 0 hsla(0 0% 0% / .10);
   }
 }
 
