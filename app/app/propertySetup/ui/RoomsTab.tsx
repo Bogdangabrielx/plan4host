@@ -95,7 +95,7 @@ export default function RoomsTab({
               <li
                 key={r.id}
                 style={{
-                  background: "var(--panel)",
+                  background: "var(--card)",
                   borderRadius: 12,
                   padding: 12,
                   gap: 10,
