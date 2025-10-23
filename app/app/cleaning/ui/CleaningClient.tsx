@@ -44,6 +44,57 @@ function addDaysStr(s: string, n: number) {
   return dstr(d);
 }
 
+/* ─── UI: Circular progress ring ────────────────────────────────────── */
+function CircleProgress({
+  value,
+  total,
+  size = 44,
+  strokeWidth = 5,
+  track = 'var(--border)',
+  color = 'var(--primary)',
+  textColor = 'var(--text)'
+}: {
+  value: number;
+  total: number;
+  size?: number;
+  strokeWidth?: number;
+  track?: string;
+  color?: string;
+  textColor?: string;
+}) {
+  const safeTotal = Math.max(0, total);
+  const v = Math.min(Math.max(0, value), safeTotal);
+  const r = (size - strokeWidth) / 2;
+  const c = 2 * Math.PI * r;
+  const pct = safeTotal > 0 ? v / safeTotal : 0;
+  const offset = c * (1 - pct);
+  const label = `${v}/${safeTotal}`;
+  const cx = size / 2;
+  const cy = size / 2;
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+      <circle cx={cx} cy={cy} r={r} stroke={track} strokeWidth={strokeWidth} fill="none" opacity={0.35} />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        stroke={color}
+        strokeWidth={strokeWidth}
+        fill="none"
+        strokeDasharray={c}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${cx} ${cy})`}
+        style={{ filter: 'drop-shadow(0 0 6px rgba(96,165,250,0.15))' }}
+      />
+      <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" fontWeight={800} fontSize={size * 0.34} fill={textColor}>
+        {label}
+      </text>
+    </svg>
+  );
+}
+
 /* ─── Component ─────────────────────────────────────────────────────── */
 export default function CleaningClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
@@ -536,15 +587,12 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                       {it.mode === "carry" ? `carry-over • ${it.cleanDate}` : it.statusLine}
                     </small>
 
-                    {isCleaned ? (
-                      <span className="sb-badge">
-                        {cleanedBy ? `Cleaned by ${cleanedBy}` : "Cleaned"}
-                      </span>
-                    ) : (
-                      <span className="sb-badge">
-                        {doneCount}/{total}
-                      </span>
-                    )}
+                    <div style={{ display: 'grid', placeItems: 'center', gap: 4 }}>
+                      <CircleProgress value={isCleaned ? total : doneCount} total={total} size={44} />
+                      {isCleaned && cleanedBy ? (
+                        <small style={{ color: 'var(--muted)', fontSize: 11 }}>Cleaned by {cleanedBy}</small>
+                      ) : null}
+                    </div>
                   </div>
                 </li>
               );
