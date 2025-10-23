@@ -476,7 +476,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     const src = (logo && logo.trim()) || builtinLogo(provider) || null;
     return (
       <span style={{
-        display: "inline-flex",
+        display: "inline-block",
         alignItems: "center",
         gap: 6,
         padding: "4px 10px",
