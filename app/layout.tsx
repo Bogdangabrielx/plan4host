@@ -139,7 +139,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --border-h: 210; --border-s: 32%; --border-l: 82%;
 
   /* Primary derived from accent-h — stronger chroma for clearer accent */
-  --primary-h: var(--accent-h); --primary-s: 95%; --primary-l: 56%;
+  --primary-h: var(--accent-h); --primary-s: 90%; --primary-l: 50%;
   --danger-h: 15; --danger-s: 80%; --danger-l: 52%;
   --success-h: 140; --success-s: 60%; --success-l: 52%;
 
