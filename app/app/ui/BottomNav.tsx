@@ -148,7 +148,7 @@ useEffect(() => {
         padding: "8px 10px",
 
         // când tastatura e deschisă, NU mai urcă: îl scot în jos din viewport
-        transform: (forceHide) ? "translateY(100%)" : "translateY(0)",
+        transform: (kbOpen || forceHide) ? "translateY(100%)" : "translateY(0)",
         transition: "transform .18s ease",
 
         zIndex: 2147483000,
