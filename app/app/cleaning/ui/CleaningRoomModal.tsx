@@ -114,8 +114,21 @@ export default function CleaningRoomModal({
           fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif'
         }}>
 
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        {/* Header (sticky) */}
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 10,
+            padding: "8px 0",
+            background: "var(--panel)",
+            boxShadow: "0 1px 0 var(--border)",
+          }}
+        >
           <strong>{roomName} — Cleaning — {cleanDate}</strong>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <StatusPill />
