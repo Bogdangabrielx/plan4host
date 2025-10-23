@@ -483,7 +483,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         borderRadius: 21,
         background: bg,
         color: "#0c111b",
-        border: "transparent",
+        border: "1px solid var(--border)",
         fontSize: 12,
         fontWeight: 400,
         width: fullWidth ? "100%" : undefined,

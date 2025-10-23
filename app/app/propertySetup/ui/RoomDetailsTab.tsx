@@ -27,7 +27,7 @@ export default function RoomDetailsTab({
   return (
     <div style={{ display: "grid", gap: 16 }}>
       {/* Checks */}
-      <section className="sb-card" style={{ padding: 12, border: "1px solid color-mix(in srgb, var(--muted) 40%, transparent)" }}>
+      <section className="sb-card" style={{ padding: 12 }}>
         <header style={head}>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
             <h3 style={{ margin: 0 }}>Checklist Item</h3>
@@ -96,7 +96,7 @@ export default function RoomDetailsTab({
       </section>
 
       {/* Text fields */}
-      <section className="sb-card" style={{ padding: 12, border: "1px solid color-mix(in srgb, var(--muted) 40%, transparent)" }}>
+      <section className="sb-card" style={{ padding: 12 }}>
         <header style={head}>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
             <h3 style={{ margin: 0 }}>Notes Tab</h3>
@@ -206,7 +206,6 @@ const rowBase: React.CSSProperties  = {
   display: "grid",
   gap: 8,
   alignItems: "center",
-  border: "1px solid color-mix(in srgb, var(--muted) 35%, transparent)",
   borderRadius: 10,
   padding: 10,
 };

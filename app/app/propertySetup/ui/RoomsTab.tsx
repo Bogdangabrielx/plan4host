@@ -42,7 +42,7 @@ export default function RoomsTab({
   return (
     <div style={{ display: "grid", gap: 16 }}>
       {/* Section 1: Room Types */}
-      <section className="sb-card" style={{ padding: 12, border: '1px solid color-mix(in srgb, var(--muted) 40%, transparent)' }}>
+      <section className="sb-card" style={{ padding: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
           <strong>Room types</strong>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -81,7 +81,7 @@ export default function RoomsTab({
       </section>
 
       {/* Section 2: Rooms + type assignment */}
-      <section className="sb-card" style={{ padding: 12, border: '1px solid color-mix(in srgb, var(--muted) 40%, transparent)' }}>
+      <section className="sb-card" style={{ padding: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
           <strong>Rooms</strong>
           <button onClick={onAddRoom} className="sb-btn sb-btn--primary">Add room</button>
@@ -97,7 +97,6 @@ export default function RoomsTab({
                 style={{
                   background: "var(--card)",
                   borderRadius: 12,
-                  border: '1px solid color-mix(in srgb, var(--muted) 35%, transparent)',
                   padding: 12,
                   gap: 10,
                   overflow: "hidden",
@@ -197,7 +196,7 @@ function TypeRow({
   const [confirmDel, setConfirmDel] = useState(false);
 
   return (
-    <li className="sb-card" style={{ display: "grid", gap: 8, padding: 12, border: '1px solid color-mix(in srgb, var(--muted) 35%, transparent)' }}>
+    <li className="sb-card" style={{ display: "grid", gap: 8, padding: 12 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
           {editing ? (
