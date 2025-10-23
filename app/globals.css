@@ -99,55 +99,115 @@ textarea:focus-visible {
   background: var(--panel);
   border: 0;
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
   position: relative;
   overflow: hidden;
+  /* Soft elevation (fallback in non-OKLCH browsers is added below) */
+  box-shadow: 0 6px 18px 0 rgba(0,0,0,.10);
 }
 
-/* Card sheen + hover highlight (OKLCH first, HSL fallback) */
+/* =============================
+   Card tokens + effects (OKLCH)
+   ============================= */
 @supports (color: oklch(0 0 0)){
-  :root{
-    --card-sheen-L: calc(var(--card-L) + 0.03);
-    --card-sheen-C: calc(max(0, var(--card-C) - 0.02));
-    --card-hover-L: calc(var(--card-L) + 0.06);
-    --card-hover-C: calc(max(0, var(--card-C) - 0.05));
+  /* Derived effect tokens (relative to seed vars from layout) */
+  .sb-card{
+    /* Sheen layer (normal) */
+    --card-sheen-dL: 0.015;  /* +1.5% luminance */
+    --card-sheen-dC: -0.02;  /* -2% chroma      */
+    /* Hotspot (hover/focus) */
+    --card-hotspot-dL: 0.035; /* +3.5% luminance */
+    --card-hotspot-dC: -0.03; /* -3% chroma      */
+    /* Border-top reflex deltas (theme-tuned below) */
+    --card-top-dL: 0.02;  /* default increase */
+    --card-top-dC: -0.03; /* default decrease */
   }
+  :root[data-theme="dark"] .sb-card{ --card-top-dL: 0.03; }
+  :root[data-theme="light"] .sb-card{ --card-top-dL: -0.012; }
+
+  /* Border top gradient (reflex) */
   .sb-card::before{
     content: "";
-    position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(120% 160% at 15% 0%,
-      oklch(var(--card-sheen-L) var(--card-sheen-C) var(--accent-h)),
-      transparent 60%);
-    opacity: .28;
-    transition: opacity .2s ease;
+    position: absolute; left: 0; right: 0; top: 0; height: 3px;
+    pointer-events: none;
+    /* center brighter, fade to transparent at edges */
+    background: linear-gradient(90deg,
+      oklch(calc(var(--card-L) + var(--card-top-dL)) calc(max(0, var(--card-C) + var(--card-top-dC))) var(--accent-h) / 0) 0%,
+      oklch(calc(var(--card-L) + var(--card-top-dL)) calc(max(0, var(--card-C) + var(--card-top-dC))) var(--accent-h) / .85) 50%,
+      oklch(calc(var(--card-L) + var(--card-top-dL)) calc(max(0, var(--card-C) + var(--card-top-dC))) var(--accent-h) / 0) 100%
+    );
+    transition: opacity .14s ease, filter .14s ease;
   }
+
+  /* Surface sheen (normal) + hotspot (on hover/focus) */
   .sb-card::after{
-    content: "";
-    position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(80% 90% at 85% 0%,
-      oklch(var(--card-hover-L) var(--card-hover-C) var(--accent-h)),
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 160% at 18% 0%,
+      oklch(calc(var(--card-L) + var(--card-sheen-dL)) calc(max(0, var(--card-C) + var(--card-sheen-dC))) var(--accent-h)),
       transparent 60%);
-    opacity: 0;
-    transition: opacity .18s ease;
+    opacity: .22;
+    transition: opacity .14s ease;
   }
-  .sb-card:hover::after, .sb-card:focus-within::after { opacity: 1; }
+  .sb-card:hover::after,
+  .sb-card:focus-within::after{
+    background: radial-gradient(110% 140% at 20% 0%,
+      oklch(calc(var(--card-L) + var(--card-hotspot-dL)) calc(max(0, var(--card-C) + var(--card-hotspot-dC))) var(--accent-h)),
+      transparent 62%);
+    opacity: .32;
+  }
+
+  /* Elevation: soft -> lifted with accent warmth */
+  .sb-card{ box-shadow:
+      0 8px 24px 0 oklch(calc(var(--card-L)) calc(var(--card-C)) var(--card-h-ok) / .16),
+      0 1px 0 0 oklch(calc(var(--border-L)) calc(var(--border-C)) var(--border-h-ok) / .6) inset;
+  }
+  .sb-card:hover, .sb-card:focus-within{
+    box-shadow:
+      0 10px 28px 0 oklch(calc(var(--card-L)) calc(var(--card-C)) var(--card-h-ok) / .18),
+      0 10px 32px 0 oklch(calc(var(--primary-L)) calc(var(--primary-C)) var(--primary-h-ok) / .18),
+      0 1px 0 0 oklch(calc(var(--border-L)) calc(var(--border-C)) var(--border-h-ok) / .6) inset;
+  }
 }
+
+/* =============================
+   Fallback in HSL
+   ============================= */
 @supports not (color: oklch(0 0 0)){
+  .sb-card{
+    /* Soft elevation */
+    box-shadow: 0 6px 18px 0 hsla(var(--card-h) var(--card-s) var(--card-l) / .12);
+  }
   .sb-card::before{
-    content: ""; position: absolute; inset: 0; pointer-events:none;
-    background: radial-gradient(120% 160% at 15% 0%,
-      hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 8%))),
-      transparent 60%);
-    opacity: .25; transition: opacity .2s ease;
+    content: ""; position: absolute; left:0; right:0; top:0; height:3px; pointer-events: none;
+    background: linear-gradient(90deg,
+      hsl(var(--primary-h) var(--primary-s) calc((var(--card-l) + 2%)) / 0) 0%,
+      hsl(var(--primary-h) var(--primary-s) calc((var(--card-l) + 2%)) / .85) 50%,
+      hsl(var(--primary-h) var(--primary-s) calc((var(--card-l) + 2%)) / 0) 100%
+    );
+    transition: opacity .14s ease;
   }
   .sb-card::after{
-    content: ""; position: absolute; inset: 0; pointer-events:none;
-    background: radial-gradient(80% 90% at 85% 0%,
-      hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 10%))),
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background: radial-gradient(120% 160% at 18% 0%,
+      hsl(var(--primary-h) calc((var(--primary-s) - 12%)) calc((var(--card-l) + 1.5%))),
       transparent 60%);
-    opacity: 0; transition: opacity .18s ease;
+    opacity:.22; transition: opacity .14s ease;
   }
-  .sb-card:hover::after, .sb-card:focus-within::after { opacity: 1; }
+  .sb-card:hover::after, .sb-card:focus-within::after{
+    background: radial-gradient(110% 140% at 20% 0%,
+      hsl(var(--primary-h) calc((var(--primary-s) - 14%)) calc((var(--card-l) + 3.5%))),
+      transparent 62%);
+    opacity:.32;
+  }
+  .sb-card:hover, .sb-card:focus-within{
+    box-shadow:
+      0 10px 26px 0 hsla(var(--card-h) var(--card-s) var(--card-l) / .14),
+      0 10px 32px 0 hsla(var(--primary-h) var(--primary-s) var(--primary-l) / .20);
+  }
+}
+
+/* Reduced motion: disable sheen/transitions */
+@media (prefers-reduced-motion: reduce){
+  .sb-card::before, .sb-card::after{ transition: none !important; }
 }
 
 /* Toolbar container */
