@@ -333,6 +333,40 @@ export default function DashboardClient({
     fontFamily: "inherit",
   };
 
+  // —— Desktop-only two-column layout + equal heights ——
+  const DESKTOP_BP = 960; // px
+  const [isDesktop, setIsDesktop] = useState<boolean>(false);
+  const addCardRef = useRef<HTMLDivElement | null>(null);
+  const listCardRef = useRef<HTMLDivElement | null>(null);
+  const [addCardHeight, setAddCardHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= DESKTOP_BP);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Keep list card matched to the New Property card height on desktop.
+  useEffect(() => {
+    if (!isDesktop) { setAddCardHeight(null); return; }
+    const el = addCardRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') {
+      setAddCardHeight(el?.getBoundingClientRect().height ?? null);
+      return;
+    }
+    const ro = new ResizeObserver(() => {
+      try {
+        const h = Math.round(el.getBoundingClientRect().height);
+        setAddCardHeight(h);
+      } catch {}
+    });
+    ro.observe(el);
+    // Initial measure
+    try { setAddCardHeight(Math.round(el.getBoundingClientRect().height)); } catch {}
+    return () => ro.disconnect();
+  }, [isDesktop]);
+
   return (
     <div
       style={{
@@ -343,8 +377,17 @@ export default function DashboardClient({
     >
       <PlanHeaderBadge title="Dashboard" slot="header-right" />
 
+      {/* 2-column desktop row: New Property + Your Properties */}
+      <div
+        style={{
+          display: "grid",
+          gap: 16,
+          gridTemplateColumns: isDesktop ? "minmax(0, 1fr) minmax(0, 1fr)" : "1fr",
+          alignItems: "start",
+        }}
+      >
       {/* Add property */}
-      <section style={card}>
+      <section ref={addCardRef} style={card}>
         <h2 style={{ marginTop: 0 }}>New Property</h2>
 
         <div style={{ display: "grid", gap: 12 }}>
@@ -402,46 +445,36 @@ export default function DashboardClient({
         </div>
       </section>
 
-      {/* First-time guidance modal */}
-      {showFirstPropertyGuide && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          onClick={(e)=>{ e.stopPropagation(); /* require button to dismiss */ }}
-          style={{ position:'fixed', inset:0, zIndex: 240, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
-                   paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <strong>Getting started</strong>
-            </div>
-            <div style={{ color:'var(--text)' }}>
-              As a first step, please add the property name you want to register and select its country.
-            </div>
-            <div style={{ display:'flex', justifyContent:'flex-end' }}>
-              <button
-                className="sb-btn sb-btn--primary"
-                onClick={() => {
-                  setShowFirstPropertyGuide(false);
-                  setHighlightName(true);
-                  try {
-                    nameInputRef.current?.focus();
-                    nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  } catch {}
-                }}
-              >OK</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Your properties */}
-      <section style={card}>
+      <section
+        ref={listCardRef}
+        style={{
+          ...card,
+          // Desktop: match the height of the New Property card and scroll inner list
+          height: isDesktop && addCardHeight ? addCardHeight : undefined,
+          display: "flex",
+          flexDirection: "column",
+          overflow: isDesktop ? "hidden" : undefined,
+        }}
+      >
         <h2 style={{ marginTop: 0 }}>Your Properties</h2>
 
         {list.length === 0 ? (
           <p style={{ color: "var(--muted)" }}>No properties yet.</p>
         ) : (
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 10 }}>
+          <ul
+            style={{
+              listStyle: "none",
+              padding: 0,
+              margin: 0,
+              display: "grid",
+              gap: 10,
+              // Desktop: make the list take remaining space and scroll
+              flex: isDesktop ? 1 : undefined,
+              minHeight: isDesktop ? 0 : undefined,
+              overflowY: isDesktop ? "auto" : undefined,
+            }}
+          >
             {list.map((p) => {
               return (
                 <li
@@ -515,6 +548,39 @@ export default function DashboardClient({
           </ul>
         )}
       </section>
+      </div>
+
+      {/* First-time guidance modal */}
+      {showFirstPropertyGuide && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e)=>{ e.stopPropagation(); /* require button to dismiss */ }}
+          style={{ position:'fixed', inset:0, zIndex: 240, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
+                   paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <strong>Getting started</strong>
+            </div>
+            <div style={{ color:'var(--text)' }}>
+              As a first step, please add the property name you want to register and select its country.
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end' }}>
+              <button
+                className="sb-btn sb-btn--primary"
+                onClick={() => {
+                  setShowFirstPropertyGuide(false);
+                  setHighlightName(true);
+                  try {
+                    nameInputRef.current?.focus();
+                    nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  } catch {}
+                }}
+              >OK</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirm Delete Modal */}
       {toDelete && (
