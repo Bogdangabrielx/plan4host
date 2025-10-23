@@ -149,7 +149,7 @@ export default function RoomDetailsTab({
                 style={textInput} />
               <input
                 defaultValue={t.placeholder || ""}
-                placeholder="e.g., Personal Notes"
+                placeholder="e.g., Front Desk Notes"
                 onBlur={(e) => {
                   const v = e.currentTarget.value;
                   if (v !== (t.placeholder || "")) onPlaceholderText(t.id, v);
