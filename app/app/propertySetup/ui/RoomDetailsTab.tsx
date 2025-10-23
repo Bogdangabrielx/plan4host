@@ -210,7 +210,7 @@ export default function RoomDetailsTab({
 import { useState } from 'react';
 const head: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 };
 const rowBase: React.CSSProperties  = {
-  background: "var(--card)",
+  background: "var(--panel)",
   display: "grid",
   gap: 8,
   alignItems: "center",
