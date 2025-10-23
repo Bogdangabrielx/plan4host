@@ -157,7 +157,7 @@ export default function CleanTaskModal({
 
 
         {/* Body (scrolls independently) */}
-        <div style={{ padding: 14, display: "grid", gap: 10, overflowY: 'auto', WebkitOverflowScrolling: 'touch', minHeight: '448px' }}>
+        <div className="ct-body" style={{ padding: 14, display: "grid", gap: 10, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {tasks.length === 0 ? (
             <p style={{ color: "var(--muted)",}}>No cleaning checklist defined for this property.</p>
           ) : (
@@ -200,6 +200,9 @@ export default function CleanTaskModal({
             width: min(640px, calc(100vw - 16px));
           }
         }
+        /* Visible task area height hint (approx ~8 on desktop, ~6 on mobile) */
+        .ct-body { min-height: 448px; padding-bottom: calc(var(--safe-bottom) + 8px); }
+        @media (max-width: 720px) { .ct-body { min-height: 336px; } }
       `}</style>
     </>
   );
