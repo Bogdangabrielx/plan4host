@@ -194,16 +194,16 @@ export default function CleanTaskModal({
       <style jsx>{`
         @media (max-width: 720px) {
           .ct-modal{
-            top: calc(var(--safe-top) + 72px) !important;                 /* mai jos sub AppHeader */
-            transform: translateX(-50%) !important;                     /* fără translateY pentru a evita sub-header */
-            /* rezervă loc pentru BottomNav (var(--nav-h), fallback 88px) + spațiu de respirație */
-            max-height: calc(100dvh - (var(--safe-top) + var(--nav-h, 88px) + 48px)) !important;
+            top: calc(var(--safe-top) + 72px) !important;                 /* sub AppHeader */
+            transform: translateX(-50%) !important;                       /* fără translateY */
+            /* puțin mai scund: rezervă mai mult spațiu către BottomNav */
+            max-height: calc(100dvh - (var(--safe-top) + var(--nav-h, 88px) + 72px)) !important;
             width: min(560px, calc(100vw - 12px));
           }
         }
         /* Visible task area height hint (approx ~8 on desktop, ~6 on mobile) */
         .ct-body { min-height: 448px; padding-bottom: calc(var(--safe-bottom) + 8px); }
-        @media (max-width: 720px) { .ct-body { min-height: 336px; } }
+        @media (max-width: 720px) { .ct-body { min-height: 300px; } }
       `}</style>
     </>
   );
