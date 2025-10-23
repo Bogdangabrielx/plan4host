@@ -135,7 +135,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* HSL component tokens per theme */
 :root[data-theme="light"]{
   /* HSL components */
-  --bg-h: 205; --bg-s: 30%; --bg-l: 97%;
+  --bg-h: 0; --bg-s: 0%; --bg-l: 98%;
   --text-h: 210; --text-s: 22%; --text-l: 14%;
   --muted-h: 215; --muted-s: 20%; --muted-l: 56%;
   --panel-h: 0; --panel-s: 0%; --panel-l: 100%;
@@ -148,7 +148,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --success-h: 140; --success-s: 60%; --success-l: 52%;
 
   /* OKLCH components (approximate perceptual matches) */
-  --bg-L: 0.97; --bg-C: 0.02; --bg-h-ok: 210;
+  --bg-L: 0.98; --bg-C: 0; --bg-h-ok: 0;
   --text-L: 0.15; --text-C: 0.03; --text-h-ok: 250;
   --muted-L: 0.62; --muted-C: 0.04; --muted-h-ok: 230;
   --panel-L: 1.00; --panel-C: 0.00; --panel-h-ok: 0;
