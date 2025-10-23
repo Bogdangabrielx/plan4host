@@ -75,14 +75,20 @@ html { -webkit-text-size-adjust: 100%; }
     var(--bg);
 }
 
-/* Focus (global fallback) */
+/* Focus ring derived from primary */
+:root { --focus-ring: var(--primary); }
+@supports (color: oklch(0 0 0)){
+  :root { --focus-ring: oklch(from var(--primary) calc(min(1, var(--primary-L) + 0.10)) var(--primary-C) var(--primary-h-ok)); }
+}
+
+/* Focus (global) */
 a:focus-visible,
 button:focus-visible,
 [role="button"]:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--primary) 80%, white);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: 8px;
 }
@@ -94,6 +100,54 @@ textarea:focus-visible {
   border: 0;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Card sheen + hover highlight (OKLCH first, HSL fallback) */
+@supports (color: oklch(0 0 0)){
+  :root{
+    --card-sheen-L: calc(var(--card-L) + 0.03);
+    --card-sheen-C: calc(max(0, var(--card-C) - 0.02));
+    --card-hover-L: calc(var(--card-L) + 0.06);
+    --card-hover-C: calc(max(0, var(--card-C) - 0.05));
+  }
+  .sb-card::before{
+    content: "";
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 160% at 15% 0%,
+      oklch(var(--card-sheen-L) var(--card-sheen-C) var(--accent-h)),
+      transparent 60%);
+    opacity: .28;
+    transition: opacity .2s ease;
+  }
+  .sb-card::after{
+    content: "";
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(80% 90% at 85% 0%,
+      oklch(var(--card-hover-L) var(--card-hover-C) var(--accent-h)),
+      transparent 60%);
+    opacity: 0;
+    transition: opacity .18s ease;
+  }
+  .sb-card:hover::after, .sb-card:focus-within::after { opacity: 1; }
+}
+@supports not (color: oklch(0 0 0)){
+  .sb-card::before{
+    content: ""; position: absolute; inset: 0; pointer-events:none;
+    background: radial-gradient(120% 160% at 15% 0%,
+      hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 8%))),
+      transparent 60%);
+    opacity: .25; transition: opacity .2s ease;
+  }
+  .sb-card::after{
+    content: ""; position: absolute; inset: 0; pointer-events:none;
+    background: radial-gradient(80% 90% at 85% 0%,
+      hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 10%))),
+      transparent 60%);
+    opacity: 0; transition: opacity .18s ease;
+  }
+  .sb-card:hover::after, .sb-card:focus-within::after { opacity: 1; }
 }
 
 /* Toolbar container */
@@ -341,4 +395,3 @@ select:not(.sb-select){ /* opțional */
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 }
-

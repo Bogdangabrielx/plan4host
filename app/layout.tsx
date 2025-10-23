@@ -120,51 +120,146 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <style
           dangerouslySetInnerHTML={{
             __html: `
-:root[data-theme="dark"]{
-  --bg:#0b1117; --text:#e6edf3; --muted:#9aa4af;
-  --panel:#0f1623; --card:#0d1320; --border:#1f2937;
-  --primary:#3ECF8E; --danger:#ef4444; --success:#6ccc4c;
-  --accent1:#22d3ee; --accent2:#0d1323;
-}
+/* =============================
+   Theming via HSL + OKLCH tokens
+   ============================= */
+
+/* Accent hue (only hue changes per accent) */
+:root { --accent-h: 160; }
+:root[data-accent="blue"]   { --accent-h: 220; }
+:root[data-accent="indigo"] { --accent-h: 255; }
+:root[data-accent="emerald"]{ --accent-h: 160; }
+:root[data-accent="amber"]  { --accent-h: 38; }
+:root[data-accent="base"]   { --accent-h: 160; }
+
+/* HSL component tokens per theme */
 :root[data-theme="light"]{
-  --bg:#f7faf9; --text:#0f172a; --muted:#64748b;
-  --panel:#ffffff; --card:#ffffff; --border:#e2e8f0;
-  --primary:#26dc9dff; --danger:#dc2626; --success:#6ccc4c;
-  --accent1:#22d3ee; --accent2:#0d1323;
+  /* HSL components */
+  --bg-h: 205; --bg-s: 30%; --bg-l: 97%;
+  --text-h: 210; --text-s: 22%; --text-l: 14%;
+  --muted-h: 215; --muted-s: 20%; --muted-l: 56%;
+  --panel-h: 0; --panel-s: 0%; --panel-l: 100%;
+  --card-h: 0; --card-s: 0%; --card-l: 100%;
+  --border-h: 210; --border-s: 32%; --border-l: 90%;
+
+  /* Primary derived from accent-h (keep S/L stable across accents) */
+  --primary-h: var(--accent-h); --primary-s: 90%; --primary-l: 58%;
+  --danger-h: 15; --danger-s: 80%; --danger-l: 52%;
+  --success-h: 140; --success-s: 60%; --success-l: 52%;
+
+  /* OKLCH components (approximate perceptual matches) */
+  --bg-L: 0.97; --bg-C: 0.02; --bg-h-ok: 210;
+  --text-L: 0.15; --text-C: 0.03; --text-h-ok: 250;
+  --muted-L: 0.62; --muted-C: 0.04; --muted-h-ok: 230;
+  --panel-L: 1.00; --panel-C: 0.00; --panel-h-ok: 0;
+  --card-L: 1.00; --card-C: 0.00; --card-h-ok: 0;
+  --border-L: 0.90; --border-C: 0.01; --border-h-ok: 230;
+  --primary-L: 0.72; --primary-C: 0.14; --primary-h-ok: var(--accent-h);
+  --danger-L: 0.66; --danger-C: 0.16; --danger-h-ok: 25;
+  --success-L: 0.68; --success-C: 0.12; --success-h-ok: 145;
 }
+
+:root[data-theme="dark"]{
+  /* HSL components */
+  --bg-h: 215; --bg-s: 32%; --bg-l: 8%;
+  --text-h: 210; --text-s: 20%; --text-l: 92%;
+  --muted-h: 215; --muted-s: 12%; --muted-l: 64%;
+  --panel-h: 220; --panel-s: 36%; --panel-l: 12%;
+  --card-h: 220; --card-s: 36%; --card-l: 9%;
+  --border-h: 220; --border-s: 22%; --border-l: 22%;
+
+  /* Primary derived from accent-h */
+  --primary-h: var(--accent-h); --primary-s: 85%; --primary-l: 55%;
+  --danger-h: 6; --danger-s: 78%; --danger-l: 56%;
+  --success-h: 135; --success-s: 58%; --success-l: 58%;
+
+  /* OKLCH components */
+  --bg-L: 0.16; --bg-C: 0.03; --bg-h-ok: 260;
+  --text-L: 0.94; --text-C: 0.02; --text-h-ok: 250;
+  --muted-L: 0.72; --muted-C: 0.04; --muted-h-ok: 240;
+  --panel-L: 0.19; --panel-C: 0.03; --panel-h-ok: 260;
+  --card-L: 0.17; --card-C: 0.03; --card-h-ok: 260;
+  --border-L: 0.32; --border-C: 0.02; --border-h-ok: 260;
+  --primary-L: 0.70; --primary-C: 0.13; --primary-h-ok: var(--accent-h);
+  --danger-L: 0.63; --danger-C: 0.16; --danger-h-ok: 25;
+  --success-L: 0.66; --success-C: 0.12; --success-h-ok: 145;
+}
+
+/* Materialize palette (HSL as baseline) */
+:root{
+  --bg: hsl(var(--bg-h) var(--bg-s) var(--bg-l));
+  --text: hsl(var(--text-h) var(--text-s) var(--text-l));
+  --muted: hsl(var(--muted-h) var(--muted-s) var(--muted-l));
+  --panel: hsl(var(--panel-h) var(--panel-s) var(--panel-l));
+  --card: hsl(var(--card-h) var(--card-s) var(--card-l));
+  --border: hsl(var(--border-h) var(--border-s) var(--border-l));
+  --primary: hsl(var(--primary-h) var(--primary-s) var(--primary-l));
+  --danger: hsl(var(--danger-h) var(--danger-s) var(--danger-l));
+  --success: hsl(var(--success-h) var(--success-s) var(--success-l));
+
+  /* secondary/tertiary accents (HSL fallback) */
+  --accent1: hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 6%)));
+  --accent2: hsl(var(--primary-h) calc((var(--primary-s) - 30%)) calc((var(--primary-l) - 22%)));
+}
+
+/* Prefer OKLCH when supported */
+@supports (color: oklch(0.6 0.1 240)){
+  :root{
+    --bg: oklch(var(--bg-L) var(--bg-C) var(--bg-h-ok));
+    --text: oklch(var(--text-L) var(--text-C) var(--text-h-ok));
+    --muted: oklch(var(--muted-L) var(--muted-C) var(--muted-h-ok));
+    --panel: oklch(var(--panel-L) var(--panel-C) var(--panel-h-ok));
+    --card: oklch(var(--card-L) var(--card-C) var(--card-h-ok));
+    --border: oklch(var(--border-L) var(--border-C) var(--border-h-ok));
+    --primary: oklch(var(--primary-L) var(--primary-C) var(--primary-h-ok));
+    --danger: oklch(var(--danger-L) var(--danger-C) var(--danger-h-ok));
+    --success: oklch(var(--success-L) var(--success-C) var(--success-h-ok));
+
+    /* derived accents via relative color */
+    --accent1: oklch(from var(--primary) calc(min(1, var(--primary-L) + 0.06)) calc(max(0, var(--primary-C) - 0.04)) var(--primary-h-ok));
+    --accent2: oklch(from var(--bg)      calc(max(0, var(--bg-L) - 0.06))        calc(var(--bg-C))                  var(--bg-h-ok));
+  }
+}
+
 html, body { background: var(--bg); color: var(--text); }
 
-:root[data-theme="dark"] body{
-  background:
-    radial-gradient(60rem 60rem at 10% 0%,
-      color-mix(in oklab, var(--accent1) 22%, transparent), transparent 60%),
-    radial-gradient(50rem 50rem at 95% 10%,
-      color-mix(in oklab, var(--accent2) 22%, transparent), transparent 60%),
-    radial-gradient(70rem 60rem at 30% 100%,
-      color-mix(in oklab, var(--primary) 14%, transparent), transparent 60%),
-    var(--bg);
-  background-attachment: fixed, fixed, fixed, fixed;
-}
-:root[data-os="ios"][data-theme="dark"] body{
-  background-attachment: scroll, scroll, scroll, scroll;
+/* Ambient background bubbles — OKLCH first, HSL fallback */
+@supports (color: oklch(0.6 0.1 240)){
+  :root[data-theme="dark"] body{
+    background:
+      radial-gradient(60rem 60rem at 10% 0%,
+        oklch(calc(var(--bg-L) + 0.06) calc(max(0, var(--bg-C) - 0.01)) var(--bg-h-ok)),
+        transparent 60%),
+      radial-gradient(50rem 50rem at 92% 10%,
+        oklch(calc(var(--primary-L) - 0.22) calc(max(0, var(--primary-C) - 0.08)) var(--primary-h-ok)),
+        transparent 62%),
+      radial-gradient(70rem 60rem at 30% 100%,
+        oklch(calc(var(--primary-L) - 0.10) calc(max(0, var(--primary-C) - 0.06)) var(--primary-h-ok)),
+        transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+  }
 }
 
+@supports not (color: oklch(0.6 0.1 240)){
+  :root[data-theme="dark"] body{
+    background:
+      radial-gradient(60rem 60rem at 10% 0%,
+        hsl(var(--bg-h) var(--bg-s) calc((var(--bg-l) + 4%))), transparent 60%),
+      radial-gradient(50rem 50rem at 92% 10%,
+        hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 22%))), transparent 62%),
+      radial-gradient(70rem 60rem at 30% 100%,
+        hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 10%))), transparent 60%),
+      var(--bg);
+  }
+}
 
-/* accents */
-:root[data-theme="dark"][data-accent="base"]   { --primary:#3ECF8E; }
-:root[data-theme="dark"][data-accent="blue"]   { --primary:#3b82f6; }
-:root[data-theme="dark"][data-accent="indigo"] { --primary:#6366f1; }
-:root[data-theme="dark"][data-accent="emerald"]{ --primary:#34d399; }
-:root[data-theme="dark"][data-accent="amber"]  { --primary:#f59e0b; }
-:root[data-theme="light"][data-accent="base"]  { --primary:#26dc9dff;}
-:root[data-theme="light"][data-accent="blue"]   { --primary:#3b82f6; }
-:root[data-theme="light"][data-accent="indigo"] { --primary:#6366f1; }
-:root[data-theme="light"][data-accent="emerald"]{ --primary:#10b981; }
-:root[data-theme="light"][data-accent="amber"]  { --primary:#f59e0b; }
+/* iOS: avoid fixed attachment */
+:root[data-os="ios"][data-theme="dark"] body{ background-attachment: scroll; }
 
 * { transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
 
-/* Pause CSS animations when tab is hidden (brand-safe; avoids GPU work in background) */
+/* Pause CSS animations in background tabs */
 html[data-page-visible="false"] * { animation-play-state: paused !important; }
 
 .config-grid { display:grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
