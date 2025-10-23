@@ -6,11 +6,7 @@ import Script from "next/script";
 import ConsentOverlayHost from "@/components/consent/ConsentOverlayHost";
 import VisibilityManager from "@/components/system/VisibilityManager";
 
-
-
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.plan4host.com";
-
-
 
 export const metadata: Metadata = {
   title: "Plan4Host",
@@ -24,9 +20,6 @@ export const metadata: Metadata = {
       ro: "/ro",
     },
   },
-
-
-  
   openGraph: {
     siteName: "Plan4Host",
     type: "website",
@@ -42,10 +35,7 @@ export const metadata: Metadata = {
     description: "Stay Smart, Host Better",
     images: ["/og-default.png"],
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: { index: true, follow: true },
   icons: {
     icon: [
       { url: "/icons/icon-192.png", sizes: "192x192" },
@@ -74,15 +64,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const cookieStore = cookies();
   const langCookie = cookieStore.get("site_lang")?.value;
   const lang = langCookie === "ro" ? "ro" : "en";
+
+  // prefer cookie theme; default light
   const theme = (cookieStore.get("app_theme")?.value as "light" | "dark") ?? "light";
   const accent = cookieStore.get("app_accent")?.value ?? "base";
 
   return (
     <html lang={lang} data-theme={theme} data-accent={accent}>
       <body style={{ margin: 0 }}>
-        {/* Global page visibility manager (safe, no visual side effects) */}
+        {/* Visibility flags (no visual output) */}
         <VisibilityManager />
-        {/* UA flags -> <html data-browser|data-os|data-standalone> */}
+
+        {/* UA / PWA flags */}
         <Script id="ua-flags" strategy="beforeInteractive">
           {`(function(){
             try{
@@ -97,193 +90,87 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               var el = document.documentElement;
               el.setAttribute('data-os', os);
               el.setAttribute('data-browser', br);
-
-              // PWA/Standalone detect (pentru a ascunde Skip to content în aplicația instalată)
               var isStandalone = false;
               if (window.matchMedia) {
                 isStandalone =
                   window.matchMedia('(display-mode: standalone)').matches ||
                   window.matchMedia('(display-mode: fullscreen)').matches;
               }
-              // iOS legacy
-              if (!isStandalone && 'standalone' in navigator && (navigator as any).standalone) {
+              if (!isStandalone && 'standalone' in navigator && (navigator).standalone) {
                 isStandalone = true;
               }
-              if (isStandalone) {
-                el.setAttribute('data-standalone', 'true');
-              }
+              if (isStandalone) el.setAttribute('data-standalone', 'true');
             }catch(e){}
           })();`}
         </Script>
 
-        {/* ——— Palete + gradient global ——— */}
+        {/* ===== THEME TOKENS + DARK BLUE BACKDROP ===== */}
         <style
           dangerouslySetInnerHTML={{
             __html: `
-/* =============================
-   Theming via HSL + OKLCH tokens
-   ============================= */
-
-/* Accent hue (only hue changes per accent) */
-:root { --accent-h: 160; }
-:root[data-accent="blue"]   { --accent-h: 220; }
-:root[data-accent="indigo"] { --accent-h: 255; }
-:root[data-accent="emerald"]{ --accent-h: 160; }
-:root[data-accent="amber"]  { --accent-h: 38; }
-:root[data-accent="base"]   { --accent-h: 160; }
-
-/* HSL component tokens per theme */
+/* ---------- Global theme variables (light/dark) ---------- */
 :root[data-theme="light"]{
-  /* HSL components */
-  /* Slight cool grey canvas with clearer separation of surfaces */
-  --bg-h: 0; --bg-s: 0%; --bg-l: 94%;
-  --text-h: 210; --text-s: 22%; --text-l: 14%;
-  --muted-h: 215; --muted-s: 20%; --muted-l: 56%;
-  --panel-h: 0; --panel-s: 0%; --panel-l: 96%;
-  --card-h: 0; --card-s: 0%; --card-l: 98%;
-  --border-h: 210; --border-s: 32%; --border-l: 82%;
-
-  /* Primary derived from accent-h — stronger chroma for clearer accent */
-  --primary-h: var(--accent-h); --primary-s: 95%; --primary-l: 56%;
-  --danger-h: 15; --danger-s: 80%; --danger-l: 52%;
-  --success-h: 140; --success-s: 60%; --success-l: 52%;
-
-  /* OKLCH components (approximate perceptual matches) */
-  --bg-L: 0.94; --bg-C: 0; --bg-h-ok: 0;
-  --text-L: 0.15; --text-C: 0.03; --text-h-ok: 250;
-  --muted-L: 0.62; --muted-C: 0.04; --muted-h-ok: 230;
-  --panel-L: 0.965; --panel-C: 0.00; --panel-h-ok: 0;
-  --card-L: 0.985; --card-C: 0.00; --card-h-ok: 0;
-  --border-L: 0.84; --border-C: 0.01; --border-h-ok: 230;
-  --primary-L: 0.70; --primary-C: 0.20; --primary-h-ok: var(--accent-h);
-  --danger-L: 0.66; --danger-C: 0.16; --danger-h-ok: 25;
-  --success-L: 0.68; --success-C: 0.12; --success-h-ok: 145;
+  --bg:#f8fafc;
+  --text:#0c111b;
+  --muted:#5b6470;
+  --panel:#ffffff;
+  --card:#ffffff;
+  --border:#dbe2ea;
+  --primary:#7086b7;   /* cooler blue for light */
+  --danger:#d15656;
+  --success:#50bf79;
 }
-
 :root[data-theme="dark"]{
-  /* HSL components */
-  /* Slightly cool greys (reduce warm/brown perception) */
-  --bg-h: 220;   --bg-s: 3%;  --bg-l: 10%;
-  --text-h: 0;   --text-s: 0%; --text-l: 92%;
-  --muted-h: 220; --muted-s: 3%; --muted-l: 68%;
-  --panel-h: 220; --panel-s: 3%; --panel-l: 15%;
-  --card-h: 220;  --card-s: 3%; --card-l: 18%;
-  --border-h: 220; --border-s: 4%; --border-l: 28%;
-
-  /* Primary derived from accent-h — stronger chroma for clearer accent */
-  --primary-h: var(--accent-h); --primary-s: 92%; --primary-l: 58%;
-  --danger-h: 6; --danger-s: 78%; --danger-l: 56%;
-  --success-h: 135; --success-s: 58%; --success-l: 58%;
-
-  /* OKLCH components */
-  /* OKLCH: tiny cool bias to counter warm OLED/SDR casts */
-  --bg-L: 0.19;   --bg-C: 0.01; --bg-h-ok: 250;
-  --text-L: 0.94; --text-C: 0.00; --text-h-ok: 0;
-  --muted-L: 0.75; --muted-C: 0.01; --muted-h-ok: 250;
-  --panel-L: 0.22; --panel-C: 0.01; --panel-h-ok: 250;
-  --card-L: 0.26;  --card-C: 0.01; --card-h-ok: 250;
-  --border-L: 0.36; --border-C: 0.01; --border-h-ok: 250;
-  --primary-L: 0.70; --primary-C: 0.18; --primary-h-ok: var(--accent-h);
-  --danger-L: 0.63; --danger-C: 0.16; --danger-h-ok: 25;
-  --success-L: 0.66; --success-C: 0.12; --success-h-ok: 145;
+  /* your requested blue-ish dark palette */
+  --bg:#0c111b;       /* deep navy */
+  --text:#f8fafc;     /* near-white */
+  --muted:#9aa4af;    /* cool grey */
+  --panel:#111827;    /* slate */
+  --card:#0f172a;     /* indigo-slate */
+  --border:#22304a;   /* steel blue */
+  --primary:#60a5fa;  /* vivid blue accent */
+  --danger:#ef4444;
+  --success:#22c55e;
 }
 
-/* Materialize palette (HSL as baseline) */
-:root{
-  --bg: hsl(var(--bg-h) var(--bg-s) var(--bg-l));
-  --text: hsl(var(--text-h) var(--text-s) var(--text-l));
-  --muted: hsl(var(--muted-h) var(--muted-s) var(--muted-l));
-  --panel: hsl(var(--panel-h) var(--panel-s) var(--panel-l));
-  --card: hsl(var(--card-h) var(--card-s) var(--card-l));
-  --border: hsl(var(--border-h) var(--border-s) var(--border-l));
-  --primary: hsl(var(--primary-h) var(--primary-s) var(--primary-l));
-  --danger: hsl(var(--danger-h) var(--danger-s) var(--danger-l));
-  --success: hsl(var(--success-h) var(--success-s) var(--success-l));
-
-  /* secondary/tertiary accents (HSL fallback) */
-  --accent1: hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 10%)));
-  --accent2: hsl(var(--primary-h) calc((var(--primary-s) - 25%)) calc((var(--primary-l) - 16%)));
-  /* Accent scale (HSL fallback) */
-  --primary-weak:  hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 12%)));
-  --primary-strong:hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 8%)));
-
-  /* Action field surface (fallback) — lighter than card on dark; slightly lighter than card on light */
-  --field: hsl(var(--card-h) var(--card-s) calc((var(--card-l) + 2%)));
-}
-
-/* Prefer OKLCH when supported */
-@supports (color: oklch(0.6 0.1 240)){
-  :root{
-    --bg: oklch(var(--bg-L) var(--bg-C) var(--bg-h-ok));
-    --text: oklch(var(--text-L) var(--text-C) var(--text-h-ok));
-    --muted: oklch(var(--muted-L) var(--muted-C) var(--muted-h-ok));
-    --panel: oklch(var(--panel-L) var(--panel-C) var(--panel-h-ok));
-    --card: oklch(var(--card-L) var(--card-C) var(--card-h-ok));
-    --border: oklch(var(--border-L) var(--border-C) var(--border-h-ok));
-    --primary: oklch(var(--primary-L) var(--primary-C) var(--primary-h-ok));
-    --danger: oklch(var(--danger-L) var(--danger-C) var(--danger-h-ok));
-    --success: oklch(var(--success-L) var(--success-C) var(--success-h-ok));
-
-    /* derived accents via relative color (stronger separation) */
-    --accent1: oklch(from var(--primary) calc(min(1, var(--primary-L) + 0.10)) calc(max(0, var(--primary-C) - 0.05)) var(--primary-h-ok));
-    --accent2: oklch(from var(--bg)      calc(max(0, var(--bg-L) - 0.04))        calc(var(--bg-C))                  var(--bg-h-ok));
-    /* Accent scale */
-    --primary-weak:   oklch(from var(--primary) calc(min(1, var(--primary-L) + 0.12)) var(--primary-C) var(--primary-h-ok));
-    --primary-strong: oklch(from var(--primary) calc(max(0, var(--primary-L) - 0.08)) calc(min(1, var(--primary-C) + 0.02)) var(--primary-h-ok));
-
-    /* Field surface derived from card */
-    --field: oklch(from var(--card) calc(min(1, var(--card-L) + 0.02)) var(--card-C) var(--card-h-ok));
-  }
-}
-
+/* apply base */
 html, body { background: var(--bg); color: var(--text); }
 
-/* Ambient background bubbles — OKLCH first, HSL fallback */
-@supports (color: oklch(0.6 0.1 240)){
+/* ---------- Dark ambient "blue" gradients like the mock ---------- */
+:root[data-theme="dark"] body{
+  background:
+    radial-gradient(60rem 60rem at 12% 0%,
+      color-mix(in oklab, var(--bg), white 6%),
+      transparent 60%),
+    radial-gradient(46rem 46rem at 92% 12%,
+      color-mix(in oklab, var(--primary), black 35%),
+      transparent 62%),
+    radial-gradient(64rem 56rem at 30% 100%,
+      color-mix(in oklab, var(--primary), black 20%),
+      transparent 58%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+/* Fallback when color-mix/oklab unsupported */
+@supports not (background: color-mix(in oklab, black, white)){
   :root[data-theme="dark"] body{
     background:
-      radial-gradient(60rem 60rem at 10% 0%,
-        oklch(calc(var(--bg-L) + 0.06) calc(max(0, var(--bg-C) - 0.01)) var(--bg-h-ok)),
-        transparent 60%),
-      radial-gradient(50rem 50rem at 92% 10%,
-        oklch(calc(var(--primary-L) - 0.22) calc(max(0, var(--primary-C) - 0.08)) var(--primary-h-ok)),
-        transparent 62%),
-      radial-gradient(70rem 60rem at 30% 100%,
-        oklch(calc(var(--primary-L) - 0.10) calc(max(0, var(--primary-C) - 0.06)) var(--primary-h-ok)),
-        transparent 60%),
+      radial-gradient(60rem 60rem at 12% 0%,
+        #0f1625, transparent 60%),
+      radial-gradient(46rem 46rem at 92% 12%,
+        #1b2a48, transparent 62%),
+      radial-gradient(64rem 56rem at 30% 100%,
+        #173059, transparent 58%),
       var(--bg);
-    background-attachment: fixed;
   }
 }
 
-@supports not (color: oklch(0.6 0.1 240)){
-  :root[data-theme="dark"] body{
-    background:
-      radial-gradient(60rem 60rem at 10% 0%,
-        hsl(var(--bg-h) var(--bg-s) calc((var(--bg-l) + 4%))), transparent 60%),
-      radial-gradient(50rem 50rem at 92% 10%,
-        hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 22%))), transparent 62%),
-      radial-gradient(70rem 60rem at 30% 100%,
-        hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 10%))), transparent 60%),
-      var(--bg);
-  }
-}
-
-/* iOS: avoid fixed attachment */
+/* iOS Safari: avoid fixed attachment banding */
 :root[data-os="ios"][data-theme="dark"] body{ background-attachment: scroll; }
-:root[data-os="ios"][data-theme="light"] body{ background-attachment: scroll; }
 
-* { transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
-
-/* Pause CSS animations in background tabs */
-html[data-page-visible="false"] * { animation-play-state: paused !important; }
-
-.config-grid { display:grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
-@media (min-width: 1025px) { .config-grid { grid-template-columns: 280px 1fr; } }
-.room-row { display: grid; gap: 10px; grid-template-columns: 1fr auto; grid-template-areas: "name name" "type actions"; align-items: center; }
-@media (max-width: 480px) { .room-row { grid-template-columns: 1fr; grid-template-areas: "name" "type" "actions"; } }
-.rd-row { display: grid; grid-template-columns: 1fr 160px 90px 90px; gap: 8px; align-items: center; }
-@media (max-width: 480px) { .rd-row { grid-template-columns: 1fr; } }
+/* Smooth theme transitions */
+*{ transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
 
 /* Safe areas */
 :root{
@@ -300,20 +187,18 @@ html[data-page-visible="false"] * { animation-play-state: paused !important; }
     --safe-right: constant(safe-area-inset-right);
   }
 }
-.safe-top-pad{ padding-top: calc(var(--safe-top) + 8px); }
-.safe-bottom-pad{ padding-bottom: var(--safe-bottom); }
-.safe-top-sticky{ position: sticky; top: 0; }
-.safe-top-fixed{ position: fixed; top: var(--safe-top); }
-`,
 
+/* pause animations when tab hidden */
+html[data-page-visible="false"] *{ animation-play-state: paused !important; }
+`,
           }}
         />
 
+        {/* page content */}
         <div style={{ paddingTop: "var(--safe-top)", position: "relative", zIndex: 1 }}>
-        {children}
+          {children}
         </div>
 
-        {/* Host global pentru modalul “emoji” (deschis din OpenCookieSettingsButton / AutoOpenOnLanding) */}
         <ConsentOverlayHost />
       </body>
     </html>
