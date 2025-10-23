@@ -8,6 +8,7 @@ export default function BottomNav() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [path, setPath] = useState<string>("");
   const [kbOpen, setKbOpen] = useState(false);
+  const [forceHide, setForceHide] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
 
@@ -31,6 +32,18 @@ export default function BottomNav() {
         mq.removeListener(update);
       };
     }
+  }, []);
+
+  // Allow pages (e.g., search inputs) to explicitly hide/show nav on focus/blur
+  useEffect(() => {
+    const onHide = () => setForceHide(true);
+    const onShow = () => setForceHide(false);
+    window.addEventListener('p4h:nav:hide' as any, onHide);
+    window.addEventListener('p4h:nav:show' as any, onShow);
+    return () => {
+      window.removeEventListener('p4h:nav:hide' as any, onHide);
+      window.removeEventListener('p4h:nav:show' as any, onShow);
+    };
   }, []);
 
   // theme & path
@@ -135,7 +148,7 @@ useEffect(() => {
         padding: "8px 10px",
 
         // când tastatura e deschisă, NU mai urcă: îl scot în jos din viewport
-        transform: kbOpen ? "translateY(100%)" : "translateY(0)",
+        transform: (kbOpen || forceHide) ? "translateY(100%)" : "translateY(0)",
         transition: "transform .18s ease",
 
         zIndex: 2147483000,
