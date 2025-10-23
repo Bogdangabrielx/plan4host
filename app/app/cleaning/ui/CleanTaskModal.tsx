@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 
 
@@ -119,7 +120,9 @@ export default function CleanTaskModal({
     } catch {}
   }
 
-  return (
+  const portalTarget = typeof document !== 'undefined' ? document.body : null;
+  if (!portalTarget) return null;
+  return createPortal(
     <>
       {/* Backdrop under AppHeader/BottomNav (so header/nav stay visible) */}
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 90 }} />
@@ -205,6 +208,7 @@ export default function CleanTaskModal({
         .ct-body { height: 448px; padding-bottom: calc(var(--safe-bottom) + 8px); }
         @media (max-width: 720px) { .ct-body { height: 300px; } }
       `}</style>
-    </>
+    </>,
+    portalTarget
   );
 }
