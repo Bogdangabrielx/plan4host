@@ -312,12 +312,12 @@ export default function TeamClient() {
           }
           .scopeItem {
             display: flex; gap: 6px; align-items: center;
-            border: 1px solid var(--border); background: "var(--card)"; padding: 6px 8px; border-radius: 8px;
+            border: 1px solid var(--border);  padding: 6px 8px; border-radius: 8px;
           }
         }
         @media (min-width: 721px) {
           .scopesWrap { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
-          .scopeItem { display: flex; gap: 6px; background: "var(--card)"; align-items: center; border: 1px solid var(--border); padding: 6px 8px; border-radius: 8px; }
+          .scopeItem { display: flex; gap: 6px;  align-items: center; border: 1px solid var(--border); padding: 6px 8px; border-radius: 8px; }
         }
       `}</style>
     </div>
