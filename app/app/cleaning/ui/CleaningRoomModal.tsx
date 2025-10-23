@@ -106,7 +106,7 @@ export default function CleaningRoomModal({
   return (
     <div role="dialog" aria-modal="true" onClick={onClose}
       style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.6)", display: "grid", placeItems: "center" }}>
-      <div onClick={(e) => e.stopPropagation()} className="crm-modal"
+      <div onClick={(e) => e.stopPropagation()}
         style={{
           width: "min(680px, calc(100vw - 32px))", maxHeight: "calc(100vh - 32px)", overflow: "auto",
           background: "var(--panel)", color: "var(--text)",
@@ -178,13 +178,6 @@ export default function CleaningRoomModal({
           </button>
         </div>
       </div>
-      <style jsx>{`
-        @media (max-width: 720px) {
-          .crm-modal{
-            width: min(360px, calc((100vw - 24px) / 2));
-          }
-        }
-      `}</style>
     </div>
   );
 }

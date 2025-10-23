@@ -528,7 +528,9 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         ) : items.length === 0 ? (
           <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
         ) : (
+          <>
           <ul
+            className="cleanGrid"
             style={{
               listStyle: "none",
               padding: 0,
@@ -552,7 +554,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                   onClick={
                     !canWrite || isCleaned ? undefined : () => setOpenItem(it)
                   }
-                  className="sb-card"
+                  className="sb-card cleanCard"
                   style={{
                     aspectRatio: "1.2 / 1",
                     padding: 10,
@@ -599,6 +601,14 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               );
             })}
           </ul>
+          <style jsx>{`
+            /* Phone: exactly two cards per row and fixed height */
+            @media (max-width: 640px) {
+              .cleanGrid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+              .cleanCard { height: 300px; aspect-ratio: auto; }
+            }
+          `}</style>
+          </>
         )}
 
         {openItem && (
