@@ -199,14 +199,14 @@ export default function CleanTaskModal({
           .ct-modal{
             top: calc(var(--safe-top) + 72px) !important;                 /* sub AppHeader */
             transform: translateX(-50%) !important;                       /* fără translateY */
-            /* puțin mai scund: rezervă mai mult spațiu către BottomNav */
-            max-height: calc(100dvh - (var(--safe-top) + var(--nav-h, 88px) + 72px)) !important;
+            /* puțin mai înalt: rezervă ceva mai puțin spațiu către BottomNav */
+            max-height: calc(100dvh - (var(--safe-top) + var(--nav-h, 88px) + 56px)) !important;
             width: min(560px, calc(100vw - 12px));
           }
         }
         /* Visible task area fixed height (approx ~8 on desktop, ~6 on mobile) */
         .ct-body { height: 448px; padding-bottom: calc(var(--safe-bottom) + 8px); }
-        @media (max-width: 720px) { .ct-body { height: 300px; } }
+        @media (max-width: 720px) { .ct-body { height: 336px; } }
       `}</style>
     </>,
     portalTarget
