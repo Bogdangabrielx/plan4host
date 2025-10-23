@@ -145,8 +145,8 @@ useEffect(() => {
         bottom: 0,                 // ancorat de muchia fizică
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
+        borderTopLeftRadius: 23,
+        borderTopRightRadius: 23,
         padding: "8px 10px",
         overflow: "hidden",
 
