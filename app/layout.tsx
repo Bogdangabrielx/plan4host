@@ -135,12 +135,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* HSL component tokens per theme */
 :root[data-theme="light"]{
   /* HSL components */
-  --bg-h: 0; --bg-s: 0%; --bg-l: 98%;
+  /* Slight cool grey canvas with clearer separation of surfaces */
+  --bg-h: 0; --bg-s: 0%; --bg-l: 96%;
   --text-h: 210; --text-s: 22%; --text-l: 14%;
   --muted-h: 215; --muted-s: 20%; --muted-l: 56%;
-  --panel-h: 0; --panel-s: 0%; --panel-l: 99.3%;
-  --card-h: 0; --card-s: 0%; --card-l: 99.7%;
-  --border-h: 210; --border-s: 32%; --border-l: 88%;
+  --panel-h: 0; --panel-s: 0%; --panel-l: 97.5%;
+  --card-h: 0; --card-s: 0%; --card-l: 98%;
+  --border-h: 210; --border-s: 32%; --border-l: 85%;
 
   /* Primary derived from accent-h (keep S/L stable across accents) */
   --primary-h: var(--accent-h); --primary-s: 90%; --primary-l: 58%;
@@ -148,12 +149,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --success-h: 140; --success-s: 60%; --success-l: 52%;
 
   /* OKLCH components (approximate perceptual matches) */
-  --bg-L: 0.98; --bg-C: 0; --bg-h-ok: 0;
+  --bg-L: 0.96; --bg-C: 0; --bg-h-ok: 0;
   --text-L: 0.15; --text-C: 0.03; --text-h-ok: 250;
   --muted-L: 0.62; --muted-C: 0.04; --muted-h-ok: 230;
-  --panel-L: 0.993; --panel-C: 0.00; --panel-h-ok: 0;
-  --card-L: 0.998; --card-C: 0.00; --card-h-ok: 0;
-  --border-L: 0.88; --border-C: 0.01; --border-h-ok: 230;
+  --panel-L: 0.975; --panel-C: 0.00; --panel-h-ok: 0;
+  --card-L: 0.985; --card-C: 0.00; --card-h-ok: 0;
+  --border-L: 0.86; --border-C: 0.01; --border-h-ok: 230;
   --primary-L: 0.72; --primary-C: 0.14; --primary-h-ok: var(--accent-h);
   --danger-L: 0.66; --danger-C: 0.16; --danger-h-ok: 25;
   --success-L: 0.68; --success-C: 0.12; --success-h-ok: 145;
