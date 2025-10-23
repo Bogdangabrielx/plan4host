@@ -357,7 +357,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                     const next = texts.length;
                     const { data, error } = await supabase
                       .from("room_detail_text_fields")
-                      .insert({ property_id: selected.id, label: `Notes Tab ${next + 1}`, placeholder: "", sort_index: next })
+                      .insert({ property_id: selected.id, label: `Title for Notes Tab ${next + 1}`, placeholder: "", sort_index: next })
                       .select("id,property_id,label,placeholder,sort_index")
                       .single();
                     if (!error && data) setTexts(prev => [...prev, data as TextDef]);
