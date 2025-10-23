@@ -398,10 +398,7 @@ export default function DashboardClient({
               Save property
             </button>
           </div>
-          <small style={{ fontSize: 12, color: "var(--muted)" }}>
-            Check-in/out default to 14:00 / 11:00. <br />
-            Customizable anytime in the Property Setup.
-          </small>
+         
         </div>
       </section>
 

@@ -116,7 +116,7 @@ export default function RoomsTab({
                     value={r.room_type_id ?? ""}
                     onChange={(e) => onAssignType(r.id, e.currentTarget.value || null)}
                     className="sb-select"
-                    style={{ fontFamily: 'inherit' }}
+                    style={{ fontFamily: 'inherit', fontSize: 13 }}
                   >
                     <option value="">— None —</option>
                     {roomTypes.map((t) => (
