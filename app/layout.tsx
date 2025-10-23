@@ -223,9 +223,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 html, body { background: var(--bg); color: var(--text); }
 
-/* Ambient background bubbles — OKLCH first, HSL fallback */
-@supports (color: oklch(0.6 0.1 240)){
-  :root[data-theme="dark"] body{
+  /* Ambient background bubbles — OKLCH first, HSL fallback */
+  @supports (color: oklch(0.6 0.1 240)){
+    :root[data-theme="dark"] body{
     background:
       radial-gradient(60rem 60rem at 10% 0%,
         oklch(calc(var(--bg-L) + 0.06) calc(max(0, var(--bg-C) - 0.01)) var(--bg-h-ok)),
@@ -239,10 +239,24 @@ html, body { background: var(--bg); color: var(--text); }
       var(--bg);
     background-attachment: fixed;
   }
-}
+  :root[data-theme="light"] body{
+    background:
+      radial-gradient(60rem 60rem at 10% -5%,
+        oklch(calc(var(--primary-L) + 0.10) calc(max(0, var(--primary-C) - 0.06)) var(--primary-h-ok)),
+        transparent 72%),
+      radial-gradient(56rem 56rem at 100% 0%,
+        oklch(calc(var(--primary-L) + 0.06) calc(max(0, var(--primary-C) - 0.08)) var(--primary-h-ok)),
+        transparent 65%),
+      radial-gradient(68rem 58rem at 30% 100%,
+        oklch(calc(var(--primary-L) + 0.08) calc(max(0, var(--primary-C) - 0.08)) var(--primary-h-ok)),
+        transparent 62%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+  }
 
-@supports not (color: oklch(0.6 0.1 240)){
-  :root[data-theme="dark"] body{
+  @supports not (color: oklch(0.6 0.1 240)){
+    :root[data-theme="dark"] body{
     background:
       radial-gradient(60rem 60rem at 10% 0%,
         hsl(var(--bg-h) var(--bg-s) calc((var(--bg-l) + 4%))), transparent 60%),
@@ -251,11 +265,22 @@ html, body { background: var(--bg); color: var(--text); }
       radial-gradient(70rem 60rem at 30% 100%,
         hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 10%))), transparent 60%),
       var(--bg);
+    }
+    :root[data-theme="light"] body{
+      background:
+        radial-gradient(60rem 60rem at 10% -5%,
+          hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 10%))), transparent 72%),
+        radial-gradient(56rem 56rem at 100% 0%,
+          hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 6%))), transparent 65%),
+        radial-gradient(68rem 58rem at 30% 100%,
+          hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 8%))), transparent 62%),
+        var(--bg);
+    }
   }
-}
 
-/* iOS: avoid fixed attachment */
-:root[data-os="ios"][data-theme="dark"] body{ background-attachment: scroll; }
+  /* iOS: avoid fixed attachment */
+  :root[data-os="ios"][data-theme="dark"] body{ background-attachment: scroll; }
+  :root[data-os="ios"][data-theme="light"] body{ background-attachment: scroll; }
 
 * { transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
 
