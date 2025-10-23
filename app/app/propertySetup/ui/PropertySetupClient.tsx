@@ -496,7 +496,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         <style jsx>{`
           /* Desktop-only: narrow the main setup card width */
           @media (min-width: 1025px) {
-            .psMain { max-width: auto; width: auto; justify-self: start; }
+            .psMain { max-width: 1200px; width: auto; justify-self: start; }
           }
         `}</style>
         </div>
