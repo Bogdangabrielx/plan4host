@@ -287,7 +287,7 @@ const input: React.CSSProperties = {
   maxWidth: "100%",
   minWidth: 0,
   padding: "8px 10px",
-  background: "var(--bg)",
+  background: "var(--field)",
   color: "var(--text)",
   border: "1px solid var(--border)",
   borderRadius: 8,

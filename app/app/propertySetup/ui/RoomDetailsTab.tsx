@@ -217,7 +217,7 @@ const rowBase: React.CSSProperties  = {
   borderRadius: 10,
   padding: 10,
 };
-const textInput: React.CSSProperties = { padding: 8, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, fontFamily: 'inherit' };
+const textInput: React.CSSProperties = { padding: 8, background: "var(--field)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, fontFamily: 'inherit' };
 // buttons now use sb-btn classes
 const infoBox: React.CSSProperties = {
   border: "1px solid var(--border)",

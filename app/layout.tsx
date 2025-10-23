@@ -138,8 +138,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --bg-h: 0; --bg-s: 0%; --bg-l: 98%;
   --text-h: 210; --text-s: 22%; --text-l: 14%;
   --muted-h: 215; --muted-s: 20%; --muted-l: 56%;
-  --panel-h: 0; --panel-s: 0%; --panel-l: 100%;
-  --card-h: 0; --card-s: 0%; --card-l: 100%;
+  --panel-h: 0; --panel-s: 0%; --panel-l: 99%;
+  --card-h: 0; --card-s: 0%; --card-l: 99.5%;
   --border-h: 210; --border-s: 32%; --border-l: 90%;
 
   /* Primary derived from accent-h (keep S/L stable across accents) */
@@ -151,8 +151,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --bg-L: 0.98; --bg-C: 0; --bg-h-ok: 0;
   --text-L: 0.15; --text-C: 0.03; --text-h-ok: 250;
   --muted-L: 0.62; --muted-C: 0.04; --muted-h-ok: 230;
-  --panel-L: 1.00; --panel-C: 0.00; --panel-h-ok: 0;
-  --card-L: 1.00; --card-C: 0.00; --card-h-ok: 0;
+  --panel-L: 0.99; --panel-C: 0.00; --panel-h-ok: 0;
+  --card-L: 0.995; --card-C: 0.00; --card-h-ok: 0;
   --border-L: 0.90; --border-C: 0.01; --border-h-ok: 230;
   --primary-L: 0.72; --primary-C: 0.14; --primary-h-ok: var(--accent-h);
   --danger-L: 0.66; --danger-C: 0.16; --danger-h-ok: 25;
@@ -165,7 +165,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --text-h: 210; --text-s: 20%; --text-l: 92%;
   --muted-h: 215; --muted-s: 12%; --muted-l: 64%;
   --panel-h: 220; --panel-s: 36%; --panel-l: 12%;
-  --card-h: 220; --card-s: 36%; --card-l: 9%;
+  --card-h: 220; --card-s: 36%; --card-l: 14%;
   --border-h: 220; --border-s: 22%; --border-l: 22%;
 
   /* Primary derived from accent-h */
@@ -178,7 +178,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --text-L: 0.94; --text-C: 0.02; --text-h-ok: 250;
   --muted-L: 0.72; --muted-C: 0.04; --muted-h-ok: 240;
   --panel-L: 0.19; --panel-C: 0.03; --panel-h-ok: 260;
-  --card-L: 0.17; --card-C: 0.03; --card-h-ok: 260;
+  --card-L: 0.22; --card-C: 0.03; --card-h-ok: 260;
   --border-L: 0.32; --border-C: 0.02; --border-h-ok: 260;
   --primary-L: 0.70; --primary-C: 0.13; --primary-h-ok: var(--accent-h);
   --danger-L: 0.63; --danger-C: 0.16; --danger-h-ok: 25;
@@ -200,6 +200,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   /* secondary/tertiary accents (HSL fallback) */
   --accent1: hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) + 6%)));
   --accent2: hsl(var(--primary-h) calc((var(--primary-s) - 30%)) calc((var(--primary-l) - 22%)));
+
+  /* Action field surface (fallback) — lighter than card on dark; slightly lighter than card on light */
+  --field: hsl(var(--card-h) var(--card-s) calc((var(--card-l) + 2%)));
 }
 
 /* Prefer OKLCH when supported */
@@ -218,6 +221,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     /* derived accents via relative color */
     --accent1: oklch(from var(--primary) calc(min(1, var(--primary-L) + 0.06)) calc(max(0, var(--primary-C) - 0.04)) var(--primary-h-ok));
     --accent2: oklch(from var(--bg)      calc(max(0, var(--bg-L) - 0.06))        calc(var(--bg-C))                  var(--bg-h-ok));
+
+    /* Field surface derived from card */
+    --field: oklch(from var(--card) calc(min(1, var(--card-L) + 0.02)) var(--card-C) var(--card-h-ok));
   }
 }
 

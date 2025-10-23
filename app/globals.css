@@ -249,6 +249,14 @@ textarea:focus-visible {
   line-height: 1.2;
 }
 
+/* Inside cards, elevate fields slightly (lighter than card on dark; slightly lighter than card on light) */
+.sb-card input,
+.sb-card textarea,
+.sb-card select,
+.sb-card .sb-select {
+  background: var(--field);
+}
+
 select:not(.sb-select){ /* opțional */
   -webkit-appearance: menulist;
   appearance: auto;
