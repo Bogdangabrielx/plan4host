@@ -526,111 +526,115 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         ) : items.length === 0 ? (
           <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
         ) : (
-          <ul
-            style={{
-              listStyle: "none",
-              padding: 0,
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: 10,
-            }}
-          >
-            {items.map((it) => {
-              const key = `${it.room.id}|${it.cleanDate}`;
-              const prog = cleaningMap[key] || {};
-              const doneCount = tdefs.filter((t) => !!prog[t.id]).length;
-              const total = tdefs.length;
-              const cleaned = total > 0 && doneCount === total;
-              const cleanedBy = cleanedByMap[key];
-              const isCleaned = cleaned || !!cleanedBy;
+          <><ul
+                className="cleanGrid"
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  display: "grid",
+                  gap: 10,
+                }}
+              >
+                {items.map((it) => {
+                  const key = `${it.room.id}|${it.cleanDate}`;
+                  const prog = cleaningMap[key] || {};
+                  const doneCount = tdefs.filter((t) => !!prog[t.id]).length;
+                  const total = tdefs.length;
+                  const cleaned = total > 0 && doneCount === total;
+                  const cleanedBy = cleanedByMap[key];
+                  const isCleaned = cleaned || !!cleanedBy;
 
-              return (
-                <li
-                  key={it.room.id + "|" + it.cleanDate}
-                  onClick={
-                    !canWrite || isCleaned ? undefined : () => setOpenItem(it)
-                  }
-                  className="sb-card"
-                  style={{
-                    aspectRatio: "1.2 / 1",
-                    padding: 12,
-                    cursor: isCleaned ? "default" : "pointer",
-                    display: "grid",
-                    placeItems: "center",
-                    gap: 8,
-                    opacity: isCleaned ? 0.72 : 1,
-                    background: "linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%)",
-                    border: "1px solid rgba(96,165,250,0.25)",
-                    boxShadow: "0 12px 28px rgba(0,0,0,0.35)",
-                  }}
-                  title={isCleaned ? "Cleaned" : "Open cleaning tasks"}
-                >
-                  <div style={{ textAlign: "center", display: "grid", gap: 8 }}>
-                    {/* Progress ring */}
-                    <div
-                      aria-hidden
+                  return (
+                    <li
+                      key={it.room.id + "|" + it.cleanDate}
+                      onClick={!canWrite || isCleaned ? undefined : () => setOpenItem(it)}
+                      className="sb-card"
                       style={{
-                        width: 38,
-                        height: 38,
-                        borderRadius: 9999,
-                        padding: 2,
-                        background: "linear-gradient(180deg, rgba(96, 165, 250, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%)",
-                        boxShadow: "0 0 10px rgba(96,165,250,0.15)",
-                        margin: "0 auto",
+                        aspectRatio: "1.2 / 1",
+                        padding: 12,
+                        cursor: isCleaned ? "default" : "pointer",
+                        display: "grid",
+                        placeItems: "center",
+                        gap: 8,
+                        opacity: isCleaned ? 0.72 : 1,
+                        background: "linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%)",
+                        border: "1px solid rgba(96,165,250,0.25)",
+                        boxShadow: "0 12px 28px rgba(0,0,0,0.35)",
                       }}
+                      title={isCleaned ? "Cleaned" : "Open cleaning tasks"}
                     >
-                      <div
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          borderRadius: 9999,
-                          background: "rgba(17,24,39,0.85)",
-                          display: "grid",
-                          placeItems: "center",
-                          color: "rgba(228,234,243,1)",
-                          fontSize: 12,
-                          fontWeight: 800,
-                          boxShadow: "inset 0 0 10px rgba(96,165,250,0.15)",
-                        }}
-                      >
-                        {doneCount}/{total}
+                      <div style={{ textAlign: "center", display: "grid", gap: 8 }}>
+                        {/* Progress ring */}
+                        <div
+                          aria-hidden
+                          style={{
+                            width: 38,
+                            height: 38,
+                            borderRadius: 9999,
+                            padding: 2,
+                            background: "linear-gradient(180deg, rgba(96, 165, 250, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%)",
+                            boxShadow: "0 0 10px rgba(96,165,250,0.15)",
+                            margin: "0 auto",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              borderRadius: 9999,
+                              background: "rgba(17,24,39,0.85)",
+                              display: "grid",
+                              placeItems: "center",
+                              color: "rgba(228,234,243,1)",
+                              fontSize: 12,
+                              fontWeight: 800,
+                              boxShadow: "inset 0 0 10px rgba(96,165,250,0.15)",
+                            }}
+                          >
+                            {doneCount}/{total}
+                          </div>
+                        </div>
+
+                        {/* Icon above room name, theme-aware */}
+                        <Image
+                          src={roomIconSrc}
+                          alt=""
+                          width={29}
+                          height={29}
+                          style={{ margin: "0 auto", opacity: 0.95, pointerEvents: "none" }} />
+
+                        <strong
+                          style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {it.room.name}
+                        </strong>
+
+                        <small style={{ color: "rgba(154, 164, 175, 1)" }}>
+                          {it.mode === "carry"
+                            ? `carry-over • ${it.cleanDate}`
+                            : it.statusLine}
+                        </small>
+                        {isCleaned && (
+                          <span className="sb-badge">
+                            {cleanedBy ? `Cleaned by ${cleanedBy}` : "Cleaned"}
+                          </span>
+                        )}
                       </div>
-                    </div>
-
-                    {/* Icon above room name, theme-aware */}
-                    <Image
-                      src={roomIconSrc}
-                      alt=""
-                      width={29}
-                      height={29}
-                      style={{ margin: "0 auto", opacity: 0.95, pointerEvents: "none" }}
-                    />
-
-                    <strong
-                      style={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {it.room.name}
-                    </strong>
-
-                    <small style={{ color: "rgba(154, 164, 175, 1)" }}>
-                      {it.mode === "carry"
-                        ? `carry-over • ${it.cleanDate}`
-                        : it.statusLine}
-                    </small>
-                    {isCleaned && (
-                      <span className="sb-badge">
-                        {cleanedBy ? `Cleaned by ${cleanedBy}` : "Cleaned"}
-                      </span>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                    </li>
+                  );
+                })}
+              </ul><style jsx>{`
+            /* Desktop/tablet default */
+            .cleanGrid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+            /* Phone: exactly two cards per row */
+            @media (max-width: 640px) {
+              .cleanGrid { grid-template-columns: repeat(2, 1fr); }
+            }
+          `}</style></>
         )}
 
         {openItem && (

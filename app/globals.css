@@ -38,7 +38,8 @@ body {
   --panel: rgba(17, 24, 39, 0.95);
   --card: rgba(15, 23, 42, 0.95);
   --border: rgba(96, 165, 250, 0.25);
-  --primary: rgba(96, 165, 250, 1);
+  /* Keep existing green primary */
+  --primary: rgba(62, 207, 142, 1);
   --muted: rgba(154, 164, 175, 1);
   --text: rgba(248, 250, 252, 1);
 }
