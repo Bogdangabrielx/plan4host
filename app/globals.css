@@ -269,21 +269,44 @@ textarea:focus-visible {
 .sb-select{
   -webkit-appearance: menulist;
   appearance: auto;
-  background: var(--card);
   color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-weight: 700;
   font-family: inherit;
+  font-weight: 800;
   line-height: 1.2;
+  padding: 10px 14px;
+  border-radius: 999px; /* pill */
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  /* layered background to create subtle bevel + hotspot */
+  background:
+    radial-gradient(140% 260% at 18% 0%, color-mix(in srgb, var(--bg) 22%, transparent), transparent 62%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--card) 96%, var(--bg) 4%),
+      color-mix(in srgb, var(--card) 88%, var(--bg) 12%)
+    );
+  /* inner highlight + crisp edge + soft lift */
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--bg) 46%, transparent) inset,
+    0 -1px 0 color-mix(in srgb, var(--border) 45%, transparent) inset,
+    0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent) inset,
+    0 8px 24px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.sb-select:hover{
+  background:
+    radial-gradient(140% 240% at 20% 0%, color-mix(in srgb, var(--bg) 26%, transparent), transparent 64%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--card) 97%, var(--bg) 3%),
+      color-mix(in srgb, var(--card) 86%, var(--bg) 14%)
+    );
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--bg) 50%, transparent) inset,
+    0 -1px 0 color-mix(in srgb, var(--border) 48%, transparent) inset,
+    0 0 0 1px color-mix(in srgb, var(--border) 65%, transparent) inset,
+    0 12px 32px color-mix(in srgb, var(--primary) 16%, transparent);
 }
 
 /* Inside cards, elevate fields slightly (lighter than card on dark; slightly lighter than card on light) */
-.sb-card input,
-.sb-card textarea,
-.sb-card select,
-.sb-card .sb-select {
+/* Inside cards, elevate typical fields but preserve custom styling for .sb-select */
+.sb-card :where(input, textarea, select):not(.sb-select){
   background: var(--field);
 }
 
