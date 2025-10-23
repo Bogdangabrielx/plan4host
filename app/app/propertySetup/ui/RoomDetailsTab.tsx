@@ -71,7 +71,7 @@ export default function RoomDetailsTab({
         {checks.length === 0 && <p style={{ color: "var(--muted)" }}>No checklist item defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...checks].sort((a,b) => a.sort_index - b.sort_index).map((c, idx) => (
-            <li key={c.id} style={rowBase} className="rd-row">
+            <li key={c.id} style={rowBase} className="rd-row" data-kind="check">
               <input
                 defaultValue={c.label}
                 onBlur={(e) => {
@@ -85,11 +85,11 @@ export default function RoomDetailsTab({
                 <input type="checkbox" defaultChecked={c.default_value} onChange={(e) => onToggleCheckDefault(c.id, e.currentTarget.checked)} />
                 default ON
               </label>
-              <div style={{ display: "flex", gap: 6 }}>
+              <div className="rd-actions" style={{ display: "flex", gap: 6 }}>
                 <button onClick={() => onMoveCheck(c.id, "up")} disabled={idx === 0} className="sb-btn" title="Move up">↑</button>
                 <button onClick={() => onMoveCheck(c.id, "down")} disabled={idx === checks.length - 1} className="sb-btn" title="Move down">↓</button>
+                <button onClick={() => setConfirmDel({ kind:'check', id: c.id, label: c.label })} className="sb-btn">Delete</button>
               </div>
-              <button onClick={() => setConfirmDel({ kind:'check', id: c.id, label: c.label })} className="sb-btn">Delete</button>
             </li>
           ))}
         </ul>
@@ -139,7 +139,7 @@ export default function RoomDetailsTab({
         {texts.length === 0 && <p style={{ color: "var(--muted)" }}>No notes tab defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...texts].sort((a,b) => a.sort_index - b.sort_index).map((t, idx) => (
-            <li key={t.id} style={rowBase} className="rd-row">
+            <li key={t.id} style={rowBase} className="rd-row" data-kind="text">
               <input
                 defaultValue={t.label}
                 onBlur={(e) => {
@@ -158,11 +158,11 @@ export default function RoomDetailsTab({
                 }}
                 style={textInput}
               />
-              <div style={{ display: "flex", gap: 6 }}>
+              <div className="rd-actions" style={{ display: "flex", gap: 6 }}>
                 <button onClick={() => onMoveText(t.id, "up")} disabled={idx === 0} className="sb-btn" title="Move up">↑</button>
                 <button onClick={() => onMoveText(t.id, "down")} disabled={idx === texts.length - 1} className="sb-btn" title="Move down">↓</button>
+                <button onClick={() => setConfirmDel({ kind:'text', id: t.id, label: t.label })} className="sb-btn">Delete</button>
               </div>
-              <button onClick={() => setConfirmDel({ kind:'text', id: t.id, label: t.label })} className="sb-btn">Delete</button>
             </li>
           ))}
         </ul>
@@ -195,6 +195,18 @@ export default function RoomDetailsTab({
         </div>
       )}
     </div>
+    <style jsx>{`
+      /* Desktop grids: align columns per kind */
+      @media (min-width: 721px) {
+        .rd-row[data-kind="check"] { grid-template-columns: 1fr auto auto; align-items: center; }
+        .rd-row[data-kind="text"]  { grid-template-columns: 1fr 1fr auto; align-items: center; }
+      }
+      /* Mobile: stack inputs, actions on one row below inputs */
+      @media (max-width: 720px) {
+        .rd-row { grid-template-columns: 1fr; }
+        .rd-actions { display: flex; gap: 8px; justify-content: flex-end; }
+      }
+    `}</style>
   );
 }
 
