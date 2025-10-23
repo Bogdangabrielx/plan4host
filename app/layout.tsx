@@ -239,26 +239,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 html, body { background: var(--bg); color: var(--text); }
 
 /* Ambient background bubbles — OKLCH first, HSL fallback */
-/* New dark theme RGBA palette override */
-:root[data-theme="dark"]{
-  /* Explicit RGBA variables per new design */
-  --bg: rgba(12, 17, 27, 1);
-  --panel: rgba(17, 24, 39, 0.95);
-  --card: rgba(15, 23, 42, 0.95);
-  --border: rgba(96, 165, 250, 0.25);
-  /* Keep existing green primary */
-  --primary: rgba(62, 207, 142, 1);
-  --muted: rgba(154, 164, 175, 1);
-  --text: rgba(248, 250, 252, 1);
+@supports (color: oklch(0.6 0.1 240)){
+  :root[data-theme="dark"] body{
+    background:
+      radial-gradient(60rem 60rem at 10% 0%,
+        oklch(calc(var(--bg-L) + 0.06) calc(max(0, var(--bg-C) - 0.01)) var(--bg-h-ok)),
+        transparent 60%),
+      radial-gradient(50rem 50rem at 92% 10%,
+        oklch(calc(var(--primary-L) - 0.22) calc(max(0, var(--primary-C) - 0.08)) var(--primary-h-ok)),
+        transparent 62%),
+      radial-gradient(70rem 60rem at 30% 100%,
+        oklch(calc(var(--primary-L) - 0.10) calc(max(0, var(--primary-C) - 0.06)) var(--primary-h-ok)),
+        transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+  }
 }
 
-/* New dark ambient background with specified RGBA gradients */
-:root[data-theme="dark"] body{
-  background:
-    radial-gradient(60rem 60rem at 10% 0%, rgba(30, 45, 75, 0.9), transparent 60%),
-    radial-gradient(70rem 60rem at 85% 85%, rgba(20, 35, 65, 0.85), transparent 60%),
-    rgba(12, 17, 27, 1);
-  background-attachment: fixed;
+@supports not (color: oklch(0.6 0.1 240)){
+  :root[data-theme="dark"] body{
+    background:
+      radial-gradient(60rem 60rem at 10% 0%,
+        hsl(var(--bg-h) var(--bg-s) calc((var(--bg-l) + 4%))), transparent 60%),
+      radial-gradient(50rem 50rem at 92% 10%,
+        hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 22%))), transparent 62%),
+      radial-gradient(70rem 60rem at 30% 100%,
+        hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 10%))), transparent 60%),
+      var(--bg);
+  }
 }
 
 /* iOS: avoid fixed attachment */
