@@ -496,7 +496,7 @@ select:not(.sb-select){ /* opțional */
 }
 
 /* Cards: remove elevation shadow on dark theme */
-//* :root[data-theme="dark"] .sb-card,
+/* :root[data-theme="dark"] .sb-card,
 :root[data-theme="dark"] .sb-card:hover,
 :root[data-theme="dark"] .sb-card:focus-within{
   box-shadow: none !important;
