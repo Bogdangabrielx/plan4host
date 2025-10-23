@@ -131,3 +131,14 @@ select * from public.properties limit 5;
 
 ---
 Acest document se sincronizează cu `supabase/docs/plan_policies_overview.sql`. Pentru un audit complet (politici/expr), folosește și `supabase/docs/rls_and_sql_audit.md`.
+
+
+
+
+
+/* Cards: remove elevation shadow on dark theme */
+:root[data-theme="dark"] .sb-card,
+:root[data-theme="dark"] .sb-card:hover,
+:root[data-theme="dark"] .sb-card:focus-within{
+  box-shadow: none !important;
+}
