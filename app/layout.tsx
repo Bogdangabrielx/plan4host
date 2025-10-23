@@ -6,11 +6,7 @@ import Script from "next/script";
 import ConsentOverlayHost from "@/components/consent/ConsentOverlayHost";
 import VisibilityManager from "@/components/system/VisibilityManager";
 
-
-
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.plan4host.com";
-
-
 
 export const metadata: Metadata = {
   title: "Plan4Host",
@@ -24,7 +20,6 @@ export const metadata: Metadata = {
       ro: "/ro",
     },
   },
-
 
   
   openGraph: {
