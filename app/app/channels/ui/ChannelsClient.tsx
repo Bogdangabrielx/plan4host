@@ -641,7 +641,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         <Modal title="Export · Rooms" onClose={() => { setShowRoomsModal(false); setActiveRoomId(null); }}>
           <div style={tileGrid}>
             {rooms.length === 0 ? (
-              <p style={{ color: "var(--text)", gridColumn: "1 / -1" }}>No rooms in this property.</p>
+              <p style={{ color: "var(--text)", gridColumn: "1 / -1",background: "var(--panel)",}}>No rooms in this property.</p>
             ) : rooms.map(r => (
               <button
                 key={r.id}
@@ -679,7 +679,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         <Modal title="Export · Room Types" onClose={() => { setShowTypesModal(false); setActiveTypeId(null); }}>
           <div style={tileGrid}>
             {types.length === 0 ? (
-              <p style={{ color: "var(--text)", gridColumn: "1 / -1" }}>No room types defined.</p>
+              <p style={{ color: "var(--text)", gridColumn: "1 / -1",background: "var(--panel)" }}>No room types defined.</p>
             ) : types.map(t => (
               <button
                 key={t.id}
