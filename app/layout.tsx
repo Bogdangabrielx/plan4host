@@ -239,6 +239,21 @@ html, body { background: var(--bg); color: var(--text); }
       var(--bg);
     background-attachment: fixed;
   }
+  :root[data-theme="light"] body{
+    /* Near-white neutral bubbles, derived from bg (not accent) */
+    background:
+      radial-gradient(60rem 60rem at 10% -5%,
+        oklch(calc(var(--bg-L) + 0.04) calc(max(0, var(--bg-C) - 0.005)) var(--bg-h-ok)),
+        transparent 72%),
+      radial-gradient(56rem 56rem at 100% 0%,
+        oklch(calc(var(--bg-L) + 0.02) calc(max(0, var(--bg-C) - 0.005)) var(--bg-h-ok)),
+        transparent 65%),
+      radial-gradient(68rem 58rem at 30% 100%,
+        oklch(calc(var(--bg-L) + 0.03) calc(max(0, var(--bg-C) - 0.005)) var(--bg-h-ok)),
+        transparent 62%),
+      var(--bg);
+    background-attachment: fixed;
+  }
 }
 
 @supports not (color: oklch(0.6 0.1 240)){
@@ -252,10 +267,21 @@ html, body { background: var(--bg); color: var(--text); }
         hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 10%))), transparent 60%),
       var(--bg);
   }
+  :root[data-theme="light"] body{
+    background:
+      radial-gradient(60rem 60rem at 10% -5%,
+        hsl(var(--bg-h) var(--bg-s) calc((var(--bg-l) + 4%))), transparent 72%),
+      radial-gradient(56rem 56rem at 100% 0%,
+        hsl(var(--bg-h) var(--bg-s) calc((var(--bg-l) + 2%))), transparent 65%),
+      radial-gradient(68rem 58rem at 30% 100%,
+        hsl(var(--bg-h) var(--bg-s) calc((var(--bg-l) + 3%))), transparent 62%),
+      var(--bg);
+  }
 }
 
 /* iOS: avoid fixed attachment */
 :root[data-os="ios"][data-theme="dark"] body{ background-attachment: scroll; }
+:root[data-os="ios"][data-theme="light"] body{ background-attachment: scroll; }
 
 * { transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
 

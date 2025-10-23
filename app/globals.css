@@ -98,11 +98,11 @@ textarea:focus-visible {
     content: "";
     position: absolute; left: 0; right: 0; top: 0; height: 3px;
     pointer-events: none;
-    /* center brighter, fade to transparent at edges */
+    /* neutral (near-white) reflex: chroma ~0, no accent tint */
     background: linear-gradient(90deg,
-      oklch(calc(var(--card-L) + var(--card-top-dL)) calc(max(0, var(--card-C) + var(--card-top-dC))) var(--accent-h) / 0) 0%,
-      oklch(calc(var(--card-L) + var(--card-top-dL)) calc(max(0, var(--card-C) + var(--card-top-dC))) var(--accent-h) / .85) 50%,
-      oklch(calc(var(--card-L) + var(--card-top-dL)) calc(max(0, var(--card-C) + var(--card-top-dC))) var(--accent-h) / 0) 100%
+      oklch(calc(var(--card-L) + var(--card-top-dL)) 0 var(--card-h-ok) / 0) 0%,
+      oklch(calc(var(--card-L) + var(--card-top-dL)) 0 var(--card-h-ok) / .85) 50%,
+      oklch(calc(var(--card-L) + var(--card-top-dL)) 0 var(--card-h-ok) / 0) 100%
     );
     transition: opacity .14s ease, filter .14s ease;
   }
@@ -147,10 +147,11 @@ textarea:focus-visible {
   }
   .sb-card::before{
     content: ""; position: absolute; left:0; right:0; top:0; height:3px; pointer-events: none;
+    /* neutral reflex in HSL fallback */
     background: linear-gradient(90deg,
-      hsl(var(--primary-h) var(--primary-s) calc((var(--card-l) + 2%)) / 0) 0%,
-      hsl(var(--primary-h) var(--primary-s) calc((var(--card-l) + 2%)) / .85) 50%,
-      hsl(var(--primary-h) var(--primary-s) calc((var(--card-l) + 2%)) / 0) 100%
+      hsl(var(--card-h) 0% calc((var(--card-l) + 2%)) / 0) 0%,
+      hsl(var(--card-h) 0% calc((var(--card-l) + 2%)) / .85) 50%,
+      hsl(var(--card-h) 0% calc((var(--card-l) + 2%)) / 0) 100%
     );
     transition: opacity .14s ease;
   }
