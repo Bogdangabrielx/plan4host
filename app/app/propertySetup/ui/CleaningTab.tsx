@@ -16,7 +16,7 @@ export default function CleaningTab({
 }) {
   const [confirmDel, setConfirmDel] = useState<null | { id: string; label: string }>(null);
   return (
-    <section className="sb-card" style={{ display: "grid", gap: 12, padding: 12 }}>
+    <section className="sb-card ps-cleaning" style={{ display: "grid", gap: 12, padding: 12 }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h3 style={{ margin: 0 }}>Cleaning tasks</h3>
         <button onClick={onAdd} className="sb-btn sb-btn--primary">+ Add task</button>
@@ -28,7 +28,7 @@ export default function CleaningTab({
 
       <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
         {[...tasks].sort((a,b) => a.sort_index - b.sort_index).map((t, idx) => (
-          <li key={t.id} style={row}>
+          <li key={t.id} className="ct-row">
             <input
               defaultValue={t.label}
               onBlur={(e) => {
@@ -36,13 +36,14 @@ export default function CleaningTab({
                 if (!v || v === t.label) { e.currentTarget.value = t.label; return; }
                 onRename(t.id, v);
               }}
+              className="ct-input"
               style={textInput}
             />
-            <div style={{ display: "flex", gap: 6 }}>
+            <div className="ct-actions">
               <button onClick={() => onMove(t.id, "up")}   disabled={idx === 0}                   className="sb-btn" title="Move up">↑</button>
               <button onClick={() => onMove(t.id, "down")} disabled={idx === tasks.length - 1}    className="sb-btn" title="Move down">↓</button>
+              <button onClick={() => setConfirmDel({ id: t.id, label: t.label })} className="sb-btn">Delete</button>
             </div>
-            <button onClick={() => setConfirmDel({ id: t.id, label: t.label })} className="sb-btn">Delete</button>
           </li>
         ))}
       </ul>
@@ -64,6 +65,18 @@ export default function CleaningTab({
           </div>
         </div>
       )}
+      <style jsx>{`
+        /* Make cleaning card behave like other setup cards and be full-width on mobile */
+        .ps-cleaning { width: 100%; }
+        .ct-row { display: grid; grid-template-columns: 1fr 180px; gap: 8px; align-items: center; }
+        .ct-actions { display: flex; gap: 6px; justify-content: flex-end; }
+        .ct-input { width: 100%; }
+        @media (max-width: 720px) {
+          .ct-row { grid-template-columns: 1fr; }
+          .ct-actions { display: grid; grid-template-columns: 1fr; gap: 8px; }
+          .ct-actions > button { width: 100%; border-radius: 29px !important; min-height: 44px; }
+        }
+      `}</style>
     </section>
   );
 }
