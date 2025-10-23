@@ -25,11 +25,11 @@ export default function RoomDetailsTab({
   const [showChecksInfo, setShowChecksInfo] = useState<boolean>(false);
   const [showNotesInfo, setShowNotesInfo] = useState<boolean>(false);
   return (
-    <div style={{ display: "grid", gap: 16 }}>
+    <><div style={{ display: "grid", gap: 16 }}>
       {/* Checks */}
       <section className="sb-card" style={{ padding: 12 }}>
         <header style={head}>
-          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <h3 style={{ margin: 0 }}>Checklist Item</h3>
             <button
               type="button"
@@ -61,8 +61,8 @@ export default function RoomDetailsTab({
         </header>
         {showChecksInfo && (
           <div id="checks-info" className="sb-card" style={infoBox}>
-            <strong style={{ display:'block', marginBottom:6 }}>What are checklist items?</strong>
-            <div style={{ color:'var(--muted)' }}>
+            <strong style={{ display: 'block', marginBottom: 6 }}>What are checklist items?</strong>
+            <div style={{ color: 'var(--muted)' }}>
               Define yes/no preferences that staff can toggle per reservation. Examples: breakfast, daily towel change, extra bed.
               Set a default state here; the values can be adjusted later when managing each booking.
             </div>
@@ -70,7 +70,7 @@ export default function RoomDetailsTab({
         )}
         {checks.length === 0 && <p style={{ color: "var(--muted)" }}>No checklist item defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
-          {[...checks].sort((a,b) => a.sort_index - b.sort_index).map((c, idx) => (
+          {[...checks].sort((a, b) => a.sort_index - b.sort_index).map((c, idx) => (
             <li key={c.id} style={rowBase} className="rd-row" data-kind="check">
               <input
                 defaultValue={c.label}
@@ -78,9 +78,8 @@ export default function RoomDetailsTab({
                   const v = e.currentTarget.value.trim();
                   if (v && v !== c.label) onRenameCheck(c.id, v);
                   else e.currentTarget.value = c.label;
-                }}
-                style={textInput}
-              />
+                } }
+                style={textInput} />
               <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input type="checkbox" defaultChecked={c.default_value} onChange={(e) => onToggleCheckDefault(c.id, e.currentTarget.checked)} />
                 default ON
@@ -88,7 +87,7 @@ export default function RoomDetailsTab({
               <div className="rd-actions" style={{ display: "flex", gap: 6 }}>
                 <button onClick={() => onMoveCheck(c.id, "up")} disabled={idx === 0} className="sb-btn" title="Move up">↑</button>
                 <button onClick={() => onMoveCheck(c.id, "down")} disabled={idx === checks.length - 1} className="sb-btn" title="Move down">↓</button>
-                <button onClick={() => setConfirmDel({ kind:'check', id: c.id, label: c.label })} className="sb-btn">Delete</button>
+                <button onClick={() => setConfirmDel({ kind: 'check', id: c.id, label: c.label })} className="sb-btn">Delete</button>
               </div>
             </li>
           ))}
@@ -98,7 +97,7 @@ export default function RoomDetailsTab({
       {/* Text fields */}
       <section className="sb-card" style={{ padding: 12 }}>
         <header style={head}>
-          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <h3 style={{ margin: 0 }}>Notes Tab</h3>
             <button
               type="button"
@@ -130,15 +129,15 @@ export default function RoomDetailsTab({
         </header>
         {showNotesInfo && (
           <div id="notes-info" className="sb-card" style={infoBox}>
-            <strong style={{ display:'block', marginBottom:6 }}>What are notes tabs?</strong>
-            <div style={{ color:'var(--muted)' }}>
+            <strong style={{ display: 'block', marginBottom: 6 }}>What are notes tabs?</strong>
+            <div style={{ color: 'var(--muted)' }}>
               Private, staff‑only areas attached to each reservation. Use them to track internal instructions or comments (e.g., housekeeping notes, front desk reminders). Guests cannot see these notes.
             </div>
           </div>
         )}
         {texts.length === 0 && <p style={{ color: "var(--muted)" }}>No notes tab defined yet.</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
-          {[...texts].sort((a,b) => a.sort_index - b.sort_index).map((t, idx) => (
+          {[...texts].sort((a, b) => a.sort_index - b.sort_index).map((t, idx) => (
             <li key={t.id} style={rowBase} className="rd-row" data-kind="text">
               <input
                 defaultValue={t.label}
@@ -146,22 +145,20 @@ export default function RoomDetailsTab({
                   const v = e.currentTarget.value.trim();
                   if (v && v !== t.label) onRenameText(t.id, v);
                   else e.currentTarget.value = t.label;
-                }}
-                style={textInput}
-              />
+                } }
+                style={textInput} />
               <input
                 defaultValue={t.placeholder || ""}
                 placeholder="e.g., Personal Notes"
                 onBlur={(e) => {
                   const v = e.currentTarget.value;
                   if (v !== (t.placeholder || "")) onPlaceholderText(t.id, v);
-                }}
-                style={textInput}
-              />
+                } }
+                style={textInput} />
               <div className="rd-actions" style={{ display: "flex", gap: 6 }}>
                 <button onClick={() => onMoveText(t.id, "up")} disabled={idx === 0} className="sb-btn" title="Move up">↑</button>
                 <button onClick={() => onMoveText(t.id, "down")} disabled={idx === texts.length - 1} className="sb-btn" title="Move down">↓</button>
-                <button onClick={() => setConfirmDel({ kind:'text', id: t.id, label: t.label })} className="sb-btn">Delete</button>
+                <button onClick={() => setConfirmDel({ kind: 'text', id: t.id, label: t.label })} className="sb-btn">Delete</button>
               </div>
             </li>
           ))}
@@ -169,23 +166,23 @@ export default function RoomDetailsTab({
       </section>
 
       {confirmDel && (
-        <div role="dialog" aria-modal="true" onClick={()=>setConfirmDel(null)}
-          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
-            <div style={{ display:'grid', gap:8 }}>
+        <div role="dialog" aria-modal="true" onClick={() => setConfirmDel(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 120, display: 'grid', placeItems: 'center', padding: 12 }}>
+          <div onClick={(e) => e.stopPropagation()} className="sb-card" style={{ width: 'min(520px,100%)', padding: 16, border: '1px solid var(--border)', borderRadius: 12, background: 'var(--panel)', color: 'var(--text)' }}>
+            <div style={{ display: 'grid', gap: 8 }}>
               <strong>Delete item</strong>
-              <div style={{ color:'var(--muted)' }}>
+              <div style={{ color: 'var(--muted)' }}>
                 Are you sure you want to delete “{confirmDel.label}”? This action is irreversible.
               </div>
-              <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
-                <button className="sb-btn" onClick={()=>setConfirmDel(null)}>Close</button>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 6 }}>
+                <button className="sb-btn" onClick={() => setConfirmDel(null)}>Close</button>
                 <button
                   className="sb-btn sb-btn--primary"
-                  onClick={()=>{
+                  onClick={() => {
                     const item = confirmDel; setConfirmDel(null);
-                    if (item.kind==='check') onDeleteCheck(item.id); else onDeleteText(item.id);
-                  }}
-                  style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}
+                    if (item.kind === 'check') onDeleteCheck(item.id); else onDeleteText(item.id);
+                  } }
+                  style={{ background: 'var(--danger)', color: '#fff', border: '1px solid var(--danger)' }}
                 >
                   Delete
                 </button>
@@ -194,8 +191,7 @@ export default function RoomDetailsTab({
           </div>
         </div>
       )}
-    </div>
-    <style jsx>{`
+    </div><style jsx>{`
       /* Desktop grids: align columns per kind */
       @media (min-width: 721px) {
         .rd-row[data-kind="check"] { grid-template-columns: 1fr auto auto; align-items: center; }
@@ -206,7 +202,7 @@ export default function RoomDetailsTab({
         .rd-row { grid-template-columns: 1fr; }
         .rd-actions { display: flex; gap: 8px; justify-content: flex-end; }
       }
-    `}</style>
+    `}</style></>
   );
 }
 
