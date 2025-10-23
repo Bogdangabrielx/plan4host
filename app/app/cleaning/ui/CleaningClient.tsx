@@ -1,7 +1,7 @@
 // app/app/cleaning/ui/CleaningClient.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
@@ -42,6 +42,19 @@ function addDaysStr(s: string, n: number) {
   const d = new Date(s + "T00:00:00");
   d.setDate(d.getDate() + n);
   return dstr(d);
+}
+function fmtHumanDate(isoDate: string) {
+  // ex: "24 Oct 2025"
+  try {
+    const d = new Date(isoDate + "T00:00:00");
+    return d.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).replace(/,/g, "");
+  } catch {
+    return isoDate;
+  }
 }
 
 /* ─── Component ─────────────────────────────────────────────────────── */
@@ -113,7 +126,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   }, []);
   const roomIconSrc = isDark ? "/room_fordark.png" : "/room_forlight.png";
 
-  /* Header title + pill */
+  /* Header title + pill (status) */
   useEffect(() => { setTitle("Cleaning Board"); }, [setTitle]);
   useEffect(() => {
     setPill(status === "Loading" ? "Syncing…" : status === "Error" ? "Error" : "Idle");
@@ -182,7 +195,6 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         .gte("clean_date", fromStr)
         .lte("clean_date", dateStr);
 
-      // Allow board to render even if cleaning_progress SELECT is not permitted (viewer without 'cleaning' scope).
       if (rRooms.error || rTasks.error || rBookingsBefore.error || rBookingsAfter.error) {
         setStatus("Error");
         return;
@@ -397,6 +409,10 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
     );
   }
 
+  /* ─── Date selector (vizual) ──────────────────────────────────────── */
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
+  const triggerPick = () => dateInputRef.current?.showPicker?.() ?? dateInputRef.current?.click();
+
   /* ─── UI principal (scroll conținut, header/bottom fixe în AppShell) ─ */
   return (
     <div
@@ -420,8 +436,60 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             "calc(var(--bottom-nav-h,56px) + 12px + var(--safe-bottom,0px))",
         }}
       >
-        {/* Toolbar */}
-        <div className="sb-toolbar" style={{ gap: 12 }}>
+        {/* ── Top nav din poză: buton stânga + pastilă dată centrată ── */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "auto 1fr auto",
+            alignItems: "center",
+            padding: "8px 8px 2px",
+          }}
+        >
+          {/* Prev */}
+          <button
+            type="button"
+            aria-label="Previous day"
+            onClick={() => setDateStr(addDaysStr(dateStr, -1))}
+            style={chevronBtn}
+          >
+            <span style={{ transform: "translateX(-1px)" }}>◀</span>
+          </button>
+
+          {/* Date pill (click to open native date picker) */}
+          <div
+            onClick={triggerPick}
+            role="button"
+            aria-label="Change date"
+            title="Change date"
+            style={datePill}
+          >
+            {fmtHumanDate(dateStr)}
+            {/* glow layer */}
+            <div style={datePillGlow} />
+          </div>
+
+          {/* Next (invizibil pentru a păstra layout-ul echilibrat) */}
+          <button
+            type="button"
+            aria-label="Next day"
+            onClick={() => setDateStr(addDaysStr(dateStr, 1))}
+            style={chevronBtn}
+          >
+            <span style={{ transform: "translateX(1px)" }}>▶</span>
+          </button>
+        </div>
+
+        {/* input ascuns dar funcțional pentru a deschide native date picker */}
+        <input
+          ref={dateInputRef}
+          type="date"
+          value={dateStr}
+          onChange={(e) => setDateStr(e.currentTarget.value)}
+          style={hiddenDateInput}
+        />
+
+        {/* Toolbar existentă – doar proprietatea (lăsată simplă) */}
+        <div className="sb-toolbar" style={{ gap: 12, marginTop: 6 }}>
           <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
             Property
           </label>
@@ -437,34 +505,9 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               </option>
             ))}
           </select>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button
-              type="button"
-              className="sb-btn sb-btn--icon"
-              aria-label="Previous day"
-              onClick={() => setDateStr(addDaysStr(dateStr, -1))}
-            >
-              ◀
-            </button>
-            <input
-              type="date"
-              value={dateStr}
-              onChange={(e) => setDateStr(e.currentTarget.value)}
-              className="sb-select"
-              style={{ padding: "8px 12px", fontFamily: "inherit" }}
-            />
-            <button
-              type="button"
-              className="sb-btn sb-btn--icon"
-              aria-label="Next day"
-              onClick={() => setDateStr(addDaysStr(dateStr, 1))}
-            >
-              ▶
-            </button>
-          </div>
         </div>
 
+        {/* Conținut */}
         {tdefs.length === 0 ? (
           <div style={{ color: "var(--muted)" }}>
             No cleaning checklist defined. Configure tasks in{" "}
@@ -481,8 +524,9 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               listStyle: "none",
               padding: 0,
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: 10,
+              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+              gap: 16,
+              marginTop: 10,
             }}
           >
             {items.map((it) => {
@@ -500,54 +544,81 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                   onClick={
                     !canWrite || isCleaned ? undefined : () => setOpenItem(it)
                   }
-                  className="sb-card"
                   style={{
-                    aspectRatio: "1.2 / 1",
-                    padding: 10,
+                    ...cardShell,
                     cursor: isCleaned ? "default" : "pointer",
-                    display: "grid",
-                    placeItems: "center",
-                    gap: 6,
                     opacity: isCleaned ? 0.66 : 1,
                   }}
                   title={isCleaned ? "Cleaned" : "Open cleaning tasks"}
                 >
-                  <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
-                    {/* Icon above room name, theme-aware */}
+                  {/* inner content */}
+                  <div style={{ textAlign: "center", display: "grid", gap: 10 }}>
+                    {/* icon */}
                     <Image
                       src={roomIconSrc}
                       alt=""
-                      width={29}
-                      height={29}
-                      style={{ margin: "0 auto", opacity: 0.95, pointerEvents: "none" }}
+                      width={44}
+                      height={44}
+                      style={{ margin: "6px auto 2px", opacity: 0.95, pointerEvents: "none" }}
                     />
 
-                    <strong
+                    {/* Room name */}
+                    <div
                       style={{
+                        fontSize: 24,
+                        fontWeight: 800,
+                        letterSpacing: 0.2,
+                        textShadow: "0 1px 0 rgba(0,0,0,0.25)",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
                       }}
                     >
                       {it.room.name}
-                    </strong>
+                    </div>
 
-                    <small style={{ color: "var(--muted)" }}>
-                      {it.mode === "carry"
-                        ? `carry-over • ${it.cleanDate}`
-                        : it.statusLine}
-                    </small>
+                    {/* Status line */}
+                    <div
+                      style={{
+                        color: "var(--muted)",
+                        fontSize: 16,
+                        display: "grid",
+                        gap: 4,
+                        lineHeight: 1.25,
+                      }}
+                    >
+                      {it.mode === "carry" ? (
+                        <>
+                          <span>carry-over</span>
+                          <span>• {it.cleanDate}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>checkout {it.statusLine.split(" • ")[0].replace("checkout ", "")}</span>
+                          <span>• {it.statusLine.split(" • ")[1]}</span>
+                        </>
+                      )}
+                    </div>
 
-                    {isCleaned ? (
-                      <span className="sb-badge">
-                        {cleanedBy ? `Cleaned by ${cleanedBy}` : "Cleaned"}
-                      </span>
-                    ) : (
-                      <span className="sb-badge">
-                        {doneCount}/{total}
-                      </span>
+                    {/* Ring counter */}
+                    <div style={{ display: "grid", placeItems: "center", marginTop: 8 }}>
+                      <div style={ringOuter}>
+                        <div style={ringInner}>
+                          <div style={{ fontSize: 22, fontWeight: 800 }}>
+                            {isCleaned ? "✓" : `${doneCount}/${total}`}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* badge cleaned by */}
+                    {isCleaned && cleanedBy && (
+                      <div style={badgeSmall}>Cleaned by {cleanedBy}</div>
                     )}
                   </div>
+
+                  {/* glossy edges */}
+                  <div style={cardEdge} />
                 </li>
               );
             })}
@@ -571,7 +642,116 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   );
 }
 
-/* Styles */
+/* ─── Styles (inline objects pentru look din poză) ───────────────────── */
+
+const hiddenDateInput: React.CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  opacity: 0,
+  pointerEvents: "none",
+};
+
+const chevronBtn: React.CSSProperties = {
+  width: 56,
+  height: 56,
+  borderRadius: 999,
+  border: "1px solid rgba(112,134,183,0.25)",
+  background:
+    "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.15) 100%)",
+  boxShadow:
+    "inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 20px rgba(0,0,0,0.25)",
+  color: "var(--text)",
+  display: "grid",
+  placeItems: "center",
+  backdropFilter: "blur(6px)",
+};
+
+const datePill: React.CSSProperties = {
+  position: "relative",
+  justifySelf: "center",
+  minWidth: 220,
+  padding: "14px 22px",
+  borderRadius: 18,
+  border: "1px solid rgba(112,134,183,0.35)",
+  background:
+    "radial-gradient(120% 160% at 50% -20%, rgba(96,165,250,0.25) 0%, rgba(96,165,250,0.12) 35%, rgba(16,24,40,0.2) 100%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.20) 100%)",
+  boxShadow:
+    "0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 3px rgba(96,165,250,0.12)",
+  color: "var(--text)",
+  fontSize: 22,
+  fontWeight: 900,
+  textAlign: "center",
+  cursor: "pointer",
+  userSelect: "none",
+};
+
+const datePillGlow: React.CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  borderRadius: 18,
+  boxShadow: "0 0 40px 10px rgba(96,165,250,0.25)",
+  pointerEvents: "none",
+};
+
+const cardShell: React.CSSProperties = {
+  position: "relative",
+  display: "grid",
+  placeItems: "center",
+  padding: 18,
+  borderRadius: 28,
+  border: "1px solid rgba(112,134,183,0.2)",
+  background:
+    "radial-gradient(140% 160% at 50% -40%, rgba(96,165,250,0.08) 0%, rgba(96,165,250,0.04) 40%, rgba(15,23,42,0.6) 100%), rgba(17,24,39,0.55)",
+  boxShadow:
+    "0 12px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
+  minHeight: 280,
+  aspectRatio: "0.78 / 1", // aprox. proporția din poză
+  overflow: "hidden",
+};
+
+const cardEdge: React.CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  borderRadius: 28,
+  boxShadow: "inset 0 0 0 1px rgba(96,165,250,0.04), inset 0 -80px 120px rgba(0,0,0,0.25)",
+  pointerEvents: "none",
+};
+
+const ringOuter: React.CSSProperties = {
+  width: 110,
+  height: 110,
+  borderRadius: 999,
+  border: "6px solid rgba(96,165,250,0.15)",
+  boxShadow: "inset 0 0 0 6px rgba(0,0,0,0.15), 0 8px 20px rgba(0,0,0,0.25)",
+  display: "grid",
+  placeItems: "center",
+};
+
+const ringInner: React.CSSProperties = {
+  width: 88,
+  height: 88,
+  borderRadius: 999,
+  border: "6px solid rgba(112,134,183,0.35)",
+  background:
+    "radial-gradient(120% 140% at 50% -20%, rgba(96,165,250,0.12) 0%, rgba(96,165,250,0.05) 40%, rgba(2,6,23,0.6) 100%)",
+  display: "grid",
+  placeItems: "center",
+};
+
+const badgeSmall: React.CSSProperties = {
+  marginTop: 6,
+  alignSelf: "center",
+  display: "inline-block",
+  padding: "6px 10px",
+  borderRadius: 999,
+  border: "1px solid rgba(112,134,183,0.3)",
+  background: "rgba(255,255,255,0.04)",
+  fontSize: 12,
+  fontWeight: 700,
+  color: "var(--muted)",
+};
+
+/* (ex.) butoane reutilizabile – păstrate dacă ai nevoie în alte locuri */
 const primaryBtn: React.CSSProperties = {
   padding: "8px 12px",
   borderRadius: 10,
