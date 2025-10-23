@@ -93,8 +93,8 @@ textarea:focus-visible {
   :root[data-theme="dark"] .sb-card{ --card-top-dL: 0.03; }
   :root[data-theme="light"] .sb-card{ --card-top-dL: -0.012; }
 
-  /* Border top gradient (reflex) */
-  .sb-card::before{
+  /* Border top gradient (reflex) — opt-in */
+  .sb-card--fx::before{
     content: "";
     position: absolute; left: 0; right: 0; top: 0; height: 3px;
     pointer-events: none;
@@ -107,8 +107,8 @@ textarea:focus-visible {
     transition: opacity .14s ease, filter .14s ease;
   }
 
-  /* Surface sheen (normal) + hotspot (on hover/focus) */
-  .sb-card::after{
+  /* Surface sheen (normal) + hotspot (on hover/focus) — opt-in */
+  .sb-card--fx::after{
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background: radial-gradient(120% 160% at 18% 0%,
       oklch(calc(var(--card-L) + var(--card-sheen-dL)) calc(max(0, var(--card-C) + var(--card-sheen-dC))) var(--accent-h)),
@@ -116,8 +116,8 @@ textarea:focus-visible {
     opacity: .22;
     transition: opacity .14s ease;
   }
-  .sb-card:hover::after,
-  .sb-card:focus-within::after{
+  .sb-card--fx:hover::after,
+  .sb-card--fx:focus-within::after{
     background: radial-gradient(110% 140% at 20% 0%,
       oklch(calc(var(--card-L) + var(--card-hotspot-dL)) calc(max(0, var(--card-C) + var(--card-hotspot-dC))) var(--accent-h)),
       transparent 62%);
@@ -145,7 +145,7 @@ textarea:focus-visible {
     /* Soft elevation */
     box-shadow: 0 6px 18px 0 hsla(var(--card-h) var(--card-s) var(--card-l) / .12);
   }
-  .sb-card::before{
+  .sb-card--fx::before{
     content: ""; position: absolute; left:0; right:0; top:0; height:3px; pointer-events: none;
     /* neutral reflex in HSL fallback */
     background: linear-gradient(90deg,
@@ -155,14 +155,14 @@ textarea:focus-visible {
     );
     transition: opacity .14s ease;
   }
-  .sb-card::after{
+  .sb-card--fx::after{
     content:""; position:absolute; inset:0; pointer-events:none;
     background: radial-gradient(120% 160% at 18% 0%,
       hsl(var(--primary-h) calc((var(--primary-s) - 12%)) calc((var(--card-l) + 1.5%))),
       transparent 60%);
     opacity:.22; transition: opacity .14s ease;
   }
-  .sb-card:hover::after, .sb-card:focus-within::after{
+  .sb-card--fx:hover::after, .sb-card--fx:focus-within::after{
     background: radial-gradient(110% 140% at 20% 0%,
       hsl(var(--primary-h) calc((var(--primary-s) - 14%)) calc((var(--card-l) + 3.5%))),
       transparent 62%);
