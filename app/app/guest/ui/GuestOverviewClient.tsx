@@ -664,6 +664,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.currentTarget.value)}
+                onFocus={() => { try { window.dispatchEvent(new Event('p4h:nav:stick')); } catch {} }}
+                onBlur={() => { try { window.dispatchEvent(new Event('p4h:nav:unstick')); } catch {} }}
                 placeholder="Search guest name…"
                 aria-label="Search guest name"
                 style={{
