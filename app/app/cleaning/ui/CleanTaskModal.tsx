@@ -161,7 +161,7 @@ export default function CleanTaskModal({
           {tasks.length === 0 ? (
             <p style={{ color: "var(--muted)",}}>No cleaning checklist defined for this property.</p>
           ) : (
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8, alignContent: 'start', alignItems: 'start' }}>
               {[...tasks].sort((a,b)=>a.sort_index-b.sort_index).map(t => {
                 const checked = !!local[t.id];
                 return (
@@ -201,9 +201,9 @@ export default function CleanTaskModal({
             width: min(560px, calc(100vw - 12px));
           }
         }
-        /* Visible task area height hint (approx ~8 on desktop, ~6 on mobile) */
-        .ct-body { min-height: 448px; padding-bottom: calc(var(--safe-bottom) + 8px); }
-        @media (max-width: 720px) { .ct-body { min-height: 300px; } }
+        /* Visible task area fixed height (approx ~8 on desktop, ~6 on mobile) */
+        .ct-body { height: 448px; padding-bottom: calc(var(--safe-bottom) + 8px); }
+        @media (max-width: 720px) { .ct-body { height: 300px; } }
       `}</style>
     </>
   );
