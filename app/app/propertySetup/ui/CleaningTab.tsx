@@ -73,8 +73,8 @@ export default function CleaningTab({
         .ct-input { width: 100%; }
         @media (max-width: 720px) {
           .ct-row { grid-template-columns: 1fr; }
-          .ct-actions { display: grid; grid-template-columns: 1fr; gap: 8px; }
-          .ct-actions > button { width: 100%; border-radius: 29px !important; min-height: 44px; }
+          /* Actions on a single row, placed under the textbox */
+          .ct-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: nowrap; }
         }
       `}</style>
     </section>
