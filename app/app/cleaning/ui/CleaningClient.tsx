@@ -44,22 +44,18 @@ function addDaysStr(s: string, n: number) {
   return dstr(d);
 }
 
-/* ─── UI: Circular progress ring ────────────────────────────────────── */
+/* ─── UI: Circular progress ring (uses theme variables) ─────────────── */
 function CircleProgress({
   value,
   total,
   size = 44,
   strokeWidth = 5,
-  track = 'var(--border)',
-  color = 'var(--primary)',
-  textColor = 'var(--text)'
+  textColor = 'color-mix(in srgb, var(--text) 90%, var(--bg) 10%)'
 }: {
   value: number;
   total: number;
   size?: number;
   strokeWidth?: number;
-  track?: string;
-  color?: string;
   textColor?: string;
 }) {
   const safeTotal = Math.max(0, total);
@@ -71,23 +67,43 @@ function CircleProgress({
   const label = `${v}/${safeTotal}`;
   const cx = size / 2;
   const cy = size / 2;
+  const gradId = useMemo(() => `gp-${Math.random().toString(36).slice(2)}`, []);
+  const glowId = useMemo(() => `glow-${Math.random().toString(36).slice(2)}`, []);
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-      <circle cx={cx} cy={cy} r={r} stroke={track} strokeWidth={strokeWidth} fill="none" opacity={0.35} />
+      <defs>
+        {/* Outer border gradient: var(--primary) → var(--card) */}
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.4} />
+          <stop offset="100%" stopColor="var(--card)" stopOpacity={0.9} />
+        </linearGradient>
+        {/* Subtle glow for the progress stroke */}
+        <filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="var(--primary)" floodOpacity="0.15" />
+        </filter>
+      </defs>
+      {/* Outer gradient ring (border) */}
+      <circle cx={cx} cy={cy} r={r} stroke={`url(#${gradId})`} strokeWidth={Math.max(2, strokeWidth - 3)} fill="none" />
+      {/* Track (subtle) */}
+      <circle cx={cx} cy={cy} r={r} stroke="var(--border)" strokeWidth={strokeWidth} fill="none" opacity={0.25} />
+      {/* Progress */}
       <circle
         cx={cx}
         cy={cy}
         r={r}
-        stroke={color}
+        stroke="var(--primary)"
         strokeWidth={strokeWidth}
         fill="none"
         strokeDasharray={c}
         strokeDashoffset={offset}
         strokeLinecap="round"
         transform={`rotate(-90 ${cx} ${cy})`}
-        style={{ filter: 'drop-shadow(0 0 6px rgba(96,165,250,0.15))' }}
+        filter={`url(#${glowId})`}
       />
+      {/* Inner dark glass (fills center without covering stroke) */}
+      <circle cx={cx} cy={cy} r={r - strokeWidth / 2} fill="color-mix(in srgb, var(--panel) 85%, transparent)" />
+      {/* Label */}
       <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" fontWeight={800} fontSize={size * 0.34} fill={textColor}>
         {label}
       </text>
