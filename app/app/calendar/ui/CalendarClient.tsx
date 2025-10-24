@@ -280,13 +280,13 @@ export default function CalendarClient({
             style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 36 }} aria-label="Pick date">
             {monthNames[month]} {year}
           </button>
-          <button type="button" className="sb-cardglow sb-btn--icon" aria-label="Next month"
+          <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Next month"
             onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}
           >▶</button>
-          <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label="Open year overview">
+          <button type="button" className="sb-btn sb-cardglow sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label="Open year overview">
             Year
           </button>
-          <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label="Open room overview">
+          <button type="button" className="sb-btn sb-cardglow sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label="Open room overview">
             Room view
           </button>
         </div>
@@ -560,7 +560,7 @@ function MonthView({
 
   return (
     // 🟢 containerul principal — .modalCard cu inel
-    <section className="modalCard cal-smoobu" data-animate={animate ? "true" : undefined} style={{ padding: 12 }}>
+    <section className="modalCard cal-smoobu sb-cardglow" data-animate={animate ? "true" : undefined} style={{ padding: 12 }}>
       {/* headers */}
       <div className="cal-weekdays" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
         {weekdayShort.map((w) => (
