@@ -529,7 +529,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
           <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
         ) : (
           <ul
-            className="cleaning-grid"
+            className="sb-cardglow"
             style={{
               listStyle: "none",
               padding: 0,
@@ -548,16 +548,18 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               const cleanedBy = cleanedByMap[key];
               const isCleaned = cleaned || !!cleanedBy;
 
+              
               return (
                 <li
                   key={it.room.id + "|" + it.cleanDate}
                   onClick={
                     !canWrite || isCleaned ? undefined : () => setOpenItem(it)
                   }
-                  className="sb-cardglow"
+                  className="sb-card"
                   style={{
                     aspectRatio: "var(--clean-card-aspect, 3 / 4)",
                     padding: 10,
+                    borderRadius: 16,
                     cursor: isCleaned ? "default" : "pointer",
                     display: "grid",
                     placeItems: "center",
