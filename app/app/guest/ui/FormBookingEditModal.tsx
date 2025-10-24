@@ -339,7 +339,6 @@ export default function EditFormBookingModal({
       role="dialog"
       aria-modal="true"
       onClick={onClose}
-      className="sb-cardglow"
       style={{
         position: "fixed",
         inset: 0,
