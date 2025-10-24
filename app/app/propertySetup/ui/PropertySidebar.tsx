@@ -14,7 +14,7 @@ export default function PropertySidebar({
   status: "Idle" | "Saving…" | "Synced" | "Error";
 }) {
   return (
-    <aside
+    <aside className="sb-cardglow"
       style={{
         background: "var(--panel)",
         border: "1px solid var(--border)",
