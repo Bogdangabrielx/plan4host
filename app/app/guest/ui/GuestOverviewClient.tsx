@@ -1442,7 +1442,7 @@ function EditFormBookingModal({
   };
 
   return (
-    <div role="dialog" aria-modal="true" onClick={() => { if (!popupMsg) onClose(); }} style={wrap}>
+    <div  className="sb-cardglow" role="dialog" aria-modal="true" onClick={() => { if (!popupMsg) onClose(); }} style={wrap}>
       {popupMsg && (
         <div
           role="dialog"
