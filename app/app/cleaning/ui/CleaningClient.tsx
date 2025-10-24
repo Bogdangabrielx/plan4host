@@ -533,6 +533,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             style={{
               listStyle: "none",
               padding: 0,
+              borderRadius: 13,
               display: "grid",
               gridTemplateColumns:
                 "var(--clean-grid-cols, repeat(auto-fill, minmax(var(--clean-card-min, 180px), 1fr)))",
@@ -548,7 +549,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               const cleanedBy = cleanedByMap[key];
               const isCleaned = cleaned || !!cleanedBy;
 
-              
+
               return (
                 <li
                   key={it.room.id + "|" + it.cleanDate}
@@ -559,7 +560,6 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                   style={{
                     aspectRatio: "var(--clean-card-aspect, 3 / 4)",
                     padding: 10,
-                    borderRadius: 16,
                     cursor: isCleaned ? "default" : "pointer",
                     display: "grid",
                     placeItems: "center",
