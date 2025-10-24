@@ -599,7 +599,7 @@ export default function ReservationMessageClient({
       </div>
 
       {/* COLLAPSIBLE: Room Variables */}
-      <section className="sb-card" style={{ ...card, padding: 0 }}>
+      <section className="sb-card sb-cardglow" style={{ ...card, padding: 0 }}>
         <button
           onClick={() => setRvOpen((v) => !v)}
           style={{
@@ -760,7 +760,7 @@ export default function ReservationMessageClient({
       </section>
 
       {/* Templates header + grid */}
-      <section className="sb-card" style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
+      <section className="sb-card sb-cardglow" style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
           <strong>Templates</strong>
           <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Add template</button>
@@ -825,7 +825,7 @@ export default function ReservationMessageClient({
 
       {/* Message composer — only when a template is active */}
       {activeId && (
-        <section style={card}>
+        <section className="sb-cardglow" style={card}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
             <h2 style={{ margin: 0 }}>Message</h2>
             <div style={{ display:'inline-flex', gap:8 }}>
@@ -863,7 +863,7 @@ export default function ReservationMessageClient({
           {/* Scheduler selector */}
           <div style={{ display:'grid', gap:6, marginTop:10, maxWidth: 360 }}>
             <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>Scheduler (required before Publish)</label>
-            <select className="sb-select" value={scheduler || ''} onChange={(e)=>setScheduler(e.currentTarget.value as any)}>
+            <select className="sb-select sb-cardglow" value={scheduler || ''} onChange={(e)=>setScheduler(e.currentTarget.value as any)}>
               <option value="">— select —</option>
               <option value="hour_before_checkin">One hour before reservation</option>
               <option value="on_arrival">Once the guest arrives (check-in time)</option>
