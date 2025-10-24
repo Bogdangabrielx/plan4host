@@ -600,7 +600,7 @@ export default function ReservationMessageClient({
 
       {/* COLLAPSIBLE: Room Variables */}
       <section className="sb-card sb-cardglow" style={{ ...card, padding: 0 }}>
-        <button
+        <button className="sb-cardglow" 
           onClick={() => setRvOpen((v) => !v)}
           style={{
             width: "100%", textAlign: "left", padding: 14, border: "none",
@@ -609,11 +609,11 @@ export default function ReservationMessageClient({
           }}
         >
           <strong>Room variables</strong>
-          <span className="sb-cardglow" style={{ opacity: 0.7 }}>{rvOpen ? "▲" : "▼"}</span>
+          <span style={{ opacity: 0.7 }}>{rvOpen ? "▲" : "▼"}</span>
         </button>
 
         {rvOpen && (
-          <div style={{ borderTop: "1px solid var(--border)", padding: 12, display: "grid", gap: 12 }}>
+          <div  style={{ borderTop: "1px solid var(--border)", padding: 12, display: "grid", gap: 12 }}>
             {/* Tabs */}
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
               <button
