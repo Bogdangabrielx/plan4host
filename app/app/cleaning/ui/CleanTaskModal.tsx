@@ -181,7 +181,7 @@ export default function CleanTaskModal({
         </div>
 
         {/* Footer */}
-        <div className="sb-cardglow" style={{
+        <div  style={{
           padding: 14,
           borderTop: "1px solid var(--border)",
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10
