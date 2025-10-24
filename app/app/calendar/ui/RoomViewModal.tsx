@@ -233,7 +233,7 @@ export default function RoomViewModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="cal-smoobu"
+        className="cal-smoobu sb-cardglow"
         style={{
           width: "min(1100px, 100%)",
           maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 48px))",
@@ -250,9 +250,9 @@ export default function RoomViewModal({
         <div style={{ position: "sticky", top: 0, zIndex: 2, background: "var(--panel)", borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS, borderBottom: "1px solid var(--border)", padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <strong>Room view — {monthNames[month]} {year}</strong>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <button className="sb-btn sb-btn--icon" aria-label="Prev month" onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}>◀</button>
-            <button className="sb-btn sb-btn--icon" aria-label="Next month" onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}>▶</button>
-            <button className="sb-btn sb-btn--ghost sb-btn--small" onClick={onClose}>Close</button>
+            <button className="sb-btn sb-cardglow sb-btn--icon" aria-label="Prev month" onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}>◀</button>
+            <button className="sb-btn  sb-cardglow sb-btn--icon" aria-label="Next month" onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}>▶</button>
+            <button className="sb-btn  sb-btn--ghost sb-btn--small" onClick={onClose}>Close</button>
           </div>
         </div>
 
@@ -266,7 +266,7 @@ export default function RoomViewModal({
           )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
             {rooms.map((r) => (
-              <div key={r.id} className="sb-card" style={{ padding: 10 }}>
+              <div key={r.id} className="sb-card sb-cardglow" style={{ padding: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                   <strong style={{ fontSize: 14 }}>{r.name}</strong>
                   <small style={{ color: "var(--muted)" }}>{monthNames[month]} {year}</small>
