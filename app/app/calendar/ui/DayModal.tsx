@@ -191,7 +191,7 @@ export default function DayModal({
   const RADIUS = 12;
 
   return (
-    <div className="sb-cardglow"
+    <div 
       role="dialog"
       aria-modal="true"
       onClick={onClose}
@@ -319,7 +319,7 @@ export default function DayModal({
         </div>
 
         {/* CONȚINUT — padding separat, ca să nu mai existe spațiu „deasupra” header-ului */}
-        <div style={{ padding: 16, paddingTop: 12 }}>
+        <div className="sb-cardglow" style={{ padding: 16, paddingTop: 12 }}>
           <div
             style={{
               display: "grid",
