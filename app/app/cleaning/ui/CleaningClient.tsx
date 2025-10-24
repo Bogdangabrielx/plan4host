@@ -529,11 +529,10 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
           <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
         ) : (
           <ul
-            className="sb-cardglow"
+            className="sb-card"
             style={{
               listStyle: "none",
               padding: 0,
-              borderRadius: 13,
               display: "grid",
               gridTemplateColumns:
                 "var(--clean-grid-cols, repeat(auto-fill, minmax(var(--clean-card-min, 180px), 1fr)))",
@@ -556,13 +555,14 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                   onClick={
                     !canWrite || isCleaned ? undefined : () => setOpenItem(it)
                   }
-                  className="sb-card"
+                  className="sb-cardglow"
                   style={{
                     aspectRatio: "var(--clean-card-aspect, 3 / 4)",
                     padding: 10,
                     cursor: isCleaned ? "default" : "pointer",
                     display: "grid",
                     placeItems: "center",
+                    borderRadius:13,
                     gap: 6,
                     opacity: isCleaned ? 0.66 : 1,
                   }}
