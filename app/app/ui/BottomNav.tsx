@@ -143,7 +143,7 @@ useEffect(() => {
         left: 0,
         right: 0,
         bottom: 0,                 // ancorat de muchia fizică
-        background: "transparent",
+        background: "var(--panel)",
         borderTop: "1px solid var(--border)",
         borderTopLeftRadius: 23,
         borderTopRightRadius: 23,
