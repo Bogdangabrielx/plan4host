@@ -499,7 +499,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   }, [pillLabel, setPill]);
 
   return (
-    <div className="sb-cardglow" style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',  }}>
       <PlanHeaderBadge title="Sync Calendars" slot="header-right" />
       {/* Toolbar minimalistă */}
       <div className="sb-toolbar" style={{ gap: 12, marginBottom: 8 }}>
@@ -513,7 +513,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       </div>
 
       {/* Card cu acțiuni */}
-      <section className="sb-card" style={{ padding: 16, marginTop: 8 }}>
+      <section className="sb-cardglow" style={{ padding: 16, marginTop: 8 }}>
         <h3 style={{ marginTop: 0 }}>Calendar Integrations</h3>
         {!timezone && (
           <p style={{ fontSize:8, color: "var(--danger)", marginTop: 0 }}>
