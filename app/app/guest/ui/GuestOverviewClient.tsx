@@ -1009,9 +1009,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       </div>
       {qrModal && (
         <div role="dialog" aria-modal="true" onClick={()=>setQrModal(null)}
-          className="sb-cardglow" style={{ position:'fixed', inset:0, zIndex: 230, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
+          style={{ position:'fixed', inset:0, zIndex: 230, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
                    paddingTop:'calc(var(--safe-top) + 12px)', paddingBottom:'calc(var(--safe-bottom) + 12px)'}}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(420px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card sbcardglow" style={{ width:'min(420px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <strong>QR code</strong>
               <button onClick={()=>setQrModal(null)} className="sb-btn">Close</button>
