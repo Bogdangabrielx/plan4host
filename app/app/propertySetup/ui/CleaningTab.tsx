@@ -51,7 +51,7 @@ export default function CleaningTab({
       {confirmDel && (
         <div role="dialog" aria-modal="true" onClick={()=>setConfirmDel(null)}
           style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-card sb-cardglow" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
             <div style={{ display:'grid', gap:8 }}>
               <strong>Delete cleaning task</strong>
               <div style={{ color:'var(--muted)' }}>
