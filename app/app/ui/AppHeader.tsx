@@ -490,7 +490,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
                   return (
                     <li key={it.href}>
-                      <button className="sb-cardglow"
+                      <button className="sb-card sb-cardglow"
                         onClick={() => hardNavigate(it.href)}
                         onPointerDown={() => setPressedLeft(it.href)}
                         onPointerUp={() => setPressedLeft((p) => (p === it.href ? null : p))}
@@ -606,7 +606,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
                   return (
                     <li key={it.href}>
-                      <button className="sb-cardglow"
+                      <button className="sb-card sb-cardglow"
                         onClick={() => {
                           setOpenRight(false);
                           hardNavigate(it.href);
