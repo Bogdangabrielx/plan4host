@@ -465,9 +465,8 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
       <div
         data-scroll
         style={{
-          overflow: "auto",
-          WebkitOverflowScrolling: "touch",
-          overscrollBehavior: "contain",
+          /* Avoid nested scrolling; AppShell's #app-main is the only scroller */
+          overflow: "visible",
           paddingBottom:
             "calc(var(--bottom-nav-h,56px) + 12px + var(--safe-bottom,0px))",
         }}
