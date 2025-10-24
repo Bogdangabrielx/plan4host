@@ -137,7 +137,7 @@ useEffect(() => {
     <nav
       ref={(n) => { navRef.current = n; }}
       aria-label="Bottom navigation"
-      className="p4h-bottom-nav"
+      className="sb-cardglow"
       style={{
         position: "fixed",
         left: 0,
