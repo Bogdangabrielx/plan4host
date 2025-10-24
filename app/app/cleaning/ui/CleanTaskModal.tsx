@@ -183,6 +183,7 @@ export default function CleanTaskModal({
         {/* Footer */}
         <div  style={{
           padding: 14,
+          background:"var(--card)",
           borderTop: "1px solid var(--border)",
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10
         }}>
