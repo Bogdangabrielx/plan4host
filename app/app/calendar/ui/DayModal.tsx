@@ -191,7 +191,7 @@ export default function DayModal({
   const RADIUS = 12;
 
   return (
-    <div
+    <div className="sb-cardglow"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
@@ -249,11 +249,11 @@ export default function DayModal({
           }}
         >
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <button className="sb-btn sb-btn--icon" type="button" aria-label="Previous day" onClick={() => setDay((d)=> prevDate(d))}>◀</button>
+            <button className="sb-btn sb-cardglow sb-btn--icon" type="button" aria-label="Previous day" onClick={() => setDay((d)=> prevDate(d))}>◀</button>
             <strong style={{ letterSpacing: 0.2, fontSize: 16 }}>
               {day} 
             </strong>
-            <button className="sb-btn sb-btn--icon" type="button" aria-label="Next day" onClick={() => setDay((d)=> nextDate(d))}>▶</button>
+            <button className="sb-btn sb-cardglow sb-btn--icon" type="button" aria-label="Next day" onClick={() => setDay((d)=> nextDate(d))}>▶</button>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
