@@ -273,7 +273,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         {/* minimalist layout */}
         <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>
           <PropertySidebar properties={properties} selectedId={selectedId} onSelect={setSelectedId} status={status} />
-          <section className="sb-card" style={{ padding: 16 }}>
+          <section className="sb-card" style={{ padding: 14 ,border:'1px solid var(--border)', borderRadius: 16  }}>
             {!selected ? (
               <p>Please select a property on the left.</p>
             ) : (
@@ -526,7 +526,7 @@ function Tabs({ settings, rooms, roomDetails, cleaning, highlightRooms, onTabSel
     }
   }, [activateRooms, onTabSelect]);
   return (
-    <div style={{ display: "grid", gap: 12,border:'1px solid var(--border)', borderRadius: 16 }} className="psTabs">
+    <div style={{ display: "grid", gap: 12}} className="psTabs">
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} className="psTabsBar">
         <button onClick={() => { setTab("settings"); onTabSelect?.('settings'); }}    style={tabBtn(tab === "settings")} className="psTabBtn">Check-in/out Time</button>
         <button
