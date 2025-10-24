@@ -378,7 +378,7 @@ export default function DashboardClient({
       <PlanHeaderBadge title="Dashboard" slot="header-right" />
 
       {/* 2-column desktop row: New Property + Your Properties */}
-      <div
+      <div 
         style={{
           display: "grid",
           gap: 16,
@@ -387,7 +387,7 @@ export default function DashboardClient({
         }}
       >
       {/* Add property */}
-      <section ref={addCardRef} style={card}>
+      <section className="sb-cardglow" ref={addCardRef} style={card}>
         <h2 style={{ marginTop: 0 }}>New Property</h2>
 
         <div style={{ display: "grid", gap: 12 }}>
@@ -446,7 +446,7 @@ export default function DashboardClient({
       </section>
 
       {/* Your properties */}
-      <section
+      <section className="sb-cardglow"
         ref={listCardRef}
         style={{
           ...card,
