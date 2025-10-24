@@ -273,14 +273,14 @@ export default function CalendarClient({
         <div style={{ flexBasis: "100%", height: 8 }} />
 
         <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 12 : 18, marginLeft: 0 }}>
-          <button type="button" className="sb-btn sb-btn--icon" aria-label="Previous month"
+          <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Previous month"
             onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}
           >◀</button>
-          <button type="button" className="sb-btn sb-btn--ghost" onClick={openDatePicker}
+          <button type="button" className="sb-btn sb-cardglow sb-btn--ghost" onClick={openDatePicker}
             style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 36 }} aria-label="Pick date">
             {monthNames[month]} {year}
           </button>
-          <button type="button" className="sb-btn sb-btn--icon" aria-label="Next month"
+          <button type="button" className="sb-cardglow sb-btn--icon" aria-label="Next month"
             onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}
           >▶</button>
           <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label="Open year overview">
