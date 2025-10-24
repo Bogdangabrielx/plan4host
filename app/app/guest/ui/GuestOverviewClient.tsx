@@ -789,7 +789,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   return (
               <section
                 key={key}
-                className="sb-card"
+                className="sb-cardglow"
                 style={{
                   border: "1px solid var(--border)",
                   borderRadius: 12,
