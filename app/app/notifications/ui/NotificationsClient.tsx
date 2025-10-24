@@ -169,7 +169,7 @@ export default function NotificationsClient() {
           className={offClass}
           onClick={turnOff}
           disabled={loading}
-          style={{ color: '#fff', border: !active ? '1px solid var(--primary)' as const : undefined }}
+          style={{ color: '#fff', border: !active ? '1px solid var(--danger)' as const : undefined }}
         >
           Turn Off
         </button>
