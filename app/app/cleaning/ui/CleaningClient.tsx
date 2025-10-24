@@ -493,7 +493,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
               type="button"
-              className="sb-btn sb-btn--icon"
+              className="sb-btn sb-cardglow sb-btn--icon"
               aria-label="Previous day"
               onClick={() => setDateStr(addDaysStr(dateStr, -1))}
             >
@@ -503,12 +503,12 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               type="date"
               value={dateStr}
               onChange={(e) => setDateStr(e.currentTarget.value)}
-              className="sb-select"
+              className="sb-select sb-cardglow"
               style={{ padding: "8px 12px", fontFamily: "inherit" }}
             />
             <button
               type="button"
-              className="sb-btn sb-btn--icon"
+              className="sb-btn sb-cardglow sb-btn--icon"
               aria-label="Next day"
               onClick={() => setDateStr(addDaysStr(dateStr, 1))}
             >
