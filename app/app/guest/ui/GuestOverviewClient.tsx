@@ -1016,7 +1016,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={{ width:'min(420px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <strong>QR code</strong>
-              <button onClick={()=>setQrModal(null)} className="sb-btn">Close</button>
+              <button  onClick={()=>setQrModal(null)} className="sb-btn sb-cardglow">Close</button>
             </div>
             <div style={{ display:'grid', gap:8, justifyItems:'center' }}>
               <QrWithLogo data={qrModal.url} size={240} radius={16} logoSrc="/p4h_logo_round_QR.png" logoAlt="Plan4Host" />
