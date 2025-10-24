@@ -513,7 +513,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       </div>
 
       {/* Card cu acțiuni */}
-      <section className="sb-card" style={{ padding: 16, marginTop: 8 }}>
+      <section className="sb-cardglow" style={{ padding: 16, marginTop: 8, borderRadius: 16 }}>
         <h3 style={{ marginTop: 0 }}>Calendar Integrations</h3>
         {!timezone && (
           <p style={{ fontSize:8, color: "var(--danger)", marginTop: 0 }}>
@@ -547,7 +547,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           </div>
 
           {/* Cards pentru Export/Import */}
-          <div className="sb-cardglow"
+          <div
             style={{
               display: 'grid',
               gap: isSmall ? 10 : 6,
