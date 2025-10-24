@@ -336,6 +336,67 @@ textarea:focus-visible {
     0 2px 4px color-mix(in srgb, var(--bg) 14%, transparent);
 }
 
+/* Reusable glass + glow effect for cards */
+/* Usage: add class to any card container, e.g. <div class="sb-card Sb-cardglow"> */
+.Sb-cardglow, .sb-cardglow{
+  /* Glass controls */
+  --glass-blur: 10px;
+  --glass-sat: 1.25;
+
+  position: relative;
+  border: 1px solid transparent; /* drawn by 3rd background layer */
+  /* layered background: hotspot, inner glass gradient, gradient border */
+  background:
+    radial-gradient(140% 260% at 18% 0%, color-mix(in srgb, var(--bg) 20%, transparent), transparent 64%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--card) 65%, transparent),
+      color-mix(in srgb, var(--card) 35%, transparent)
+    ),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--border) 55%, transparent),
+      color-mix(in srgb, var(--border) 25%, transparent)
+    );
+  background-clip: padding-box, padding-box, border-box;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+          backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  /* inner highlight + subtle lift + crisp outline */
+  box-shadow:
+    /* glossy top edge */
+    0 1px 0 color-mix(in srgb, #fff 22%, var(--card)) inset,
+    /* bottom inner edge */
+    0 -1px 0 color-mix(in srgb, var(--border) 52%, transparent) inset,
+    /* soft inner ambient glow */
+    0 2px 10px color-mix(in srgb, #fff 10%, transparent) inset,
+    0 0 22px color-mix(in srgb, #fff 10%, transparent) inset,
+    /* crisp inner outline */
+    0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent) inset,
+    /* subtle external shadow */
+    0 8px 22px color-mix(in srgb, var(--bg) 14%, transparent);
+  transition: background-color .15s ease, box-shadow .15s ease, border-color .15s ease, backdrop-filter .2s ease;
+}
+.Sb-cardglow:hover, .Sb-cardglow:focus-within,
+.sb-cardglow:hover, .sb-cardglow:focus-within{
+  background:
+    radial-gradient(140% 240% at 20% 0%, color-mix(in srgb, var(--bg) 26%, transparent), transparent 66%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--card) 68%, transparent),
+      color-mix(in srgb, var(--card) 32%, transparent)
+    ),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--border) 60%, transparent),
+      color-mix(in srgb, var(--border) 28%, transparent)
+    );
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 1px)) saturate(1.3);
+          backdrop-filter: blur(calc(var(--glass-blur) + 1px)) saturate(1.3);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 28%, var(--card)) inset,
+    0 -1px 0 color-mix(in srgb, var(--border) 54%, transparent) inset,
+    0 3px 12px color-mix(in srgb, #fff 12%, transparent) inset,
+    0 0 26px color-mix(in srgb, #fff 12%, transparent) inset,
+    0 0 0 1px color-mix(in srgb, var(--border) 65%, transparent) inset,
+    0 10px 26px color-mix(in srgb, var(--bg) 16%, transparent);
+}
+
 /* Inside cards, elevate fields slightly (lighter than card on dark; slightly lighter than card on light) */
 /* Inside cards, elevate typical fields but preserve custom styling for .sb-select */
 .sb-card :where(input, textarea, select):not(.sb-select){

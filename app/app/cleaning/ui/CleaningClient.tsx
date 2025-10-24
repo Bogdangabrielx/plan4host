@@ -554,7 +554,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                   onClick={
                     !canWrite || isCleaned ? undefined : () => setOpenItem(it)
                   }
-                  className="sb-card"
+                  className="sb-cardglow"
                   style={{
                     aspectRatio: "var(--clean-card-aspect, 3 / 4)",
                     padding: 10,
