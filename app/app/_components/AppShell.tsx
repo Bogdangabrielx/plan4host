@@ -135,7 +135,8 @@ export default function AppShell({ title, currentPath, children }: Props) {
             // ancorele/scrollIntoView nu vor mai ancora ultimul element chiar la margine
             scrollPaddingBottom: "var(--scroll-extra, 40px)",
 
-            maxWidth: 1200,
+            // Lățime maximă: unele pagini au nevoie de canvas mai lat pe desktop
+            maxWidth: currentPath === "/app/propertySetup" ? 1400 : 1200,
             margin: "0 auto",
             width: "100%",
             boxSizing: "border-box",
