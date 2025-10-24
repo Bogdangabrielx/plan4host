@@ -613,7 +613,7 @@ export default function ReservationMessageClient({
         </button>
 
         {rvOpen && (
-          <div  className="sb-cardglow"  style={{ borderTop: "1px solid var(--border)", padding: 12, display: "grid", gap: 12 }}>
+          <div  className="sb-cardglow"  style={{ borderTop: "1px solid var(--border)",background:"(var--panel)" , padding: 12, display: "grid", gap: 12 }}>
             {/* Tabs */}
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
               <button
