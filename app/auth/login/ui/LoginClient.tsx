@@ -206,7 +206,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
           </div>
         </div>
 
-        <div style={{ display: "grid", gap: 10 }}>
+        <div className="sb-cardglow" style={{ display: "grid", gap: 10 }}>
           <button onClick={signInWithGoogle} style={oauthBtn}>
             <img
               src={
