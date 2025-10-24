@@ -1439,12 +1439,13 @@ function EditFormBookingModal({
     overscrollBehavior: "contain",
     touchAction: "pan-y",
     padding: 16,
+    borderRadius:16,
   };
 
   return (
     <div  className="sb-cardglow" role="dialog" aria-modal="true" onClick={() => { if (!popupMsg) onClose(); }} style={wrap}>
       {popupMsg && (
-        <div className="sb-cardglow"
+        <div 
           role="dialog"
           aria-modal="true"
           onClick={(e)=>{ e.stopPropagation(); setPopupMsg(null); }}
