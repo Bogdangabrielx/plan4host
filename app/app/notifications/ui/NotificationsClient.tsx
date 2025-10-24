@@ -157,9 +157,23 @@ export default function NotificationsClient() {
         <strong>Notifications</strong>
       </div>
       <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-        <button className={onClass} onClick={turnOn} disabled={loading}>Turn On</button>
-        <button className={offClass} onClick={turnOff} disabled={loading}>Turn Off</button>
-        <button className="sb-btn" onClick={sendTest} disabled={loading || !active}>Send test</button>
+        <button
+          className={onClass}
+          onClick={turnOn}
+          disabled={loading}
+          style={{ color: '#fff', border: active ? '1px solid var(--primary)' as const : undefined }}
+        >
+          Turn On
+        </button>
+        <button
+          className={offClass}
+          onClick={turnOff}
+          disabled={loading}
+          style={{ color: '#fff', border: !active ? '1px solid var(--primary)' as const : undefined }}
+        >
+          Turn Off
+        </button>
+        <button className="sb-btn" onClick={sendTest} disabled={loading || !active} style={{ color: '#fff' }}>Send test</button>
       </div>
       <div style={{ display: 'grid', gap: 4 }}>
         <small style={{ color:'var(--muted)' }}>
