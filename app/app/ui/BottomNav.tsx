@@ -147,7 +147,7 @@ useEffect(() => {
         borderTop: "1px solid var(--border)",
         borderTopLeftRadius: 23,
         borderTopRightRadius: 23,
-        padding: "8px 10px",
+        padding: "8px 8px",
         overflow: "hidden",
 
         // când tastatura e deschisă, NU mai urcă: îl scot în jos din viewport
