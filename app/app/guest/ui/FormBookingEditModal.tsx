@@ -320,12 +320,13 @@ export default function EditFormBookingModal({
     return (
       <div className="sb-cardglow" style={{ display: "grid", gap: 6 }}>
         <Label>{label}</Label>
-        <div
+        <div className="sb-cardglow" 
           style={{
             ...FIELD,
             background: "var(--panel)",
             color: "var(--muted)",
             borderStyle: "dashed",
+            borderRadius: 16,
           }}
         >
           {value ?? "—"}
