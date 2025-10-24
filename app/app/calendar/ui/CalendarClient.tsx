@@ -272,7 +272,7 @@ export default function CalendarClient({
         </select>
         <div style={{ flexBasis: "100%", height: 8 }} />
 
-        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 12 : 18, marginLeft: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 13 : 18, marginLeft: 0 }}>
           <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Previous month"
             onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}
           >◀</button>
