@@ -273,7 +273,18 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         {/* minimalist layout */}
         <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>
           <PropertySidebar properties={properties} selectedId={selectedId} onSelect={setSelectedId} status={status} />
-          <section className="sb-cardglow" style={{ padding: 14,background:'var(--panel)', border:'1px solid var(--border)', borderRadius: 16  }}>
+          <section
+            className="sb-cardglow"
+            style={{
+              padding: 14,
+              background: 'var(--panel)',
+              border: '1px solid var(--border)',
+              borderRadius: 16,
+              width: '100%',
+              maxWidth: 904,          // keep previous main width on desktop
+              justifySelf: 'center',  // center within the grid track
+            }}
+          >
             {!selected ? (
               <p>Please select a property on the left.</p>
             ) : (
