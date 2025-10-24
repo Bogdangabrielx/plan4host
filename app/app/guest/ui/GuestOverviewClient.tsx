@@ -926,6 +926,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     <button
                       type="button"
                       {...useTap(() => setEditModal({ propertyId, bookingId: String(it.id), confirmOnSave: kind === 'green' }))}
+                      className="sb-cardglow"
                       style={{
                         ...BTN_TOUCH_STYLE,
                         borderRadius: 21,
@@ -946,6 +947,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   <button
                     type="button"
                     {...useTap(() => setQrModal({ bookingId: String(it.id), url: `${window.location.origin}/r/ci/${encodeURIComponent(String(it.id||''))}` }))}
+                    className="sb-cardglow"
                     style={{
                       ...BTN_TOUCH_STYLE,
                       borderRadius: 21,
