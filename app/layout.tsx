@@ -171,7 +171,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --success-h: 135; --success-s: 58%; --success-l: 58%;
 
   /* OKLCH components (more vibrant royal-blue bias) */
-  --bg-L: 0.18;   --bg-C: 0.045; --bg-h-ok: 255;
+  --bg-L: 0.20;   --bg-C: 0.065; --bg-h-ok: 255;
   --text-L: 0.94; --text-C: 0.00; --text-h-ok: 0;
   --muted-L: 0.75; --muted-C: 0.035; --muted-h-ok: 255;
   --panel-L: 0.22; --panel-C: 0.055; --panel-h-ok: 255;
