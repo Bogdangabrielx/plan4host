@@ -323,7 +323,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     <div style={{ display:'grid', gap:16 }}>
       <PlanHeaderBadge title="Check-in Editor" slot="header-right" />
       {/* Property selector */}
-      <section style={card}>
+      <section className="sb-cardglow"  style={card}>
         <h2 style={{ marginTop: 0 }}>Select Property</h2>
         <select value={propertyId || ''} onChange={onPropChange} style={FIELD}>
           {(properties || []).map(p => (
@@ -335,7 +335,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       {prop && (
         <>
           {/* Check-in Link */}
-          <section style={card}>
+          <section className="sb-cardglow" style={card}>
             <h3 style={{ marginTop: 0 }}>Check-in Link</h3>
             <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
               <button
@@ -353,7 +353,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </section>
 
           {/* House Rules PDF */}
-          <section style={card}>
+          <section  className="sb-cardglow"  style={card}>
             <h3 style={{ marginTop: 0 }}>House Rules PDF</h3>
             {prop.regulation_pdf_url ? (
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
@@ -416,7 +416,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           )}
 
           {/* Contact details */}
-          <section style={card}>
+          <section className="sb-cardglow"  style={card}>
             <h3 style={{ marginTop: 0 }}>Property Contact</h3>
             <form onSubmit={saveContacts} style={{ display:'grid', gap:12, maxWidth:560 }}>
               <div>
@@ -499,7 +499,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </section>
 
           {/* Presentation Image */}
-          <section style={card}>
+          <section className="sb-cardglow"  style={card}>
             <h3 style={{ marginTop: 0 }}>Presentation Image</h3>
             <div style={{ display:'grid', gap:10 }}>
               {prop.presentation_image_url ? (
