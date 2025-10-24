@@ -152,7 +152,7 @@ export default function NotificationsClient() {
   const offClass = `sb-btn ${!active ? 'sb-btn--primary' : ''}`.trim();
 
   return (
-    <div className="sb-cardglow" style={{ padding: 16, display: 'grid', gap: 12 }}>
+    <div className="sb-cardglow" style={{ padding: 16, display: 'grid', gap: 12, borderRadius: 13 }}>
       <div style={{ display: 'grid', gap: 6 }}>
         <strong>Notifications</strong>
       </div>
