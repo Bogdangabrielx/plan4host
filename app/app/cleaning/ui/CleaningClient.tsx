@@ -529,7 +529,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
           <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
         ) : (
           <ul
-            className="sb-card"
+            className="cleaning-grid"
             style={{
               listStyle: "none",
               padding: 0,
@@ -548,7 +548,6 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               const cleanedBy = cleanedByMap[key];
               const isCleaned = cleaned || !!cleanedBy;
 
-
               return (
                 <li
                   key={it.room.id + "|" + it.cleanDate}
@@ -562,7 +561,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                     cursor: isCleaned ? "default" : "pointer",
                     display: "grid",
                     placeItems: "center",
-                    borderRadius:13,
+                    borderRadius: 13,
                     gap: 6,
                     opacity: isCleaned ? 0.66 : 1,
                   }}
