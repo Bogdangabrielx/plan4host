@@ -362,12 +362,12 @@ textarea:focus-visible {
   /* inner highlight + subtle lift + crisp outline */
   box-shadow:
     /* glossy top edge */
-    0 1px 0 color-mix(in srgb, #fff 22%, var(--card)) inset,
+    0 1px 0 color-mix(in srgb, var(--text) 22%, var(--card)) inset,
     /* bottom inner edge */
     0 -1px 0 color-mix(in srgb, var(--border) 52%, transparent) inset,
     /* soft inner ambient glow */
-    0 2px 10px color-mix(in srgb, #fff 10%, transparent) inset,
-    0 0 22px color-mix(in srgb, #fff 10%, transparent) inset,
+    0 2px 10px color-mix(in srgb, var(--text)10%, transparent) inset,
+    0 0 22px color-mix(in srgb, var(--text) 10%, transparent) inset,
     /* crisp inner outline */
     0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent) inset,
     /* subtle external shadow */
@@ -389,10 +389,10 @@ textarea:focus-visible {
   -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 1px)) saturate(1.3);
           backdrop-filter: blur(calc(var(--glass-blur) + 1px)) saturate(1.3);
   box-shadow:
-    0 1px 0 color-mix(in srgb, #fff 28%, var(--card)) inset,
+    0 1px 0 color-mix(in srgb, var(--text) 28%, var(--card)) inset,
     0 -1px 0 color-mix(in srgb, var(--border) 54%, transparent) inset,
-    0 3px 12px color-mix(in srgb, #fff 12%, transparent) inset,
-    0 0 26px color-mix(in srgb, #fff 12%, transparent) inset,
+    0 3px 12px color-mix(in srgb, var(--text)12%, transparent) inset,
+    0 0 26px color-mix(in srgb, var(--text)12%, transparent) inset,
     0 0 0 1px color-mix(in srgb, var(--border) 65%, transparent) inset,
     0 10px 26px color-mix(in srgb, var(--bg) 16%, transparent);
 }
