@@ -1444,7 +1444,7 @@ function EditFormBookingModal({
   return (
     <div  className="sb-cardglow" role="dialog" aria-modal="true" onClick={() => { if (!popupMsg) onClose(); }} style={wrap}>
       {popupMsg && (
-        <div 
+        <div className="sb-cardglow"
           role="dialog"
           aria-modal="true"
           onClick={(e)=>{ e.stopPropagation(); setPopupMsg(null); }}
@@ -1625,7 +1625,7 @@ function EditFormBookingModal({
           </div>
         </div>
       )}
-      <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={card}>
+      <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={card}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:8 }}>
           <strong>{confirmOnSave ? 'Modify booking' : 'Confirm booking'}</strong>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
