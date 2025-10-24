@@ -130,7 +130,7 @@ export default function CleanTaskModal({
       {/* Modal */}
       <div role="dialog" aria-modal="true" className="sb-card sb-cardglow ct-modal" style={{ position: "fixed", top: "calc(50% + var(--safe-top) / 2)", left: "50%", transform: "translate(-50%, -50%)", width: "min(640px, calc(100vw - 32px))", maxHeight: "calc(100dvh - 32px)", overflow: "hidden", zIndex: 95, display: "grid", gridTemplateRows: "auto 1fr auto", padding: 0, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
 {/* HEADER — sticky, centered room name */}
-<div style={{ position:'sticky', top:0, zIndex:2, padding: 16, paddingBottom: 8, background:'var(--panel)', borderTopLeftRadius: 12, borderTopRightRadius: 12, borderBottom: "1px solid var(--border)", transform:'translateZ(0)', willChange:'transform' }}>
+<div className="sb-cardglow" style={{ position:'sticky', top:0, zIndex:2, padding: 16, paddingBottom: 8, background:'var(--panel)', borderTopLeftRadius: 12, borderTopRightRadius: 12, borderBottom: "1px solid var(--border)", transform:'translateZ(0)', willChange:'transform' }}>
   <div
     style={{
       display: "grid",
@@ -168,7 +168,7 @@ export default function CleanTaskModal({
               {[...tasks].sort((a,b)=>a.sort_index-b.sort_index).map(t => {
                 const checked = !!local[t.id];
                 return (
-                  <li key={t.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--card)", borderRadius: 10, padding: 10 }}>
+                  <li key={t.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--panel)", borderRadius: 10, padding: 10 }}>
                     <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: locked ? "default" : "pointer", opacity: locked ? .7 : 1 }}>
                       <input type="checkbox" checked={checked} disabled={locked} onChange={(e) => toggle(t.id, (e.target as HTMLInputElement).checked)} />
                       <span>{t.label}</span>
@@ -181,7 +181,7 @@ export default function CleanTaskModal({
         </div>
 
         {/* Footer */}
-        <div style={{
+        <div className="sb-cardglow" style={{
           padding: 14,
           borderTop: "1px solid var(--border)",
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10
