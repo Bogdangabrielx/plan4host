@@ -158,7 +158,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 :root[data-theme="dark"]{
   /* HSL components */
   /* Royal‑blue tinted neutrals (instead of greys) */
-  --bg-h: 230;   --bg-s: 30%; --bg-l: 11%;  /* deeper, more saturated canvas */
+  --bg-h: 230;   --bg-s: 30%; --bg-l: 60%;  /* deeper, more saturated canvas */
   --text-h: 0;   --text-s: 0%;  --text-l: 92%;
   --muted-h: 230; --muted-s: 24%; --muted-l: 68%;
   --panel-h: 230; --panel-s: 36%; --panel-l: 16%;
