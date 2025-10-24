@@ -503,8 +503,8 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               type="date"
               value={dateStr}
               onChange={(e) => setDateStr(e.currentTarget.value)}
-              className="sb-btn sb-cardglow sb-btn--icon"
-              style={{ padding: "16px 20px", fontFamily: "inherit" }}
+              className="sb-btn sb-cardglow sb-btn--ghost"
+              style={{ padding: "8px 12px", fontFamily: "inherit" }}
             />
             <button
               type="button"
