@@ -148,8 +148,8 @@ export default function NotificationsClient() {
     }
   }
 
-  const onClass = `sb-btn ${active ? 'sb-btn--primary' : ''}`.trim();
-  const offClass = `sb-btn ${!active ? 'sb-btn--primary' : ''}`.trim();
+  const onClass = `sb-btn sb-cardglow ${active ? 'sb-btn--primary' : ''}`.trim();
+  const offClass = `sb-btn sb-cardglow ${!active ? 'sb-btn--primary' : ''}`.trim();
 
   return (
     <div className="sb-cardglow" style={{ padding: 16, display: 'grid', gap: 12, borderRadius: 13 }}>
@@ -157,8 +157,8 @@ export default function NotificationsClient() {
         <strong>Notifications</strong>
       </div>
       <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-        <button className={'onClass sb-cardglow'} onClick={turnOn} disabled={loading}>Turn On</button>
-        <button className={'offClass sb-cardglow'} onClick={turnOff} disabled={loading}>Turn Off</button>
+        <button className={onClass} onClick={turnOn} disabled={loading}>Turn On</button>
+        <button className={offClass} onClick={turnOff} disabled={loading}>Turn Off</button>
         <button className="sb-btn" onClick={sendTest} disabled={loading || !active}>Send test</button>
       </div>
       <div style={{ display: 'grid', gap: 4 }}>
