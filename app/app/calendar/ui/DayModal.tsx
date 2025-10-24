@@ -334,7 +334,7 @@ export default function DayModal({
               const endsToday = isReserved && b!.end_date === day;
 
               return (
-                <div
+                <div  className="sb-cardglow"
                   key={room.id}
                   onClick={() => setOpenRoom(room)}
                   role="button"
