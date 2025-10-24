@@ -271,7 +271,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         )}
 
         {/* minimalist layout */}
-        <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>
+        <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined, border:'1px solid var(--border)'}}>
           <PropertySidebar properties={properties} selectedId={selectedId} onSelect={setSelectedId} status={status} />
           <section className="sb-card" style={{ padding: 16 }}>
             {!selected ? (
