@@ -80,15 +80,16 @@ export default function RoomDetailsTab({
                   else e.currentTarget.value = c.label;
                 } }
                 style={textInput} />
+                
               <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input type="checkbox" defaultChecked={c.default_value} onChange={(e) => onToggleCheckDefault(c.id, e.currentTarget.checked)} />
                 default ON
               </label>
-              <div className="rd-actions" style={{ display: "flex", gap: 6 }}>
+              
                 <button onClick={() => onMoveCheck(c.id, "up")} disabled={idx === 0} className="sb-btn" title="Move up">↑</button>
                 <button onClick={() => onMoveCheck(c.id, "down")} disabled={idx === checks.length - 1} className="sb-btn" title="Move down">↓</button>
                 <button onClick={() => setConfirmDel({ kind: 'check', id: c.id, label: c.label })} className="sb-btn">Delete</button>
-              </div>
+             
             </li>
           ))}
         </ul>
