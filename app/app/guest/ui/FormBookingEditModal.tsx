@@ -318,7 +318,7 @@ export default function EditFormBookingModal({
 
   function ReadRow({ label, value }: { label: string; value: React.ReactNode }) {
     return (
-      <div style={{ display: "grid", gap: 6 }}>
+      <div className="sb-cardglow" style={{ display: "grid", gap: 6 }}>
         <Label>{label}</Label>
         <div
           style={{
