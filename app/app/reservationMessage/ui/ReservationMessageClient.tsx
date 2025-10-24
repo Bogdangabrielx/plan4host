@@ -609,7 +609,7 @@ export default function ReservationMessageClient({
           }}
         >
           <strong>Room variables</strong>
-          <span style={{ opacity: 0.7 }}>{rvOpen ? "▲" : "▼"}</span>
+          <span className="sb-cardglow" style={{ opacity: 0.7 }}>{rvOpen ? "▲" : "▼"}</span>
         </button>
 
         {rvOpen && (
