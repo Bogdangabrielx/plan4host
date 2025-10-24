@@ -172,7 +172,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   /* OKLCH components */
   /* OKLCH: tiny cool bias to counter warm OLED/SDR casts */
-  --bg-L: 0.19;   --bg-C: 0.01; --bg-h-ok: 250;
+  --bg-L: 0.19;   --bg-C: 0.06; --bg-h-ok: 250;
   --text-L: 0.94; --text-C: 0.00; --text-h-ok: 0;
   --muted-L: 0.75; --muted-C: 0.01; --muted-h-ok: 250;
   --panel-L: 0.22; --panel-C: 0.01; --panel-h-ok: 250;
