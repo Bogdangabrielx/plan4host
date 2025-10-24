@@ -199,7 +199,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
        
       <div  style={wrap(mounted ? theme : "dark")} >
         <div  style={headRow}>
-          <h1 className="sb-cardglow" style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? "Sign in" : "Create account"}</h1>
+          <h1  style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? "Sign in" : "Create account"}</h1>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <span style={pillStyle(pill)}>{pill}</span>
             <ThemeToggle size="md" />
