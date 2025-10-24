@@ -276,7 +276,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
           <section
             className="sb-cardglow"
             style={{
-              padding: 14,
+              padding: 20,
               background: 'var(--panel)',
               border: '1px solid var(--border)',
               borderRadius: 16,
