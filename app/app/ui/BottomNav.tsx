@@ -193,6 +193,8 @@ useEffect(() => {
             borderRadius: 10,
             display: "grid",
             placeItems: "center",
+            background: "var(--panel)";
+            border: "var(--border)";
             gap: 4,
             padding: "6px 4px",
             touchAction: "manipulation",
