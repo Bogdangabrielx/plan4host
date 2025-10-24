@@ -169,7 +169,6 @@ useEffect(() => {
               href={it.href}
               style={{
                 textDecoration: "none",
-                border: "1px solid var(--border)",
                 background: "var(--card)",
                 color: "var(--text)",
                 borderRadius: 10,
@@ -190,7 +189,7 @@ useEffect(() => {
           type="button"
           onClick={() => { try { window.dispatchEvent(new CustomEvent("p4h:openManagement")); } catch {} }}
           style={{
-            border: "1px solid var(--border)",
+            textDecoration: "none",
             background: "var(--card)",
             color: "var(--text)",
             borderRadius: 10,
