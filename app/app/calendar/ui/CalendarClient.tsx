@@ -283,10 +283,10 @@ export default function CalendarClient({
           <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Next month"
             onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}
           >▶</button>
-          <button type="button" className="sb-btn sb-cardglow sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label="Open year overview">
+          <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label="Open year overview">
             Year
           </button>
-          <button type="button" className="sb-btn sb-cardglow sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label="Open room overview">
+          <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label="Open room overview">
             Room view
           </button>
         </div>
