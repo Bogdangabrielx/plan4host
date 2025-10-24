@@ -230,7 +230,7 @@ export default function TeamClient() {
         </div>
       </section>
 
-      <section style={card}>
+      <section className="sb-cardglow" style={card}>
         <h3 style={{ margin: 0 }}>Members</h3>
         {loading && <div style={{ color: "var(--muted)" }}>Loading…</div>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
