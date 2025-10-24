@@ -25,7 +25,7 @@ export function YearGrid({
     return () => window.removeEventListener("resize", detect);
   }, []);
   return (
-    <section style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "repeat(3, 1fr)", gap: 16 }}>
+    <section className="sb-card-glow" style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "repeat(3, 1fr)", gap: 16 }}>
       {Array.from({ length: 12 }).map((_, m) => (
         <div key={m} style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, boxShadow: "0 6px 18px rgba(0,0,0,0.25)" }}>
           <button
