@@ -482,7 +482,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       <select
                         value={prop.contact_overlay_position ?? ''}
                         onChange={(e)=>{ const v = (e.currentTarget.value || '') as any; setProp(prev => prev ? { ...prev, contact_overlay_position: (v || null) } : prev); }}
-                        style={{ ...FIELD, maxWidth: 240 }}
+                        style={{ ...FIELD, maxWidth: 520 }}
                       >
                         <option value="">- select -</option>
                         <option value="top">top</option>
