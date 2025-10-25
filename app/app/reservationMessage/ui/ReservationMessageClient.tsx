@@ -105,6 +105,7 @@ export default function ReservationMessageClient({
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
+  const isSmall = useIsSmall();
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
   const [lang, setLang] = useState<'ro'|'en'>('ro');
   const [scheduler, setScheduler] = useState<TemplateState['schedule_kind']>('');
@@ -616,14 +617,15 @@ export default function ReservationMessageClient({
           className="Sb-cardglow"
           style={{
             position: 'relative',
-            display: 'inline-flex',
+            display: isSmall ? 'grid' : 'inline-flex',
             alignItems: 'center',
             gap: 10,
-            padding: '6px 10px 6px 56px',
+            padding: isSmall ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
             borderRadius: 999,
             minHeight: 56,
             background: 'var(--panel)',
-            border: '1px solid var(--border)'
+            border: '1px solid var(--border)',
+            width: isSmall ? '100%' : undefined,
           }}
         >
           {propertyId && propertyPhotos[propertyId] ? (
@@ -645,7 +647,9 @@ export default function ReservationMessageClient({
               boxShadow: 'none',
               padding: '10px 12px',
               minHeight: 44,
-              minWidth: 220,
+              minWidth: isSmall ? '100%' : 220,
+              maxWidth: isSmall ? '100%' : 380,
+              width: isSmall ? '100%' : 'auto',
               fontFamily: 'inherit'
             }}
           >

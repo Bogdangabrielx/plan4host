@@ -86,12 +86,15 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
   const [status, setStatus] = useState<"Idle" | "Loading" | "Saving…" | "Error">("Idle");
-  // Responsive: folosit doar pentru layout-ul cardurilor (mobil vs desktop)
-  const [isSmall, setIsSmall] = useState<boolean>(false);
+  // Responsive: folosit pentru layout mobil (telefon)
+  const [isSmall, setIsSmall] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia?.('(max-width: 560px), (pointer: coarse)')?.matches ?? false;
+  });
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(max-width: 720px)');
-    const apply = () => setIsSmall(mq.matches);
+    const mq = window.matchMedia('(max-width: 560px), (pointer: coarse)');
+    const apply = (e?: MediaQueryListEvent) => setIsSmall(e ? e.matches : mq.matches);
     try { mq.addEventListener('change', apply); } catch { mq.addListener?.(apply as any); }
     apply();
     return () => { try { mq.removeEventListener('change', apply); } catch { mq.removeListener?.(apply as any); } };
@@ -101,6 +104,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
+  // (second detector removed; unified above)
   const [timezone, setTimezone] = useState<string>("");
   const [prefReady, setPrefReady] = useState(false);
 
@@ -528,14 +532,15 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           className="Sb-cardglow"
           style={{
             position: 'relative',
-            display: 'inline-flex',
+            display: isSmall ? 'grid' : 'inline-flex',
             alignItems: 'center',
             gap: 10,
-            padding: '6px 10px 6px 56px',
+            padding: isSmall ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
             borderRadius: 999,
             minHeight: 56,
             background: 'var(--panel)',
-            border: '1px solid var(--border)'
+            border: '1px solid var(--border)',
+            width: isSmall ? '100%' : undefined,
           }}
         >
           {propertyId && propertyPhotos[propertyId] ? (
@@ -557,7 +562,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               boxShadow: 'none',
               padding: '10px 12px',
               minHeight: 44,
-              minWidth: 220,
+              minWidth: isSmall ? '100%' : 220,
+              maxWidth: isSmall ? '100%' : 380,
+              width: isSmall ? '100%' : 'auto',
               fontFamily: 'inherit'
             }}
           >

@@ -150,6 +150,18 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
 
   const [openItem, setOpenItem] = useState<RoomItem | null>(null);
 
+  // Small screen detection (phones)
+  const [isSmall, setIsSmall] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia?.('(max-width: 560px), (pointer: coarse)')?.matches ?? false;
+  });
+  useEffect(() => {
+    const mq = window.matchMedia?.('(max-width: 560px), (pointer: coarse)');
+    const on = (e: MediaQueryListEvent) => setIsSmall(e.matches);
+    try { mq?.addEventListener('change', on); } catch { mq?.addListener?.(on); }
+    return () => { try { mq?.removeEventListener('change', on); } catch { mq?.removeListener?.(on); } };
+  }, []);
+
   /* Theme-aware icon (light/dark) */
   const [isDark, setIsDark] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -510,14 +522,15 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             className="Sb-cardglow"
             style={{
               position: 'relative',
-              display: 'inline-flex',
+              display: isSmall ? 'grid' : 'inline-flex',
               alignItems: 'center',
               gap: 10,
-              padding: '6px 10px 6px 56px',
+              padding: isSmall ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
               borderRadius: 999,
               minHeight: 56,
               background: 'var(--panel)',
               border: '1px solid var(--border)',
+              width: isSmall ? '100%' : undefined,
             }}
           >
             {propertyId && propertyPhotos[propertyId] ? (
@@ -538,7 +551,9 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                 border: '0',
                 boxShadow: 'none',
                 padding: '10px 12px',
-                minWidth: 220,
+                minWidth: isSmall ? '100%' : 220,
+                maxWidth: isSmall ? '100%' : 380,
+                width: isSmall ? '100%' : 'auto',
                 minHeight: 44,
                 fontFamily: 'inherit',
               }}
