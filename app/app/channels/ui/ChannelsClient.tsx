@@ -525,7 +525,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',  }}>
       <PlanHeaderBadge title="Sync Calendars" slot="header-right" />
       {/* Toolbar minimalistă */}
-      <div className="sb-toolbar" style={{ gap: 12, marginBottom: 8, alignItems: 'center' }}>
+      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, marginBottom: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <div
           className="Sb-cardglow"
           style={{
@@ -539,6 +539,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             background: 'var(--panel)',
             border: '1px solid var(--border)',
             width: isSmall ? '100%' : undefined,
+            flexBasis: isSmall ? '100%' : 'auto',
+            flex: isSmall ? '1 1 100%' : undefined,
           }}
         >
           {propertyId && propertyPhotos[propertyId] ? (
@@ -569,6 +571,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
+        {isSmall && <div style={{ flexBasis: '100%', height: 8 }} />}
         <span className="sb-badge">Timezone: {timezone || "—"}</span>
       </div>
 
