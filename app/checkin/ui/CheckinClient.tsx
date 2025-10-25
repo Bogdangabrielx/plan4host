@@ -1217,7 +1217,7 @@ export default function CheckinClient() {
             </div>
 
             {/* Identity document */}
-            <div className="sb-select sb-cardglow"  style={{ ...ROW_1, marginTop: 6 }}>
+            <div  style={{ ...ROW_1, marginTop: 6 }}>
               <div>
                 <label htmlFor="checkin-doc-type" style={LABEL_ROW}>
                   <Image src={formIcon("id")} alt="" width={16} height={16} />
@@ -1225,6 +1225,7 @@ export default function CheckinClient() {
                 </label>
                 <select 
                   id="checkin-doc-type"
+                  className="sb-select sb-cardglow" 
                   style={SELECT}
                   value={docType}
                   onChange={(e) => {
