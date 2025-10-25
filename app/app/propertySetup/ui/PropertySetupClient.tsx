@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import PropertySidebar from "./PropertySidebar";
+// import PropertySidebar from "./PropertySidebar"; // replaced by top pill selector
 import SettingsTab from "./SettingsTab";
 import RoomsTab from "./RoomsTab";
 import RoomDetailsTab from "./RoomDetailsTab";
@@ -270,10 +270,48 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
           </div>
         )}
 
-        {/* minimalist layout */}
-        <div className="config-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : undefined }}>
-          <PropertySidebar properties={properties} selectedId={selectedId} onSelect={setSelectedId} status={status} />
-          <section
+        {/* Top property selector pill (desktop + mobile) */}
+        <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap', marginBottom: 10 }}>
+          <div
+            className="Sb-cardglow"
+            style={{
+              position: 'relative',
+              display: isSmall ? 'grid' : 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: isSmall ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
+              borderRadius: 999,
+              minHeight: 56,
+              background: 'var(--panel)',
+              border: '1px solid var(--border)',
+              width: isSmall ? '100%' : undefined,
+              flexBasis: isSmall ? '100%' : 'auto',
+              flex: isSmall ? '1 1 100%' : undefined,
+            }}
+          >
+            {selectedId ? null : null}
+            <select
+              className="sb-select"
+              value={selectedId || ''}
+              onChange={(e) => setSelectedId((e.target as HTMLSelectElement).value)}
+              style={{
+                background: 'transparent', border: 0, boxShadow: 'none',
+                padding: '10px 12px', minHeight: 44,
+                minWidth: isSmall ? '100%' : 220,
+                maxWidth: isSmall ? '100%' : 380,
+                width: isSmall ? '100%' : 'auto',
+                fontFamily: 'inherit', fontWeight: 700,
+              }}
+            >
+              {properties.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Content card under the selector (desktop + mobile) */}
+        <section
             className="sb-cardglow"
             style={{
               padding: 20,
@@ -504,7 +542,6 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
             />
           )}
         </section>
-      </div>
       </div>
     </div>
   );
