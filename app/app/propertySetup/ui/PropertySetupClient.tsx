@@ -288,7 +288,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         )}
 
         {/* Top property selector pill (desktop + mobile) */}
-        <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap', marginBottom: 10 }}>
+        <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap', marginBottom: 10, width: '100%', maxWidth: 904, marginInline: 'auto' }}>
           <div
             className="Sb-cardglow"
             style={{
@@ -349,7 +349,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
             }}
           >
             {!selected ? (
-              <p>Please select a property on the left.</p>
+              <p>Please select a property above.</p>
             ) : (
               <Tabs
               settings={<SettingsTab property={selected} onChange={(k, v) => saveTime(k, v)} />}
