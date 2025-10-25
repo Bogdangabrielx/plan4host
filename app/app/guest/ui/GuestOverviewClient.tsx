@@ -756,7 +756,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 style={{
                   marginLeft: 6, width: 24, height: 24, borderRadius: 50,
                   border: "1px solid var(--border)", background: "transparent",
-                  color: "var(--text)", lineHeight: 1, fontSize: 12, cursor: "pointer",
+                  color: "var(--muted)", lineHeight: 1, fontSize: 12, cursor: "pointer",
                   ...BTN_TOUCH_STYLE,
                   padding: 0, minHeight: 24,
                 }}
