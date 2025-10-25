@@ -44,7 +44,19 @@ export default async function CalendarPage({
 
   return (
     <AppShell currentPath="/app/calendar" title="Calendar">
-      <CalendarClient initialProperties={properties} initialDate={initialDate} />
+      <div
+        style={{
+          backgroundImage: 'var(--bg-media)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed',
+          borderRadius: 16,
+          padding: 0,
+        }}
+      >
+        <CalendarClient initialProperties={properties} initialDate={initialDate} />
+      </div>
     </AppShell>
   );
 }
