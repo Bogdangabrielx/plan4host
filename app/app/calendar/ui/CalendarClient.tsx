@@ -332,7 +332,7 @@ export default function CalendarClient({
             onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}
           >◀</button>
           <button type="button" className="sb-btn sb-cardglow sb-btn--ghost" onClick={openDatePicker}
-            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 60 }} aria-label="Pick date">
+            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 50 }} aria-label="Pick date">
             {monthNames[month]} {year}
           </button>
           <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Next month"
