@@ -610,8 +610,8 @@ export default function ReservationMessageClient({
     <div style={{ display: "grid", gap: 12, fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" }}>
       <PlanHeaderBadge title="Automatic Messages" slot="header-right" />
 
-      {/* Property selector (pill with avatar) */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      {/* Property selector (pill with avatar) — align like Calendar (sb-toolbar) */}
+      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap' }}>
         <div
           className="Sb-cardglow"
           style={{
@@ -657,7 +657,7 @@ export default function ReservationMessageClient({
             {properties.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
           </select>
         </div>
-        {isSmall ? <div style={{ flexBasis: '100%', height: 8 }} /> : <div style={{ flex: 1 }} />}
+        {isSmall && <div style={{ flexBasis: '100%', height: 8 }} />}
       </div>
 
       {/* COLLAPSIBLE: Room Variables */}
