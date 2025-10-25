@@ -690,7 +690,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         )}
 
         {/* Search */}
-        <div style={{ display: "flex", justifyContent: "stretch" }}>
+        <div style={{ display: "flex", justifyContent: "stretch", marginBottom: 12 }}>
           <div style={{ position: "relative", width: "100%" }}>
             <svg viewBox="0 0 24 24" aria-hidden="true" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 18, height: 18, opacity: 0.7 }}>
               <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor" />
