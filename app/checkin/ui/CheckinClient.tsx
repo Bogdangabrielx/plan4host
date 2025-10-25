@@ -138,9 +138,8 @@ const Combobox = React.forwardRef<ComboboxHandle, ComboboxProps>(function Combob
   }));
 
   return (
-    <div ref={wrapRef} className="sb-select sb-cardglow" style={{ position: "relative" }}>
+    <div ref={wrapRef} style={{ position: "relative" }}>
       <input
-        className="sb-select sb-cardglow"
         id={id}
         aria-label={ariaLabel}
         role="combobox"
@@ -1218,13 +1217,13 @@ export default function CheckinClient() {
             </div>
 
             {/* Identity document */}
-            <div style={{ ...ROW_1, marginTop: 6 }}>
+            <div className="sb-select sb-cardglow"  style={{ ...ROW_1, marginTop: 6 }}>
               <div>
                 <label htmlFor="checkin-doc-type" style={LABEL_ROW}>
                   <Image src={formIcon("id")} alt="" width={16} height={16} />
                   <span>Document type*</span>
                 </label>
-                <select
+                <select 
                   id="checkin-doc-type"
                   style={SELECT}
                   value={docType}
@@ -1237,7 +1236,7 @@ export default function CheckinClient() {
                     // Reset combobox draft for nationality when switching types
                     if (nationalityRef.current) nationalityRef.current.commit();
                   }}
-                >
+                > 
                   <option value="" disabled>Select document type…</option>
                   <option value="id_card">Identity card</option>
                   <option value="passport">Passport</option>
