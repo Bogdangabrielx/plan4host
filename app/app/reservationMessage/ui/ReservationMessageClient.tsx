@@ -103,6 +103,8 @@ export default function ReservationMessageClient({
 }) {
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
+  // Cache property presentation images (for avatar in pill selector)
+  const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
   const [lang, setLang] = useState<'ro'|'en'>('ro');
   const [scheduler, setScheduler] = useState<TemplateState['schedule_kind']>('');
@@ -584,17 +586,72 @@ export default function ReservationMessageClient({
 
   useEffect(() => { setPill(saving); }, [saving, setPill]);
 
+  // Load presentation image for selected property (once per id)
+  useEffect(() => {
+    (async () => {
+      if (!propertyId) return;
+      if (propertyPhotos[propertyId] !== undefined) return;
+      try {
+        const r = await sb
+          .from('properties')
+          .select('presentation_image_url')
+          .eq('id', propertyId)
+          .maybeSingle();
+        const url = (r.data as any)?.presentation_image_url || null;
+        setPropertyPhotos(prev => ({ ...prev, [propertyId]: url }));
+      } catch {
+        setPropertyPhotos(prev => ({ ...prev, [propertyId]: null }));
+      }
+    })();
+  }, [propertyId, sb, propertyPhotos]);
+
   /** --------- Render --------- */
   return (
     <div style={{ display: "grid", gap: 12, fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" }}>
       <PlanHeaderBadge title="Automatic Messages" slot="header-right" />
 
-      {/* Property selector */}
+      {/* Property selector (pill with avatar) */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Property</label>
-        <select className="sb-select" value={propertyId} onChange={(e) => setPropertyId((e.target as HTMLSelectElement).value)} style={{ minWidth: 220 }}>
-          {properties.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
-        </select>
+        <div
+          className="Sb-cardglow"
+          style={{
+            position: 'relative',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '6px 10px 6px 56px',
+            borderRadius: 999,
+            minHeight: 56,
+            background: 'var(--panel)',
+            border: '1px solid var(--border)'
+          }}
+        >
+          {propertyId && propertyPhotos[propertyId] ? (
+            <img
+              src={propertyPhotos[propertyId] as string}
+              alt=""
+              width={40}
+              height={40}
+              style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
+            />
+          ) : null}
+          <select
+            className="sb-select"
+            value={propertyId}
+            onChange={(e) => setPropertyId((e.target as HTMLSelectElement).value)}
+            style={{
+              background: 'transparent',
+              border: 0,
+              boxShadow: 'none',
+              padding: '10px 12px',
+              minHeight: 44,
+              minWidth: 220,
+              fontFamily: 'inherit'
+            }}
+          >
+            {properties.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
+          </select>
+        </div>
         <div style={{ flex: 1 }} />
       </div>
 
