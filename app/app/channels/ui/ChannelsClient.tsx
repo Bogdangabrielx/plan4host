@@ -86,15 +86,12 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
   const [status, setStatus] = useState<"Idle" | "Loading" | "Saving…" | "Error">("Idle");
-  // Responsive: folosit pentru layout mobil (telefon)
-  const [isSmall, setIsSmall] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia?.('(max-width: 560px), (pointer: coarse)')?.matches ?? false;
-  });
+  // Responsive: folosit doar pentru layout-ul cardurilor (mobil vs desktop)
+  const [isSmall, setIsSmall] = useState<boolean>(false);
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(max-width: 560px), (pointer: coarse)');
-    const apply = (e?: MediaQueryListEvent) => setIsSmall(e ? e.matches : mq.matches);
+    const mq = window.matchMedia('(max-width: 720px)');
+    const apply = () => setIsSmall(mq.matches);
     try { mq.addEventListener('change', apply); } catch { mq.addListener?.(apply as any); }
     apply();
     return () => { try { mq.removeEventListener('change', apply); } catch { mq.removeListener?.(apply as any); } };
@@ -104,7 +101,17 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
-  // (second detector removed; unified above)
+  // Small screen detection
+  const [isSmall, setIsSmall] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia?.('(max-width: 560px), (pointer: coarse)')?.matches ?? false;
+  });
+  useEffect(() => {
+    const mq = window.matchMedia?.('(max-width: 560px), (pointer: coarse)');
+    const on = (e: MediaQueryListEvent) => setIsSmall(e.matches);
+    try { mq?.addEventListener('change', on); } catch { mq?.addListener?.(on); }
+    return () => { try { mq?.removeEventListener('change', on); } catch { mq?.removeListener?.(on); } };
+  }, []);
   const [timezone, setTimezone] = useState<string>("");
   const [prefReady, setPrefReady] = useState(false);
 
