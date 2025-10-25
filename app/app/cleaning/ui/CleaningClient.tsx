@@ -145,6 +145,8 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   const [items, setItems] = useState<RoomItem[]>([]);
   const [cleaningMap, setCleaningMap] = useState<Record<string, Record<string, boolean>>>({});
   const [cleanedByMap, setCleanedByMap] = useState<Record<string, string>>({});
+  // Cache property presentation images by id (used in toolbar pill)
+  const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
 
   const [openItem, setOpenItem] = useState<RoomItem | null>(null);
 
@@ -175,6 +177,25 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
     return () => ob.disconnect();
   }, []);
   const roomIconSrc = isDark ? "/room_fordark.png" : "/room_forlight.png";
+
+  // Load presentation image for the selected property (once per id)
+  useEffect(() => {
+    (async () => {
+      if (!propertyId) return;
+      if (propertyPhotos[propertyId] !== undefined) return;
+      try {
+        const r = await supabase
+          .from('properties')
+          .select('presentation_image_url')
+          .eq('id', propertyId)
+          .maybeSingle();
+        const url = (r.data as any)?.presentation_image_url || null;
+        setPropertyPhotos(prev => ({ ...prev, [propertyId]: url }));
+      } catch {
+        setPropertyPhotos(prev => ({ ...prev, [propertyId]: null }));
+      }
+    })();
+  }, [propertyId, supabase, propertyPhotos]);
 
   /* Header title + pill */
   useEffect(() => { setTitle("Cleaning Board"); }, [setTitle]);
@@ -483,22 +504,53 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         }}
       >
         {/* Toolbar */}
-        <div className="sb-toolbar" style={{ gap: 12 }}>
-          <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
-            Property
-          </label>
-          <select
-            className="sb-select"
-            value={propertyId}
-            onChange={(e) => setPropertyId(e.currentTarget.value)}
-            style={{ minWidth: 220, fontFamily: "inherit" }}
+        <div className="sb-toolbar" style={{ gap: 12, alignItems: 'center' }}>
+          <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Property</label>
+          {/* Pill card with property avatar (left) + selector */}
+          <div
+            className="Sb-cardglow"
+            style={{
+              position: 'relative',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '6px 10px 6px 56px',
+              borderRadius: 999,
+              minHeight: 56,
+              background: 'var(--panel)',
+              border: '1px solid var(--border)',
+            }}
           >
-            {properties.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+            {propertyId && propertyPhotos[propertyId] ? (
+              <img
+                src={propertyPhotos[propertyId] as string}
+                alt=""
+                width={40}
+                height={40}
+                style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
+              />
+            ) : null}
+            <select
+              value={propertyId}
+              onChange={(e) => setPropertyId(e.currentTarget.value)}
+              className="sb-select"
+              style={{
+                background: 'transparent',
+                border: '0',
+                boxShadow: 'none',
+                padding: '10px 12px',
+                minWidth: 220,
+                minHeight: 44,
+                fontFamily: 'inherit',
+              }}
+            >
+              {properties.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
