@@ -204,6 +204,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   /* Action field surface (fallback) — lighter than card on dark; slightly lighter than card on light */
   --field: hsl(var(--card-h) var(--card-s) calc((var(--card-l) + 2%)));
+  /* Background media (optional texture/image) */
+  --bg-media: url('/plain-backdrop-decorative-gray-textured.jpg');
 }
 
 /* Prefer OKLCH when supported */
@@ -232,6 +234,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 html, body { background: var(--bg); color: var(--text); }
+/* Light theme: layer optional background image under UI */
+:root[data-theme="light"] body{
+  background-color: var(--bg);
+  background-image: var(--bg-media);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
 
 /* Ambient background bubbles — OKLCH first, HSL fallback */
 @supports (color: oklch(0.6 0.1 240)){
@@ -246,7 +257,7 @@ html, body { background: var(--bg); color: var(--text); }
       radial-gradient(70rem 60rem at 30% 100%,
         oklch(calc(var(--primary-L) - 0.10) calc(max(0, var(--primary-C) - 0.06)) var(--primary-h-ok)),
         transparent 60%),
-      var(--bg);
+      var(--bg-media, var(--bg));
     background-attachment: fixed;
   }
 }
@@ -260,7 +271,7 @@ html, body { background: var(--bg); color: var(--text); }
         hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 22%))), transparent 62%),
       radial-gradient(70rem 60rem at 30% 100%,
         hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 10%))), transparent 60%),
-      var(--bg);
+      var(--bg-media, var(--bg));
   }
 }
 
