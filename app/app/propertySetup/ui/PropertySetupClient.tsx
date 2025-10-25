@@ -611,7 +611,7 @@ function Tabs({ settings, rooms, roomDetails, cleaning, highlightRooms, onTabSel
           className="psTabBtn"
         >Rooms</button>
         <button onClick={() => { setTab("roomdetails"); onTabSelect?.('roomdetails'); }} style={tabBtn(tab === "roomdetails")} className="psTabBtn">Room details</button>
-        <button onClick={() => { setTab("cleaning"); onTabSelect?.('cleaning'); }}    style={tabBtn(tab === "cleaning")} className="psTabBtn">Cleaning</button>
+        <button onClick={() => { setTab("cleaning"); onTabSelect?.('cleaning'); }}    style={tabBtn(tab === "cleaning")} className="psTabBtn">Cleaning tasks</button>
       </div>
       <div>
         {tab === "settings"    && settings}
