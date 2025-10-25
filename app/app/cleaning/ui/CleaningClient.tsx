@@ -127,6 +127,17 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
     })();
   }, []);
 
+  // Desktop-only: apply custom scrollbar to AppShell's main scroller
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isDesktop = window.matchMedia?.('(min-width: 1025px)')?.matches ?? false;
+    if (!isDesktop) return;
+    const main = document.getElementById('app-main');
+    if (!main) return;
+    main.classList.add('sb-scrollbar');
+    return () => { main.classList.remove('sb-scrollbar'); };
+  }, []);
+
   const [dateStr, setDateStr] = useState<string>(dstr(new Date()));
 
   const [rooms, setRooms] = useState<Room[]>([]);
