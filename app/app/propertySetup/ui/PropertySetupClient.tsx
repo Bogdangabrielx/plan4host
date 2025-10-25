@@ -38,6 +38,8 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   const selected = properties.find(p => p.id === selectedId) || null;
   // First-time guidance modal (after first property creation)
   const [showRoomsGuide, setShowRoomsGuide] = useState<boolean>(false);
+  // Cache property presentation images for avatar in the pill
+  const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
 
   const { setTitle, setPill } = useHeader();
   useEffect(() => { setTitle("Property Setup"); }, [setTitle]);
@@ -101,6 +103,21 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   // Load data for selected property
   useEffect(() => {
     if (!selectedId) return;
+    // Load presentation image (once per property id)
+    (async () => {
+      if (propertyPhotos[selectedId] !== undefined) return;
+      try {
+        const r = await supabase
+          .from('properties')
+          .select('presentation_image_url')
+          .eq('id', selectedId)
+          .maybeSingle();
+        const url = (r.data as any)?.presentation_image_url || null;
+        setPropertyPhotos(prev => ({ ...prev, [selectedId]: url }));
+      } catch {
+        setPropertyPhotos(prev => ({ ...prev, [selectedId]: null }));
+      }
+    })();
     (async () => {
       setStatus("Idle");
       const [r1, r2, r3, r4, r5] = await Promise.all([
@@ -289,7 +306,15 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
               flex: isSmall ? '1 1 100%' : undefined,
             }}
           >
-            {selectedId ? null : null}
+            {selectedId && propertyPhotos[selectedId] ? (
+              <img
+                src={propertyPhotos[selectedId] as string}
+                alt=""
+                width={40}
+                height={40}
+                style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
+              />
+            ) : null}
             <select
               className="sb-select"
               value={selectedId || ''}
