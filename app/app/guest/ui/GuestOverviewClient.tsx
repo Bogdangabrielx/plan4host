@@ -252,6 +252,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [activePropertyId, setActivePropertyId] = usePersistentProperty(properties);
   const [prefReady, setPrefReady] = useState(false);
   const [openActions, setOpenActions] = useState<Set<string>>(() => new Set());
+  // Cache property presentation images (for avatar in pill selector)
+  const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
 
   // Ensure the selected property matches URL/localStorage before first load
   useEffect(() => {
@@ -603,24 +605,52 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, width: isSmall ? "100%" : "auto" }}>
               Property
             </label>
-            <select
-              className="sb-select"
-              value={activePropertyId}
-              onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value)}
+            <div
+              className="Sb-cardglow"
               style={{
-                minWidth: isSmall ? "100%" : 220,
-                maxWidth: isSmall ? "100%" : 380,
-                width: isSmall ? "100%" : "auto",
-                padding: "10px 12px",
-                minHeight: 44,
-                fontWeight: 700,
-                fontFamily: "inherit",
+                position: 'relative',
+                display: isSmall ? 'grid' : 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: isSmall ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
+                borderRadius: 999,
+                minHeight: 56,
+                background: 'var(--panel)',
+                border: '1px solid var(--border)',
+                width: isSmall ? '100%' : undefined,
               }}
             >
-              {properties.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
+              {activePropertyId && propertyPhotos[activePropertyId] ? (
+                <img
+                  src={propertyPhotos[activePropertyId] as string}
+                  alt=""
+                  width={40}
+                  height={40}
+                  style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
+                />
+              ) : null}
+              <select
+                className="sb-select"
+                value={activePropertyId}
+                onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value)}
+                style={{
+                  background: 'transparent',
+                  border: '0',
+                  boxShadow: 'none',
+                  padding: '10px 12px',
+                  minHeight: 44,
+                  minWidth: isSmall ? '100%' : 220,
+                  maxWidth: isSmall ? '100%' : 380,
+                  width: isSmall ? '100%' : 'auto',
+                  fontWeight: 700,
+                  fontFamily: 'inherit',
+                }}
+              >
+                {properties.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
             {false && (
               <button
                 className="sb-btn"
@@ -1066,6 +1096,24 @@ function EditFormBookingModal({
     } catch { /* noop */ }
   }, []);
   const isSmall = useIsSmall();
+  // Load presentation image for selected property (once per id)
+  useEffect(() => {
+    (async () => {
+      if (!activePropertyId) return;
+      if (propertyPhotos[activePropertyId] !== undefined) return;
+      try {
+        const r = await supabase
+          .from('properties')
+          .select('presentation_image_url')
+          .eq('id', activePropertyId)
+          .maybeSingle();
+        const url = (r.data as any)?.presentation_image_url || null;
+        setPropertyPhotos(prev => ({ ...prev, [activePropertyId]: url }));
+      } catch {
+        setPropertyPhotos(prev => ({ ...prev, [activePropertyId]: null }));
+      }
+    })();
+  }, [activePropertyId, supabase, propertyPhotos]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);

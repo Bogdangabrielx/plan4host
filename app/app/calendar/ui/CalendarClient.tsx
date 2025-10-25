@@ -50,6 +50,8 @@ export default function CalendarClient({
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [isSmall, setIsSmall] = useState(false);
+  // Cache property presentation images (avatar in pill selector)
+  const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
 
   // 🔔 mic preview al inelului pe mobil
   const [animateRing, setAnimateRing] = useState(false);
@@ -117,6 +119,25 @@ export default function CalendarClient({
     window.addEventListener("resize", detect);
     return () => window.removeEventListener("resize", detect);
   }, []);
+
+  // Load presentation image for selected property (once per id)
+  useEffect(() => {
+    (async () => {
+      if (!propertyId) return;
+      if (propertyPhotos[propertyId] !== undefined) return;
+      try {
+        const r = await supabase
+          .from('properties')
+          .select('presentation_image_url')
+          .eq('id', propertyId)
+          .maybeSingle();
+        const url = (r.data as any)?.presentation_image_url || null;
+        setPropertyPhotos(prev => ({ ...prev, [propertyId]: url }));
+      } catch {
+        setPropertyPhotos(prev => ({ ...prev, [propertyId]: null }));
+      }
+    })();
+  }, [propertyId, supabase, propertyPhotos]);
 
   useEffect(() => {
     if (isSmall && view !== "month") setView("month");
@@ -257,19 +278,54 @@ export default function CalendarClient({
       <PlanHeaderBadge title="Calendar" slot="header-right" />
       {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20 }}>
-        <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800,}}>
-              Property
-            </label>
-        <select
-          className="sb-select"
-          value={propertyId ?? ""} // evităm undefined
-          onChange={(e) => { setPropertyId(e.currentTarget.value); }}
-          style={{ minWidth: 220, maxWidth: 380, width: "auto", padding: "10px 12px", minHeight: 44,  fontWeight: 700 }}
+        <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800,}}>Property</label>
+        {/* Pill selector with avatar on the left */}
+        <div
+          className="Sb-cardglow"
+          style={{
+            position: 'relative',
+            display: isSmall ? 'grid' : 'inline-flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: isSmall ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
+            borderRadius: 999,
+            minHeight: 56,
+            background: 'var(--panel)',
+            border: '1px solid var(--border)',
+            width: isSmall ? '100%' : undefined,
+          }}
         >
-          {properties.map(p => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
+          {propertyId && propertyPhotos[propertyId] ? (
+            <img
+              src={propertyPhotos[propertyId] as string}
+              alt=""
+              width={40}
+              height={40}
+              style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
+            />
+          ) : null}
+          <select
+            className="sb-select"
+            value={propertyId ?? ""}
+            onChange={(e) => { setPropertyId(e.currentTarget.value); }}
+            style={{
+              background: 'transparent',
+              border: '0',
+              boxShadow: 'none',
+              padding: '10px 12px',
+              minHeight: 44,
+              minWidth: isSmall ? '100%' : 220,
+              maxWidth: isSmall ? '100%' : 380,
+              width: isSmall ? '100%' : 'auto',
+              fontWeight: 700,
+              fontFamily: 'inherit',
+            }}
+          >
+            {properties.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
         <div style={{ flexBasis: "100%", height: 8 }} />
 
         <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 13 : 18, marginLeft: 0 }}>
