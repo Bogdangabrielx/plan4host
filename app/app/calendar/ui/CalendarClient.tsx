@@ -278,8 +278,7 @@ export default function CalendarClient({
       <PlanHeaderBadge title="Calendar" slot="header-right" />
       {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20 }}>
-        <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800,}}>Property</label>
-        {/* Pill selector with avatar on the left */}
+        {/* Pill selector with avatar on the left (no text label) */}
         <div
           className="Sb-cardglow"
           style={{

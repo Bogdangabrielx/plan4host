@@ -99,6 +99,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
+  // Cache property presentation images (for avatar in pill selector)
+  const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
   const [timezone, setTimezone] = useState<string>("");
   const [prefReady, setPrefReady] = useState(false);
 
@@ -159,6 +161,25 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
+
+  // Load presentation image for selected property (once per id)
+  useEffect(() => {
+    (async () => {
+      if (!propertyId) return;
+      if (propertyPhotos[propertyId] !== undefined) return;
+      try {
+        const r = await supabase
+          .from('properties')
+          .select('presentation_image_url')
+          .eq('id', propertyId)
+          .maybeSingle();
+        const url = (r.data as any)?.presentation_image_url || null;
+        setPropertyPhotos(prev => ({ ...prev, [propertyId]: url }));
+      } catch {
+        setPropertyPhotos(prev => ({ ...prev, [propertyId]: null }));
+      }
+    })();
+  }, [propertyId, supabase, propertyPhotos]);
 
   // PLAN gate (pentru Sync now)
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
@@ -502,13 +523,47 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',  }}>
       <PlanHeaderBadge title="Sync Calendars" slot="header-right" />
       {/* Toolbar minimalistă */}
-      <div className="sb-toolbar" style={{ gap: 12, marginBottom: 8 }}>
-        <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800,}}>
-              Property
-            </label>
-        <select className="sb-select" value={propertyId} onChange={(e) => setPropertyId(e.target.value)} style={{ minWidth: 220, fontFamily: 'inherit' }}>
-          {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </select>
+      <div className="sb-toolbar" style={{ gap: 12, marginBottom: 8, alignItems: 'center' }}>
+        <div
+          className="Sb-cardglow"
+          style={{
+            position: 'relative',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '6px 10px 6px 56px',
+            borderRadius: 999,
+            minHeight: 56,
+            background: 'var(--panel)',
+            border: '1px solid var(--border)'
+          }}
+        >
+          {propertyId && propertyPhotos[propertyId] ? (
+            <img
+              src={propertyPhotos[propertyId] as string}
+              alt=""
+              width={40}
+              height={40}
+              style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
+            />
+          ) : null}
+          <select
+            className="sb-select"
+            value={propertyId}
+            onChange={(e) => setPropertyId(e.target.value)}
+            style={{
+              background: 'transparent',
+              border: 0,
+              boxShadow: 'none',
+              padding: '10px 12px',
+              minHeight: 44,
+              minWidth: 220,
+              fontFamily: 'inherit'
+            }}
+          >
+            {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        </div>
         <span className="sb-badge">Timezone: {timezone || "—"}</span>
       </div>
 

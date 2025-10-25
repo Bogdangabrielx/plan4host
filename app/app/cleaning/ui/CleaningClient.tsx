@@ -505,8 +505,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
       >
         {/* Toolbar */}
         <div className="sb-toolbar" style={{ gap: 12, alignItems: 'center' }}>
-          <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Property</label>
-          {/* Pill card with property avatar (left) + selector */}
+          {/* Pill card with property avatar (left) + selector (no text label) */}
           <div
             className="Sb-cardglow"
             style={{

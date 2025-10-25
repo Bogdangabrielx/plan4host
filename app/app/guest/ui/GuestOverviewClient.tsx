@@ -621,9 +621,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, width: isSmall ? "100%" : "auto" }}>
-              Property
-            </label>
             <div
               className="Sb-cardglow"
               style={{
