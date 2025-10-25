@@ -255,6 +255,25 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
 
+  // Load presentation image for selected property (once per id)
+  useEffect(() => {
+    (async () => {
+      if (!activePropertyId) return;
+      if (propertyPhotos[activePropertyId] !== undefined) return;
+      try {
+        const r = await supabase
+          .from('properties')
+          .select('presentation_image_url')
+          .eq('id', activePropertyId)
+          .maybeSingle();
+        const url = (r.data as any)?.presentation_image_url || null;
+        setPropertyPhotos(prev => ({ ...prev, [activePropertyId]: url }));
+      } catch {
+        setPropertyPhotos(prev => ({ ...prev, [activePropertyId]: null }));
+      }
+    })();
+  }, [activePropertyId, supabase, propertyPhotos]);
+
   // Ensure the selected property matches URL/localStorage before first load
   useEffect(() => {
     try {
@@ -1096,24 +1115,6 @@ function EditFormBookingModal({
     } catch { /* noop */ }
   }, []);
   const isSmall = useIsSmall();
-  // Load presentation image for selected property (once per id)
-  useEffect(() => {
-    (async () => {
-      if (!activePropertyId) return;
-      if (propertyPhotos[activePropertyId] !== undefined) return;
-      try {
-        const r = await supabase
-          .from('properties')
-          .select('presentation_image_url')
-          .eq('id', activePropertyId)
-          .maybeSingle();
-        const url = (r.data as any)?.presentation_image_url || null;
-        setPropertyPhotos(prev => ({ ...prev, [activePropertyId]: url }));
-      } catch {
-        setPropertyPhotos(prev => ({ ...prev, [activePropertyId]: null }));
-      }
-    })();
-  }, [activePropertyId, supabase, propertyPhotos]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
