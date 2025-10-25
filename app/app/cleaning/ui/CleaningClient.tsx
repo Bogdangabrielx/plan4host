@@ -532,6 +532,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               border: '1px solid var(--border)',
               width: isSmall ? '100%' : undefined,
               flexBasis: isSmall ? '100%' : 'auto',
+              flex: isSmall ? '1 1 100%' : undefined,
             }}
           >
             {propertyId && propertyPhotos[propertyId] ? (

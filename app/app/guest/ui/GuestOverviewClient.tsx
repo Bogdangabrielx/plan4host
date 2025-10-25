@@ -635,6 +635,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 border: '1px solid var(--border)',
                 width: isSmall ? '100%' : undefined,
                 flexBasis: isSmall ? '100%' : 'auto',
+                flex: isSmall ? '1 1 100%' : undefined,
               }}
             >
               {activePropertyId && propertyPhotos[activePropertyId] ? (
