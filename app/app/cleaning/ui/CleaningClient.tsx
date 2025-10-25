@@ -531,6 +531,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               background: 'var(--panel)',
               border: '1px solid var(--border)',
               width: isSmall ? '100%' : undefined,
+              flexBasis: isSmall ? '100%' : 'auto',
             }}
           >
             {propertyId && propertyPhotos[propertyId] ? (
@@ -566,7 +567,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             </select>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, width: isSmall ? '100%' : undefined, flexBasis: isSmall ? '100%' : 'auto' }}>
             <button
               type="button"
               className="sb-btn sb-cardglow sb-btn--icon"
