@@ -585,7 +585,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               value={dateStr}
               onChange={(e) => setDateStr(e.currentTarget.value)}
               className="sb-btn sb-cardglow sb-btn--ghost"
-              style={{ padding: "8px 12px", fontFamily: "inherit" }}
+              style={{ padding: "10px 12px", fontFamily: "inherit" }}
             />
             <button
               type="button"
