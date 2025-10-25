@@ -421,20 +421,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     padding: isSmall ? "10px 12px 16px" : "16px",
     paddingBottom: "calc(16px + var(--safe-bottom))",
   };
-  const FIELD_STYLE: React.CSSProperties = {
-    minWidth: isSmall ? "100%" : 220,
-    width: isSmall ? "100%" : undefined,
-    padding: "10px 12px",
-    background: "var(--card)",
-    color: "var(--text)",
-    border: "1px solid var(--border)",
-    borderRadius: 10,
-    fontWeight: 700,
-    fontFamily: "inherit",
-    minHeight: 44,
-    touchAction: "manipulation",
-    WebkitTapHighlightColor: "transparent",
-  };
+  // property selector inherits look from global .sb-select
   const badgeStyle = (kind: OverviewRow["status"]): React.CSSProperties => ({
     display: "inline-block",
     padding: "3px 10px",
@@ -617,9 +604,18 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               Property
             </label>
             <select
+              className="sb-select"
               value={activePropertyId}
               onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value)}
-              style={FIELD_STYLE}
+              style={{
+                minWidth: isSmall ? "100%" : 220,
+                maxWidth: isSmall ? "100%" : 380,
+                width: isSmall ? "100%" : "auto",
+                padding: "10px 12px",
+                minHeight: 44,
+                fontWeight: 700,
+                fontFamily: "inherit",
+              }}
             >
               {properties.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
