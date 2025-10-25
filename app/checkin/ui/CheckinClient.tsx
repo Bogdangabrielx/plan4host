@@ -173,6 +173,7 @@ const Combobox = React.forwardRef<ComboboxHandle, ComboboxProps>(function Combob
         <ul
           role="listbox"
           id={id ? id + "-listbox" : undefined}
+          className="sb-select sb-cardglow"
           style={{
             position: "absolute",
             top: "100%",
@@ -197,6 +198,7 @@ const Combobox = React.forwardRef<ComboboxHandle, ComboboxProps>(function Combob
               aria-selected={idx === hi}
               onMouseEnter={() => setHi(idx)}
               onMouseDown={(e) => { e.preventDefault(); select(opt); }}
+              className="sb-select sb-cardglow"
               style={{
                 padding: "8px 10px",
                 borderRadius: 8,
