@@ -86,16 +86,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
   const [status, setStatus] = useState<"Idle" | "Loading" | "Saving…" | "Error">("Idle");
-  // Responsive: folosit doar pentru layout-ul cardurilor (mobil vs desktop)
-  const [isSmall, setIsSmall] = useState<boolean>(false);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(max-width: 720px)');
-    const apply = () => setIsSmall(mq.matches);
-    try { mq.addEventListener('change', apply); } catch { mq.addListener?.(apply as any); }
-    apply();
-    return () => { try { mq.removeEventListener('change', apply); } catch { mq.removeListener?.(apply as any); } };
-  }, []);
+  // Responsive: mobil (telefon)
 
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
