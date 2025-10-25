@@ -516,7 +516,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         }}
       >
         {/* Toolbar */}
-        <div className="sb-toolbar" style={{ gap: 12, alignItems: 'center' }}>
+        <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Pill card with property avatar (left) + selector (no text label) */}
           <div
             className="Sb-cardglow"
@@ -568,7 +568,10 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             </select>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 8, width: isSmall ? '100%' : undefined, flexBasis: isSmall ? '100%' : 'auto' }}>
+          {/* Line break on phones to match Calendar layout */}
+          {isSmall && <div style={{ flexBasis: '100%', height: 8 }} />}
+
+          <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 13 : 18, marginLeft: 0 }}>
             <button
               type="button"
               className="sb-btn sb-cardglow sb-btn--icon"
