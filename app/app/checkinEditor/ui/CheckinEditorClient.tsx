@@ -364,7 +364,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             <h3 style={{ marginTop: 0 }}>Check-in Link</h3>
             <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
               <button
-                className="sb-btn sb-btn--primary"
+                className="sb-btn sb-btn--primary sb-cardglow"
+                style={{maxWidth: 520 }}
                 onClick={() => {
                   if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
                   openSourcePicker();
@@ -383,7 +384,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             {prop.regulation_pdf_url ? (
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                 <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" className="sb-btn sb-btn--primary">Open</a>
-                <button className="sb-btn" onClick={triggerPdfUpload}>Replace PDF</button>
+                <button className="sb-btn sb-cardglow" onClick={triggerPdfUpload}>Replace PDF</button>
                 <Info text={PDF_INFO} />
                 <small style={{ color:'var(--muted)' }}>
                   Uploaded {prop.regulation_pdf_uploaded_at ? new Date(prop.regulation_pdf_uploaded_at).toLocaleString() : ''}
@@ -534,15 +535,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     Uploaded {prop.presentation_image_uploaded_at ? new Date(prop.presentation_image_uploaded_at).toLocaleString() : ''}
                   </small>
                   <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-                    <a href={prop.presentation_image_url} target="_blank" rel="noreferrer" className="sb-btn">Preview</a>
-                    <button className="sb-btn" onClick={triggerImageUpload}>Replace image</button>
+                    <a href={prop.presentation_image_url} target="_blank" rel="noreferrer" className="sb-btn sb-cardglow">Preview</a>
+                    <button className="sb-btn sb-cardglow" onClick={triggerImageUpload}>Replace image</button>
                     <Info text={IMAGE_INFO} />
                   </div>
                 </div>
               ) : (
                 <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                   <span style={{ color:'var(--muted)' }}>No image uploaded.</span>
-                  <button className="sb-btn" onClick={triggerImageUpload}>Upload image</button>
+                  <button className="sb-btn sb-cardglow" onClick={triggerImageUpload}>Upload image</button>
                   <Info text={IMAGE_INFO} />
                 </div>
               )}
