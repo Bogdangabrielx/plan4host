@@ -610,145 +610,137 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       <PlanHeaderBadge title="Guest Overview" slot="header-right" />
 
       <div style={containerStyle}>
-        {/* Controls */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isSmall ? "1fr" : "auto 1fr",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <div
-              className="Sb-cardglow"
+        {/* Controls (sb-toolbar as in Calendar) */}
+        <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap', marginBottom: 12 }}>
+          <div
+            className="Sb-cardglow"
+            style={{
+              position: 'relative',
+              display: isSmall ? 'grid' : 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: isSmall ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
+              borderRadius: 999,
+              minHeight: 56,
+              background: 'var(--panel)',
+              border: '1px solid var(--border)',
+              width: isSmall ? '100%' : undefined,
+              flexBasis: isSmall ? '100%' : 'auto',
+              flex: isSmall ? '1 1 100%' : undefined,
+            }}
+          >
+            {activePropertyId && propertyPhotos[activePropertyId] ? (
+              <img
+                src={propertyPhotos[activePropertyId] as string}
+                alt=""
+                width={40}
+                height={40}
+                style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
+              />
+            ) : null}
+            <select
+              className="sb-select"
+              value={activePropertyId}
+              onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value)}
               style={{
-                position: 'relative',
-                display: isSmall ? 'grid' : 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: isSmall ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
-                borderRadius: 999,
-                minHeight: 56,
-                background: 'var(--panel)',
-                border: '1px solid var(--border)',
-                width: isSmall ? '100%' : undefined,
-                flexBasis: isSmall ? '100%' : 'auto',
-                flex: isSmall ? '1 1 100%' : undefined,
+                background: 'transparent',
+                border: '0',
+                boxShadow: 'none',
+                padding: '10px 12px',
+                minHeight: 44,
+                minWidth: isSmall ? '100%' : 220,
+                maxWidth: isSmall ? '100%' : 380,
+                width: isSmall ? '100%' : 'auto',
+                fontWeight: 700,
+                fontFamily: 'inherit',
               }}
             >
-              {activePropertyId && propertyPhotos[activePropertyId] ? (
-                <img
-                  src={propertyPhotos[activePropertyId] as string}
-                  alt=""
-                  width={40}
-                  height={40}
-                  style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
-                />
-              ) : null}
-              <select
-                className="sb-select"
-                value={activePropertyId}
-                onChange={(e) => setActivePropertyId((e.target as HTMLSelectElement).value)}
+              {properties.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+          {/* break after pill on phones */}
+          {isSmall && <div style={{ flexBasis: '100%', height: 8 }} />}
+          {false && (
+            <button
+              className="sb-btn"
+              {...useTap(refresh)}
+              style={{ ...BTN_TOUCH_STYLE, borderRadius: 10 }}
+              title="Refresh"
+              type="button"
+            >
+              Refresh
+            </button>
+          )}
+        </div>
+
+        {showIosHint && (
+          <div className="sb-card" style={{ padding: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <div style={{ color: 'var(--muted)', fontSize: 13 }}>
+              On iPhone, install the app to enable notifications: <strong>Share</strong> → <strong>Add to Home Screen</strong>.
+            </div>
+            <button
+              className="sb-btn sb-btn--small"
+              onClick={() => { try { localStorage.setItem('p4h:iosPwaHint:dismissed', '1'); } catch {}; setShowIosHint(false); }}
+            >
+              Got it
+            </button>
+          </div>
+        )}
+
+        {/* Search */}
+        <div style={{ display: "flex", justifyContent: "stretch" }}>
+          <div style={{ position: "relative", width: "100%" }}>
+            <svg viewBox="0 0 24 24" aria-hidden="true" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 18, height: 18, opacity: 0.7 }}>
+              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor" />
+            </svg>
+            <input
+              ref={searchRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.currentTarget.value)}
+              onFocus={() => { try { window.dispatchEvent(new Event('p4h:nav:hide')); } catch {} }}
+              onBlur={() => { try { window.dispatchEvent(new Event('p4h:nav:show')); } catch {} }}
+              placeholder="Search guest name…"
+              aria-label="Search guest name"
+              style={{
+                width: "100%",
+                padding: "10px 12px 10px 36px",
+                background: "var(--card)",
+                color: "var(--text)",
+                border: "1px solid var(--border)",
+                borderRadius: 29,
+                fontWeight: 700,
+                fontFamily: "inherit",
+                outline: "none",
+                minHeight: 44,
+              }}
+            />
+            {query && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                {...useTap(() => { setQuery(""); searchRef.current?.focus(); })}
                 style={{
-                  background: 'transparent',
-                  border: '0',
-                  boxShadow: 'none',
-                  padding: '10px 12px',
-                  minHeight: 44,
-                  minWidth: isSmall ? '100%' : 220,
-                  maxWidth: isSmall ? '100%' : 380,
-                  width: isSmall ? '100%' : 'auto',
-                  fontWeight: 700,
-                  fontFamily: 'inherit',
+                  position: "absolute",
+                  right: 4,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: 44,
+                  height: 44,
+                  borderRadius: 999,
+                  border: "1px solid var(--border)",
+                  background: "transparent",
+                  color: "var(--muted)",
+                  cursor: "pointer",
+                  touchAction: "manipulation",
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
-                {properties.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
-            {false && (
-              <button
-                className="sb-btn"
-                {...useTap(refresh)}
-                style={{ ...BTN_TOUCH_STYLE, borderRadius: 10 }}
-                title="Refresh"
-                type="button"
-              >
-                Refresh
+                ×
               </button>
             )}
-          </div>
-
-          {showIosHint && (
-            <div className="sb-card" style={{ gridColumn: '1 / -1', padding: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-              <div style={{ color: 'var(--muted)', fontSize: 13 }}>
-                On iPhone, install the app to enable notifications: <strong>Share</strong> → <strong>Add to Home Screen</strong>.
-              </div>
-              <button
-                className="sb-btn sb-btn--small"
-                onClick={() => { try { localStorage.setItem('p4h:iosPwaHint:dismissed', '1'); } catch {}; setShowIosHint(false); }}
-              >
-                Got it
-              </button>
-            </div>
-          )}
-
-          {/* Search */}
-          <div style={{ display: "flex", justifyContent: "stretch", gridColumn: "1 / -1" }}>
-            <div style={{ position: "relative", width: "100%" }}>
-              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 18, height: 18, opacity: 0.7 }}>
-                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor" />
-              </svg>
-              <input
-                ref={searchRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.currentTarget.value)}
-                onFocus={() => { try { window.dispatchEvent(new Event('p4h:nav:hide')); } catch {} }}
-                onBlur={() => { try { window.dispatchEvent(new Event('p4h:nav:show')); } catch {} }}
-                placeholder="Search guest name…"
-                aria-label="Search guest name"
-                style={{
-                  width: "100%",
-                  padding: "10px 12px 10px 36px",
-                  background: "var(--card)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 29,
-                  fontWeight: 700,
-                  fontFamily: "inherit",
-                  outline: "none",
-                  minHeight: 44,
-                }}
-              />
-              {query && (
-                <button
-                  type="button"
-                  aria-label="Clear search"
-                  {...useTap(() => { setQuery(""); searchRef.current?.focus(); })}
-                  style={{
-                    position: "absolute",
-                    right: 4,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    width: 44,
-                    height: 44,
-                    borderRadius: 999,
-                    border: "1px solid var(--border)",
-                    background: "transparent",
-                    color: "var(--muted)",
-                    cursor: "pointer",
-                    touchAction: "manipulation",
-                    WebkitTapHighlightColor: "transparent",
-                  }}
-                >
-                  ×
-                </button>
-              )}
-            </div>
           </div>
         </div>
 
