@@ -120,7 +120,6 @@ export default function ReservationMessageClient({
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const sb = useMemo(() => createClient(), []);
   const [hasRoomTypes, setHasRoomTypes] = useState(false);
-  const isSmall = useIsSmall(); // ← for mobile tap-to-toggle
 
   // Room Variables UI state
   const [rvOpen, setRvOpen] = useState<boolean>(false);
