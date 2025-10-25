@@ -322,56 +322,53 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   return (
     <div style={{ display:'grid', gap:16 }}>
       <PlanHeaderBadge title="Check-in Editor" slot="header-right" />
-      {/* Property selector */}
-      <section className="sb-cardglow"  style={card}>
-        <h2 style={{ marginTop: 0 }}>Select Property</h2>
-        <div
-          className="Sb-cardglow"
+      {/* Property selector (pill with avatar only) */}
+      <div
+        className="Sb-cardglow"
+        style={{
+          position: 'relative',
+          display: isNarrow ? 'grid' : 'inline-flex',
+          alignItems: 'center',
+          gap: 10,
+          padding: isNarrow ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
+          borderRadius: 999,
+          minHeight: 56,
+          background: 'var(--panel)',
+          border: '1px solid var(--border)',
+          width: isNarrow ? '100%' : undefined,
+        }}
+      >
+        {prop?.presentation_image_url ? (
+          <img
+            src={prop.presentation_image_url}
+            alt=""
+            width={40}
+            height={40}
+            style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
+          />
+        ) : null}
+        <select
+          className="sb-select"
+          value={propertyId || ''}
+          onChange={onPropChange}
           style={{
-            position: 'relative',
-            display: isNarrow ? 'grid' : 'inline-flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: isNarrow ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
-            borderRadius: 999,
-            minHeight: 56,
-            background: 'var(--panel)',
-            border: '1px solid var(--border)',
-            width: isNarrow ? '100%' : undefined,
+            background: 'transparent',
+            border: 0,
+            boxShadow: 'none',
+            padding: '10px 12px',
+            minHeight: 44,
+            minWidth: isNarrow ? '100%' : 220,
+            maxWidth: isNarrow ? '100%' : 380,
+            width: isNarrow ? '100%' : 'auto',
+            fontFamily: 'inherit',
+            fontWeight: 700,
           }}
         >
-          {prop?.presentation_image_url ? (
-            <img
-              src={prop.presentation_image_url}
-              alt=""
-              width={40}
-              height={40}
-              style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
-            />
-          ) : null}
-          <select
-            className="sb-select"
-            value={propertyId || ''}
-            onChange={onPropChange}
-            style={{
-              background: 'transparent',
-              border: 0,
-              boxShadow: 'none',
-              padding: '10px 12px',
-              minHeight: 44,
-              minWidth: isNarrow ? '100%' : 220,
-              maxWidth: isNarrow ? '100%' : 380,
-              width: isNarrow ? '100%' : 'auto',
-              fontFamily: 'inherit',
-              fontWeight: 700,
-            }}
-          >
-            {(properties || []).map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </div>
-      </section>
+          {(properties || []).map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+      </div>
 
       {prop && (
         <>

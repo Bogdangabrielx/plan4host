@@ -625,6 +625,8 @@ export default function ReservationMessageClient({
             background: 'var(--panel)',
             border: '1px solid var(--border)',
             width: isSmall ? '100%' : undefined,
+            flexBasis: isSmall ? '100%' : 'auto',
+            flex: isSmall ? '1 1 100%' : undefined,
           }}
         >
           {propertyId && propertyPhotos[propertyId] ? (
@@ -655,7 +657,7 @@ export default function ReservationMessageClient({
             {properties.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
           </select>
         </div>
-        <div style={{ flex: 1 }} />
+        {isSmall ? <div style={{ flexBasis: '100%', height: 8 }} /> : <div style={{ flex: 1 }} />}
       </div>
 
       {/* COLLAPSIBLE: Room Variables */}
