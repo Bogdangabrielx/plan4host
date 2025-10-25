@@ -336,6 +336,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           background: 'var(--panel)',
           border: '1px solid var(--border)',
           width: isNarrow ? '100%' : undefined,
+          flexBasis: isNarrow ? '100%': 'auto',
+          flex: isNarrow ? '1 1 100%' :undefined
         }}
       >
         {prop?.presentation_image_url ? (
