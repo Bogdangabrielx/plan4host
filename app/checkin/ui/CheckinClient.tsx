@@ -1301,21 +1301,44 @@ export default function CheckinClient() {
             {/* Upload ID document (photo/PDF) — obligatoriu */}
             <div style={{ marginTop: 6 }}>
               <label style={LABEL}>Upload ID document (photo/PDF)*</label>
-              <input
-                style={INPUT}
+              {/* Custom upload button styled as sb-cardglow */}
+              <label
+                className="sb-cardglow"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '10px 14px',
+                  borderRadius: 21,
+                  border: '1px solid var(--primary)',
+                  background: 'transparent',
+                  color: 'var(--text)',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                }}
+              >
+                Choose file…
+                <input
                   type="file"
                   accept="image/*,application/pdf"
                   onChange={(e) => {
                     const f = e.currentTarget.files?.[0] ?? null;
                     setDocFile(f || null);
-                    if (f && f.type.startsWith("image/")) {
+                    if (f && f.type.startsWith('image/')) {
                       const url = URL.createObjectURL(f);
                       setDocFilePreview(url);
                     } else {
                       setDocFilePreview(null);
                     }
                   }}
+                  style={{ position:'absolute', inset:0, opacity:0, width:'100%', height:'100%', cursor:'pointer' }}
                 />
+              </label>
+              {docFile && (
+                <div style={{ marginTop: 6, color:'var(--muted)', fontSize: 12 }}>
+                  Selected: <strong style={{ color:'var(--text)' }}>{docFile.name}</strong>
+                </div>
+              )}
                 {docFile && (
                   <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
                     {docFilePreview ? (
