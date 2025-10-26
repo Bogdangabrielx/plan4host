@@ -385,7 +385,7 @@ export default function SubscriptionClient({
             <div style={{ display:'grid', gap:10, marginTop:4 }}>
               <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
                 <button
-                  className={`${styles.btn} ${styles.btnPrimary}`}
+                  className={`${styles.btn} sb-cardglow`}
                   onClick={async () => {
                     // Cancel at period end (server action)
                     try {
