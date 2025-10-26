@@ -365,7 +365,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
               <button
                 className="sb-btn sb-btn--primary sb-cardglow"
-                style={{maxWidth: 900, color:"var(--text)" }}
+                style={{minWidth: 340, color:"var(--text)", borderColor:"var(--primary)" }}
                 onClick={() => {
                   if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
                   openSourcePicker();

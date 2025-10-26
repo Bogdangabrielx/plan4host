@@ -303,7 +303,7 @@ export default function SubscriptionClient({
           const padded = Array.from({ length: BENEFIT_ROWS }, (_, i) => p.bullets[i] ?? "");
 
           return (
-            <article key={p.slug} className={styles.card} aria-current={isCurrent ? "true" : undefined}>
+            <article  key={p.slug} className={`${styles.card} sb-cardglow`} aria-current={isCurrent ? "true" : undefined}>
               <div className={styles.tier}>{p.name}</div>
 
               <ul className={styles.list} style={{ ["--rows" as any]: BENEFIT_ROWS }}>
