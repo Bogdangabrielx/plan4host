@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "@/app/app/ui/ThemeToggle";
 
 type Theme = "light" | "dark";
@@ -24,6 +24,9 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   const [resetEmail, setResetEmail] = useState("");
   const [resetBusy, setResetBusy] = useState(false);
   const [resetMsg, setResetMsg] = useState("");
+  const [resetCooldown, setResetCooldown] = useState<number>(0);
+  const resetTimerRef = useRef<number | null>(null);
+  const resetEndAtRef = useRef<number | null>(null);
 
   // ————— helpers null-safe —————
   const asStr = (v: unknown) => (typeof v === "string" ? v : v == null ? "" : String(v));
@@ -72,6 +75,41 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     if (p === "basic" || p === "standard" || p === "premium") setDesiredPlan(p as any);
     const nx = u.searchParams.get("next");
     if (nx && /^\//.test(nx)) setNextParam(nx);
+  }, []);
+
+  // —— Reset cooldown: persist + live countdown ——
+  const RESET_LS_KEY = "p4h:reset:until";
+  function clearResetTimer(){ if (resetTimerRef.current){ window.clearInterval(resetTimerRef.current); resetTimerRef.current = null; } }
+  function startResetCountdown(seconds: number){
+    const until = Date.now() + Math.max(0, seconds) * 1000;
+    resetEndAtRef.current = until;
+    try { localStorage.setItem(RESET_LS_KEY, String(until)); } catch {}
+    clearResetTimer();
+    const tick = () => {
+      const leftMs = (resetEndAtRef.current ?? 0) - Date.now();
+      const left = Math.max(0, Math.ceil(leftMs / 1000));
+      setResetCooldown(left);
+      if (left <= 0) {
+        clearResetTimer();
+        try { localStorage.removeItem(RESET_LS_KEY); } catch {}
+      }
+    };
+    tick();
+    resetTimerRef.current = window.setInterval(tick, 1000);
+  }
+  useEffect(() => {
+    // Resume cooldown across navigation/refresh
+    try {
+      const raw = localStorage.getItem(RESET_LS_KEY);
+      const until = raw ? parseInt(raw || "0", 10) : 0;
+      if (until && until > Date.now()) {
+        resetEndAtRef.current = until;
+        startResetCountdown(Math.ceil((until - Date.now()) / 1000));
+      } else {
+        try { localStorage.removeItem(RESET_LS_KEY); } catch {}
+      }
+    } catch {}
+    return () => clearResetTimer();
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
@@ -162,10 +200,14 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
       });
       if (!res.ok) {
         const j = await safeJson(res);
+        const retry = (j?.retry_after ?? j?.retryAfter ?? j?.cooldown ?? 0) as number;
+        if (retry && retry > 0) startResetCountdown(retry);
         setResetMsg(j?.error || 'Failed to send reset email.');
         return;
       }
       setResetMsg('We sent a reset link to your email. Please check your inbox.');
+      // 30s cooldown
+      startResetCountdown(30);
     } catch (e:any) {
       setResetMsg(e?.message || 'Unexpected error.');
     } finally { setResetBusy(false); }
@@ -357,8 +399,8 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
               <label style={{ fontSize:12, color:'var(--muted)' }}>Email</label>
               <input type="email" value={resetEmail} onChange={(e)=>setResetEmail(e.currentTarget.value)} placeholder="name@example.com" style={input} />
               {resetMsg && <div style={{ color:'var(--text)', fontSize: 13 }}>{resetMsg}</div>}
-              <button onClick={requestReset} disabled={resetBusy} style={primaryBtn}>
-                {resetBusy ? 'Sending…' : 'Send reset link'}
+              <button onClick={requestReset} disabled={resetBusy || resetCooldown>0} style={primaryBtn}>
+                {resetBusy ? 'Sending…' : (resetCooldown>0 ? `Resend in ${resetCooldown}s` : 'Send reset link')}
               </button>
               <small style={{ color:'var(--muted)' }}>
                 You’ll receive a secure link to set a new password. For security, setting the password requires verification via email.
