@@ -527,7 +527,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       {/* Toolbar minimalistă */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, marginBottom: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <div
-          className="Sb-cardglow"
+          className="modalCard Sb-cardglow"
           style={{
             position: 'relative',
             display: isSmall ? 'grid' : 'inline-flex',
