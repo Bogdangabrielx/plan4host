@@ -613,7 +613,7 @@ export default function ReservationMessageClient({
       {/* Property selector (pill with avatar) — align like Calendar (sb-toolbar) */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap' }}>
         <div
-          className="Sb-cardglow"
+          className="modalCard Sb-cardglow"
           style={{
             position: 'relative',
             display: isSmall ? 'grid' : 'inline-flex',

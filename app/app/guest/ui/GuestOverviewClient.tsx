@@ -613,7 +613,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         {/* Controls (sb-toolbar as in Calendar) */}
         <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap', marginBottom: 12 }}>
           <div
-            className="Sb-cardglow"
+            className="modalCard Sb-cardglow"
             style={{
               position: 'relative',
               display: isSmall ? 'grid' : 'inline-flex',

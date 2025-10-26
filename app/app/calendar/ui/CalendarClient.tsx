@@ -648,7 +648,7 @@ function MonthView({
               onMouseUp={(e)=>{ (e.currentTarget as HTMLDivElement).style.transform='scale(1)'; }}
             >
               {/* weekend tint */}
-              {weekend && <div style={{ position: "absolute", inset: 0, background: "var(--card)" }} />}
+              {weekend && <div style={{ position: "absolute", inset: 0, background: "var(--cal-wkend)" }} />}
 
               {/* day number */}
               {c.dateStr && (
@@ -695,10 +695,6 @@ function MonthView({
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <span style={{ width: 14, height: 6, background: "var(--primary)", borderRadius: 4, display: "inline-block", opacity: .22 }} />
           Occupancy
-        </span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 14, height: 10, background: "var(--cal-wkend)", borderRadius: 3, display: "inline-block" }} />
-          Weekend
         </span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <span style={{ width: 6, height: 6, background: "var(--primary)", borderRadius: 999, display: "inline-block" }} />
