@@ -333,12 +333,12 @@ export default function SubscriptionClient({
 
               <div className={styles.cardActions}>
                 {isCurrent ? (
-                  <div style={{ display:'flex', alignItems:'center', gap: 10 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap: 5 }}>
                     <span className={`${styles.currentBadge} sb-cardglow`}>{isActive ? 'Active plan' : 'Last active plan'}</span>
                     <button
                       className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
                       onClick={() => setManageOpen(true)}
-                      style={{ color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21, }}
+                      style={{ fontSize:11, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21, }}
                     >
                       Manage Account
                     </button>
