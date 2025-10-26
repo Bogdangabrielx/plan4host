@@ -1308,7 +1308,7 @@ export default function CheckinClient() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 10,
-                  padding: '10px 14px',
+                  padding: '10px 45px',
                   borderRadius: 21,
                   border: '1px solid var(--primary)',
                   background: 'transparent',
@@ -1316,8 +1316,9 @@ export default function CheckinClient() {
                   cursor: 'pointer',
                   userSelect: 'none',
                 }}
-              >
+              >  
                 Choose file…
+                
                 <input
                   type="file"
                   accept="image/*,application/pdf"
@@ -1332,6 +1333,8 @@ export default function CheckinClient() {
                     }
                   }}
                   style={{ position:'absolute', inset:0, opacity:0, width:'100%', height:'100%', cursor:'pointer' }}
+                
+                
                 />
               </label>
               {docFile && (
