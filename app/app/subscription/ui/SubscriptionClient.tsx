@@ -338,7 +338,7 @@ export default function SubscriptionClient({
                     <button
                       className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
                       onClick={() => setManageOpen(true)}
-                      style={{ fontSize:11, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21, }}
+                      style={{ fontSize:13, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21, }}
                     >
                       Manage Account
                     </button>
