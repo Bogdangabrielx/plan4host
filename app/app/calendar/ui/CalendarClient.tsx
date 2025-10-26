@@ -648,7 +648,7 @@ function MonthView({
               onMouseUp={(e)=>{ (e.currentTarget as HTMLDivElement).style.transform='scale(1)'; }}
             >
               {/* weekend tint */}
-              {weekend && <div style={{ position: "absolute", inset: 0, background: "var(--cal-wkend)" }} />}
+              {weekend && <div style={{ position: "absolute", inset: 0, background: "var(--card)" }} />}
 
               {/* day number */}
               {c.dateStr && (
