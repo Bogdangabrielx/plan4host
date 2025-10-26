@@ -71,11 +71,49 @@ export async function GET(req: Request) {
     if (rForms.error) return NextResponse.json({ error: rForms.error.message }, { status: 500 });
     const forms = (rForms.data ?? []) as FRow[];
 
+    // Provider meta (color + logo) from ical_type_integrations
+    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "").trim();
+    const providerHints = new Set<string>();
+    for (const f of forms as any[]) {
+      const hint = (f.ota_provider_hint || "").toString();
+      if (hint) providerHints.add(hint);
+    }
+    const provMetaMap = new Map<string, { color: string | null; logo_url: string | null; name: string }>();
+    if (providerHints.size > 0) {
+      const rMeta = await admin
+        .from("ical_type_integrations")
+        .select("provider,color,logo_url")
+        .eq("property_id", property_id);
+      if (!rMeta.error) {
+        const rows = (rMeta.data ?? []) as any[];
+        // Build normalized map
+        for (const row of rows) {
+          const name = (row.provider || "").toString();
+          if (!name) continue;
+          const key = normalize(name);
+          if (!provMetaMap.has(key)) provMetaMap.set(key, { color: row.color || null, logo_url: row.logo_url || null, name });
+        }
+      }
+    }
+
     // Build rows: yellow if no room selected; green once a room_id is set
     const rows = forms.map((f) => {
       const rid = f.room_id ? String(f.room_id) : null;
       const roomLabel = rid ? (roomNameById.get(rid) ?? `#${rid.slice(0,4)}`) : null;
       const status = (rid || (f.state || '').toLowerCase() === 'linked') ? 'green' : 'yellow';
+      const hint = ((f as any).ota_provider_hint || "").toString();
+      const norm = hint ? normalize(hint) : "";
+      let meta: { color: string | null; logo_url: string | null } | null = null;
+      if (norm && provMetaMap.size > 0) {
+        // Direct normalized match
+        if (provMetaMap.has(norm)) meta = provMetaMap.get(norm)!;
+        else {
+          // Fuzzy: find first where either includes the other
+          for (const [k, v] of provMetaMap.entries()) {
+            if (k.includes(norm) || norm.includes(k)) { meta = v; break; }
+          }
+        }
+      }
       return {
         id: f.id,
         property_id,
@@ -88,9 +126,9 @@ export async function GET(req: Request) {
         _room_type_name: null,
         _reason: status === 'yellow' ? 'waiting_room' : null,
         _cutoff_ts: null,
-        _ota_provider: (f as any).ota_provider_hint ?? null,
-        _ota_color: null,
-        _ota_logo_url: null,
+        _ota_provider: hint || null,
+        _ota_color: meta ? (meta.color || null) : null,
+        _ota_logo_url: meta ? (meta.logo_url || null) : null,
         _guest_first_name: f.guest_first_name ?? null,
         _guest_last_name: f.guest_last_name ?? null,
       };
