@@ -500,7 +500,7 @@ export async function POST(req: NextRequest) {
             const fromName  = process.env.FROM_NAME  || 'Plan4Host';
             const appBase = (process.env.NEXT_PUBLIC_APP_URL || '').toString().replace(/\/+$/, '');
             const link = `${appBase}/app/guest?property=${encodeURIComponent(property_id)}`;
-            const subject = `New check-in submitted — awaiting room${propName ? ` — ${propName}` : ''}`;
+            const subject = `New check-in submitted ${propName ? ` — ${propName}` : ''}`;
             const html = `
               <div style="background:#ffffff; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0c111b; line-height:1.6; padding:16px;">
                 <h2 style="margin:0 0 12px;">New check-in submitted${propName ? ` for <span style=\"color:#3ECF8E\">${propName.replace(/[&<>\"]/g,'')}</span>` : ''}</h2>

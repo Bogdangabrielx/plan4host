@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ResetRequestClient() {
   const [email, setEmail] = useState("");
@@ -8,8 +8,46 @@ export default function ResetRequestClient() {
   const [err, setErr] = useState("");
   const [cooldown, setCooldown] = useState<number>(0);
   const timerRef = useRef<number | null>(null);
+  const endAtRef = useRef<number | null>(null);
 
   function isEmail(s: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((s||"").trim()); }
+
+  // Persisted cooldown helpers
+  const LS_KEY = "p4h:reset:until";
+  function clearTimer(){ if (timerRef.current) { window.clearInterval(timerRef.current); timerRef.current = null; } }
+  function startCountdown(seconds: number){
+    const until = Date.now() + Math.max(0, seconds) * 1000;
+    endAtRef.current = until;
+    try { localStorage.setItem(LS_KEY, String(until)); } catch {}
+    clearTimer();
+    const tick = () => {
+      const leftMs = (endAtRef.current ?? 0) - Date.now();
+      const left = Math.max(0, Math.ceil(leftMs / 1000));
+      setCooldown(left);
+      if (left <= 0) {
+        clearTimer();
+        try { localStorage.removeItem(LS_KEY); } catch {}
+      }
+    };
+    tick();
+    timerRef.current = window.setInterval(tick, 1000);
+  }
+
+  useEffect(() => {
+    // On mount, resume any persisted cooldown
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      const until = raw ? parseInt(raw || "0", 10) : 0;
+      if (until && until > Date.now()) {
+        endAtRef.current = until;
+        startCountdown(Math.ceil((until - Date.now()) / 1000));
+      } else {
+        try { localStorage.removeItem(LS_KEY); } catch {}
+      }
+    } catch {}
+    return () => { clearTimer(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function submit() {
     if (!isEmail(email)) { setErr("Please enter a valid email."); setStatus("Error"); return; }
@@ -21,17 +59,15 @@ export default function ResetRequestClient() {
         body: JSON.stringify({ email })
       });
       const j = await res.json().catch(()=>({}));
-      if (!res.ok) { setErr(j?.error || 'Could not send reset email.'); setStatus("Error"); return; }
+      if (!res.ok) {
+        // If backend provides retry-after or cooldown seconds, honor it
+        const retry = (j?.retry_after ?? j?.retryAfter ?? j?.cooldown ?? 0) as number;
+        if (retry && retry > 0) startCountdown(retry);
+        setErr(j?.error || 'Could not send reset email.'); setStatus("Error"); return;
+      }
       setStatus("Sent");
-      // 30s cooldown
-      setCooldown(30);
-      if (timerRef.current) window.clearInterval(timerRef.current);
-      timerRef.current = window.setInterval(() => {
-        setCooldown((v)=>{
-          if (v <= 1) { if (timerRef.current) window.clearInterval(timerRef.current); return 0; }
-          return v - 1;
-        });
-      }, 1000);
+      // 30s cooldown (persist + live countdown)
+      startCountdown(30);
     } catch (e:any) {
       setErr(e?.message || 'Network error.'); setStatus("Error");
     }
@@ -60,4 +96,3 @@ export default function ResetRequestClient() {
 
 const input: React.CSSProperties = { padding: '10px 12px', background:'var(--bg)', color:'var(--text)', border:'1px solid var(--border)', borderRadius:8 };
 const primaryBtn: React.CSSProperties = { padding:'10px 14px', borderRadius:10, border:'1px solid var(--border)', background:'var(--primary)', color:'#0c111b', fontWeight:800, cursor:'pointer' };
-
