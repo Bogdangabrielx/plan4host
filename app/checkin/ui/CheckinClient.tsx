@@ -1305,18 +1305,22 @@ export default function CheckinClient() {
               <label
                 className="sb-cardglow"
                 style={{
-                  display: 'inline-flex',
+                  display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: 10,
-                  padding: '10px 45px',
-                  borderRadius: 21,
+                  padding: '10px 14px',
+                  borderRadius: 12,
                   border: '1px solid var(--primary)',
                   background: 'transparent',
                   color: 'var(--text)',
                   cursor: 'pointer',
                   userSelect: 'none',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  textAlign: 'center',
                 }}
-              >  
+              >
                 Choose file…
                 
                 <input
