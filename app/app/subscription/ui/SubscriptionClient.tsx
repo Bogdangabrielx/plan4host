@@ -335,17 +335,17 @@ export default function SubscriptionClient({
                 {isCurrent ? (
                   <div style={{ display:'flex', alignItems:'center', gap: 10 }}>
                     <button
-                      className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+                      className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
                       onClick={() => setManageOpen(true)}
                       style={{ color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21, }}
                     >
                       Manage Account
                     </button>
-                    <span className={styles.currentBadge}>{isActive ? 'Active plan' : 'Last active plan'}</span>
+                    <span className={`${styles.currentBadge} sb-cardglow`}>{isActive ? 'Active plan' : 'Last active plan'}</span>
                   </div>
                 ) : (
                   <button
-                    className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+                    className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
                     disabled={!!saving || role !== "admin"}
                     onClick={() => choosePlan(p.slug)}
                     data-animate={highlightPlan === p.slug ? true : undefined}
