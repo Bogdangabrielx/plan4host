@@ -270,18 +270,18 @@ export default function SubscriptionClient({
         {isActive ? (
           cancelled ? (
             <>
-              <span className={styles.badge}>Still active until:</span>
+              <span className={`${styles.badge} sb-cardglow`}>Still active until:</span>
               <span className={styles.muted}>{validUntil ? `${validUntil}` : "—"}</span>
             </>
           ) : (
             <>
-              <span className={styles.badge}>Active now: {planLabel(currentPlan)}</span>
+              <span className={`${styles.badge} sb-cardglow`}>Active now: {planLabel(currentPlan)}</span>
               <span className={styles.muted}>{validUntil ? `until ${validUntil}` : "—"}</span>
             </>
           )
         ) : (
           <>
-            <span className={styles.badge}>Last active plan: {planLabel(currentPlan)}</span>
+            <span className={`${styles.badge} sb-cardglow`}>Last active plan: {planLabel(currentPlan)}</span>
             <span className={styles.muted}>{validUntil ? `expired at ${validUntil}` : 'expired'}</span>
           </>
         )}
