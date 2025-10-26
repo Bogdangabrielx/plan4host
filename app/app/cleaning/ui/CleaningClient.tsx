@@ -519,7 +519,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Pill card with property avatar (left) + selector (no text label) */}
           <div
-            className="Sb-cardglow"
+            className="modalCard Sb-cardglow"
             style={{
               position: 'relative',
               display: isSmall ? 'grid' : 'inline-flex',

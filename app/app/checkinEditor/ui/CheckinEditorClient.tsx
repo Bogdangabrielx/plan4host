@@ -309,7 +309,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       <PlanHeaderBadge title="Check-in Editor" slot="header-right" />
       {/* Property selector (pill with avatar only) */}
       <div
-        className="Sb-cardglow"
+        className="modalCard Sb-cardglow"
         style={{
           position: 'relative',
           display: isNarrow ? 'grid' : 'inline-flex',

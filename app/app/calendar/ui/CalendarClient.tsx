@@ -280,7 +280,7 @@ export default function CalendarClient({
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20 }}>
         {/* Pill selector with avatar on the left (no text label) */}
         <div
-          className="Sb-cardglow"
+          className="modalCard Sb-cardglow"
           style={{
             position: 'relative',
             display: isSmall ? 'grid' : 'inline-flex',

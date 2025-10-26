@@ -290,7 +290,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         {/* Top property selector pill (desktop + mobile) */}
         <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap', marginBottom: 10, width: '100%', maxWidth: 904, marginInline: 'auto' }}>
           <div
-            className="Sb-cardglow"
+            className="modalCard Sb-cardglow"
             style={{
               position: 'relative',
               display: isSmall ? 'grid' : 'inline-flex',
