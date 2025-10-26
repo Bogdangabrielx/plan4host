@@ -334,6 +334,7 @@ export default function SubscriptionClient({
               <div className={styles.cardActions}>
                 {isCurrent ? (
                   <div style={{ display:'flex', alignItems:'center', gap: 10 }}>
+                    <span className={`${styles.currentBadge} sb-cardglow`}>{isActive ? 'Active plan' : 'Last active plan'}</span>
                     <button
                       className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
                       onClick={() => setManageOpen(true)}
@@ -341,7 +342,6 @@ export default function SubscriptionClient({
                     >
                       Manage Account
                     </button>
-                    <span className={`${styles.currentBadge} sb-cardglow`}>{isActive ? 'Active plan' : 'Last active plan'}</span>
                   </div>
                 ) : (
                   <button
