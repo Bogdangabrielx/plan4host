@@ -346,18 +346,10 @@ export default function ReservationMessageClient({
     } catch { setSaving("Error"); }
   }
 
-  function onAddNew() {
+  async function onAddNew() {
     if (!propertyId) return;
-    setCreateTitle("");
-    setCreateError(null);
-    setCreateOpen(true);
-  }
-
-  async function createTemplate() {
-    if (!propertyId) return;
-    const t = (createTitle || "").trim();
-    if (!t) { setCreateError("Please enter a title."); return; }
-    setCreateBusy(true); setCreateError(null);
+    const t = prompt("Message title");
+    if (!t) return;
     try {
       const res = await fetch("/api/reservation-message/template", {
         method: "POST",
@@ -371,10 +363,7 @@ export default function ReservationMessageClient({
       const jl = await rl.json().catch(() => ({}));
       const items = Array.isArray(jl?.items) ? jl.items : [];
       setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
-      setCreateOpen(false);
-    } catch (e:any) {
-      setCreateError(e?.message || "Create failed");
-    } finally { setCreateBusy(false); }
+    } catch (e: any) { alert(e?.message || "Failed"); }
   }
   async function onDuplicate(id: string, title: string) {
     try {
@@ -1021,38 +1010,6 @@ export default function ReservationMessageClient({
             <button style={btnPri} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); publish(); }} disabled={!isAdmin}>Publish</button>
           </div>
         </section>
-      )}
-
-      {createOpen && (
-        <div
-          role="dialog"
-          aria-modal
-          onClick={() => { if (!createBusy) setCreateOpen(false); }}
-          style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
-        >
-          <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12 }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <h3 style={{ margin:0 }}>New template</h3>
-              <button className="sb-btn" onClick={()=>!createBusy && setCreateOpen(false)} disabled={createBusy} style={{ background:'transparent' }}>✕</button>
-            </div>
-            <div style={{ display:'grid', gap:8 }}>
-              <label style={{ fontSize:12, color:'var(--muted)' }}>Title</label>
-              <input
-                value={createTitle}
-                onChange={(e)=>setCreateTitle(e.currentTarget.value)}
-                onKeyDown={(e)=>{ if (e.key === 'Enter') { e.preventDefault(); createTemplate(); } }}
-                placeholder="Message title"
-                style={{ padding: 10, background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, width:'100%', boxSizing:'border-box', fontFamily:'inherit' }}
-                autoFocus
-              />
-              {createError && <small style={{ color:'var(--danger)' }}>{createError}</small>}
-            </div>
-            <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
-              <button className="sb-btn" onClick={()=>setCreateOpen(false)} disabled={createBusy}>Cancel</button>
-              <button className="sb-btn sb-btn--primary" onClick={createTemplate} disabled={createBusy}>{createBusy ? 'Creating…' : 'Create'}</button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );
