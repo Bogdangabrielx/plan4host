@@ -676,7 +676,7 @@ function MonthView({
                     left: 0, right: 0, bottom: 0,
                     height: `${Math.round((c.occPct ?? 0) * 100)}%`,
                     background: "var(--primary)",
-                    opacity: isSmall ? 0.18 : 0.22,
+                    opacity: isSmall ? 0.18 : 0.09,
                   }}
                 />
               )}
