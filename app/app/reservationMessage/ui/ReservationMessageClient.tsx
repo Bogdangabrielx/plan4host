@@ -923,7 +923,7 @@ export default function ReservationMessageClient({
             </div>
           </div>
 
-          {/* Scheduler selector */}p
+          {/* Scheduler selector */}
           <div style={{ display:'grid', gap:6, marginTop:10, maxWidth: 360 }}>
             <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>Scheduler (required before Publish)</label>
             <select className="sb-select sb-cardglow"  value={scheduler || ''} onChange={(e)=>setScheduler(e.currentTarget.value as any)}>
