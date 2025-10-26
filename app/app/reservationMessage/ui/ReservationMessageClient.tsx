@@ -854,7 +854,7 @@ export default function ReservationMessageClient({
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                     <strong
-                      style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                      style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, flex: 1 }}
                       dangerouslySetInnerHTML={{ __html: titleToChips(t.title || "(Untitled)") }}
                     />
                     <span
@@ -863,7 +863,8 @@ export default function ReservationMessageClient({
                         display: "inline-block",
                         whiteSpace: "nowrap",
                         background: t.status === "published" ? "var(--primary)" : "var(--card)",
-                        color: t.status === "published" ? "#0c111b" : "var(--muted)"
+                        color: t.status === "published" ? "#0c111b" : "var(--muted)",
+                        flex: '0 0 auto'
                       }}
                     >
                       {t.status === 'published' ? 'Active' : (t.status || '').replace(/^./, c => c.toUpperCase())}
@@ -922,10 +923,10 @@ export default function ReservationMessageClient({
             </div>
           </div>
 
-          {/* Scheduler selector */}
+          {/* Scheduler selector */}p
           <div style={{ display:'grid', gap:6, marginTop:10, maxWidth: 360 }}>
             <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>Scheduler (required before Publish)</label>
-            <select className="sb-select sb-cardglow" style={{border:'var(--primary)'}} value={scheduler || ''} onChange={(e)=>setScheduler(e.currentTarget.value as any)}>
+            <select className="modalCard sb-select sb-cardglow"  value={scheduler || ''} onChange={(e)=>setScheduler(e.currentTarget.value as any)}>
               <option value="">— select —</option>
               <option value="hour_before_checkin">One hour before reservation</option>
               <option value="on_arrival">Once the guest arrives (check-in time)</option>
