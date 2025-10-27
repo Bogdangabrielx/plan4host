@@ -234,11 +234,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* Per-theme background gradient variable */
 :root[data-theme="dark"]{
   /* neutral greys: bg → panel → card */
-  --bground: linear-gradient(135deg, var(--bg) 0%, var(--text) 300%, var(--card) 100%);
+  --bground: linear-gradient(135deg, var(--bg) 0%, var(--muted) 30%, var(--card) 100%);
 }
 :root[data-theme="light"]{
   /* subtle near-white: bg → card → panel */
-  --bground: linear-gradient(135deg, var(--bg) 0%, var(--text) 300%, var(--panel) 100%);
+  --bground: linear-gradient(135deg, var(--bg) 0%, var(--muted) 30%, var(--card) 100%);
 }
 
 html, body { background: var(--bg); color: var(--text); }
