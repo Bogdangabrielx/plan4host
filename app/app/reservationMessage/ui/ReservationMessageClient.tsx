@@ -1006,8 +1006,8 @@ export default function ReservationMessageClient({
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-            <button className="sb-cardglow" style={{ ...btn, borderRadius: 16 }} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); saveDraft(); }} disabled={!isAdmin}>Save</button>
-            <button className="sb-cardglow" style={{ ...btnPri, borderRadius: 16 }}  onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); publish(); }} disabled={!isAdmin}>Make active</button>
+            <button className="sb-cardglow" style={{ ...btn, borderRadius: 16, padding: '8px 12px' }} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); saveDraft(); }} disabled={!isAdmin}>Save</button>
+            <button className="sb-cardglow" style={{ ...btn, borderRadius: 16, padding: '8px 12px',borderColor:"var(--primary)" }}  onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); publish(); }} disabled={!isAdmin}>Make active</button>
           </div>
         </section>
       )}
