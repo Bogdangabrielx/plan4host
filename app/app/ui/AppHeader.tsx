@@ -62,6 +62,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const [open, setOpen] = useState(false);             // left drawer (Navigation)
   const [openRight, setOpenRight] = useState(false);   // right drawer (Management)
   const [isSmall, setIsSmall] = useState(false);
+  // Hide top header nav buttons when BottomNav is shown (<=640px)
+  const [isMobileNav, setIsMobileNav] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [aboutFailed, setAboutFailed] = useState(false);
   // const [showNotifMgr, setShowNotifMgr] = useState(false);
@@ -101,6 +103,26 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     detect();
     window.addEventListener("resize", detect);
     return () => window.removeEventListener("resize", detect);
+  }, []);
+
+  // Track same breakpoint as BottomNav (<= 640px)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(max-width: 640px)');
+    const update = () => setIsMobileNav(!!mq.matches);
+    update();
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', update);
+      return () => mq.removeEventListener('change', update);
+    } else {
+      // Safari fallback
+      // @ts-ignore
+      mq.addListener(update);
+      return () => {
+        // @ts-ignore
+        mq.removeListener(update);
+      };
+    }
   }, []);
 
   // Theme init + listen
@@ -320,7 +342,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       >
         {/* Left: menu + title */}
         <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
-          {!isSmall && (
+          {!isMobileNav && (
           <button
             onClick={() => {
               setOpen(true);
@@ -381,7 +403,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           }}
         >
           {right}
-          {!isSmall && (
+          {!isMobileNav && (
           <button
             onClick={() => {
               setOpenRight(true);
