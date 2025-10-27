@@ -91,7 +91,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
           minHeight: "100dvh",
           display: "grid",
           gridTemplateRows: "auto 1fr",
-          background: "var(--bg)",
+          background: "var(--bground, var(--bg))",
           color: "var(--text)",
           overflow: "hidden",
         }}
