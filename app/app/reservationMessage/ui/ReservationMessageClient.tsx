@@ -1012,7 +1012,7 @@ export default function ReservationMessageClient({
               onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); saveDraft(); }}
               disabled={!isAdmin}
             >
-              Save (no live)
+              Save
             </button>
             <button
               className="sb-cardglow"
