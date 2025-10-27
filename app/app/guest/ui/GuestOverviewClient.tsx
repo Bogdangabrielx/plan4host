@@ -820,9 +820,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             type="button"
             className="sb-btn"
             onClick={() => setShowPast((v) => !v)}
-            style={{ marginLeft: 'auto' }}
+            style={{
+              marginLeft: isSmall ? undefined : 'auto',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: isSmall ? '6px 10px' : undefined,
+            }}
             title={showPast ? 'Hide past reservations' : 'Show past reservations'}
           >
+            <span aria-hidden style={{ lineHeight: 1 }}>🕒</span>
             {showPast ? 'Hide past' : 'Show past'}
           </button>
         </div>
