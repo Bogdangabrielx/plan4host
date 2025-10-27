@@ -68,7 +68,10 @@ export default function BottomNav() {
     if (!vv) return;
     const apply = () => {
       const keyboardHeight = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
-      setKbOpen(keyboardHeight > 120);
+      const isOpen = keyboardHeight > 120;
+      setKbOpen(isOpen);
+      // când tastatura se închide, anulează forceHide ca să revină bara
+      if (!isOpen) setForceHide(false);
     };
     vv.addEventListener("resize", apply);
     vv.addEventListener("scroll", apply);
