@@ -437,10 +437,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   // Styles
   const containerStyle: React.CSSProperties = {
-    margin: "0 auto",
-    width: "min(960px, 100%)",
+    // Rely on AppShell for centering and maxWidth. Keep only inner padding.
     padding: isSmall ? "10px 12px 16px" : "16px",
-    paddingBottom: "calc(16px + var(--safe-bottom))",
   };
   // property selector inherits look from global .sb-select
   const badgeStyle = (kind: OverviewRow["status"]): React.CSSProperties => ({
