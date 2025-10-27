@@ -818,11 +818,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           ))}
           <button
             type="button"
-            className="sb-btn"
+            className="sb-btn sb-cardglow"
             onClick={() => setShowPast((v) => !v)}
             style={{
               marginLeft: isSmall ? undefined : 'auto',
-              display: 'inline-flex',
+              display: 'flex',
               alignItems: 'center',
               gap: 6,
               padding: isSmall ? '6px 10px' : undefined,
