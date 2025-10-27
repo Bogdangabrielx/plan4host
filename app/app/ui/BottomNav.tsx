@@ -71,7 +71,18 @@ export default function BottomNav() {
       const isOpen = keyboardHeight > 120;
       setKbOpen(isOpen);
       // când tastatura se închide, anulează forceHide ca să revină bara
-      if (!isOpen) setForceHide(false);
+      if (!isOpen) {
+        setForceHide(false);
+        // nudge scroll (următorul cadru) ca să forțăm re-ancorarea barei jos
+        try {
+          requestAnimationFrame(() => {
+            try {
+              window.scrollBy(0, 1);
+              window.scrollBy(0, -1);
+            } catch {}
+          });
+        } catch {}
+      }
     };
     vv.addEventListener("resize", apply);
     vv.addEventListener("scroll", apply);
