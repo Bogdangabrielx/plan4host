@@ -26,7 +26,7 @@ html, body { margin: 0; }
 
 body {
   font-family: 'Switzer', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, sans-serif;
-  background: var(--bg);
+  background: var(--bground);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

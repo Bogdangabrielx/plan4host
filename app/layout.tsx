@@ -231,6 +231,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }
 }
 
+/* Per-theme background gradient variable */
+:root[data-theme="dark"]{
+  /* neutral greys: bg → panel → card */
+  --bground: linear-gradient(135deg, var(--bg) 0%, var(--panel) 50%, var(--card) 100%);
+}
+:root[data-theme="light"]{
+  /* subtle near-white: bg → card → panel */
+  --bground: linear-gradient(135deg, var(--bg) 0%, var(--card) 50%, var(--panel) 100%);
+}
+
 html, body { background: var(--bg); color: var(--text); }
 
 /* Ambient background bubbles — OKLCH first, HSL fallback */
