@@ -429,11 +429,24 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   }, [items, collator]);
 
   // Filter by name
+  const [showPast, setShowPast] = useState(false);
+  const todayYmd = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  }, []);
   const visibleRows = useMemo(() => {
+    let arr = rows;
+    if (!showPast) {
+      // keep only items whose checkout (end_date) is today or in the future
+      arr = arr.filter((r) => (r.end_date || '') >= todayYmd);
+    }
     const q = norm(query);
-    if (!q) return rows;
-    return rows.filter((r) => norm(fullName(r)).includes(q));
-  }, [rows, query]);
+    if (q) arr = arr.filter((r) => norm(fullName(r)).includes(q));
+    return arr;
+  }, [rows, query, showPast, todayYmd]);
 
   // Styles
   const containerStyle: React.CSSProperties = {
@@ -803,6 +816,15 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               )}
             </div>
           ))}
+          <button
+            type="button"
+            className="sb-btn"
+            onClick={() => setShowPast((v) => !v)}
+            style={{ marginLeft: 'auto' }}
+            title={showPast ? 'Hide past reservations' : 'Show past reservations'}
+          >
+            {showPast ? 'Hide past' : 'Show past'}
+          </button>
         </div>
 
         {/* Rows */}
