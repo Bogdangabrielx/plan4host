@@ -999,7 +999,7 @@ export default function ReservationMessageClient({
                       <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={() => removeFieldByUid(f.uid)} title="Remove">×</button>
                     </span>
                   ))}
-                  <AddVarInline onAdd={(name) => addFieldFromName(name)} disabled={!isAdmin} />
+                  {/* Inline add variable removed per request */}
                 </div>
               </div>
             </div>
