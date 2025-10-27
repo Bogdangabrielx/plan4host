@@ -829,7 +829,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             }}
             title={showPast ? 'Hide past reservations' : 'Show past reservations'}
           >
-            <span aria-hidden style={{ lineHeight: 1 }}>🕒</span>
+            <svg aria-hidden width={16} height={16} viewBox="0 0 24 24" fill="none" style={{ display:'block' }}>
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+              <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
             {showPast ? 'Hide past' : 'Show past'}
           </button>
         </div>
