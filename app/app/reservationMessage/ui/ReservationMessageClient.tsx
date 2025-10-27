@@ -582,7 +582,7 @@ export default function ReservationMessageClient({
   const card: React.CSSProperties = { background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 };
   const input: React.CSSProperties = { padding: 10, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, width: "100%", boxSizing: "border-box", fontFamily: "inherit" };
   const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 700, cursor: "pointer" };
-  const btnPri: React.CSSProperties = { ...btn, background: "var(--primary)", color: "#0c111b", border: "1px solid var(--border)" };
+  const btnPri: React.CSSProperties = { ...btn, background: "var(--primary)", color: "var(--text)", border: "1px solid var(--border)" };
 
   useEffect(() => { setPill(saving); }, [saving, setPill]);
 
@@ -1006,8 +1006,8 @@ export default function ReservationMessageClient({
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-            <button style={btn} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); saveDraft(); }} disabled={!isAdmin}>Save</button>
-            <button style={btnPri} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); publish(); }} disabled={!isAdmin}>Publish</button>
+            <button className="sb-cardglow" style={{ ...btn, borderRadius: 16 }} onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); saveDraft(); }} disabled={!isAdmin}>Save</button>
+            <button className="sb-cardglow" style={{ ...btnPri, borderRadius: 16 }}  onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); publish(); }} disabled={!isAdmin}>Make active</button>
           </div>
         </section>
       )}
