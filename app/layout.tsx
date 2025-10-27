@@ -231,12 +231,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }
 }
 
-html, body { background: var(--bg); color: var(--text); }
+html, body { background: var(--bground, var(--bg)); color: var(--text); }
 
-/* Ambient background bubbles — OKLCH first, HSL fallback */
+/* Ambient background gradients exposed via --bground (OKLCH first, HSL fallback) */
 @supports (color: oklch(0.6 0.1 240)){
-  :root[data-theme="dark"] body{
-    background:
+  /* Dark theme gradient */
+  :root[data-theme="dark"]{
+    --bground:
       radial-gradient(60rem 60rem at 10% 0%,
         oklch(calc(var(--bg-L) + 0.06) calc(max(0, var(--bg-C) - 0.01)) var(--bg-h-ok)),
         transparent 60%),
@@ -247,13 +248,24 @@ html, body { background: var(--bg); color: var(--text); }
         oklch(calc(var(--primary-L) - 0.10) calc(max(0, var(--primary-C) - 0.06)) var(--primary-h-ok)),
         transparent 60%),
       var(--bg);
-    background-attachment: fixed;
+  }
+  /* Light theme gradient — subtle, theme-tinted */
+  :root[data-theme="light"]{
+    --bground:
+      radial-gradient(70rem 60rem at 8% -10%,
+        oklch(calc(min(1, var(--bg-L) + 0.06)) var(--bg-C) var(--bg-h-ok)),
+        transparent 60%),
+      radial-gradient(55rem 48rem at 100% 0%,
+        oklch(calc(min(1, var(--bg-L) + 0.03)) calc(max(0, var(--bg-C) + 0.01)) var(--primary-h-ok)),
+        transparent 62%),
+      var(--bg);
   }
 }
 
 @supports not (color: oklch(0.6 0.1 240)){
-  :root[data-theme="dark"] body{
-    background:
+  /* Dark theme gradient (HSL fallback) */
+  :root[data-theme="dark"]{
+    --bground:
       radial-gradient(60rem 60rem at 10% 0%,
         hsl(var(--bg-h) var(--bg-s) calc((var(--bg-l) + 4%))), transparent 60%),
       radial-gradient(50rem 50rem at 92% 10%,
@@ -262,7 +274,19 @@ html, body { background: var(--bg); color: var(--text); }
         hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 10%))), transparent 60%),
       var(--bg);
   }
+  /* Light theme gradient (HSL fallback) */
+  :root[data-theme="light"]{
+    --bground:
+      radial-gradient(70rem 60rem at 8% -10%,
+        hsl(var(--bg-h) var(--bg-s) calc((var(--bg-l) + 6%))), transparent 60%),
+      radial-gradient(55rem 48rem at 100% 0%,
+        hsl(var(--primary-h) calc((var(--primary-s) - 40%)) calc((var(--bg-l) + 3%))), transparent 62%),
+      var(--bg);
+  }
 }
+
+/* Keep fixed attachment for dark (iOS handled below) */
+:root[data-theme="dark"] body{ background-attachment: fixed; }
 
 /* iOS: avoid fixed attachment */
 :root[data-os="ios"][data-theme="dark"] body{ background-attachment: scroll; }
