@@ -158,7 +158,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 :root[data-theme="dark"]{
   /* HSL components */
   /* Slightly cool greys (reduce warm/brown perception) */
-  --bg: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+  --bg-h: 220;   --bg-s: 3%;  --bg-l: 10%;
   --text-h: 0;   --text-s: 0%; --text-l: 92%;
   --muted-h: 220; --muted-s: 3%; --muted-l: 68%;
   --panel-h: 220; --panel-s: 3%; --panel-l: 15%;
@@ -172,7 +172,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   /* OKLCH components */
   /* OKLCH: tiny cool bias to counter warm OLED/SDR casts */
-  --bg: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+  --bg-L: 0.19;   --bg-C: 0.01; --bg-h-ok: 250;
   --text-L: 0.94; --text-C: 0.00; --text-h-ok: 0;
   --muted-L: 0.75; --muted-C: 0.01; --muted-h-ok: 250;
   --panel-L: 0.22; --panel-C: 0.01; --panel-h-ok: 250;
