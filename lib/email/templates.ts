@@ -35,7 +35,7 @@ export function buildTeamWelcomeEmail(opts: {
       </div>
       <p style="margin:12px 0;">Login here:</p>
       <p style="margin:12px 0;">
-        <a href="${loginUrl}" style="display:inline-block; padding:10px 14px; background:#0ea5e9; color:#0c111b; font-weight:800; border-radius:10px; text-decoration:none;">Open Plan4Host</a>
+        <a href="${loginUrl}" style="display:inline-block; padding:10px 14px; background:##34b27b; color:#0c111b; font-weight:800; border-radius:10px; text-decoration:none;">Open Plan4Host</a>
       </p>
       <p style="margin:12px 0; color:#475569;">You can change your password anytime from the platform settings.</p>
     </div>

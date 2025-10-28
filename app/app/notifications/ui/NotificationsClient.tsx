@@ -161,7 +161,7 @@ export default function NotificationsClient() {
           className={onClass}
           onClick={turnOn}
           disabled={loading}
-          style={{ color: '#fff', border: active ? '1px solid var(--primary)' as const : undefined }}
+          style={{ color: 'var(--text)', border: active ? '1px solid var(--primary)' as const : undefined }}
         >
           Turn On
         </button>
@@ -169,11 +169,11 @@ export default function NotificationsClient() {
           className={offClass}
           onClick={turnOff}
           disabled={loading}
-          style={{ color: '#fff', border: !active ? '1px solid var(--danger)' as const : undefined }}
+          style={{ color: 'var(--text)', border: !active ? '1px solid var(--danger)' as const : undefined }}
         >
           Turn Off
         </button>
-        <button className="sb-btn" onClick={sendTest} disabled={loading || !active} style={{ color: '#fff' }}>Send test</button>
+        <button className="sb-btn" onClick={sendTest} disabled={loading || !active} style={{ color: 'var(--text)' }}>Send test</button>
       </div>
       <div style={{ display: 'grid', gap: 4 }}>
         <small style={{ color:'var(--muted)' }}>
