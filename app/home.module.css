@@ -1,6 +1,6 @@
 /* app/home.module.css — isolated styles for landing homepage */
 
-.landing { background: var(--bg); color: var(--text); position: relative; }
+.landing { background: var(--bg); color: var(--text); position: relative; min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; overscroll-behavior-y: contain; }
 .landing {
  /* Light, airy palette for landing */
   --bg: #f8fafc; /* near-white */
@@ -506,6 +506,8 @@ will-change: transform;
 
 /* Footer (expanded) */
 .footer { max-width: 1100px; margin: 60px auto; padding: 0 20px 60px; color: var(--muted); }
+/* When landing content is shorter than viewport, keep footer anchored to bottom */
+.footer { margin-top: auto; }
 .footerGrid { display: grid; grid-template-columns: 1.2fr repeat(4, minmax(0, 1fr)); gap: 20px; align-items: start; border-top: 1px solid var(--border); padding-top: 28px; }
 .footerCol { display: grid; gap: 10px; }
 .footerBrand { display: inline-flex; align-items: center; gap: 10px; }
