@@ -256,7 +256,7 @@ function FeatureCarousel() {
                 role={isMobile ? 'button' : undefined}
                 onClick={() => { if (isMobile) setModalIdx(idx); }}
               >
-                <div className={styles.featureHead}>
+                <div className={styles.featureHead} style={{fontSize:4}}>
                   <img src={f.icon} alt="" aria-hidden="true" className={styles.featureIcon} />
                   <h3>{f.title}</h3>
                 </div>
