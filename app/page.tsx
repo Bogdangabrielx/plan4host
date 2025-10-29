@@ -270,7 +270,7 @@ function FeatureCarousel() {
       {isMobile && modalIdx !== null && (() => { const f = feats[(modalIdx!%feats.length+feats.length)%feats.length]; return (
         <div role="dialog" aria-modal="true" onClick={() => setModalIdx(null)}
           style={{ position:'fixed', inset:0, zIndex:120, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={{ width:'min(520px, 92vw)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:10 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={{ width:'min(520px, 92vw)', background:'var(--card)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:10 }}>
             <div style={{ alignItems:'center', gap:10 }}>
               <img src={f.icon} alt="" aria-hidden className={styles.featureIcon} />
               <h3 style={{ margin:0 }}>{f.title}</h3>
