@@ -276,7 +276,7 @@ function FeatureCarousel() {
               <h3 style={{ margin:0 }}>{f.title}</h3>
             </div>
             <p style={{ margin:0, color:'var(--muted)' }}>{f.text}</p>
-            <button className="sb-btn" onClick={() => setModalIdx(null)} style={{ justifySelf:'end' }}>Close</button>
+            <button className="sb-btn sb-cardglow" onClick={() => setModalIdx(null)} style={{ justifySelf:'end' }}>Close</button>
           </div>
         </div>
       ); })()}
