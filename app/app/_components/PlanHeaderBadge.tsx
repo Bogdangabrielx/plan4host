@@ -76,5 +76,5 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
 
   if (slot === "header-right" || slot === 'under-title') return null;
   if (!plan) return null;
-  return <div style={{ margin: "6px 0 12px" }}>{badge}</div>;
+  return <div className="sb-cardglow" style={{ margin: "6px 0 12px" }}>{badge}</div>;
 }
