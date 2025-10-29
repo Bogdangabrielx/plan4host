@@ -494,7 +494,7 @@ export default function HomePage() {
           {/* Get started -> login in signup mode (animated) */}
           <CtaLink
             href="/auth/login?mode=signup"
-            className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}
+            className={`sb-cardglow ${styles.btn}  ${styles.btnChoose} ${styles.focusable}`}
           >
             Get started
           </CtaLink>
@@ -565,7 +565,7 @@ export default function HomePage() {
             {/* Start free -> login in signup mode (animated) */}
             <CtaLink
               href="/auth/login?mode=signup"
-              className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}
+              className={`sb-cardglow ${styles.btn}  ${styles.btnChoose} ${styles.focusable}`}
             >
               Start free
             </CtaLink>
