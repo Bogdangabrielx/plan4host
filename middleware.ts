@@ -6,9 +6,12 @@ export function middleware(req: NextRequest) {
 
   // Redirect authenticated users straight to the app when hitting landing root
   if (p === "/" || p === "/ro") {
-    const hasAccess = req.cookies.get("sb-access-token")?.value;
-    const hasRefresh = req.cookies.get("sb-refresh-token")?.value;
-    if (hasAccess || hasRefresh) {
+    // Robust Supabase cookie detection: sb-access/refresh-token with or without project ref prefix
+    const all = req.cookies.getAll?.() || [] as any;
+    const hasSbSession = all.some((c: { name: string }) => /^(sb-[^-]+-)?(access|refresh)-token$/.test(c.name))
+      || !!req.cookies.get("sb-access-token")?.value
+      || !!req.cookies.get("sb-refresh-token")?.value;
+    if (hasSbSession) {
       return NextResponse.redirect(new URL("/app", req.url));
     }
   }
