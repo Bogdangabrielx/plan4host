@@ -250,8 +250,8 @@ export default function HomePageRO() {
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
         </div>
         <div className={styles.actions}>
-          <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Logare</Link>
-          <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
+          <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Logare</Link>
+          <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
           <button
             type="button"
             className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
@@ -291,7 +291,7 @@ export default function HomePageRO() {
             să sincronizeze calendarele și să pornească rapid check‑in online.
           </p>
           <div className={styles.heroCta}>
-            <CtaLink href="/auth/login?mode=signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
+            <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
             <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Vezi funcțiile</a>
           </div>
         </div>
@@ -312,7 +312,7 @@ export default function HomePageRO() {
       <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
         <h2 id="pricing-title">Prețuri</h2>
         <div className={styles.pricingGrid}>
-          <div className={styles.priceCard}>
+          <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
               <li>Calendar adaptiv</li>
@@ -325,7 +325,7 @@ export default function HomePageRO() {
             <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Basic</Link>
           </div>
 
-          <div className={styles.priceCard}>
+          <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>STANDARD</div>
             <ul className={styles.priceList}>
               <li>Calendar adaptiv</li>
@@ -339,7 +339,7 @@ export default function HomePageRO() {
             <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Standard</Link>
           </div>
 
-          <div className={styles.priceCard}>
+          <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>PREMIUM</div>
             <ul className={styles.priceList}>
               <li>Calendar adaptiv</li>
@@ -369,7 +369,7 @@ export default function HomePageRO() {
       </section>
 
       {/* Contact */}
-      <section id="contact" className={styles.contact} aria-labelledby="contact-title">
+      <section id="contact" className={`sb-cardglow ${styles.contact}`} aria-labelledby="contact-title">
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
           <p>
