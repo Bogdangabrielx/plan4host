@@ -166,16 +166,7 @@ function FeatureCarousel() {
     return () => { try { io.disconnect(); } catch {}; track.removeEventListener('scroll', onScroll as any); window.removeEventListener('resize', onResize); };
   }, []);
 
-  // Autoplay (pause on interaction)
-  useEffect(() => {
-    let paused = false;
-    const t = window.setInterval(() => { if (!paused) next(); }, 5000);
-    const el = trackRef.current;
-    const onUser = () => { paused = true; window.setTimeout(() => { paused = false; }, 6000); };
-    el?.addEventListener('pointerdown', onUser, { passive: true });
-    el?.addEventListener('wheel', onUser, { passive: true });
-    return () => { window.clearInterval(t); el?.removeEventListener('pointerdown', onUser as any); el?.removeEventListener('wheel', onUser as any); };
-  }, []);
+  // Autoplay disabled — slide changes only via arrows or swipe
 
   return (
     <div className={styles.featureCarousel} ref={wrapRef}>
