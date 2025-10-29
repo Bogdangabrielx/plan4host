@@ -356,33 +356,38 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
             </div>
           )}
 
-            <small style={{ color: "var(--muted)" }}>
-              {mode === "login" ? (
-                <>
-                  Don’t have an account?{" "}
-                  <a
-                    href="#"
-                  onClick={(e) => { e.preventDefault(); setMode("signup"); setErr(""); setFailCount(0); }}
-                    style={{ color: "var(--primary)", fontWeight: 700 }}
-                  >
-                    Create one
-                  </a>
-                  .
-                </>
-              ) : (
-                <>
-                  Already have an account?{" "}
-                  <a
-                    href="#"
-                  onClick={(e) => { e.preventDefault(); setMode("login"); setErr(""); setFailCount(0); }}
-                    style={{ color: "var(--primary)", fontWeight: 700 }}
-                  >
-                    Sign in
-                  </a>
-                  .
-                </>
-              )}
-            </small>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <small style={{ color: "var(--muted)" }}>
+                {mode === "login" ? (
+                  <>
+                    Don’t have an account?{" "}
+                    <a
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); setMode("signup"); setErr(""); setFailCount(0); }}
+                      style={{ color: "var(--primary)", fontWeight: 700, textDecoration: 'none' }}
+                    >
+                      Create one
+                    </a>
+                    .
+                  </>
+                ) : (
+                  <>
+                    Already have an account?{" "}
+                    <a
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); setMode("login"); setErr(""); setFailCount(0); }}
+                      style={{ color: "var(--primary)", fontWeight: 700, textDecoration: 'none' }}
+                    >
+                      Sign in
+                    </a>
+                    .
+                  </>
+                )}
+              </small>
+              <a href="/" style={{ color: 'var(--muted)', textDecoration: 'none', fontWeight: 800 }} title="Back to homepage">
+                Home
+              </a>
+            </div>
           </form>
         </div>
       </div>
