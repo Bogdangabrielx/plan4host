@@ -427,10 +427,10 @@ will-change: transform;
 }
 /* Tablet/Desktop: restore wider padding and gaps */
 @media (min-width: 641px){
-  .featureViewport{ --card-gap: 16px; padding: 0 10vw; }
+  .featureViewport{ --card-gap: 12px; padding: 0 10vw; }
 }
 @media (min-width: 1025px){
-  .featureViewport{ --card-gap: 20px; padding: 0 10vw; }
+  .featureViewport{ --card-gap: 16px; padding: 0 10vw; }
 }
 .featureTrack {
   --card-gap: 12px; /* mobile gap */
