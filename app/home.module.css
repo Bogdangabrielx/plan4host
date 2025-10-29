@@ -412,6 +412,16 @@ will-change: transform;
 
 /* Carousel */
 .featureCarousel { position: relative; }
+.featureViewport{
+  --card-gap: 12px;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: var(--card-gap);
+  padding: 0 10vw; /* peek at edges */
+}
+@media (min-width: 641px){ .featureViewport{ --card-gap: 16px; } }
+@media (min-width: 1025px){ .featureViewport{ --card-gap: 20px; } }
 .featureTrack {
   --card-gap: 12px; /* mobile gap */
   display: flex;
@@ -423,6 +433,8 @@ will-change: transform;
   padding-left: 10vw;
   padding-right: 10vw; /* allow first/last to center with peek */
 }
+/* Hide legacy scrolling track when using 3-slot viewport implementation */
+.featureTrack { display: none !important; }
 @media (min-width: 641px){ .featureTrack { --card-gap: 16px; } }
 @media (min-width: 1025px){ .featureTrack { --card-gap: 20px; } }
 .featureTrack::-webkit-scrollbar { height: 8px; }

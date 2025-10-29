@@ -66,6 +66,8 @@ function FeatureCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const activeIdxRef = useRef<number>(0);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
 
   const getStep = () => {
     const el = trackRef.current;
@@ -90,12 +92,14 @@ function FeatureCarousel() {
     const N = cards.length || 1;
     activeIdxRef.current = (activeIdxRef.current - 1 + N) % N;
     centerCard(activeIdxRef.current);
+    setActive(activeIdxRef.current);
   };
   const next = () => {
     const track = trackRef.current; if (!track) return;
     const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
     activeIdxRef.current = (activeIdxRef.current + 1) % cards.length;
     centerCard(activeIdxRef.current);
+    setActive(activeIdxRef.current);
   };
 
   const updateActive = () => {
@@ -227,6 +231,36 @@ function FeatureCarousel() {
           </div>
           <p>Invite teammates (editor/viewer), assign scope‑based access (calendar, cleaning, channels, property setup) and delegate daily tasks with confidence.</p>
         </article>
+      </div>
+      <div className={styles.featureViewport} ref={viewportRef}
+        onPointerDown={(e)=>{ (e.currentTarget as any)._sx = e.clientX; }}
+        onPointerUp={(e)=>{ const sx = (e.currentTarget as any)._sx as number|undefined; if (typeof sx==='number'){ const dx = e.clientX - sx; if (Math.abs(dx)>30){ if (dx<0) next(); else prev(); } } }}
+      >
+        {(() => {
+          const feats = [
+            { icon: "/guest_forlight.png", title: "Secured Check-in Form", text: "Collect guest details safely — ID upload, consent, instant email." },
+            { icon: "/ical_forlight.png", title: "Automatic Sync", text: "Keep calendars aligned with Airbnb/Booking via iCal." },
+            { icon: "/dashboard_forlight.png", title: "Easy Dashboard", text: "Manage all properties in one simple place." },
+            { icon: "/configurator_forlight.png", title: "Property Setup", text: "Add rooms, set defaults, tailor settings in minutes." },
+            { icon: "/calendar_forlight.png", title: "Adaptive Calendar", text: "Customize views and organize bookings at a glance." },
+            { icon: "/team_forlight.png", title: "Delegate Tasks", text: "Invite teammates and delegate daily tasks." },
+          ];
+          const n = feats.length; const i = ((active % n) + n) % n;
+          const prevIdx = (i - 1 + n) % n; const nextIdx = (i + 1) % n;
+          const order = [prevIdx, i, nextIdx];
+          return order.map((idx, k) => {
+            const f = feats[idx]; const role = k===0?'prev':k===1?'active':'next';
+            return (
+              <article key={idx} data-card data-prev={role==='prev'||undefined} data-active={role==='active'||undefined} data-next={role==='next'||undefined} className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+                <div className={styles.featureHead}>
+                  <img src={f.icon} alt="" aria-hidden="true" className={styles.featureIcon} />
+                  <h3>{f.title}</h3>
+                </div>
+                <p>{f.text}</p>
+              </article>
+            );
+          });
+        })()}
       </div>
       <button type="button" aria-label="Next features" className={`${styles.carouselBtn} ${styles.carouselBtnRight}`} onClick={next}>›</button>
     </div>
