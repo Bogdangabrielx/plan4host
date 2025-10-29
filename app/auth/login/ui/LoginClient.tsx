@@ -384,7 +384,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                   </>
                 )}
               </small>
-              <a href="/" className="sb-cardglow" style={{ color: 'var(--muted)', textDecoration: 'none', fontWeight: 800, fontSize: 11, borderRadius: 21,   }} title="Back to homepage">
+              <a href="/" className="sb-cardglow" style={{ color: 'var(--muted)', textDecoration: 'none', fontWeight: 600, fontSize: 11, borderRadius: 21, padding: "3px 5px"  }} title="Back to homepage">
                 Home
               </a>
             </div>
