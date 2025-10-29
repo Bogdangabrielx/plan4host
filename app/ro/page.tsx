@@ -217,7 +217,9 @@ function FeatureCarousel() {
               >
                 <div className={styles.featureHead}>
                   <img src={f.icon} alt="" aria-hidden="true" className={styles.featureIcon} />
-                  <h3>{f.title}</h3>
+                  <h3 className="text-sm md:text-base text-center break-words whitespace-normal leading-snug">
+  {f.title}
+</h3>
                 </div>
                 {!isMobile && <p>{f.text}</p>}
               </article>
