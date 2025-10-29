@@ -87,7 +87,8 @@ function FeatureCarousel() {
   const prev = () => {
     const track = trackRef.current; if (!track) return;
     const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
-    activeIdxRef.current = Math.max(0, activeIdxRef.current - 1);
+    const N = cards.length || 1;
+    activeIdxRef.current = (activeIdxRef.current - 1 + N) % N;
     centerCard(activeIdxRef.current);
   };
   const next = () => {
@@ -109,9 +110,13 @@ function FeatureCarousel() {
       if (dist < min) { min = dist; best = i; }
     });
     activeIdxRef.current = best;
+    const N = cards.length;
+    const prevIdx = (best - 1 + N) % N;
+    const nextIdx = (best + 1) % N;
     cards.forEach((c, i) => {
-      if (i === best) c.setAttribute('data-active', 'true');
-      else c.removeAttribute('data-active');
+      if (i === best) c.setAttribute('data-active', 'true'); else c.removeAttribute('data-active');
+      if (i === prevIdx) c.setAttribute('data-prev', 'true'); else c.removeAttribute('data-prev');
+      if (i === nextIdx) c.setAttribute('data-next', 'true'); else c.removeAttribute('data-next');
     });
   };
 
