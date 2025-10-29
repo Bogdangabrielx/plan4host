@@ -462,7 +462,7 @@ will-change: transform;
   border: 1px solid var(--border);
   background: var(--panel);
   color: var(--text);
-  display: none; /* hidden on mobile */
+  display: none; /* default hidden; enabled by breakpoints */
   align-items: center; justify-content: center;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(0,0,0,.08);
@@ -471,6 +471,12 @@ will-change: transform;
 .carouselBtnLeft { left: -6px; }
 .carouselBtnRight { right: -6px; }
 @media (min-width: 901px){ .carouselBtn { display: inline-flex; } }
+/* Show arrows on mobile too, slightly smaller and within padding */
+@media (max-width: 640px){
+  .carouselBtn{ display: inline-flex; width: 36px; height: 36px; }
+  .carouselBtnLeft{ left: 6px; }
+  .carouselBtnRight{ right: 6px; }
+}
 
 /* Animated gradient border on feature card (mask technique) */
 @property --ring-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
