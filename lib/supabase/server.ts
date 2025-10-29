@@ -18,6 +18,8 @@ export function createClient() {
     path: "/",
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
+    // keep session cookies alive for a long window (≈90 days)
+    maxAge: 60 * 60 * 24 * 90,
   };
 
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
