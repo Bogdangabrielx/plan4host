@@ -413,15 +413,25 @@ will-change: transform;
 /* Carousel */
 .featureCarousel { position: relative; }
 .featureViewport{
-  --card-gap: 12px;
+  --card-gap: 8px;                /* tighter on mobile */
   display: flex;
   align-items: stretch;
   justify-content: center;
   gap: var(--card-gap);
-  padding: 0 10vw; /* peek at edges */
+  padding: 0 12px;                /* no outside peek on phones */
+  overflow: hidden;               /* keep cards within viewport */
 }
-@media (min-width: 641px){ .featureViewport{ --card-gap: 16px; } }
-@media (min-width: 1025px){ .featureViewport{ --card-gap: 20px; } }
+/* 3-up fit on mobile: compute width so that 3 cards + gaps fit the viewport */
+.featureViewport .featureCard{
+  width: calc((100vw - 24px - (2 * var(--card-gap))) / 3);
+}
+/* Tablet/Desktop: restore wider padding and gaps */
+@media (min-width: 641px){
+  .featureViewport{ --card-gap: 16px; padding: 0 10vw; }
+}
+@media (min-width: 1025px){
+  .featureViewport{ --card-gap: 20px; padding: 0 10vw; }
+}
 .featureTrack {
   --card-gap: 12px; /* mobile gap */
   display: flex;
@@ -486,11 +496,11 @@ will-change: transform;
 @media (min-width: 1025px){
   .featureCard { width: clamp(320px, 28vw, 380px); }
 }
-.featureCard[data-active="true"]{ opacity: 1; transform: scale(1.06); filter: none; z-index: 2; }
+.featureCard[data-active="true"]{ opacity: 1; transform: scale(1.05); filter: none; z-index: 2; }
 .featureCard[data-prev="true"],
 .featureCard[data-next="true"]{
   opacity: .8;
-  transform: scale(.92);
+  transform: scale(.90);
 }
 /* Visually "stick" neighbors to the active card: cancel half the gap on the touching side */
 .featureCard[data-prev="true"]{ margin-right: calc(-0.5 * var(--card-gap)); }
