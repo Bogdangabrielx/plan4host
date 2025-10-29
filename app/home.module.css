@@ -433,6 +433,25 @@ will-change: transform;
 @media (min-width: 1025px){
   .featureViewport{ --card-gap: 16px; padding: 32px 10vw; }
 }
+
+/* Mobile-only: enforce equal, compact card height and clamp text */
+@media (max-width: 640px){
+  .featureViewport .featureCard{
+    aspect-ratio: auto;          /* ignore ratio on small screens */
+    height: 136px;               /* uniform height */
+    padding: 12px;               /* tighter padding */
+    display: grid;
+    grid-template-rows: auto 1fr; /* head then text fills */
+    overflow: hidden;            /* prevent text from stretching the card */
+  }
+  .featureCard h3{ font-size: 15px; }
+  .featureCard p{
+    display: -webkit-box;
+    -webkit-line-clamp: 3;       /* max 3 lines on mobile */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
 .featureTrack {
   --card-gap: 12px; /* mobile gap */
   display: flex;
