@@ -454,16 +454,8 @@ will-change: transform;
     overflow-wrap: normal;
     hyphens: none;
   }
-  .featureCard p{
-    font-size: 12px;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;       /* max 3 lines on mobile */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    word-break: normal;          /* avoid breaking inside words */
-    overflow-wrap: break-word;   /* break only at natural points */
-    hyphens: none;
-  }
+  /* Hide description in carousel on phones; details shown in modal */
+  .featureCard p{ display: none; }
 }
 .featureTrack {
   --card-gap: 12px; /* mobile gap */

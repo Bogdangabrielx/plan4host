@@ -68,6 +68,24 @@ function FeatureCarousel() {
   const activeIdxRef = useRef<number>(0);
   const viewportRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const [modalIdx, setModalIdx] = useState<number|null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const apply = () => setIsMobile(!!mq.matches);
+    apply();
+    try { mq.addEventListener('change', apply); } catch { mq.addListener(apply as any); }
+    return () => { try { mq.removeEventListener('change', apply); } catch { mq.removeListener(apply as any); } };
+  }, []);
+
+  const feats = [
+    { icon: "/guest_forlight.png", title: "Secured Check-in Form", text: "Collect guest details safely — ID upload, consent, instant email." },
+    { icon: "/ical_forlight.png", title: "Automatic Sync", text: "Keep calendars aligned with Airbnb/Booking via iCal." },
+    { icon: "/dashboard_forlight.png", title: "Easy Dashboard", text: "Manage all properties in one simple place." },
+    { icon: "/configurator_forlight.png", title: "Property Setup", text: "Add rooms, set defaults, tailor settings in minutes." },
+    { icon: "/calendar_forlight.png", title: "Adaptive Calendar", text: "Customize views and organize bookings at a glance." },
+    { icon: "/team_forlight.png", title: "Delegate Tasks", text: "Invite teammates and delegate daily tasks." },
+  ];
 
   const getStep = () => {
     const el = trackRef.current;
@@ -228,32 +246,40 @@ function FeatureCarousel() {
         onPointerUp={(e)=>{ const sx = (e.currentTarget as any)._sx as number|undefined; if (typeof sx==='number'){ const dx = e.clientX - sx; if (Math.abs(dx)>30){ if (dx<0) next(); else prev(); } } }}
       >
         {(() => {
-          const feats = [
-            { icon: "/guest_forlight.png", title: "Secured Check-in Form", text: "Collect guest details safely — ID upload, consent, instant email." },
-            { icon: "/ical_forlight.png", title: "Automatic Sync", text: "Keep calendars aligned with Airbnb/Booking via iCal." },
-            { icon: "/dashboard_forlight.png", title: "Easy Dashboard", text: "Manage all properties in one simple place." },
-            { icon: "/configurator_forlight.png", title: "Property Setup", text: "Add rooms, set defaults, tailor settings in minutes." },
-            { icon: "/calendar_forlight.png", title: "Adaptive Calendar", text: "Customize views and organize bookings at a glance." },
-            { icon: "/team_forlight.png", title: "Delegate Tasks", text: "Invite teammates and delegate daily tasks." },
-          ];
           const n = feats.length; const i = ((active % n) + n) % n;
           const prevIdx = (i - 1 + n) % n; const nextIdx = (i + 1) % n;
           const order = [prevIdx, i, nextIdx];
           return order.map((idx, k) => {
             const f = feats[idx]; const role = k===0?'prev':k===1?'active':'next';
             return (
-              <article key={idx} data-card data-prev={role==='prev'||undefined} data-active={role==='active'||undefined} data-next={role==='next'||undefined} className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+              <article key={idx} data-card data-prev={role==='prev'||undefined} data-active={role==='active'||undefined} data-next={role==='next'||undefined} className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}
+                role={isMobile ? 'button' : undefined}
+                onClick={() => { if (isMobile) setModalIdx(idx); }}
+              >
                 <div className={styles.featureHead}>
                   <img src={f.icon} alt="" aria-hidden="true" className={styles.featureIcon} />
                   <h3>{f.title}</h3>
                 </div>
-                <p>{f.text}</p>
+                {!isMobile && <p>{f.text}</p>}
               </article>
             );
           });
         })()}
       </div>
       <button type="button" aria-label="Next features" className={`${styles.carouselBtn} ${styles.carouselBtnRight}`} onClick={next}>›</button>
+      {isMobile && modalIdx !== null && (() => { const f = feats[(modalIdx!%feats.length+feats.length)%feats.length]; return (
+        <div role="dialog" aria-modal="true" onClick={() => setModalIdx(null)}
+          style={{ position:'fixed', inset:0, zIndex:120, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={{ width:'min(520px, 92vw)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:10 }}>
+            <div className={styles.featureHead}>
+              <img src={f.icon} alt="" aria-hidden className={styles.featureIcon} />
+              <h3 style={{ margin:0 }}>{f.title}</h3>
+            </div>
+            <p style={{ margin:0, color:'var(--muted)' }}>{f.text}</p>
+            <button className="sb-btn" onClick={() => setModalIdx(null)} style={{ justifySelf:'end' }}>Close</button>
+          </div>
+        </div>
+      ); })()}
     </div>
   );
 }
