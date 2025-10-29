@@ -54,7 +54,7 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
   }, [supabase]);
 
   // Compose badge element
-  const badge = plan ? <span style={planBadgeStyle(plan)}>{planLabel(plan)}</span> : null;
+  const badge = plan ? <span className="sb-cardglow" style={planBadgeStyle(plan)}>{planLabel(plan)}</span> : null;
 
   // Slot behaviors
   useEffect(() => {
@@ -66,7 +66,7 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
       // Mută badge-ul sub titlu, în zona titlului din header
       const composed = (
         <div style={{ display: 'grid', gap: 8 }}>
-          <span>{title}</span>
+          <span>{title}</span> 
           {badge}
         </div>
       );
@@ -76,5 +76,5 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
 
   if (slot === "header-right" || slot === 'under-title') return null;
   if (!plan) return null;
-  return <div className="sb-cardglow" style={{ margin: "6px 0 12px" }}>{badge}</div>;
+  return <div  style={{ margin: "6px 0 12px" }}>{badge}</div>;
 }
