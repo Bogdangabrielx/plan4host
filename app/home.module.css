@@ -415,10 +415,10 @@ will-change: transform;
 .featureViewport{
   --card-gap: 8px;                /* tighter on mobile */
   display: flex;
-  align-items: stretch;
+  align-items: center;            /* keep cards height unaffected by container height */
   justify-content: center;
   gap: var(--card-gap);
-  padding: 0 12px;                /* no outside peek on phones */
+  padding: 16px 12px;             /* taller viewport without changing card size */
   overflow: hidden;               /* keep cards within viewport */
 }
 /* 3-up fit on mobile: compute width so that 3 cards + gaps fit the viewport */
@@ -428,10 +428,10 @@ will-change: transform;
 }
 /* Tablet/Desktop: restore wider padding and gaps */
 @media (min-width: 641px){
-  .featureViewport{ --card-gap: 12px; padding: 0 10vw; }
+  .featureViewport{ --card-gap: 12px; padding: 24px 10vw; }
 }
 @media (min-width: 1025px){
-  .featureViewport{ --card-gap: 16px; padding: 0 10vw; }
+  .featureViewport{ --card-gap: 16px; padding: 32px 10vw; }
 }
 .featureTrack {
   --card-gap: 12px; /* mobile gap */
