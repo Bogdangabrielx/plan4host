@@ -1,18 +1,6 @@
 /* app/home.module.css — isolated styles for landing homepage */
 
-.landing {
-  background: var(--bg);
-  color: var(--text);
-  /* Make landing the only scroller to avoid rubber-band and keep footer anchored */
-  position: fixed;
-  inset: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  display: flex;
-  flex-direction: column;
-  min-height: 100svh; /* fallback handled by UA to 100vh */
-  overscroll-behavior-y: contain;
-}
+.landing { background: var(--bg); color: var(--text); position: relative; min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; overscroll-behavior-y: contain; }
 .landing {
  /* Light, airy palette for landing */
   --bg: #f8fafc; /* near-white */
