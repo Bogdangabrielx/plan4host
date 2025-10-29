@@ -449,13 +449,15 @@ will-change: transform;
   .featureIcon{ margin: 0 auto; }
   .featureCard h3{ text-align: center; }
   .featureCard h3{
-    font-size: 14px;             /* smaller to fit single line */
+    font-size: 14px;
     line-height: 1.2;
-    white-space: nowrap;         /* keep title on one line */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;       /* allow up to 2 lines for intelligibility */
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;     /* truncate with … if needed */
-    word-break: normal;          /* avoid aggressive breaking */
-    overflow-wrap: normal;
+    text-overflow: ellipsis;
+    word-break: normal;
+    overflow-wrap: break-word;
     hyphens: none;
   }
   /* Hide description in carousel on phones; details shown in modal */

@@ -219,7 +219,7 @@ function FeatureCarousel() {
                   <img src={f.icon} alt="" aria-hidden="true" className={styles.featureIcon} />
                   <h3>{f.title}</h3>
                 </div>
-                {!isMobile && <p>{f.text}</p>}
+                {/* pe mobil afișăm doar icon + titlu; detaliile rămân în modal */}
               </article>
             );
           });
