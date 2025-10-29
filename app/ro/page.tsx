@@ -49,6 +49,7 @@ function CtaLink({
 function FeatureCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const activeIdxRef = useRef<number>(0);
   const getStep = () => {
     const el = trackRef.current;
     if (!el) return 0;
@@ -56,8 +57,40 @@ function FeatureCarousel() {
     if (first) return first.offsetWidth + 20;
     return Math.max(280, Math.floor(el.clientWidth * 0.9));
   };
-  const prev = () => trackRef.current?.scrollBy({ left: -getStep(), behavior: "smooth" });
-  const next = () => trackRef.current?.scrollBy({ left: getStep(), behavior: "smooth" });
+  const centerCard = (idx: number) => {
+    const track = trackRef.current; if (!track) return;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
+    const target = cards[idx]; if (!target) return;
+    const targetCenter = target.offsetLeft + target.offsetWidth / 2;
+    const left = Math.max(0, targetCenter - track.clientWidth / 2);
+    track.scrollTo({ left, behavior: 'smooth' });
+  };
+  const prev = () => {
+    const track = trackRef.current; if (!track) return;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
+    activeIdxRef.current = Math.max(0, activeIdxRef.current - 1);
+    centerCard(activeIdxRef.current);
+  };
+  const next = () => {
+    const track = trackRef.current; if (!track) return;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
+    activeIdxRef.current = (activeIdxRef.current + 1) % cards.length;
+    centerCard(activeIdxRef.current);
+  };
+  const updateActive = () => {
+    const track = trackRef.current; if (!track) return;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
+    if (!cards.length) return;
+    const viewportCenter = track.scrollLeft + track.clientWidth / 2;
+    let best = 0; let min = Infinity;
+    cards.forEach((c, i) => {
+      const cc = c.offsetLeft + c.offsetWidth / 2;
+      const dist = Math.abs(cc - viewportCenter);
+      if (dist < min) { min = dist; best = i; }
+    });
+    activeIdxRef.current = best;
+    cards.forEach((c, i) => { if (i === best) c.setAttribute('data-active','true'); else c.removeAttribute('data-active'); });
+  };
   useEffect(() => {
     const el = wrapRef.current;
     const track = trackRef.current;
@@ -78,10 +111,25 @@ function FeatureCarousel() {
       window.setTimeout(() => window.clearTimeout(t), 1200);
     };
     const io = new IntersectionObserver((entries) => {
-      for (const e of entries) if (e.isIntersecting && e.intersectionRatio >= 0.4) nudge();
+      for (const e of entries) if (e.isIntersecting && e.intersectionRatio >= 0.4) { nudge(); requestAnimationFrame(updateActive); }
     }, { threshold: [0, 0.25, 0.4, 0.75, 1] });
     io.observe(el);
-    return () => { try { io.disconnect(); } catch {} };
+    const onScroll = () => updateActive();
+    const onResize = () => updateActive();
+    track.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+    requestAnimationFrame(updateActive);
+    return () => { try { io.disconnect(); } catch {}; track.removeEventListener('scroll', onScroll as any); window.removeEventListener('resize', onResize); };
+  }, []);
+
+  useEffect(() => {
+    let paused = false;
+    const t = window.setInterval(() => { if (!paused) next(); }, 5000);
+    const el = trackRef.current;
+    const onUser = () => { paused = true; window.setTimeout(() => { paused = false; }, 6000); };
+    el?.addEventListener('pointerdown', onUser, { passive: true });
+    el?.addEventListener('wheel', onUser, { passive: true });
+    return () => { window.clearInterval(t); el?.removeEventListener('pointerdown', onUser as any); el?.removeEventListener('wheel', onUser as any); };
   }, []);
 
   return (

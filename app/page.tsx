@@ -65,6 +65,7 @@ function CtaLink({
 function FeatureCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const activeIdxRef = useRef<number>(0);
 
   const getStep = () => {
     const el = trackRef.current;
@@ -74,15 +75,44 @@ function FeatureCarousel() {
     return Math.max(280, Math.floor(el.clientWidth * 0.9));
   };
 
+  const centerCard = (idx: number) => {
+    const track = trackRef.current; if (!track) return;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
+    const target = cards[idx]; if (!target) return;
+    const targetCenter = target.offsetLeft + target.offsetWidth / 2;
+    const left = Math.max(0, targetCenter - track.clientWidth / 2);
+    track.scrollTo({ left, behavior: 'smooth' });
+  };
+
   const prev = () => {
-    const el = trackRef.current;
-    if (!el) return;
-    el.scrollBy({ left: -getStep(), behavior: 'smooth' });
+    const track = trackRef.current; if (!track) return;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
+    activeIdxRef.current = Math.max(0, activeIdxRef.current - 1);
+    centerCard(activeIdxRef.current);
   };
   const next = () => {
-    const el = trackRef.current;
-    if (!el) return;
-    el.scrollBy({ left: getStep(), behavior: 'smooth' });
+    const track = trackRef.current; if (!track) return;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
+    activeIdxRef.current = (activeIdxRef.current + 1) % cards.length;
+    centerCard(activeIdxRef.current);
+  };
+
+  const updateActive = () => {
+    const track = trackRef.current; if (!track) return;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
+    if (!cards.length) return;
+    const viewportCenter = track.scrollLeft + track.clientWidth / 2;
+    let best = 0; let min = Infinity;
+    cards.forEach((c, i) => {
+      const cc = c.offsetLeft + c.offsetWidth / 2;
+      const dist = Math.abs(cc - viewportCenter);
+      if (dist < min) { min = dist; best = i; }
+    });
+    activeIdxRef.current = best;
+    cards.forEach((c, i) => {
+      if (i === best) c.setAttribute('data-active', 'true');
+      else c.removeAttribute('data-active');
+    });
   };
 
   // Mobile-only nudge effect when section scrolls into view
@@ -112,11 +142,30 @@ function FeatureCarousel() {
       for (const e of entries) {
         if (e.isIntersecting && e.intersectionRatio >= 0.4) {
           nudge();
+          // initialize active on first reveal
+          requestAnimationFrame(updateActive);
         }
       }
     }, { threshold: [0, 0.25, 0.4, 0.75, 1] });
     io.observe(el);
-    return () => { try { io.disconnect(); } catch {} };
+    const onScroll = () => updateActive();
+    const onResize = () => updateActive();
+    track.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+    // initial active
+    requestAnimationFrame(updateActive);
+    return () => { try { io.disconnect(); } catch {}; track.removeEventListener('scroll', onScroll as any); window.removeEventListener('resize', onResize); };
+  }, []);
+
+  // Autoplay (pause on interaction)
+  useEffect(() => {
+    let paused = false;
+    const t = window.setInterval(() => { if (!paused) next(); }, 5000);
+    const el = trackRef.current;
+    const onUser = () => { paused = true; window.setTimeout(() => { paused = false; }, 6000); };
+    el?.addEventListener('pointerdown', onUser, { passive: true });
+    el?.addEventListener('wheel', onUser, { passive: true });
+    return () => { window.clearInterval(t); el?.removeEventListener('pointerdown', onUser as any); el?.removeEventListener('wheel', onUser as any); };
   }, []);
 
   return (

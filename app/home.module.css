@@ -414,12 +414,15 @@ will-change: transform;
 .featureCarousel { position: relative; }
 .featureTrack {
   display: flex;
-  gap: 20px;
+  gap: 16px; /* mobile spacing */
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   padding-bottom: 6px; /* space for hidden scrollbar */
+  padding-left: 10vw;
+  padding-right: 10vw; /* allow first/last to center with peek */
 }
+@media (min-width: 1025px){ .featureTrack { gap: 24px; } }
 .featureTrack::-webkit-scrollbar { height: 8px; }
 .featureTrack::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--border) 70%, transparent); border-radius: 8px; }
 
@@ -451,15 +454,25 @@ will-change: transform;
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 22px;
-  min-height: 180px;
-  transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+  aspect-ratio: 63 / 88; /* playing card ratio ~0.716 */
+  transition: box-shadow .2s ease, transform .6s ease-out, opacity .6s ease-out, filter .6s ease-out, border-color .15s ease;
   position: relative;
-  scroll-snap-align: start;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
   flex: 0 0 auto;
-  width: clamp(280px, 30vw, 360px); /* consistent card width on desktop */
-  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+  width: min(90vw, 320px); /* mobile default */
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  will-change: transform;
+  opacity: .65;
+  transform: scale(.94);
 }
-.featureCard:hover { box-shadow: 0 10px 24px rgba(0,0,0,.10); transform: translateY(-2px); }
+@media (min-width: 641px) and (max-width: 1024px){
+  .featureCard { width: clamp(320px, 35vw, 360px); }
+}
+@media (min-width: 1025px){
+  .featureCard { width: clamp(360px, 32vw, 420px); }
+}
+.featureCard[data-active="true"]{ opacity: 1; transform: scale(1.04); filter: none; z-index: 1; }
 .featureCard > * { position: relative; z-index: 2; }
 .featureCard::before {
   content: ""; position: absolute; inset: 0; padding: var(--ring); border-radius: inherit;
