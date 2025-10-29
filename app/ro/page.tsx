@@ -50,6 +50,8 @@ function FeatureCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const activeIdxRef = useRef<number>(0);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
   const getStep = () => {
     const el = trackRef.current;
     if (!el) return 0;
@@ -66,17 +68,16 @@ function FeatureCarousel() {
     track.scrollTo({ left, behavior: 'smooth' });
   };
   const prev = () => {
-    const track = trackRef.current; if (!track) return;
-    const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
+    const cards = Array.from((trackRef.current||document).querySelectorAll<HTMLElement>('[data-card]'));
     const N = cards.length || 1;
     activeIdxRef.current = (activeIdxRef.current - 1 + N) % N;
-    centerCard(activeIdxRef.current);
+    setActive(activeIdxRef.current);
   };
   const next = () => {
-    const track = trackRef.current; if (!track) return;
-    const cards = Array.from(track.querySelectorAll<HTMLElement>('[data-card]'));
-    activeIdxRef.current = (activeIdxRef.current + 1) % cards.length;
-    centerCard(activeIdxRef.current);
+    const cards = Array.from((trackRef.current||document).querySelectorAll<HTMLElement>('[data-card]'));
+    const N = cards.length || 1;
+    activeIdxRef.current = (activeIdxRef.current + 1) % N;
+    setActive(activeIdxRef.current);
   };
   const updateActive = () => {
     const track = trackRef.current; if (!track) return;
@@ -189,6 +190,36 @@ function FeatureCarousel() {
           </div>
           <p>Invită colegi (editor/vizualizare), setează acces pe arii (calendar, curățenie, canale, configurare) și delegă cu încredere sarcinile zilnice.</p>
         </article>
+      </div>
+      <div className={styles.featureViewport} ref={viewportRef}
+        onPointerDown={(e)=>{ (e.currentTarget as any)._sx = e.clientX; }}
+        onPointerUp={(e)=>{ const sx = (e.currentTarget as any)._sx as number|undefined; if (typeof sx==='number'){ const dx = e.clientX - sx; if (Math.abs(dx)>30){ if (dx<0) next(); else prev(); } } }}
+      >
+        {(() => {
+          const feats = [
+            { icon: "/guest_forlight.png", title: "Formular check‑in sigur", text: "Colectezi datele în siguranță — act, consimțământ, email instant." },
+            { icon: "/ical_forlight.png", title: "Sincronizare automată", text: "Ții calendarele aliniate cu Airbnb/Booking prin iCal." },
+            { icon: "/dashboard_forlight.png", title: "Panou ușor de folosit", text: "Toate proprietățile într‑un singur tablou clar." },
+            { icon: "/configurator_forlight.png", title: "Configurare proprietate", text: "Adaugi camere, setări implicite și personalizări rapid." },
+            { icon: "/calendar_forlight.png", title: "Calendar adaptiv", text: "Personalizezi vederi și organizezi rezervări pe loc." },
+            { icon: "/team_forlight.png", title: "Delegare sarcini", text: "Invită colegi și deleagă activitățile zilnice." },
+          ];
+          const n = feats.length; const i = ((active % n) + n) % n;
+          const prevIdx = (i - 1 + n) % n; const nextIdx = (i + 1) % n;
+          const order = [prevIdx, i, nextIdx];
+          return order.map((idx, k) => {
+            const f = feats[idx]; const role = k===0?'prev':k===1?'active':'next';
+            return (
+              <article key={idx} data-card data-prev={role==='prev'||undefined} data-active={role==='active'||undefined} data-next={role==='next'||undefined} className={`${styles.featureCard} ${styles.focusable}`} tabIndex={0}>
+                <div className={styles.featureHead}>
+                  <img src={f.icon} alt="" aria-hidden="true" className={styles.featureIcon} />
+                  <h3>{f.title}</h3>
+                </div>
+                <p>{f.text}</p>
+              </article>
+            );
+          });
+        })()}
       </div>
       <button type="button" aria-label="Next features" className={`${styles.carouselBtn} ${styles.carouselBtnRight}`} onClick={next}>›</button>
     </div>
