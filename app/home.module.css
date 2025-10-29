@@ -576,6 +576,13 @@ will-change: transform;
 .featureCard h3 { margin: 0; font-size: 20px; line-height: 1.2; overflow-wrap: anywhere; word-break: break-word; hyphens: auto; }
 .featureCard p { margin: 0; color: var(--muted); overflow-wrap: anywhere; word-break: break-word; hyphens: auto; }
 
+/* Ensure mobile head layout overrides the base flex (defined above) */
+@media (max-width: 640px){
+  .featureViewport .featureHead{ display: grid; justify-items: center; align-items: start; gap: 6px; margin: 0 0 6px; }
+  .featureViewport .featureIcon{ margin: 0 auto; }
+  .featureViewport .featureCard h3{ text-align: center; }
+}
+
 /* Pricing */
 .pricing { max-width: 1100px; margin: 80px auto; padding: 0 20px; }
 .pricing h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 24px; }
