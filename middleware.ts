@@ -12,7 +12,7 @@ export function middleware(req: NextRequest) {
       || !!req.cookies.get("sb-access-token")?.value
       || !!req.cookies.get("sb-refresh-token")?.value;
     if (hasSbSession) {
-      return NextResponse.redirect(new URL("/app", req.url));
+      return NextResponse.redirect(new URL("/app/calendar", req.url));
     }
   }
 
