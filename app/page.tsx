@@ -260,7 +260,7 @@ function FeatureCarousel() {
                   <img src={f.icon} alt="" aria-hidden="true" className={styles.featureIcon} />
                   <h3>{f.title}</h3>
                 </div>
-                {/* On mobile we show only icon + title; details are in modal. On desktop we can omit here for consistency. */}
+                {!isMobile && <p>{f.text}</p>}
               </article>
             );
           });
