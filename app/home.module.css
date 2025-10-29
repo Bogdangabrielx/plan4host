@@ -444,6 +444,10 @@ will-change: transform;
     grid-template-rows: auto 1fr; /* head then text fills */
     overflow: hidden;            /* prevent text from stretching the card */
   }
+  /* Mobile: icon centered above title */
+  .featureHead{ display: grid; justify-items: center; align-items: start; gap: 6px; margin: 0 0 6px; }
+  .featureIcon{ margin: 0 auto; }
+  .featureCard h3{ text-align: center; }
   .featureCard h3{
     font-size: 14px;             /* smaller to fit single line */
     line-height: 1.2;
