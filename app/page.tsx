@@ -487,7 +487,7 @@ export default function HomePage() {
 
         {/* Actions + Mobile toggle */}
         <div className={styles.actions}>
-          <Link href="/auth/login" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
+          <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
             Sign in
           </Link>
 
@@ -569,7 +569,7 @@ export default function HomePage() {
             >
               Start free
             </CtaLink>
-            <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
+            <a href="#features" className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
               See features
             </a>
           </div>
@@ -602,7 +602,7 @@ export default function HomePage() {
       <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
         <h2 id="pricing-title">Pricing</h2>
         <div className={styles.pricingGrid}>
-          <div className={styles.priceCard}>
+          <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
               <li>Adaptive calendar</li>
@@ -620,7 +620,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className={styles.priceCard}>
+          <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>STANDARD</div>
             <ul className={styles.priceList}>
               <li>Adaptive calendar</li>
@@ -639,7 +639,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className={styles.priceCard}>
+          <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>PREMIUM</div>
             <ul className={styles.priceList}>
               <li>Adaptive calendar</li>
