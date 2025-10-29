@@ -444,12 +444,25 @@ will-change: transform;
     grid-template-rows: auto 1fr; /* head then text fills */
     overflow: hidden;            /* prevent text from stretching the card */
   }
-  .featureCard h3{ font-size: 15px; }
+  .featureCard h3{
+    font-size: 14px;             /* smaller to fit single line */
+    line-height: 1.2;
+    white-space: nowrap;         /* keep title on one line */
+    overflow: hidden;
+    text-overflow: ellipsis;     /* truncate with … if needed */
+    word-break: normal;          /* avoid aggressive breaking */
+    overflow-wrap: normal;
+    hyphens: none;
+  }
   .featureCard p{
+    font-size: 12px;
     display: -webkit-box;
     -webkit-line-clamp: 3;       /* max 3 lines on mobile */
     -webkit-box-orient: vertical;
     overflow: hidden;
+    word-break: normal;          /* avoid breaking inside words */
+    overflow-wrap: break-word;   /* break only at natural points */
+    hyphens: none;
   }
 }
 .featureTrack {
