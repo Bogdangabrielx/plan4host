@@ -545,7 +545,8 @@ export default function HomePage() {
       if (!el) return;
       const header = document.querySelector('.' + styles.nav) as HTMLElement | null;
       const headerH = header?.getBoundingClientRect().height ?? 0;
-      const extra = 48; // leave visible space above title
+      const isMobile = window.matchMedia('(max-width: 900px)').matches;
+      const extra = isMobile ? 120 : 64; // more space on phones
       const y = el.getBoundingClientRect().top + window.scrollY - headerH - extra;
       window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
     } catch {}

@@ -424,7 +424,7 @@ will-change: transform;
   #pricing-title,
   #about-title,
   #contact-title {
-    scroll-margin-top: calc(160px + var(--safe-top, 0px));
+    scroll-margin-top: calc(200px + var(--safe-top, 0px));
   }
 }
 
