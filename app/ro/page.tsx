@@ -329,6 +329,26 @@ function CookieConsentLanding() {
 export default function HomePageRO() {
   const [navOpen, setNavOpen] = useState(false);
   const year = new Date().getFullYear();
+  const beneficii: string[] = [
+    "Formular personalizat pentru Check-in digiatal",
+    "Acord GDPR, semnatura digitala si copie ID",
+    "QR cod pentru validate check-in",
+    "Notificare push si email pentru fiecare noua rezervare",
+    "Mesaje automate, programate conform rezervarii",
+    "Integrarea calendarelor din diferite platforme(Booking,Airbnb etc.)",
+    "Sincronizarea automata a rezervarilor intre platforme*",
+    "Nelimitat proprietati si camere listate intr-un singur cont",
+    "Note interne pentru fiecare rezervare",
+    "Checklists personalizate conform fiecarei rezervari(mic dejun inclus, schimbare prosoape zilnic etc.)",
+    "Frontdesk direct de pe telefon (Confrima/modifica rezervare)",
+    "Exporta PDF-ul cu detaliile fiecarei rezervari. ",
+    "Redirectionare catre mesaj Whatsapp direct din rezervare.",
+    "Prioritizare curatenie camere in functie de urmatorul check-in",
+    "Lista personalizata de taskuri pentru curatenie",
+    "Actualizeaza in timp real statusul curateniei",
+    "Imparte activitatile zilnice cu memrbii din echipa",
+    "Sincronizare instanta a rezervarilor in calendarul aplicatiei",
+  ];
 
   return (
     <main className={styles.landing} style={{ paddingBottom: "var(--safe-bottom, 0px)" }}>
@@ -426,11 +446,20 @@ export default function HomePageRO() {
           <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
-              <li>Calendar adaptiv</li>
-              <li>Formular check‑in online sigur</li>
-              <li>Proprietăți și camere nelimitate</li>
-              <li>Mesaje automate nelimitate</li>
-              <li>Autosync iCal la 60 de minute</li>
+              {beneficii.map((b, i) => (
+                <li key={`basic-b-${i}`}>
+                  {i === beneficii.length - 1 ? (
+                    <svg viewBox="0 0 24 24" aria-hidden="true" style={{ color: 'var(--text)' }}>
+                      <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                  <span>{b}</span>
+                </li>
+              ))}
             </ul>
             <img className={styles.priceImg} src="/basic_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Basic</Link>
@@ -439,12 +468,20 @@ export default function HomePageRO() {
           <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>STANDARD</div>
             <ul className={styles.priceList}>
-              <li>Calendar adaptiv</li>
-              <li>Formular check‑in online sigur</li>
-              <li>Proprietăți și camere nelimitate</li>
-              <li>Mesaje automate nelimitate</li>
-              <li>Autosync iCal la 30 de minute</li>
-              <li>Smart cleaning board (prioritate check‑in)</li>
+              {beneficii.map((b, i) => (
+                <li key={`standard-b-${i}`}>
+                  {i === beneficii.length - 1 ? (
+                    <svg viewBox="0 0 24 24" aria-hidden="true" style={{ color: 'var(--text)' }}>
+                      <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                  <span>{b}</span>
+                </li>
+              ))}
             </ul>
             <img className={styles.priceImg} src="/standard_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Standard</Link>
@@ -453,13 +490,20 @@ export default function HomePageRO() {
           <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>PREMIUM</div>
             <ul className={styles.priceList}>
-              <li>Calendar adaptiv</li>
-              <li>Formular check‑in online sigur</li>
-              <li>Proprietăți și camere nelimitate</li>
-              <li>Mesaje automate nelimitate</li>
-              <li>Autosync iCal la 10 minute + Sync Now</li>
-              <li>Smart cleaning board (prioritate check‑in)</li>
-              <li>Delegare sarcini în echipă</li>
+              {beneficii.map((b, i) => (
+                <li key={`premium-b-${i}`}>
+                  {i === beneficii.length - 1 ? (
+                    <svg viewBox="0 0 24 24" aria-hidden="true" style={{ color: 'var(--text)' }}>
+                      <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                  <span>{b}</span>
+                </li>
+              ))}
             </ul>
             <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Premium</Link>

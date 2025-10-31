@@ -591,6 +591,9 @@ will-change: transform;
 .priceCard:hover { transform: translateY(-3px); box-shadow: 0 16px 36px color-mix(in srgb, var(--primary) 35%, transparent); border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }
 .priceImg { width: 140px; height: auto; display: block; margin: auto auto 0; object-fit: contain; border: 0; }
 .priceList { list-style: none; padding: 0; margin: 0; color: var(--text); display: grid; gap: 8px; }
+/* Benefits list items with classic check icon */
+.priceList li { display: grid; grid-template-columns: 18px 1fr; align-items: start; gap: 8px; }
+.priceList li > svg { width: 18px; height: 18px; color: var(--primary); flex-shrink: 0; margin-top: 1px; }
 .priceTier { margin-top: 10px; font-weight: 900; letter-spacing: .1em; opacity: .9; text-align: center; font-size: 22px; }
 
 /* Footer (expanded) */
