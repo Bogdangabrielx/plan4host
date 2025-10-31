@@ -625,12 +625,12 @@ will-change: transform;
 /* When landing content is shorter than viewport, keep footer anchored to bottom */
 .footer { margin-top: auto; }
 .footerGrid { display: grid; grid-template-columns: 1.2fr repeat(4, minmax(0, 1fr)); gap: 20px; align-items: start; border-top: 1px solid var(--border); padding-top: 28px; }
-.footerCol { display: grid; gap: 10px; }
+.footerCol { display: grid; gap: 10px; min-width: 0; }
 .footerBrand { display: inline-flex; align-items: center; gap: 10px; }
 .footerCopy { margin: 0; color: var(--muted); }
 .footerTitle { font-weight: 700; color: var(--text); opacity: .9; }
-.footerList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.footerLink { color: var(--muted); text-decoration: none; font-weight: 400; }
+.footerList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; min-width: 0; }
+.footerLink { color: var(--muted); text-decoration: none; font-weight: 400; overflow-wrap: anywhere; word-break: break-word; white-space: normal; }
 .footerLink:hover { color: var(--text); }
 .legalBar { border-top: 1px solid var(--border); margin-top: 28px; padding-top: 16px; color: var(--muted); display: grid; gap: 6px; }
 .legalMeta { font-size: 12px; opacity: .9; }
@@ -679,6 +679,7 @@ will-change: transform;
     gap: 18px;
     margin-top: 10px;
   }
+  .footerStacksMobile > div { min-width: 0; }
   /* Hide the separate columns on mobile; we show the stacked copies instead */
   .footerGrid > .footerCol:not(:first-child) { display: none; }
 }
