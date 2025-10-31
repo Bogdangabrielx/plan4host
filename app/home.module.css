@@ -457,7 +457,7 @@ will-change: transform;
   .featureViewport{ padding: 24px 12px; }
   .featureViewport .featureCard{
     aspect-ratio: auto;          /* ignore ratio on small screens */
-    height: 160px;               /* taller cards on phones */
+    height: 184px;               /* even taller cards on phones */
     padding: 14px;               /* a touch more breathing room */
     display: grid;
     grid-template-rows: auto 1fr; /* head then text fills */
