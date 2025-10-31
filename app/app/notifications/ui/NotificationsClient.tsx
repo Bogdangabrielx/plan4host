@@ -173,7 +173,16 @@ export default function NotificationsClient() {
         >
           Turn Off
         </button>
-        <button className="sb-btn" onClick={sendTest} disabled={loading || !active} style={{ color: 'var(--muted)', background:"var(--panel)", border:'var(--muted)' }}>Get instant one</button>
+        {active && (
+          <button
+            className="sb-btn"
+            onClick={sendTest}
+            disabled={loading}
+            style={{ color: 'var(--muted)', background: "var(--panel)", border: 'var(--muted)' }}
+          >
+            Get instant one
+          </button>
+        )}
       </div>
       <div style={{ display: 'grid', gap: 4 }}>
         <small style={{ color:'var(--muted)' }}>
