@@ -454,10 +454,11 @@ will-change: transform;
 
 /* Mobile-only: enforce equal, compact card height and clamp text */
 @media (max-width: 640px){
+  .featureViewport{ padding: 24px 12px; }
   .featureViewport .featureCard{
     aspect-ratio: auto;          /* ignore ratio on small screens */
-    height: 136px;               /* uniform height */
-    padding: 12px;               /* tighter padding */
+    height: 160px;               /* taller cards on phones */
+    padding: 14px;               /* a touch more breathing room */
     display: grid;
     grid-template-rows: auto 1fr; /* head then text fills */
     overflow: hidden;            /* prevent text from stretching the card */
