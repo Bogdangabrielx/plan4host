@@ -547,10 +547,28 @@ export default function HomePage() {
       const headerH = header?.getBoundingClientRect().height ?? 0;
       const isMobile = window.matchMedia('(max-width: 900px)').matches;
       const extra = isMobile ? 120 : 64; // more space on phones
-      const y = el.getBoundingClientRect().top + window.scrollY - headerH - extra;
-      window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
+      const scroller = document.querySelector('main.' + styles.landing) as HTMLElement | null;
+      if (scroller) {
+        const y = scroller.scrollTop + (el.getBoundingClientRect().top - scroller.getBoundingClientRect().top) - headerH - extra;
+        scroller.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
+      } else {
+        const y = el.getBoundingClientRect().top + window.scrollY - headerH - extra;
+        window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
+      }
     } catch {}
   };
+  // iOS bounce guard: keep scroll position within bounds to avoid rubber-band
+  useEffect(() => {
+    const scroller = document.querySelector('main.' + styles.landing) as HTMLElement | null;
+    if (!scroller) return;
+    const onTouchStart = () => {
+      const max = scroller.scrollHeight - scroller.clientHeight;
+      if (scroller.scrollTop <= 0) scroller.scrollTop = 1;
+      else if (scroller.scrollTop >= max) scroller.scrollTop = Math.max(0, max - 1);
+    };
+    scroller.addEventListener('touchstart', onTouchStart, { passive: true });
+    return () => scroller.removeEventListener('touchstart', onTouchStart as any);
+  }, []);
   const benefits: string[] = [
     "Custom digital check-in form",
     "GDPR consent, digital signature and ID copy",
