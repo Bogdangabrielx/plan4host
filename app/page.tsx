@@ -539,6 +539,26 @@ function CookieConsentLanding() {
 export default function HomePage() {
   const [navOpen, setNavOpen] = useState(false);
   const year = new Date().getFullYear();
+  const benefits: string[] = [
+    "Custom digital check-in form",
+    "GDPR consent, digital signature and ID copy",
+    "QR code for check-in validation",
+    "Push and email notification for each new reservation",
+    "Automated messages scheduled by reservation",
+    "Calendar integrations with multiple platforms (Booking, Airbnb, etc.)",
+    "Automatic sync of reservations between platforms",
+    "Unlimited properties and rooms in one account",
+    "Internal notes for each reservation",
+    "Custom checklists per reservation (breakfast included, daily towel change, etc.)",
+    "Front desk from your phone (confirm/modify reservation)",
+    "Export a PDF with each reservation's details",
+    "Redirect to WhatsApp directly from reservation",
+    "Prioritize room cleaning based on next check-in",
+    "Personalized cleaning task list",
+    "Real-time cleaning status updates",
+    "Share daily activities with team members",
+    "Instant sync of reservations in the app calendar",
+  ];
 
   return (
     <main className={styles.landing} style={{ paddingBottom: "var(--safe-bottom, 0px)" }}>
@@ -710,11 +730,29 @@ export default function HomePage() {
           <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
-              <li>Adaptive calendar</li>
-              <li>Secured online check-in form</li>
-              <li>Unlimited properties and rooms listed</li>
-              <li>Unlimited automatic messages</li>
-              <li>Autosync every 60 minutes with iCal</li>
+              {benefits.map((b, i) => {
+                const basicX = [
+                  'Prioritize room cleaning based on next check-in',
+                  'Personalized cleaning task list',
+                  'Real-time cleaning status updates',
+                  'Share daily activities with team members',
+                  'Instant sync of reservations in the app calendar',
+                ].some((s) => b.includes(s));
+                return (
+                  <li key={`basic-b-${i}`}>
+                    {basicX ? (
+                      <svg viewBox="0 0 24 24" aria-hidden="true" style={{ color: 'var(--text)' }}>
+                        <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                    <span>{b.startsWith('Automatic sync of reservations between platforms') ? 'Automatic sync of reservations between platforms (every 60 min)' : b}</span>
+                  </li>
+                );
+              })}
             </ul>
             <img className={styles.priceImg} src="/basic_forlight.png" alt="" aria-hidden="true" />
             <Link
@@ -728,12 +766,26 @@ export default function HomePage() {
           <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>STANDARD</div>
             <ul className={styles.priceList}>
-              <li>Adaptive calendar</li>
-              <li>Secured online check-in form</li>
-              <li>Unlimited properties and rooms listed</li>
-              <li>Unlimited automatic messages</li>
-              <li>Autosync every 30 minutes with iCal</li>
-              <li>Smart cleaning board - (Advanced Next-Check-In Priority)</li>
+              {benefits.map((b, i) => {
+                const standardX = [
+                  'Share daily activities with team members',
+                  'Instant sync of reservations in the app calendar',
+                ].some((s) => b.includes(s));
+                return (
+                  <li key={`standard-b-${i}`}>
+                    {standardX ? (
+                      <svg viewBox="0 0 24 24" aria-hidden="true" style={{ color: 'var(--text)' }}>
+                        <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                    <span>{b.startsWith('Automatic sync of reservations between platforms') ? 'Automatic sync of reservations between platforms (every 30 min)' : b}</span>
+                  </li>
+                );
+              })}
             </ul>
             <img className={styles.priceImg} src="/standard_forlight.png" alt="" aria-hidden="true" />
             <Link
@@ -747,13 +799,14 @@ export default function HomePage() {
           <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>PREMIUM</div>
             <ul className={styles.priceList}>
-              <li>Adaptive calendar</li>
-              <li>Secured online check-in form</li>
-              <li>Unlimited properties and rooms listed</li>
-              <li>Unlimited automatic messages</li>
-              <li>Autosync every 10 minutes with iCal + Sync Now Function</li>
-              <li>Smart cleaning board - (Advanced Next-Check-In Priority)</li>
-              <li>Delegate tasks with your team members</li>
+              {benefits.map((b, i) => (
+                <li key={`premium-b-${i}`}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>{b.startsWith('Automatic sync of reservations between platforms') ? 'Automatic sync of reservations between platforms (every 10 min)' : b}</span>
+                </li>
+              ))}
             </ul>
             <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
             <Link

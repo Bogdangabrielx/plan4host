@@ -1,18 +1,18 @@
-Formular personalizat pentru Check-in digital
-Acord GDPR, semnatura digitala si copie ID
+Formular personalizat pentru check-in digital
+Acord GDPR, semnătură digitală și copie ID
 QR cod pentru validare check-in
-Notificare push si email pentru fiecare noua rezervare
-Mesaje automate, programate conform rezervarii
+Notificare push și email pentru fiecare nouă rezervare
+Mesaje automate, programate conform rezervării
 Integrarea calendarelor din diferite platforme (Booking, Airbnb etc.)
-Sincronizarea automata a rezervarilor intre platforme
-Nelimitat proprietati si camere listate intr-un singur cont
+Sincronizarea automată a rezervărilor între platforme
+Nelimitat proprietăți și camere listate într-un singur cont
 Note interne pentru fiecare rezervare
-Checklists personalizate conform fiecarei rezervari (mic dejun inclus, schimbare prosoape zilnic etc.)
-Frontdesk direct de pe telefon (Confirma/modifica rezervare)
-Exporta PDF-ul cu detaliile fiecarei rezervari. 
-Redirectionare catre mesaj WhatsApp direct din rezervare.
-Prioritizare curatenie camere in functie de urmatorul check-in
-Lista personalizata de taskuri pentru curatenie
-Actualizeaza in timp real statusul curateniei
-Imparte activitatile zilnice cu membrii din echipa
-Sincronizare instanta a rezervarilor in calendarul aplicatiei
+Liste de verificare personalizate conform fiecărei rezervări (mic dejun inclus, schimbare prosoape zilnic etc.)
+Front desk direct de pe telefon (confirmă/modifică rezervare)
+Exportă PDF-ul cu detaliile fiecărei rezervări.
+Redirecționare către mesaj WhatsApp direct din rezervare.
+Prioritizare curățenie camere în funcție de următorul check-in
+Listă personalizată de task-uri pentru curățenie
+Actualizează în timp real statusul curățeniei
+Împarte activitățile zilnice cu membrii din echipă
+Sincronizare instantă a rezervărilor în calendarul aplicației
