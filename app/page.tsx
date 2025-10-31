@@ -683,8 +683,8 @@ export default function HomePage() {
         <div className={styles.heroVisual} aria-label="Calendar preview">
           <video
             className={styles.focusable}
-            src="/Hero_video.mp4"
-            poster="/Hero_video.mp4"
+            src="/Hero_video2.mp4"
+            poster="/Hero_video2.mp4"
             muted
             autoPlay
             loop
