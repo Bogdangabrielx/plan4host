@@ -543,20 +543,20 @@ export default function HomePage() {
     "Custom digital check-in form",
     "GDPR consent, digital signature and ID copy",
     "QR code for check-in validation",
-    "Push and email notification for each new reservation",
-    "Automated messages scheduled by reservation",
+    "Push and email notifications for each new reservation",
+    "Automated, reservation-aware messages",
     "Calendar integrations with multiple platforms (Booking, Airbnb, etc.)",
     "Automatic sync of reservations between platforms",
     "Unlimited properties and rooms in one account",
     "Internal notes for each reservation",
     "Custom checklists per reservation (breakfast included, daily towel change, etc.)",
-    "Front desk from your phone (confirm/modify reservation)",
+    "Manage front desk from your phone (confirm/modify reservations)",
     "Export a PDF with each reservation's details",
-    "Redirect to WhatsApp directly from reservation",
+    "Quick WhatsApp link from each reservation",
     "Prioritize room cleaning based on next check-in",
-    "Personalized cleaning task list",
+    "Personalized cleaning task lists",
     "Real-time cleaning status updates",
-    "Share daily activities with team members",
+    "Share daily tasks with team members",
     "Instant sync of reservations in the app calendar",
   ];
 
@@ -732,10 +732,10 @@ export default function HomePage() {
             <ul className={styles.priceList}>
               {benefits.map((b, i) => {
                 const basicX = [
-                  'Prioritize room cleaning based on next check-in',
-                  'Personalized cleaning task list',
-                  'Real-time cleaning status updates',
-                  'Share daily activities with team members',
+                  'Prioritize room cleaning',
+                  'Personalized cleaning task',
+                  'Real-time cleaning status',
+                  'Share daily tasks',
                   'Instant sync of reservations in the app calendar',
                 ].some((s) => b.includes(s));
                 return (
@@ -768,7 +768,7 @@ export default function HomePage() {
             <ul className={styles.priceList}>
               {benefits.map((b, i) => {
                 const standardX = [
-                  'Share daily activities with team members',
+                  'Share daily tasks',
                   'Instant sync of reservations in the app calendar',
                 ].some((s) => b.includes(s));
                 return (

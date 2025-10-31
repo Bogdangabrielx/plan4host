@@ -330,24 +330,24 @@ export default function HomePageRO() {
   const [navOpen, setNavOpen] = useState(false);
   const year = new Date().getFullYear();
   const beneficii: string[] = [
-    "Formular personalizat pentru Check-in digital",
-    "Acord GDPR, semnatura digitala si copie ID",
+    "Formular personalizat pentru check-in digital",
+    "Acord GDPR, semnătură digitală și copie ID",
     "QR cod pentru validare check-in",
-    "Notificare push si email pentru fiecare noua rezervare",
-    "Mesaje automate, programate conform rezervarii",
+    "Notificare push și email pentru fiecare nouă rezervare",
+    "Mesaje automate, programate conform rezervării",
     "Integrarea calendarelor din diferite platforme (Booking, Airbnb etc.)",
-    "Sincronizarea automata a rezervarilor intre platforme",
-    "Nelimitat proprietati si camere listate intr-un singur cont",
+    "Sincronizarea automată a rezervărilor între platforme",
+    "Nelimitat proprietăți și camere listate într-un singur cont",
     "Note interne pentru fiecare rezervare",
-    "Checklists personalizate conform fiecarei rezervari (mic dejun inclus, schimbare prosoape zilnic etc.)",
-    "Frontdesk direct de pe telefon (Confirma/modifica rezervare)",
-    "Exporta PDF-ul cu detaliile fiecarei rezervari",
-    "Redirectionare catre mesaj WhatsApp direct din rezervare",
-    "Prioritizare curatenie camere in functie de urmatorul check-in",
-    "Lista personalizata de taskuri pentru curatenie",
-    "Actualizeaza in timp real statusul curateniei",
-    "Imparte activitatile zilnice cu membrii din echipa",
-    "Sincronizare instanta a rezervarilor in calendarul aplicatiei",
+    "Liste de verificare personalizate conform fiecărei rezervări (mic dejun inclus, schimbare prosoape zilnic etc.)",
+    "Front desk direct de pe telefon (confirmă/modifică rezervare)",
+    "Exportă PDF-ul cu detaliile fiecărei rezervări",
+    "Redirecționare către mesaj WhatsApp direct din rezervare",
+    "Prioritizare curățenie camere în funcție de următorul check-in",
+    "Listă personalizată de task-uri pentru curățenie",
+    "Actualizează în timp real statusul curățeniei",
+    "Împarte activitățile zilnice cu membrii din echipă",
+    "Sincronizare instantă a rezervărilor în calendarul aplicației",
   ];
 
   return (
@@ -448,11 +448,11 @@ export default function HomePageRO() {
             <ul className={styles.priceList}>
               {beneficii.map((b, i) => {
                 const basicX = [
-                  'Prioritizare curatenie camere in functie de urmatorul check-in',
-                  'Lista personalizata de taskuri pentru curatenie',
-                  'Actualizeaza in timp real statusul curateniei',
-                  'Imparte activitatile zilnice cu membrii din echipa',
-                  'Sincronizare instanta a rezervarilor in calendarul aplicatiei',
+                  'Prioritizare curățenie camere',
+                  'Listă personalizată de task-uri pentru curățenie',
+                  'Actualizează în timp real statusul curățeniei',
+                  'Împarte activitățile zilnice cu membrii din echipă',
+                  'Sincronizare instantă a rezervărilor în calendarul aplicației',
                 ].some((s) => b.includes(s));
                 return (
                   <li key={`basic-b-${i}`}>
@@ -465,7 +465,7 @@ export default function HomePageRO() {
                         <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
-                    <span>{b.startsWith('Sincronizarea automata a rezervarilor intre platforme') ? 'Sincronizarea automata a rezervarilor intre platforme (la 60 min)' : b}</span>
+                    <span>{b.startsWith('Sincronizarea automată a rezervărilor între platforme') ? 'Sincronizarea automată a rezervărilor între platforme (la 60 min)' : b}</span>
                   </li>
                 );
               })}
@@ -479,8 +479,8 @@ export default function HomePageRO() {
             <ul className={styles.priceList}>
               {beneficii.map((b, i) => {
                 const standardX = [
-                  'Imparte activitatile zilnice cu membrii din echipa',
-                  'Sincronizare instanta a rezervarilor in calendarul aplicatiei',
+                  'Împarte activitățile zilnice cu membrii din echipă',
+                  'Sincronizare instantă a rezervărilor în calendarul aplicației',
                 ].some((s) => b.includes(s));
                 return (
                   <li key={`standard-b-${i}`}>
@@ -493,7 +493,7 @@ export default function HomePageRO() {
                         <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
-                    <span>{b.startsWith('Sincronizarea automata a rezervarilor intre platforme') ? 'Sincronizarea automata a rezervarilor intre platforme (la 30 min)' : b}</span>
+                    <span>{b.startsWith('Sincronizarea automată a rezervărilor între platforme') ? 'Sincronizarea automată a rezervărilor între platforme (la 30 min)' : b}</span>
                   </li>
                 );
               })}
@@ -510,7 +510,7 @@ export default function HomePageRO() {
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span>{b.startsWith('Sincronizarea automata a rezervarilor intre platforme') ? 'Sincronizarea automata a rezervarilor intre platforme (la 10 min)' : b}</span>
+                  <span>{b.startsWith('Sincronizarea automată a rezervărilor între platforme') ? 'Sincronizarea automată a rezervărilor între platforme (la 10 min)' : b}</span>
                 </li>
               ))}
             </ul>
