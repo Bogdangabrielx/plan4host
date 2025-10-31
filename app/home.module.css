@@ -798,6 +798,8 @@ html[data-standalone="true"] .skipLink { display: none !important; }
   .landing{
     background: #f8fafc;          /* culoarea landing-ului */
     min-height: 100svh;
+    /* Avoid iOS rubber-band revealing background under bottom safe area */
+    overscroll-behavior-y: contain;
   }
 
 
@@ -815,11 +817,12 @@ html[data-standalone="true"] .skipLink { display: none !important; }
 
 
   
-  /* Home-indicator bottom */
+  /* Home-indicator bottom — stick with content to prevent detachment */
   .landing::after{
     content:"";
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
+    position: sticky;
+    bottom: 0;
+    display: block;
     height: var(--safe-bottom, env(safe-area-inset-bottom));
     background: #f8fafc;
     z-index: 10900;
