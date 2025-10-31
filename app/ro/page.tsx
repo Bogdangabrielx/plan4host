@@ -407,7 +407,7 @@ export default function HomePageRO() {
           </div>
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview">
-          <video className={styles.focusable} src="/Hero_video.MP4" poster="/Hero_video.mp4" muted autoPlay loop playsInline preload="metadata" style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 12 }}>
+          <video className={styles.focusable} src="/Hero_video.mp4" poster="/Hero_video.mp4" muted autoPlay loop playsInline preload="metadata" style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 12 }}>
             Video preview indisponibil.
           </video>
         </div>
