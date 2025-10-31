@@ -413,7 +413,10 @@ will-change: transform;
 #features-title,
 #pricing-title,
 #about-title,
-#contact-title { scroll-margin-top: calc(68px + var(--safe-top, 0px) + 12px); }
+#contact-title {
+  /* Ensure titles are fully visible below sticky header on anchor navigation */
+  scroll-margin-top: calc(68px + var(--safe-top, 0px) + 32px);
+}
 
 /* Carousel */
 .featureCarousel { position: relative; }
