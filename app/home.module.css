@@ -409,6 +409,11 @@ will-change: transform;
 /* Features */
 .features { max-width: 1100px; margin: 80px auto; padding: 0 20px; position: relative; }
 .features h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 20px; }
+/* Anchor offset for sticky header: ensure titles are visible on hash navigation */
+#features-title,
+#pricing-title,
+#about-title,
+#contact-title { scroll-margin-top: calc(68px + var(--safe-top, 0px) + 12px); }
 
 /* Carousel */
 .featureCarousel { position: relative; }

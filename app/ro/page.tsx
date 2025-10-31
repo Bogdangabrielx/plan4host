@@ -375,7 +375,7 @@ export default function HomePageRO() {
           </Link>
         </div>
         <div className={styles.menu} id="nav-menu">
-          <a href="#features" className={`${styles.menuLink} ${styles.focusable}`}>Funcții</a>
+          <a href="#features-title" className={`${styles.menuLink} ${styles.focusable}`}>Funcții</a>
           <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Prețuri</a>
           <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>Despre</a>
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
@@ -405,7 +405,7 @@ export default function HomePageRO() {
 
       {/* Meniu mobil */}
       <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
-        <a href="#features" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Funcții</a>
+        <a href="#features-title" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Funcții</a>
         <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
         <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Despre</a>
         <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Contact</a>
@@ -423,7 +423,7 @@ export default function HomePageRO() {
           </p>
           <div className={styles.heroCta}>
             <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
-            <a href="#features" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Vezi funcțiile</a>
+            <a href="#features-title" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Vezi funcțiile</a>
           </div>
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview">
@@ -557,7 +557,7 @@ export default function HomePageRO() {
               <div>
                 <div className={styles.footerTitle}>Produs</div>
                 <ul className={styles.footerList}>
-                  <li><a className={styles.footerLink} href="#features">Funcții</a></li>
+                  <li><a className={styles.footerLink} href="#features-title">Funcții</a></li>
                   <li><a className={styles.footerLink} href="#pricing">Prețuri</a></li>
                   <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Încearcă gratuit</Link></li>
                   <li><Link className={styles.footerLink} href="/auth/login">Autentificare</Link></li>
@@ -596,7 +596,7 @@ export default function HomePageRO() {
           <div className={styles.footerCol}>
             <div className={styles.footerTitle}>Produs</div>
             <ul className={styles.footerList}>
-              <li><a className={styles.footerLink} href="#features">Funcții</a></li>
+              <li><a className={styles.footerLink} href="#features-title">Funcții</a></li>
               <li><a className={styles.footerLink} href="#pricing">Prețuri</a></li>
               <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Încearcă gratuit</Link></li>
               <li><Link className={styles.footerLink} href="/auth/login">Autentificare</Link></li>

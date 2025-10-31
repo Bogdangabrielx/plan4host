@@ -604,7 +604,7 @@ export default function HomePage() {
 
         {/* Desktop menu */}
         <div className={styles.menu} id="nav-menu">
-          <a href="#features" className={`${styles.menuLink} ${styles.focusable}`}>Features</a>
+          <a href="#features-title" className={`${styles.menuLink} ${styles.focusable}`}>Features</a>
           <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
           <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
@@ -647,7 +647,7 @@ export default function HomePage() {
       {/* Mobile menu panel */}
       <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
         <a
-          href="#features"
+          href="#features-title"
           className={`${styles.mobileLink} ${styles.focusable}`}
           onClick={() => setNavOpen(false)}
         >
@@ -694,7 +694,7 @@ export default function HomePage() {
             >
               Start free
             </CtaLink>
-            <a href="#features" className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
+            <a href="#features-title" className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
               See features
             </a>
           </div>
@@ -874,7 +874,7 @@ export default function HomePage() {
               <div>
                 <div className={styles.footerTitle}>Product</div>
                 <ul className={styles.footerList}>
-                  <li><a className={styles.footerLink} href="#features">Features</a></li>
+                  <li><a className={styles.footerLink} href="#features-title">Features</a></li>
                   <li><a className={styles.footerLink} href="#pricing">Pricing</a></li>
                   <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Start free</Link></li>
                   <li><Link className={styles.footerLink} href="/auth/login">Sign in</Link></li>
@@ -913,7 +913,7 @@ export default function HomePage() {
           <div className={styles.footerCol}>
             <div className={styles.footerTitle}>Product</div>
             <ul className={styles.footerList}>
-              <li><a className={styles.footerLink} href="#features">Features</a></li>
+              <li><a className={styles.footerLink} href="#features-title">Features</a></li>
               <li><a className={styles.footerLink} href="#pricing">Pricing</a></li>
               <li><Link className={styles.footerLink} href="/auth/login?mode=signup">Start free</Link></li>
               <li><Link className={styles.footerLink} href="/auth/login">Sign in</Link></li>
