@@ -415,7 +415,17 @@ will-change: transform;
 #about-title,
 #contact-title {
   /* Ensure titles are fully visible below sticky header on anchor navigation */
-  scroll-margin-top: calc(68px + var(--safe-top, 0px) + 32px);
+  scroll-margin-top: calc(140px + var(--safe-top, 0px));
+}
+
+/* On mobile (fixed header + tighter spacing), give even more room */
+@media (max-width: 900px) {
+  #features-title,
+  #pricing-title,
+  #about-title,
+  #contact-title {
+    scroll-margin-top: calc(160px + var(--safe-top, 0px));
+  }
 }
 
 /* Carousel */
