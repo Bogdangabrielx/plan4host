@@ -22,6 +22,17 @@
   --focus-color: color-mix(in srgb, var(--primary) 70%, white);
 }
 
+/* Safe-area bottom filler tied to content (non-PWA). Prevents visual detachment at page end */
+.landing::after{
+  content: "";
+  position: sticky;
+  bottom: 0;
+  display: block;
+  height: var(--safe-bottom, env(safe-area-inset-bottom));
+  background: var(--bg);
+  pointer-events: none;
+}
+
 /* Accessible skip link */
 .skipLink {
   position: absolute; left: 12px; top: -40px; z-index: 100;

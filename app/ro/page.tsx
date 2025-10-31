@@ -363,12 +363,12 @@ export default function HomePageRO() {
   ];
 
   return (
-    <main className={styles.landing} style={{ paddingBottom: "var(--safe-bottom, 0px)" }}>
+    <main className={styles.landing}>
       <AutoOpenOnLanding delay={150} />
 
       {/* Bară safe-area iOS */}
       <div aria-hidden style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 'var(--safe-top)', background: 'var(--bg)', zIndex: 3, pointerEvents: 'none' }} />
-      <div aria-hidden style={{ position:'fixed', bottom:0, left:0, right:0, height:'var(--safe-bottom)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
+      {/* Bara safe-area bottom e gestionată acum de .landing::after (sticky) pentru a evita desprinderea */}
       <div aria-hidden style={{ position:'fixed', top:0, bottom:0, left:0, width:'var(--safe-left)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
       <div aria-hidden style={{ position:'fixed', top:0, bottom:0, right:0, width:'var(--safe-right)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
 

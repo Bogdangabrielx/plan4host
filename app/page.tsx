@@ -573,7 +573,7 @@ export default function HomePage() {
   ];
 
   return (
-    <main className={styles.landing} style={{ paddingBottom: "var(--safe-bottom, 0px)" }}>
+    <main className={styles.landing}>
       {/* Safe-area cover (iOS notch) — landing only */}
       <div
         aria-hidden
@@ -589,7 +589,7 @@ export default function HomePage() {
         }}
       />
       {/* Left/right/bottom safe-area covers to avoid see-through on iOS bounce/edges */}
-      <div aria-hidden style={{ position:'fixed', bottom:0, left:0, right:0, height:'var(--safe-bottom)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
+      {/* Bottom safe-area now handled by .landing::after (sticky) to avoid detachment */}
       <div aria-hidden style={{ position:'fixed', top:0, bottom:0, left:0, width:'var(--safe-left)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
       <div aria-hidden style={{ position:'fixed', top:0, bottom:0, right:0, width:'var(--safe-right)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
 
