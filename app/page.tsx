@@ -539,6 +539,17 @@ function CookieConsentLanding() {
 export default function HomePage() {
   const [navOpen, setNavOpen] = useState(false);
   const year = new Date().getFullYear();
+  const scrollToId = (id: string) => {
+    try {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const header = document.querySelector('.' + styles.nav) as HTMLElement | null;
+      const headerH = header?.getBoundingClientRect().height ?? 0;
+      const extra = 48; // leave visible space above title
+      const y = el.getBoundingClientRect().top + window.scrollY - headerH - extra;
+      window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
+    } catch {}
+  };
   const benefits: string[] = [
     "Custom digital check-in form",
     "GDPR consent, digital signature and ID copy",
@@ -604,7 +615,13 @@ export default function HomePage() {
 
         {/* Desktop menu */}
         <div className={styles.menu} id="nav-menu">
-          <a href="#features-title" className={`${styles.menuLink} ${styles.focusable}`}>Features</a>
+          <a
+            href="#features-title"
+            className={`${styles.menuLink} ${styles.focusable}`}
+            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+          >
+            Features
+          </a>
           <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
           <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
@@ -649,7 +666,7 @@ export default function HomePage() {
         <a
           href="#features-title"
           className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={() => setNavOpen(false)}
+          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
         >
           Features
         </a>
@@ -694,7 +711,11 @@ export default function HomePage() {
             >
               Start free
             </CtaLink>
-            <a href="#features-title" className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
+            <a
+              href="#features-title"
+              className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}
+              onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+            >
               See features
             </a>
           </div>

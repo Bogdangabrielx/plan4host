@@ -329,6 +329,17 @@ function CookieConsentLanding() {
 export default function HomePageRO() {
   const [navOpen, setNavOpen] = useState(false);
   const year = new Date().getFullYear();
+  const scrollToId = (id: string) => {
+    try {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const header = document.querySelector('.' + styles.nav) as HTMLElement | null;
+      const headerH = header?.getBoundingClientRect().height ?? 0;
+      const extra = 48; // spațiu liber deasupra titlului
+      const y = el.getBoundingClientRect().top + window.scrollY - headerH - extra;
+      window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
+    } catch {}
+  };
   const beneficii: string[] = [
     "Formular personalizat pentru check-in digital",
     "Acord GDPR, semnătură digitală și copie ID",
@@ -375,7 +386,13 @@ export default function HomePageRO() {
           </Link>
         </div>
         <div className={styles.menu} id="nav-menu">
-          <a href="#features-title" className={`${styles.menuLink} ${styles.focusable}`}>Funcții</a>
+          <a
+            href="#features-title"
+            className={`${styles.menuLink} ${styles.focusable}`}
+            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+          >
+            Funcții
+          </a>
           <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Prețuri</a>
           <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>Despre</a>
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
@@ -405,7 +422,13 @@ export default function HomePageRO() {
 
       {/* Meniu mobil */}
       <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
-        <a href="#features-title" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Funcții</a>
+        <a
+          href="#features-title"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
+        >
+          Funcții
+        </a>
         <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
         <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Despre</a>
         <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Contact</a>
@@ -423,7 +446,13 @@ export default function HomePageRO() {
           </p>
           <div className={styles.heroCta}>
             <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
-            <a href="#features-title" className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Vezi funcțiile</a>
+            <a
+              href="#features-title"
+              className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}
+              onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+            >
+              Vezi funcțiile
+            </a>
           </div>
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview">
