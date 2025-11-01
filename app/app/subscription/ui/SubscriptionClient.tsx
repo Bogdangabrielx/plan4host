@@ -57,7 +57,7 @@ const BENEFITS: string[] = [
   "Personalized cleaning task lists",
   "Real-time cleaning status updates",
   "Share daily tasks with team members",
-  "Instant sync of reservations in the app calendar",
+  "Instant sync of reservations in the app calendar with Sync Now button",
 ];
 
 function planLabel(slug: string) {
