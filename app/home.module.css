@@ -481,6 +481,17 @@ will-change: transform;
   }
   /* Hide description in carousel on phones; details shown in modal */
   .featureCard p{ display: none; }
+  /* Show only the center (active) card on phones */
+  .featureCard[data-prev="true"],
+  .featureCard[data-next="true"]{ display: none !important; }
+  .featureCard[data-active="true"]{ width: 100% !important; }
+}
+
+/* PWA small screens: keep a single visible card as well */
+@media (display-mode: standalone) and (max-width: 900px){
+  .featureCard[data-prev="true"],
+  .featureCard[data-next="true"]{ display: none !important; }
+  .featureCard[data-active="true"]{ width: 100% !important; }
 }
 .featureTrack {
   --card-gap: 12px; /* mobile gap */
