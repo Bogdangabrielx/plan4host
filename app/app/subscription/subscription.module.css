@@ -67,14 +67,14 @@
 }
 
 .list{
-  margin:0;
-  padding-left:18px;
-  display:grid;
-  gap:6px;
-  color:var(--text);
-  font-weight:600;
-  line-height:1.1;
-  font-size: 9
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  color: var(--text);
+  font-weight: 500;
+  line-height: 1.25;
 }
 
 .imgWrap{
@@ -123,29 +123,30 @@
 
 .list{
   margin: 0;
-  padding-left: 18px;                 /* indent pentru bullets */
+  padding: 0;
   display: grid;
-  grid-template-rows: repeat(var(--rows, 21), auto);
-  row-gap: 4px;
+  gap: 8px;
   color: var(--text);
-  font-weight: 300;
+  font-weight: 400;
   list-style: none;
-  list-style-position: outside;       /* wrap-ul păstrează indentarea corectă */
-  min-width: 0;                       /* important când părintele e grid/flex */
+  min-width: 0;
 }
 
 /* fiecare beneficiu poate rupe linia pe rândul următor */
 .liItem{
-  white-space: normal;                /* permite mai multe linii */
-  overflow-wrap: anywhere;            /* rupe cuvinte foarte lungi/URL-uri */
-  word-break: break-word;             /* fallback */
-  hyphens: auto;                      /* despărțire silabică (setați lang pe <html>) */
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: start;
+  gap: 8px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
   min-width: 0;
-  font-weight: 300;
-  line-height: 1.35;                  /* înălțime lizibilă pe wrap */
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: small;
+  font-weight: 400;
 }
+.liItem > svg{ width: 18px; height: 18px; color: var(--primary); flex-shrink: 0; margin-top: 1px; }
+.liItem > span{ min-width: 0; }
 
 
 .empty{

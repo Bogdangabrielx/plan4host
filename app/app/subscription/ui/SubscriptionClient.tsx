@@ -10,7 +10,6 @@ type Plan = {
   slug: "basic" | "standard" | "premium";
   name: string;
   image: string;           // png used on landing for price/visual
-  bullets: string[];
   syncIntervalMinutes: number;
   allowSyncNow: boolean;
 };
@@ -22,13 +21,6 @@ const PLANS: Plan[] = [
     image: "/basic.png",
     syncIntervalMinutes: 60,
     allowSyncNow: false,
-    bullets: [
-      "Adaptive calendar",
-      "Secured online check-in form",
-      "Unlimited properties and rooms listed",
-      "Unlimited automatic messages",
-      "Autosync every 60 minutes with iCal",
-    ],
   },
   {
     slug: "standard",
@@ -36,15 +28,6 @@ const PLANS: Plan[] = [
     image: "/standard.png",
     syncIntervalMinutes: 30,
     allowSyncNow: false,
-    bullets: [
-      "Adaptive calendar",
-      "Secured online check-in form",
-      "Unlimited properties and rooms listed",
-      "Unlimited automatic messages",
-      "Autosync every 30 minutes with iCal",
-      "Smart cleaning board - ",
-      "   (Advanced Next-Check-In Priority)",
-    ],
   },
   {
     slug: "premium",
@@ -52,19 +35,29 @@ const PLANS: Plan[] = [
     image: "/premium.png",
     syncIntervalMinutes: 10,
     allowSyncNow: true,
-    bullets: [
-      "Adaptive calendar",
-      "Secured online check-in form",
-      "Unlimited properties and rooms listed",
-      "Unlimited automatic messages",
-      "Autosync every 10 minutes with iCal",
-      "                + Sync Now Function",
-      "Smart cleaning board - ",
-      "   (Advanced Next-Check-In Priority)",
-      "Delegate tasks with your",
-      "                      team members",
-    ],
   },
+];
+
+// Same benefit set as the EN landing page
+const BENEFITS: string[] = [
+  "Custom digital check-in form",
+  "GDPR consent, digital signature and ID copy",
+  "QR code for check-in validation",
+  "Push and email notifications for each new reservation",
+  "Automated, reservation-aware messages",
+  "Calendar integrations with multiple platforms (Booking, Airbnb, etc.)",
+  "Automatic sync of reservations between platforms",
+  "Unlimited properties and rooms in one account",
+  "Internal notes for each reservation",
+  "Custom checklists per reservation (breakfast included, daily towel change, etc.)",
+  "Manage front desk from your phone (confirm/modify reservations)",
+  "Export a PDF with each reservation's details",
+  "Quick WhatsApp link from each reservation",
+  "Prioritize room cleaning based on next check-in",
+  "Personalized cleaning task lists",
+  "Real-time cleaning status updates",
+  "Share daily tasks with team members",
+  "Instant sync of reservations in the app calendar",
 ];
 
 function planLabel(slug: string) {
@@ -72,7 +65,18 @@ function planLabel(slug: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-const BENEFIT_ROWS = 13; // exact 15 rânduri înainte de imagine
+// Benefit rendering helpers (same logic as landing EN) — plan-specific X markers
+const basicX = [
+  'Prioritize room cleaning',
+  'Personalized cleaning task',
+  'Real-time cleaning status',
+  'Share daily tasks',
+  'Instant sync of reservations in the app calendar',
+];
+const standardX = [
+  'Share daily tasks',
+  'Instant sync of reservations in the app calendar',
+];
 
 export default function SubscriptionClient({
   initialAccount: _a,
@@ -299,27 +303,38 @@ export default function SubscriptionClient({
           const useLight = isLight && !imgFallback[p.slug];
           const src = useLight ? lightCandidate : p.image;
 
-          // pad bullets to exactly BENEFIT_ROWS
-          const padded = Array.from({ length: BENEFIT_ROWS }, (_, i) => p.bullets[i] ?? "");
-
           return (
             <article  key={p.slug} className={`${styles.card} sb-cardglow`} aria-current={isCurrent ? "true" : undefined}>
               <div className={styles.tier}>{p.name}</div>
 
-              <ul className={styles.list} style={{ ["--rows" as any]: BENEFIT_ROWS }}>
-                {padded.map((txt, i) =>
-                  txt ? (
-                    <li key={i} className={styles.liItem} title={txt}>{txt}</li>
-                  ) : (
-                    <li key={i} className={`${styles.liItem} ${styles.empty}`} aria-hidden="true">
-                      {/* spațiu rezervat rând gol */}
-                      &nbsp;
+              <ul className={styles.list}>
+                {BENEFITS.map((b, i) => {
+                  const isSync = b.startsWith('Automatic sync of reservations between platforms');
+                  const text = isSync
+                    ? `Automatic sync of reservations between platforms (every ${p.syncIntervalMinutes} min)`
+                    : b;
+                  const x = p.slug === 'premium'
+                    ? false
+                    : p.slug === 'standard'
+                      ? standardX.some(s => b.includes(s))
+                      : basicX.some(s => b.includes(s));
+                  return (
+                    <li key={i} className={styles.liItem}>
+                      {x ? (
+                        <svg viewBox="0 0 24 24" aria-hidden="true" style={{ color: 'var(--text)' }}>
+                          <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                      <span>{text}</span>
                     </li>
-                  )
-                )}
+                  );
+                })}
               </ul>
 
-              {/* imaginea începe la rândul 16 pentru toate cardurile */}
               <div className={styles.imgWrap}>
                 <Image
                   src={src}
