@@ -106,6 +106,15 @@ export default function SubscriptionClient({
   const [buyerTypeOpen, setBuyerTypeOpen] = useState<boolean>(false);
   const [buyerType, setBuyerType] = useState<BuyerType | null>(null);
   const [billingFormOpen, setBillingFormOpen] = useState<boolean>(false);
+  const [billingEditMode, setBillingEditMode] = useState<boolean>(false);
+  const [planConfirmOpen, setPlanConfirmOpen] = useState<boolean>(false);
+  const [planToSchedule, setPlanToSchedule] = useState<Plan["slug"] | null>(null);
+  const [planRelation, setPlanRelation] = useState<'upgrade'|'downgrade'|'same'|'unknown'>('unknown');
+
+  // Account billing/status snapshot (pending change, cancel flag)
+  const [pendingPlan, setPendingPlan] = useState<Plan["slug"] | null>(null);
+  const [pendingEffectiveAt, setPendingEffectiveAt] = useState<string | null>(null);
+  const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState<boolean>(false);
 
   // Form state (local only, just for preview)
   const [formB2C, setFormB2C] = useState({
@@ -236,6 +245,25 @@ export default function SubscriptionClient({
     })();
   }, [supabase]);
 
+  // Check if billing profile exists (DB) — used to decide Buyer Type flow
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: auth } = await supabase.auth.getUser();
+        const uid = auth?.user?.id as string | undefined;
+        if (!uid) { setProfileExists(false); return; }
+        const { data } = await supabase
+          .from('account_billing_profiles')
+          .select('account_id')
+          .eq('account_id', uid)
+          .maybeSingle();
+        setProfileExists(!!data);
+      } catch {
+        setProfileExists(false);
+      }
+    })();
+  }, [supabase]);
+
   // Determine if free STANDARD trial is currently active
   useEffect(() => {
     try {
@@ -282,9 +310,69 @@ export default function SubscriptionClient({
       setBuyerType(null);
       return;
     }
-    // Existing behavior if profile exists
-    if (trialActive) { setPendingSelect(slug); return; }
-    applyPlan(slug);
+    // With profile: for now, only allow scheduling at period end (Stripe pending)
+    const order = { basic: 1, standard: 2, premium: 3 } as const;
+    const rel = slug === currentPlan ? 'same' : (order[slug] > order[currentPlan] ? 'upgrade' : 'downgrade');
+    setPlanRelation(rel);
+    setPlanToSchedule(slug);
+    setPlanConfirmOpen(true);
+  }
+
+  // Open Billing form in edit mode from Manage Account
+  async function openBillingEdit() {
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth?.user?.id as string | undefined;
+      if (!uid) return;
+      const { data } = await supabase
+        .from('account_billing_profiles')
+        .select('*')
+        .eq('account_id', uid)
+        .maybeSingle();
+      if (!data) {
+        // No profile yet → go through type selection
+        setBuyerTypeOpen(true);
+        setBuyerType(null);
+        setBillingEditMode(false);
+        return;
+      }
+      // Lock to stored buyer_type and prefill form
+      const t = (data as any).buyer_type as BuyerType | null;
+      if (t === 'b2b') {
+        setBuyerType('b2b');
+        setFormB2B(s => ({
+          ...s,
+          legalName: (data as any).legal_name || '',
+          taxId: (data as any).tax_id || '',
+          street: (data as any).street || '',
+          city: (data as any).city || '',
+          county: (data as any).county || '',
+          postalCode: (data as any).postal_code || '',
+          country: (data as any).country || 'RO',
+          email: (data as any).email || '',
+          phone: (data as any).phone || '',
+          vatRegistered: !!(data as any).vat_registered,
+          regNo: (data as any).reg_no || '',
+          iban: (data as any).iban || '',
+        }));
+      } else {
+        setBuyerType('b2c');
+        setFormB2C(s => ({
+          ...s,
+          fullName: (data as any).full_name || '',
+          street: (data as any).street || '',
+          city: (data as any).city || '',
+          county: (data as any).county || '',
+          postalCode: (data as any).postal_code || '',
+          country: (data as any).country || 'RO',
+          email: (data as any).email || '',
+          phone: (data as any).phone || '',
+          cnp: (data as any).cnp || '',
+        }));
+      }
+      setBillingEditMode(true);
+      setBillingFormOpen(true);
+    } catch {}
   }
 
   async function applyPlan(slug: Plan["slug"]) {
@@ -318,6 +406,61 @@ export default function SubscriptionClient({
     }
   }
 
+  // Save billing profile via API (inside component)
+  async function saveBillingProfile() {
+    try {
+      const payload: any = { buyer_type: buyerType };
+      if (buyerType === 'b2c') {
+        payload.full_name = formB2C.fullName;
+        payload.street = formB2C.street;
+        payload.city = formB2C.city;
+        payload.county = formB2C.county;
+        payload.postal_code = formB2C.postalCode;
+        payload.country = formB2C.country || 'RO';
+        payload.email = formB2C.email;
+        payload.phone = formB2C.phone;
+        if (formB2C.cnp) payload.cnp = formB2C.cnp;
+      } else if (buyerType === 'b2b') {
+        payload.legal_name = formB2B.legalName;
+        payload.tax_id = formB2B.taxId;
+        payload.vat_registered = !!formB2B.vatRegistered;
+        payload.reg_no = formB2B.regNo;
+        payload.iban = formB2B.iban;
+        payload.street = formB2B.street;
+        payload.city = formB2B.city;
+        payload.county = formB2B.county;
+        payload.postal_code = formB2B.postalCode;
+        payload.country = formB2B.country || 'RO';
+        payload.email = formB2B.email;
+        payload.phone = formB2B.phone;
+      }
+      const res = await fetch('/api/billing/profile', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+      if (!res.ok) throw new Error((await res.json())?.error || 'Failed to save profile');
+      setProfileExists(true);
+      return true;
+    } catch (e:any) {
+      alert(e?.message || 'Could not save billing profile');
+      return false;
+    }
+  }
+
+  // Fetch account billing/status (pending plan, cancel flag)
+  async function refreshBillingStatus() {
+    try {
+      const r = await fetch('/api/billing/status');
+      if (!r.ok) return;
+      const j = await r.json();
+      const acc = j?.account || {};
+      const pp = (acc?.pending_plan || '').toLowerCase();
+      const pes = acc?.pending_effective_at || null;
+      setPendingPlan(pp && (pp==='basic'||pp==='standard'||pp==='premium') ? pp : null);
+      setPendingEffectiveAt(pes);
+      setCancelAtPeriodEnd(!!acc?.cancel_at_period_end);
+    } catch {}
+  }
+
+  useEffect(() => { refreshBillingStatus(); }, []);
+
   return (
     <div className={styles.container}>
       {/* Header bar: current plan */}
@@ -339,6 +482,11 @@ export default function SubscriptionClient({
             <span className={`${styles.badge} sb-cardglow`}>Last active plan: {planLabel(currentPlan)}</span>
             <span className={styles.muted}>{validUntil ? `expired at ${validUntil}` : 'expired'}</span>
           </>
+        )}
+        {pendingPlan && (
+          <span className={`${styles.badge} sb-cardglow`} style={{ borderColor:'var(--border)' }}>
+            Scheduled: {planLabel(pendingPlan)} {pendingEffectiveAt ? `on ${new Date(pendingEffectiveAt).toLocaleString()}` : ''}
+          </span>
         )}
         {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
       </div>
@@ -460,7 +608,7 @@ export default function SubscriptionClient({
                   onClick={async () => {
                     // Cancel at period end (server action)
                     try {
-                      const res = await fetch('/api/account/cancel', { method:'POST' });
+                      const res = await fetch('/api/billing/cancel', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ cancel: true }) });
                       if (!res.ok) throw new Error(await res.text());
                       setCancelled(true);
                       alert('Subscription will end at the end of the current period.');
@@ -486,6 +634,19 @@ export default function SubscriptionClient({
                     <path d="M3 10h18" stroke="currentColor" strokeWidth="2"/>
                   </svg>
                   Change payment method
+                </button>
+
+                <button
+                  className={`${styles.btn} ${styles.btnGhost} sb-cardglow`}
+                  title="Edit billing details"
+                  aria-label="Edit billing details"
+                  onClick={openBillingEdit}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="none" stroke="currentColor" strokeWidth="1.6"/>
+                    <path d="M14.06 6.19l2.12-2.12a2 2 0 1 1 2.83 2.83l-2.12 2.12-2.83-2.83z" fill="none" stroke="currentColor" strokeWidth="1.6"/>
+                  </svg>
+                  Edit billing details
                 </button>
 
                 <button
@@ -636,7 +797,7 @@ export default function SubscriptionClient({
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(720px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="billing-title" style={{ margin:0 }}>{buyerType==='b2b' ? 'Billing Details (Business)' : 'Billing Details (Individual)'}</h3>
-              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setBillingFormOpen(false)}>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>{ setBillingFormOpen(false); setBillingEditMode(false); }}>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -749,16 +910,82 @@ export default function SubscriptionClient({
             )}
 
             <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
-              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>{ setBillingFormOpen(false); setBuyerTypeOpen(true); }}>
-                <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
-                  <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Back
-              </button>
+              {!billingEditMode && (
+                <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>{ setBillingFormOpen(false); setBuyerTypeOpen(true); }}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
+                    <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Back
+                </button>
+              )}
               <button
                 className={`${styles.btn} ${styles.btnPrimary}`}
-                onClick={()=>{ setBillingFormOpen(false); setProfileExists(true); alert('Saved locally (demo). Next: upgrade/downgrade flow.'); }}
-              >Save & Continue</button>
+                onClick={async ()=>{
+                  const ok = await saveBillingProfile();
+                  if (!ok) return;
+                  setBillingFormOpen(false);
+                  setBillingEditMode(false);
+                  await refreshBillingStatus();
+                  if (selectedPlan) {
+                    // Open schedule modal for selected plan
+                    const order = { basic: 1, standard: 2, premium: 3 } as const;
+                    const rel = selectedPlan === currentPlan ? 'same' : (order[selectedPlan] > order[currentPlan] ? 'upgrade' : 'downgrade');
+                    setPlanRelation(rel);
+                    setPlanToSchedule(selectedPlan);
+                    setPlanConfirmOpen(true);
+                    setSelectedPlan(null);
+                  }
+                }}
+              >{billingEditMode ? 'Save changes' : 'Save & Continue'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Plan change (schedule) modal */}
+      {planConfirmOpen && planToSchedule && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="plan-change-title"
+          onClick={() => setPlanConfirmOpen(false)}
+          style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
+        >
+          <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <h3 id="plan-change-title" style={{ margin:0 }}>Plan change</h3>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPlanConfirmOpen(false)}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+            </div>
+            <div style={{ color:'var(--muted)' }}>
+              {planRelation === 'upgrade' && (
+                <p style={{ margin:0 }}>Upgrading to <strong>{planLabel(planToSchedule)}</strong>. For now, we will schedule this change at the end of your current period{validUntil ? ` (on ${validUntil})` : ''}.</p>
+              )}
+              {planRelation === 'downgrade' && (
+                <p style={{ margin:0 }}>Downgrading to <strong>{planLabel(planToSchedule)}</strong> at the end of your current period{validUntil ? ` (on ${validUntil})` : ''}.</p>
+              )}
+              {planRelation === 'same' && (
+                <p style={{ margin:0 }}>You already have <strong>{planLabel(currentPlan)}</strong>. No change required.</p>
+              )}
+            </div>
+            <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmOpen(false)}>Cancel</button>
+              <button
+                className={`${styles.btn} ${styles.btnPrimary}`}
+                disabled={planRelation==='same'}
+                onClick={async ()=>{
+                  try {
+                    const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
+                    if (!res.ok) throw new Error((await res.json())?.error || 'Failed to schedule');
+                    await refreshBillingStatus();
+                    setPlanConfirmOpen(false);
+                    alert('Plan change scheduled.');
+                  } catch (e:any) {
+                    alert(e?.message || 'Could not schedule plan change.');
+                  }
+                }}
+              >Schedule</button>
             </div>
           </div>
         </div>
