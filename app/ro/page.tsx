@@ -341,6 +341,19 @@ export default function HomePageRO() {
       window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
     } catch {}
   };
+  // Blochează overscroll (bounce) dincolo de capătul paginii pe landing
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overscrollBehaviorY;
+    const prevBody = body.style.overscrollBehaviorY;
+    html.style.overscrollBehaviorY = 'none';
+    body.style.overscrollBehaviorY = 'none';
+    return () => {
+      html.style.overscrollBehaviorY = prevHtml;
+      body.style.overscrollBehaviorY = prevBody;
+    };
+  }, []);
   const beneficii: string[] = [
     "Formular personalizat pentru check-in digital",
     "Acord GDPR, semnătură digitală și copie ID",

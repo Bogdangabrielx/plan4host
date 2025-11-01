@@ -1,6 +1,6 @@
 /* app/home.module.css — isolated styles for landing homepage */
 
-.landing { background: var(--bg); color: var(--text); position: relative; min-height: 100dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: none; }
+.landing { background: var(--bg); color: var(--text); position: relative; }
 .landing {
  /* Light, airy palette for landing */
   --bg: #f8fafc; /* near-white */
@@ -30,9 +30,6 @@
   transition: top .15s ease;
 }
 .skipLink:focus { top: 12px; }
-
-/* Prevent rubber-band beyond body on landing when this module is loaded */
-:global(html), :global(body) { overscroll-behavior-y: none; }
 
 /* Focus util */
 .focusable:focus-visible { outline: var(--focus-ring) solid var(--focus-color); outline-offset: 3px; border-radius: 10px; }

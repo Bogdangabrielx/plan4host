@@ -551,6 +551,19 @@ export default function HomePage() {
       window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
     } catch {}
   };
+  // Prevent overscroll past page end while on landing
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overscrollBehaviorY;
+    const prevBody = body.style.overscrollBehaviorY;
+    html.style.overscrollBehaviorY = 'none';
+    body.style.overscrollBehaviorY = 'none';
+    return () => {
+      html.style.overscrollBehaviorY = prevHtml;
+      body.style.overscrollBehaviorY = prevBody;
+    };
+  }, []);
   const benefits: string[] = [
     "Custom digital check-in form",
     "GDPR consent, digital signature and ID copy",
