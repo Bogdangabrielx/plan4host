@@ -562,7 +562,7 @@ export default function HomePageRO() {
           </div>
         </div>
         <p style={{ marginTop: 16, color: "var(--muted)" }}>
-          Prețurile sunt: 9,99 €/lună (Basic), 14,99 €/lună (Standard), 17,99 €/lună (Premium). TVA inclus.
+          Prețurile sunt: 50.00 RON/lună (Basic), 75.00 RON/lună (Standard), 90.00 RON/lună (Premium). TVA inclus.
         </p>
       </section>
 
@@ -706,7 +706,8 @@ export default function HomePageRO() {
               "sincronizare iCal Airbnb",
               "sincronizare iCal Booking.com",
               "software cazare",
-              "check‑in online"
+              "check‑in online",
+              "Acord GDPR,"
             ]
           })
         }}
@@ -726,14 +727,14 @@ export default function HomePageRO() {
               "Channel manager ieftin cu sincronizare iCal pentru Booking.com și Airbnb și check‑in online sigur.",
             offers: {
               "@type": "AggregateOffer",
-              priceCurrency: "EUR",
-              lowPrice: "9.99",
-              highPrice: "17.99",
+              priceCurrency: "RON",
+              lowPrice: "50.00",
+              highPrice: "90.00",
               offerCount: 3,
               offers: [
-                { "@type": "Offer", price: "9.99", priceCurrency: "EUR", category: "Basic" },
-                { "@type": "Offer", price: "14.99", priceCurrency: "EUR", category: "Standard" },
-                { "@type": "Offer", price: "17.99", priceCurrency: "EUR", category: "Premium" },
+                { "@type": "Offer", price: "50.00", priceCurrency: "RON", category: "Basic" },
+                { "@type": "Offer", price: "75.00", priceCurrency: "RON", category: "Standard" },
+                { "@type": "Offer", price: "90.00", priceCurrency: "RON", category: "Premium" },
               ],
             },
           }),
