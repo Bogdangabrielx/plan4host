@@ -647,7 +647,7 @@ export default function SubscriptionClient({
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
                     <label style={{ color:'var(--muted)' }}>County</label>
-                    <input className={styles.input} value={formB2C.county} onChange={e=>setFormB2C(s=>({...s, county:e.target.value}))} />
+                    <input className={styles.input} placeholder="Județ / Sector" value={formB2C.county} onChange={e=>setFormB2C(s=>({...s, county:e.target.value}))} />
                   </div>
                 </div>
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
@@ -696,7 +696,7 @@ export default function SubscriptionClient({
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
                     <label style={{ color:'var(--muted)' }}>County</label>
-                    <input className={styles.input} value={formB2B.county} onChange={e=>setFormB2B(s=>({...s, county:e.target.value}))} />
+                    <input className={styles.input} placeholder="Județ / Sector" value={formB2B.county} onChange={e=>setFormB2B(s=>({...s, county:e.target.value}))} />
                   </div>
                 </div>
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
