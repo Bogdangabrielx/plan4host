@@ -484,14 +484,17 @@ will-change: transform;
   /* Show only the center (active) card on phones */
   .featureCard[data-prev="true"],
   .featureCard[data-next="true"]{ display: none !important; }
-  .featureCard[data-active="true"]{ width: 100% !important; }
+  /* Leave room for nav arrows (36px each + some gap) */
+  .featureCard[data-active="true"]{ width: calc(100% - 88px) !important; margin: 0 auto; }
+  .carouselBtn { z-index: 10; }
 }
 
 /* PWA small screens: keep a single visible card as well */
 @media (display-mode: standalone) and (max-width: 900px){
   .featureCard[data-prev="true"],
   .featureCard[data-next="true"]{ display: none !important; }
-  .featureCard[data-active="true"]{ width: 100% !important; }
+  .featureCard[data-active="true"]{ width: calc(100% - 88px) !important; margin: 0 auto; }
+  .carouselBtn { z-index: 10; }
 }
 .featureTrack {
   --card-gap: 12px; /* mobile gap */
