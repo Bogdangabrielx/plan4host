@@ -456,8 +456,8 @@ will-change: transform;
 @media (max-width: 640px){
   .featureViewport{ padding: 24px 12px; }
   .featureViewport .featureCard{
-    aspect-ratio: auto;          /* ignore ratio on small screens */
-    height: 184px;               /* even taller cards on phones */
+    /* Keep desktop-like ratio on phones as well */
+    aspect-ratio: 63 / 88;
     padding: 14px;               /* a touch more breathing room */
     display: grid;
     grid-template-rows: auto 1fr; /* head then text fills */
