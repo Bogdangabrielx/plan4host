@@ -455,7 +455,8 @@ export default function SubscriptionClient({
             <div style={{ display:'grid', gap:10, marginTop:4 }}>
               <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
                 <button
-                  className={`${styles.btn} sb-cardglow`}
+                  className={`${styles.btn} ${styles.btnGhost} sb-cardglow`}
+                  aria-label="Cancel subscription at period end"
                   onClick={async () => {
                     // Cancel at period end (server action)
                     try {
@@ -468,20 +469,28 @@ export default function SubscriptionClient({
                     }
                   }}
                 >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
+                    <path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20Zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-1-9V7h2v6h-2Z" fill="currentColor"/>
+                  </svg>
                   Cancel subscription
                 </button>
 
                 {/* Display-only button for now */}
                 <button
-                  className={`${styles.btn} sb-cardglow`}
+                  className={`${styles.btn} ${styles.btnGhost} sb-cardglow`}
                   title="Update the default card or payment method"
-                  style={{ border:'1px solid var(--border)', background:'transparent' }}
+                  aria-label="Change payment method"
                 >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
+                    <path d="M3 6h18v12H3z" fill="none" stroke="currentColor" strokeWidth="2"/>
+                    <path d="M3 10h18" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
                   Change payment method
                 </button>
 
                 <button
-                  className={styles.btn}
+                  className={`${styles.btn} ${styles.btnDangerGhost}`}
+                  aria-label="Delete account permanently"
                   onClick={async () => {
                     const conf = prompt('Type DELETE to confirm account deletion. This removes ALL your data.');
                     if ((conf || '').trim().toUpperCase() !== 'DELETE') return;
@@ -494,8 +503,12 @@ export default function SubscriptionClient({
                       alert(e?.message || 'Could not delete account.');
                     }
                   }}
-                  style={{ border:'1px solid var(--danger)', color:'var(--danger)', background:'transparent' }}
                 >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
+                    <path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M8 6v-2h8v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M6 6l1 14h10l1-14" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  </svg>
                   Delete account
                 </button>
               </div>

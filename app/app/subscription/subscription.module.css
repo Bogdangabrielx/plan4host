@@ -132,6 +132,16 @@
   box-shadow: 0 6px 16px rgba(0,0,0,.12);
 }
 
+/* danger outline button */
+.btnDangerGhost{
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+.btnDangerGhost:hover{
+  box-shadow: 0 6px 16px rgba(255,0,0,.12);
+}
+
 .list{
   margin: 0;
   padding: 0;
