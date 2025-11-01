@@ -99,6 +99,41 @@ export default function SubscriptionClient({
   const [manageOpen, setManageOpen] = useState<boolean>(false);
   const [cancelled, setCancelled] = useState<boolean>(false);
 
+  // Demo-only: billing profile collection UI (no persistence yet)
+  type BuyerType = 'b2b' | 'b2c';
+  const [profileExists, setProfileExists] = useState<boolean>(false); // assume false for now
+  const [selectedPlan, setSelectedPlan] = useState<Plan["slug"] | null>(null);
+  const [buyerTypeOpen, setBuyerTypeOpen] = useState<boolean>(false);
+  const [buyerType, setBuyerType] = useState<BuyerType | null>(null);
+  const [billingFormOpen, setBillingFormOpen] = useState<boolean>(false);
+
+  // Form state (local only, just for preview)
+  const [formB2C, setFormB2C] = useState({
+    fullName: "",
+    street: "",
+    city: "",
+    county: "",
+    postalCode: "",
+    country: "RO",
+    email: "",
+    phone: "",
+    cnp: "",
+  });
+  const [formB2B, setFormB2B] = useState({
+    legalName: "",
+    taxId: "",
+    street: "",
+    city: "",
+    county: "",
+    postalCode: "",
+    country: "RO",
+    email: "",
+    phone: "",
+    vatRegistered: false,
+    regNo: "",
+    iban: "",
+  });
+
   // theme detection + per-plan light-image fallback
   const [isLight, setIsLight] = useState(false);
   const [imgFallback, setImgFallback] = useState<Record<Plan["slug"], boolean>>({
@@ -222,6 +257,14 @@ export default function SubscriptionClient({
     return () => { document.body.style.overflow = prev; };
   }, [pendingSelect]);
 
+  // Lock scroll for demo billing modals as well
+  useEffect(() => {
+    if (!(buyerTypeOpen || billingFormOpen || manageOpen)) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [buyerTypeOpen, billingFormOpen, manageOpen]);
+
   // Is current plan active (validity in the future)?
   const isActive = useMemo(() => {
     try {
@@ -232,6 +275,14 @@ export default function SubscriptionClient({
 
   function choosePlan(slug: Plan["slug"]) {
     if (role !== "admin") return;
+    // Demo: Assume no billing profile exists yet → collect buyer type first
+    if (!profileExists) {
+      setSelectedPlan(slug);
+      setBuyerTypeOpen(true);
+      setBuyerType(null);
+      return;
+    }
+    // Existing behavior if profile exists
     if (trialActive) { setPendingSelect(slug); return; }
     applyPlan(slug);
   }
@@ -503,6 +554,181 @@ export default function SubscriptionClient({
               >
                 Continue
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Buyer Type modal (demo only) */}
+      {buyerTypeOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="buyer-type-title"
+          onClick={() => setBuyerTypeOpen(false)}
+          style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
+        >
+          <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <h3 id="buyer-type-title" style={{ margin:0 }}>Billing Type</h3>
+              <button className={styles.btn} onClick={()=>setBuyerTypeOpen(false)} style={{ border:'1px solid var(--border)', background:'transparent' }}>✕</button>
+            </div>
+
+            <p style={{ color:'var(--muted)', margin:'4px 0 0' }}>Who is paying for this subscription?</p>
+
+            <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
+              <button
+                className={`${styles.btn} ${styles.btnChoose}`}
+                data-selected={buyerType==='b2b' || undefined}
+                onClick={()=>setBuyerType('b2b')}
+                style={{ border:'1px solid var(--border)', background:'transparent' }}
+              >Business (B2B)</button>
+              <button
+                className={`${styles.btn} ${styles.btnChoose}`}
+                data-selected={buyerType==='b2c' || undefined}
+                onClick={()=>setBuyerType('b2c')}
+                style={{ border:'1px solid var(--border)', background:'transparent' }}
+              >Individual (B2C)</button>
+            </div>
+
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
+              <button className={styles.btn} onClick={()=>setBuyerTypeOpen(false)} style={{ border:'1px solid var(--border)', background:'transparent' }}>Close</button>
+              <button
+                className={`${styles.btn} ${styles.btnPrimary}`}
+                onClick={()=>{ if (!buyerType) return; setBuyerTypeOpen(false); setBillingFormOpen(true); }}
+                disabled={!buyerType}
+              >Continue</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Billing Details modal (demo only; shows B2C or B2B based on selection) */}
+      {billingFormOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="billing-title"
+          onClick={() => setBillingFormOpen(false)}
+          style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
+        >
+          <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(720px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <h3 id="billing-title" style={{ margin:0 }}>{buyerType==='b2b' ? 'Billing Details (Business)' : 'Billing Details (Individual)'}</h3>
+              <button className={styles.btn} onClick={()=>setBillingFormOpen(false)} style={{ border:'1px solid var(--border)', background:'transparent' }}>✕</button>
+            </div>
+
+            {buyerType === 'b2c' ? (
+              <div style={{ display:'grid', gap:10 }}>
+                <div style={{ display:'grid', gap:6 }}>
+                  <label style={{ color:'var(--muted)' }}>Full name</label>
+                  <input className={styles.input} placeholder="e.g. Andrei Popescu" value={formB2C.fullName} onChange={e=>setFormB2C(s=>({...s, fullName:e.target.value}))} />
+                </div>
+                <div style={{ display:'grid', gap:6 }}>
+                  <label style={{ color:'var(--muted)' }}>Street & number</label>
+                  <input className={styles.input} placeholder="e.g. Str. Lalelelor 12A" value={formB2C.street} onChange={e=>setFormB2C(s=>({...s, street:e.target.value}))} />
+                </div>
+                <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>City</label>
+                    <input className={styles.input} value={formB2C.city} onChange={e=>setFormB2C(s=>({...s, city:e.target.value}))} />
+                  </div>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>County</label>
+                    <input className={styles.input} value={formB2C.county} onChange={e=>setFormB2C(s=>({...s, county:e.target.value}))} />
+                  </div>
+                </div>
+                <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>Postal code</label>
+                    <input className={styles.input} inputMode="numeric" pattern="^[0-9]{6}$" placeholder="010101" value={formB2C.postalCode} onChange={e=>setFormB2C(s=>({...s, postalCode:e.target.value.replace(/[^0-9]/g,'').slice(0,6)}))} />
+                  </div>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>Country</label>
+                    <input className={styles.input} value={formB2C.country} readOnly />
+                  </div>
+                </div>
+                <div style={{ display:'grid', gap:6 }}>
+                  <label style={{ color:'var(--muted)' }}>Email</label>
+                  <input className={styles.input} type="email" placeholder="you@example.com" value={formB2C.email} onChange={e=>setFormB2C(s=>({...s, email:e.target.value}))} />
+                </div>
+                <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>Phone (optional)</label>
+                    <input className={styles.input} placeholder="+40 7xx xxx xxx" value={formB2C.phone} onChange={e=>setFormB2C(s=>({...s, phone:e.target.value}))} />
+                  </div>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>National ID (optional)</label>
+                    <input className={styles.input} inputMode="numeric" placeholder="13 digits" value={formB2C.cnp} onChange={e=>setFormB2C(s=>({...s, cnp:e.target.value.replace(/[^0-9]/g,'').slice(0,13)}))} />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display:'grid', gap:10 }}>
+                <div style={{ display:'grid', gap:6 }}>
+                  <label style={{ color:'var(--muted)' }}>Legal name</label>
+                  <input className={styles.input} placeholder="e.g. SC Exemplu SRL" value={formB2B.legalName} onChange={e=>setFormB2B(s=>({...s, legalName:e.target.value}))} />
+                </div>
+                <div style={{ display:'grid', gap:6 }}>
+                  <label style={{ color:'var(--muted)' }}>Tax ID (CUI/CIF)</label>
+                  <input className={styles.input} inputMode="numeric" placeholder="digits only" value={formB2B.taxId} onChange={e=>setFormB2B(s=>({...s, taxId:e.target.value.replace(/[^0-9]/g,'').slice(0,10)}))} />
+                </div>
+                <div style={{ display:'grid', gap:6 }}>
+                  <label style={{ color:'var(--muted)' }}>Street & number</label>
+                  <input className={styles.input} placeholder="e.g. Str. Lalelelor 12A" value={formB2B.street} onChange={e=>setFormB2B(s=>({...s, street:e.target.value}))} />
+                </div>
+                <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>City</label>
+                    <input className={styles.input} value={formB2B.city} onChange={e=>setFormB2B(s=>({...s, city:e.target.value}))} />
+                  </div>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>County</label>
+                    <input className={styles.input} value={formB2B.county} onChange={e=>setFormB2B(s=>({...s, county:e.target.value}))} />
+                  </div>
+                </div>
+                <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>Postal code</label>
+                    <input className={styles.input} inputMode="numeric" pattern="^[0-9]{6}$" placeholder="010101" value={formB2B.postalCode} onChange={e=>setFormB2B(s=>({...s, postalCode:e.target.value.replace(/[^0-9]/g,'').slice(0,6)}))} />
+                  </div>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>Country</label>
+                    <input className={styles.input} value={formB2B.country} readOnly />
+                  </div>
+                </div>
+                <div style={{ display:'grid', gap:6 }}>
+                  <label style={{ color:'var(--muted)' }}>Billing email</label>
+                  <input className={styles.input} type="email" placeholder="billing@example.com" value={formB2B.email} onChange={e=>setFormB2B(s=>({...s, email:e.target.value}))} />
+                </div>
+                <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
+                  <label style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <input type="checkbox" checked={formB2B.vatRegistered} onChange={e=>setFormB2B(s=>({...s, vatRegistered:e.target.checked}))} /> VAT registered in RO
+                  </label>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>Phone (optional)</label>
+                    <input className={styles.input} placeholder="+40 7xx xxx xxx" value={formB2B.phone} onChange={e=>setFormB2B(s=>({...s, phone:e.target.value}))} />
+                  </div>
+                </div>
+                <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>Company registration no. (optional)</label>
+                    <input className={styles.input} placeholder="e.g. J12/3456/2024" value={formB2B.regNo} onChange={e=>setFormB2B(s=>({...s, regNo:e.target.value}))} />
+                  </div>
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>Bank account (IBAN) (optional)</label>
+                    <input className={styles.input} placeholder="e.g. RO49AAAA1B31007593840000" value={formB2B.iban} onChange={e=>setFormB2B(s=>({...s, iban:e.target.value}))} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
+              <button className={styles.btn} onClick={()=>{ setBillingFormOpen(false); setBuyerTypeOpen(true); }} style={{ border:'1px solid var(--border)', background:'transparent' }}>Back</button>
+              <button
+                className={`${styles.btn} ${styles.btnPrimary}`}
+                onClick={()=>{ setBillingFormOpen(false); setProfileExists(true); alert('Saved locally (demo). Next: upgrade/downgrade flow.'); }}
+              >Save & Continue</button>
             </div>
           </div>
         </div>

@@ -190,6 +190,13 @@
     0 8px 24px color-mix(in srgb, var(--primary) 35%, transparent),
     0 0 0 1px color-mix(in srgb, #3ECF8E 22%, transparent);
 }
+/* selection highlight for buyer type */
+.btnChoose[data-selected="true"]{
+  border-color: color-mix(in srgb, var(--primary) 60%, var(--border));
+  box-shadow:
+    0 8px 24px color-mix(in srgb, var(--primary) 35%, transparent),
+    0 0 0 1px color-mix(in srgb, #3ECF8E 28%, transparent);
+}
 .btnChoose::before{
   content:"";
   position:absolute; inset:0; border-radius: inherit; padding: 1.5px;
@@ -327,4 +334,28 @@
             drop-shadow(0 0 26px color-mix(in srgb, var(--primary) 75%, transparent));
     transform: translateY(-1px) rotate(6deg);
   }
+}
+
+/* ───────────────
+   Form inputs (billing details)
+   ─────────────── */
+.input{
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  outline: none;
+}
+.input:focus{
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+/* generic focusable for small controls */
+.focusable:focus-visible{
+  outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 2px;
 }
