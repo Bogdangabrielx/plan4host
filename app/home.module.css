@@ -1,6 +1,6 @@
 /* app/home.module.css — isolated styles for landing homepage */
 
-.landing { background: var(--bg); color: var(--text); position: relative; min-height: 100dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
+.landing { background: var(--bg); color: var(--text); position: relative; }
 .landing {
  /* Light, airy palette for landing */
   --bg: #f8fafc; /* near-white */
@@ -20,17 +20,6 @@
   /* Focus util (scoped) */
   --focus-ring: 2px;
   --focus-color: color-mix(in srgb, var(--primary) 70%, white);
-}
-
-/* Safe-area bottom filler tied to content (non-PWA). Prevents visual detachment at page end */
-.landing::after{
-  content: "";
-  position: sticky;
-  bottom: 0;
-  display: block;
-  height: var(--safe-bottom, env(safe-area-inset-bottom));
-  background: var(--bg);
-  pointer-events: none;
 }
 
 /* Accessible skip link */
@@ -798,8 +787,6 @@ html[data-standalone="true"] .skipLink { display: none !important; }
   .landing{
     background: #f8fafc;          /* culoarea landing-ului */
     min-height: 100svh;
-    /* Avoid iOS rubber-band revealing background under bottom safe area */
-    overscroll-behavior-y: contain;
   }
 
 
@@ -817,12 +804,11 @@ html[data-standalone="true"] .skipLink { display: none !important; }
 
 
   
-  /* Home-indicator bottom — stick with content to prevent detachment */
+  /* Home-indicator bottom */
   .landing::after{
     content:"";
-    position: sticky;
-    bottom: 0;
-    display: block;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
     height: var(--safe-bottom, env(safe-area-inset-bottom));
     background: #f8fafc;
     z-index: 10900;
