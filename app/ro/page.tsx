@@ -513,7 +513,7 @@ export default function HomePageRO() {
                 );
               })}
             </ul>
-            <img className={styles.priceImg} src="/basic_forlight.png" alt="" aria-hidden="true" />
+            <img className={styles.priceImg} src="/basic_ron_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Basic</Link>
           </div>
 
@@ -541,7 +541,7 @@ export default function HomePageRO() {
                 );
               })}
             </ul>
-            <img className={styles.priceImg} src="/standard_forlight.png" alt="" aria-hidden="true" />
+            <img className={styles.priceImg} src="/standard_ron_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Standard</Link>
           </div>
 
@@ -557,7 +557,7 @@ export default function HomePageRO() {
                 </li>
               ))}
             </ul>
-            <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
+            <img className={styles.priceImg} src="/premium_ron_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Premium</Link>
           </div>
         </div>
