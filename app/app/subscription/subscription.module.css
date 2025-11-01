@@ -121,6 +121,17 @@
 }
 .btnPrimary:active{ transform: translateY(1px); }
 
+/* ghost button variant */
+.btnGhost{
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btnGhost:hover{
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+  box-shadow: 0 6px 16px rgba(0,0,0,.12);
+}
+
 .list{
   margin: 0;
   padding: 0;
@@ -359,3 +370,19 @@
   outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
   outline-offset: 2px;
 }
+
+/* circular icon button for close (X) */
+.iconBtn{
+  display: inline-grid;
+  place-items: center;
+  width: 32px; height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+}
+.iconBtn:hover{
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+  box-shadow: 0 6px 16px rgba(0,0,0,.12);
+}
+.iconBtn > svg{ width: 16px; height: 16px; }

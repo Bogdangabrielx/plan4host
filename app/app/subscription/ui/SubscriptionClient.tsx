@@ -438,7 +438,11 @@ export default function SubscriptionClient({
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(680px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="manage-title" style={{ margin:0 }}>Active plan</h3>
-              <button className={styles.btn} onClick={()=>setManageOpen(false)} style={{ border:'1px solid var(--border)', background:'transparent' }}>✕</button>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setManageOpen(false)}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
             </div>
 
             <div style={{ color:'var(--muted)' }}>
@@ -465,6 +469,15 @@ export default function SubscriptionClient({
                   }}
                 >
                   Cancel subscription
+                </button>
+
+                {/* Display-only button for now */}
+                <button
+                  className={`${styles.btn} sb-cardglow`}
+                  title="Update the default card or payment method"
+                  style={{ border:'1px solid var(--border)', background:'transparent' }}
+                >
+                  Change payment method
                 </button>
 
                 <button
@@ -571,7 +584,11 @@ export default function SubscriptionClient({
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="buyer-type-title" style={{ margin:0 }}>Billing Type</h3>
-              <button className={styles.btn} onClick={()=>setBuyerTypeOpen(false)} style={{ border:'1px solid var(--border)', background:'transparent' }}>✕</button>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setBuyerTypeOpen(false)}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
             </div>
 
             <p style={{ color:'var(--muted)', margin:'4px 0 0' }}>Who is paying for this subscription?</p>
@@ -580,24 +597,15 @@ export default function SubscriptionClient({
               <button
                 className={`${styles.btn} ${styles.btnChoose}`}
                 data-selected={buyerType==='b2b' || undefined}
-                onClick={()=>setBuyerType('b2b')}
+                onClick={()=>{ setBuyerType('b2b'); setBuyerTypeOpen(false); setBillingFormOpen(true); }}
                 style={{ border:'1px solid var(--border)', background:'transparent' }}
               >Business (B2B)</button>
               <button
                 className={`${styles.btn} ${styles.btnChoose}`}
                 data-selected={buyerType==='b2c' || undefined}
-                onClick={()=>setBuyerType('b2c')}
+                onClick={()=>{ setBuyerType('b2c'); setBuyerTypeOpen(false); setBillingFormOpen(true); }}
                 style={{ border:'1px solid var(--border)', background:'transparent' }}
               >Individual (B2C)</button>
-            </div>
-
-            <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
-              <button className={styles.btn} onClick={()=>setBuyerTypeOpen(false)} style={{ border:'1px solid var(--border)', background:'transparent' }}>Close</button>
-              <button
-                className={`${styles.btn} ${styles.btnPrimary}`}
-                onClick={()=>{ if (!buyerType) return; setBuyerTypeOpen(false); setBillingFormOpen(true); }}
-                disabled={!buyerType}
-              >Continue</button>
             </div>
           </div>
         </div>
@@ -615,7 +623,11 @@ export default function SubscriptionClient({
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(720px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="billing-title" style={{ margin:0 }}>{buyerType==='b2b' ? 'Billing Details (Business)' : 'Billing Details (Individual)'}</h3>
-              <button className={styles.btn} onClick={()=>setBillingFormOpen(false)} style={{ border:'1px solid var(--border)', background:'transparent' }}>✕</button>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setBillingFormOpen(false)}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
             </div>
 
             {buyerType === 'b2c' ? (
@@ -724,7 +736,12 @@ export default function SubscriptionClient({
             )}
 
             <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
-              <button className={styles.btn} onClick={()=>{ setBillingFormOpen(false); setBuyerTypeOpen(true); }} style={{ border:'1px solid var(--border)', background:'transparent' }}>Back</button>
+              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>{ setBillingFormOpen(false); setBuyerTypeOpen(true); }}>
+                <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
+                  <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Back
+              </button>
               <button
                 className={`${styles.btn} ${styles.btnPrimary}`}
                 onClick={()=>{ setBillingFormOpen(false); setProfileExists(true); alert('Saved locally (demo). Next: upgrade/downgrade flow.'); }}
