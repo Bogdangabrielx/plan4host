@@ -372,7 +372,7 @@ export default function HomePageRO() {
     "Listă personalizată de task-uri pentru curățenie",
     "Actualizează în timp real statusul curățeniei",
     "Împarte activitățile zilnice cu membrii din echipă",
-    "Sincronizare instantă a rezervărilor în calendarul aplicației",
+    "Sincronizare instantă a rezervărilor în calendarul aplicației prin butonul (Sync Now)",
   ];
 
   return (
