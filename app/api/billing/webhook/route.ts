@@ -146,7 +146,32 @@ export async function POST(req: Request) {
       case "invoice.paid": {
         const inv = event.data.object as any;
         const customerId: string | undefined = typeof inv.customer === 'string' ? inv.customer : inv.customer?.id;
-        await supabase.from("accounts").update({ status: 'active' }).eq("stripe_customer_id", customerId as any);
+        const subId: string | undefined = typeof inv.subscription === 'string' ? inv.subscription : inv.subscription?.id;
+        let cps: string | null = null;
+        let cpe: string | null = null;
+        let cancelAtPeriodEnd = false;
+        if (subId) {
+          try {
+            const sub = await stripe.subscriptions.retrieve(subId);
+            cps = toISO(sub.current_period_start);
+            cpe = toISO(sub.current_period_end);
+            cancelAtPeriodEnd = !!sub.cancel_at_period_end;
+          } catch {}
+        }
+        const updatePayload: any = { status: 'active' };
+        if (cps) updatePayload.current_period_start = cps;
+        if (cpe) updatePayload.current_period_end = cpe, updatePayload.valid_until = cpe;
+        updatePayload.cancel_at_period_end = cancelAtPeriodEnd;
+
+        // Prefer match by subscription id when available, else by customer id
+        let updated = null as any;
+        if (subId) {
+          const res = await supabase.from("accounts").update(updatePayload).eq("stripe_subscription_id", subId as any).select("id").maybeSingle();
+          updated = res?.data;
+        }
+        if (!updated) {
+          await supabase.from("accounts").update(updatePayload).eq("stripe_customer_id", customerId as any);
+        }
         break;
       }
       case "invoice.payment_failed": {

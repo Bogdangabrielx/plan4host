@@ -23,4 +23,3 @@ export async function GET() {
 
   return NextResponse.json({ account: account ?? null, buyer_type: profile?.buyer_type ?? null });
 }
-
