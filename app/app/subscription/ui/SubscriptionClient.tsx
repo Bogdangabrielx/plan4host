@@ -1344,7 +1344,7 @@ export default function SubscriptionClient({
             </div>
             <div style={{ color:'var(--muted)' }}>
               <p style={{ margin:0 }}>We will cancel your current subscription immediately and start <strong>{planToSchedule ? planLabel(planToSchedule) : 'the new plan'}</strong> now.</p>
-              <p style={{ margin:'4px 0 0' }}>No refunds or credits are provided for the remaining period.</p>
+              <p style={{ margin:'4px 0 0', color:'var(--danger)', textDecoration:'underline' }}>No refunds or credits are provided for the remaining period.</p>
             </div>
             <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
               <button
