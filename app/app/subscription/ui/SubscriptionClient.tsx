@@ -408,6 +408,24 @@ export default function SubscriptionClient({
     }
   }
 
+  // Start Stripe Checkout for immediate activation
+  async function startCheckout(slug: Plan["slug"]) {
+    try {
+      const res = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: slug })
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j?.error || 'Checkout failed');
+      const url = j?.url as string | undefined;
+      if (url) window.location.assign(url);
+      else throw new Error('Missing checkout URL');
+    } catch (e:any) {
+      alert(e?.message || 'Could not start checkout');
+    }
+  }
+
   // Save billing profile via API (inside component)
   async function saveBillingProfile() {
     try {
@@ -999,14 +1017,20 @@ export default function SubscriptionClient({
               <>
                 <div style={{ color:'var(--muted)' }}>
                   {planRelation === 'upgrade' && (
-                    <p style={{ margin:0 }}>Upgrading to <strong>{planLabel(planToSchedule)}</strong>. For now, this change will take effect at the end of your current period{validUntil ? ` (on ${validUntil})` : ''}.</p>
+                    <p style={{ margin:0 }}>You are about to upgrade to <strong>{planLabel(planToSchedule)}</strong>. You can start now (we will charge you immediately and reset your renewal date), or apply the change at the end of your current period{validUntil ? ` (on ${validUntil})` : ''}.</p>
                   )}
                   {planRelation === 'same' && (
                     <p style={{ margin:0 }}>You already have <strong>{planLabel(currentPlan)}</strong>. No change required.</p>
                   )}
                 </div>
-                <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+                <div style={{ display:'flex', gap:10, justifyContent:'flex-end', flexWrap:'wrap' }}>
                   <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmOpen(false)}>Cancel</button>
+                  {planRelation === 'upgrade' && (
+                    <button
+                      className={`${styles.btn} ${styles.btnPrimary}`}
+                      onClick={()=>{ if (planToSchedule) startCheckout(planToSchedule); }}
+                    >Pay now</button>
+                  )}
                   <button
                     className={`${styles.btn} ${styles.btnPrimary}`}
                     disabled={planRelation==='same'}
@@ -1020,7 +1044,7 @@ export default function SubscriptionClient({
                         alert(e?.message || 'Could not change plan.');
                       }
                     }}
-                  >Confirm</button>
+                  >{planRelation==='upgrade' ? 'Schedule at period end' : 'Confirm'}</button>
                 </div>
               </>
             )}
