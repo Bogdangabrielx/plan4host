@@ -101,7 +101,7 @@ export default function SubscriptionClient({
   const [hasStripeCustomer, setHasStripeCustomer] = useState<boolean>(false);
   const [pmOpen, setPmOpen] = useState<boolean>(false);
   const [pmLoading, setPmLoading] = useState<boolean>(false);
-  const [pmCard, setPmCard] = useState<{brand?:string; last4?:string; exp_month?:number; exp_year?:number} | null>(null);
+  const [pmCard, setPmCard] = useState<{brand?:string; last4?:string; exp_month?:number; exp_year?:number; name?: string | null; country?: string | null; funding?: string | null} | null>(null);
   const [downgradeConfirmOpen, setDowngradeConfirmOpen] = useState<boolean>(false);
   const [payResultOpen, setPayResultOpen] = useState<boolean>(false);
   const [payResultSuccess, setPayResultSuccess] = useState<boolean>(false);
@@ -922,11 +922,16 @@ export default function SubscriptionClient({
               <div style={{ display:'grid', gap:12 }}>
                 <div className={styles.pmCard}>
                   <div className={styles.pmBrand}>{pmCard.brand?.toUpperCase?.() || 'CARD'}</div>
-                  <div />
                   <div className={styles.pmDigits}>•••• {pmCard.last4 || '••••'}</div>
+                  <div className={styles.pmFooter}>
+                    <div className={styles.pmName}>{(pmCard.name || 'CARDHOLDER NAME').toString().toUpperCase()}</div>
+                    <div className={styles.pmExpiry}>
+                      {(pmCard.exp_month ? pmCard.exp_month.toString().padStart(2,'0') : '--')}/{(pmCard.exp_year ? (pmCard.exp_year % 100).toString().padStart(2,'0') : '--')}
+                    </div>
+                  </div>
                 </div>
                 <div style={{ color:'var(--muted)', fontSize:12 }}>
-                  Expires {pmCard.exp_month?.toString().padStart(2,'0') || '--'}/{pmCard.exp_year || '----'}
+                  {pmCard.funding ? pmCard.funding.toUpperCase() : 'CARD'}{pmCard.country ? ` • ${pmCard.country}` : ''}
                 </div>
               </div>
             ) : (

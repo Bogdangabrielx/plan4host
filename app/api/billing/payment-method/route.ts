@@ -30,12 +30,16 @@ export async function GET() {
     // @ts-ignore
     const dpm = (customer as any)?.invoice_settings?.default_payment_method;
     if (dpm && dpm.card) {
+      const name = (dpm as any)?.billing_details?.name || (customer as any)?.name || null;
       return NextResponse.json({
         card: {
           brand: dpm.card.brand,
           last4: dpm.card.last4,
           exp_month: dpm.card.exp_month,
           exp_year: dpm.card.exp_year,
+          name,
+          country: dpm.card.country || null,
+          funding: dpm.card.funding || null,
         }
       });
     }
@@ -56,6 +60,9 @@ export async function GET() {
             last4: card.last4,
             exp_month: card.exp_month,
             exp_year: card.exp_year,
+            name: (pm as any)?.billing_details?.name || null,
+            country: card.country || null,
+            funding: card.funding || null,
           }});
         }
       }
@@ -72,10 +79,12 @@ export async function GET() {
         last4: pm.card.last4,
         exp_month: pm.card.exp_month,
         exp_year: pm.card.exp_year,
+        name: pm?.billing_details?.name || null,
+        country: pm.card.country || null,
+        funding: pm.card.funding || null,
       }});
     }
   } catch {}
 
   return NextResponse.json({ card: null });
 }
-
