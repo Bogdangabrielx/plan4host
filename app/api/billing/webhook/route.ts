@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `Webhook signature verification failed: ${err?.message}` }, { status: 400 });
   }
 
-  const supabase = getServiceSupabase();
+  const supabase = getServiceSupabase() as any;
 
   try {
     switch (event.type) {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
         const p = String(planSlug || "").toLowerCase();
         if (p && ["basic","standard","premium"].includes(p)) update.plan = p;
 
-        await supabase.from("accounts").update(update).eq("id", accountId);
+        await supabase.from("accounts").update(update).eq("id", accountId as any);
         break;
       }
       case "customer.subscription.updated": {
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
         const { data: acc } = await supabase
           .from("accounts")
           .select("id, pending_plan, pending_effective_at")
-          .eq("stripe_customer_id", customerId || "")
+          .eq("stripe_customer_id", customerId as any)
           .maybeSingle();
         if (!acc) break;
         const cps = toISO(sub.current_period_start);
@@ -96,19 +96,19 @@ export async function POST(req: Request) {
       case "customer.subscription.deleted": {
         const sub = event.data.object as any;
         const customerId: string | undefined = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id;
-        await supabase.from("accounts").update({ status: 'canceled' }).eq("stripe_customer_id", customerId || "");
+        await supabase.from("accounts").update({ status: 'canceled' }).eq("stripe_customer_id", customerId as any);
         break;
       }
       case "invoice.payment_succeeded": {
         const inv = event.data.object as any;
         const customerId: string | undefined = typeof inv.customer === 'string' ? inv.customer : inv.customer?.id;
-        await supabase.from("accounts").update({ status: 'active' }).eq("stripe_customer_id", customerId || "");
+        await supabase.from("accounts").update({ status: 'active' }).eq("stripe_customer_id", customerId as any);
         break;
       }
       case "invoice.payment_failed": {
         const inv = event.data.object as any;
         const customerId: string | undefined = typeof inv.customer === 'string' ? inv.customer : inv.customer?.id;
-        await supabase.from("accounts").update({ status: 'past_due' }).eq("stripe_customer_id", customerId || "");
+        await supabase.from("accounts").update({ status: 'past_due' }).eq("stripe_customer_id", customerId as any);
         break;
       }
       default:
@@ -121,4 +121,3 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ received: true });
 }
-

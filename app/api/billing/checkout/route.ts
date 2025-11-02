@@ -87,7 +87,8 @@ export async function POST(req: Request) {
     client_reference_id: uid,
     metadata: { account_id: uid, plan_slug: plan },
     billing_address_collection: "auto",
-    customer_update: { name: "auto", address: "auto", phone: "auto" },
+    customer_update: { name: "auto", address: "auto" },
+    phone_number_collection: { enabled: true },
     tax_id_collection: { enabled: true },
     success_url,
     cancel_url,
@@ -95,4 +96,3 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ url: session.url });
 }
-
