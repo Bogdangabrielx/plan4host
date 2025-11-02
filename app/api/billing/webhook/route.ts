@@ -68,8 +68,8 @@ export async function POST(req: Request) {
           .eq("stripe_customer_id", customerId as any)
           .maybeSingle();
         if (!acc) break;
-        const cps = toISO(sub.current_period_start);
-        const cpe = toISO(sub.current_period_end);
+        const cps = toISO(sub.current_period_start ?? sub?.items?.data?.[0]?.current_period_start ?? null);
+        const cpe = toISO(sub.current_period_end ?? sub?.items?.data?.[0]?.current_period_end ?? null);
         const updatePayload: any = {
           stripe_subscription_id: sub.id,
           status: sub.status,
@@ -118,8 +118,8 @@ export async function POST(req: Request) {
           .eq("stripe_customer_id", customerId as any)
           .maybeSingle();
         if (!acc) break;
-        const cps = toISO(sub.current_period_start);
-        const cpe = toISO(sub.current_period_end);
+        const cps = toISO(sub.current_period_start ?? sub?.items?.data?.[0]?.current_period_start ?? null);
+        const cpe = toISO(sub.current_period_end ?? sub?.items?.data?.[0]?.current_period_end ?? null);
         const item = sub?.items?.data?.[0];
         const priceId = typeof item?.price === 'string' ? item?.price : item?.price?.id;
         const mapped = getPlanSlugForPriceId(priceId);
@@ -153,10 +153,14 @@ export async function POST(req: Request) {
         if (subId) {
           try {
             const sub = await stripe.subscriptions.retrieve(subId);
-            cps = toISO(sub.current_period_start);
-            cpe = toISO(sub.current_period_end);
+            cps = toISO((sub as any).current_period_start ?? (sub as any)?.items?.data?.[0]?.current_period_start ?? null);
+            cpe = toISO((sub as any).current_period_end ?? (sub as any)?.items?.data?.[0]?.current_period_end ?? null);
             cancelAtPeriodEnd = !!sub.cancel_at_period_end;
           } catch {}
+        }
+        // Fallback to invoice line period if subscription fetch failed
+        if (!cpe && inv?.lines?.data?.[0]?.period?.end) {
+          cpe = toISO(inv.lines.data[0].period.end);
         }
         const updatePayload: any = { status: 'active' };
         if (cps) updatePayload.current_period_start = cps;
