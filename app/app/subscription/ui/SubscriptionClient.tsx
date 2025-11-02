@@ -1298,10 +1298,31 @@ export default function SubscriptionClient({
                 disabled={upgradeBusy}
                 onClick={async ()=>{
                   if (!planToSchedule) return;
-                  // Always go via Checkout for consistent SCA + feedback
-                  setPayNowConfirmOpen(false);
-                  setPlanConfirmOpen(false);
-                  startCheckout(planToSchedule);
+                  try {
+                    setUpgradeBusy(true);
+                    const res = await fetch('/api/billing/upgrade-now', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
+                    const j = await res.json();
+                    if (res.ok && j?.ok) {
+                      setPayNowConfirmOpen(false);
+                      setPlanConfirmOpen(false);
+                      await refreshBillingStatus();
+                      setPayResultPlan(planLabel(planToSchedule));
+                      setPayResultSuccess(true);
+                      setPayResultOpen(true);
+                      return;
+                    }
+                    if (j?.fallback === 'checkout') {
+                      setPayNowConfirmOpen(false);
+                      setPlanConfirmOpen(false);
+                      startCheckout(planToSchedule);
+                      return;
+                    }
+                    throw new Error(j?.error || 'Upgrade failed');
+                  } catch (e:any) {
+                    alert(e?.message || 'Could not upgrade');
+                  } finally {
+                    setUpgradeBusy(false);
+                  }
                 }}
               >{upgradeBusy ? 'Processing…' : 'OK'}</button>
             </div>
