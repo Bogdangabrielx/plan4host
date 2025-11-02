@@ -583,7 +583,7 @@ export default function SubscriptionClient({
       {/* Header bar: current plan */}
       <div className={styles.headerRow}>
         {isActive ? (
-          cancelled ? (
+          cancelAtPeriodEnd ? (
             <>
               <span className={`${styles.badge} sb-cardglow`}>Still active until:</span>
               <span className={styles.muted}>{validUntil ? `${validUntil}` : "—"}</span>
