@@ -567,16 +567,37 @@ export default function SubscriptionClient({
 
               <div className={styles.cardActions}>
                 {isCurrent ? (
-                  <div style={{ display:'flex', alignItems:'center', gap: 5 }}>
-                    <span className={`${styles.currentBadge} sb-cardglow`}>{isActive ? 'Active plan' : 'Last active plan'}</span>
-                    <button
-                      className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
-                      onClick={() => setManageOpen(true)}
-                      style={{ fontSize:13, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21, }}
-                    >
-                      Manage Account
-                    </button>
-                  </div>
+                  isActive ? (
+                    <div style={{ display:'flex', alignItems:'center', gap: 5 }}>
+                      <span className={`${styles.currentBadge} sb-cardglow`}>Active plan</span>
+                      <button
+                        className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+                        onClick={() => setManageOpen(true)}
+                        style={{ fontSize:13, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21 }}
+                      >
+                        Manage Account
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display:'flex', gap:8, flexWrap:'wrap', justifyContent:'center' }}>
+                      <button
+                        className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+                        disabled={!!saving || role !== "admin"}
+                        onClick={() => choosePlan(p.slug)}
+                        data-animate={highlightPlan === p.slug ? true : undefined}
+                        data-plan={p.slug}
+                      >
+                        {saving === p.slug ? "Applying…" : `I want ${planLabel(p.slug)}`}
+                      </button>
+                      <button
+                        className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+                        onClick={() => setManageOpen(true)}
+                        style={{ fontSize:13, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21 }}
+                      >
+                        Manage Account
+                      </button>
+                    </div>
+                  )
                 ) : (
                   <button
                     className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
