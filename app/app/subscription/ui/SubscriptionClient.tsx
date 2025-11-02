@@ -119,6 +119,8 @@ export default function SubscriptionClient({
   const [planRelation, setPlanRelation] = useState<'upgrade'|'downgrade'|'same'|'unknown'>('unknown');
   const [planConfirmPhase, setPlanConfirmPhase] = useState<'intro'|'confirmDate'>('intro');
   const [payNowConfirmOpen, setPayNowConfirmOpen] = useState<boolean>(false);
+  const [upgradeBusy, setUpgradeBusy] = useState<boolean>(false);
+  const [scheduleBusy, setScheduleBusy] = useState<boolean>(false);
 
   // Account billing/status snapshot (pending change, cancel flag)
   const [pendingPlan, setPendingPlan] = useState<Plan["slug"] | null>(null);
@@ -1222,38 +1224,46 @@ export default function SubscriptionClient({
                     <>
                       <button
                         className={`${styles.btn} ${styles.btnPrimary}`}
+                        disabled={upgradeBusy || scheduleBusy}
                         onClick={()=> setPayNowConfirmOpen(true)}
-                      >Pay now</button>
+                      >{upgradeBusy ? 'Processing…' : 'Pay now'}</button>
                       <button
                         className={`${styles.btn} ${styles.btnPrimary}`}
+                        disabled={upgradeBusy || scheduleBusy}
                         onClick={async ()=>{
                           try {
+                            setScheduleBusy(true);
                             const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
                             if (!res.ok) throw new Error((await res.json())?.error || 'Failed to apply change');
                             await refreshBillingStatus();
                             setPlanConfirmOpen(false);
                           } catch (e:any) {
                             alert(e?.message || 'Could not change plan.');
+                          } finally {
+                            setScheduleBusy(false);
                           }
                         }}
-                      >Upgrade at renewal</button>
+                      >{scheduleBusy ? 'Scheduling…' : 'Upgrade at renewal'}</button>
                     </>
                   )}
                   {planRelation !== 'upgrade' && (
                     <button
                       className={`${styles.btn} ${styles.btnPrimary}`}
-                      disabled={planRelation==='same'}
+                      disabled={planRelation==='same' || scheduleBusy}
                       onClick={async ()=>{
                         try {
+                          setScheduleBusy(true);
                           const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
                           if (!res.ok) throw new Error((await res.json())?.error || 'Failed to apply change');
                           await refreshBillingStatus();
                           setPlanConfirmOpen(false);
                         } catch (e:any) {
                           alert(e?.message || 'Could not change plan.');
+                        } finally {
+                          setScheduleBusy(false);
                         }
                       }}
-                    >Confirm</button>
+                    >{scheduleBusy ? 'Applying…' : 'Confirm'}</button>
                   )}
                 </div>
               </>
@@ -1285,22 +1295,33 @@ export default function SubscriptionClient({
             <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
               <button
                 className={`${styles.btn} ${styles.btnPrimary}`}
+                disabled={upgradeBusy}
                 onClick={async ()=>{
-                  setPayNowConfirmOpen(false);
                   if (!planToSchedule) return;
                   try {
-                    // Try server-side immediate upgrade (update subscription anchor now)
+                    setUpgradeBusy(true);
                     const res = await fetch('/api/billing/upgrade-now', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
                     const j = await res.json();
-                    if (res.ok && j?.ok) { await refreshBillingStatus(); return; }
-                    // Fallback: go to Checkout if server suggests
-                    if (j?.fallback === 'checkout') { startCheckout(planToSchedule); return; }
+                    if (res.ok && j?.ok) {
+                      setPayNowConfirmOpen(false);
+                      setPlanConfirmOpen(false);
+                      await refreshBillingStatus();
+                      return;
+                    }
+                    if (j?.fallback === 'checkout') {
+                      setPayNowConfirmOpen(false);
+                      setPlanConfirmOpen(false);
+                      startCheckout(planToSchedule);
+                      return;
+                    }
                     throw new Error(j?.error || 'Upgrade failed');
                   } catch (e:any) {
                     alert(e?.message || 'Could not upgrade');
+                  } finally {
+                    setUpgradeBusy(false);
                   }
                 }}
-              >OK</button>
+              >{upgradeBusy ? 'Processing…' : 'OK'}</button>
             </div>
           </div>
         </div>
