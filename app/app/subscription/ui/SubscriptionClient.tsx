@@ -101,6 +101,10 @@ export default function SubscriptionClient({
   const [pmOpen, setPmOpen] = useState<boolean>(false);
   const [pmLoading, setPmLoading] = useState<boolean>(false);
   const [pmCard, setPmCard] = useState<{brand?:string; last4?:string; exp_month?:number; exp_year?:number} | null>(null);
+  const [downgradeConfirmOpen, setDowngradeConfirmOpen] = useState<boolean>(false);
+  const [payResultOpen, setPayResultOpen] = useState<boolean>(false);
+  const [payResultSuccess, setPayResultSuccess] = useState<boolean>(false);
+  const [payResultPlan, setPayResultPlan] = useState<string>("");
 
   // Demo-only: billing profile collection UI (no persistence yet)
   type BuyerType = 'b2b' | 'b2c';
@@ -322,22 +326,13 @@ export default function SubscriptionClient({
       startCheckout(slug);
       return;
     }
-    // With profile: for now, only allow scheduling at period end (Stripe pending)
+    // With profile: branching by relation
     const order = { basic: 1, standard: 2, premium: 3 } as const;
     const rel = slug === currentPlan ? 'same' : (order[slug] > order[currentPlan] ? 'upgrade' : 'downgrade');
-    // Downgrade: redirect to Stripe Billing Portal to schedule at renewal
+    // Downgrade: show confirm then redirect to Stripe Billing Portal to schedule at renewal
     if (rel === 'downgrade') {
-      (async () => {
-        try {
-          const res = await fetch('/api/billing/portal', { method:'POST' });
-          const j = await res.json();
-          if (!res.ok) throw new Error(j?.error || 'Failed to open Stripe Portal');
-          const url = j?.url as string | undefined;
-          if (url) window.location.assign(url);
-        } catch (e:any) {
-          alert(e?.message || 'Could not open Stripe customer portal.');
-        }
-      })();
+      setPlanToSchedule(slug);
+      setDowngradeConfirmOpen(true);
       return;
     }
     setPlanRelation(rel);
@@ -411,6 +406,18 @@ export default function SubscriptionClient({
       if (res.ok) setPmCard(j?.card || null);
     } catch {}
     finally { setPmLoading(false); }
+  }
+
+  async function openStripePortal() {
+    try {
+      const res = await fetch('/api/billing/portal', { method:'POST' });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j?.error || 'Failed to open Stripe Portal');
+      const url = j?.url as string | undefined;
+      if (url) window.location.assign(url);
+    } catch (e:any) {
+      alert(e?.message || 'Could not open Stripe customer portal.');
+    }
   }
 
   async function applyPlan(slug: Plan["slug"]) {
@@ -516,6 +523,25 @@ export default function SubscriptionClient({
   }
 
   useEffect(() => { refreshBillingStatus(); }, []);
+
+  // Detect Checkout redirects for pay result feedback
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href);
+      const success = u.searchParams.get('success');
+      const canceled = u.searchParams.get('canceled');
+      const plan = u.searchParams.get('plan') || '';
+      if (success === '1') {
+        setPayResultPlan(planLabel(plan));
+        setPayResultSuccess(true);
+        setPayResultOpen(true);
+      } else if (canceled === '1') {
+        setPayResultPlan(planLabel(plan));
+        setPayResultSuccess(false);
+        setPayResultOpen(true);
+      }
+    } catch {}
+  }, []);
 
   return (
     <div className={styles.container}>
