@@ -1283,21 +1283,15 @@ export default function SubscriptionClient({
                       >{upgradeBusy ? 'Processing…' : 'Pay now'}</button>
                       <button
                         className={`${styles.btn} ${styles.btnPrimary}`}
-                        disabled={upgradeBusy || scheduleBusy}
+                        disabled={upgradeBusy}
                         onClick={async ()=>{
+                          // Redirect to Stripe Portal so the user can schedule upgrade at renewal there
                           try {
-                            setScheduleBusy(true);
-                            const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
-                            if (!res.ok) throw new Error((await res.json())?.error || 'Failed to apply change');
-                            await refreshBillingStatus();
                             setPlanConfirmOpen(false);
-                          } catch (e:any) {
-                            alert(e?.message || 'Could not change plan.');
-                          } finally {
-                            setScheduleBusy(false);
-                          }
+                            await openStripePortal();
+                          } catch {}
                         }}
-                      >{scheduleBusy ? 'Scheduling…' : 'Upgrade at renewal'}</button>
+                      >Upgrade at renewal (in Stripe)</button>
                     </>
                   )}
                   {planRelation !== 'upgrade' && (
