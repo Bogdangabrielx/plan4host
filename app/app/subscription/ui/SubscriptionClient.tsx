@@ -110,6 +110,7 @@ export default function SubscriptionClient({
   const [planConfirmOpen, setPlanConfirmOpen] = useState<boolean>(false);
   const [planToSchedule, setPlanToSchedule] = useState<Plan["slug"] | null>(null);
   const [planRelation, setPlanRelation] = useState<'upgrade'|'downgrade'|'same'|'unknown'>('unknown');
+  const [planConfirmPhase, setPlanConfirmPhase] = useState<'intro'|'confirmDate'>('intro');
 
   // Account billing/status snapshot (pending change, cancel flag)
   const [pendingPlan, setPendingPlan] = useState<Plan["slug"] | null>(null);
@@ -315,6 +316,7 @@ export default function SubscriptionClient({
     const rel = slug === currentPlan ? 'same' : (order[slug] > order[currentPlan] ? 'upgrade' : 'downgrade');
     setPlanRelation(rel);
     setPlanToSchedule(slug);
+    setPlanConfirmPhase('intro');
     setPlanConfirmOpen(true);
   }
 
@@ -485,7 +487,7 @@ export default function SubscriptionClient({
         )}
         {pendingPlan && (
           <span className={`${styles.badge} sb-cardglow`} style={{ borderColor:'var(--border)' }}>
-            Scheduled: {planLabel(pendingPlan)} {pendingEffectiveAt ? `on ${new Date(pendingEffectiveAt).toLocaleString()}` : ''}
+            New plan: {planLabel(pendingPlan)} {pendingEffectiveAt ? `starting on ${new Date(pendingEffectiveAt).toLocaleString()}` : ''}
           </span>
         )}
         {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
@@ -958,35 +960,70 @@ export default function SubscriptionClient({
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
-            <div style={{ color:'var(--muted)' }}>
-              {planRelation === 'upgrade' && (
-                <p style={{ margin:0 }}>Upgrading to <strong>{planLabel(planToSchedule)}</strong>. For now, we will schedule this change at the end of your current period{validUntil ? ` (on ${validUntil})` : ''}.</p>
-              )}
-              {planRelation === 'downgrade' && (
-                <p style={{ margin:0 }}>Downgrading to <strong>{planLabel(planToSchedule)}</strong> at the end of your current period{validUntil ? ` (on ${validUntil})` : ''}.</p>
-              )}
-              {planRelation === 'same' && (
-                <p style={{ margin:0 }}>You already have <strong>{planLabel(currentPlan)}</strong>. No change required.</p>
-              )}
-            </div>
-            <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
-              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmOpen(false)}>Cancel</button>
-              <button
-                className={`${styles.btn} ${styles.btnPrimary}`}
-                disabled={planRelation==='same'}
-                onClick={async ()=>{
-                  try {
-                    const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
-                    if (!res.ok) throw new Error((await res.json())?.error || 'Failed to schedule');
-                    await refreshBillingStatus();
-                    setPlanConfirmOpen(false);
-                    alert('Plan change scheduled.');
-                  } catch (e:any) {
-                    alert(e?.message || 'Could not schedule plan change.');
-                  }
-                }}
-              >Schedule</button>
-            </div>
+            {/* Content variations */}
+            {planRelation === 'downgrade' ? (
+              planConfirmPhase === 'intro' ? (
+                <>
+                  <div style={{ color:'var(--muted)' }}>
+                    <p style={{ margin:0 }}>You are about to downgrade to <strong>{planLabel(planToSchedule)}</strong>.</p>
+                  </div>
+                  <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+                    <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmOpen(false)}>Cancel</button>
+                    <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={()=>setPlanConfirmPhase('confirmDate')}>Downgrade</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ color:'var(--muted)' }}>
+                    <p style={{ margin:0 }}>The new plan will start {validUntil ? <>on <strong>{validUntil}</strong></> : 'at the end of your current period'}.</p>
+                  </div>
+                  <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+                    <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmPhase('intro')}>Back</button>
+                    <button
+                      className={`${styles.btn} ${styles.btnPrimary}`}
+                      onClick={async ()=>{
+                        try {
+                          const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
+                          if (!res.ok) throw new Error((await res.json())?.error || 'Failed to apply change');
+                          await refreshBillingStatus();
+                          setPlanConfirmOpen(false);
+                        } catch (e:any) {
+                          alert(e?.message || 'Could not change plan.');
+                        }
+                      }}
+                    >Confirm</button>
+                  </div>
+                </>
+              )
+            ) : (
+              <>
+                <div style={{ color:'var(--muted)' }}>
+                  {planRelation === 'upgrade' && (
+                    <p style={{ margin:0 }}>Upgrading to <strong>{planLabel(planToSchedule)}</strong>. For now, this change will take effect at the end of your current period{validUntil ? ` (on ${validUntil})` : ''}.</p>
+                  )}
+                  {planRelation === 'same' && (
+                    <p style={{ margin:0 }}>You already have <strong>{planLabel(currentPlan)}</strong>. No change required.</p>
+                  )}
+                </div>
+                <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+                  <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmOpen(false)}>Cancel</button>
+                  <button
+                    className={`${styles.btn} ${styles.btnPrimary}`}
+                    disabled={planRelation==='same'}
+                    onClick={async ()=>{
+                      try {
+                        const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
+                        if (!res.ok) throw new Error((await res.json())?.error || 'Failed to apply change');
+                        await refreshBillingStatus();
+                        setPlanConfirmOpen(false);
+                      } catch (e:any) {
+                        alert(e?.message || 'Could not change plan.');
+                      }
+                    }}
+                  >Confirm</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
