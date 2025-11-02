@@ -39,6 +39,17 @@ export async function POST(req: Request) {
         const planSlug: string | undefined = session.metadata?.plan_slug;
         if (!accountId || !subscriptionId) break;
 
+        // Capture any previous subscription id before updating
+        let oldSubId: string | undefined;
+        try {
+          const { data: prev } = await supabase
+            .from('accounts')
+            .select('stripe_subscription_id')
+            .eq('id', accountId as any)
+            .maybeSingle();
+          oldSubId = prev?.stripe_subscription_id as string | undefined;
+        } catch {}
+
         const sub = await stripe.subscriptions.retrieve(subscriptionId);
         const cps = toISO(sub.current_period_start);
         const cpe = toISO(sub.current_period_end);
@@ -56,6 +67,13 @@ export async function POST(req: Request) {
         if (p && ["basic","standard","premium"].includes(p)) update.plan = p;
 
         await supabase.from("accounts").update(update).eq("id", accountId as any);
+
+        // Variant B: cancel previous subscription immediately (no refund/proration)
+        try {
+          if (oldSubId && oldSubId !== subscriptionId) {
+            await stripe.subscriptions.cancel(oldSubId);
+          }
+        } catch {}
         break;
       }
       case "customer.subscription.updated": {

@@ -114,6 +114,7 @@ export default function SubscriptionClient({
   const [planToSchedule, setPlanToSchedule] = useState<Plan["slug"] | null>(null);
   const [planRelation, setPlanRelation] = useState<'upgrade'|'downgrade'|'same'|'unknown'>('unknown');
   const [planConfirmPhase, setPlanConfirmPhase] = useState<'intro'|'confirmDate'>('intro');
+  const [payNowConfirmOpen, setPayNowConfirmOpen] = useState<boolean>(false);
 
   // Account billing/status snapshot (pending change, cancel flag)
   const [pendingPlan, setPendingPlan] = useState<Plan["slug"] | null>(null);
@@ -1184,7 +1185,7 @@ export default function SubscriptionClient({
                     <>
                       <button
                         className={`${styles.btn} ${styles.btnPrimary}`}
-                        onClick={()=>{ if (planToSchedule) startCheckout(planToSchedule); }}
+                        onClick={()=> setPayNowConfirmOpen(true)}
                       >Pay now</button>
                       <button
                         className={`${styles.btn} ${styles.btnPrimary}`}
@@ -1220,6 +1221,33 @@ export default function SubscriptionClient({
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Pay now confirm (upgrade) */}
+      {payNowConfirmOpen && (
+        <div
+          role="dialog"
+          aria-modal
+          aria-labelledby="paynow-title"
+          onClick={() => setPayNowConfirmOpen(false)}
+          style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
+        >
+          <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(520px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <h3 id="paynow-title" style={{ margin:0 }}>Confirm upgrade</h3>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPayNowConfirmOpen(false)}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+            </div>
+            <div style={{ color:'var(--muted)' }}>
+              <p style={{ margin:0 }}>We will cancel your current subscription immediately and start <strong>{planToSchedule ? planLabel(planToSchedule) : 'the new plan'}</strong> now.</p>
+              <p style={{ margin:'4px 0 0' }}>No refunds or credits are provided for the remaining period.</p>
+            </div>
+            <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={()=>{ setPayNowConfirmOpen(false); if (planToSchedule) startCheckout(planToSchedule); }}>OK</button>
+            </div>
           </div>
         </div>
       )}
