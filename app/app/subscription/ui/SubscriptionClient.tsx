@@ -1173,34 +1173,50 @@ export default function SubscriptionClient({
               <>
                 <div style={{ color:'var(--muted)' }}>
                   {planRelation === 'upgrade' && (
-                    <p style={{ margin:0 }}>You are about to upgrade to <strong>{planLabel(planToSchedule)}</strong>. You can start now (we will charge you immediately and reset your renewal date), or apply the change at the end of your current period{validUntil ? ` (on ${validUntil})` : ''}.</p>
+                    <p style={{ margin:0 }}>Ready to upgrade your experience?</p>
                   )}
                   {planRelation === 'same' && (
                     <p style={{ margin:0 }}>You already have <strong>{planLabel(currentPlan)}</strong>. No change required.</p>
                   )}
                 </div>
                 <div style={{ display:'flex', gap:10, justifyContent:'flex-end', flexWrap:'wrap' }}>
-                  <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmOpen(false)}>Cancel</button>
                   {planRelation === 'upgrade' && (
+                    <>
+                      <button
+                        className={`${styles.btn} ${styles.btnPrimary}`}
+                        onClick={()=>{ if (planToSchedule) startCheckout(planToSchedule); }}
+                      >Pay now</button>
+                      <button
+                        className={`${styles.btn} ${styles.btnPrimary}`}
+                        onClick={async ()=>{
+                          try {
+                            const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
+                            if (!res.ok) throw new Error((await res.json())?.error || 'Failed to apply change');
+                            await refreshBillingStatus();
+                            setPlanConfirmOpen(false);
+                          } catch (e:any) {
+                            alert(e?.message || 'Could not change plan.');
+                          }
+                        }}
+                      >Upgrade at renewal</button>
+                    </>
+                  )}
+                  {planRelation !== 'upgrade' && (
                     <button
                       className={`${styles.btn} ${styles.btnPrimary}`}
-                      onClick={()=>{ if (planToSchedule) startCheckout(planToSchedule); }}
-                    >Pay now</button>
+                      disabled={planRelation==='same'}
+                      onClick={async ()=>{
+                        try {
+                          const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
+                          if (!res.ok) throw new Error((await res.json())?.error || 'Failed to apply change');
+                          await refreshBillingStatus();
+                          setPlanConfirmOpen(false);
+                        } catch (e:any) {
+                          alert(e?.message || 'Could not change plan.');
+                        }
+                      }}
+                    >Confirm</button>
                   )}
-                  <button
-                    className={`${styles.btn} ${styles.btnPrimary}`}
-                    disabled={planRelation==='same'}
-                    onClick={async ()=>{
-                      try {
-                        const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
-                        if (!res.ok) throw new Error((await res.json())?.error || 'Failed to apply change');
-                        await refreshBillingStatus();
-                        setPlanConfirmOpen(false);
-                      } catch (e:any) {
-                        alert(e?.message || 'Could not change plan.');
-                      }
-                    }}
-                  >{planRelation==='upgrade' ? 'Schedule at period end' : 'Confirm'}</button>
                 </div>
               </>
             )}
