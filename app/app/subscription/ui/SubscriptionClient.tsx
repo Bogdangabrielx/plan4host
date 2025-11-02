@@ -1306,6 +1306,9 @@ export default function SubscriptionClient({
                       setPayNowConfirmOpen(false);
                       setPlanConfirmOpen(false);
                       await refreshBillingStatus();
+                      setPayResultPlan(planLabel(planToSchedule));
+                      setPayResultSuccess(true);
+                      setPayResultOpen(true);
                       return;
                     }
                     if (j?.fallback === 'checkout') {
