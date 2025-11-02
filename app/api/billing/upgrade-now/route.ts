@@ -1,7 +1,8 @@
 // app/api/billing/upgrade-now/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getStripe, getPriceIdForPlan } from "@/lib/stripe/server";
+import { getStripe, getPriceIdForPlan, getPlanSlugForPriceId } from "@/lib/stripe/server";
+import { getServiceSupabase } from "@/lib/supabase/service";
 
 export async function POST(req: Request) {
   const supabase = createClient();
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
     if (!itemId) throw new Error('No subscription item to update');
 
     // Force immediate upgrade: reset anchor to now, no proration/credit
-    await stripe.subscriptions.update(subId, {
+    const updated = await stripe.subscriptions.update(subId, {
       items: [{ id: itemId, price: priceId }],
       billing_cycle_anchor: 'now',
       proration_behavior: 'none',
@@ -45,10 +46,31 @@ export async function POST(req: Request) {
       payment_behavior: 'error_if_incomplete',
     } as any);
 
-    return NextResponse.json({ ok: true });
+    // Synchronous DB update for instant feedback
+    const u: any = updated as any;
+    const item = u?.items?.data?.[0];
+    const newPriceId = typeof item?.price === 'string' ? item?.price : item?.price?.id;
+    const mappedPlan = getPlanSlugForPriceId(newPriceId) || plan;
+    const cpsSec = u?.current_period_start ?? item?.current_period_start ?? null;
+    const cpeSec = u?.current_period_end ?? item?.current_period_end ?? null;
+    const cps = cpsSec ? new Date(cpsSec * 1000).toISOString() : null;
+    const cpe = cpeSec ? new Date(cpeSec * 1000).toISOString() : null;
+
+    try {
+      const svc = getServiceSupabase();
+      await svc.from('accounts').update({
+        plan: mappedPlan,
+        status: u?.status || 'active',
+        current_period_start: cps,
+        current_period_end: cpe,
+        valid_until: cpe,
+        cancel_at_period_end: !!u?.cancel_at_period_end,
+      }).eq('id', uid as any);
+    } catch {}
+
+    return NextResponse.json({ ok: true, plan: mappedPlan, valid_until: cpe });
   } catch (e:any) {
     // If requires_action or off-session fails, instruct client to use Checkout
     return NextResponse.json({ error: e?.message || 'Upgrade failed', fallback: 'checkout' }, { status: 400 });
   }
 }
-
