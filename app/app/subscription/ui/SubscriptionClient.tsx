@@ -1183,7 +1183,7 @@ export default function SubscriptionClient({
                   </div>
                   <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
                     <button className={`sb-cardglow ${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmOpen(false)}>Cancel</button>
-                    <button className={`sb-cardglow ${styles.btn} ${styles.btnPrimary}`} style={{ color:'var(--text)' }} onClick={()=>setPlanConfirmPhase('confirmDate')}>Downgrade</button>
+                    <button className={`sb-cardglow ${styles.btn} `} style={{ color:'var(--text)',borderRadius:16, borderColor:"var(--primary)" }} onClick={()=>setPlanConfirmPhase('confirmDate')}>Downgrade</button>
                   </div>
                 </>
               ) : (
@@ -1351,7 +1351,7 @@ export default function SubscriptionClient({
               <p style={{ margin:'4px 0 0' }}>You’ll continue to enjoy <strong>{planLabel(currentPlan)}</strong> benefits until <strong>{validUntil ?? '—'}</strong>.</p>
             </div>
             <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
-              <button className={`sb-cardglow ${styles.btn} ${styles.btnPrimary}`} style={{ color:'var(--text)' }} onClick={async ()=>{ setDowngradeConfirmOpen(false); try { const r = await fetch('/api/billing/portal',{method:'POST'}); const j = await r.json(); if (!r.ok) throw new Error(j?.error||'Failed to open Stripe Portal'); const url = j?.url as string|undefined; if (url) window.location.assign(url);} catch(e:any){ alert(e?.message||'Could not open Stripe Portal.'); } }}>Downgrade</button>
+              <button className={`sb-cardglow ${styles.btn} `} style={{ color:'var(--text)',borderRadius:16, borderColor:"var(--primary)" }} onClick={async ()=>{ setDowngradeConfirmOpen(false); try { const r = await fetch('/api/billing/portal',{method:'POST'}); const j = await r.json(); if (!r.ok) throw new Error(j?.error||'Failed to open Stripe Portal'); const url = j?.url as string|undefined; if (url) window.location.assign(url);} catch(e:any){ alert(e?.message||'Could not open Stripe Portal.'); } }}>Downgrade</button>
             </div>
           </div>
         </div>
