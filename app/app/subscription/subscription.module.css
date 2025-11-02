@@ -396,3 +396,29 @@
   box-shadow: 0 6px 16px rgba(0,0,0,.12);
 }
 .iconBtn > svg{ width: 16px; height: 16px; }
+
+/* payment method card preview */
+.pmCard{
+  width: min(360px, 92vw);
+  aspect-ratio: 1.6 / 1;
+  border-radius: 16px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 35%, var(--panel)), var(--panel));
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0,0,0,.15);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: 16px;
+}
+.pmBrand{
+  color: var(--muted);
+  font-weight: 700;
+}
+.pmDigits{
+  justify-self: end;
+  color: var(--text);
+  font-weight: 800;
+  letter-spacing: .12em;
+  font-size: 20px;
+}

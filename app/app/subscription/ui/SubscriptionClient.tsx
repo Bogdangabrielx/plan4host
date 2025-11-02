@@ -98,6 +98,9 @@ export default function SubscriptionClient({
   const [pendingSelect, setPendingSelect] = useState<null | Plan["slug"]>(null);
   const [manageOpen, setManageOpen] = useState<boolean>(false);
   const [cancelled, setCancelled] = useState<boolean>(false);
+  const [pmOpen, setPmOpen] = useState<boolean>(false);
+  const [pmLoading, setPmLoading] = useState<boolean>(false);
+  const [pmCard, setPmCard] = useState<{brand?:string; last4?:string; exp_month?:number; exp_year?:number} | null>(null);
 
   // Demo-only: billing profile collection UI (no persistence yet)
   type BuyerType = 'b2b' | 'b2c';
@@ -126,6 +129,7 @@ export default function SubscriptionClient({
     postalCode: "",
     country: "RO",
     email: "",
+    confirmEmail: "",
     phone: "",
     cnp: "",
   });
@@ -138,6 +142,7 @@ export default function SubscriptionClient({
     postalCode: "",
     country: "RO",
     email: "",
+    confirmEmail: "",
     phone: "",
     vatRegistered: false,
     regNo: "",
@@ -380,6 +385,16 @@ export default function SubscriptionClient({
       setBillingEditMode(true);
       setBillingFormOpen(true);
     } catch {}
+  }
+
+  async function openPaymentMethod() {
+    setPmOpen(true); setPmLoading(true); setPmCard(null);
+    try {
+      const res = await fetch('/api/billing/payment-method');
+      const j = await res.json();
+      if (res.ok) setPmCard(j?.card || null);
+    } catch {}
+    finally { setPmLoading(false); }
   }
 
   async function applyPlan(slug: Plan["slug"]) {
@@ -650,36 +665,37 @@ export default function SubscriptionClient({
               <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
                 <button
                   className={`${styles.btn} ${styles.btnGhost} sb-cardglow`}
-                  aria-label="Cancel subscription at period end"
+                  aria-label="Manage subscription in Stripe"
                   onClick={async () => {
-                    // Cancel at period end (server action)
                     try {
-                      const res = await fetch('/api/billing/cancel', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ cancel: true }) });
-                      if (!res.ok) throw new Error(await res.text());
-                      setCancelled(true);
-                      alert('Subscription will end at the end of the current period.');
+                      const res = await fetch('/api/billing/portal', { method:'POST' });
+                      const j = await res.json();
+                      if (!res.ok) throw new Error(j?.error || 'Failed to open Stripe Portal');
+                      const url = j?.url as string | undefined;
+                      if (url) window.location.assign(url);
+                      else throw new Error('Missing Stripe Portal URL');
                     } catch (e:any) {
-                      alert(e?.message || 'Could not cancel subscription.');
+                      alert(e?.message || 'Could not open Stripe customer portal.');
                     }
                   }}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
                     <path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20Zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-1-9V7h2v6h-2Z" fill="currentColor"/>
                   </svg>
-                  Cancel subscription
+                  Manage in Stripe (cancel)
                 </button>
 
-                {/* Display-only button for now */}
                 <button
                   className={`${styles.btn} ${styles.btnGhost} sb-cardglow`}
-                  title="Update the default card or payment method"
-                  aria-label="Change payment method"
+                  title="See payment method"
+                  aria-label="See payment method"
+                  onClick={openPaymentMethod}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
                     <path d="M3 6h18v12H3z" fill="none" stroke="currentColor" strokeWidth="2"/>
                     <path d="M3 10h18" stroke="currentColor" strokeWidth="2"/>
                   </svg>
-                  Change payment method
+                  See payment method
                 </button>
 
                 <button
@@ -792,6 +808,63 @@ export default function SubscriptionClient({
         </div>
       )}
 
+      {/* Payment method modal */}
+      {pmOpen && (
+        <div
+          role="dialog"
+          aria-modal
+          aria-labelledby="pm-title"
+          onClick={() => setPmOpen(false)}
+          style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
+        >
+          <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <h3 id="pm-title" style={{ margin:0 }}>Payment method</h3>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPmOpen(false)}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+
+            {pmLoading ? (
+              <div style={{ color:'var(--muted)' }}>Loading…</div>
+            ) : pmCard ? (
+              <div style={{ display:'grid', gap:12 }}>
+                <div className={styles.pmCard}>
+                  <div className={styles.pmBrand}>{pmCard.brand?.toUpperCase?.() || 'CARD'}</div>
+                  <div />
+                  <div className={styles.pmDigits}>•••• {pmCard.last4 || '••••'}</div>
+                </div>
+                <div style={{ color:'var(--muted)', fontSize:12 }}>
+                  Expires {pmCard.exp_month?.toString().padStart(2,'0') || '--'}/{pmCard.exp_year || '----'}
+                </div>
+              </div>
+            ) : (
+              <div style={{ color:'var(--muted)' }}>No payment method on file.</div>
+            )}
+
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
+              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>setPmOpen(false)}>Close</button>
+              <button
+                className={`${styles.btn} ${styles.btnPrimary}`}
+                onClick={async ()=>{
+                  try {
+                    const res = await fetch('/api/billing/portal', { method:'POST' });
+                    const j = await res.json();
+                    if (!res.ok) throw new Error(j?.error || 'Failed to open Stripe Portal');
+                    const url = j?.url as string | undefined;
+                    if (url) window.location.assign(url);
+                  } catch (e:any) {
+                    alert(e?.message || 'Could not open Stripe customer portal.');
+                  }
+                }}
+              >Change payment method</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Buyer Type modal (demo only) */}
       {buyerTypeOpen && (
         <div
@@ -881,9 +954,32 @@ export default function SubscriptionClient({
                   </div>
                 </div>
                 <div style={{ display:'grid', gap:6 }}>
-                  <label style={{ color:'var(--muted)' }}>Email</label>
-                  <input className={styles.input} type="email" placeholder="you@example.com" value={formB2C.email} onChange={e=>setFormB2C(s=>({...s, email:e.target.value}))} />
+                  <label style={{ color:'var(--muted)' }}>{billingEditMode ? 'Email (managed by Stripe)' : 'Email'}</label>
+                  <input
+                    className={styles.input}
+                    type="email"
+                    placeholder="you@example.com"
+                    value={formB2C.email}
+                    onChange={e=>setFormB2C(s=>({...s, email:e.target.value}))}
+                    readOnly={billingEditMode}
+                  />
                 </div>
+                {!billingEditMode && (
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>Confirm email</label>
+                    <input
+                      className={styles.input}
+                      type="email"
+                      placeholder="retype your email"
+                      value={formB2C.confirmEmail}
+                      onChange={e=>setFormB2C(s=>({...s, confirmEmail:e.target.value}))}
+                      onPaste={(e)=>e.preventDefault()}
+                    />
+                    {formB2C.confirmEmail && formB2C.email.trim() !== formB2C.confirmEmail.trim() && (
+                      <span style={{ color:'var(--danger)', fontSize:12 }}>Emails do not match</span>
+                    )}
+                  </div>
+                )}
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
                   <div style={{ display:'grid', gap:6 }}>
                     <label style={{ color:'var(--muted)' }}>Phone (optional)</label>
@@ -930,9 +1026,32 @@ export default function SubscriptionClient({
                   </div>
                 </div>
                 <div style={{ display:'grid', gap:6 }}>
-                  <label style={{ color:'var(--muted)' }}>Billing email</label>
-                  <input className={styles.input} type="email" placeholder="billing@example.com" value={formB2B.email} onChange={e=>setFormB2B(s=>({...s, email:e.target.value}))} />
+                  <label style={{ color:'var(--muted)' }}>{billingEditMode ? 'Billing email (managed by Stripe)' : 'Billing email'}</label>
+                  <input
+                    className={styles.input}
+                    type="email"
+                    placeholder="billing@example.com"
+                    value={formB2B.email}
+                    onChange={e=>setFormB2B(s=>({...s, email:e.target.value}))}
+                    readOnly={billingEditMode}
+                  />
                 </div>
+                {!billingEditMode && (
+                  <div style={{ display:'grid', gap:6 }}>
+                    <label style={{ color:'var(--muted)' }}>Confirm billing email</label>
+                    <input
+                      className={styles.input}
+                      type="email"
+                      placeholder="retype billing email"
+                      value={formB2B.confirmEmail}
+                      onChange={e=>setFormB2B(s=>({...s, confirmEmail:e.target.value}))}
+                      onPaste={(e)=>e.preventDefault()}
+                    />
+                    {formB2B.confirmEmail && formB2B.email.trim() !== formB2B.confirmEmail.trim() && (
+                      <span style={{ color:'var(--danger)', fontSize:12 }}>Emails do not match</span>
+                    )}
+                  </div>
+                )}
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
                   <label style={{ display:'flex', alignItems:'center', gap:8 }}>
                     <input type="checkbox" checked={formB2B.vatRegistered} onChange={e=>setFormB2B(s=>({...s, vatRegistered:e.target.checked}))} /> VAT registered in RO
@@ -955,31 +1074,46 @@ export default function SubscriptionClient({
               </div>
             )}
 
-            <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
-              {!billingEditMode && (
-                <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>{ setBillingFormOpen(false); setBuyerTypeOpen(true); }}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
-                    <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Back
-                </button>
-              )}
-              <button
-                className={`${styles.btn} ${styles.btnPrimary}`}
-                onClick={async ()=>{
-                  const ok = await saveBillingProfile();
-                  if (!ok) return;
-                  setBillingFormOpen(false);
-                  setBillingEditMode(false);
-                  await refreshBillingStatus();
-                  if (selectedPlan) {
-                    // No payment method saved yet → always go to Checkout to activate selected plan
-                    const plan = selectedPlan; setSelectedPlan(null);
-                    startCheckout(plan);
-                  }
-                }}
-              >{billingEditMode ? 'Save changes' : 'Save & Continue'}</button>
-            </div>
+            {(() => {
+              const email = buyerType==='b2c' ? formB2C.email : formB2B.email;
+              const confirmEmail = buyerType==='b2c' ? formB2C.confirmEmail : formB2B.confirmEmail;
+              const emailOk = /.+@.+\..+/.test(email.trim());
+              const confirmOk = billingEditMode ? true : (email.trim() !== '' && email.trim() === confirmEmail.trim());
+              const postalOk = (buyerType==='b2c' ? formB2C.postalCode : formB2B.postalCode).trim().length === 6;
+              const addressOk = (buyerType==='b2c' ? formB2C.street : formB2B.street).trim() !== '' &&
+                                (buyerType==='b2c' ? formB2C.city : formB2B.city).trim() !== '' &&
+                                (buyerType==='b2c' ? formB2C.county : formB2B.county).trim() !== '';
+              const nameOk = buyerType==='b2c' ? (formB2C.fullName.trim().length >= 2) : (formB2B.legalName.trim().length >= 2);
+              const taxOk = buyerType==='b2b' ? (formB2B.taxId.trim().length >= 2) : true;
+              const canSubmit = emailOk && confirmOk && postalOk && addressOk && nameOk && taxOk;
+              return (
+                <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
+                  {!billingEditMode && (
+                    <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>{ setBillingFormOpen(false); setBuyerTypeOpen(true); }}>
+                      <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
+                        <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Back
+                    </button>
+                  )}
+                  <button
+                    className={`${styles.btn} ${styles.btnPrimary}`}
+                    disabled={!canSubmit}
+                    onClick={async ()=>{
+                      const ok = await saveBillingProfile();
+                      if (!ok) return;
+                      setBillingFormOpen(false);
+                      setBillingEditMode(false);
+                      await refreshBillingStatus();
+                      if (selectedPlan) {
+                        const plan = selectedPlan; setSelectedPlan(null);
+                        startCheckout(plan);
+                      }
+                    }}
+                  >{billingEditMode ? 'Save changes' : 'Save & Continue'}</button>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
