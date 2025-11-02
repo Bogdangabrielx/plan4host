@@ -546,10 +546,34 @@ export default function SubscriptionClient({
         setPayResultPlan(planLabel(plan));
         setPayResultSuccess(true);
         setPayResultOpen(true);
+        // Clean URL params after handling success to avoid re-triggering on reload
+        setTimeout(() => {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('success');
+            url.searchParams.delete('canceled');
+            url.searchParams.delete('hl');
+            url.searchParams.delete('highlight');
+            url.searchParams.delete('plan');
+            window.history.replaceState(null, '', url.toString());
+          } catch {}
+        }, 120);
       } else if (canceled === '1') {
         setPayResultPlan(planLabel(plan));
         setPayResultSuccess(false);
         setPayResultOpen(true);
+        // Clean URL params after handling cancel to avoid re-triggering on reload
+        setTimeout(() => {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('success');
+            url.searchParams.delete('canceled');
+            url.searchParams.delete('hl');
+            url.searchParams.delete('highlight');
+            url.searchParams.delete('plan');
+            window.history.replaceState(null, '', url.toString());
+          } catch {}
+        }, 120);
       }
     } catch {}
   }, []);
