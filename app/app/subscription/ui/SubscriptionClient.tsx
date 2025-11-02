@@ -682,7 +682,7 @@ export default function SubscriptionClient({
                   <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
                     <path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20Zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-1-9V7h2v6h-2Z" fill="currentColor"/>
                   </svg>
-                  Manage in Stripe (cancel)
+                  Manage subscription
                 </button>
 
                 <button
