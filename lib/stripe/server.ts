@@ -6,10 +6,8 @@ export function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("Missing STRIPE_SECRET_KEY env");
   if (!stripeSingleton) {
-    stripeSingleton = new Stripe(key, {
-      apiVersion: "2024-06-20",
-      typescript: true,
-    });
+    // Rely on Stripe account API version; avoid hardcoding to keep types compatible
+    stripeSingleton = new Stripe(key);
   }
   return stripeSingleton;
 }
