@@ -1291,7 +1291,7 @@ export default function SubscriptionClient({
                             await openStripePortal();
                           } catch {}
                         }}
-                      >Upgrade at renewal (in Stripe)</button>
+                      >Upgrade at renewal</button>
                     </>
                   )}
                   {planRelation !== 'upgrade' && (
