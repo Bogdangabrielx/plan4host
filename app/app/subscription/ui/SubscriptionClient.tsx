@@ -311,6 +311,11 @@ export default function SubscriptionClient({
       setBuyerType(null);
       return;
     }
+    // If subscription is not active, go straight to Checkout (reactivate/new subscription)
+    if (!isActive) {
+      startCheckout(slug);
+      return;
+    }
     // With profile: for now, only allow scheduling at period end (Stripe pending)
     const order = { basic: 1, standard: 2, premium: 3 } as const;
     const rel = slug === currentPlan ? 'same' : (order[slug] > order[currentPlan] ? 'upgrade' : 'downgrade');
