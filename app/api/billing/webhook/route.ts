@@ -1,6 +1,6 @@
 // app/api/billing/webhook/route.ts
 import { NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe/server";
+import { getStripe, getPlanSlugForPriceId } from "@/lib/stripe/server";
 import { getServiceSupabase } from "@/lib/supabase/service";
 
 export const runtime = "nodejs";
@@ -64,20 +64,35 @@ export async function POST(req: Request) {
         // Resolve account by customer id
         const { data: acc } = await supabase
           .from("accounts")
-          .select("id, pending_plan, pending_effective_at")
+          .select("id, plan, pending_plan, pending_effective_at")
           .eq("stripe_customer_id", customerId as any)
           .maybeSingle();
         if (!acc) break;
         const cps = toISO(sub.current_period_start);
         const cpe = toISO(sub.current_period_end);
-        await supabase.from("accounts").update({
+        const updatePayload: any = {
           stripe_subscription_id: sub.id,
           status: sub.status,
           current_period_start: cps,
           current_period_end: cpe,
           cancel_at_period_end: sub.cancel_at_period_end || false,
           valid_until: cpe,
-        }).eq("id", acc.id);
+        };
+
+        // Try to map Stripe price → plan slug
+        try {
+          const item = sub?.items?.data?.[0];
+          const priceId = typeof item?.price === 'string' ? item?.price : item?.price?.id;
+          const mapped = getPlanSlugForPriceId(priceId);
+          if (mapped) {
+            updatePayload.plan = mapped;
+            // Clear pending if plan is now applied
+            updatePayload.pending_plan = null;
+            updatePayload.pending_effective_at = null;
+          }
+        } catch {}
+
+        await supabase.from("accounts").update(updatePayload).eq("id", acc.id);
 
         // Apply pending plan if boundary reached
         if (acc.pending_plan && acc.pending_effective_at) {
@@ -93,13 +108,42 @@ export async function POST(req: Request) {
         }
         break;
       }
+      case "customer.subscription.created": {
+        const sub = event.data.object as any;
+        const customerId: string | undefined = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id;
+        // Resolve account by customer id
+        const { data: acc } = await supabase
+          .from("accounts")
+          .select("id")
+          .eq("stripe_customer_id", customerId as any)
+          .maybeSingle();
+        if (!acc) break;
+        const cps = toISO(sub.current_period_start);
+        const cpe = toISO(sub.current_period_end);
+        const item = sub?.items?.data?.[0];
+        const priceId = typeof item?.price === 'string' ? item?.price : item?.price?.id;
+        const mapped = getPlanSlugForPriceId(priceId);
+        await supabase.from("accounts").update({
+          stripe_subscription_id: sub.id,
+          status: sub.status,
+          current_period_start: cps,
+          current_period_end: cpe,
+          cancel_at_period_end: sub.cancel_at_period_end || false,
+          valid_until: cpe,
+          plan: mapped ?? undefined,
+          pending_plan: null,
+          pending_effective_at: null,
+        }).eq("id", acc.id);
+        break;
+      }
       case "customer.subscription.deleted": {
         const sub = event.data.object as any;
         const customerId: string | undefined = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id;
         await supabase.from("accounts").update({ status: 'canceled' }).eq("stripe_customer_id", customerId as any);
         break;
       }
-      case "invoice.payment_succeeded": {
+      case "invoice.payment_succeeded":
+      case "invoice.paid": {
         const inv = event.data.object as any;
         const customerId: string | undefined = typeof inv.customer === 'string' ? inv.customer : inv.customer?.id;
         await supabase.from("accounts").update({ status: 'active' }).eq("stripe_customer_id", customerId as any);

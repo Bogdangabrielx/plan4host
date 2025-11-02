@@ -19,3 +19,14 @@ export function getPriceIdForPlan(slug: string): string | null {
   if (s === "premium") return process.env.STRIPE_PRICE_PREMIUM_RON || null;
   return null;
 }
+
+export function getPlanSlugForPriceId(priceId?: string | null): 'basic'|'standard'|'premium'|null {
+  if (!priceId) return null;
+  const basic = process.env.STRIPE_PRICE_BASIC_RON || '';
+  const standard = process.env.STRIPE_PRICE_STANDARD_RON || '';
+  const premium = process.env.STRIPE_PRICE_PREMIUM_RON || '';
+  if (priceId === basic) return 'basic';
+  if (priceId === standard) return 'standard';
+  if (priceId === premium) return 'premium';
+  return null;
+}
