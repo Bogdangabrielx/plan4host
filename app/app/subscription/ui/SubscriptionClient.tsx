@@ -325,6 +325,21 @@ export default function SubscriptionClient({
     // With profile: for now, only allow scheduling at period end (Stripe pending)
     const order = { basic: 1, standard: 2, premium: 3 } as const;
     const rel = slug === currentPlan ? 'same' : (order[slug] > order[currentPlan] ? 'upgrade' : 'downgrade');
+    // Downgrade: redirect to Stripe Billing Portal to schedule at renewal
+    if (rel === 'downgrade') {
+      (async () => {
+        try {
+          const res = await fetch('/api/billing/portal', { method:'POST' });
+          const j = await res.json();
+          if (!res.ok) throw new Error(j?.error || 'Failed to open Stripe Portal');
+          const url = j?.url as string | undefined;
+          if (url) window.location.assign(url);
+        } catch (e:any) {
+          alert(e?.message || 'Could not open Stripe customer portal.');
+        }
+      })();
+      return;
+    }
     setPlanRelation(rel);
     setPlanToSchedule(slug);
     setPlanConfirmPhase('intro');
@@ -524,11 +539,7 @@ export default function SubscriptionClient({
             <span className={styles.muted}>{validUntil ? `expired at ${validUntil}` : 'expired'}</span>
           </>
         )}
-        {pendingPlan && (
-          <span className={`${styles.badge} sb-cardglow`} style={{ borderColor:'var(--border)' }}>
-            New plan: {planLabel(pendingPlan)} {pendingEffectiveAt ? `starting on ${new Date(pendingEffectiveAt).toLocaleString()}` : ''}
-          </span>
-        )}
+        {/* We no longer display scheduled next plan; handled via Stripe Portal */}
         {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
       </div>
 
@@ -1246,7 +1257,24 @@ export default function SubscriptionClient({
               <p style={{ margin:'4px 0 0' }}>No refunds or credits are provided for the remaining period.</p>
             </div>
             <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
-              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={()=>{ setPayNowConfirmOpen(false); if (planToSchedule) startCheckout(planToSchedule); }}>OK</button>
+              <button
+                className={`${styles.btn} ${styles.btnPrimary}`}
+                onClick={async ()=>{
+                  setPayNowConfirmOpen(false);
+                  if (!planToSchedule) return;
+                  try {
+                    // Try server-side immediate upgrade (update subscription anchor now)
+                    const res = await fetch('/api/billing/upgrade-now', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
+                    const j = await res.json();
+                    if (res.ok && j?.ok) { await refreshBillingStatus(); return; }
+                    // Fallback: go to Checkout if server suggests
+                    if (j?.fallback === 'checkout') { startCheckout(planToSchedule); return; }
+                    throw new Error(j?.error || 'Upgrade failed');
+                  } catch (e:any) {
+                    alert(e?.message || 'Could not upgrade');
+                  }
+                }}
+              >OK</button>
             </div>
           </div>
         </div>
