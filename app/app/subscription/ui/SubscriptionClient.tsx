@@ -1329,6 +1329,63 @@ export default function SubscriptionClient({
           </div>
         </div>
       )}
+
+      {/* Downgrade confirm modal */}
+      {downgradeConfirmOpen && (
+        <div
+          role="dialog"
+          aria-modal
+          aria-labelledby="downgrade-title"
+          onClick={() => setDowngradeConfirmOpen(false)}
+          style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
+        >
+          <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <h3 id="downgrade-title" style={{ margin:0 }}>Plan change</h3>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setDowngradeConfirmOpen(false)}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+            </div>
+            <div style={{ color:'var(--muted)' }}>
+              <p style={{ margin:0 }}>You are about to downgrade to <strong>{planToSchedule ? planLabel(planToSchedule) : 'the selected plan'}</strong>.</p>
+              <p style={{ margin:'4px 0 0' }}>You’ll continue to enjoy <strong>{planLabel(currentPlan)}</strong> benefits until <strong>{validUntil ?? '—'}</strong>.</p>
+            </div>
+            <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={async ()=>{ setDowngradeConfirmOpen(false); try { const r = await fetch('/api/billing/portal',{method:'POST'}); const j = await r.json(); if (!r.ok) throw new Error(j?.error||'Failed to open Stripe Portal'); const url = j?.url as string|undefined; if (url) window.location.assign(url);} catch(e:any){ alert(e?.message||'Could not open Stripe Portal.'); } }}>Downgrade</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pay result feedback */}
+      {payResultOpen && (
+        <div
+          role="dialog"
+          aria-modal
+          aria-labelledby="payresult-title"
+          onClick={() => { setPayResultOpen(false); window.location.reload(); }}
+          style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
+        >
+          <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(520px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <h3 id="payresult-title" style={{ margin:0 }}>{payResultSuccess ? 'Upgrade successful' : 'Payment failed'}</h3>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>{ setPayResultOpen(false); window.location.reload(); }}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+            </div>
+            <div style={{ color:'var(--muted)' }}>
+              {payResultSuccess ? (
+                <p style={{ margin:0 }}>Congrats! You are now enjoying <strong>{payResultPlan || 'your new plan'}</strong> access.</p>
+              ) : (
+                <p style={{ margin:0 }}>Unfortunately, the payment could not be completed. Please use “Manage subscription” to update your payment method.</p>
+              )}
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end' }}>
+              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={()=>{ setPayResultOpen(false); window.location.reload(); }}>OK</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
