@@ -973,13 +973,9 @@ export default function SubscriptionClient({
                   setBillingEditMode(false);
                   await refreshBillingStatus();
                   if (selectedPlan) {
-                    // Open schedule modal for selected plan
-                    const order = { basic: 1, standard: 2, premium: 3 } as const;
-                    const rel = selectedPlan === currentPlan ? 'same' : (order[selectedPlan] > order[currentPlan] ? 'upgrade' : 'downgrade');
-                    setPlanRelation(rel);
-                    setPlanToSchedule(selectedPlan);
-                    setPlanConfirmOpen(true);
-                    setSelectedPlan(null);
+                    // No payment method saved yet → always go to Checkout to activate selected plan
+                    const plan = selectedPlan; setSelectedPlan(null);
+                    startCheckout(plan);
                   }
                 }}
               >{billingEditMode ? 'Save changes' : 'Save & Continue'}</button>
