@@ -10,7 +10,7 @@ export async function GET() {
 
   const { data: account, error } = await supabase
     .from("accounts")
-    .select("plan, valid_until, trial_ends_at, current_period_start, current_period_end, cancel_at_period_end, pending_plan, pending_effective_at, status")
+    .select("plan, valid_until, trial_ends_at, current_period_start, current_period_end, cancel_at_period_end, pending_plan, pending_effective_at, status, stripe_customer_id")
     .eq("id", uid)
     .maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });

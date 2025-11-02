@@ -98,6 +98,7 @@ export default function SubscriptionClient({
   const [pendingSelect, setPendingSelect] = useState<null | Plan["slug"]>(null);
   const [manageOpen, setManageOpen] = useState<boolean>(false);
   const [cancelled, setCancelled] = useState<boolean>(false);
+  const [hasStripeCustomer, setHasStripeCustomer] = useState<boolean>(false);
   const [pmOpen, setPmOpen] = useState<boolean>(false);
   const [pmLoading, setPmLoading] = useState<boolean>(false);
   const [pmCard, setPmCard] = useState<{brand?:string; last4?:string; exp_month?:number; exp_year?:number} | null>(null);
@@ -521,6 +522,14 @@ export default function SubscriptionClient({
       setPendingPlan(pp && (pp==='basic'||pp==='standard'||pp==='premium') ? pp : null);
       setPendingEffectiveAt(pes);
       setCancelAtPeriodEnd(!!acc?.cancel_at_period_end);
+      setHasStripeCustomer(!!acc?.stripe_customer_id);
+      const newPlan = String(acc?.plan || '').toLowerCase();
+      if (newPlan === 'basic' || newPlan === 'standard' || newPlan === 'premium') {
+        setCurrentPlan(newPlan as any);
+      }
+      const vu = acc?.valid_until as string | null | undefined;
+      setValidUntilISO(vu ?? null);
+      setValidUntil(vu ? new Date(vu).toLocaleString() : null);
     } catch {}
   }
 
@@ -626,39 +635,7 @@ export default function SubscriptionClient({
               </div>
 
               <div className={styles.cardActions}>
-                {isCurrent ? (
-                  isActive ? (
-                    <div style={{ display:'flex', alignItems:'center', gap: 5 }}>
-                      <span className={`${styles.currentBadge} sb-cardglow`}>Active plan</span>
-                      <button
-                        className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
-                        onClick={() => setManageOpen(true)}
-                        style={{ fontSize:13, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21 }}
-                      >
-                        Manage Account
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ display:'flex', gap:8, flexWrap:'wrap', justifyContent:'center' }}>
-                      <button
-                        className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
-                        disabled={!!saving || role !== "admin"}
-                        onClick={() => choosePlan(p.slug)}
-                        data-animate={highlightPlan === p.slug ? true : undefined}
-                        data-plan={p.slug}
-                      >
-                        {saving === p.slug ? "Applying…" : `I want ${planLabel(p.slug)}`}
-                      </button>
-                      <button
-                        className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
-                        onClick={() => setManageOpen(true)}
-                        style={{ fontSize:13, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21 }}
-                      >
-                        Manage Account
-                      </button>
-                    </div>
-                  )
-                ) : (
+                {!profileExists ? (
                   <button
                     className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
                     disabled={!!saving || role !== "admin"}
@@ -668,6 +645,54 @@ export default function SubscriptionClient({
                   >
                     {saving === p.slug ? "Applying…" : `I want ${planLabel(p.slug)}`}
                   </button>
+                ) : (
+                  isCurrent ? (
+                    isActive ? (
+                      <div style={{ display:'flex', alignItems:'center', gap: 5 }}>
+                        <span className={`${styles.currentBadge} sb-cardglow`}>Active plan</span>
+                        {hasStripeCustomer && (
+                          <button
+                            className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+                            onClick={() => setManageOpen(true)}
+                            style={{ fontSize:13, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21 }}
+                          >
+                            Manage Account
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ display:'flex', gap:8, flexWrap:'wrap', justifyContent:'center' }}>
+                        <button
+                          className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+                          disabled={!!saving || role !== "admin"}
+                          onClick={() => choosePlan(p.slug)}
+                          data-animate={highlightPlan === p.slug ? true : undefined}
+                          data-plan={p.slug}
+                        >
+                          {saving === p.slug ? "Applying…" : `I want ${planLabel(p.slug)}`}
+                        </button>
+                        {hasStripeCustomer && (
+                          <button
+                            className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+                            onClick={() => setManageOpen(true)}
+                            style={{ fontSize:13, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21 }}
+                          >
+                            Manage Account
+                          </button>
+                        )}
+                      </div>
+                    )
+                  ) : (
+                    <button
+                      className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+                      disabled={!!saving || role !== "admin"}
+                      onClick={() => choosePlan(p.slug)}
+                      data-animate={highlightPlan === p.slug ? true : undefined}
+                      data-plan={p.slug}
+                    >
+                      {saving === p.slug ? "Applying…" : `I want ${planLabel(p.slug)}`}
+                    </button>
+                  )
                 )}
               </div>
             </article>
