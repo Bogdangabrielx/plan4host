@@ -194,12 +194,117 @@ export async function POST(req: Request) {
         if (!updated) {
           await supabase.from("accounts").update(updatePayload).eq("stripe_customer_id", customerId as any);
         }
+
+        // ---- Persist invoice snapshot (transaction log) ----
+        try {
+          // Resolve account id from customer
+          const { data: accRow } = await supabase
+            .from('accounts')
+            .select('id')
+            .eq('stripe_customer_id', customerId as any)
+            .maybeSingle();
+          const accountId = accRow?.id as string | undefined;
+          if (accountId) {
+            // Determine billed price/plan (prefer non-proration line)
+            let priceId: string | null = null;
+            try {
+              const lines = Array.isArray(inv?.lines?.data) ? inv.lines.data : [];
+              const nonProration = lines.find((l: any) => !!l?.price && !l?.proration);
+              const lineWithPrice = nonProration || lines.find((l: any) => !!l?.price);
+              const p = lineWithPrice?.price;
+              priceId = typeof p === 'string' ? p : p?.id || null;
+            } catch {}
+            if (!priceId && subId) {
+              try {
+                const sub = await stripe.subscriptions.retrieve(subId, { expand: ['items'] } as any);
+                const item = (sub as any)?.items?.data?.[0];
+                const p = item?.price;
+                priceId = typeof p === 'string' ? p : p?.id || null;
+              } catch {}
+            }
+
+            const planSlug = getPlanSlugForPriceId(priceId || undefined);
+            const paymentIntentId: string | undefined = typeof inv.payment_intent === 'string' ? inv.payment_intent : inv.payment_intent?.id;
+
+            // Optionally fetch charge id for audit
+            let chargeId: string | undefined;
+            try {
+              if (paymentIntentId) {
+                const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+                const ch = (pi as any)?.latest_charge;
+                chargeId = typeof ch === 'string' ? ch : ch?.id;
+              }
+            } catch {}
+
+            const customerTaxId = Array.isArray(inv?.customer_tax_ids) && inv.customer_tax_ids.length
+              ? (inv.customer_tax_ids[0]?.value as string | undefined)
+              : undefined;
+
+            const row: any = {
+              account_id: accountId,
+              stripe_invoice_id: inv.id,
+              stripe_payment_intent_id: paymentIntentId || null,
+              stripe_charge_id: chargeId || null,
+              stripe_customer_id: customerId || null,
+              stripe_subscription_id: subId || null,
+              number: inv.number || null,
+              status: inv.status || 'paid',
+              currency: inv.currency,
+              subtotal: inv.subtotal ?? null,
+              tax: inv.tax ?? null,
+              total: inv.total ?? 0,
+              price_id: priceId || null,
+              plan_slug: planSlug || null,
+              period_start: cps,
+              period_end: cpe,
+              hosted_invoice_url: inv.hosted_invoice_url || null,
+              invoice_pdf_url: inv.invoice_pdf || null,
+              customer_name: inv.customer_name || null,
+              customer_email: inv.customer_email || null,
+              customer_tax_id: customerTaxId || null,
+              customer_address: inv.customer_address || null,
+            };
+            await supabase.from('billing_invoices').upsert(row as any, { onConflict: 'stripe_invoice_id' } as any);
+          }
+        } catch {}
         break;
       }
       case "invoice.payment_failed": {
         const inv = event.data.object as any;
         const customerId: string | undefined = typeof inv.customer === 'string' ? inv.customer : inv.customer?.id;
         await supabase.from("accounts").update({ status: 'past_due' }).eq("stripe_customer_id", customerId as any);
+        // Also log failed invoice for traceability
+        try {
+          const { data: accRow } = await supabase
+            .from('accounts')
+            .select('id')
+            .eq('stripe_customer_id', customerId as any)
+            .maybeSingle();
+          const accountId = accRow?.id as string | undefined;
+          if (accountId) {
+            const paymentIntentId: string | undefined = typeof inv.payment_intent === 'string' ? inv.payment_intent : inv.payment_intent?.id;
+            const row: any = {
+              account_id: accountId,
+              stripe_invoice_id: inv.id,
+              stripe_payment_intent_id: paymentIntentId || null,
+              stripe_customer_id: customerId || null,
+              stripe_subscription_id: (typeof inv.subscription === 'string' ? inv.subscription : inv.subscription?.id) || null,
+              number: inv.number || null,
+              status: inv.status || 'failed',
+              currency: inv.currency,
+              subtotal: inv.subtotal ?? null,
+              tax: inv.tax ?? null,
+              total: inv.total ?? 0,
+              period_end: (inv?.lines?.data?.[0]?.period?.end ? toISO(inv.lines.data[0].period.end) : null),
+              hosted_invoice_url: inv.hosted_invoice_url || null,
+              invoice_pdf_url: inv.invoice_pdf || null,
+              customer_name: inv.customer_name || null,
+              customer_email: inv.customer_email || null,
+              customer_address: inv.customer_address || null,
+            };
+            await supabase.from('billing_invoices').upsert(row as any, { onConflict: 'stripe_invoice_id' } as any);
+          }
+        } catch {}
         break;
       }
       default:
