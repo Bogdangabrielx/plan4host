@@ -63,8 +63,7 @@ export async function POST(req: Request) {
           cancel_at_period_end: sub.cancel_at_period_end || false,
           valid_until: cpe, // keeps existing gating compatible
         };
-        const p = String(planSlug || "").toLowerCase();
-        if (p && ["basic","standard","premium"].includes(p)) update.plan = p;
+        // Do not set plan here; consider plan active only on paid invoice
 
         await supabase.from("accounts").update(update).eq("id", accountId as any);
 
@@ -97,33 +96,9 @@ export async function POST(req: Request) {
           valid_until: cpe,
         };
 
-        // Try to map Stripe price → plan slug
-        try {
-          const item = sub?.items?.data?.[0];
-          const priceId = typeof item?.price === 'string' ? item?.price : item?.price?.id;
-          const mapped = getPlanSlugForPriceId(priceId);
-          if (mapped) {
-            updatePayload.plan = mapped;
-            // Clear pending if plan is now applied
-            updatePayload.pending_plan = null;
-            updatePayload.pending_effective_at = null;
-          }
-        } catch {}
+        // Do not change plan on subscription.updated; plan changes are applied on paid invoices
 
         await supabase.from("accounts").update(updatePayload).eq("id", acc.id);
-
-        // Apply pending plan if boundary reached
-        if (acc.pending_plan && acc.pending_effective_at) {
-          const now = Date.now();
-          const eff = Date.parse(acc.pending_effective_at);
-          if (Number.isFinite(eff) && eff <= now) {
-            await supabase.from("accounts").update({
-              plan: acc.pending_plan,
-              pending_plan: null,
-              pending_effective_at: null,
-            }).eq("id", acc.id);
-          }
-        }
         break;
       }
       case "customer.subscription.created": {
@@ -138,9 +113,6 @@ export async function POST(req: Request) {
         if (!acc) break;
         const cps = toISO(sub.current_period_start ?? sub?.items?.data?.[0]?.current_period_start ?? null);
         const cpe = toISO(sub.current_period_end ?? sub?.items?.data?.[0]?.current_period_end ?? null);
-        const item = sub?.items?.data?.[0];
-        const priceId = typeof item?.price === 'string' ? item?.price : item?.price?.id;
-        const mapped = getPlanSlugForPriceId(priceId);
         await supabase.from("accounts").update({
           stripe_subscription_id: sub.id,
           status: sub.status,
@@ -148,9 +120,7 @@ export async function POST(req: Request) {
           current_period_end: cpe,
           cancel_at_period_end: sub.cancel_at_period_end || false,
           valid_until: cpe,
-          plan: mapped ?? undefined,
-          pending_plan: null,
-          pending_effective_at: null,
+          // Do not set plan or clear pending here; plan will be updated on invoice paid
         }).eq("id", acc.id);
         break;
       }
@@ -193,6 +163,32 @@ export async function POST(req: Request) {
         }
         if (!updated) {
           await supabase.from("accounts").update(updatePayload).eq("stripe_customer_id", customerId as any);
+        }
+
+        // Determine billed plan from invoice lines (prefer non-proration)
+        let billedPriceId: string | null = null;
+        try {
+          const lines = Array.isArray(inv?.lines?.data) ? inv.lines.data : [];
+          const nonProration = lines.find((l: any) => !!l?.price && !l?.proration);
+          const lineWithPrice = nonProration || lines.find((l: any) => !!l?.price);
+          const p = lineWithPrice?.price;
+          billedPriceId = typeof p === 'string' ? p : p?.id || null;
+        } catch {}
+        if (!billedPriceId && subId) {
+          try {
+            const sub = await stripe.subscriptions.retrieve(subId, { expand: ['items'] } as any);
+            const item = (sub as any)?.items?.data?.[0];
+            const p = item?.price;
+            billedPriceId = typeof p === 'string' ? p : p?.id || null;
+          } catch {}
+        }
+        const billedPlan = getPlanSlugForPriceId(billedPriceId || undefined);
+        if (billedPlan) {
+          if (subId) {
+            await supabase.from('accounts').update({ plan: billedPlan, pending_plan: null, pending_effective_at: null }).eq('stripe_subscription_id', subId as any);
+          } else {
+            await supabase.from('accounts').update({ plan: billedPlan, pending_plan: null, pending_effective_at: null }).eq('stripe_customer_id', customerId as any);
+          }
         }
 
         // ---- Persist invoice snapshot (transaction log) ----
