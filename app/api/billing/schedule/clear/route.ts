@@ -20,12 +20,22 @@ export async function POST() {
 
     const { data: acc } = await supabase
       .from('accounts')
-      .select('stripe_schedule_id')
+      .select('stripe_subscription_id, stripe_schedule_id')
       .eq('id', accountId)
       .maybeSingle();
-    const sched = (acc as any)?.stripe_schedule_id as string | undefined;
+
+    const stripe = getStripe();
+    let sched = (acc as any)?.stripe_schedule_id as string | undefined;
+    // If DB has no schedule id, try to resolve from subscription
+    if (!sched && (acc as any)?.stripe_subscription_id) {
+      try {
+        const sub = await stripe.subscriptions.retrieve((acc as any).stripe_subscription_id as string);
+        const attached = (sub as any)?.schedule as string | undefined;
+        if (attached) sched = attached;
+      } catch {}
+    }
     if (sched) {
-      try { await getStripe().subscriptionSchedules.cancel(sched as any); } catch {}
+      try { await stripe.subscriptionSchedules.cancel(sched as any); } catch {}
       try { await supabase.from('accounts').update({ stripe_schedule_id: null }).eq('id', accountId as any); } catch {}
     }
   } catch {}

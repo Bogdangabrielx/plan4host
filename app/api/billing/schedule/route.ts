@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       try { await supabase.from('accounts').update({ stripe_schedule_id: null }).eq('id', accountId as any); } catch {}
     }
 
-    // Read current subscription details
+    // Read current subscription details (and attached schedule if any)
     const sub = await stripe.subscriptions.retrieve(subId, { expand: ['items'] } as any);
     const item = (sub as any)?.items?.data?.[0];
     const currentPriceId = typeof item?.price === 'string' ? item?.price : item?.price?.id;
@@ -63,22 +63,28 @@ export async function POST(req: Request) {
     const cpeSec: number | null = (sub as any)?.current_period_end ?? item?.current_period_end ?? null;
     if (!cpeSec) return NextResponse.json({ ok: true, note: 'no_cpe' });
 
-    // Create schedule from existing subscription (no phases at creation)
-    const schedule = await stripe.subscriptionSchedules.create({
-      from_subscription: subId,
-    } as any);
+    // If subscription already has an attached schedule, update that
+    const attachedScheduleId = (sub as any)?.schedule as string | undefined;
+    if (attachedScheduleId) {
+      const upd = await stripe.subscriptionSchedules.update(attachedScheduleId, {
+        phases: [
+          { end_date: cpeSec as any, items: [{ price: currentPriceId, quantity: qty }] as any, proration_behavior: 'none' },
+          { items: [{ price: newPriceId, quantity: qty }] as any, proration_behavior: 'none' },
+        ],
+      } as any);
+      try { await supabase.from('accounts').update({ stripe_schedule_id: (upd as any)?.id || attachedScheduleId }).eq('id', accountId as any); } catch {}
+      return NextResponse.json({ ok: true, schedule_id: (upd as any)?.id || attachedScheduleId });
+    }
 
-    // Then set phases (Stripe does not allow phases together with from_subscription at creation)
+    // Otherwise create a new schedule and then set phases
+    const schedule = await stripe.subscriptionSchedules.create({ from_subscription: subId } as any);
     const updated = await stripe.subscriptionSchedules.update((schedule as any).id, {
       phases: [
         { end_date: cpeSec as any, items: [{ price: currentPriceId, quantity: qty }] as any, proration_behavior: 'none' },
         { items: [{ price: newPriceId, quantity: qty }] as any, proration_behavior: 'none' },
       ],
     } as any);
-
-    // Store schedule id for later clear/update
     try { await supabase.from('accounts').update({ stripe_schedule_id: (updated as any)?.id || (schedule as any)?.id || null }).eq('id', accountId as any); } catch {}
-
     return NextResponse.json({ ok: true, schedule_id: (updated as any)?.id || (schedule as any)?.id || null });
   } catch (e: any) {
     // Best-effort: DB is scheduled; Stripe mirroring failed
