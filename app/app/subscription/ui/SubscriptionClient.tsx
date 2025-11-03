@@ -1250,16 +1250,13 @@ export default function SubscriptionClient({
                     <button
                       className={`${styles.btn} ${styles.btnPrimary}`}
                       onClick={async ()=>{
+                        // Open Stripe Portal to schedule the downgrade at renewal
                         try {
-                          const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
-                          if (!res.ok) throw new Error((await res.json())?.error || 'Failed to apply change');
-                          await refreshBillingStatus();
                           setPlanConfirmOpen(false);
-                        } catch (e:any) {
-                          alert(e?.message || 'Could not change plan.');
-                        }
+                          await openStripePortal();
+                        } catch {}
                       }}
-                    >Confirm</button>
+                    >Open Stripe Portal</button>
                   </div>
                 </>
               )
@@ -1297,21 +1294,15 @@ export default function SubscriptionClient({
                   {planRelation !== 'upgrade' && (
                     <button
                       className={`${styles.btn} ${styles.btnPrimary}`}
-                      disabled={planRelation==='same' || scheduleBusy}
+                      disabled={planRelation==='same'}
                       onClick={async ()=>{
+                        // Open Stripe Portal for non-upgrade cases (e.g., downgrade) to manage schedule at renewal
                         try {
-                          setScheduleBusy(true);
-                          const res = await fetch('/api/billing/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planToSchedule }) });
-                          if (!res.ok) throw new Error((await res.json())?.error || 'Failed to apply change');
-                          await refreshBillingStatus();
                           setPlanConfirmOpen(false);
-                        } catch (e:any) {
-                          alert(e?.message || 'Could not change plan.');
-                        } finally {
-                          setScheduleBusy(false);
-                        }
+                          await openStripePortal();
+                        } catch {}
                       }}
-                    >{scheduleBusy ? 'Applying…' : 'Confirm'}</button>
+                    >Open Stripe Portal</button>
                   )}
                 </div>
               </>
