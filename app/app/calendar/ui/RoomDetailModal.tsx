@@ -1216,11 +1216,11 @@ export default function RoomDetailModal({
             style={{ width:'min(520px,100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}
           >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <strong>Delete reservation</strong>
+              <strong>Cancel reservation</strong>
               <button className="sb-btn" onClick={()=>setReleaseConfirmOpen(false)}>✕</button>
             </div>
             <div style={{ color:'var(--muted)' }}>
-              Are you sure you want to delete this reservation? This frees the room for the selected dates and removes guest details from this booking card. This action cannot be undone.
+              You are about to cancel this reservation. This will free the room for the selected dates. This action cannot be undone.
             </div>
             <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
               <button className="sb-btn" onClick={()=>setReleaseConfirmOpen(false)} disabled={saving !== false}>Cancel</button>
