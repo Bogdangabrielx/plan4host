@@ -66,7 +66,6 @@ export async function POST(req: Request) {
     // Create schedule from existing subscription (no phases at creation)
     const schedule = await stripe.subscriptionSchedules.create({
       from_subscription: subId,
-      metadata: { account_id: uid, plan_slug: plan },
     } as any);
 
     // Then set phases (Stripe does not allow phases together with from_subscription at creation)
