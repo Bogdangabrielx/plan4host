@@ -66,10 +66,12 @@ export async function POST(req: Request) {
     // If subscription already has an attached schedule, update that
     const attachedScheduleId = (sub as any)?.schedule as string | undefined;
     if (attachedScheduleId) {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const start1 = Math.max(nowSec, ((sub as any)?.current_period_start ?? nowSec));
       const upd = await stripe.subscriptionSchedules.update(attachedScheduleId, {
         phases: [
-          { end_date: cpeSec as any, items: [{ price: currentPriceId, quantity: qty }] as any, proration_behavior: 'none' },
-          { items: [{ price: newPriceId, quantity: qty }] as any, proration_behavior: 'none' },
+          { start_date: start1 as any, end_date: cpeSec as any, items: [{ price: currentPriceId, quantity: qty }] as any, proration_behavior: 'none' },
+          { start_date: cpeSec as any, items: [{ price: newPriceId, quantity: qty }] as any, proration_behavior: 'none' },
         ],
       } as any);
       try { await supabase.from('accounts').update({ stripe_schedule_id: (upd as any)?.id || attachedScheduleId }).eq('id', accountId as any); } catch {}
@@ -78,10 +80,12 @@ export async function POST(req: Request) {
 
     // Otherwise create a new schedule and then set phases
     const schedule = await stripe.subscriptionSchedules.create({ from_subscription: subId } as any);
+    const nowSec = Math.floor(Date.now() / 1000);
+    const start1 = Math.max(nowSec, ((sub as any)?.current_period_start ?? nowSec));
     const updated = await stripe.subscriptionSchedules.update((schedule as any).id, {
       phases: [
-        { end_date: cpeSec as any, items: [{ price: currentPriceId, quantity: qty }] as any, proration_behavior: 'none' },
-        { items: [{ price: newPriceId, quantity: qty }] as any, proration_behavior: 'none' },
+        { start_date: start1 as any, end_date: cpeSec as any, items: [{ price: currentPriceId, quantity: qty }] as any, proration_behavior: 'none' },
+        { start_date: cpeSec as any, items: [{ price: newPriceId, quantity: qty }] as any, proration_behavior: 'none' },
       ],
     } as any);
     try { await supabase.from('accounts').update({ stripe_schedule_id: (updated as any)?.id || (schedule as any)?.id || null }).eq('id', accountId as any); } catch {}
