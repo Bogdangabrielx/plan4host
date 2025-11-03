@@ -21,10 +21,22 @@ export async function POST(req: Request) {
   // 2) Mirror to Stripe using a Subscription Schedule (apply at renewal)
   try {
     const uid = auth.user.id;
+    // Resolve current account id (owner or member)
+    let accountId: string | null = null;
+    try {
+      const self = await supabase.rpc('_account_self_with_boundary');
+      const row = Array.isArray(self.data) ? self.data[0] : null;
+      accountId = (row as any)?.account_id || null;
+    } catch {}
+    if (!accountId) {
+      // fallback: assume own account
+      accountId = uid;
+    }
+
     const { data: acc } = await supabase
       .from('accounts')
       .select('stripe_subscription_id, stripe_schedule_id')
-      .eq('id', uid)
+      .eq('id', accountId)
       .maybeSingle();
 
     const subId = (acc as any)?.stripe_subscription_id as string | undefined;
@@ -40,7 +52,7 @@ export async function POST(req: Request) {
     // Cancel any existing schedule to avoid conflicts
     if (existingScheduleId) {
       try { await stripe.subscriptionSchedules.cancel(existingScheduleId as any); } catch {}
-      try { await supabase.from('accounts').update({ stripe_schedule_id: null }).eq('id', uid); } catch {}
+      try { await supabase.from('accounts').update({ stripe_schedule_id: null }).eq('id', accountId as any); } catch {}
     }
 
     // Read current subscription details
@@ -63,7 +75,7 @@ export async function POST(req: Request) {
     } as any);
 
     // Store schedule id for later clear/update
-    try { await supabase.from('accounts').update({ stripe_schedule_id: (schedule as any)?.id || null }).eq('id', uid); } catch {}
+    try { await supabase.from('accounts').update({ stripe_schedule_id: (schedule as any)?.id || null }).eq('id', accountId as any); } catch {}
 
     return NextResponse.json({ ok: true, schedule_id: (schedule as any)?.id || null });
   } catch (e: any) {
