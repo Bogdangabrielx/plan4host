@@ -66,10 +66,9 @@ export async function POST(req: Request) {
     // Create schedule with two phases: keep current until CPE, then switch to new price
     const schedule = await stripe.subscriptionSchedules.create({
       from_subscription: subId,
-      proration_behavior: 'none',
       phases: [
-        { start_date: 'now', end_date: cpeSec, items: [{ price: currentPriceId, quantity: qty }] },
-        { items: [{ price: newPriceId, quantity: qty }] },
+        { start_date: 'now', end_date: cpeSec, items: [{ price: currentPriceId, quantity: qty }], proration_behavior: 'none' },
+        { items: [{ price: newPriceId, quantity: qty }], proration_behavior: 'none' },
       ],
       metadata: { account_id: uid, plan_slug: plan },
     } as any);
