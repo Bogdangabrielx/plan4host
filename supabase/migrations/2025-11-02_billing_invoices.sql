@@ -88,3 +88,4 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 
 -- End of migration
+

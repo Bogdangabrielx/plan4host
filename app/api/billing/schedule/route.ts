@@ -1,7 +1,6 @@
 // app/api/billing/schedule/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getStripe, getPriceIdForPlan } from "@/lib/stripe/server";
 
 export async function POST(req: Request) {
   const supabase = createClient();
@@ -14,86 +13,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
   }
 
-  // 1) Schedule at DB-level for UI (badge etc.)
-  const { error: rpcErr } = await supabase.rpc("account_schedule_plan_self", { p_plan_slug: plan });
-  if (rpcErr) return NextResponse.json({ error: rpcErr.message }, { status: 400 });
-
-  // 2) Mirror to Stripe using a Subscription Schedule (apply at renewal)
-  try {
-    const uid = auth.user.id;
-    // Resolve current account id (owner or member)
-    let accountId: string | null = null;
-    try {
-      const self = await supabase.rpc('_account_self_with_boundary');
-      const row = Array.isArray(self.data) ? self.data[0] : null;
-      accountId = (row as any)?.account_id || null;
-    } catch {}
-    if (!accountId) {
-      // fallback: assume own account
-      accountId = uid;
-    }
-
-    const { data: acc } = await supabase
-      .from('accounts')
-      .select('stripe_subscription_id, stripe_schedule_id')
-      .eq('id', accountId)
-      .maybeSingle();
-
-    const subId = (acc as any)?.stripe_subscription_id as string | undefined;
-    const existingScheduleId = (acc as any)?.stripe_schedule_id as string | undefined;
-    const newPriceId = getPriceIdForPlan(plan);
-
-    if (!subId || !newPriceId) {
-      // No active Stripe subscription to schedule against; DB scheduling is enough for now
-      return NextResponse.json({ ok: true, db_only: true });
-    }
-
-    const stripe = getStripe();
-    // Cancel any existing schedule to avoid conflicts
-    if (existingScheduleId) {
-      try { await stripe.subscriptionSchedules.cancel(existingScheduleId as any); } catch {}
-      try { await supabase.from('accounts').update({ stripe_schedule_id: null }).eq('id', accountId as any); } catch {}
-    }
-
-    // Read current subscription details (and attached schedule if any)
-    const sub = await stripe.subscriptions.retrieve(subId, { expand: ['items'] } as any);
-    const item = (sub as any)?.items?.data?.[0];
-    const currentPriceId = typeof item?.price === 'string' ? item?.price : item?.price?.id;
-    const qty = item?.quantity || 1;
-    const cpeSec: number | null = (sub as any)?.current_period_end ?? item?.current_period_end ?? null;
-    if (!cpeSec) return NextResponse.json({ ok: true, note: 'no_cpe' });
-
-    // If subscription already has an attached schedule, update that
-    const attachedScheduleId = (sub as any)?.schedule as string | undefined;
-    if (attachedScheduleId) {
-      const nowSec = Math.floor(Date.now() / 1000);
-      const start1 = Math.max(nowSec, ((sub as any)?.current_period_start ?? nowSec));
-      const upd = await stripe.subscriptionSchedules.update(attachedScheduleId, {
-        phases: [
-          { start_date: start1 as any, end_date: cpeSec as any, items: [{ price: currentPriceId, quantity: qty }] as any, proration_behavior: 'none' },
-          { start_date: cpeSec as any, items: [{ price: newPriceId, quantity: qty }] as any, proration_behavior: 'none' },
-        ],
-      } as any);
-      try { await supabase.from('accounts').update({ stripe_schedule_id: (upd as any)?.id || attachedScheduleId }).eq('id', accountId as any); } catch {}
-      return NextResponse.json({ ok: true, schedule_id: (upd as any)?.id || attachedScheduleId });
-    }
-
-    // Otherwise create a new schedule and then set phases
-    const schedule = await stripe.subscriptionSchedules.create({ from_subscription: subId } as any);
-    const nowSec = Math.floor(Date.now() / 1000);
-    const start1 = Math.max(nowSec, ((sub as any)?.current_period_start ?? nowSec));
-    const updated = await stripe.subscriptionSchedules.update((schedule as any).id, {
-      phases: [
-        { start_date: start1 as any, end_date: cpeSec as any, items: [{ price: currentPriceId, quantity: qty }] as any, proration_behavior: 'none' },
-        { start_date: cpeSec as any, items: [{ price: newPriceId, quantity: qty }] as any, proration_behavior: 'none' },
-      ],
-    } as any);
-    try { await supabase.from('accounts').update({ stripe_schedule_id: (updated as any)?.id || (schedule as any)?.id || null }).eq('id', accountId as any); } catch {}
-    return NextResponse.json({ ok: true, schedule_id: (updated as any)?.id || (schedule as any)?.id || null });
-  } catch (e: any) {
-    // Best-effort: DB is scheduled; Stripe mirroring failed
-    return NextResponse.json({ ok: true, stripe_error: e?.message || 'Stripe schedule failed (DB scheduled only)' });
-  }
+  const { error } = await supabase.rpc("account_schedule_plan_self", { p_plan_slug: plan });
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json({ ok: true });
 }
 
 export async function GET() {
@@ -110,3 +32,4 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ pending: data ?? null });
 }
+
