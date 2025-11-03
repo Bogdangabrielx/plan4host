@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     const schedule = await stripe.subscriptionSchedules.create({
       from_subscription: subId,
       phases: [
-        { start_date: 'now', end_date: cpeSec, items: [{ price: currentPriceId, quantity: qty }], proration_behavior: 'none' },
+        { end_date: cpeSec, items: [{ price: currentPriceId, quantity: qty }], proration_behavior: 'none' },
         { items: [{ price: newPriceId, quantity: qty }], proration_behavior: 'none' },
       ],
       metadata: { account_id: uid, plan_slug: plan },
