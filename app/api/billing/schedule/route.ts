@@ -63,20 +63,24 @@ export async function POST(req: Request) {
     const cpeSec: number | null = (sub as any)?.current_period_end ?? item?.current_period_end ?? null;
     if (!cpeSec) return NextResponse.json({ ok: true, note: 'no_cpe' });
 
-    // Create schedule with two phases: keep current until CPE, then switch to new price
+    // Create schedule from existing subscription (no phases at creation)
     const schedule = await stripe.subscriptionSchedules.create({
       from_subscription: subId,
-      phases: [
-        { end_date: cpeSec, items: [{ price: currentPriceId, quantity: qty }], proration_behavior: 'none' },
-        { items: [{ price: newPriceId, quantity: qty }], proration_behavior: 'none' },
-      ],
       metadata: { account_id: uid, plan_slug: plan },
     } as any);
 
-    // Store schedule id for later clear/update
-    try { await supabase.from('accounts').update({ stripe_schedule_id: (schedule as any)?.id || null }).eq('id', accountId as any); } catch {}
+    // Then set phases (Stripe does not allow phases together with from_subscription at creation)
+    const updated = await stripe.subscriptionSchedules.update((schedule as any).id, {
+      phases: [
+        { end_date: cpeSec as any, items: [{ price: currentPriceId, quantity: qty }] as any, proration_behavior: 'none' },
+        { items: [{ price: newPriceId, quantity: qty }] as any, proration_behavior: 'none' },
+      ],
+    } as any);
 
-    return NextResponse.json({ ok: true, schedule_id: (schedule as any)?.id || null });
+    // Store schedule id for later clear/update
+    try { await supabase.from('accounts').update({ stripe_schedule_id: (updated as any)?.id || (schedule as any)?.id || null }).eq('id', accountId as any); } catch {}
+
+    return NextResponse.json({ ok: true, schedule_id: (updated as any)?.id || (schedule as any)?.id || null });
   } catch (e: any) {
     // Best-effort: DB is scheduled; Stripe mirroring failed
     return NextResponse.json({ ok: true, stripe_error: e?.message || 'Stripe schedule failed (DB scheduled only)' });
