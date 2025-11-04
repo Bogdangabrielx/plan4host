@@ -554,11 +554,18 @@ export default function HomePage() {
     if (!coarse) setFeaturesHover(false);
   };
   const onFeaturesPointerDown = () => {
-    // On phones/coarse pointer, toggle overlay visibility on single tap
+    // On phones/PWA (coarse pointer), toggle playback on tap anywhere in the video area
     let coarse = false;
     try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
-    if (coarse) { setFeaturesHover(v => !v); return; }
-    // Desktop: show on hover or explicit pointer
+    if (coarse) {
+      const v = featuresVideoRef.current; if (!v) return;
+      if (v.paused) { try { v.play(); } catch {}; setFeaturesPlaying(true); }
+      else { try { v.pause(); } catch {}; setFeaturesPlaying(false); }
+      // Do not keep overlay; hide it for a clean UI
+      setFeaturesHover(false);
+      return;
+    }
+    // Desktop: show overlay via hover/pointer
     setFeaturesHover(true);
   };
   const year = new Date().getFullYear();
