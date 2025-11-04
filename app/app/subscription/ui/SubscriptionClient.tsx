@@ -1081,7 +1081,7 @@ export default function SubscriptionClient({
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
                     <label style={{ color:'var(--muted)' }}>National ID (optional)</label>
-                    <input className={styles.input} inputMode="numeric" placeholder="13 digits" value={formB2C.cnp} onChange={e=>setFormB2C(s=>({...s, cnp:e.target.value.replace(/[^0-9]/g,'').slice(0,13)}))} />
+                    <input className={styles.input} inputMode="numeric" placeholder="CNP ro - 13 digits" value={formB2C.cnp} onChange={e=>setFormB2C(s=>({...s, cnp:e.target.value.replace(/[^0-9]/g,'').slice(0,13)}))} />
                   </div>
                 </div>
               </div>
