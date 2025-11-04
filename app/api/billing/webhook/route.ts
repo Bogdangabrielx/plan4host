@@ -105,7 +105,9 @@ export async function POST(req: Request) {
           const currentPlan = (acc.plan as string | null)?.toLowerCase?.() || null;
           const order: any = { basic: 1, standard: 2, premium: 3 };
           const isUpgrade = mapped && currentPlan && order[mapped] > order[currentPlan];
-          if (mapped && mapped !== currentPlan && isUpgrade) {
+          const alreadyPending = !!((acc as any)?.pending_plan);
+          // Do not overwrite pending_* if it already exists (avoid pushing the change one more cycle)
+          if (!alreadyPending && mapped && mapped !== currentPlan && isUpgrade) {
             updatePayload.pending_plan = mapped;
             updatePayload.pending_effective_at = cpe;
           }
@@ -184,14 +186,17 @@ export async function POST(req: Request) {
           ? accountRow.stripe_subscription_id === subId
           : true;
 
-        // Optional tolerance on invoice period start vs pending_effective_at
-        let periodStartOk = true;
+        // Toleranță mică: acceptăm fie start>=pending, fie end≈pending (±5m)
+        let periodOk = true;
         try {
           const invPeriodStartSec = inv?.lines?.data?.[0]?.period?.start as number | undefined;
-          if (invPeriodStartSec && accountRow?.pending_effective_at) {
-            const invStartMs = invPeriodStartSec * 1000;
+          const invPeriodEndSec = inv?.lines?.data?.[0]?.period?.end as number | undefined;
+          if (accountRow?.pending_effective_at && (invPeriodStartSec || invPeriodEndSec)) {
             const pendingMs = Date.parse(accountRow.pending_effective_at);
-            periodStartOk = Math.abs(invStartMs - pendingMs) <= 5 * 60 * 1000 || invStartMs >= pendingMs;
+            const tol = 5 * 60 * 1000;
+            const startOk = invPeriodStartSec ? (invPeriodStartSec * 1000) >= (pendingMs - tol) : false;
+            const endOk = invPeriodEndSec ? Math.abs((invPeriodEndSec * 1000) - pendingMs) <= tol : false;
+            periodOk = startOk || endOk;
           }
         } catch {}
 
@@ -200,7 +205,7 @@ export async function POST(req: Request) {
         if (cpe) { updatePayload.current_period_end = cpe; updatePayload.valid_until = cpe; }
         updatePayload.cancel_at_period_end = false; // renewed successfully
 
-        const shouldApplyPending = pendingPlan && billingReason === 'subscription_cycle' && matchSubscription && periodStartOk;
+        const shouldApplyPending = pendingPlan && billingReason === 'subscription_cycle' && matchSubscription && periodOk;
         if (shouldApplyPending) {
           updatePayload.plan = pendingPlan;
           updatePayload.pending_plan = null;
