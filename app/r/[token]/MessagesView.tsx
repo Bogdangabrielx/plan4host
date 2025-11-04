@@ -238,7 +238,26 @@ export default function MessagesView({ token, data }: { token: string; data: any
       </article>
 
       {items.length === 0 ? (
-        <article className="rm-card"><div className="rm-content">No messages available.</div></article>
+        <article className="rm-card">
+          <div className="rm-content">
+            <p style={{ margin: 0, fontWeight: 700 }}>
+              {lang === 'ro' ? 'Momentan nu există mesaje.' : 'No messages available yet.'}
+            </p>
+            <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>
+              {lang === 'ro'
+                ? 'Prin această pagină vei putea vedea toate mesajele publicate în legătură cu rezervarea ta.'
+                : 'Through this page, you will be able to view any messages we publish related to your reservation.'}
+            </p>
+            <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>
+              {lang === 'ro'
+                ? 'Când se postează un mesaj, vei primi un email de notificare cu un link securizat pentru a reveni aici.'
+                : 'When a message is posted, you will receive an email notification with a secure link to return to this page.'}
+            </p>
+            <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>
+              {lang === 'ro' ? 'Îți mulțumim pentru înțelegere.' : 'Thank you for your understanding.'}
+            </p>
+          </div>
+        </article>
       ) : (
         <div style={{ display:'grid', gap:12 }}>
           {items.map(it => {
