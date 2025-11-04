@@ -337,7 +337,6 @@ export default function HomePageRO() {
     if (v.paused) { try { v.play(); } catch {} setFeaturesPlaying(true); }
     else { try { v.pause(); } catch {} setFeaturesPlaying(false); }
   };
-  
   const year = new Date().getFullYear();
   const scrollToId = (id: string) => {
     try {
