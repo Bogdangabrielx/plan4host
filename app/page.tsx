@@ -548,8 +548,10 @@ export default function HomePage() {
     if (!v) return;
     if (v.paused) { try { v.play(); } catch {} setFeaturesPlaying(true); }
     else { try { v.pause(); } catch {} setFeaturesPlaying(false); }
-    // After action, hide the overlay
-    setFeaturesHover(false);
+    // Desktop: hide overlay after action; Mobile (coarse): keep visible until next tap
+    let coarse = false;
+    try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
+    if (!coarse) setFeaturesHover(false);
   };
   const onFeaturesPointerDown = () => {
     // On phones/coarse pointer, toggle overlay visibility on single tap

@@ -338,7 +338,9 @@ export default function HomePageRO() {
     if (!v) return;
     if (v.paused) { try { v.play(); } catch {} setFeaturesPlaying(true); }
     else { try { v.pause(); } catch {} setFeaturesPlaying(false); }
-    setFeaturesHover(false);
+    let coarse = false;
+    try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
+    if (!coarse) setFeaturesHover(false);
   };
   const onFeaturesPointerDown = () => {
     let coarse = false;
