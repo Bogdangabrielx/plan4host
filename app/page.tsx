@@ -540,6 +540,7 @@ export default function HomePage() {
   const [navOpen, setNavOpen] = useState(false);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
+  const [featuresHover, setFeaturesHover] = useState(false);
   const toggleFeaturesPlay = () => {
     const v = featuresVideoRef.current;
     if (!v) return;
@@ -763,7 +764,13 @@ export default function HomePage() {
       {/* Features */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title">Features</h2>
-        <div className="sb-cardglow" style={{ borderRadius: 12, overflow: 'hidden', position: 'relative' }}>
+        <div
+          className="sb-cardglow"
+          style={{ borderRadius: 12, overflow: 'hidden', position: 'relative', maxWidth: 960, margin: '0 auto' }}
+          onPointerEnter={() => setFeaturesHover(true)}
+          onPointerLeave={() => setFeaturesHover(false)}
+          onPointerDown={() => { setFeaturesHover(true); setTimeout(() => setFeaturesHover(false), 1600); }}
+        >
           <video
             className={styles.focusable}
             src="/functions_forlanding.mp4"
@@ -774,7 +781,7 @@ export default function HomePage() {
             playsInline
             preload="metadata"
             ref={featuresVideoRef}
-            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
+            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block', aspectRatio: '16 / 9' }}
           >
             Sorry, your browser doesn’t support embedded videos.
           </video>
@@ -785,19 +792,34 @@ export default function HomePage() {
             aria-label={featuresPlaying ? 'Pause video' : 'Play video'}
             style={{
               position: 'absolute',
-              right: 12,
-              bottom: 12,
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
               borderRadius: 999,
               border: '1px solid var(--border)',
               background: 'color-mix(in srgb, var(--panel) 86%, transparent)',
               backdropFilter: 'blur(6px)',
               WebkitBackdropFilter: 'blur(6px)',
               color: 'var(--text)',
-              padding: '8px 12px',
-              fontWeight: 800,
+              width: 56,
+              height: 56,
+              display: 'grid',
+              placeItems: 'center',
+              opacity: (!featuresPlaying || featuresHover) ? 1 : 0,
+              transition: 'opacity .2s ease',
+              pointerEvents: (!featuresPlaying || featuresHover) ? 'auto' : 'none',
             }}
           >
-            {featuresPlaying ? 'Pause' : 'Play'}
+            {featuresPlaying ? (
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
+                <rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor" />
+                <rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
+                <path d="M8 5l12 7-12 7V5z" fill="currentColor" />
+              </svg>
+            )}
           </button>
         </div>
       </section>
