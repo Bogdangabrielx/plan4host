@@ -543,24 +543,57 @@ export default function HomePage() {
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
+  const featuresTapTimerRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
   const toggleFeaturesPlay = () => {
     const v = featuresVideoRef.current;
     if (!v) return;
-    if (v.paused) { try { v.play(); } catch {} setFeaturesPlaying(true); }
-    else { try { v.pause(); } catch {} setFeaturesPlaying(false); }
-    // Desktop: hide overlay after action; Mobile (coarse): keep visible until next tap
-    let coarse = false;
-    try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
-    if (!coarse) setFeaturesHover(false);
+    const wasPaused = v.paused;
+    if (wasPaused) {
+      try { v.play(); } catch {}
+      setFeaturesPlaying(true);
+      // Mobile: show briefly then hide; Desktop: hide immediately (hover handles)
+      let coarse = false; try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
+      setFeaturesHover(true);
+      if (coarse) {
+        if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} }
+        featuresTapTimerRef.current = window.setTimeout(() => { setFeaturesHover(false); featuresTapTimerRef.current = null; }, 1500);
+      } else {
+        setFeaturesHover(false);
+      }
+    } else {
+      try { v.pause(); } catch {}
+      setFeaturesPlaying(false);
+      // Pause: keep overlay on mobile until next tap; desktop: hide
+      let coarse = false; try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
+      if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} featuresTapTimerRef.current = null; }
+      setFeaturesHover(true);
+      if (!coarse) setFeaturesHover(false);
+    }
   };
   const onFeaturesPointerDown = () => {
-    // Mobile/PWA: tap toggles overlay visibility (play/pause via button)
+    // Mobile/PWA: tap anywhere toggles playback; on play, show button briefly; on pause, keep button visible
     let coarse = false;
     try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
-    if (coarse) { setFeaturesHover(v => !v); return; }
-    // Desktop: show overlay via pointer
+    if (coarse) {
+      const v = featuresVideoRef.current; if (!v) return;
+      if (!v.paused) {
+        try { v.pause(); } catch {}
+        setFeaturesPlaying(false);
+        if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} featuresTapTimerRef.current = null; }
+        setFeaturesHover(true);
+      } else {
+        try { v.play(); } catch {}
+        setFeaturesPlaying(true);
+        setFeaturesHover(true);
+        if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} }
+        featuresTapTimerRef.current = window.setTimeout(() => { setFeaturesHover(false); featuresTapTimerRef.current = null; }, 1500);
+      }
+      return;
+    }
+    // Desktop: reveal overlay on pointer
     setFeaturesHover(true);
   };
+  useEffect(() => { return () => { if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} } }; }, []);
   const year = new Date().getFullYear();
   const scrollToId = (id: string) => {
     try {
