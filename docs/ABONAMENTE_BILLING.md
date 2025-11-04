@@ -1,104 +1,111 @@
-# Planuri, Billing și Fluxuri — Implementare curentă și TODO
+# Planuri, Billing și Fluxuri — Implementare actuală
 
-Acest document sumarizează ce este implementat (UI + DB + API) și ce urmează, pentru planurile Basic/Standard/Premium cu trial Standard 7 zile. Basic este plan plătit (RON).
+Documentul descrie comportamentul complet pentru planurile Basic / Standard / Premium, cu trial Standard 7 zile, integrarea Stripe (Checkout, Portal, Webhooks), programarea schimbărilor de plan la reînnoire și garanții de consistență.
 
-## Ce este implementat acum
+## Model și Gating în App
 
-- Model planuri (existent în proiect)
-  - Planuri: Basic / Standard / Premium (gating în app cu `account_access_mode()`); trial Standard 7 zile la onboarding (`account_grant_trial`).
-  - Redirect când expiră: mod acces `billing_only` → ești dus la Subscription (deja activ în proiect).
+- Planuri: Basic / Standard / Premium. Trial Standard 7 zile la onboarding (`account_grant_trial`).
+- Accesul real în aplicație este determinat exclusiv de `accounts.plan` (DB = source of truth).
+- Redirecționare când expiră: `account_access_mode()` întoarce `billing_only` → redirect către pagina `Subscription`.
 
-- UI Subscription (nou/actualizat)
-  - “I want {Plan}” → verifică profilul de facturare:
-    - Fără profil → „Billing Type” (B2B/B2C) → formular PF/PJ → Save & Continue → DIRECT Stripe Checkout (salvare card) pentru activare.
-    - Cu profil:
-      - Dacă abonamentul este inactiv (Last active) → DIRECT Stripe Checkout.
-      - Dacă este activ: Upgrade (modal “Ready to upgrade your experience?”) cu “Pay now” / “Upgrade at renewal”; Downgrade în 2 pași și programare la finalul perioadei.
-  - Formulare Billing (B2B/B2C): confirm email (fără paste) la creare; la editare emailul este read‑only (“managed by Stripe”). Buyer type nu se schimbă.
-  - Manage Account: “See payment method” (modal cu card preview — brand, •••• last4, expirare) + “Change payment method”/“Manage in Stripe (cancel)” → Stripe Billing Portal.
-  - Flow downgrade (fără Stripe):
-    - Pas 1: „Plan change – You are about to downgrade to …” (Cancel/Downgrade).
-    - Pas 2: „The new plan will start on …” (Back/Confirm) → programează schimbarea la sfârșitul perioadei curente.
-  - Header status: badge „New plan: {Plan} starting on {date}” când există programare (`pending_*`).
+## UI Subscription (rezumat)
 
-- DB (migrație nouă: `supabase/migrations/2025-11-01_billing_profiles_and_pending_plan.sql`)
-  - `accounts` (extins):
-    - `status`, `current_period_start`, `current_period_end`, `cancel_at_period_end`
-    - `pending_plan`, `pending_effective_at` (+ index)
-    - `stripe_customer_id`, `stripe_subscription_id`
-  - `account_billing_profiles` (nou):
-    - `buyer_type` ('b2b'|'b2c'), câmpuri PF (B2C) și PJ (B2B) + adresă/e-mail/telefon; `country` default RO.
-    - RLS: SELECT/INSERT/UPDATE doar pentru `auth.uid()`; trigger `updated_at`.
-  - RPC-uri self:
-    - `_account_self_with_boundary()` → ID cont + boundary (prioritizează `current_period_end`, fallback `valid_until`).
-    - `account_schedule_plan_self(p_plan_slug)` → setează `pending_plan` + `pending_effective_at`.
-    - `account_clear_scheduled_plan_self()` → curăță programarea.
-    - `account_cancel_at_period_end_self(p_cancel)` → setează/șterge cancel la period end.
+- „I want {Plan}”: colectează profil de facturare (B2B/B2C), apoi Stripe Checkout (sau branching upgrade/downgrade dacă există abonament activ).
+- Upgrade cu abonament activ:
+  - „Pay now” → `POST /api/billing/upgrade-now` (încearcă upgrade imediat fără proration credit; dacă e nevoie de acțiune, cade pe Checkout).
+  - „Upgrade at renewal” → deschide Stripe Portal (utilizatorul poate seta acolo; în app programăm `pending_*`).
+- Downgrade → programare la reînnoire (`pending_*`) sau prin Portal (subscription schedule).
+- Header/UI: afișează badge „Upcoming plan: {Plan} starting {date}” când `pending_*` există.
 
-- API (implementate)
-  - `GET/POST /api/billing/profile` — citește/salvează profilul; blochează schimbarea buyer_type dacă există deja.
-  - `POST /api/billing/schedule` — programează plan (folosește RPC); `GET` expune `pending_*`.
-  - `POST /api/billing/schedule/clear` — curăță programarea.
-  - `POST /api/billing/checkout` — Stripe Checkout pentru activare/upgrade imediat.
-  - `POST /api/billing/portal` — Stripe Billing Portal (anulare și schimbare metodă plată).
-  - `GET /api/billing/payment-method` — cardul curent (brand, last4, expirare) din Stripe.
-  - `GET /api/billing/status` — status cont (plan, valid_until/current_period, pending, cancel flag) + buyer_type.
+## Stripe — Config
 
-## Ce urmează (fără Stripe încă)
+- Produse: Basic / Standard / Premium. Prețuri lunare în RON (tax‑inclusive).
+- Customer Portal: „Customers can switch plans” = ON, „No charges or credits” = ON.
+- ENV necesare:
+  - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+  - `STRIPE_PRICE_BASIC_RON`, `STRIPE_PRICE_STANDARD_RON`, `STRIPE_PRICE_PREMIUM_RON`
+  - `NEXT_PUBLIC_APP_URL`
 
-- UI
-  - Buton „Clear scheduled change” în Manage Account → `POST /api/billing/schedule/clear`.
-  - Afișare clară „Cancels on {date}” când `cancel_at_period_end=true` (din `/api/billing/status`).
-  - (Opțional) Mesaje de confirmare localizate (EN/RO) și afișare coerentă a datei.
+## DB și Migrations
 
-- DB/API
-  - Audit: tabel opțional `account_plan_change_log` (from_plan, to_plan, effective_at, reason, created_at).
-  - Harden RPC: validări suplimentare (ex: nu programa dacă deja există `cancel_at_period_end` fără a confirma cu utilizatorul).
+- `supabase/migrations/2025-09-13_tenant_bootstrap_and_access.sql` — bootstrap cont + trial + funcții `account_current_plan()`/`account_access_mode()`.
+- `supabase/migrations/2025-11-01_billing_profiles_and_pending_plan.sql` — extinde `accounts` cu:
+  - `status`, `current_period_start`, `current_period_end`, `cancel_at_period_end`, `pending_plan`, `pending_effective_at`, `stripe_customer_id`, `stripe_subscription_id`.
+  - `account_billing_profiles` (PF/PJ) + RLS + RPC‑uri: `_account_self_with_boundary`, `account_schedule_plan_self`, `account_clear_scheduled_plan_self`, `account_cancel_at_period_end_self`.
+- `supabase/migrations/2025-11-02_billing_invoices.sql` — `billing_invoices` (snapshot facturi din webhook).
+- Nou: `supabase/migrations/2025-11-05_stripe_event_guards.sql` — `stripe_events_processed` (idempotency webhook).
+- Nou: `supabase/migrations/2025-11-05_accounts_add_stripe_schedule.sql` — `accounts.stripe_schedule_id` (+ index) pentru subscription schedules (downgrade programat din Portal).
 
-## Stripe — de făcut (faza următoare)
+## API — Endpoints relevante
 
-- Config Stripe
-  - Produse: Basic / Standard / Premium; prețuri lunare RON (tax-inclusive); branding + emailuri (receipts, finalized invoices), dunning 0/3/7/14.
-  - ENV: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_BASIC_RON`, `STRIPE_PRICE_STANDARD_RON`, `STRIPE_PRICE_PREMIUM_RON`.
+- `POST /api/billing/checkout` — creează Checkout Session (mode=subscription), asociază/actualizează Customer.
+- `POST /api/billing/portal` — deschide Customer Portal (downgrade/cancel/payment method).
+- `POST /api/billing/upgrade-now` — upgrade imediat al subscription‑ului (fără proration credit); dacă eșuează (SCA/off-session), fallback: Checkout.
+- `GET/POST /api/billing/profile` — profil de facturare (PF/PJ). Buyer type nu se schimbă ulterior.
+- `POST /api/billing/schedule` — programare schimbare plan (umple `pending_*`).
+- `POST /api/billing/schedule/clear` — curăță `pending_*`.
+- `GET /api/billing/payment-method` — card curent (brand, last4, expirare) din Stripe.
+- `GET /api/billing/status` — snapshot: plan, valid_until/current_period, pending, cancel flag, buyer_type.
+- Nou: `POST /api/billing/reconcile` — reconciliere (cron, cu `Authorization: Bearer ${BILLING_CRON_SECRET}`) aplică `pending_plan` dacă factura de ciclu e plătită și `pending_effective_at` a trecut.
 
-- API Stripe
-  - `POST /api/billing/checkout` — Checkout Session (mode=subscription), cu `customer` creat/actualizat din profil; `client_reference_id=account_id`.
-  - `POST /api/billing/webhook` —
-    - `checkout.session.completed`: setează `stripe_customer_id/subscription_id`, sincronizează `current_period_start/end`, `status`, `valid_until = current_period_end`, curăță `pending_*` la upgrade “now”.
-    - `customer.subscription.updated/created`: sincronizează `status` și perioade; mapează price→plan; `valid_until = current_period_end` (compat cu “clover” via items[0].current_period_end).
-    - `invoice.payment_succeeded/paid`: marchează `active`, recuperează subscription și setează `valid_until = current_period_end`; `invoice.payment_failed` → `past_due`.
-    - Aplică `pending_plan` la boundary: dacă `now >= pending_effective_at`, `plan = pending_plan` și curăță `pending_*`.
+## Webhook — Comportament detaliat
 
-- UX decizii Stripe
-  - Upgrade: „Start now” (Checkout imediat) vs. „Start at period end” (programare — deja implementată).
-  - Downgrade: doar la finalul perioadei (deja implementat ca programare).
-  - Nu expunem Customer Portal; datele de facturare se editează în app.
+- Idempotency garantat:
+  - Tabel `stripe_events_processed(event_id PK, type, status, payload, processed_at)`; evenimente duplicate sunt ignorate.
 
-## Testare rapidă (dev)
+- `checkout.session.completed`
+  - Capturează `stripe_customer_id` / `stripe_subscription_id` pe cont, setează `status`, perioade (`current_period_*`) și `valid_until`.
+  - Curăță eventualele subscription‑uri anterioare (cancel imediat, fără proration).
 
-- Profil PF/PJ
-  - În Subscription → „I want …” fără profil → selectează B2B/B2C → completează → Save & Continue → verifică în DB `account_billing_profiles`.
-  - Manage Account → „Edit billing details” → prefill + Save changes.
+- `customer.subscription.updated`
+  - Sincronizează perioade/status.
+  - Mapare price → plan și programare DOAR pentru upgrade (Basic<Standard<Premium).
+  - Guard: dacă există deja `pending_plan`, NU mai rescrie `pending_*` (evită să împingă încă un ciclu la graniță).
 
-- Programare plan
-  - Alege un plan mai mic → dialog în 2 pași → Confirm → verifică `accounts.pending_plan/pending_effective_at` + badge „New plan: … starting on …”.
-  - `POST /api/billing/schedule/clear` → badge dispare, `pending_*` devin NULL.
+- `subscription_schedule.created | updated`
+  - Pentru downgrade programat din Portal: stabilește `pending_plan` și `pending_effective_at` din „next phase start” + `stripe_schedule_id`.
 
-- Cancel
-  - Manage Account → „Cancel subscription” → verifică `cancel_at_period_end=true` (în `/api/billing/status`).
+- `subscription_schedule.canceled | released`
+  - Curăță `pending_plan`, `pending_effective_at`, `stripe_schedule_id`.
 
-## Observații/Limitări actuale
+- `invoice.paid` / `invoice.payment_succeeded`
+  - Aplica switch‑ul efectiv DOAR pentru reînnoirile de ciclu: `billing_reason = 'subscription_cycle'`.
+  - Garduri de siguranță:
+    - `invoice.subscription == accounts.stripe_subscription_id`.
+    - Toleranță la graniță: ACCEPTĂM fie
+      - `lines[0].period.start >= pending_effective_at - 5m`, fie
+      - `lines[0].period.end ≈ pending_effective_at ± 5m`.
+  - Dacă trece gardurile: `plan = pending_plan`, golește `pending_*`, actualizează perioade și `valid_until`, setează `cancel_at_period_end=false` (reînnoit cu succes).
+  - Fallback: dacă nu există `pending_plan`, mapează planul din price (subscription sau invoice line) și aliniază `plan`.
 
-- Upgrade “Pay now” este activ (Checkout + webhook). “Upgrade at renewal” programează schimbarea la finalul perioadei curente.
-- `SubscriptionClient` încă folosește PLANS hardcodate pentru listă/imagini (nu citim din `billing_plans.features` pentru UI).
-- `account_set_plan_self` este referit în componentă pentru scenariul legacy; noul flux cu Stripe va înlocui setarea directă a planului din client.
+- `invoice.payment_failed`
+  - Nu schimbă `plan`; setează `status='past_due'` și persistă invoice în `billing_invoices`.
+
+## Reguli de business (anti‑confuzii)
+
+- Niciodată nu acordăm acces după `customer.subscription.updated`. Accesul real vine după `invoice.paid` (subscription_cycle) + garduri OK.
+- Nu ne bazăm pe `subscription.items` pentru entitlement; DB e autoritativ.
+- Prima plată (subscription_create) este ignorată pentru switch‑ul programat; doar aliniază perioade/valid_until.
+
+## Testare rapidă (dev / Test Clock)
+
+- Upgrade în Portal (Standard → Premium), apoi înainte de reînnoire verifică:
+  - `accounts.pending_plan='premium'`, `pending_effective_at = current_period_end`.
+  - UI arată badge „Upcoming plan: Premium starting …”.
+- Avansează Test Clock peste `pending_effective_at`; pe `invoice.paid`:
+  - `accounts.plan` devine `pending_plan` și `pending_*` se golesc.
+- Caz critic (ordinea evenimentelor): dacă vine `customer.subscription.updated` puțin înainte de `invoice.paid`, pending NU mai este rescris (guard), iar switch‑ul are loc corect pe factura ciclului.
+
+## Mentenanță/Operare
+
+- Reconciliere periodică: rulează `POST /api/billing/reconcile` (cron cu `BILLING_CRON_SECRET`) pentru conturi cu `pending_plan` depășit și factură de ciclu „paid”.
+- Debug rapid:
+  - Stripe Dashboard → Developers → Events (filtre pe `invoice.paid`, `customer.subscription.updated`, `subscription_schedule.*`).
+  - DB → `stripe_events_processed` (vezi tip, payload, status) și `accounts` (plan/pending/perioade).
 
 ## Referințe fișiere
 
 - UI: `app/app/subscription/ui/SubscriptionClient.tsx`, `app/app/subscription/subscription.module.css`
-- DB: `supabase/migrations/2025-11-01_billing_profiles_and_pending_plan.sql`
-- API: `app/api/billing/*`
-
----
-
-Dacă dorești, pot adăuga imediat rutarea „Clear scheduled change” în Manage Account și afișaj „Cancels on …”, sau trecem direct la integrarea Stripe (Checkout + Webhook) în faza următoare.
+- Webhook: `app/api/billing/webhook/route.ts`
+- API: `app/api/billing/*` (checkout, portal, status, schedule, payment‑method, reconcile)
+- DB: migrațiile din `supabase/migrations` listate mai sus
