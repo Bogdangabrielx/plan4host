@@ -539,7 +539,6 @@ function CookieConsentLanding() {
 export default function HomePage() {
   const [navOpen, setNavOpen] = useState(false);
   const [isPwa, setIsPwa] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
@@ -602,16 +601,6 @@ export default function HomePage() {
       const iOSStandalone = (window as any).navigator?.standalone === true;
       setIsPwa(!!(standaloneMedia || iOSStandalone));
     } catch { setIsPwa(false); }
-  }, []);
-  // Desktop detection to tweak video height
-  useEffect(() => {
-    try {
-      const mq = window.matchMedia('(min-width: 1024px)');
-      const apply = () => setIsDesktop(!!mq.matches);
-      apply();
-      try { mq.addEventListener('change', apply); } catch { mq.addListener(apply as any); }
-      return () => { try { mq.removeEventListener('change', apply); } catch { mq.removeListener(apply as any); } };
-    } catch { setIsDesktop(false); }
   }, []);
   const benefits: string[] = [
     "Custom digital check-in form",
@@ -819,7 +808,7 @@ export default function HomePage() {
             onPointerDown={onFeaturesPointerDown}
             onPointerEnter={() => setFeaturesHover(true)}
             onPointerLeave={() => setFeaturesHover(false)}
-            style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: featuresHover ? 'none' : 'auto' }}
+            style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: 'auto' }}
           />
           <video
             className={styles.focusable}
@@ -831,7 +820,7 @@ export default function HomePage() {
             playsInline
             preload="metadata"
             ref={featuresVideoRef}
-            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block', ...(isDesktop ? { maxHeight: 420 } : {}) }}
+            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
           >
             Sorry, your browser doesn’t support embedded videos.
           </video>
