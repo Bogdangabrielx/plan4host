@@ -329,6 +329,7 @@ function CookieConsentLanding() {
 export default function HomePageRO() {
   const [navOpen, setNavOpen] = useState(false);
   const [isPwa, setIsPwa] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
@@ -378,6 +379,16 @@ export default function HomePageRO() {
       const iOSStandalone = (window as any).navigator?.standalone === true;
       setIsPwa(!!(standaloneMedia || iOSStandalone));
     } catch { setIsPwa(false); }
+  }, []);
+  // Detect desktop to constrain video height slightly
+  useEffect(() => {
+    try {
+      const mq = window.matchMedia('(min-width: 1024px)');
+      const apply = () => setIsDesktop(!!mq.matches);
+      apply();
+      try { mq.addEventListener('change', apply); } catch { mq.addListener(apply as any); }
+      return () => { try { mq.removeEventListener('change', apply); } catch { mq.removeListener(apply as any); } };
+    } catch { setIsDesktop(false); }
   }, []);
   const beneficii: string[] = [
     "Formular personalizat pentru check-in digital",
@@ -531,7 +542,7 @@ export default function HomePageRO() {
             playsInline
             preload="metadata"
             ref={featuresVideoRef}
-            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
+            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block', ...(isDesktop ? { maxHeight: 420 } : {}) }}
           >
             Video indisponibil.
           </video>
