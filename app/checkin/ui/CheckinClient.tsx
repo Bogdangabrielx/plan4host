@@ -1021,7 +1021,7 @@ export default function CheckinClient() {
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
               Thank you for choosing us!<br />
               Please fill in the fields below with the requested information.<br />
-              Once you complete the online check-in, you will automatically receive an email with confirmation of check-in for <span style={{ color: "var(--primary)", fontWeight: 700 }}>{prop?.name ?? "the property"}</span>.<br />
+              Once you complete the online check-in, you will automatically receive an email confirming your check-in for <span style={{ color: "var(--primary)", fontWeight: 700 }}>{prop?.name ?? "the property"}</span>. This email will also include a QR code that you can present at reception, or use as proof that you have completed this form.<br />
               Please note that all information you provide is strictly confidential.<br />
               Thank you for your patience!
             </p>
