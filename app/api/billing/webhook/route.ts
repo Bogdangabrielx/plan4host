@@ -97,33 +97,21 @@ export async function POST(req: Request) {
           valid_until: cpe,
         };
 
-        // Try to map Stripe price → plan slug
+        // Map Stripe price → plan slug and schedule it for the boundary (do NOT grant access now)
         try {
           const item = sub?.items?.data?.[0];
           const priceId = typeof item?.price === 'string' ? item?.price : item?.price?.id;
           const mapped = getPlanSlugForPriceId(priceId);
-          if (mapped) {
-            updatePayload.plan = mapped;
-            // Clear pending if plan is now applied
-            updatePayload.pending_plan = null;
-            updatePayload.pending_effective_at = null;
+          const currentPlan = (acc.plan as string | null)?.toLowerCase?.() || null;
+          const order: any = { basic: 1, standard: 2, premium: 3 };
+          const isUpgrade = mapped && currentPlan && order[mapped] > order[currentPlan];
+          if (mapped && mapped !== currentPlan && isUpgrade) {
+            updatePayload.pending_plan = mapped;
+            updatePayload.pending_effective_at = cpe;
           }
         } catch {}
 
         await supabase.from("accounts").update(updatePayload).eq("id", acc.id);
-
-        // Apply pending plan if boundary reached
-        if (acc.pending_plan && acc.pending_effective_at) {
-          const now = Date.now();
-          const eff = Date.parse(acc.pending_effective_at);
-          if (Number.isFinite(eff) && eff <= now) {
-            await supabase.from("accounts").update({
-              plan: acc.pending_plan,
-              pending_plan: null,
-              pending_effective_at: null,
-            }).eq("id", acc.id);
-          }
-        }
         break;
       }
       case "customer.subscription.created": {
@@ -168,45 +156,64 @@ export async function POST(req: Request) {
         let cps: string | null = null;
         let cpe: string | null = null;
         let cancelAtPeriodEnd = false;
+        let subscriptionSnapshot: any = null;
         if (subId) {
           try {
-            const sub = await stripe.subscriptions.retrieve(subId);
-            cps = toISO((sub as any).current_period_start ?? (sub as any)?.items?.data?.[0]?.current_period_start ?? null);
-            cpe = toISO((sub as any).current_period_end ?? (sub as any)?.items?.data?.[0]?.current_period_end ?? null);
-            cancelAtPeriodEnd = !!sub.cancel_at_period_end;
+            subscriptionSnapshot = await stripe.subscriptions.retrieve(subId, { expand: ['items'] } as any);
+            cps = toISO(subscriptionSnapshot.current_period_start ?? subscriptionSnapshot?.items?.data?.[0]?.current_period_start ?? null);
+            cpe = toISO(subscriptionSnapshot.current_period_end ?? subscriptionSnapshot?.items?.data?.[0]?.current_period_end ?? null);
+            cancelAtPeriodEnd = !!subscriptionSnapshot.cancel_at_period_end;
           } catch {}
         }
         // Fallback to invoice line period if subscription fetch failed
         if (!cpe && inv?.lines?.data?.[0]?.period?.end) {
           cpe = toISO(inv.lines.data[0].period.end);
         }
+
+        // Resolve account row and pending
+        const { data: accountRow } = await supabase
+          .from('accounts')
+          .select('id, plan, pending_plan, pending_effective_at, stripe_subscription_id, cancel_at_period_end')
+          .eq('stripe_customer_id', customerId as any)
+          .maybeSingle();
+        const pendingPlan = (accountRow?.pending_plan as string | null)?.toLowerCase?.() || null;
+        const billingReason = inv?.billing_reason || '';
+
+        // Subscription match guard
+        const matchSubscription = accountRow?.stripe_subscription_id && subId
+          ? accountRow.stripe_subscription_id === subId
+          : true;
+
+        // Optional tolerance on invoice period start vs pending_effective_at
+        let periodStartOk = true;
+        try {
+          const invPeriodStartSec = inv?.lines?.data?.[0]?.period?.start as number | undefined;
+          if (invPeriodStartSec && accountRow?.pending_effective_at) {
+            const invStartMs = invPeriodStartSec * 1000;
+            const pendingMs = Date.parse(accountRow.pending_effective_at);
+            periodStartOk = Math.abs(invStartMs - pendingMs) <= 5 * 60 * 1000 || invStartMs >= pendingMs;
+          }
+        } catch {}
+
         const updatePayload: any = { status: 'active' };
         if (cps) updatePayload.current_period_start = cps;
-        if (cpe) updatePayload.current_period_end = cpe, updatePayload.valid_until = cpe;
-        updatePayload.cancel_at_period_end = cancelAtPeriodEnd;
+        if (cpe) { updatePayload.current_period_end = cpe; updatePayload.valid_until = cpe; }
+        updatePayload.cancel_at_period_end = false; // renewed successfully
 
-        // Prefer match by subscription id when available, else by customer id
-        let updated = null as any;
-        if (subId) {
-          const res = await supabase.from("accounts").update(updatePayload).eq("stripe_subscription_id", subId as any).select("id").maybeSingle();
-          updated = res?.data;
-        }
-        if (!updated) {
-          await supabase.from("accounts").update(updatePayload).eq("stripe_customer_id", customerId as any);
-        }
-
-        // ---- Persist invoice snapshot (transaction log) ----
-        try {
-          // Resolve account id from customer
-          const { data: accRow } = await supabase
-            .from('accounts')
-            .select('id')
-            .eq('stripe_customer_id', customerId as any)
-            .maybeSingle();
-          const accountId = accRow?.id as string | undefined;
-          if (accountId) {
-            // Determine billed price/plan (prefer non-proration line)
-            let priceId: string | null = null;
+        const shouldApplyPending = pendingPlan && billingReason === 'subscription_cycle' && matchSubscription && periodStartOk;
+        if (shouldApplyPending) {
+          updatePayload.plan = pendingPlan;
+          updatePayload.pending_plan = null;
+          updatePayload.pending_effective_at = null;
+        } else if (!pendingPlan) {
+          // Fallback: map plan from invoice/subscription price
+          let priceId: string | null = null;
+          try {
+            const item = subscriptionSnapshot?.items?.data?.[0];
+            const p = item?.price;
+            priceId = typeof p === 'string' ? p : p?.id || null;
+          } catch {}
+          if (!priceId) {
             try {
               const lines = Array.isArray(inv?.lines?.data) ? inv.lines.data : [];
               const nonProration = lines.find((l: any) => !!l?.price && !l?.proration);
@@ -214,16 +221,41 @@ export async function POST(req: Request) {
               const p = lineWithPrice?.price;
               priceId = typeof p === 'string' ? p : p?.id || null;
             } catch {}
-            if (!priceId && subId) {
+          }
+          const mapped = getPlanSlugForPriceId(priceId || undefined);
+          if (mapped) updatePayload.plan = mapped;
+        }
+
+        if (accountRow?.id) {
+          await supabase.from('accounts').update(updatePayload).eq('id', accountRow.id);
+        } else if (subId) {
+          await supabase.from('accounts').update(updatePayload).eq('stripe_subscription_id', subId as any);
+        } else if (customerId) {
+          await supabase.from('accounts').update(updatePayload).eq('stripe_customer_id', customerId as any);
+        }
+
+        // ---- Persist invoice snapshot (transaction log) ----
+        try {
+          const accountId = (accountRow?.id as string | undefined) || null;
+          if (accountId) {
+            // Determine billed price/plan (prefer subscription snapshot, else invoice line)
+            let priceId: string | null = null;
+            try {
+              const item = subscriptionSnapshot?.items?.data?.[0];
+              const p = item?.price;
+              priceId = typeof p === 'string' ? p : p?.id || null;
+            } catch {}
+            if (!priceId) {
               try {
-                const sub = await stripe.subscriptions.retrieve(subId, { expand: ['items'] } as any);
-                const item = (sub as any)?.items?.data?.[0];
-                const p = item?.price;
+                const lines = Array.isArray(inv?.lines?.data) ? inv.lines.data : [];
+                const nonProration = lines.find((l: any) => !!l?.price && !l?.proration);
+                const lineWithPrice = nonProration || lines.find((l: any) => !!l?.price);
+                const p = lineWithPrice?.price;
                 priceId = typeof p === 'string' ? p : p?.id || null;
               } catch {}
             }
 
-            const planSlug = getPlanSlugForPriceId(priceId || undefined);
+            const finalPlanSlug = shouldApplyPending ? pendingPlan : getPlanSlugForPriceId(priceId || undefined);
             const paymentIntentId: string | undefined = typeof inv.payment_intent === 'string' ? inv.payment_intent : inv.payment_intent?.id;
 
             // Optionally fetch charge id for audit
@@ -254,7 +286,7 @@ export async function POST(req: Request) {
               tax: inv.tax ?? null,
               total: inv.total ?? 0,
               price_id: priceId || null,
-              plan_slug: planSlug || null,
+              plan_slug: finalPlanSlug || null,
               period_start: cps,
               period_end: cpe,
               hosted_invoice_url: inv.hosted_invoice_url || null,
@@ -305,6 +337,63 @@ export async function POST(req: Request) {
             await supabase.from('billing_invoices').upsert(row as any, { onConflict: 'stripe_invoice_id' } as any);
           }
         } catch {}
+        break;
+      }
+      case "subscription_schedule.created":
+      case "subscription_schedule.updated": {
+        const schedule = event.data.object as any;
+        const scheduleId: string = schedule?.id;
+        const customerId: string | undefined = typeof schedule.customer === 'string' ? schedule.customer : schedule.customer?.id;
+        if (!customerId) break;
+
+        const { data: acc } = await supabase
+          .from('accounts')
+          .select('id, plan')
+          .eq('stripe_customer_id', customerId as any)
+          .maybeSingle();
+        if (!acc) break;
+
+        // Choose the next future phase as pending effective
+        let nextPhaseStart: number | null = null;
+        let nextPhasePriceId: string | null = null;
+        try {
+          const nowSec = Math.floor(Date.now() / 1000);
+          const phases = Array.isArray(schedule?.phases) ? schedule.phases : [];
+          let candidate: any = null;
+          for (const ph of phases) {
+            const s = ph?.start_date as number | undefined;
+            if (s && s > nowSec && (!candidate || s < candidate.start_date)) candidate = ph;
+          }
+          if (candidate) {
+            nextPhaseStart = candidate.start_date as number;
+            const item = Array.isArray(candidate.items) ? candidate.items[0] : null;
+            const p = item?.price;
+            nextPhasePriceId = typeof p === 'string' ? p : p?.id || null;
+          }
+        } catch {}
+
+        if (nextPhaseStart && nextPhasePriceId) {
+          const mapped = getPlanSlugForPriceId(nextPhasePriceId);
+          if (mapped) {
+            await supabase.from('accounts').update({
+              pending_plan: mapped,
+              pending_effective_at: toISO(nextPhaseStart),
+              stripe_schedule_id: scheduleId,
+            }).eq('id', acc.id);
+          }
+        }
+        break;
+      }
+      case "subscription_schedule.canceled":
+      case "subscription_schedule.released": {
+        const schedule = event.data.object as any;
+        const customerId: string | undefined = typeof schedule.customer === 'string' ? schedule.customer : schedule.customer?.id;
+        if (!customerId) break;
+        await supabase.from('accounts').update({
+          pending_plan: null,
+          pending_effective_at: null,
+          stripe_schedule_id: null,
+        }).eq('stripe_customer_id', customerId as any);
         break;
       }
       default:
