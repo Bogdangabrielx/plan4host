@@ -490,7 +490,7 @@ export default function HomePageRO() {
         <h2 id="features-title">Funcții</h2>
         <div
           className="sb-cardglow"
-          style={{ borderRadius: 12, overflow: 'hidden', position: 'relative', maxWidth: 960, margin: '0 auto' }}
+          style={{ borderRadius: 12, overflow: 'hidden', position: 'relative' }}
           onPointerEnter={() => setFeaturesHover(true)}
           onPointerLeave={() => setFeaturesHover(false)}
           onPointerDown={() => { setFeaturesHover(true); setTimeout(() => setFeaturesHover(false), 1600); }}
@@ -505,7 +505,7 @@ export default function HomePageRO() {
             playsInline
             preload="metadata"
             ref={featuresVideoRef}
-            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block', aspectRatio: '16 / 9' }}
+            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
           >
             Video indisponibil.
           </video>

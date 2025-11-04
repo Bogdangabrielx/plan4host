@@ -766,7 +766,7 @@ export default function HomePage() {
         <h2 id="features-title">Features</h2>
         <div
           className="sb-cardglow"
-          style={{ borderRadius: 12, overflow: 'hidden', position: 'relative', maxWidth: 960, margin: '0 auto' }}
+          style={{ borderRadius: 12, overflow: 'hidden', position: 'relative' }}
           onPointerEnter={() => setFeaturesHover(true)}
           onPointerLeave={() => setFeaturesHover(false)}
           onPointerDown={() => { setFeaturesHover(true); setTimeout(() => setFeaturesHover(false), 1600); }}
@@ -781,7 +781,7 @@ export default function HomePage() {
             playsInline
             preload="metadata"
             ref={featuresVideoRef}
-            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block', aspectRatio: '16 / 9' }}
+            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
           >
             Sorry, your browser doesn’t support embedded videos.
           </video>
