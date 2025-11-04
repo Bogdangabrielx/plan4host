@@ -1022,7 +1022,7 @@ export default function CheckinClient() {
               Thank you for choosing us!<br />
               Please fill in the fields below with the requested information.<br />
               Once you complete the online check-in, you will automatically receive an email confirming your check-in for <span style={{ color: "var(--primary)", fontWeight: 700 }}>{prop?.name ?? "the property"}</span>.<br />
-              The email will also include a <strong>QR code</strong>  <img src="/QR_fordark.png" alt="QR" width={16} height={16} style={{ verticalAlign: 'text-bottom', marginRight: 4 }} /> that you can present at reception, or use as proof that you have completed this form.<br />
+              The email will also include a <strong>QR code</strong>  <img src="/QR_fordark.png" alt="QR" width={16} height={16} style={{ verticalAlign: 'text-bottom', marginRight: 4 }} /> pothat you can present at reception, or use as proof that you have completed this form.<br />
               Please note that all information you provide is strictly confidential.<br />
               Thank you for your patience!
             </p>

@@ -328,6 +328,14 @@ function CookieConsentLanding() {
 
 export default function HomePageRO() {
   const [navOpen, setNavOpen] = useState(false);
+  const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
+  const [featuresPlaying, setFeaturesPlaying] = useState(true);
+  const toggleFeaturesPlay = () => {
+    const v = featuresVideoRef.current;
+    if (!v) return;
+    if (v.paused) { try { v.play(); } catch {} setFeaturesPlaying(true); }
+    else { try { v.pause(); } catch {} setFeaturesPlaying(false); }
+  };
   const year = new Date().getFullYear();
   const scrollToId = (id: string) => {
     try {
@@ -479,7 +487,43 @@ export default function HomePageRO() {
       {/* Caracteristici */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title">Funcții</h2>
-        <FeatureCarousel />
+        <div className="sb-cardglow" style={{ borderRadius: 12, overflow: 'hidden', position: 'relative' }}>
+          <video
+            className={styles.focusable}
+            src="/functions_forlanding.mp4"
+            poster="/functions_forlanding.mp4"
+            muted
+            autoPlay
+            loop
+            playsInline
+            preload="metadata"
+            ref={featuresVideoRef}
+            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
+          >
+            Video indisponibil.
+          </video>
+          <button
+            type="button"
+            onClick={toggleFeaturesPlay}
+            className={styles.focusable}
+            aria-label={featuresPlaying ? 'Pauză video' : 'Redă video'}
+            style={{
+              position: 'absolute',
+              right: 12,
+              bottom: 12,
+              borderRadius: 999,
+              border: '1px solid var(--border)',
+              background: 'color-mix(in srgb, var(--panel) 86%, transparent)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              color: 'var(--text)',
+              padding: '8px 12px',
+              fontWeight: 800,
+            }}
+          >
+            {featuresPlaying ? 'Pauză' : 'Redă'}
+          </button>
+        </div>
       </section>
 
       {/* Prețuri */}
