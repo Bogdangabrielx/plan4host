@@ -541,12 +541,39 @@ export default function HomePage() {
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
+  const [featuresHintShown, setFeaturesHintShown] = useState(false);
+  const featuresHintTimerRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
   const toggleFeaturesPlay = () => {
     const v = featuresVideoRef.current;
     if (!v) return;
     if (v.paused) { try { v.play(); } catch {} setFeaturesPlaying(true); }
     else { try { v.pause(); } catch {} setFeaturesPlaying(false); }
+    // After action, hide the overlay and clear any hint timers
+    setFeaturesHover(false);
+    if (featuresHintTimerRef.current) { try { clearTimeout(featuresHintTimerRef.current as any); } catch {} featuresHintTimerRef.current = null; }
   };
+  const onFeaturesPointerDown = () => {
+    // On phones/coarse pointer, first tap shows overlay for 3s so it can be actioned
+    let coarse = false;
+    try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
+    if (coarse) {
+      setFeaturesHover(true);
+      if (!featuresHintShown) {
+        setFeaturesHintShown(true);
+        if (featuresHintTimerRef.current) { try { clearTimeout(featuresHintTimerRef.current as any); } catch {} }
+        featuresHintTimerRef.current = window.setTimeout(() => { setFeaturesHover(false); featuresHintTimerRef.current = null; }, 3000);
+      } else {
+        if (featuresHintTimerRef.current) { try { clearTimeout(featuresHintTimerRef.current as any); } catch {} }
+        featuresHintTimerRef.current = window.setTimeout(() => { setFeaturesHover(false); featuresHintTimerRef.current = null; }, 1600);
+      }
+      return;
+    }
+    // Desktop: keep previous hover behavior (explicit enter/leave handle visibility)
+    setFeaturesHover(true);
+  };
+  useEffect(() => {
+    return () => { if (featuresHintTimerRef.current) { try { clearTimeout(featuresHintTimerRef.current as any); } catch {} } };
+  }, []);
   const year = new Date().getFullYear();
   const scrollToId = (id: string) => {
     try {
@@ -769,7 +796,7 @@ export default function HomePage() {
           style={{ borderRadius: 12, overflow: 'hidden', position: 'relative' }}
           onPointerEnter={() => setFeaturesHover(true)}
           onPointerLeave={() => setFeaturesHover(false)}
-          onPointerDown={() => { setFeaturesHover(true); setTimeout(() => setFeaturesHover(false), 1600); }}
+          onPointerDown={onFeaturesPointerDown}
         >
           <video
             className={styles.focusable}
