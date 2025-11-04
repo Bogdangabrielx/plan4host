@@ -537,7 +537,7 @@ function CookieConsentLanding() {
   );
 }
 export default function HomePage() {
-  const [navOpen, setNavOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false); 
   const [isPwa, setIsPwa] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
