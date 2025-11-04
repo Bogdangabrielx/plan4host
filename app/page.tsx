@@ -543,24 +543,58 @@ export default function HomePage() {
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
+  const featuresTapTimerRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
   const toggleFeaturesPlay = () => {
     const v = featuresVideoRef.current;
     if (!v) return;
-    if (v.paused) { try { v.play(); } catch {} setFeaturesPlaying(true); }
-    else { try { v.pause(); } catch {} setFeaturesPlaying(false); }
-    // Desktop: hide overlay after action; Mobile (coarse): keep visible until next tap
-    let coarse = false;
-    try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
-    if (!coarse) setFeaturesHover(false);
+    const wasPaused = v.paused;
+    if (wasPaused) {
+      try { v.play(); } catch {}
+      setFeaturesPlaying(true);
+      // Show briefly then hide on mobile; desktop hides via hover
+      let coarse = false; try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
+      setFeaturesHover(true);
+      if (coarse) {
+        if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} }
+        featuresTapTimerRef.current = window.setTimeout(() => { setFeaturesHover(false); featuresTapTimerRef.current = null; }, 1500);
+      } else {
+        setFeaturesHover(false);
+      }
+    } else {
+      try { v.pause(); } catch {}
+      setFeaturesPlaying(false);
+      // Pause: keep overlay visible on mobile until next tap; desktop hides
+      let coarse = false; try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
+      if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} featuresTapTimerRef.current = null; }
+      setFeaturesHover(true);
+      if (!coarse) setFeaturesHover(false);
+    }
   };
   const onFeaturesPointerDown = () => {
-    // On phones/coarse pointer, toggle overlay visibility on single tap
     let coarse = false;
     try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
-    if (coarse) { setFeaturesHover(v => !v); return; }
-    // Desktop: show on hover or explicit pointer
+    if (coarse) {
+      // Toggle playback directly on tap
+      const v = featuresVideoRef.current; if (!v) return;
+      const wasPaused = v.paused;
+      if (wasPaused) {
+        try { v.play(); } catch {}
+        setFeaturesPlaying(true);
+        setFeaturesHover(true);
+        if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} }
+        featuresTapTimerRef.current = window.setTimeout(() => { setFeaturesHover(false); featuresTapTimerRef.current = null; }, 1500);
+      } else {
+        try { v.pause(); } catch {}
+        setFeaturesPlaying(false);
+        if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} featuresTapTimerRef.current = null; }
+        setFeaturesHover(true);
+      }
+      return;
+    }
+    // Desktop: reveal overlay on pointer
     setFeaturesHover(true);
   };
+  useEffect(() => { return () => { if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} } }; }, []);
   const year = new Date().getFullYear();
   const scrollToId = (id: string) => {
     try {
@@ -812,7 +846,7 @@ export default function HomePage() {
             onPointerDown={onFeaturesPointerDown}
             onPointerEnter={() => setFeaturesHover(true)}
             onPointerLeave={() => setFeaturesHover(false)}
-            style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: featuresHover ? 'none' : 'auto' }}
+            style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: 'auto' }}
           />
           <video
             className={styles.focusable}
@@ -841,10 +875,10 @@ export default function HomePage() {
               transform: 'translate(-50%, -50%)',
               borderRadius: 999,
               border: '1px solid var(--border)',
-              background: 'color-mix(in srgb, var(--card) 54%, transparent)',
+              background: 'color-mix(in srgb, var(--card) 16%, transparent)',
               backdropFilter: 'blur(0.5px)',
               WebkitBackdropFilter: 'blur(0.5px)',
-              color: 'var(--panel)',
+              color: 'var(--card)',
               width: 80,
               height: 80,
               display: 'grid',
