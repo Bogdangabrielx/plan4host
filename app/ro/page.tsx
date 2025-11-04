@@ -328,6 +328,7 @@ function CookieConsentLanding() {
 
 export default function HomePageRO() {
   const [navOpen, setNavOpen] = useState(false);
+  const [isPwa, setIsPwa] = useState(false);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
@@ -370,6 +371,14 @@ export default function HomePageRO() {
       body.style.overscrollBehaviorY = prevBody;
     };
   }, []);
+  // Detect PWA (installed) and apply safe-bottom only in PWA
+  useEffect(() => {
+    try {
+      const standaloneMedia = window.matchMedia?.('(display-mode: standalone)')?.matches ?? false;
+      const iOSStandalone = (window as any).navigator?.standalone === true;
+      setIsPwa(!!(standaloneMedia || iOSStandalone));
+    } catch { setIsPwa(false); }
+  }, []);
   const beneficii: string[] = [
     "Formular personalizat pentru check-in digital",
     "Acord GDPR, semnătură digitală și copie ID",
@@ -392,12 +401,14 @@ export default function HomePageRO() {
   ];
 
   return (
-    <main className={styles.landing} style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: '100dvh', overflowX: 'hidden' }}>
+    <main className={styles.landing} style={{ paddingBottom: isPwa ? 'var(--safe-bottom, 0px)' : 0, minHeight: '100dvh', overflowX: 'hidden' }}>
       <AutoOpenOnLanding delay={150} />
 
       {/* Bară safe-area iOS */}
       <div aria-hidden style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 'var(--safe-top)', background: 'var(--bg)', zIndex: 3, pointerEvents: 'none' }} />
-      <div aria-hidden style={{ position:'fixed', bottom:0, left:0, right:0, height:'var(--safe-bottom)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
+      {isPwa && (
+        <div aria-hidden style={{ position:'fixed', bottom:0, left:0, right:0, height:'var(--safe-bottom)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
+      )}
       <div aria-hidden style={{ position:'fixed', top:0, bottom:0, left:0, width:'var(--safe-left)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
       <div aria-hidden style={{ position:'fixed', top:0, bottom:0, right:0, width:'var(--safe-right)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
 
@@ -540,9 +551,9 @@ export default function HomePageRO() {
               background: 'color-mix(in srgb, var(--card) 54%, transparent)',
               backdropFilter: 'blur(0.5px)',
               WebkitBackdropFilter: 'blur(0.5px)',
-              color: 'var(--text)',
-              width: 70,
-              height: 70,
+              color: '#ffffff',
+              width: 80,
+              height: 80,
               display: 'grid',
               placeItems: 'center',
               opacity: (!featuresPlaying || featuresHover) ? 1 : 0,
