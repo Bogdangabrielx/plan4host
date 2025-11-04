@@ -738,6 +738,20 @@ will-change: transform;
   .featureCard::before { animation: none !important; }
 }
 
+/* Wide desktop override: let sections span full width */
+@media (min-width: 1200px) {
+  .hero,
+  .features,
+  .pricing,
+  .about,
+  .contact,
+  .footer {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
 /* Utility: force-wrap very long words/URLs */
 .break-anywhere { overflow-wrap: anywhere; word-break: break-word; }
 
