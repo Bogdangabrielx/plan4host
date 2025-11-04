@@ -854,12 +854,12 @@ export default function HomePage() {
             }}
           >
             {featuresPlaying ? (
-              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
+              <svg viewBox="0 0 24 24" width="60" height="60" aria-hidden>
                 <rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor" />
                 <rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
+              <svg viewBox="0 0 24 24" width="60" height="60" aria-hidden>
                 <path d="M8 5l12 7-12 7V5z" fill="currentColor" />
               </svg>
             )}
