@@ -554,18 +554,11 @@ export default function HomePage() {
     if (!coarse) setFeaturesHover(false);
   };
   const onFeaturesPointerDown = () => {
-    // On phones/PWA (coarse pointer), toggle playback on tap anywhere in the video area
+    // Mobile/PWA: tap toggles overlay visibility (play/pause via button)
     let coarse = false;
     try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
-    if (coarse) {
-      const v = featuresVideoRef.current; if (!v) return;
-      if (v.paused) { try { v.play(); } catch {}; setFeaturesPlaying(true); }
-      else { try { v.pause(); } catch {}; setFeaturesPlaying(false); }
-      // Do not keep overlay; hide it for a clean UI
-      setFeaturesHover(false);
-      return;
-    }
-    // Desktop: show overlay via hover/pointer
+    if (coarse) { setFeaturesHover(v => !v); return; }
+    // Desktop: show overlay via pointer
     setFeaturesHover(true);
   };
   const year = new Date().getFullYear();
@@ -813,14 +806,6 @@ export default function HomePage() {
           onPointerLeave={() => setFeaturesHover(false)}
           onPointerDown={onFeaturesPointerDown}
         >
-          {/* Invisible hit area to reliably capture taps/clicks over the video (esp. on mobile) */}
-          <div
-            aria-hidden
-            onPointerDown={onFeaturesPointerDown}
-            onPointerEnter={() => setFeaturesHover(true)}
-            onPointerLeave={() => setFeaturesHover(false)}
-            style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: featuresHover ? 'none' : 'auto' }}
-          />
           <video
             className={styles.focusable}
             src="/functions_forlanding.mp4"
