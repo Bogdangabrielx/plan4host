@@ -333,54 +333,21 @@ export default function HomePageRO() {
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
-  const featuresTapTimerRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
   const toggleFeaturesPlay = () => {
     const v = featuresVideoRef.current;
     if (!v) return;
-    const wasPaused = v.paused;
-    if (wasPaused) {
-      try { v.play(); } catch {}
-      setFeaturesPlaying(true);
-      setFeaturesHover(true);
-      let coarse = false; try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
-      if (coarse) {
-        if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} }
-        featuresTapTimerRef.current = window.setTimeout(() => { setFeaturesHover(false); featuresTapTimerRef.current = null; }, 1500);
-      } else {
-        setFeaturesHover(false);
-      }
-    } else {
-      try { v.pause(); } catch {}
-      setFeaturesPlaying(false);
-      if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} featuresTapTimerRef.current = null; }
-      setFeaturesHover(true);
-      let coarse = false; try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
-      if (!coarse) setFeaturesHover(false);
-    }
+    if (v.paused) { try { v.play(); } catch {} setFeaturesPlaying(true); }
+    else { try { v.pause(); } catch {} setFeaturesPlaying(false); }
+    let coarse = false;
+    try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
+    if (!coarse) setFeaturesHover(false);
   };
   const onFeaturesPointerDown = () => {
     let coarse = false;
     try { coarse = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches ?? false; } catch {}
-    if (coarse) {
-      const v = featuresVideoRef.current; if (!v) return;
-      const wasPaused = v.paused;
-      if (wasPaused) {
-        try { v.play(); } catch {}
-        setFeaturesPlaying(true);
-        setFeaturesHover(true);
-        if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} }
-        featuresTapTimerRef.current = window.setTimeout(() => { setFeaturesHover(false); featuresTapTimerRef.current = null; }, 1500);
-      } else {
-        try { v.pause(); } catch {}
-        setFeaturesPlaying(false);
-        if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} featuresTapTimerRef.current = null; }
-        setFeaturesHover(true);
-      }
-      return;
-    }
+    if (coarse) { setFeaturesHover(v => !v); return; }
     setFeaturesHover(true);
   };
-  useEffect(() => { return () => { if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} } }; }, []);
   const year = new Date().getFullYear();
   const scrollToId = (id: string) => {
     try {
@@ -514,6 +481,14 @@ export default function HomePageRO() {
           className={`${styles.mobileLink} ${styles.focusable}`}
           onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
         >
+          {/* Zonă invizibilă pentru a captura tap-uri pe mobil */}
+          <div
+            aria-hidden
+            onPointerDown={onFeaturesPointerDown}
+            onPointerEnter={() => setFeaturesHover(true)}
+            onPointerLeave={() => setFeaturesHover(false)}
+            style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: featuresHover ? 'none' : 'auto' }}
+          />
           Funcții
         </a>
         <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
@@ -559,14 +534,6 @@ export default function HomePageRO() {
           onPointerLeave={() => setFeaturesHover(false)}
           onPointerDown={onFeaturesPointerDown}
         >
-          {/* Zonă invizibilă pentru a captura tap-uri oriunde pe clip */}
-          <div
-            aria-hidden
-            onPointerDown={onFeaturesPointerDown}
-            onPointerEnter={() => setFeaturesHover(true)}
-            onPointerLeave={() => setFeaturesHover(false)}
-            style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: 'auto' }}
-          />
           <video
             className={styles.focusable}
             src="/functions_forlanding.mp4"
@@ -577,7 +544,7 @@ export default function HomePageRO() {
             playsInline
             preload="metadata"
             ref={featuresVideoRef}
-            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
+            style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block', ...(isDesktop ? { maxHeight: 420 } : {}) }}
           >
             Video indisponibil.
           </video>
