@@ -562,7 +562,7 @@ export default function HomePageRO() {
               background: 'color-mix(in srgb, var(--card) 54%, transparent)',
               backdropFilter: 'blur(0.5px)',
               WebkitBackdropFilter: 'blur(0.5px)',
-              color: '#ffffff',
+              color: 'var(--muted)',
               width: 80,
               height: 80,
               display: 'grid',
