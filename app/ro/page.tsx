@@ -457,6 +457,14 @@ export default function HomePageRO() {
           className={`${styles.mobileLink} ${styles.focusable}`}
           onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
         >
+          {/* Zonă invizibilă pentru a captura tap-uri pe mobil */}
+          <div
+            aria-hidden
+            onPointerDown={onFeaturesPointerDown}
+            onPointerEnter={() => setFeaturesHover(true)}
+            onPointerLeave={() => setFeaturesHover(false)}
+            style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: featuresHover ? 'none' : 'auto' }}
+          />
           Funcții
         </a>
         <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
@@ -529,12 +537,12 @@ export default function HomePageRO() {
               transform: 'translate(-50%, -50%)',
               borderRadius: 999,
               border: '1px solid var(--border)',
-              background: 'color-mix(in srgb, var(--panel) 54%, transparent)',
-              backdropFilter: 'blur(2px)',
-              WebkitBackdropFilter: 'blur(2px)',
+              background: 'color-mix(in srgb, var(--card) 54%, transparent)',
+              backdropFilter: 'blur(0.5px)',
+              WebkitBackdropFilter: 'blur(0.5px)',
               color: 'var(--text)',
-              width: 56,
-              height: 56,
+              width: 70,
+              height: 70,
               display: 'grid',
               placeItems: 'center',
               opacity: (!featuresPlaying || featuresHover) ? 1 : 0,

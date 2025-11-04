@@ -781,6 +781,14 @@ export default function HomePage() {
           onPointerLeave={() => setFeaturesHover(false)}
           onPointerDown={onFeaturesPointerDown}
         >
+          {/* Invisible hit area to reliably capture taps/clicks over the video (esp. on mobile) */}
+          <div
+            aria-hidden
+            onPointerDown={onFeaturesPointerDown}
+            onPointerEnter={() => setFeaturesHover(true)}
+            onPointerLeave={() => setFeaturesHover(false)}
+            style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: featuresHover ? 'none' : 'auto' }}
+          />
           <video
             className={styles.focusable}
             src="/functions_forlanding.mp4"
@@ -808,17 +816,18 @@ export default function HomePage() {
               transform: 'translate(-50%, -50%)',
               borderRadius: 999,
               border: '1px solid var(--border)',
-              background: 'color-mix(in srgb, var(--panel) 86%, transparent)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)',
+              background: 'color-mix(in srgb, var(--card) 54%, transparent)',
+              backdropFilter: 'blur(0.5px)',
+              WebkitBackdropFilter: 'blur(0.5px)',
               color: 'var(--text)',
-              width: 56,
-              height: 56,
+              width: 70,
+              height: 70,
               display: 'grid',
               placeItems: 'center',
               opacity: (!featuresPlaying || featuresHover) ? 1 : 0,
               transition: 'opacity .2s ease',
               pointerEvents: (!featuresPlaying || featuresHover) ? 'auto' : 'none',
+              zIndex: 2,
             }}
           >
             {featuresPlaying ? (
