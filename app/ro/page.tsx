@@ -409,7 +409,7 @@ export default function HomePageRO() {
   ];
 
   return (
-    <main className={styles.landing} style={{ paddingBottom: "var(--safe-bottom, 0px)" }}>
+    <main className={styles.landing} style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: '100dvh', overflowX: 'hidden' }}>
       <AutoOpenOnLanding delay={150} />
 
       {/* Bară safe-area iOS */}

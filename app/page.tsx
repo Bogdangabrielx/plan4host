@@ -622,7 +622,7 @@ export default function HomePage() {
   ];
 
   return (
-    <main className={styles.landing} style={{ paddingBottom: "var(--safe-bottom, 0px)" }}>
+    <main className={styles.landing} style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: '100dvh', overflowX: 'hidden' }}>
       {/* Safe-area cover (iOS notch) — landing only */}
       <div
         aria-hidden
