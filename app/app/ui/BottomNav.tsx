@@ -190,9 +190,10 @@ useEffect(() => {
                 gap: 4,
                 padding: "6px 4px",
                 touchAction: "manipulation",
+                textAlign: 'center',
               }}
             >
-              <img src={it.icon} alt="" width={22} height={22} style={{ display: "block", opacity: active ? 1 : 0.95 }} />
+              <img src={it.icon} alt="" width={22} height={22} style={{ display: "block", opacity: active ? 1 : 0.95, minWidth: 22, minHeight: 22 }} />
               <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>{it.label}</small>
             </a>
           );
@@ -212,10 +213,11 @@ useEffect(() => {
             gap: 4,
             padding: "6px 4px",
             touchAction: "manipulation",
+            textAlign: 'center',
           }}
           aria-label="Open management"
         >
-          <img src={theme==="light" ? "/configurator_forlight.png" : "/configurator_fordark.png"} alt="" width={22} height={22} style={{ display: "block" }} />
+          <img src={theme==="light" ? "/configurator_forlight.png" : "/configurator_fordark.png"} alt="" width={22} height={22} style={{ display: "block", minWidth: 22, minHeight: 22 }} />
           <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
         </button>
       </div>
