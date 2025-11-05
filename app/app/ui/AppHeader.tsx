@@ -64,6 +64,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const [isSmall, setIsSmall] = useState(false);
   // Hide top header nav buttons when BottomNav is shown (<=640px)
   const [isMobileNav, setIsMobileNav] = useState(false);
+  // Height-based guard for short screens (< 800px)
+  const [isShortHeight, setIsShortHeight] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [aboutFailed, setAboutFailed] = useState(false);
   // const [showNotifMgr, setShowNotifMgr] = useState(false);
@@ -103,6 +105,34 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     detect();
     window.addEventListener("resize", detect);
     return () => window.removeEventListener("resize", detect);
+  }, []);
+
+  // Track viewport height < 800px (use VisualViewport when available)
+  useEffect(() => {
+    const update = () => {
+      try {
+        const vv: any = (typeof window !== 'undefined') ? (window as any).visualViewport : null;
+        const h = vv?.height || (typeof window !== 'undefined' ? window.innerHeight : 0);
+        setIsShortHeight(h < 800);
+      } catch { setIsShortHeight(false); }
+    };
+    update();
+    try {
+      const vv: any = (typeof window !== 'undefined') ? (window as any).visualViewport : null;
+      vv?.addEventListener?.('resize', update);
+      vv?.addEventListener?.('scroll', update);
+    } catch {}
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    return () => {
+      try {
+        const vv: any = (window as any).visualViewport;
+        vv?.removeEventListener?.('resize', update);
+        vv?.removeEventListener?.('scroll', update);
+      } catch {}
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+    };
   }, []);
 
   // Track same breakpoint as BottomNav (<= 640px)
@@ -494,12 +524,12 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             <nav
               style={{
                 padding: 12,
-                // Allow scrolling and ensure bottom content isn't hidden behind BottomNav
                 overflowY: "auto",
-                WebkitOverflowScrolling: "touch",
-                paddingBottom: isMobileNav
+                WebkitOverflowScrolling: 'touch',
+                // When screen height is short, ensure extra room equal to BottomNav height
+                paddingBottom: isShortHeight
                   ? 'calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
-                  : 'calc(var(--safe-bottom, 0px) + 12px)',
+                  : 'calc(var(--safe-bottom, 0px) + 12px)'
               }}
             >
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
