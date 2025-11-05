@@ -1577,6 +1577,18 @@ function ManageRoomModal({
           </div>
           )}
 
+          {provider === 'Other' && (
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={label}>Custom provider name</label>
+              <input
+                style={input}
+                value={customProvider}
+                onChange={(e) => setCustomProvider((e.target as HTMLInputElement).value)}
+                placeholder="e.g., Vrbo, Agoda"
+              />
+            </div>
+          )}
+
           {provider && (
             <div style={{ display: "grid", gap: 6 }}>
               <label style={label}>iCal URL</label>
