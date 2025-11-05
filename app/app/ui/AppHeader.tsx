@@ -491,7 +491,17 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               </button>
             </div>
 
-            <nav style={{ padding: 12, overflowY: "auto" }}>
+            <nav
+              style={{
+                padding: 12,
+                // Allow scrolling and ensure bottom content isn't hidden behind BottomNav
+                overflowY: "auto",
+                WebkitOverflowScrolling: "touch",
+                paddingBottom: isMobileNav
+                  ? 'calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
+                  : 'calc(var(--safe-bottom, 0px) + 12px)',
+              }}
+            >
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
                 {navLeft.map((it) => {
                   const active = currentPath
