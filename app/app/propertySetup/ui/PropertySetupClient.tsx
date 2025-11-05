@@ -578,6 +578,27 @@ function Tabs({ settings, rooms, roomDetails, cleaning, highlightRooms, onTabSel
 }) {
   const [tab, setTab] = useState<"settings" | "rooms" | "roomdetails" | "cleaning">("settings");
   const [hl, setHl] = useState<boolean>(false);
+  // Initialize from URL (?tab=...) or hash (#cleaning)
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href);
+      const fromQuery = (u.searchParams.get('tab') || '').toLowerCase();
+      const fromHash = (u.hash || '').replace(/^#/, '').toLowerCase();
+      const candidate = (fromQuery || fromHash) as string;
+      if (candidate === 'settings' || candidate === 'rooms' || candidate === 'roomdetails' || candidate === 'cleaning') {
+        setTab(candidate as any);
+        onTabSelect?.(candidate as any);
+      }
+    } catch { /* noop */ }
+  }, []);
+  // Keep URL in sync when tab changes (preserve other params)
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', u.toString());
+    } catch { /* noop */ }
+  }, [tab]);
   // Prop-driven highlight
   useEffect(() => { if (highlightRooms) setHl(true); }, [highlightRooms]);
   // Event-driven activation + highlight

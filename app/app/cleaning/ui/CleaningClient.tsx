@@ -601,8 +601,19 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         {tdefs.length === 0 ? (
           <div style={{ color: "var(--muted)" }}>
             No cleaning checklist defined. Configure tasks in{" "}
-            <a href="/app/propertySetup" style={{ color: "var(--primary)" }}>
-              Property Setup → Cleaning
+            <a
+              href={(() => {
+                try {
+                  const params = new URLSearchParams();
+                  if (propertyId) params.set('property', propertyId);
+                  params.set('tab', 'cleaning');
+                  const qs = params.toString();
+                  return `/app/propertySetup${qs ? `?${qs}` : ''}`;
+                } catch { return "/app/propertySetup?tab=cleaning"; }
+              })()}
+              style={{ color: "var(--primary)" }}
+            >
+              Property Setup → Cleaning tasks.
             </a>
             .
           </div>
