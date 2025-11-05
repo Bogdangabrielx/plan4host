@@ -193,7 +193,7 @@ useEffect(() => {
               }}
             >
               <img src={it.icon} alt="" width={22} height={22} style={{ display: "block", opacity: active ? 1 : 0.95 }} />
-              <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>{it.label}</small>
+              <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2, display: 'block', textAlign: 'center' }}>{it.label}</small>
             </a>
           );
         })}
@@ -216,7 +216,7 @@ useEffect(() => {
           aria-label="Open management"
         >
           <img src={theme==="light" ? "/configurator_forlight.png" : "/configurator_fordark.png"} alt="" width={22} height={22} style={{ display: "block" }} />
-          <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
+          <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2, display: 'block', textAlign: 'center' }}>Management</small>
         </button>
       </div>
 
