@@ -1156,7 +1156,16 @@ export default function HomePage() {
           >
             <img src="/ANPC.png" alt="ANPC" style={{ width: 120, height: 'auto' }} />
           </a>
-          {/* You can add Stripe badge here next to ANPC */}
+          <a
+            href="https://stripe.com/en-ro/payments"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Stripe Payments"
+            title="Stripe Payments"
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 6, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)' }}
+          >
+            <img src="/STRIPE.png" alt="Stripe" style={{ width: 120, height: 'auto' }} />
+          </a>
         </div>
 
         <div className={styles.legalBar}>
