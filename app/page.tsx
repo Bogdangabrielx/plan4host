@@ -1018,7 +1018,8 @@ export default function HomePage() {
         <div className={styles.contactCard}>
           <div style={{ display: 'grid', gap: 12 }}>
             <p style={{ margin: 0, color: 'var(--muted)' }}>
-              Talk to a human — WhatsApp or email us. We reply fast.
+              <span>Sometimes you just need a quick answer.</span><br />
+              <span>Reach out — we’re one message away on email or WhatsApp.</span>
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ opacity: .9 }}>

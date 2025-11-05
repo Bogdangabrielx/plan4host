@@ -693,7 +693,8 @@ export default function HomePageRO() {
         <div className={styles.contactCard}>
           <div style={{ display: 'grid', gap: 12 }}>
             <p style={{ margin: 0, color: 'var(--muted)' }}>
-              Vorbește direct cu noi — pe WhatsApp sau email. Răspundem rapid.
+              <span>Uneori ai nevoie doar de un răspuns rapid.</span><br />
+              <span>Scrie-ne — suntem la un mesaj distanță, pe email sau WhatsApp.</span>
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ opacity: .9 }}>
