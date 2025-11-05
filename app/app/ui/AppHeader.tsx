@@ -113,7 +113,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       try {
         const vv: any = (typeof window !== 'undefined') ? (window as any).visualViewport : null;
         const h = vv?.height || (typeof window !== 'undefined' ? window.innerHeight : 0);
-        setIsShortHeight(h < 800);
+        setIsShortHeight(h < 500);
       } catch { setIsShortHeight(false); }
     };
     update();
