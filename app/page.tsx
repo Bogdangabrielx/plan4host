@@ -1122,8 +1122,17 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ANPC link (button-like) placed above the legal bar */}
-        <div style={{ display: 'grid', placeItems: 'center', padding: '8px 0' }}>
+        {/* Compliance/Payments badges row (left-aligned, room for more like Stripe) */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: '8px 0',
+            justifyContent: 'flex-start',
+            flexWrap: 'wrap',
+          }}
+        >
           <a
             href="https://eservicii.anpc.ro/"
             target="_blank"
@@ -1134,6 +1143,7 @@ export default function HomePage() {
           >
             <img src="/ANPC.png" alt="ANPC" style={{ width: 120, height: 'auto' }} />
           </a>
+          {/* You can add Stripe badge here next to ANPC */}
         </div>
 
         <div className={styles.legalBar}>

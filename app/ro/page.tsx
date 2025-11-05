@@ -789,8 +789,17 @@ export default function HomePageRO() {
           </div>
         </div>
 
-        {/* ANPC (RO) — plasat deasupra liniei de separare */}
-        <div style={{ display: 'grid', placeItems: 'center', padding: '8px 0' }}>
+        {/* Insigne conformitate/plăți (aliniate la stânga; loc și pentru Stripe) */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: '8px 0',
+            justifyContent: 'flex-start',
+            flexWrap: 'wrap',
+          }}
+        >
           <a
             href="https://eservicii.anpc.ro/"
             target="_blank"
@@ -801,6 +810,7 @@ export default function HomePageRO() {
           >
             <img src="/ANPC.png" alt="ANPC" style={{ width: 120, height: 'auto' }} />
           </a>
+          {/* Poți adăuga aici badge-ul Stripe, lângă ANPC */}
         </div>
 
         <div className={styles.legalBar}>
