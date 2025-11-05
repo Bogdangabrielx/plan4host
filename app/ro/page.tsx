@@ -789,6 +789,20 @@ export default function HomePageRO() {
           </div>
         </div>
 
+        {/* ANPC (RO) — plasat deasupra liniei de separare */}
+        <div style={{ display: 'grid', placeItems: 'center', padding: '8px 0' }}>
+          <a
+            href="https://eservicii.anpc.ro/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="ANPC e-Servicii"
+            title="ANPC e-Servicii"
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 6, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)' }}
+          >
+            <img src="/ANPC.png" alt="ANPC" style={{ width: 120, height: 'auto' }} />
+          </a>
+        </div>
+
         <div className={styles.legalBar}>
           <p>
             © {year} Plan4Host. Toate drepturile rezervate. Prin utilizarea Plan4Host ești de acord cu <Link className={styles.footerLink} href="/legal/terms">Termeni și condiții</Link> și <Link className={styles.footerLink} href="/legal/privacy">Politica de confidențialitate</Link>.
