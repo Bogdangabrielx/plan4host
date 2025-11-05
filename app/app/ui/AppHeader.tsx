@@ -526,10 +526,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 padding: 12,
                 overflowY: "auto",
                 WebkitOverflowScrolling: 'touch',
-                // When screen height is short, ensure extra room equal to BottomNav height
-                paddingBottom: isShortHeight
-                  ? 'calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
-                  : 'calc(var(--safe-bottom, 0px) + 12px)'
+                // Always reserve space for BottomNav, with CSS var fallback to 0
+                paddingBottom: 'calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
               }}
             >
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
