@@ -31,7 +31,6 @@ type TypeIntegration = {
   provider: string | null;
   is_active: boolean | null;
   color?: string | null;
-  logo_url?: string | null;
 };
 
 function pad(n: number) { return String(n).padStart(2, "0"); }
@@ -91,7 +90,7 @@ export default function RoomViewModal({
       // Integrations are optional (RLS may block for non-channels users). We tolerate errors.
       const rInteg = await supabase
         .from("ical_type_integrations")
-        .select("id,property_id,room_type_id,room_id,provider,is_active,color,logo_url")
+        .select("id,property_id,room_type_id,room_id,provider,is_active,color")
         .eq("property_id", propertyId)
         .order("created_at", { ascending: true });
 
@@ -153,41 +152,6 @@ export default function RoomViewModal({
     return m;
   }, [integrations]);
 
-  // Logos by integration id / room / type + provider fallbacks
-  const integLogoById = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const it of integrations) {
-      if (!it?.is_active) continue;
-      if ((it as any).id && it.logo_url) m.set(String((it as any).id), it.logo_url);
-    }
-    return m;
-  }, [integrations]);
-  const integLogoByRoomId = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const it of integrations) {
-      if (!it?.is_active) continue;
-      if (it.room_id && it.logo_url && !m.has(it.room_id)) m.set(it.room_id, it.logo_url);
-    }
-    return m;
-  }, [integrations]);
-  const integLogoByTypeId = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const it of integrations) {
-      if (!it?.is_active) continue;
-      if (it.room_type_id && it.logo_url && !m.has(it.room_type_id)) m.set(it.room_type_id, it.logo_url);
-    }
-    return m;
-  }, [integrations]);
-  const providerLogos = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const it of integrations) {
-      if (!it?.is_active) continue;
-      const key = normalizeProvider(it.provider);
-      if (it.logo_url && !m.has(key)) m.set(key, it.logo_url);
-    }
-    return m;
-  }, [integrations]);
-
   // Integration color by room/type (for cases where source is generic 'ical' or unknown)
   const integColorByRoomId = useMemo(() => {
     const m = new Map<string, string>();
@@ -245,35 +209,7 @@ export default function RoomViewModal({
       }
     }
     return map;
-  }, [bookings, providerColors, integColorByRoomId, integColorByTypeId, integColorById]);
-
-  const logoByRoomDate = useMemo(() => {
-    const map = new Map<string, Map<string, string>>();
-    for (const b of bookings) {
-      if (!b.room_id) continue;
-      const key = normalizeProvider(b.source);
-      let logo: string | undefined;
-      const intId = (b as any).ota_integration_id as string | undefined;
-      if (intId && integLogoById.has(intId)) logo = integLogoById.get(intId);
-      if (key !== 'manual') {
-        if (!logo && key !== 'other') logo = providerLogos.get(key);
-        if (!logo) logo = (b.room_id && integLogoByRoomId.get(b.room_id))
-          || ((b as any).room_type_id && integLogoByTypeId.get((b as any).room_type_id as string))
-          || undefined;
-      }
-      let d = b.start_date;
-      const end = b.end_date;
-      while (d <= end) {
-        if (logo) {
-          const inner = map.get(b.room_id) || new Map<string, string>();
-          if (!inner.has(d)) inner.set(d, logo);
-          map.set(b.room_id, inner);
-        }
-        const dt = new Date(d + "T00:00:00"); dt.setDate(dt.getDate() + 1); d = ymd(dt);
-      }
-    }
-    return map;
-  }, [bookings, integLogoById, integLogoByRoomId, integLogoByTypeId, providerLogos]);
+  }, [bookings, providerColors, integColorByRoomId, integColorByTypeId]);
 
   const RADIUS = 12;
 
@@ -340,7 +276,6 @@ export default function RoomViewModal({
                   month={month}
                   room={r}
                   colors={colorByRoomDate.get(r.id) || new Map<string,string>()}
-                  logos={logoByRoomDate.get(r.id) || new Map<string,string>()}
                   onDayClick={(room, dateStr) => { setOpenRoom(room); setOpenDate(dateStr); }}
                 />
               </div>
@@ -362,8 +297,8 @@ export default function RoomViewModal({
   );
 }
 
-function MiniMonthRoom({ year, month, room, colors, logos, onDayClick }: {
-  year: number; month: number; room: Room; colors: Map<string,string>; logos?: Map<string,string>;
+function MiniMonthRoom({ year, month, room, colors, onDayClick }: {
+  year: number; month: number; room: Room; colors: Map<string,string>;
   onDayClick: (room: Room, dateStr: string) => void;
 }) {
   const dim = daysInMonth(year, month);
@@ -385,7 +320,6 @@ function MiniMonthRoom({ year, month, room, colors, logos, onDayClick }: {
       {cells.map((c, i) => {
         const clickable = !!c.dateStr;
         const hasColor = !!c.color;
-        const logoUrl = c.dateStr && logos ? logos.get(c.dateStr) : undefined;
         return (
           <div
             key={i}
@@ -403,15 +337,10 @@ function MiniMonthRoom({ year, month, room, colors, logos, onDayClick }: {
             }}
           >
             {hasColor && (
-              <div style={{ position: 'absolute', inset: 0, background: c.color!, opacity: 0.28, zIndex: 0 }} />
-            )}
-            {logoUrl && (
-              <div style={{ position:'absolute', inset:0, display:'grid', placeItems:'center', pointerEvents:'none', zIndex: 1, opacity: 0.22 }}>
-                <img src={logoUrl} alt="OTA" style={{ maxWidth:'68%', maxHeight:'68%', objectFit:'contain', display:'block', filter:'grayscale(10%) contrast(0.9)' }} />
-              </div>
+              <div style={{ position: 'absolute', inset: 0, background: c.color!, opacity: 0.28 }} />
             )}
             {typeof c.dayNum === "number" && (
-              <span style={{ position: "absolute", top: 5, left: 6, fontSize: 11, color: "var(--text)", fontWeight: 800, zIndex: 2, textShadow: '0 1px 0 rgba(255,255,255,0.35)' }}>
+              <span style={{ position: "absolute", top: 5, left: 6, fontSize: 11, color: "var(--text)", fontWeight: 800 }}>
                 {c.dayNum}
               </span>
             )}
