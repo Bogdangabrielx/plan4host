@@ -2,7 +2,7 @@
   "name": "Plan4Host",
   "short_name": "Plan4Host",
   "description": "Stay Smart, Host Better",
-  "start_url": "/app/calendar",
+  "start_url": "/app",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
