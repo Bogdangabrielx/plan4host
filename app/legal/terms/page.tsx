@@ -51,9 +51,13 @@ export default function TermsOfServicePage() {
               modify or discontinue trial offers at any time.
             </li>
             <li className={s.p}>
+              <strong>Plans:</strong> All plans are paid (including <strong>Basic</strong>). We do not offer a perpetual
+              free plan. Plan names, features and prices may change over time.
+            </li>
+            <li className={s.p}>
               <strong>Trial outcome:</strong> At the end of the free trial, your account will <u>not</u> be charged
-              unless you explicitly subscribe to a paid plan. If you do not subscribe, your access continues on the
-              <strong> Basic</strong> plan (reduced features).
+              unless you explicitly subscribe to a paid plan. If you do not subscribe, your access is
+              <strong> suspended</strong>; no free/basic plan is provided.
             </li>
             <li className={s.p}>
               <strong>Subscriptions:</strong> Paid plans are billed via <em>Stripe</em> inside the app’s billing
@@ -63,6 +67,11 @@ export default function TermsOfServicePage() {
             <li className={s.p}>
               <strong>Renewals:</strong> Subscriptions renew automatically until cancelled. You can cancel at any time,
               effective at the end of the current billing period.
+            </li>
+            <li className={s.p}>
+              <strong>Non‑payment / failed renewals:</strong> If a renewal charge fails or payment is not made on time,
+              we may suspend your access to all features. Upon resuming payment, access to the features of your
+              selected plan will be reactivated.
             </li>
             <li className={s.p}>
               <strong>Refunds:</strong> <u>No refunds</u> are provided after the first charge and no credits are issued
