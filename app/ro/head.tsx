@@ -2,17 +2,17 @@ export default function Head() {
   const site = "https://www.plan4host.com";
   return (
     <>
-      <title>Channel manager pentru Airbnb & Booking.com – Sincronizare iCal | Plan4Host</title>
+      <title>Channel Manager & PMS cu iCal și Check‑in | Plan4Host</title>
       <meta
         name="description"
-        content="Channel manager pentru proprietăți, sincronizare iCal Airbnb/Booking.com, check‑in online sigur – potrivit pentru proprietăți mici și mari."
+        content="Channel manager cu sincronizare iCal pentru Airbnb și Booking.com, PMS ușor și check‑in online securizat pentru proprietăți mici."
       />
-      {/* Social overrides */}
-      <meta property="og:title" content="Channel manager pentru Airbnb & Booking.com – Sincronizare iCal | Plan4Host" />
-      <meta property="og:description" content="Channel manager pentru proprietăți, sincronizare iCal Airbnb/Booking.com, check‑in online sigur – potrivit pentru proprietăți mici și mari." />
-      <meta name="twitter:title" content="Channel manager pentru Airbnb & Booking.com – Sincronizare iCal | Plan4Host" />
-      <meta name="twitter:description" content="Channel manager pentru proprietăți, sincronizare iCal Airbnb/Booking.com, check‑in online sigur – potrivit pentru proprietăți mici și mari." />
+      <meta property="og:title" content="Channel Manager & PMS cu iCal și Check‑in | Plan4Host" />
+      <meta property="og:description" content="Channel manager cu sincronizare iCal pentru Airbnb și Booking.com, PMS ușor și check‑in online securizat pentru proprietăți mici." />
+      <meta name="twitter:title" content="Channel Manager & PMS cu iCal și Check‑in | Plan4Host" />
+      <meta name="twitter:description" content="Channel manager cu sincronizare iCal pentru Airbnb și Booking.com, PMS ușor și check‑in online securizat pentru proprietăți mici." />
       <link rel="canonical" href={`${site}/ro`} />
     </>
   );
 }
+

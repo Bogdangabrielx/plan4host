@@ -5,7 +5,7 @@ export default function Head() {
       <title>Channel Manager for Airbnb & Booking.com – iCal Sync | Plan4Host</title>
       <meta
         name="description"
-        content="Vacation rental channel manager with iCal sync for Airbnb & Booking.com, secure online check‑in, and tools for small and large properties."
+        content="Plan4Host is a PMS and channel manager with iCal sync for Airbnb & Booking.com, secure GDPR‑friendly check‑in forms, and tools for small properties. (Software — not web hosting.)"
       />
       {/* Social overrides (optional, safe to keep) */}
       <meta property="og:title" content="Channel Manager for Airbnb & Booking.com – iCal Sync | Plan4Host" />

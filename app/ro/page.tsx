@@ -508,6 +508,9 @@ export default function HomePageRO() {
           <h1>
             Stay Smart, <br />Host <span className={styles.betterGrad}>Better</span>
           </h1>
+          <h2 style={{ margin: '6px 0 10px', fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>
+            Channel Manager, PMS și Check‑in Online cu sincronizare iCal
+          </h2>
           <p>
             Plan4Host ajută pensiunile și apartamentele în regim hotelier să evite overbooking,
             să sincronizeze calendarele și să pornească rapid check‑in online.
@@ -689,7 +692,7 @@ export default function HomePageRO() {
 
       {/* Contact */}
       <section id="contact" className={`sb-cardglow ${styles.contact}`} aria-labelledby="contact-title">
-        <h2 id="contact-title">Contact</h2>
+          <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
           <div style={{ display: 'grid', gap: 12 }}>
             <p style={{ margin: 0, color: 'var(--muted)' }}>
@@ -864,11 +867,12 @@ export default function HomePageRO() {
             ],
             knowsAbout: [
               "channel manager",
+              "sistem de management al proprietății (PMS)",
               "sincronizare iCal Airbnb",
               "sincronizare iCal Booking.com",
               "software cazare",
               "check‑in online",
-              "Acord GDPR,"
+              "formular check‑in online"
             ]
           })
         }}
@@ -899,6 +903,50 @@ export default function HomePageRO() {
               ],
             },
           }),
+        }}
+      />
+      {/* JSON-LD FAQ (RO) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "Oferiți găzduire web?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Nu. Plan4Host este software PMS și channel manager. Nu vindem găzduire web."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Aveți formulare de check‑in online conforme GDPR?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Da. Plan4Host include formulare securizate de check‑in cu captarea consimțământului și DPA în zona Legal."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Ce canale pot sincroniza prin iCal?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Airbnb, Booking.com, Expedia și Travelminit, prin feed‑uri standard iCal (import/export)."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Există un channel manager ieftin?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Da. Toate planurile sunt plătite, inclusiv Basic, gândite pentru proprietăți mici."
+                }
+              }
+            ]
+          })
         }}
       />
     </main>

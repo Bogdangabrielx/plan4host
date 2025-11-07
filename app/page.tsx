@@ -790,6 +790,9 @@ export default function HomePage() {
           <h1>
             Stay Smart, <br />Host <span className={styles.betterGrad}>Better</span>
           </h1>
+          <h2 style={{ margin: '6px 0 10px', fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>
+            Channel Manager, PMS & Online Check‑in with iCal Sync
+          </h2>
           <p>
             Plan4Host helps small accommodations manage occupancy, avoid double bookings
             and sync calendars across channels with ease.
@@ -1197,10 +1200,12 @@ export default function HomePage() {
             ],
             knowsAbout: [
               "Channel manager",
+              "Property management system (PMS)",
               "iCal sync Airbnb",
               "iCal sync Booking.com",
               "vacation rental software",
-              "online check-in"
+              "online check-in",
+              "online check-in form"
             ]
           })
         }}
@@ -1230,6 +1235,50 @@ export default function HomePage() {
               ],
             },
           }),
+        }}
+      />
+      {/* JSON-LD FAQ (EN) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "Do you provide web hosting?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "No. Plan4Host is property management software (PMS) and a channel manager. We do not sell web hosting."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Do you offer GDPR‑friendly online check‑in forms?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes. Plan4Host includes secure guest check‑in forms with consent capture and a DPA available under Legal."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Which channels can I sync via iCal?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Airbnb, Booking.com, Expedia, and Travelminit via standard iCal feeds (import/export)."
+                }
+              },
+              {
+                "@type": "Question",
+                name: "Is there a cheap channel manager plan?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes. All plans are paid, including Basic, designed to be affordable for small properties."
+                }
+              }
+            ]
+          })
         }}
       />
     </main>
