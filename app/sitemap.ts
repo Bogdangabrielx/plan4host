@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/ro/sincronizare-ical-booking",
     "/ro/sincronizare-ical-expedia",
     "/ro/sincronizare-ical-travelminit",
+    "/ro/formular-checkin-gdpr",
     "/docs",
     "/partners",
     "/status",
