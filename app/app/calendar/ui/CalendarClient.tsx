@@ -277,7 +277,7 @@ export default function CalendarClient({
     <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
       <PlanHeaderBadge title="Calendar" slot="header-right" />
       {/* Toolbar */}
-      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20 }}>
+      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap' }}>
         {/* Pill selector with avatar on the left (no text label) */}
         <div
           className="modalCard Sb-cardglow"
@@ -327,12 +327,12 @@ export default function CalendarClient({
         </div>
         <div style={{ flexBasis: "100%", height: 8 }} />
 
-        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 13 : 18, marginLeft: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 10 : 18, marginLeft: 0, flexWrap: 'wrap', justifyContent: isSmall ? 'center' : undefined, width: isSmall ? '100%' : undefined }}>
           <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Previous month"
             onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}
           >◀</button>
           <button type="button" className="sb-btn sb-cardglow sb-btn--ghost" onClick={openDatePicker}
-            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 45 }} aria-label="Pick date">
+            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 45, width: isSmall ? '100%' : undefined, textAlign: 'center' }} aria-label="Pick date">
             {monthNames[month]} {year}
           </button>
           <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Next month"
