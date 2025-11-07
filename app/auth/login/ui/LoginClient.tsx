@@ -420,7 +420,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
 
 /* —— styles —— */
 const outerWrap: React.CSSProperties = {
-  width: 380,
+  width: 'min(380px, 100%)',
   margin: "0 auto",
   display: "grid",
   gap: 12,
@@ -435,19 +435,20 @@ const heroTitle: React.CSSProperties = {
 
 function wrap(theme: Theme): React.CSSProperties {
   return {
-    width: 380,
+    width: 'min(380px, 100%)',
     background: "var(--panel)",
     border: "1px solid var(--border)",
     borderRadius: 12,
     padding: 18,
+    boxSizing: 'border-box',
     boxShadow: theme === "light" ? "0 2px 40px rgba(2, 6, 23, 0.23)" : "0 2px 20px rgba(113, 120, 152, 0.25)",
   };
 }
-const headRow: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 };
+const headRow: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: 'wrap', marginBottom: 10 };
 const input: React.CSSProperties = { padding: "10px 12px", background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, width: '100%' };
 const lbl: React.CSSProperties = { fontSize: 12, color: "var(--muted)" };
 const primaryBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--primary)", color: "#0c111b", fontWeight: 800, cursor: "pointer" };
-const oauthBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 };
+const oauthBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, flexWrap: 'wrap', textAlign: 'center' };
 const dividerRow: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8 };
 const dividerLine: React.CSSProperties = { height: 1, background: "var(--border)", display: "block" };
 function pillStyle(pill: string): React.CSSProperties {
