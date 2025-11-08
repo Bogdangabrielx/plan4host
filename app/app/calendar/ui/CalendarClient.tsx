@@ -50,7 +50,6 @@ export default function CalendarClient({
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
   const [isSmall, setIsSmall] = useState(false);
-  const [isTiny, setIsTiny] = useState(false);
   // Cache property presentation images (avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
 
@@ -115,12 +114,7 @@ export default function CalendarClient({
 
   // Detect small screens
   useEffect(() => {
-    const detect = () => {
-      if (typeof window === 'undefined') { setIsSmall(false); setIsTiny(false); return; }
-      const w = window.innerWidth;
-      setIsSmall(w < 480);
-      setIsTiny(w < 340);
-    };
+    const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
     detect();
     window.addEventListener("resize", detect);
     return () => window.removeEventListener("resize", detect);
@@ -333,40 +327,40 @@ export default function CalendarClient({
         </div>
         <div style={{ flexBasis: "100%", height: 8 }} />
 
-        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 10 : 18, marginLeft: 0, flexWrap: 'wrap', justifyContent: isSmall ? 'center' : undefined, width: isSmall ? '100%' : undefined }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Previous month"
-              onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}
-            >◀</button>
-            <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Next month"
-              onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}
-            >▶</button>
-          </div>
+        {/* Nav row: [Prev] [Month Year] [Next] */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'auto 1fr auto',
+            alignItems: 'center',
+            gap: isSmall ? 8 : 12,
+            width: isSmall ? '100%' : undefined,
+            marginLeft: 0,
+          }}
+        >
+          <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Previous month"
+            onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}
+          >◀</button>
+
           <button type="button" className="sb-btn sb-cardglow sb-btn--ghost" onClick={openDatePicker}
             style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 45, textAlign: 'center' }} aria-label="Pick date">
             {monthNames[month]} {year}
           </button>
-          {!isTiny && (
-            <>
-              <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label="Open year overview">
-                Year
-              </button>
-              <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label="Open room overview">
-                Room view
-              </button>
-            </>
-          )}
+
+          <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Next month"
+            onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}
+          >▶</button>
         </div>
-        {isTiny && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%' }}>
-            <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label="Open year overview">
-              Year
-            </button>
-            <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label="Open room overview">
-              Room view
-            </button>
-          </div>
-        )}
+
+        {/* Mode row: Year / Room view (wraps below on small screens) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: isSmall ? '100%' : undefined, justifyContent: isSmall ? 'center' : undefined }}>
+          <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label="Open year overview">
+            Year
+          </button>
+          <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label="Open room overview">
+            Room view
+          </button>
+        </div>
         <div style={{ flex: 1 }} />
       </div>
 
