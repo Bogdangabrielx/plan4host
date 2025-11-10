@@ -764,23 +764,7 @@ export default function HomePageRO() {
                   <li><Link className={styles.footerLink} href="/legal/cookies">Politica Cookie</Link></li>
                 </ul>
               </div>
-              <div>
-                <div className={styles.footerTitle}>Social</div>
-                <ul className={styles.footerList}>
-                  <li>
-                    <a className={styles.footerLink} href="https://www.facebook.com/share/1D5V7mG79g/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                      <img src="/facebook_forlight.png" alt="Facebook" width={18} height={18} style={{ display:'inline-block', verticalAlign:'middle', marginRight:8 }} />
-                      Facebook
-                    </a>
-                  </li>
-                  <li>
-                    <a className={styles.footerLink} href="https://www.instagram.com/plan4host?igh=MXB3cnlzZjZxZGVvMQ%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                      <img src="/instagram_forlight.png" alt="Instagram" width={18} height={18} style={{ display:'inline-block', verticalAlign:'middle', marginRight:8 }} />
-                      Instagram
-                    </a>
-                  </li>
-                </ul>
-              </div>
+              
             </div>
           </div>
 
@@ -842,6 +826,19 @@ export default function HomePageRO() {
             </ul>
           </div>
         </div>
+
+        {/* Social (mobile‑only) — sub meniuri, deasupra insigne ANPC/Stripe */}
+        <div className="p4h-social-row" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+          <a className={styles.footerLink} href="https://www.facebook.com/share/1D5V7mG79g/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <img src="/facebook_forlight.png" alt="Facebook" width={18} height={18} style={{ display:'inline-block', verticalAlign:'middle', marginRight:8 }} />
+            Facebook
+          </a>
+          <a className={styles.footerLink} href="https://www.instagram.com/plan4host?igh=MXB3cnlzZjZxZGVvMQ%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <img src="/instagram_forlight.png" alt="Instagram" width={18} height={18} style={{ display:'inline-block', verticalAlign:'middle', marginRight:8 }} />
+            Instagram
+          </a>
+        </div>
+        <style jsx>{`@media (min-width: 561px){ .p4h-social-row{ display: none !important; } }`}</style>
 
         {/* Insigne conformitate/plăți (aliniate la stânga; loc și pentru Stripe) */}
         <div
