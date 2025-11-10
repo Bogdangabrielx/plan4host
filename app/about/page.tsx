@@ -1,21 +1,35 @@
+import type { Metadata } from "next";
+import s from "../legal/legal.module.css";
+import ForceDark from "@/components/theme/ForceDark";
+
+export const metadata: Metadata = {
+  title: "About — Plan4Host",
+  description: "About Plan4Host. Work in progress.",
+};
+
 export default function AboutPage() {
+  const lastUpdated = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: '2-digit' });
   return (
-    <main style={{ maxWidth: 860, margin: "0 auto", padding: "24px 20px" }}>
-      <h1 style={{ fontSize: 28, marginBottom: 10 }}>About us</h1>
-      <p style={{ color: "var(--muted)" }}>
-        This page is a work in progress. We’re preparing a short story about how Plan4Host started and where we’re going.
-      </p>
-      <p style={{ color: "var(--muted)", marginTop: 16 }}>
-        Need anything meanwhile? Reach out at {" "}
-        <a href="mailto:office@plan4host.com" style={{ color: "var(--primary)", fontWeight: 800 }}>
-          office@plan4host.com
-        </a>{" "}
-        or message us on WhatsApp: {" "}
-        <a href="https://wa.me/40721759329" target="_blank" rel="noopener noreferrer" style={{ color: "var(--primary)", fontWeight: 800 }}>
-          +40 721 759 329
-        </a>.
-      </p>
+    <main className={s.page}>
+      <ForceDark />
+      <div className={s.container}>
+        <header className={s.header}>
+          <h1 className={s.h1}>About us</h1>
+          <p className={s.meta}>Last updated: {lastUpdated}</p>
+        </header>
+
+        <section>
+          <p className={s.p}>
+            This page is a work in progress. We’re preparing a short story about how Plan4Host started and where we’re going.
+          </p>
+          <p className={s.p}>
+            Need anything meanwhile? Reach out at {" "}
+            <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>{" "}
+            or message us on WhatsApp: {" "}
+            <a className={s.link} href="https://wa.me/40721759329" target="_blank" rel="noopener noreferrer">+40 721 759 329</a>.
+          </p>
+        </section>
+      </div>
     </main>
   );
 }
-
