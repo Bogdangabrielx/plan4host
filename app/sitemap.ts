@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const urls = [
     "/",
     "/ro",
+    "/about",
     "/airbnb-ical-sync",
     "/booking-ical-sync",
     "/expedia-ical-sync",
