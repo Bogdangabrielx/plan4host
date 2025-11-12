@@ -23,6 +23,9 @@ export async function POST(req: Request) {
     timezone,
     check_in_time,
     check_out_time,
+    // Seed a default presentation image so selectors show a photo immediately
+    presentation_image_url: "/hotel_room_1456x816.jpg",
+    presentation_image_uploaded_at: new Date().toISOString(),
   };
 
   const { error, data } = await supabase
