@@ -285,46 +285,6 @@ export async function PATCH(
           await admin.from('form_documents').delete().eq('form_id', id);
         }
       } catch {}
-      // Privacy cleanup: remove ID photos (id_card/passport) from storage
-      try {
-        const DEFAULT_BUCKET = (process.env.NEXT_PUBLIC_DEFAULT_DOCS_BUCKET || 'guest_docs').toString();
-        // booking_documents for this booking
-        const { data: bdocs } = await admin
-          .from('booking_documents')
-          .select('id,storage_bucket,storage_path,doc_type')
-          .eq('booking_id', targetBooking.id)
-          .in('doc_type', ['id_card','passport']);
-        const bByBucket: Record<string, string[]> = {};
-        for (const d of (bdocs || [])) {
-          const bucket = (d as any).storage_bucket || DEFAULT_BUCKET;
-          const path = (d as any).storage_path || '';
-          if (path) { (bByBucket[bucket] ||= []).push(path); }
-        }
-        for (const [bucket, paths] of Object.entries(bByBucket)) {
-          try { await admin.storage.from(bucket).remove(paths); } catch {}
-        }
-        if ((bdocs?.length || 0) > 0) {
-          try { await admin.from('booking_documents').delete().in('id', (bdocs || []).map((d:any)=>d.id)); } catch {}
-        }
-        // form_documents (leftovers, if any)
-        const { data: fdocs } = await admin
-          .from('form_documents')
-          .select('id,storage_bucket,storage_path,doc_type')
-          .eq('form_id', id)
-          .in('doc_type', ['id_card','passport']);
-        const fByBucket: Record<string, string[]> = {};
-        for (const d of (fdocs || [])) {
-          const bucket = (d as any).storage_bucket || DEFAULT_BUCKET;
-          const path = (d as any).storage_path || '';
-          if (path) { (fByBucket[bucket] ||= []).push(path); }
-        }
-        for (const [bucket, paths] of Object.entries(fByBucket)) {
-          try { await admin.storage.from(bucket).remove(paths); } catch {}
-        }
-        if ((fdocs?.length || 0) > 0) {
-          try { await admin.from('form_documents').delete().in('id', (fdocs || []).map((d:any)=>d.id)); } catch {}
-        }
-      } catch { /* non-fatal */ }
     } else if (linkedBooking) {
       // No target booking change (e.g., no room change), but dates changed → sync dates to linked booking
       try {
