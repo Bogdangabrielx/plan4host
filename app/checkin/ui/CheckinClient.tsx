@@ -290,6 +290,9 @@ export default function CheckinClient() {
       nationality: 'Nationality (citizenship)*',
       ariaNationality: 'Nationality',
       uploadId: 'Upload ID document (photo/PDF)*',
+      docTypeLabel: 'Document type*',
+      docOptionId: 'Identity card',
+      docOptionPassport: 'Passport',
       selected: 'Selected:',
       consentPrefix: 'I have read and agree to the ',
       houseRules: 'House Rules',
@@ -333,6 +336,9 @@ export default function CheckinClient() {
       nationality: 'Naționalitate (cetățenie)*',
       ariaNationality: 'Naționalitate',
       uploadId: 'Încarcă actul de identitate (poză/PDF)*',
+      docTypeLabel: 'Tip document*',
+      docOptionId: 'Buletin',
+      docOptionPassport: 'Pașaport',
       selected: 'Selectat:',
       consentPrefix: 'Am citit și sunt de acord cu ',
       houseRules: 'Regulamentul de ordine interioară',
@@ -1394,7 +1400,7 @@ export default function CheckinClient() {
               <div>
                 <label htmlFor="checkin-doc-type" style={LABEL_ROW}>
                   <Image src={formIcon("id")} alt="" width={16} height={16} />
-                  <span>Document type*</span>
+                  <span>{T('docTypeLabel')}</span>
                 </label>
                 <select 
                   id="checkin-doc-type"
@@ -1412,8 +1418,8 @@ export default function CheckinClient() {
                   }}
                 > 
                   <option value="" disabled>{T('selectDocType')}</option>
-                  <option value="id_card">Identity card</option>
-                  <option value="passport">Passport</option>
+                  <option value="id_card">{T('docOptionId')}</option>
+                  <option value="passport">{T('docOptionPassport')}</option>
                 </select>
               </div>
 
