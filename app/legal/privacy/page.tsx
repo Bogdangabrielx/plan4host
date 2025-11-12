@@ -29,12 +29,19 @@ export default function PrivacyPolicyPage() {
             Data Protection Regulation (GDPR).
           </p>
 
-          <h2 className={s.h2}>1. Controller & contact</h2>
+          <h2 className={s.h2}>1. Roles & contact</h2>
           <p className={s.p}>
-            Data controller: <strong>BOA DIGITAL SOLUTIONS S.R.L.</strong>, CIF/CUI <strong>51680505</strong>.
-            Registered office: <strong>BUZĂU, Mun. Buzău, Str. Pietroasele 24, Romania</strong>. For privacy
-            questions or rights requests, contact{" "}
-            <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
+            For the website and our own account/billing/ops data, <strong>BOA DIGITAL SOLUTIONS SRL</strong> acts as
+            <strong> data controller</strong>.
+          </p>
+          <p className={s.p}>
+            For guest data processed on behalf of properties (online check‑in, rooming lists, iCal, etc.), we act as a
+            <strong> data processor</strong>, and the property (hotel/host) is the <strong>data controller</strong>.
+          </p>
+          <p className={s.p}>
+            Controller contact for website/account matters: <strong>BOA DIGITAL SOLUTIONS S.R.L.</strong>, CIF/CUI
+            <strong> 51680505</strong>, Str. Pietroasele 24, Buzău, Romania. Email: <a className={s.link} href="mailto:office@plan4host.com">office@plan4host.com</a>.
+            (No DPO appointed.)
           </p>
 
           <h2 className={s.h2}>2. What data we collect</h2>
@@ -54,6 +61,12 @@ export default function PrivacyPolicyPage() {
             browser), cryptographic keys (<code>p256dh</code>, <code>auth</code>) required to send messages, your
             <code>user_id</code>, the <code>account_id</code> the device is associated with, optional
             <code>property_id</code> context, the <em>user agent</em> and <em>OS</em> string, and timestamps.
+          </p>
+          <p className={s.p}>
+            <strong>Purpose:</strong> deliver account‑related notifications (e.g., new reservations). <strong>Legal basis:</strong>
+            consent (GDPR Art. 6(1)(a)). <strong>Retention:</strong> until you unsubscribe or revoke permission; invalid
+            endpoints are cleaned up automatically. Control: you can turn notifications Off from the app (Notifications →
+            Turn Off) and/or revoke permission from your browser/device settings at any time.
           </p>
           
           <h2 className={s.h2}>2.2. Check‑in data & consents</h2>
@@ -93,18 +106,13 @@ export default function PrivacyPolicyPage() {
             images</strong> are retained only as strictly necessary to verify identity and are <strong>automatically deleted
             when a reservation is confirmed and a room is assigned</strong> (the storage file is deleted, while metadata such
             as document type/series/number may remain if required by law), consistent with GDPR Art. 5(1)(e) (storage
-            limitation).
+            limitation). Where required by local lodging laws, certain government‑issued identifiers (e.g., Romanian CNP) or
+            document series/number may be retained for statutory periods. We do not store ID images beyond room assignment.
           </p>
           <p className={s.p}>
             <strong>Your choice.</strong> If you prefer not to submit data through the online form, please contact the property
             directly to arrange an alternative check‑in method. You can also exercise your privacy rights (access, erasure,
             restriction, etc.) as described in this policy; some requests may be limited by legal retention obligations.
-          </p>
-          <p className={s.p}>
-            Purpose: deliver account-related notifications (e.g., new reservations). Legal basis: <strong>consent</strong>
-            — you allow notifications in your browser. Retention: until you unsubscribe or revoke permission; invalid
-            endpoints are cleaned up automatically. Control: you can turn notifications Off from the app (Notifications →
-            Turn Off) and/or revoke permission from your browser/device settings at any time.
           </p>
 
           <h2 className={s.h2}>3. Why we process your data (purposes)</h2>
@@ -207,6 +215,7 @@ export default function PrivacyPolicyPage() {
 
           <h2 className={s.h2}>10. Children</h2>
           <p className={s.p}>The service is not directed to children under 16. If you believe a child provided us with personal data, contact us and we will take appropriate steps.</p>
+          <p className={s.p}>Guest data for minors may be provided by the property/controller (guardian responsibility). We process such data only to provide the service on the controller’s instructions.</p>
 
           <h2 className={s.h2}>11. Automated decision-making</h2>
           <p className={s.p}>We do not perform automated decision-making or profiling that produces legal effects about you.</p>
