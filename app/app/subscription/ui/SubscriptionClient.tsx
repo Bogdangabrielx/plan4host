@@ -41,7 +41,7 @@ const PLANS: Plan[] = [
 // Same benefit set as the EN landing page
 const BENEFITS: string[] = [
   "Custom digital check-in form",
-  "GDPR consent, digital signature and ID copy",
+  "GDPR-ready e-signature & ID photo verification (auto-deleted once the booking is confirmed)",
   "QR code for check-in validation",
   "Push and email notifications for each new reservation",
   "Automated, reservation-aware messages",

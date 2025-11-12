@@ -400,7 +400,7 @@ export default function HomePageRO() {
   }, []);
   const beneficii: string[] = [
     "Formular personalizat pentru check-in digital",
-    "Acord GDPR, semnătură digitală și copie ID",
+    "Semnătură electronică conformă GDPR și verificare foto ID (ștearsă automat la confirmarea rezervării)",
     "QR cod pentru validare check-in",
     "Notificare push și email pentru fiecare nouă rezervare",
     "Mesaje automate, programate conform rezervării",
