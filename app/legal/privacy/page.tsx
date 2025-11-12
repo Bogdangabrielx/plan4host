@@ -65,17 +65,18 @@ export default function PrivacyPolicyPage() {
             <li className={s.p}><strong>Identification & contact</strong>: first/last name, email, phone.</li>
             <li className={s.p}><strong>Stay details</strong>: property, check‑in/check‑out dates, room/room type.</li>
             <li className={s.p}><strong>Address & nationality</strong> (as requested by the property/locale).</li>
-            <li className={s.p}><strong>ID document image</strong> (photo/PDF) used only to verify identity for self check‑in.</li>
+            <li className={s.p}><strong>ID document image</strong> (photo/PDF) used only to verify identity for self check‑in. <strong>Auto‑deleted at reservation confirmation (room assignment).</strong></li>
             <li className={s.p}><strong>Acknowledgements</strong>: that you have read the Privacy Policy and accept the House Rules for the stay.</li>
             <li className={s.p}><strong>Operational logs</strong>: confirmation email status and technical metadata (IP/UA) for security/audit.</li>
           </ul>
           <div className={s.card} style={{ marginTop: 8 }}>
             <p className={s.p} style={{ margin: 0 }}>
               <strong>ID image purpose & masking.</strong> We request an ID image solely to verify your self check‑in details
-              under GDPR Art. 6(1)(f) (legitimate interests) and remove the image promptly when no longer needed.
-              You may redact sensitive fields before upload. Please keep your face and the fields you typed visible, and
-              mask: personal numerical code (CNP/personal number), document series/number, full address, and the MRZ area
-              on passports.
+              under GDPR Art. 6(1)(f) (legitimate interests). <strong>The ID image is automatically deleted immediately
+              when your reservation is confirmed and a room is assigned.</strong> You may redact sensitive fields before
+              upload. Please keep your face and the fields you typed visible, and mask: personal numerical code
+              (CNP/personal number), document series/number, full address, and the MRZ area on passports. We do not use the
+              image for facial recognition or biometric profiling.
             </p>
           </div>
           <p className={s.p}>
@@ -89,11 +90,10 @@ export default function PrivacyPolicyPage() {
             <strong>Retention.</strong> Reservation and guest records are retained for the duration of the contractual
             relationship and for the statutory/accounting periods required by law. Acknowledgement records (privacy/house rules)
             are kept for the stay and for a reasonable audit period thereafter (typically 3–5 years). <strong>ID document
-            images</strong> are retained only as strictly necessary to verify identity. They are <strong>automatically
-            removed when a reservation is confirmed and a room is assigned</strong> (storage file deleted while metadata such as
-            document type/series/number may remain if required by law)—consistent with GDPR Art. 5(1)(e) (storage limitation).
-            If a room is not yet assigned, images are purged on a short schedule after the stay or inactivity (typically
-            within 24–72 hours), unless a longer period is required by applicable law.
+            images</strong> are retained only as strictly necessary to verify identity and are <strong>automatically deleted
+            when a reservation is confirmed and a room is assigned</strong> (the storage file is deleted, while metadata such
+            as document type/series/number may remain if required by law), consistent with GDPR Art. 5(1)(e) (storage
+            limitation).
           </p>
           <p className={s.p}>
             <strong>Your choice.</strong> If you prefer not to submit data through the online form, please contact the property
