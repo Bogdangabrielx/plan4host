@@ -1109,10 +1109,14 @@ export default function CheckinClient() {
         <div style={CARD}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10 }}>
             <h1 style={{ marginTop: 0, marginBottom: 8 }}>{T('checkinTitle')}</h1>
-            <div style={{ display:'inline-flex', gap:6 }}>
-              <button className="sb-btn" onClick={()=>setLang('en')} aria-label="Switch to English">{TXT.en.langEN}</button>
-              <button className="sb-btn" onClick={()=>setLang('ro')} aria-label="Schimbă în Română">{TXT.ro.langRO}</button>
-            </div>
+            <button
+              className={homeStyles.btnLang}
+              onClick={() => setLang(l => (l === 'en' ? 'ro' : 'en'))}
+              aria-label={lang === 'en' ? 'Switch to Romanian' : 'Schimbă în Engleză'}
+              title={lang === 'en' ? 'Switch to Romanian' : 'Schimbă în Engleză'}
+            >
+              <img src={lang === 'ro' ? '/ro.png' : '/eng.png'} alt="" width={22} height={22} style={{ display:'block' }} />
+            </button>
           </div>
           <p style={{ color: "var(--muted)" }}>
             Missing property. This link must include <code>?property=&lt;PROPERTY_ID&gt;</code>.
@@ -1146,10 +1150,15 @@ export default function CheckinClient() {
               {T('intro6')}
             </p>
           </div>
-          <div style={{ display:'inline-flex', gap:6, alignSelf:'flex-start' }}>
-            <button className="sb-btn" onClick={()=>setLang('en')} aria-label="Switch to English">{TXT.en.langEN}</button>
-            <button className="sb-btn" onClick={()=>setLang('ro')} aria-label="Schimbă în Română">{TXT.ro.langRO}</button>
-          </div>
+          <button
+            className={homeStyles.btnLang}
+            onClick={() => setLang(l => (l === 'en' ? 'ro' : 'en'))}
+            aria-label={lang === 'en' ? 'Switch to Romanian' : 'Schimbă în Engleză'}
+            title={lang === 'en' ? 'Switch to Romanian' : 'Schimbă în Engleză'}
+            style={{ alignSelf:'flex-start' }}
+          >
+            <img src={lang === 'ro' ? '/ro.png' : '/eng.png'} alt="" width={22} height={22} style={{ display:'block' }} />
+          </button>
         </div>
       </section>
 
