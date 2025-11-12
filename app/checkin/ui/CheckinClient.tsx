@@ -349,6 +349,19 @@ export default function CheckinClient() {
     }
   }), []);
   const T = (key: keyof typeof TXT['en']) => (TXT as any)[lang][key];
+  const Intro3 = ({ name }: { name: string }) => (
+    lang === 'en' ? (
+      <>
+        Once you complete the online check-in, you will automatically receive an email confirming your check-in for{' '}
+        <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{name}</span>.
+      </>
+    ) : (
+      <>
+        După ce finalizezi check‑in‑ul online, vei primi automat un email de confirmare pentru{' '}
+        <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{name}</span>.
+      </>
+    )
+  );
   const [phoneDial, setPhoneDial] = useState<string>("+40");
   const [dialOpen,  setDialOpen]  = useState<boolean>(false);
   const dialWrapRef = useRef<HTMLDivElement | null>(null);
@@ -1142,7 +1155,8 @@ export default function CheckinClient() {
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
               {T('intro1')}<br />
               {T('intro2')}<br />
-              {(TXT as any)[lang].intro3(prop?.name ?? 'the property')}<br />
+              <Intro3 name={prop?.name ?? (lang === 'ro' ? 'proprietate' : 'the property')} />
+              <br />
               {T('intro4')}
               <img src="/QR_fordark.png" alt="QR" width={16} height={16} style={{ verticalAlign: 'text-bottom', marginLeft: 4, marginRight: 4 }} />
               <br />
