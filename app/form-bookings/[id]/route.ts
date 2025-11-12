@@ -285,6 +285,48 @@ export async function PATCH(
           await admin.from('form_documents').delete().eq('form_id', id);
         }
       } catch {}
+
+      // Privacy cleanup: remove only the ID photo files (keep metadata)
+      try {
+        const idTypes = ['id_card', 'passport'];
+        const fallbackBucket = (process.env.NEXT_PUBLIC_DEFAULT_DOCS_BUCKET || 'guest_docs').toString();
+
+        async function cleanupPhotos(table: 'booking_documents' | 'form_documents', key: 'booking_id' | 'form_id', value: string) {
+          const rSel = await admin
+            .from(table)
+            .select('id,storage_bucket,storage_path,doc_type')
+            .eq(key, value)
+            .in('doc_type', idTypes as any);
+          if (rSel.error) return;
+          const rows = (rSel.data || []) as Array<{ id: string; storage_bucket: string | null; storage_path: string | null; doc_type: string | null }>;
+          if (!rows.length) return;
+
+          // Group paths by bucket
+          const byBucket: Record<string, string[]> = {};
+          for (const d of rows) {
+            const path = d.storage_path || null;
+            if (!path) continue;
+            const bucket = (d.storage_bucket || fallbackBucket).toString();
+            if (!byBucket[bucket]) byBucket[bucket] = [];
+            byBucket[bucket].push(path);
+          }
+          // Remove files from storage
+          for (const [bucket, paths] of Object.entries(byBucket)) {
+            if (!paths.length) continue;
+            try { await admin.storage.from(bucket).remove(paths); } catch {}
+          }
+          // Null out file columns but keep document metadata (series/number/type)
+          const ids = rows.map(r => r.id);
+          if (ids.length) {
+            await admin.from(table).update({ storage_path: null, mime_type: null, size_bytes: null }).in('id', ids);
+          }
+        }
+
+        // Clean booking_documents for the linked booking
+        await cleanupPhotos('booking_documents', 'booking_id', String(targetBooking.id));
+        // Defensive: in case any form_documents remain (shouldn't after move), clean those too
+        await cleanupPhotos('form_documents', 'form_id', String(id));
+      } catch {}
     } else if (linkedBooking) {
       // No target booking change (e.g., no room change), but dates changed → sync dates to linked booking
       try {
