@@ -239,6 +239,11 @@ export default function CheckinClient() {
   const [email,     setEmail]     = useState("");
   const [phone,     setPhone]     = useState("");
 
+  // One-time info popup before uploading ID photo
+  const [showIdUploadInfo, setShowIdUploadInfo] = useState<boolean>(false);
+  const [pendingOpenAfterInfo, setPendingOpenAfterInfo] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   // Language toggle (EN/RO)
   type Lang = 'en' | 'ro';
   function readCookie(name: string): string | null {
@@ -844,6 +849,29 @@ export default function CheckinClient() {
   }, [countries]);
 
   const hasTypes = types.length > 0;
+
+  function maybeShowIdUploadInfo(e?: React.MouseEvent) {
+    try {
+      const k = 'p4h:checkin:idUploadInfoShown';
+      const seen = typeof window !== 'undefined' ? (localStorage.getItem(k) === '1') : true;
+      if (!seen) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        setShowIdUploadInfo(true);
+        setPendingOpenAfterInfo(true);
+        return true; // intercepted
+      }
+    } catch {}
+    return false;
+  }
+
+  function onConfirmIdUploadInfo() {
+    try { localStorage.setItem('p4h:checkin:idUploadInfoShown', '1'); } catch {}
+    setShowIdUploadInfo(false);
+    if (pendingOpenAfterInfo) {
+      setPendingOpenAfterInfo(false);
+      try { fileInputRef.current?.click(); } catch {}
+    }
+  }
 
   // trebuie să fie deschis PDF-ul dacă există
   const consentGatePassed = !pdfUrl || pdfViewed;
@@ -1465,12 +1493,18 @@ export default function CheckinClient() {
                   boxSizing: 'border-box',
                   textAlign: 'center',
                 }}
+                onClick={(e) => {
+                  if (!maybeShowIdUploadInfo(e)) {
+                    try { fileInputRef.current?.click(); } catch {}
+                  }
+                }}
               >
                 Choose file…
                 
                 <input
                   type="file"
                   accept="image/*,application/pdf"
+                  ref={fileInputRef}
                   onChange={(e) => {
                     const f = e.currentTarget.files?.[0] ?? null;
                     setDocFile(f || null);
@@ -1481,7 +1515,7 @@ export default function CheckinClient() {
                       setDocFilePreview(null);
                     }
                   }}
-                  style={{ position:'absolute', inset:0, opacity:0, width:'100%', height:'100%', cursor:'pointer' }}
+                  style={{ display: 'none' }}
                 
                 
                 />
@@ -1515,6 +1549,38 @@ export default function CheckinClient() {
                 )}
               </div>
             </div>
+
+            {showIdUploadInfo && (
+              <div role="dialog" aria-modal="true" style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.5)', display:'grid', placeItems:'center', padding:16 }}>
+                <div className="sb-card" style={{ position:'relative', width:'min(720px, 100%)', maxWidth:'96vw', background:'var(--panel)', color:'var(--text)', border:'1px solid var(--border)', borderRadius:16, padding:16, boxShadow:'0 10px 30px rgba(0,0,0,0.35)' }}>
+                  <button aria-label="Close" onClick={onConfirmIdUploadInfo} style={{ position:'absolute', top:8, right:8, width:36, height:36, borderRadius:999, border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)', fontWeight:900, cursor:'pointer' }}>×</button>
+                  <div style={{ display:'grid', gap:10 }}>
+                    <div style={{ fontWeight:900, fontSize:18 }}>Info</div>
+                    {lang === 'ro' ? (
+                      <>
+                        <p style={{ margin:0 }}>
+                          Încarcă o fotografie a actului de identitate pentru a verifica datele de self check‑in (GDPR art. 6(1)(f));
+                          este folosită doar pentru această verificare și se șterge automat la alocarea camerei (art. 5(1)(e)).
+                        </p>
+                        <p style={{ margin:0 }}>
+                          Poți ascunde câmpurile sensibile — păstrează fața și câmpurile completate; maschează CNP/număr personal,
+                          seria/numărul documentului, adresa și zona MRZ a pașaportului.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p style={{ margin:0 }}>
+                          Upload an ID photo to verify your self check-in details (GDPR Art. 6(1)(f)); it’s used only for this check and auto-deleted at room assignment (Art. 5(1)(e)).
+                        </p>
+                        <p style={{ margin:0 }}>
+                          You may redact sensitive fields—keep your face and the fields you typed; mask CNP/personal number, document series/number, address, and passport MRZ.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Consent — ALWAYS visible; checkbox enabled only after opening the PDF (if exists) */}
             <div
