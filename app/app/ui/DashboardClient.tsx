@@ -62,6 +62,10 @@ export default function DashboardClient({
   const [plan, setPlan] = useState<"basic" | "standard" | "premium" | null>(null);
   // Toggle actions per property (one-at-a-time)
   const [openPropId, setOpenPropId] = useState<string | null>(null);
+  // Inline rename state
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState<string>("");
+  const renameInputRef = useRef<HTMLInputElement | null>(null);
   // First-property guidance
   const [showFirstPropertyGuide, setShowFirstPropertyGuide] = useState<boolean>(false);
   const [highlightName, setHighlightName] = useState<boolean>(false);
@@ -321,6 +325,27 @@ export default function DashboardClient({
     setTimeout(() => setStatus("Idle"), 800);
   }
 
+  async function savePropertyName(id: string, newNameRaw: string) {
+    const newName = (newNameRaw || "").trim();
+    setRenamingId(null);
+    if (!newName) return; // ignore empty
+    const current = list.find(p => p.id === id);
+    if (current && current.name.trim() === newName) return; // no change
+    setStatus("Saving…");
+    try {
+      const { error } = await supabase.from('properties').update({ name: newName }).eq('id', id);
+      if (!error) {
+        setList(prev => prev.map(p => p.id === id ? { ...p, name: newName } : p));
+        setStatus("Synced");
+        setTimeout(() => setStatus("Idle"), 800);
+      } else {
+        setStatus("Error");
+      }
+    } catch {
+      setStatus("Error");
+    }
+  }
+
   // —— UI helpers ——
   const FIELD_WRAPPER: React.CSSProperties = { width: 340, maxWidth: "100%" };
   const FIELD_STYLE: React.CSSProperties = {
@@ -495,13 +520,34 @@ export default function DashboardClient({
                   }}
                   onPointerUp={(e) => {
                     const target = e.target as HTMLElement;
-                    if (target && (target.closest('button') || target.closest('a'))) return;
+                    if (target && (target.closest('button') || target.closest('a') || target.closest('input'))) return;
                     setOpenPropId(prev => prev === p.id ? null : p.id);
                   }}
                 >
                   {/* Info */}
                   <div>
-                    <strong>{p.name}</strong>
+                    {renamingId === p.id ? (
+                      <input
+                        ref={renameInputRef}
+                        value={renameValue}
+                        onChange={(e)=> setRenameValue(e.currentTarget.value)}
+                        onBlur={()=> savePropertyName(p.id, renameValue)}
+                        onKeyDown={(e)=>{
+                          if (e.key === 'Enter') { e.currentTarget.blur(); }
+                          if (e.key === 'Escape') { setRenamingId(null); }
+                        }}
+                        autoFocus
+                        style={{
+                          ...FIELD_STYLE,
+                          width: 'min(320px, 100%)',
+                          padding: 8,
+                          fontWeight: 800,
+                        }}
+                        placeholder="Property name"
+                      />
+                    ) : (
+                      <strong>{p.name}</strong>
+                    )}
                     <div style={{ color: "var(--muted)", fontSize: 12 }}>
                       {p.country_code
                         ? `${flagEmoji(p.country_code)} ${COUNTRY_NAMES[p.country_code] ?? p.country_code}`
@@ -513,6 +559,22 @@ export default function DashboardClient({
 
                   {/* Actions */}
                   <div className={`propActions ${openPropId === p.id ? 'open' : ''}`} style={{ gap: 8, flexWrap: "wrap" }}>
+                    {renamingId === p.id ? null : (
+                      <button
+                        onClick={() => { setRenamingId(p.id); setRenameValue(p.name); setTimeout(()=>renameInputRef.current?.focus(), 0); }}
+                        style={{
+                          padding: "8px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border)",
+                          background: "var(--panel)",
+                          color: "var(--text)",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Rename
+                      </button>
+                    )}
                     <button
                       onClick={() => openPropertySetup(p.id)}
                       style={{
