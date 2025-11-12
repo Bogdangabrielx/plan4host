@@ -1493,11 +1493,8 @@ export default function CheckinClient() {
                   boxSizing: 'border-box',
                   textAlign: 'center',
                 }}
-                onClick={(e) => {
-                  if (!maybeShowIdUploadInfo(e)) {
-                    try { fileInputRef.current?.click(); } catch {}
-                  }
-                }}
+                htmlFor="p4h-id-upload"
+                onClick={(e) => { if (maybeShowIdUploadInfo(e)) return; }}
               >
                 Choose file…
                 
@@ -1505,6 +1502,7 @@ export default function CheckinClient() {
                   type="file"
                   accept="image/*,application/pdf"
                   ref={fileInputRef}
+                  id="p4h-id-upload"
                   onChange={(e) => {
                     const f = e.currentTarget.files?.[0] ?? null;
                     setDocFile(f || null);
