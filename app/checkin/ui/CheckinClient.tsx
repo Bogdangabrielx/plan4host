@@ -238,6 +238,117 @@ export default function CheckinClient() {
   const [lastName,  setLastName]  = useState("");
   const [email,     setEmail]     = useState("");
   const [phone,     setPhone]     = useState("");
+
+  // Language toggle (EN/RO)
+  type Lang = 'en' | 'ro';
+  function readCookie(name: string): string | null {
+    if (typeof document === 'undefined') return null;
+    const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\/+^])/g, '\\$1') + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  const [lang, setLang] = useState<Lang>(() => {
+    const qp = (typeof window !== 'undefined') ? new URL(window.location.href).searchParams.get('lang') : null;
+    const fromQ = qp && /^(ro|en)$/i.test(qp) ? (qp.toLowerCase() as Lang) : null;
+    if (fromQ) return fromQ;
+    const ck = readCookie('site_lang');
+    if (ck && /^(ro|en)$/i.test(ck)) return ck.toLowerCase() as Lang;
+    if (typeof navigator !== 'undefined' && /^ro\b/i.test(navigator.language || '')) return 'ro';
+    return 'en';
+  });
+  useEffect(() => {
+    try { document.cookie = `site_lang=${lang}; path=/; max-age=${60*60*24*365}`; } catch {}
+    try { document.documentElement.setAttribute('lang', lang); } catch {}
+  }, [lang]);
+
+  const TXT = useMemo(() => ({
+    en: {
+      checkinTitle: 'Check-in',
+      intro1: 'Thank you for choosing us!',
+      intro2: 'Please fill in the fields below with the requested information.',
+      intro3: (propName: string) => `Once you complete the online check-in, you will automatically receive an email confirming your check-in for ${propName}.`,
+      intro4: 'The email will also include a QR code you can present at reception, or use as proof that you have completed this form.',
+      intro5: 'Please note that all information you provide is strictly confidential.',
+      intro6: 'Thank you for your patience!',
+      loading: 'Loading…',
+      thanksTitle: 'Thank you! ✅',
+      thanksMsg: 'Your check-in details were submitted successfully.',
+      checkinDate: 'Check-in date*',
+      firstName: 'First name*',
+      lastName: 'Last name*',
+      email: 'Email*',
+      phone: 'Phone*',
+      address: 'Address',
+      city: 'City',
+      country: 'Country*',
+      ariaCountry: 'Country',
+      selectDocType: 'Select document type…',
+      nationality: 'Nationality (citizenship)*',
+      ariaNationality: 'Nationality',
+      uploadId: 'Upload ID document (photo/PDF)*',
+      selected: 'Selected:',
+      consentPrefix: 'I have read and agree to the ',
+      houseRules: 'House Rules',
+      openPdfHint: '(Please open the PDF to enable the checkbox)',
+      signaturePrompt: 'Please draw your signature below (mouse or touch).',
+      submitSubmitting: 'Submitting…',
+      submit: 'Submit check-in',
+      confirmEmailTitle: 'Confirmation Email',
+      confirmEmailWait: 'Please wait while we send your confirmation email.',
+      privacyTitle: 'Privacy Policy',
+      privacyPrompt: 'Please review our Privacy Policy. After reading it, confirm below to continue.',
+      privacyAcknowledge: 'I have read and understood the Privacy Policy.',
+      privacyConfirm: 'Confirm & Continue',
+      missingIdError: 'Please upload your ID document.',
+      submitFailed: 'Submission failed. Please try again.',
+      unexpectedError: 'Unexpected error. Please try again.',
+      langEN: 'EN',
+      langRO: 'RO',
+    },
+    ro: {
+      checkinTitle: 'Check‑in',
+      intro1: 'Îți mulțumim că ne-ai ales!',
+      intro2: 'Te rugăm să completezi câmpurile de mai jos cu informațiile solicitate.',
+      intro3: (propName: string) => `După ce finalizezi check‑in‑ul online, vei primi automat un email de confirmare pentru ${propName}.`,
+      intro4: 'Emailul va include și un cod QR pe care îl poți prezenta la recepție sau ca dovadă că ai completat acest formular.',
+      intro5: 'Toate informațiile furnizate sunt strict confidențiale.',
+      intro6: 'Îți mulțumim pentru răbdare!',
+      loading: 'Se încarcă…',
+      thanksTitle: 'Mulțumim! ✅',
+      thanksMsg: 'Detaliile tale de check‑in au fost trimise cu succes.',
+      checkinDate: 'Data check‑in*',
+      firstName: 'Prenume*',
+      lastName: 'Nume*',
+      email: 'Email*',
+      phone: 'Telefon*',
+      address: 'Adresă',
+      city: 'Oraș',
+      country: 'Țară*',
+      ariaCountry: 'Țară',
+      selectDocType: 'Selectează tipul documentului…',
+      nationality: 'Naționalitate (cetățenie)*',
+      ariaNationality: 'Naționalitate',
+      uploadId: 'Încarcă actul de identitate (poză/PDF)*',
+      selected: 'Selectat:',
+      consentPrefix: 'Am citit și sunt de acord cu ',
+      houseRules: 'Regulamentul de ordine interioară',
+      openPdfHint: '(Te rugăm să deschizi PDF‑ul pentru a activa această bifă)',
+      signaturePrompt: 'Te rugăm să desenezi semnătura mai jos (mouse sau touch).',
+      submitSubmitting: 'Se trimite…',
+      submit: 'Trimite check‑in',
+      confirmEmailTitle: 'Email de confirmare',
+      confirmEmailWait: 'Te rugăm să aștepți cât timp trimitem emailul de confirmare.',
+      privacyTitle: 'Politica de confidențialitate',
+      privacyPrompt: 'Te rugăm să consulți Politica de confidențialitate. După ce ai citit‑o, confirmă mai jos pentru a continua.',
+      privacyAcknowledge: 'Am citit și am înțeles Politica de confidențialitate.',
+      privacyConfirm: 'Confirmă și continuă',
+      missingIdError: 'Te rugăm să încarci actul de identitate.',
+      submitFailed: 'Trimiterea a eșuat. Încearcă din nou.',
+      unexpectedError: 'Eroare neașteptată. Încearcă din nou.',
+      langEN: 'EN',
+      langRO: 'RO',
+    }
+  }), []);
+  const T = (key: keyof typeof TXT['en']) => (TXT as any)[lang][key];
   const [phoneDial, setPhoneDial] = useState<string>("+40");
   const [dialOpen,  setDialOpen]  = useState<boolean>(false);
   const dialWrapRef = useRef<HTMLDivElement | null>(null);
@@ -893,7 +1004,7 @@ export default function CheckinClient() {
     try {
       // 4.1 upload fișier (obligatoriu) + semnătură (opțional)
       const uploaded = await uploadDocFile();
-      if (!uploaded) throw new Error("Please upload your ID document.");
+      if (!uploaded) throw new Error((TXT as any)[lang].missingIdError);
       const uploadedSig = await uploadSignature();
 
       // 4.2 payload
@@ -946,7 +1057,7 @@ export default function CheckinClient() {
 
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        const msg = j?.error || j?.message || "Submission failed. Please try again.";
+        const msg = j?.error || j?.message || (TXT as any)[lang].submitFailed;
         setErrorMsg(msg);
         setSubmitState("error");
         setConfirmOpen(false);
@@ -978,7 +1089,7 @@ export default function CheckinClient() {
       // Mark submit success, but show final Thank you only after email is sent
       setSubmitState("success");
     } catch (err: any) {
-      setErrorMsg(err?.message || "Unexpected error. Please try again.");
+      setErrorMsg(err?.message || (TXT as any)[lang].unexpectedError);
       setSubmitState("error");
       setConfirmOpen(false);
     }
@@ -996,7 +1107,13 @@ export default function CheckinClient() {
     return (
       <div style={{ maxWidth: 720, margin: "24px auto", padding: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
         <div style={CARD}>
-          <h1 style={{ marginTop: 0, marginBottom: 8 }}>Check-in</h1>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10 }}>
+            <h1 style={{ marginTop: 0, marginBottom: 8 }}>{T('checkinTitle')}</h1>
+            <div style={{ display:'inline-flex', gap:6 }}>
+              <button className="sb-btn" onClick={()=>setLang('en')} aria-label="Switch to English">{TXT.en.langEN}</button>
+              <button className="sb-btn" onClick={()=>setLang('ro')} aria-label="Schimbă în Română">{TXT.ro.langRO}</button>
+            </div>
+          </div>
           <p style={{ color: "var(--muted)" }}>
             Missing property. This link must include <code>?property=&lt;PROPERTY_ID&gt;</code>.
           </p>
@@ -1019,13 +1136,19 @@ export default function CheckinClient() {
                <br />
             </h1>
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
-              Thank you for choosing us!<br />
-              Please fill in the fields below with the requested information.<br />
-              Once you complete the online check-in, you will automatically receive an email confirming your check-in for <span style={{ color: "var(--primary)", fontWeight: 700 }}>{prop?.name ?? "the property"}</span>.<br />
-              The email will also include a <strong>QR code</strong>  <img src="/QR_fordark.png" alt="QR" width={16} height={16} style={{ verticalAlign: 'text-bottom', marginRight: 4 }} /> pothat you can present at reception, or use as proof that you have completed this form.<br />
-              Please note that all information you provide is strictly confidential.<br />
-              Thank you for your patience!
+              {T('intro1')}<br />
+              {T('intro2')}<br />
+              {(TXT as any)[lang].intro3(prop?.name ?? 'the property')}<br />
+              {T('intro4')}
+              <img src="/QR_fordark.png" alt="QR" width={16} height={16} style={{ verticalAlign: 'text-bottom', marginLeft: 4, marginRight: 4 }} />
+              <br />
+              {T('intro5')}<br />
+              {T('intro6')}
             </p>
+          </div>
+          <div style={{ display:'inline-flex', gap:6, alignSelf:'flex-start' }}>
+            <button className="sb-btn" onClick={()=>setLang('en')} aria-label="Switch to English">{TXT.en.langEN}</button>
+            <button className="sb-btn" onClick={()=>setLang('ro')} aria-label="Schimbă în Română">{TXT.ro.langRO}</button>
           </div>
         </div>
       </section>
@@ -1072,13 +1195,11 @@ export default function CheckinClient() {
       {/* Form */}
       <section style={CARD}>
         {loading ? (
-          <div style={{ color: "var(--muted)" }}>Loading…</div>
+          <div style={{ color: "var(--muted)" }}>{T('loading')}</div>
         ) : (submitState === "success" && confirmStatus === "sent") ? (
           <div>
-            <h2 style={{ marginTop: 0 }}>Thank you! ✅</h2>
-            <p style={{ color: "var(--muted)" }}>
-              Your check-in details were submitted successfully.
-            </p>
+            <h2 style={{ marginTop: 0 }}>{T('thanksTitle')}</h2>
+            <p style={{ color: "var(--muted)" }}>{T('thanksMsg')}</p>
           </div>
         ) : (
           <form onSubmit={onSubmit} onPointerDownCapture={onFirstInteract} style={{ display: "grid", gap: 14 }}>
@@ -1090,7 +1211,7 @@ export default function CheckinClient() {
               alignItems: "start",
             }}>
               <div>
-                <label style={LABEL}>Check-in date*</label>
+                <label style={LABEL}>{T('checkinDate')}</label>
                 <input
                   style={INPUT_DATE}
                   type="date"
@@ -1127,14 +1248,14 @@ export default function CheckinClient() {
               <div>
                 <label htmlFor="checkin-first-name" style={LABEL_ROW}>
                   <Image src={formIcon("firstname")} alt="" width={16} height={16} />
-                  <span>First name*</span>
+                  <span>{T('firstName')}</span>
                 </label>
                 <input id="checkin-first-name" style={INPUT} value={firstName} onChange={e => setFirstName(e.currentTarget.value)} placeholder="First Name" />
               </div>
               <div>
                 <label htmlFor="checkin-last-name" style={LABEL_ROW}>
                   <Image src={formIcon("lastname")} alt="" width={16} height={16} />
-                  <span>Last name*</span>
+                  <span>{T('lastName')}</span>
                 </label>
                 <input id="checkin-last-name" style={INPUT} value={lastName} onChange={e => setLastName(e.currentTarget.value)} placeholder="Last Name" />
               </div>
@@ -1145,14 +1266,14 @@ export default function CheckinClient() {
               <div>
                 <label htmlFor="checkin-email" style={LABEL_ROW}>
                   <Image src={formIcon("email")} alt="" width={16} height={16} />
-                  <span>Email*</span>
+                  <span>{T('email')}</span>
                 </label>
                 <input id="checkin-email" style={INPUT} type="email" value={email} onChange={e => setEmail(e.currentTarget.value)} placeholder="***@example.com" />
               </div>
               <div>
                 <label htmlFor="checkin-phone" style={LABEL_ROW}>
                   <Image src={formIcon("phone")} alt="" width={16} height={16} />
-                  <span>Phone*</span>
+                  <span>{T('phone')}</span>
                 </label>
                 <div ref={dialWrapRef} style={{ position:'relative' }}>
                   <button type="button" onClick={()=>setDialOpen(v=>!v)} aria-label="Dial code"
@@ -1183,7 +1304,7 @@ export default function CheckinClient() {
               <div>
                 <label htmlFor="checkin-address" style={LABEL_ROW}>
                   <Image src={formIcon("address")} alt="" width={16} height={16} />
-                  <span>Address</span>
+                  <span>{T('address')}</span>
                 </label>
                 <input id="checkin-address" style={INPUT} value={address} onChange={e => setAddress(e.currentTarget.value)} placeholder="Street, number, apt." />
               </div>
@@ -1192,7 +1313,7 @@ export default function CheckinClient() {
                 <div>
                   <label htmlFor="checkin-city" style={LABEL_ROW}>
                     <Image src={formIcon("city")} alt="" width={16} height={16} />
-                    <span>City</span>
+                    <span>{T('city')}</span>
                   </label>
                   <input id="checkin-city" style={INPUT} value={city} onChange={e => setCity(e.currentTarget.value)} placeholder="Bucharest" />
                 </div>
@@ -1200,12 +1321,12 @@ export default function CheckinClient() {
                 <div>
                   <label htmlFor="checkin-country" style={LABEL_ROW}>
                     <Image src={formIcon("country")} alt="" width={16} height={16} />
-                    <span>Country*</span>
+                    <span>{T('country')}</span>
                   </label>
                   <Combobox
                     ref={countryRef}
                     id="checkin-country"
-                    ariaLabel="Country"
+                    ariaLabel={T('ariaCountry')}
                     value={countryText}
                     onCommit={setCountryText}
                     options={countries.map(c => c.name)}
@@ -1239,7 +1360,7 @@ export default function CheckinClient() {
                     if (nationalityRef.current) nationalityRef.current.commit();
                   }}
                 > 
-                  <option value="" disabled>Select document type…</option>
+                  <option value="" disabled>{T('selectDocType')}</option>
                   <option value="id_card">Identity card</option>
                   <option value="passport">Passport</option>
                 </select>
@@ -1274,11 +1395,11 @@ export default function CheckinClient() {
               {docType === "passport" && (
                 <div style={ROW_2}>
                   <div>
-                    <label style={LABEL}>Nationality (citizenship)*</label>
+                    <label style={LABEL}>{T('nationality')}</label>
                     <Combobox
                       ref={nationalityRef}
                       id="checkin-nationality"
-                      ariaLabel="Nationality"
+                      ariaLabel={T('ariaNationality')}
                       value={docNationality}
                       onCommit={setDocNationality}
                       options={nationalityOptions}
@@ -1301,7 +1422,7 @@ export default function CheckinClient() {
 
             {/* Upload ID document (photo/PDF) — obligatoriu */}
             <div style={{ marginTop: 6 }}>
-              <label style={LABEL}>Upload ID document (photo/PDF)*</label>
+              <label style={LABEL}>{T('uploadId')}</label>
               {/* Custom upload button styled as sb-cardglow */}
               <label
                 className="sb-cardglow"
@@ -1344,7 +1465,7 @@ export default function CheckinClient() {
               </label>
               {docFile && (
                 <div style={{ marginTop: 6, color:'var(--muted)', fontSize: 12 }}>
-                  Selected: <strong style={{ color:'var(--text)' }}>{docFile.name}</strong>
+                  {T('selected')} <strong style={{ color:'var(--text)' }}>{docFile.name}</strong>
                 </div>
               )}
                 {docFile && (
@@ -1394,7 +1515,7 @@ export default function CheckinClient() {
                 title={!!pdfUrl && !pdfViewed ? "Open the House Rules to enable this checkbox." : undefined}
               />
               <label htmlFor="agree" style={{ fontSize:13, color: "var(--muted)" }}>
-                I have read and agree to the{" "}
+                {T('consentPrefix')}
                 {pdfUrl ? (
                   <a
                     href={pdfUrl}
@@ -1406,13 +1527,11 @@ export default function CheckinClient() {
                     Property Rules (pdf)
                   </a>
                 ) : (
-                  <span style={{ fontStyle: "italic" }}>House Rules</span>
+                  <span style={{ fontStyle: "italic" }}>{T('houseRules')}</span>
                 )}
                 .
                 {!!pdfUrl && !pdfViewed && (
-                  <span style={{ marginLeft: 6 }}>
-                    (Please open the PDF to enable the checkbox)
-                  </span>
+                  <span style={{ marginLeft: 6 }}>{T('openPdfHint')}</span>
                 )}
                 {!!pdfUrl && pdfViewed && (
                   <span style={{ marginLeft: 6, color: "var(--text)", fontWeight: 700, fontSize:9 }}>
@@ -1435,9 +1554,7 @@ export default function CheckinClient() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <small style={{ color: 'var(--muted)' }}>
-                      Please draw your signature below (mouse or touch).
-                    </small>
+                    <small style={{ color: 'var(--muted)' }}>{T('signaturePrompt')}</small>
                     <button type="button" onClick={clearSignature} style={BTN_GHOST}>
                       Clear
                     </button>
@@ -1482,7 +1599,7 @@ export default function CheckinClient() {
                 className={`${homeStyles.btn} ${homeStyles.btnChoose} ${homeStyles.btnPrimary}`}
                 style={{ opacity: canSubmit ? 1 : 0.6, cursor: canSubmit ? "pointer" : "not-allowed" }}
               >
-                {submitState === "submitting" ? "Submitting…" : "Submit check-in"}
+                {submitState === "submitting" ? T('submitSubmitting') : T('submit')}
               </button>
             </div>
           </form>
@@ -1503,7 +1620,7 @@ export default function CheckinClient() {
             style={{ width:'min(540px, 100%)', padding:16 }}
           >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-              <strong>Confirmation Email</strong>
+              <strong>{T('confirmEmailTitle')}</strong>
               {confirmStatus !== 'sending' && (
                 <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>Close</button>
               )}
@@ -1514,7 +1631,7 @@ export default function CheckinClient() {
                   <span style={{ width:10, height:10, borderRadius:999, background:'var(--primary)', animation:'p4h-pulse 1.2s infinite' }} />
                   <span>Sending…</span>
                 </div>
-                <small style={{ color:'var(--muted)' }}>Please wait while we send your confirmation email.</small>
+                <small style={{ color:'var(--muted)' }}>{T('confirmEmailWait')}</small>
               </div>
             )}
             {confirmStatus === 'sent' && (
@@ -1557,21 +1674,22 @@ export default function CheckinClient() {
           style={{ position:'fixed', inset:0, zIndex: 320, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', padding:16 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-              <strong>Privacy Policy</strong>
+              <strong>{T('privacyTitle')}</strong>
               <button className="sb-btn" onClick={()=>setPrivacyOpen(false)}>Close</button>
             </div>
             <div style={{ display:'grid', gap:10 }}>
               <p style={{ margin:0, color:'var(--muted)' }}>
-                Please review our <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" onClick={()=>setPrivacyVisited(true)} style={{ color:'var(--primary)', fontWeight:800 }}>Privacy Policy</a>. After reading it, confirm below to continue.
+                {T('privacyPrompt').replace('Privacy Policy', '')}
+                <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" onClick={()=>setPrivacyVisited(true)} style={{ color:'var(--primary)', fontWeight:800 }}>Privacy Policy</a>.
               </p>
               <label style={{ display:'flex', alignItems:'center', gap:8 }}>
                 <input type="checkbox" disabled={!privacyVisited} checked={privacyConfirm} onChange={(e)=>setPrivacyConfirm(e.currentTarget.checked)} />
-                <span>I have read and understood the Privacy Policy.</span>
+                <span>{T('privacyAcknowledge')}</span>
               </label>
               <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
                 <button className="sb-btn" onClick={()=>setPrivacyOpen(false)} disabled={privacySaving}>Cancel</button>
                 <button className="sb-btn sb-btn--primary" disabled={!privacyConfirm || privacySaving} onClick={acceptPrivacyAck}>
-                  {privacySaving ? 'Saving…' : 'Confirm & Continue'}
+                  {privacySaving ? 'Saving…' : T('privacyConfirm')}
                 </button>
               </div>
             </div>
