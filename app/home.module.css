@@ -666,7 +666,7 @@ will-change: transform;
 /* Reviews */
 .reviews { max-width: 1100px; margin: 40px auto 80px; padding: 0 20px; }
 .reviews h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 16px; text-align: center; }
-.reviewsBody { display: grid; place-items: center; }
+.reviewsBody { display: block; }
 .reviewsCard {
   background: var(--panel);
   border: 1px solid var(--border);
