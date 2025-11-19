@@ -1000,19 +1000,21 @@ export default function HomePage() {
       {/* About */}
       <section id="about" className={styles.about} aria-labelledby="about-title">
         <h2 id="about-title">About</h2>
-        <p>
-          Plan4Host helps small hotels and property managers run smoother operations
-          <br />
-          with an adaptive calendar, simple property setup and powerful team workflows. 
-          <br />
-          Our goal is to keep things fast, reliable and easy to use.
-          <br />
-          Built with care for clarity and performance,
-          <br />
-          Plan4Host focuses on the tools you actually use every day:
-          <br />
-          calendars, cleaning, guest overview and iCal synchronization that just works.
-        </p>
+        <div className={styles.aboutCard}>
+          <div className={styles.aboutHead}>
+            <img src="/p4h_logo_rotund.png" alt="Plan4Host" />
+            <div>
+              <div style={{ fontWeight: 900, color: 'var(--text)' }}>Clarity. Precision. Effortless control.</div>
+              <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
+            </div>
+          </div>
+          <p>
+            Plan4Host helps small hotels and property managers run smoother operations with a unified calendar, simple property setup and powerful team workflows.
+          </p>
+          <p>
+            We keep things fast, reliable and easy to use. Built with care for clarity and performance, Plan4Host focuses on the tools you actually use every day: calendars, cleaning, guest overview and iCal synchronization that just works.
+          </p>
+        </div>
       </section>
 
       {/* Contact */}

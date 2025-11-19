@@ -684,10 +684,21 @@ export default function HomePageRO() {
       {/* Despre */}
       <section id="about" className={styles.about} aria-labelledby="about-title">
         <h2 id="about-title">Despre</h2>
-        <p>
-          Plan4Host simplifică operațiunile pentru proprietăți mici și mari: calendar, sincronizare iCal pentru Booking.com/Airbnb,
-          check‑in online și lucru în echipă — rapid și clar.
-        </p>
+        <div className={styles.aboutCard}>
+          <div className={styles.aboutHead}>
+            <img src="/p4h_logo_rotund.png" alt="Plan4Host" />
+            <div>
+              <div style={{ fontWeight: 900, color: 'var(--text)' }}>Claritate. Precizie. Control fără efort.</div>
+              <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
+            </div>
+          </div>
+          <p>
+            Plan4Host simplifică operațiunile pentru proprietăți mici și mari: calendar unificat, configurare rapidă a proprietății și fluxuri de lucru pentru echipă.
+          </p>
+          <p>
+            Ne concentrăm pe viteză, fiabilitate și simplitate. Creat cu grijă pentru claritate și performanță, Plan4Host pune accent pe instrumentele pe care le folosești zilnic: calendare, curățenie, panorama oaspeților și sincronizare iCal care funcționează pur și simplu.
+          </p>
+        </div>
       </section>
 
       {/* Contact */}
