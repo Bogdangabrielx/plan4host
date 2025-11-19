@@ -859,7 +859,7 @@ export default function HomePage() {
             Stay Smart, <br />Host <span className={styles.betterGrad}>Better</span>
           </h1>
           <h2 style={{ margin: '6px 0 10px', fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>
-            Channel Manager, PMS & Online Check‑in with iCal Sync
+            PMS & Online Check‑in with iCal Sync
           </h2>
           <p>
             Plan4Host is the complete solution for reservation management, a centralized calendar and online check‑in —
@@ -1178,7 +1178,7 @@ export default function HomePage() {
               <strong>Plan4Host</strong>
             </div>
             <p className={styles.footerCopy}>
-              Lightweight booking calendar &amp; channel sync for small accommodations.
+              Centralized booking calendar &amp; with real-time iCal updates for modern hosts.
             </p>
             {/* Mobile-only: show footer columns directly under the short copy */}
             <div className={styles.footerStacksMobile}>
@@ -1357,7 +1357,6 @@ export default function HomePage() {
               "https://www.plan4host.com"
             ],
             knowsAbout: [
-              "Channel manager",
               "Property management system (PMS)",
               "iCal sync Airbnb",
               "iCal sync Booking.com",
@@ -1379,7 +1378,7 @@ export default function HomePage() {
             applicationCategory: "BusinessApplication",
             operatingSystem: "Web",
             description:
-              "Channel manager with iCal sync for Booking.com and Airbnb, affordable plans and secure online check-in.",
+              "Property management system (PMS) with iCal sync for Booking.com and Airbnb, affordable plans and secure online check-in.",
             offers: {
               "@type": "AggregateOffer",
               priceCurrency: "EUR",
@@ -1408,7 +1407,7 @@ export default function HomePage() {
                 name: "Do you provide web hosting?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "No. Plan4Host is property management software (PMS) and a channel manager. We do not sell web hosting."
+                  text: "No. Plan4Host is property management software (PMS). We do not sell web hosting."
                 }
               },
               {
@@ -1429,7 +1428,7 @@ export default function HomePage() {
               },
               {
                 "@type": "Question",
-                name: "Is there a cheap channel manager plan?",
+                name: "Is there an affordable PMS plan?",
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: "Yes. All plans are paid, including Basic, designed to be affordable for small properties."

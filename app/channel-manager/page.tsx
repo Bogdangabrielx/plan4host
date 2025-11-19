@@ -1,9 +1,9 @@
-export default function ChannelManagerLanding() {
+export default function PmsIcalLanding() {
   return (
     <main style={{ maxWidth: 860, margin: '0 auto', padding: '24px 20px' }}>
-      <h1 style={{ fontSize: 28, marginBottom: 10 }}>Affordable Channel Manager with iCal Sync</h1>
+      <h1 style={{ fontSize: 28, marginBottom: 10 }}>PMS with iCal Sync — Simple and Affordable</h1>
       <p style={{ color: 'var(--muted)' }}>
-        Plan4Host is a lightweight channel manager and PMS for small properties. Sync Airbnb, Booking.com, Expedia and more via iCal, avoid double bookings, and keep a clean calendar.
+        Plan4Host is a lightweight property management system (PMS) for small properties. Sync Airbnb, Booking.com, Expedia and more via iCal, avoid overbooking, and keep a clean calendar.
       </p>
       <h2 style={{ marginTop: 24 }}>Why Plan4Host</h2>
       <ul>
@@ -15,4 +15,3 @@ export default function ChannelManagerLanding() {
     </main>
   );
 }
-

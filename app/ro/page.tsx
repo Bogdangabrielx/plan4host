@@ -571,7 +571,7 @@ export default function HomePageRO() {
             Stay Smart, <br />Host <span className={styles.betterGrad}>Better</span>
           </h1>
           <h2 style={{ margin: '6px 0 10px', fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>
-            Channel Manager, PMS și Check‑in Online cu sincronizare iCal
+            PMS și Check‑in Online cu sincronizare iCal
           </h2>
           <p>
             Plan4Host este soluția completă pentru gestionarea rezervărilor, calendar centralizat și check‑in online,
@@ -849,7 +849,7 @@ export default function HomePageRO() {
               <img src="/Logo_Landing.png" alt="" aria-hidden="true" className={styles.logoDark} />
               <strong>Plan4Host</strong>
             </div>
-            <p className={styles.footerCopy}>Calendar de rezervări ușor și sincronizare canale pentru unități mici de cazare.</p>
+            <p className={styles.footerCopy}>Calendar centralizat de rezervări cu actualizări iCal în timp real, dedicat proprietăților mici. </p>
             {/* Mobile-only: show footer columns directly under the short copy */}
             <div className={styles.footerStacksMobile}>
               <div>
@@ -1022,7 +1022,6 @@ export default function HomePageRO() {
               "https://www.plan4host.com"
             ],
             knowsAbout: [
-              "channel manager",
               "sistem de management al proprietății (PMS)",
               "sincronizare iCal Airbnb",
               "sincronizare iCal Booking.com",
@@ -1045,7 +1044,7 @@ export default function HomePageRO() {
             applicationCategory: "BusinessApplication",
             operatingSystem: "Web",
             description:
-              "Channel manager ieftin cu sincronizare iCal pentru Booking.com și Airbnb și check‑in online sigur.",
+              "PMS (sistem de management al proprietății) cu sincronizare iCal pentru Booking.com și Airbnb și check‑in online sigur.",
             offers: {
               "@type": "AggregateOffer",
               priceCurrency: "RON",
@@ -1074,7 +1073,7 @@ export default function HomePageRO() {
                 name: "Oferiți găzduire web?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Nu. Plan4Host este software PMS și channel manager. Nu vindem găzduire web."
+                  text: "Nu. Plan4Host este software PMS. Nu vindem găzduire web."
                 }
               },
               {
@@ -1095,7 +1094,7 @@ export default function HomePageRO() {
               },
               {
                 "@type": "Question",
-                name: "Există un channel manager ieftin?",
+                name: "Există un plan PMS accesibil?",
                 acceptedAnswer: {
                   "@type": "Answer",
                   text: "Da. Toate planurile sunt plătite, inclusiv Basic, gândite pentru proprietăți mici."
