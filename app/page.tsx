@@ -1077,6 +1077,7 @@ export default function HomePage() {
       <section id="about" className={styles.about} aria-labelledby="about-title">
         <h2 id="about-title">About</h2>
         <div className={styles.aboutCard}>
+          <div className={styles.aboutBrandTitle}>Plan4Host</div>
           <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
           <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
           <p className={styles.aboutBody}>

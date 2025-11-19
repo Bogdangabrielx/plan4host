@@ -750,6 +750,7 @@ export default function HomePageRO() {
       <section id="about" className={styles.about} aria-labelledby="about-title">
         <h2 id="about-title">Despre</h2>
         <div className={styles.aboutCard}>
+          <div className={styles.aboutBrandTitle}>Plan4Host</div>
           <div className={styles.aboutTitle}>Claritate. Precizie. Control fără efort.</div>
           <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
           <p className={styles.aboutBody}>
