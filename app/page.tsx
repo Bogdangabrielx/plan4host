@@ -1009,10 +1009,13 @@ export default function HomePage() {
             </div>
           </div>
           <p>
-            Plan4Host helps small hotels and property managers run smoother operations with a unified calendar, simple property setup and powerful team workflows.
+            Plan4Host brings clarity and control to hospitality management. All reservations, tasks, and guest interactions are centralized in one smart calendar on your phone, giving you a complete overview at a glance.
           </p>
           <p>
-            We keep things fast, reliable and easy to use. Built with care for clarity and performance, Plan4Host focuses on the tools you actually use every day: calendars, cleaning, guest overview and iCal synchronization that just works.
+            Reception workflows become effortless — check-ins, confirmations, and updates are handled in just a few clicks. Guests receive timely, well-sequenced messages, ensuring they feel guided and supported throughout their stay.
+          </p>
+          <p>
+            By simplifying operations and elevating communication, Plan4Host helps hosts deliver exceptional experiences that naturally lead to great reviews and warm recommendations.
           </p>
         </div>
       </section>

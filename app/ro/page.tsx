@@ -693,10 +693,13 @@ export default function HomePageRO() {
             </div>
           </div>
           <p>
-            Plan4Host simplifică operațiunile pentru proprietăți mici și mari: calendar unificat, configurare rapidă a proprietății și fluxuri de lucru pentru echipă.
+            Plan4Host aduce claritate și control în managementul ospitalității. Toate rezervările, sarcinile și interacțiunile cu oaspeții sunt centralizate într‑un calendar inteligent, direct pe telefon, oferindu‑ți o privire de ansamblu completă dintr‑o clipă.
           </p>
           <p>
-            Ne concentrăm pe viteză, fiabilitate și simplitate. Creat cu grijă pentru claritate și performanță, Plan4Host pune accent pe instrumentele pe care le folosești zilnic: calendare, curățenie, panorama oaspeților și sincronizare iCal care funcționează pur și simplu.
+            Fluxurile din recepție devin fără efort — check‑in‑urile, confirmările și actualizările se rezolvă în doar câteva click‑uri. Oaspeții primesc mesaje la timp, într‑o succesiune bine gândită, astfel încât să se simtă ghidați și susținuți pe tot parcursul sejurului.
+          </p>
+          <p>
+            Simplificând operațiunile și ridicând nivelul comunicării, Plan4Host îi ajută pe gazde să ofere experiențe excepționale, care duc natural la recenzii excelente și recomandări călduroase.
           </p>
         </div>
       </section>
