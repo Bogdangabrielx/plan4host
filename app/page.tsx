@@ -1103,6 +1103,14 @@ export default function HomePage() {
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
+            <button
+              type="button"
+              className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
+              aria-label="Previous review"
+              onClick={() => setRevIdx(i => (i - 1 + reviewsEn.length) % reviewsEn.length)}
+            >
+              C
+            </button>
             {(() => {
               const r = reviewsEn[revIdx];
               const parts = String(r.author || '').split('•');
@@ -1119,6 +1127,14 @@ export default function HomePage() {
                 </div>
               );
             })()}
+            <button
+              type="button"
+              className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
+              aria-label="Next review"
+              onClick={() => setRevIdx(i => (i + 1) % reviewsEn.length)}
+            >
+              E
+            </button>
           </div>
         </div>
       </section>
