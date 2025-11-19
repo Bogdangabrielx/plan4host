@@ -1069,20 +1069,15 @@ export default function HomePage() {
       <section id="about" className={styles.about} aria-labelledby="about-title">
         <h2 id="about-title">About</h2>
         <div className={styles.aboutCard}>
-          <div className={styles.aboutHead}>
-            <img src="/p4h_logo_rotund.png" alt="Plan4Host" />
-            <div>
-              <div style={{ fontWeight: 900, color: 'var(--text)' }}>Clarity. Precision. Effortless control.</div>
-              <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
-            </div>
-          </div>
-          <p>
+          <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
+          <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
+          <p className={styles.aboutBody}>
             Plan4Host brings clarity and control to hospitality management. All reservations, tasks, and guest interactions are centralized in one smart calendar on your phone, giving you a complete overview at a glance.
           </p>
-          <p>
-            Reception workflows become effortless — check-ins, confirmations, and updates are handled in just a few clicks. Guests receive timely, well-sequenced messages, ensuring they feel guided and supported throughout their stay.
+          <p className={styles.aboutBody}>
+            Reception workflows become effortless — check‑ins, confirmations, and updates are handled in just a few clicks. Guests receive timely, well‑sequenced messages, ensuring they feel guided and supported throughout their stay.
           </p>
-          <p>
+          <p className={styles.aboutBody}>
             By simplifying operations and elevating communication, Plan4Host helps hosts deliver exceptional experiences that naturally lead to great reviews and warm recommendations.
           </p>
         </div>

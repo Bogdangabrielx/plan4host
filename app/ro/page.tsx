@@ -748,20 +748,15 @@ export default function HomePageRO() {
       <section id="about" className={styles.about} aria-labelledby="about-title">
         <h2 id="about-title">Despre</h2>
         <div className={styles.aboutCard}>
-          <div className={styles.aboutHead}>
-            <img src="/p4h_logo_rotund.png" alt="Plan4Host" />
-            <div>
-              <div style={{ fontWeight: 900, color: 'var(--text)' }}>Claritate. Precizie. Control fără efort.</div>
-              <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
-            </div>
-          </div>
-          <p>
+          <div className={styles.aboutTitle}>Claritate. Precizie. Control fără efort.</div>
+          <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
+          <p className={styles.aboutBody}>
             Plan4Host aduce claritate și control în managementul ospitalității. Toate rezervările, sarcinile și interacțiunile cu oaspeții sunt centralizate într‑un calendar inteligent, direct pe telefon, oferindu‑ți o privire de ansamblu completă dintr‑o clipă.
           </p>
-          <p>
+          <p className={styles.aboutBody}>
             Fluxurile din recepție devin fără efort — check‑in‑urile, confirmările și actualizările se rezolvă în doar câteva click‑uri. Oaspeții primesc mesaje la timp, într‑o succesiune bine gândită, astfel încât să se simtă ghidați și susținuți pe tot parcursul sejurului.
           </p>
-          <p>
+          <p className={styles.aboutBody}>
             Simplificând operațiunile și ridicând nivelul comunicării, Plan4Host îi ajută pe gazde să ofere experiențe excepționale, care duc natural la recenzii excelente și recomandări călduroase.
           </p>
         </div>
