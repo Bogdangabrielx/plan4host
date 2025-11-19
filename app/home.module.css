@@ -665,7 +665,7 @@ will-change: transform;
 
 /* Reviews */
 .reviews { max-width: 1100px; margin: 40px auto 80px; padding: 0 20px; }
-.reviews h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 16px; text-align: center; }
+.reviews h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 16px; text-align: left; }
 .reviewsBody { display: block; }
 .reviewsCard {
   background: var(--panel);
@@ -696,8 +696,15 @@ will-change: transform;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(0,0,0,.08);
 }
-.reviewsArrow::before { content: '‹'; color: var(--text); font-size: 18px; line-height: 1; display: block; }
-.reviewsArrowRight::before { content: '›'; }
+.reviewsArrow::before {
+  content: '';
+  width: 16px; height: 16px;
+  background: var(--text);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23000' d='M15 18l-6-6 6-6'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23000' d='M15 18l-6-6 6-6'/></svg>") center / contain no-repeat;
+  display: block;
+}
+.reviewsArrowRight::before { transform: rotate(180deg); }
 .reviewsArrow:hover { box-shadow: 0 10px 24px rgba(0,0,0,.12); }
 .reviewsArrowLeft { left: 8px; }
 .reviewsArrowRight { right: 8px; }
