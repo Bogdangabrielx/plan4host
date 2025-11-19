@@ -1021,7 +1021,7 @@ export default function HomePage() {
       </section>
 
       {/* Contact */}
-      <section id="contact" className={`sb-cardglow ${styles.contact}`} aria-labelledby="contact-title">
+      <section id="contact" className={`sb-card ${styles.contact}`} aria-labelledby="contact-title">
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
           <div style={{ display: 'grid', gap: 12 }}>
