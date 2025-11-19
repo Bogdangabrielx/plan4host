@@ -862,8 +862,8 @@ export default function HomePage() {
             Channel Manager, PMS & Online Check‑in with iCal Sync
           </h2>
           <p>
-            Plan4Host helps small accommodations manage occupancy, avoid double bookings
-            and sync calendars across channels with ease.
+            Plan4Host is the complete solution for reservation management, a centralized calendar and online check‑in —
+            <br />helping guesthouses and serviced apartments avoid overbooking, automate guest messaging, and streamline daily operations.
           </p>
           <div className={styles.heroCta}>
             {/* Start free -> login in signup mode (animated) */}

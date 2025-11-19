@@ -574,8 +574,9 @@ export default function HomePageRO() {
             Channel Manager, PMS și Check‑in Online cu sincronizare iCal
           </h2>
           <p>
-            Plan4Host ajută pensiunile și apartamentele în regim hotelier să evite overbooking,
-            să sincronizeze calendarele și să pornească rapid check‑in online.
+            Plan4Host este soluția completă pentru gestionarea rezervărilor, calendar centralizat și check‑in online,
+            <br />ajutând pensiunile și apartamentele în regim hotelier să evite overbooking, să automatizeze mesajele către oaspeți
+            și să își eficientizeze administrarea zilnică.
           </p>
           <div className={styles.heroCta}>
             <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
