@@ -419,6 +419,68 @@ export default function HomePageRO() {
     "Sincronizare instantă a rezervărilor în calendarul aplicației prin butonul (Sync Now)",
   ];
 
+  // Recenzii (RO)
+  const recenziiRo: Array<{ title: string; author: string; body: string }> = [
+    {
+      title: "„Recomand, mai ales dacă ai multe sosiri și plecări în aceeași zi”",
+      author: "— Andrei Popa, Brașov • 3 apartamente",
+      body: "La mine, când se aglomera situația, mai încurcam ordinea camerelor. De când folosesc Plan4Host, văd totul dintr-o privire și îmi e mult mai ușor să coordonez.",
+    },
+    {
+      title: "„Un mic ajutor care chiar contează”",
+      author: "— Ioana Rusu, Zona Sibiului • Guesthouse de 4 camere",
+      body: "Nu pot spune că greșeam des, dar mi s-a întâmplat să trimit același mesaj la mai mulți oaspeți fără să-l ajustez. Acum aplicația personalizează automat și totul arată mult mai profesionist.",
+    },
+    {
+      title: "„Pentru cine mai răspunde uneori prea târziu”",
+      author: "— Mihai Ioniță, Cluj-Napoca • 2 studiouri Airbnb",
+      body: "Eu mai prindeam uneori ore târzii până trimiteam detaliile de check-in. Cu Plan4Host mesajele pleacă la timp și oaspeții ajung mult mai liniștiți. Se simte clar în experiența lor.",
+    },
+    {
+      title: "„Dacă ai avut măcar o dată rezervări încurcate…”",
+      author: "— Elena Badea, București • Apartamente regim hotelier",
+      body: "Am pățit-o și eu când am avut două check-in-uri apropiate. Calendarul din aplicație m-a scăpat de grijă — am totul în același loc și nu mai risc să greșesc.",
+    },
+    {
+      title: "„Nu schimbă modul de lucru, doar îl face mai clar”",
+      author: "— Vlad Rădulescu, Oradea • 4 apartamente în regim hotelier",
+      body: "Eu sunt obișnuit să-mi notez totul, dar uneori pierdeam timp căutând informații prin mesaje. Aici e totul ordonat și nu simt că m-am complicat, dimpotrivă.",
+    },
+    {
+      title: "„Recomand pentru modul în care trimite informațiile”",
+      author: "— Alina Ghermani, Suceava • Cabana turistică",
+      body: "Trimiteam de multe ori toate detaliile dintr-o dată, iar oaspeții ziceau că e cam mult. Acum mesajele vin pe rând și sunt întrebată mult mai rar lucruri în privat. Se simte că fluxul e mai natural.",
+    },
+    {
+      title: "„Dacă ai personal la curățenie, te ajută enorm”",
+      author: "— Gabriel Stan, Târgu Mureș • Pensiune",
+      body: "Mai greșeam uneori camera care trebuia pregătită prima. Plan4Host îți arată clar ordinea, ora și taskurile. Pentru noi chiar a fost un upgrade.",
+    },
+    {
+      title: "„Surprinzător de utilă”",
+      author: "— Cristina Pavel, Constanța • Apartament de vacanță la malul mării",
+      body: "Nu credeam că am nevoie de încă o aplicație, sincer. Dar mi-am dat seama că uitam uneori câte un detaliu. Acum primesc notificări și nu mai sar peste nimic.",
+    },
+    {
+      title: "„Mai puțină agitație, mai mult control”",
+      author: "— Radu Dumitrescu, Iași • 5 unități în regim hotelier",
+      body: "Nu eram chiar copleșit, dar uneori mai scăpa câte o informație în conversațiile lungi cu oaspeții. Cu aplicația văd totul clar și îmi simt programul mult mai organizat.",
+    },
+  ];
+  const [revIdx, setRevIdx] = useState<number>(0);
+  const revStartX = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => { revStartX.current = e.touches?.[0]?.clientX ?? null; };
+  const onTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    const sx = revStartX.current; revStartX.current = null; if (sx == null) return;
+    const ex = e.changedTouches?.[0]?.clientX ?? sx; const dx = ex - sx; const TH = 40;
+    if (dx > TH) setRevIdx(i => (i - 1 + recenziiRo.length) % recenziiRo.length);
+    else if (dx < -TH) setRevIdx(i => (i + 1) % recenziiRo.length);
+  };
+  const onKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowLeft') setRevIdx(i => (i - 1 + recenziiRo.length) % recenziiRo.length);
+    if (e.key === 'ArrowRight') setRevIdx(i => (i + 1) % recenziiRo.length);
+  };
+
   return (
     <main className={styles.landing} style={{ paddingBottom: isPwa ? 'var(--safe-bottom, 0px)' : 0, minHeight: '100dvh', overflowX: 'hidden' }}>
       <AutoOpenOnLanding delay={150} />
@@ -708,7 +770,23 @@ export default function HomePageRO() {
       <section className={styles.reviews} aria-labelledby="reviews-title">
         <h2 id="reviews-title">Ce spun utilizatorii noștri</h2>
         <div className={styles.reviewsBody}>
-          <div className={styles.reviewsCard} aria-label="Placeholder recenzie" />
+          <div
+            className={styles.reviewsCard}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Recenzii utilizatori"
+            aria-live="polite"
+            tabIndex={0}
+            onKeyDown={onKey}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+          >
+            <div style={{ display: 'grid', gap: 8 }}>
+              <div style={{ fontWeight: 900, color: 'var(--text)' }}>{recenziiRo[revIdx].title}</div>
+              <div style={{ color: 'var(--muted)' }}>{recenziiRo[revIdx].body}</div>
+              <div style={{ marginTop: 'auto', fontWeight: 800 }}>{recenziiRo[revIdx].author}</div>
+            </div>
+          </div>
         </div>
       </section>
 

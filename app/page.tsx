@@ -660,6 +660,74 @@ export default function HomePage() {
     "Instant sync of reservations in the app calendar with Sync Now button",
   ];
 
+  // Reviews (EN)
+  const reviewsEn: Array<{ title: string; author: string; body: string }> = [
+    {
+      title: "“I recommend it, especially if you have many arrivals and departures on the same day”",
+      author: "— Andrei Popa, Brașov • 3 apartments",
+      body: "When things got crowded, I sometimes mixed up the room order. Since using Plan4Host, I see everything at a glance and it’s much easier to coordinate.",
+    },
+    {
+      title: "“A small help that truly matters”",
+      author: "— Ioana Rusu, Sibiu area • 4‑room guesthouse",
+      body: "I can’t say I made mistakes often, but I did sometimes send the same message to multiple guests without adjusting it. Now the app personalizes automatically and everything looks much more professional.",
+    },
+    {
+      title: "“For anyone who sometimes replies too late”",
+      author: "— Mihai Ioniță, Cluj‑Napoca • 2 Airbnb studios",
+      body: "I sometimes reached late hours before sending check‑in details. With Plan4Host, messages go out on time and guests arrive much calmer. It clearly shows in their experience.",
+    },
+    {
+      title: "“If you’ve ever had tangled bookings…”",
+      author: "— Elena Badea, Bucharest • Serviced apartments",
+      body: "It happened to me too when I had two close check‑ins. The app’s calendar took the worry away — everything is in one place and I no longer risk mistakes.",
+    },
+    {
+      title: "“It doesn’t change how you work — it just makes it clearer”",
+      author: "— Vlad Rădulescu, Oradea • 4 serviced apartments",
+      body: "I’m used to writing everything down, but sometimes I lost time searching through messages. Here everything is organized and I don’t feel more complicated — quite the opposite.",
+    },
+    {
+      title: "“Recommended for how it delivers information”",
+      author: "— Alina Ghermani, Suceava • Mountain cabin",
+      body: "I used to send all details at once and guests said it was a bit much. Now messages arrive in sequence and I’m asked far fewer private questions. The flow feels more natural.",
+    },
+    {
+      title: "“If you have cleaning staff, it helps a lot”",
+      author: "— Gabriel Stan, Târgu Mureș • Guesthouse",
+      body: "I sometimes got the first room to prepare wrong. Plan4Host shows the order, time and tasks clearly. For us it really was an upgrade.",
+    },
+    {
+      title: "“Surprisingly useful”",
+      author: "— Cristina Pavel, Constanța • Seaside holiday apartment",
+      body: "I didn’t think I needed another app, honestly. But I realized I sometimes missed a detail. Now I get notifications and don’t skip anything.",
+    },
+    {
+      title: "“Less hustle, more control”",
+      author: "— Radu Dumitrescu, Iași • 5 serviced units",
+      body: "I wasn’t overwhelmed, but information sometimes got lost in long guest conversations. With the app I see everything clearly and my schedule feels much more organized.",
+    },
+  ];
+
+  const [revIdx, setRevIdx] = useState<number>(0);
+  const revStartX = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    revStartX.current = e.touches?.[0]?.clientX ?? null;
+  };
+  const onTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    const sx = revStartX.current; revStartX.current = null;
+    if (sx == null) return;
+    const ex = e.changedTouches?.[0]?.clientX ?? sx;
+    const dx = ex - sx;
+    const TH = 40; // px
+    if (dx > TH) setRevIdx(i => (i - 1 + reviewsEn.length) % reviewsEn.length);
+    else if (dx < -TH) setRevIdx(i => (i + 1) % reviewsEn.length);
+  };
+  const onKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowLeft') setRevIdx(i => (i - 1 + reviewsEn.length) % reviewsEn.length);
+    if (e.key === 'ArrowRight') setRevIdx(i => (i + 1) % reviewsEn.length);
+  };
+
   return (
     <main className={styles.landing} style={{ paddingBottom: isPwa ? 'var(--safe-bottom, 0px)' : 0, minHeight: '100dvh', overflowX: 'hidden' }}>
       {/* Safe-area cover (iOS notch) — landing only */}
@@ -1024,7 +1092,23 @@ export default function HomePage() {
       <section className={styles.reviews} aria-labelledby="reviews-title">
         <h2 id="reviews-title">What our users say</h2>
         <div className={styles.reviewsBody}>
-          <div className={styles.reviewsCard} aria-label="User review placeholder" />
+          <div
+            className={styles.reviewsCard}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="User testimonials"
+            aria-live="polite"
+            tabIndex={0}
+            onKeyDown={onKey}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+          >
+            <div style={{ display: 'grid', gap: 8 }}>
+              <div style={{ fontWeight: 900, color: 'var(--text)' }}>{reviewsEn[revIdx].title}</div>
+              <div style={{ color: 'var(--muted)' }}>{reviewsEn[revIdx].body}</div>
+              <div style={{ marginTop: 'auto', fontWeight: 800 }}>{reviewsEn[revIdx].author}</div>
+            </div>
+          </div>
         </div>
       </section>
 
