@@ -782,6 +782,7 @@ export default function HomePage() {
             Features
           </a>
           <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
+          <a href="#reviews" className={`${styles.menuLink} ${styles.focusable}`}>Reviews</a>
           <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
         </div>
@@ -835,6 +836,13 @@ export default function HomePage() {
           onClick={() => setNavOpen(false)}
         >
           Pricing
+        </a>
+        <a
+          href="#reviews"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={() => setNavOpen(false)}
+        >
+          Reviews
         </a>
         <a
           href="#about"
@@ -1084,7 +1092,7 @@ export default function HomePage() {
       </section>
 
       {/* Reviews */}
-      <section className={styles.reviews} aria-labelledby="reviews-title">
+      <section id="reviews" className={styles.reviews} aria-labelledby="reviews-title">
         <h2 id="reviews-title">What our users say</h2>
         <div className={styles.reviewsBody}>
           <div

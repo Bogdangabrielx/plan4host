@@ -517,6 +517,7 @@ export default function HomePageRO() {
           </a>
           <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Prețuri</a>
           <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>Despre</a>
+          <a href="#recenzii" className={`${styles.menuLink} ${styles.focusable}`}>Recenzii</a>
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
         </div>
         <div className={styles.actions}>
@@ -561,6 +562,7 @@ export default function HomePageRO() {
         </a>
         <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
         <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Despre</a>
+        <a href="#recenzii" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Recenzii</a>
         <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Contact</a>
       </div>
 
@@ -763,7 +765,7 @@ export default function HomePageRO() {
       </section>
 
       {/* Recenzii */}
-      <section className={styles.reviews} aria-labelledby="reviews-title">
+      <section id="recenzii" className={styles.reviews} aria-labelledby="reviews-title">
         <h2 id="reviews-title">Ce spun utilizatorii noștri</h2>
         <div className={styles.reviewsBody}>
           <div

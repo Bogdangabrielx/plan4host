@@ -413,6 +413,7 @@ will-change: transform;
 #features-title,
 #pricing-title,
 #about-title,
+#reviews-title,
 #contact-title {
   /* Ensure titles are fully visible below sticky header on anchor navigation */
   scroll-margin-top: calc(140px + var(--safe-top, 0px));
@@ -423,6 +424,7 @@ will-change: transform;
   #features-title,
   #pricing-title,
   #about-title,
+  #reviews-title,
   #contact-title {
     scroll-margin-top: calc(200px + var(--safe-top, 0px));
   }
@@ -724,7 +726,7 @@ will-change: transform;
 .contactCard a:hover { font-weight: 400 ; text-decoration-color: var(--primary); }
 
 /* Anchor offset for sticky header */
-.features, .pricing, .about, .contact, .footer { scroll-margin-top: 90px; }
+.features, .pricing, .about, .reviews, .contact, .footer { scroll-margin-top: 90px; }
 
 /* Responsive */
 @media (max-width: 1100px) { .footerGrid { grid-template-columns: 1fr 1fr 1fr; } }
