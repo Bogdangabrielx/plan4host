@@ -533,6 +533,21 @@ export default function HomePageRO() {
         </div>
       </section>
 
+      {/* Recenzii */}
+      <section className={styles.reviews} aria-labelledby="reviews-title">
+        <h2 id="reviews-title">Recenzii</h2>
+        <div className={styles.reviewsCard}>
+          <div className={styles.reviewsToolbar} role="tablist" aria-label="Surse recenzii">
+            <button type="button" className={`${styles.chip} ${styles.chipActive}`} role="tab" aria-selected="true">Toate</button>
+            <button type="button" className={styles.chip} role="tab" aria-selected="false">Google</button>
+            <button type="button" className={styles.chip} role="tab" aria-selected="false">Booking.com</button>
+            <button type="button" className={styles.chip} role="tab" aria-selected="false">Airbnb</button>
+            <button type="button" className={styles.chip} role="tab" aria-selected="false">Expedia</button>
+          </div>
+          <div className={styles.reviewEmpty}>Momentan nu avem recenzii afișate.</div>
+        </div>
+      </section>
+
       {/* Caracteristici */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title">Funcții</h2>
