@@ -832,21 +832,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Reviews */}
-      <section className={styles.reviews} aria-labelledby="reviews-title">
-        <h2 id="reviews-title">Reviews</h2>
-        <div className={styles.reviewsCard}>
-          <div className={styles.reviewsToolbar} role="tablist" aria-label="Review sources">
-            <button type="button" className={`${styles.chip} ${styles.chipActive}`} role="tab" aria-selected="true">All</button>
-            <button type="button" className={styles.chip} role="tab" aria-selected="false">Google</button>
-            <button type="button" className={styles.chip} role="tab" aria-selected="false">Booking.com</button>
-            <button type="button" className={styles.chip} role="tab" aria-selected="false">Airbnb</button>
-            <button type="button" className={styles.chip} role="tab" aria-selected="false">Expedia</button>
-          </div>
-          <div className={styles.reviewEmpty}>No reviews to show yet.</div>
-        </div>
-      </section>
-
       {/* Features */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title">Features</h2>
