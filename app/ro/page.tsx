@@ -781,6 +781,12 @@ export default function HomePageRO() {
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
+            <button
+              type="button"
+              className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
+              aria-label="Recenzia anterioară"
+              onClick={() => setRevIdx(i => (i - 1 + recenziiRo.length) % recenziiRo.length)}
+            />
             {(() => {
               const r = recenziiRo[revIdx];
               const parts = String(r.author || '').split('•');
@@ -797,6 +803,12 @@ export default function HomePageRO() {
                 </div>
               );
             })()}
+            <button
+              type="button"
+              className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
+              aria-label="Recenzia următoare"
+              onClick={() => setRevIdx(i => (i + 1) % recenziiRo.length)}
+            />
           </div>
         </div>
       </section>

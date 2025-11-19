@@ -690,13 +690,13 @@ will-change: transform;
   width: 36px; height: 36px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: var(--card);
+  background: transparent;
   color: transparent; /* hide any fallback text inside the button */
-  display: inline-flex; align-items: center; justify-content: center;
+  display: grid; place-items: center; /* center arrow perfectly */
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(0,0,0,.08);
 }
-.reviewsArrow::before { content: '‹'; color: var(--text); font-size: 18px; line-height: 1; }
+.reviewsArrow::before { content: '‹'; color: var(--text); font-size: 18px; line-height: 1; display: block; }
 .reviewsArrowRight::before { content: '›'; }
 .reviewsArrow:hover { box-shadow: 0 10px 24px rgba(0,0,0,.12); }
 .reviewsArrowLeft { left: 8px; }
