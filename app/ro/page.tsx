@@ -704,8 +704,16 @@ export default function HomePageRO() {
         </div>
       </section>
 
+      {/* Recenzii */}
+      <section className={styles.reviews} aria-labelledby="reviews-title">
+        <h2 id="reviews-title">Ce spun utilizatorii noștri</h2>
+        <div className={styles.reviewsBody}>
+          <div className={styles.reviewsCard} aria-label="Placeholder recenzie" />
+        </div>
+      </section>
+
       {/* Contact */}
-      <section id="contact" className={`sb-cardglow ${styles.contact}`} aria-labelledby="contact-title">
+      <section id="contact" className={`${styles.contact}`} aria-labelledby="contact-title">
           <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
           <div style={{ display: 'grid', gap: 12 }}>

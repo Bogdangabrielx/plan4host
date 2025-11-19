@@ -1020,8 +1020,16 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Reviews */}
+      <section className={styles.reviews} aria-labelledby="reviews-title">
+        <h2 id="reviews-title">What our users say</h2>
+        <div className={styles.reviewsBody}>
+          <div className={styles.reviewsCard} aria-label="User review placeholder" />
+        </div>
+      </section>
+
       {/* Contact */}
-      <section id="contact" className={`sb-card ${styles.contact}`} aria-labelledby="contact-title">
+      <section id="contact" className={`${styles.contact}`} aria-labelledby="contact-title">
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
           <div style={{ display: 'grid', gap: 12 }}>
