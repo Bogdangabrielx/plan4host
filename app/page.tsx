@@ -1103,11 +1103,22 @@ export default function HomePage() {
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
-            <div style={{ display: 'grid', gap: 8 }}>
-              <div style={{ fontWeight: 900, color: 'var(--text)' }}>{reviewsEn[revIdx].title}</div>
-              <div style={{ color: 'var(--muted)' }}>{reviewsEn[revIdx].body}</div>
-              <div style={{ marginTop: 'auto', fontWeight: 800 }}>{reviewsEn[revIdx].author}</div>
-            </div>
+            {(() => {
+              const r = reviewsEn[revIdx];
+              const parts = String(r.author || '').split('•');
+              const left = (parts[0] || '').trim();
+              const right = (parts[1] || '').trim();
+              return (
+                <div style={{ display: 'grid', gap: 10 }}>
+                  <div className={styles.reviewTitle}>{r.title}</div>
+                  <div className={styles.reviewBody}>{r.body}</div>
+                  <div className={styles.reviewAuthor}>
+                    <span className={styles.authorMain}>{left}</span>
+                    {right && <span className={styles.authorDetail}> • {right}</span>}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </section>
