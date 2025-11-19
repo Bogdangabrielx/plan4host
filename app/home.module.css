@@ -655,7 +655,7 @@ will-change: transform;
 .about p { color: var(--muted); margin: 0 0 12px; }
 
 /* About card */
-.aboutCard { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: grid; gap: 10px; }
+.aboutCard { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: grid; gap: 10px; width: min(520px, 100%); }
 .aboutHead { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; }
 .aboutHead img { border-radius: 999px; border: 1px solid var(--border); background: var(--card); width: 56px; height: 56px; object-fit: contain; }
 .aboutSub { color: var(--muted); font-weight: 700; }
