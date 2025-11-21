@@ -155,7 +155,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
         if (mode === "signup" && (j as any)?.requiresConfirmation) {
           setStatus("Idle");
           setErr("");
-          alert("We sent a confirmation email from noreply@plan4host.com. Please confirm to continue.");
+          alert("We sent a confirmation email from office@plan4host.com. Please confirm to continue.");
           return;
         }
 
