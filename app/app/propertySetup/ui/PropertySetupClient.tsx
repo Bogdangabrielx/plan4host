@@ -38,6 +38,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   const selected = properties.find(p => p.id === selectedId) || null;
   // First-time guidance modal (after first property creation)
   const [showRoomsGuide, setShowRoomsGuide] = useState<boolean>(false);
+  const [showEntirePrompt, setShowEntirePrompt] = useState<boolean>(false);
   // Cache property presentation images for avatar in the pill
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
 
@@ -188,6 +189,21 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     if (!error && data) setRooms(prev => [...prev, data as Room]);
     finishSaving(!error);
   }
+  async function addRoomNamed(customName: string) {
+    if (!canWrite) return;
+    if (!selected) return;
+    const safe = String(customName || '').trim() || `Room ${rooms.length + 1}`;
+    if (rooms.some(r => (r.name || '').trim().toLowerCase() === safe.toLowerCase())) return;
+    startSaving();
+    const nextIndex = rooms.length;
+    const { data, error } = await supabase
+      .from("rooms")
+      .insert({ name: safe, property_id: selected.id, sort_index: nextIndex })
+      .select("id,name,capacity,property_id,sort_index,room_type_id")
+      .single();
+    if (!error && data) setRooms(prev => [...prev, data as Room]);
+    finishSaving(!error);
+  }
   async function renameRoom(roomId: string, name: string) {
     if (!canWrite) return;
     startSaving();
@@ -282,7 +298,37 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                 If you rent full apartments or studios, add each apartment or studio as one room, so that calendar integration works correctly.
               </div>
               <div style={{ display:'flex', justifyContent:'flex-end' }}>
-                <button className="sb-btn sb-btn--primary" onClick={()=>{ setShowRoomsGuide(false); try { window.dispatchEvent(new CustomEvent('p4h:activateRoomsTab')); } catch {} }}>OK</button>
+                <button
+                  className="sb-btn sb-btn--primary"
+                  onClick={()=>{
+                    setShowRoomsGuide(false);
+                    if ((rooms?.length || 0) === 0) setShowEntirePrompt(true);
+                    try { window.dispatchEvent(new CustomEvent('p4h:activateRoomsTab')); } catch {}
+                  }}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showEntirePrompt && selected && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={(e)=>{ e.stopPropagation(); }}
+            style={{ position:'fixed', inset:0, zIndex: 241, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
+                     paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
+            <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:12 }}>
+              <strong style={{ fontSize: 16 }}>Quick setup</strong>
+              <div style={{ color:'var(--text)' }}>
+                Do you rent only the entire property?<br/>
+                We can add a single room named “<strong>{selected.name}</strong>”.
+              </div>
+              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+                <button className="sb-btn" onClick={()=> setShowEntirePrompt(false)}>No</button>
+                <button className="sb-btn sb-btn--primary" onClick={async ()=>{ await addRoomNamed(selected.name); setShowEntirePrompt(false); }}>Yes, add it</button>
               </div>
             </div>
           </div>
