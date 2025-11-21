@@ -323,12 +323,12 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
             <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:12 }}>
               <strong style={{ fontSize: 16 }}>Quick setup</strong>
               <div style={{ color:'var(--text)' }}>
-                Do you rent only the entire property?<br/>
-                We can add a single room named “<strong>{selected.name}</strong>”.
+                Are you renting one unit only?<br/>
+                If yes, we will crate a room named as: “<strong>{selected.name}</strong>” in order to activate iCal.
               </div>
               <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
                 <button className="sb-btn" onClick={()=> setShowEntirePrompt(false)}>No</button>
-                <button className="sb-btn sb-btn--primary" onClick={async ()=>{ await addRoomNamed(selected.name); setShowEntirePrompt(false); }}>Yes, add it</button>
+                <button className="sb-btn sb-btn--primary" onClick={async ()=>{ await addRoomNamed(selected.name); setShowEntirePrompt(false); }}>Yes</button>
               </div>
             </div>
           </div>
