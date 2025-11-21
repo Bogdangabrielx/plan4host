@@ -278,7 +278,8 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                 <strong>Next steps</strong>
               </div>
               <div style={{ color:'var(--text)' }}>
-                Please add your rooms and, if you use them, define room types.
+                Please add your rooms and, if you use them, define room types. 
+                If you rent full apartments or studios, add each apartment or studio as one room, so that calendar integration works correctly.
               </div>
               <div style={{ display:'flex', justifyContent:'flex-end' }}>
                 <button className="sb-btn sb-btn--primary" onClick={()=>{ setShowRoomsGuide(false); try { window.dispatchEvent(new CustomEvent('p4h:activateRoomsTab')); } catch {} }}>OK</button>
