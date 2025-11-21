@@ -24,6 +24,14 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   const supabase = useMemo(() => createClient(), []);
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
   const [isSmall, setIsSmall] = useState(false);
+  // Theme-aware icons (light/dark)
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const attr = document.documentElement.getAttribute('data-theme');
+    if (attr === 'dark') return true;
+    if (attr === 'light') return false;
+    return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false;
+  });
 
   const [properties, setProperties] = useState<Property[]>(initialProperties);
   const [selectedId, setSelectedId] = usePersistentProperty(properties);
@@ -61,6 +69,22 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     detect();
     window.addEventListener("resize", detect);
     return () => window.removeEventListener("resize", detect);
+  }, []);
+
+  // Watch for theme changes to swap icons
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const root = document.documentElement;
+    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
+    const onMq = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    const ob = new MutationObserver(() => {
+      const t = root.getAttribute('data-theme');
+      if (t === 'dark') setIsDark(true);
+      if (t === 'light') setIsDark(false);
+    });
+    try { mq?.addEventListener('change', onMq); } catch { mq?.addListener?.(onMq); }
+    ob.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => { try { mq?.removeEventListener('change', onMq); } catch { mq?.removeListener?.(onMq); } ob.disconnect(); };
   }, []);
 
 
@@ -295,35 +319,27 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
               </div>
               <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
                 <div style={{ display:'grid', gridTemplateColumns:'24px 1fr', alignItems:'start', gap:8 }}>
-                  {/* Rooms / room types — front-facing bed icon */}
-                  <svg aria-hidden viewBox="0 0 24 24" width="22" height="22" style={{ opacity:.9 }}>
-                    {/* side posts */}
-                    <line x1="4" y1="10" x2="4" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    <line x1="20" y1="10" x2="20" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    {/* pillows */}
-                    <rect x="6.5" y="10" width="4.5" height="2.8" rx="0.6" ry="0.6" fill="none" stroke="currentColor" strokeWidth="2" />
-                    <rect x="13" y="10" width="4.5" height="2.8" rx="0.6" ry="0.6" fill="none" stroke="currentColor" strokeWidth="2" />
-                    {/* mattress */}
-                    <rect x="5.5" y="13.5" width="13" height="3.8" rx="1" ry="1" fill="none" stroke="currentColor" strokeWidth="2" />
-                    {/* feet */}
-                    <line x1="6" y1="17.5" x2="6" y2="19" stroke="currentColor" strokeWidth="2" />
-                    <line x1="18" y1="17.5" x2="18" y2="19" stroke="currentColor" strokeWidth="2" />
-                  </svg>
+                  {/* Rooms / room types — PNG icon (light/dark) */}
+                  <img
+                    src={isDark ? '/room_fordark.png' : '/room_forlight.png'}
+                    alt=""
+                    width={22}
+                    height={22}
+                    style={{ display:'block', opacity:.95 }}
+                  />
                   <div>
                     Please add your rooms and, if you use them, define room types.
                   </div>
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'24px 1fr', alignItems:'start', gap:8 }}>
-                  {/* Apartment / studio — larger building icon */}
-                  <svg aria-hidden viewBox="0 0 24 24" width="22" height="22" style={{ opacity:.9 }}>
-                    <rect x="3.5" y="3.5" width="17" height="17" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" />
-                    {/* windows */}
-                    <rect x="6.5" y="6.5" width="3.5" height="3.5" fill="none" stroke="currentColor" strokeWidth="2" />
-                    <rect x="13.5" y="6.5" width="3.5" height="3.5" fill="none" stroke="currentColor" strokeWidth="2" />
-                    <rect x="6.5" y="12.5" width="3.5" height="3.5" fill="none" stroke="currentColor" strokeWidth="2" />
-                    {/* door */}
-                    <rect x="13.5" y="12" width="4" height="6" rx="0.8" ry="0.8" fill="none" stroke="currentColor" strokeWidth="2" />
-                  </svg>
+                  {/* Apartment / studio — PNG icon (light/dark) */}
+                  <img
+                    src={isDark ? '/formular_address_fordark.png' : '/formular_address_forlight.png'}
+                    alt=""
+                    width={22}
+                    height={22}
+                    style={{ display:'block', opacity:.95 }}
+                  />
                   <div>
                     If you rent full apartments or studios, add each apartment or studio as one room, so that calendar integration works correctly.
                   </div>
