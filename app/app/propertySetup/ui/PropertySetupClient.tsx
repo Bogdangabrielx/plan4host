@@ -294,26 +294,35 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                 <strong>Next steps</strong>
               </div>
               <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
-                <div style={{ display:'grid', gridTemplateColumns:'20px 1fr', alignItems:'start', gap:8 }}>
-                  {/* Rooms / room types — classic bed icon */}
-                  <svg aria-hidden viewBox="0 0 24 24" width="18" height="18" style={{ opacity:.9 }}>
-                    <rect x="3" y="11" width="14" height="5" rx="1" ry="1" fill="none" stroke="currentColor" strokeWidth="2" />
-                    <rect x="4" y="8" width="6" height="3" rx="1" ry="1" fill="none" stroke="currentColor" strokeWidth="2" />
-                    <line x1="3" y1="16" x2="3" y2="19" stroke="currentColor" strokeWidth="2" />
-                    <line x1="17" y1="16" x2="17" y2="19" stroke="currentColor" strokeWidth="2" />
+                <div style={{ display:'grid', gridTemplateColumns:'24px 1fr', alignItems:'start', gap:8 }}>
+                  {/* Rooms / room types — front-facing bed icon */}
+                  <svg aria-hidden viewBox="0 0 24 24" width="22" height="22" style={{ opacity:.9 }}>
+                    {/* side posts */}
+                    <line x1="4" y1="10" x2="4" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <line x1="20" y1="10" x2="20" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    {/* pillows */}
+                    <rect x="6.5" y="10" width="4.5" height="2.8" rx="0.6" ry="0.6" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <rect x="13" y="10" width="4.5" height="2.8" rx="0.6" ry="0.6" fill="none" stroke="currentColor" strokeWidth="2" />
+                    {/* mattress */}
+                    <rect x="5.5" y="13.5" width="13" height="3.8" rx="1" ry="1" fill="none" stroke="currentColor" strokeWidth="2" />
+                    {/* feet */}
+                    <line x1="6" y1="17.5" x2="6" y2="19" stroke="currentColor" strokeWidth="2" />
+                    <line x1="18" y1="17.5" x2="18" y2="19" stroke="currentColor" strokeWidth="2" />
                   </svg>
                   <div>
                     Please add your rooms and, if you use them, define room types.
                   </div>
                 </div>
-                <div style={{ display:'grid', gridTemplateColumns:'20px 1fr', alignItems:'start', gap:8 }}>
-                  {/* Apartment / studio — classic building icon */}
-                  <svg aria-hidden viewBox="0 0 24 24" width="18" height="18" style={{ opacity:.9 }}>
-                    <rect x="4" y="4" width="14" height="16" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" />
-                    <rect x="7" y="7" width="3" height="3" fill="none" stroke="currentColor" strokeWidth="2" />
-                    <rect x="14" y="7" width="3" height="3" fill="none" stroke="currentColor" strokeWidth="2" />
-                    <rect x="7" y="12" width="3" height="3" fill="none" stroke="currentColor" strokeWidth="2" />
-                    <rect x="14" y="12" width="3" height="3" fill="none" stroke="currentColor" strokeWidth="2" />
+                <div style={{ display:'grid', gridTemplateColumns:'24px 1fr', alignItems:'start', gap:8 }}>
+                  {/* Apartment / studio — larger building icon */}
+                  <svg aria-hidden viewBox="0 0 24 24" width="22" height="22" style={{ opacity:.9 }}>
+                    <rect x="3.5" y="3.5" width="17" height="17" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" />
+                    {/* windows */}
+                    <rect x="6.5" y="6.5" width="3.5" height="3.5" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <rect x="13.5" y="6.5" width="3.5" height="3.5" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <rect x="6.5" y="12.5" width="3.5" height="3.5" fill="none" stroke="currentColor" strokeWidth="2" />
+                    {/* door */}
+                    <rect x="13.5" y="12" width="4" height="6" rx="0.8" ry="0.8" fill="none" stroke="currentColor" strokeWidth="2" />
                   </svg>
                   <div>
                     If you rent full apartments or studios, add each apartment or studio as one room, so that calendar integration works correctly.
