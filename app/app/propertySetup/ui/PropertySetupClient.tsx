@@ -295,18 +295,25 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
               </div>
               <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
                 <div style={{ display:'grid', gridTemplateColumns:'20px 1fr', alignItems:'start', gap:8 }}>
+                  {/* Rooms / room types — classic bed icon */}
                   <svg aria-hidden viewBox="0 0 24 24" width="18" height="18" style={{ opacity:.9 }}>
-                    <rect x="3" y="7" width="18" height="10" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" />
-                    <path d="M7 7v10M17 7v10" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <rect x="3" y="11" width="14" height="5" rx="1" ry="1" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <rect x="4" y="8" width="6" height="3" rx="1" ry="1" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <line x1="3" y1="16" x2="3" y2="19" stroke="currentColor" strokeWidth="2" />
+                    <line x1="17" y1="16" x2="17" y2="19" stroke="currentColor" strokeWidth="2" />
                   </svg>
                   <div>
                     Please add your rooms and, if you use them, define room types.
                   </div>
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'20px 1fr', alignItems:'start', gap:8 }}>
+                  {/* Apartment / studio — classic building icon */}
                   <svg aria-hidden viewBox="0 0 24 24" width="18" height="18" style={{ opacity:.9 }}>
-                    <path d="M3 11h18M5 11V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    <rect x="4" y="11" width="16" height="8" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <rect x="4" y="4" width="14" height="16" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <rect x="7" y="7" width="3" height="3" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <rect x="14" y="7" width="3" height="3" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <rect x="7" y="12" width="3" height="3" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <rect x="14" y="12" width="3" height="3" fill="none" stroke="currentColor" strokeWidth="2" />
                   </svg>
                   <div>
                     If you rent full apartments or studios, add each apartment or studio as one room, so that calendar integration works correctly.
