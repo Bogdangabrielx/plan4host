@@ -156,6 +156,18 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
           setStatus("Idle");
           setErr("");
           alert("We sent a confirmation email from office@plan4host.com. Please confirm to continue.");
+          // After confirming sign-up email notice, switch back to Sign in tab
+          try {
+            const u = new URL(window.location.href);
+            // Normalize URL to reflect login tab
+            u.searchParams.delete("signup");
+            u.searchParams.delete("trial");
+            u.searchParams.delete("tab");
+            u.searchParams.delete("view");
+            u.searchParams.set("mode", "login");
+            window.history.replaceState({}, "", u.toString());
+          } catch {}
+          setMode("login");
           return;
         }
 
