@@ -1776,7 +1776,7 @@ export default function CheckinClient() {
                 <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" onClick={()=>setPrivacyVisited(true)} style={{ color:'var(--primary)', fontWeight:800 }}>Privacy Policy</a>.
               </p>
               <label style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <input type="checkbox" disabled={!privacyVisited} checked={privacyConfirm} onChange={(e)=>setPrivacyConfirm(e.currentTarget.checked)} />
+                <input type="checkbox" checked={privacyConfirm} onChange={(e)=>setPrivacyConfirm(e.currentTarget.checked)} />
                 <span>{T('privacyAcknowledge')}</span>
               </label>
               <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
