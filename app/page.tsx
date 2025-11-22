@@ -918,7 +918,13 @@ export default function HomePage() {
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', padding:16 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <strong>Try the guest check‑in form</strong>
-              <button className="sb-btn" onClick={()=>setTryModalOpen(false)}>Close</button>
+              <button
+                aria-label="Close"
+                onClick={()=>setTryModalOpen(false)}
+                style={{ width:28, height:28, borderRadius:999, border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)', display:'grid', placeItems:'center', cursor:'pointer' }}
+              >
+                ×
+              </button>
             </div>
             <div style={{ display:'grid', gap:10 }}>
               <p style={{ margin:0, color:'var(--muted)' }}>
@@ -926,7 +932,6 @@ export default function HomePage() {
                 For a complete experience, please use a valid email address — you’ll receive the confirmation and follow‑up just like a real guest.
               </p>
               <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-                <button className="sb-btn" onClick={()=>setTryModalOpen(false)}>Cancel</button>
                 <button className="sb-btn sb-btn--primary" onClick={()=>{ router.push('/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual'); setTryModalOpen(false); }}>Continue</button>
               </div>
             </div>
