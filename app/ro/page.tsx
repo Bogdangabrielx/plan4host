@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "../home.module.css";
 import { createPortal } from "react-dom";
@@ -380,6 +381,8 @@ export default function HomePageRO() {
       body.style.overscrollBehaviorY = prevBody;
     };
   }, []);
+  const router = useRouter();
+  const [tryModalOpen, setTryModalOpen] = useState(false);
   // Detect PWA (installed) and apply safe-bottom only in PWA
   useEffect(() => {
     try {
@@ -581,7 +584,9 @@ export default function HomePageRO() {
             și să își eficientizeze administrarea zilnică.
           </p>
           <div className={styles.heroCta}>
-            <CtaLink href="/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Testează formularul de check‑in</CtaLink>
+            <button type="button" onClick={()=>setTryModalOpen(true)} className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>
+              Testează formularul de check‑in
+            </button>
             <a
               href="#features-title"
               className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}
@@ -597,6 +602,29 @@ export default function HomePageRO() {
           </video>
         </div>
       </section>
+
+      {/* Try Check-in modal (RO) */}
+      {tryModalOpen && (
+        <div role="dialog" aria-modal="true" onClick={()=>setTryModalOpen(false)}
+             style={{ position:'fixed', inset:0, zIndex: 320, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', padding:16 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+              <strong>Testează formularul de check‑in</strong>
+              <button className="sb-btn" onClick={()=>setTryModalOpen(false)}>Închide</button>
+            </div>
+            <div style={{ display:'grid', gap:10 }}>
+              <p style={{ margin:0, color:'var(--muted)' }}>
+                Vei fi redirecționat către un formular de check‑in de test, ca să vezi exact experiența pe care o are un oaspete.
+                Pentru o experiență completă, folosește o adresă de email validă — vei primi confirmarea și pașii următori ca un client real.
+              </p>
+              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+                <button className="sb-btn" onClick={()=>setTryModalOpen(false)}>Renunță</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ router.push('/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual'); setTryModalOpen(false); }}>Continuă</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Caracteristici */}
       <section id="features" className={styles.features} aria-labelledby="features-title">

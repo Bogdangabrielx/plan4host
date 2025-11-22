@@ -68,6 +68,7 @@ function FeatureCarousel() {
   const activeIdxRef = useRef<number>(0);
   const viewportRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const [tryModalOpen, setTryModalOpen] = useState(false);
   const [modalIdx, setModalIdx] = useState<number|null>(null);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -875,12 +876,13 @@ export default function HomePage() {
           </p>
           <div className={styles.heroCta}>
             {/* Start free -> login in signup mode (animated) */}
-            <CtaLink
-              href="/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual"
+            <button
+              type="button"
+              onClick={() => setTryModalOpen(true)}
               className={`sb-cardglow ${styles.btn}  ${styles.btnChoose} ${styles.focusable}`}
             >
               Try the guest check-in form
-            </CtaLink>
+            </button>
             <a
               href="#features-title"
               className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}
@@ -907,6 +909,29 @@ export default function HomePage() {
           </video>
         </div>
       </section>
+
+      {/* Try Check-in modal (EN) */}
+      {tryModalOpen && (
+        <div role="dialog" aria-modal="true" onClick={()=>setTryModalOpen(false)}
+             style={{ position:'fixed', inset:0, zIndex: 320, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', padding:16 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+              <strong>Try the guest check‑in form</strong>
+              <button className="sb-btn" onClick={()=>setTryModalOpen(false)}>Close</button>
+            </div>
+            <div style={{ display:'grid', gap:10 }}>
+              <p style={{ margin:0, color:'var(--muted)' }}>
+                You will be redirected to a demo check‑in form to experience what your guests will see.
+                For a complete experience, please use a valid email address — you’ll receive the confirmation and follow‑up just like a real guest.
+              </p>
+              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+                <button className="sb-btn" onClick={()=>setTryModalOpen(false)}>Cancel</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ router.push('/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual'); setTryModalOpen(false); }}>Continue</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Features */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
