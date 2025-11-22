@@ -68,7 +68,6 @@ function FeatureCarousel() {
   const activeIdxRef = useRef<number>(0);
   const viewportRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
-  const [tryModalOpen, setTryModalOpen] = useState(false);
   const [modalIdx, setModalIdx] = useState<number|null>(null);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -538,9 +537,11 @@ function CookieConsentLanding() {
   );
 }
 export default function HomePage() {
+  const router = useRouter();
   const [navOpen, setNavOpen] = useState(false); 
   const [isPwa, setIsPwa] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [tryModalOpen, setTryModalOpen] = useState(false);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
