@@ -581,7 +581,7 @@ export default function HomePageRO() {
             și să își eficientizeze administrarea zilnică.
           </p>
           <div className={styles.heroCta}>
-            <CtaLink href="/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Try the guest check-in form</CtaLink>
+            <CtaLink href="/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Testează formularul de check‑in</CtaLink>
             <a
               href="#features-title"
               className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}
