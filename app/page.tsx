@@ -876,10 +876,10 @@ export default function HomePage() {
           <div className={styles.heroCta}>
             {/* Start free -> login in signup mode (animated) */}
             <CtaLink
-              href="/auth/login?mode=signup"
+              href="/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual"
               className={`sb-cardglow ${styles.btn}  ${styles.btnChoose} ${styles.focusable}`}
             >
-              Start free
+              Try the guest check-in form
             </CtaLink>
             <a
               href="#features-title"
