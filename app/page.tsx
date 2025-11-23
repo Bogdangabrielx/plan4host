@@ -1304,6 +1304,29 @@ export default function HomePage() {
               </>
             ),
           },
+          {
+            id: 'checkin-confirmation',
+            question: 'How does the guest know we received the check-in form?',
+            content: (
+              <>
+                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                  They get an immediate email copy of their submission, and you get a separate notification.
+                </p>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                  <li>After tapping “Submit”, the guest receives an email showing the data collected and the retention period (GDPR notice).</li>
+                  <li>You receive a separate email so you can confirm the reservation.</li>
+                  <li>Future messages are auto-scheduled based on these submitted details.</li>
+                </ul>
+                <div style={{ marginTop: 8 }}>
+                  <img
+                    src="/Confirmare%20primire%20formular.png"
+                    alt="Sample confirmation email after check-in form submission"
+                    style={{ width: '100%', maxWidth: 520, height: 'auto', borderRadius: 10, border: '1px solid var(--border)' }}
+                  />
+                </div>
+              </>
+            ),
+          },
         ].map((item) => {
           const open = !!faqOpen[item.id];
           return (
