@@ -925,6 +925,22 @@ export default function HomePageRO() {
               </>
             ),
           },
+          {
+            id: 'sync-calendars',
+            question: 'Cum sincronizez calendarele?',
+            content: (
+              <>
+                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                  Aliniază mai întâi structura proprietății, apoi importă și exportă linkurile iCal.
+                </p>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                  <li>Asigură-te că în Plan4Host ai aceeași structură (camere/tipuri) ca pe platformele pe care le sincronizezi.</li>
+                  <li>Intră la „Sync Calendars” și importă linkurile iCal din Airbnb, Booking, Travelminit etc.</li>
+                  <li>Tot din „Sync Calendars”, copiază linkurile de export Plan4Host și inserează-le în platformele de booking.</li>
+                </ul>
+              </>
+            ),
+          },
         ].map((item) => {
           const open = !!faqOpen[item.id];
           return (

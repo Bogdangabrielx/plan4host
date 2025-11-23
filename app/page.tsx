@@ -1255,6 +1255,22 @@ export default function HomePage() {
               </>
             ),
           },
+          {
+            id: 'sync-calendars',
+            question: 'How do I sync calendars?',
+            content: (
+              <>
+                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                  Align your property structure first, then import and export iCal links.
+                </p>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                  <li>Match your setup in Plan4Host to the same rooms/types you have on each platform.</li>
+                  <li>Open “Sync Calendars” and import the iCal links from Airbnb, Booking, Travelminit, etc.</li>
+                  <li>From “Sync Calendars”, copy the Plan4Host export links and paste them back into each booking platform.</li>
+                </ul>
+              </>
+            ),
+          },
         ].map((item) => {
           const open = !!faqOpen[item.id];
           return (
