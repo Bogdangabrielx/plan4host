@@ -895,6 +895,21 @@ export default function HomePageRO() {
               </>
             ),
           },
+          {
+            id: 'access-codes',
+            question: 'Aplicația îmi permite să trimit automat codurile de acces cu puțin timp înainte de a ajunge oaspetele?',
+            content: (
+              <>
+                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                  Da. Configurezi un template și îl programezi să plece automat cu o oră înainte de fiecare rezervare.
+                </p>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                  <li>Mesajul este trimis automat și personalizat pentru fiecare rezervare.</li>
+                  <li>Nu mai trebuie să faci nimic — câștigi timp pentru tine și idei mărețe.</li>
+                </ul>
+              </>
+            ),
+          },
         ].map((item) => {
           const open = !!faqOpen[item.id];
           return (

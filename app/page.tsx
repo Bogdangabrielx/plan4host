@@ -1225,6 +1225,21 @@ export default function HomePage() {
               </>
             ),
           },
+          {
+            id: 'access-codes',
+            question: 'Can the app send access codes automatically shortly before guests arrive?',
+            content: (
+              <>
+                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                  Yes. Create a template and schedule it to send 1 hour before every reservation.
+                </p>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                  <li>The message is sent automatically, personalized for each booking.</li>
+                  <li>You don’t need to lift a finger — enjoy the time you save.</li>
+                </ul>
+              </>
+            ),
+          },
         ].map((item) => {
           const open = !!faqOpen[item.id];
           return (
