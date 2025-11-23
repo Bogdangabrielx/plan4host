@@ -1259,7 +1259,13 @@ export default function HomePage() {
               <div
                 id={`faq-answer-${item.id}`}
                 hidden={!open}
-                style={{ display: 'grid', gap: 8, color: 'var(--muted)', fontSize: 14, lineHeight: 1.55 }}
+                style={{
+                  display: open ? 'grid' : 'none',
+                  gap: 8,
+                  color: 'var(--muted)',
+                  fontSize: 14,
+                  lineHeight: 1.55,
+                }}
               >
                 {item.content}
               </div>
