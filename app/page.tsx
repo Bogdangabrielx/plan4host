@@ -545,6 +545,7 @@ export default function HomePage() {
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
+  const [faqOpen, setFaqOpen] = useState(false);
   const featuresTapTimerRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
   const toggleFeaturesPlay = () => {
     const v = featuresVideoRef.current;
@@ -1191,14 +1192,49 @@ export default function HomePage() {
       {/* FAQ */}
       <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
         <h2 id="faq-title">FAQ</h2>
-        <div className={styles.contactCard} style={{ gap: 10 }}>
-          <div style={{ display: 'grid', gap: 8 }}>
-            <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)' }}>
+        <div className={styles.contactCard} style={{ gap: 12, padding: 16 }}>
+          <button
+            type="button"
+            aria-expanded={faqOpen}
+            aria-controls="faq-answer"
+            onClick={() => setFaqOpen((v) => !v)}
+            className={`${styles.focusable}`}
+            style={{
+              display: 'flex',
+              width: '100%',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 12,
+              padding: '8px 0',
+              background: 'none',
+              border: 'none',
+              color: 'var(--text)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              fontWeight: 800,
+              fontSize: 16,
+            }}
+          >
+            <span>
               Can I use the app for apartments/studios (single units) as well as cabins/guesthouses (multiple units)?
-            </div>
-            <p style={{ margin: 0, color: 'var(--muted)' }}>
-              Yes. The app works for single units (configure one room as the entire property) and for multiple units, either per room or per room type. If your property is listed on booking platforms with an “Entire property” option, we recommend mapping one “room” in Plan4Host to represent the whole property.
+            </span>
+            <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>
+              {faqOpen ? '–' : '+'}
+            </span>
+          </button>
+          <div
+            id="faq-answer"
+            hidden={!faqOpen}
+            style={{ display: 'grid', gap: 8, color: 'var(--muted)', fontSize: 14, lineHeight: 1.55 }}
+          >
+            <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+              Short answer: yes — it works for single units and multi-unit properties.
             </p>
+            <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+              <li>Single unit: set one room as the entire property and manage everything from one calendar.</li>
+              <li>Multiple units: add each room or room type and keep calendars, tasks, and messaging per unit.</li>
+              <li>Listed on OTAs with both per-room and “Entire property” options? Keep the individual rooms and add one extra Plan4Host “room” for the entire place; map iCal so room bookings and whole-property bookings block each other.</li>
+            </ul>
           </div>
         </div>
       </section>
