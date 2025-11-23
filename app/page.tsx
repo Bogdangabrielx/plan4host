@@ -542,7 +542,9 @@ export default function HomePage() {
   const [isPwa, setIsPwa] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [tryModalOpen, setTryModalOpen] = useState(false);
+  const [showHeroVideo, setShowHeroVideo] = useState(false);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
+  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
   const [faqOpen, setFaqOpen] = useState<Record<string, boolean>>({});
@@ -597,6 +599,27 @@ export default function HomePage() {
     setFeaturesHover(true);
   };
   useEffect(() => { return () => { if (featuresTapTimerRef.current) { try { clearTimeout(featuresTapTimerRef.current as any); } catch {} } }; }, []);
+  useEffect(() => {
+    // Swap from static preview to video only after user scrolls (or if already scrolled)
+    const reveal = () => {
+      setShowHeroVideo(true);
+      window.removeEventListener('scroll', onScroll, true);
+    };
+    const onScroll = () => {
+      if (window.scrollY > 20) reveal();
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // If page already scrolled (e.g., hash navigation), reveal immediately
+    if (typeof window !== "undefined" && window.scrollY > 20) {
+      reveal();
+    }
+    return () => window.removeEventListener('scroll', onScroll, true);
+  }, []);
+  useEffect(() => {
+    if (showHeroVideo) {
+      try { heroVideoRef.current?.play(); } catch {}
+    }
+  }, [showHeroVideo]);
   const year = new Date().getFullYear();
   const scrollToId = (id: string) => {
     try {
@@ -910,19 +933,29 @@ export default function HomePage() {
         </div>
 
         <div className={styles.heroVisual} aria-label="Calendar preview">
-          <video
-            className={styles.focusable}
-            src="/Hero_video2.mp4"
-            poster="/Hero_video2.mp4"
-            muted
-            autoPlay
-            loop
-            playsInline
-            preload="metadata"
-            style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 12 }}
-          >
-            Sorry, your browser doesn’t support embedded videos.
-          </video>
+          {showHeroVideo ? (
+            <video
+              ref={heroVideoRef}
+              className={styles.focusable}
+              src="/Hero_video2.mp4"
+              poster="/Hero_video2.mp4"
+              muted
+              autoPlay
+              loop
+              playsInline
+              preload="metadata"
+              style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 12 }}
+            >
+              Sorry, your browser doesn’t support embedded videos.
+            </video>
+          ) : (
+            <img
+              src="/Preview%20Calendar.png"
+              alt="Plan4Host calendar preview"
+              style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 12, display: 'block' }}
+              className={styles.focusable}
+            />
+          )}
         </div>
       </section>
 
