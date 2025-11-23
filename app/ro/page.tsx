@@ -990,7 +990,7 @@ export default function HomePageRO() {
                 <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
                   <li>După ce apasă „Submit”, oaspetele primește un email cu datele colectate și perioada de retenție (GDPR).</li>
                   <li>Tu primești un email separat ca să poți confirma rezervarea.</li>
-                  <li>Mesajele automate se programează pe baza datelor completate în formular.</li>
+                  <li>În baza datelor din formular, se vor trimite automat și mesajele programate, conform fiecărei rezervări.</li>
                 </ul>
                 <div style={{ marginTop: 8 }}>
                   <img

@@ -1315,7 +1315,7 @@ export default function HomePage() {
                 <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
                   <li>After tapping “Submit”, the guest receives an email showing the data collected and the retention period (GDPR notice).</li>
                   <li>You receive a separate email so you can confirm the reservation.</li>
-                  <li>Future messages are auto-scheduled based on these submitted details.</li>
+                  <li>Based on the form data, scheduled messages are sent automatically for each reservation.</li>
                 </ul>
                 <div style={{ marginTop: 8 }}>
                   <img
