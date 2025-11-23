@@ -905,7 +905,7 @@ export default function HomePageRO() {
                 </p>
                 <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
                   <li>Mesajul este trimis automat și personalizat pentru fiecare rezervare.</li>
-                  <li>Nu mai trebuie să faci nimic — câștigi timp pentru tine și idei mărețe.</li>
+                  <li>Nu mai trebuie să faci nimic — aplicația te ajută să acorzi mai multă atenție oaspeților tăi.</li>
                 </ul>
               </>
             ),
@@ -913,7 +913,15 @@ export default function HomePageRO() {
         ].map((item) => {
           const open = !!faqOpen[item.id];
           return (
-            <div key={item.id} className={styles.contactCard} style={{ gap: 12, padding: 16 }}>
+            <div
+              key={item.id}
+              className={styles.contactCard}
+              style={{
+                gap: open ? 12 : 0,
+                padding: open ? 16 : '10px 16px',
+                minHeight: 'auto',
+              }}
+            >
               <button
                 type="button"
                 aria-expanded={open}
@@ -936,7 +944,9 @@ export default function HomePageRO() {
                   fontSize: 16,
                 }}
               >
-                <span>{item.question}</span>
+                <span>
+                  <strong>Q:</strong> {item.question}
+                </span>
                 <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>
                   {open ? '–' : '+'}
                 </span>
@@ -952,6 +962,7 @@ export default function HomePageRO() {
                   lineHeight: 1.55,
                 }}
               >
+                <div style={{ fontWeight: 700, color: 'var(--text)' }}>A:</div>
                 {item.content}
               </div>
             </div>

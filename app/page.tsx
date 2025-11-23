@@ -1235,7 +1235,7 @@ export default function HomePage() {
                 </p>
                 <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
                   <li>The message is sent automatically, personalized for each booking.</li>
-                  <li>You don’t need to lift a finger — enjoy the time you save.</li>
+                  <li>You don’t need to lift a finger — the app lets you focus more on your guests.</li>
                 </ul>
               </>
             ),
@@ -1243,7 +1243,15 @@ export default function HomePage() {
         ].map((item) => {
           const open = !!faqOpen[item.id];
           return (
-            <div key={item.id} className={styles.contactCard} style={{ gap: 12, padding: 16 }}>
+            <div
+              key={item.id}
+              className={styles.contactCard}
+              style={{
+                gap: open ? 12 : 0,
+                padding: open ? 16 : '10px 16px',
+                minHeight: 'auto',
+              }}
+            >
               <button
                 type="button"
                 aria-expanded={open}
@@ -1266,7 +1274,9 @@ export default function HomePage() {
                   fontSize: 16,
                 }}
               >
-                <span>{item.question}</span>
+                <span>
+                  <strong>Q:</strong> {item.question}
+                </span>
                 <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>
                   {open ? '–' : '+'}
                 </span>
@@ -1282,6 +1292,7 @@ export default function HomePage() {
                   lineHeight: 1.55,
                 }}
               >
+                <div style={{ fontWeight: 700, color: 'var(--text)' }}>A:</div>
                 {item.content}
               </div>
             </div>
