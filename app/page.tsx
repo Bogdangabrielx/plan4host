@@ -545,7 +545,7 @@ export default function HomePage() {
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
-  const [faqOpen, setFaqOpen] = useState(false);
+  const [faqOpen, setFaqOpen] = useState<Record<string, boolean>>({});
   const featuresTapTimerRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
   const toggleFeaturesPlay = () => {
     const v = featuresVideoRef.current;
@@ -1192,51 +1192,80 @@ export default function HomePage() {
       {/* FAQ */}
       <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
         <h2 id="faq-title">FAQ</h2>
-        <div className={styles.contactCard} style={{ gap: 12, padding: 16 }}>
-          <button
-            type="button"
-            aria-expanded={faqOpen}
-            aria-controls="faq-answer"
-            onClick={() => setFaqOpen((v) => !v)}
-            className={`${styles.focusable}`}
-            style={{
-              display: 'flex',
-              width: '100%',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: 12,
-              padding: '8px 0',
-              background: 'none',
-              border: 'none',
-              color: 'var(--text)',
-              cursor: 'pointer',
-              textAlign: 'left',
-              fontWeight: 800,
-              fontSize: 16,
-            }}
-          >
-            <span>
-              Can I use the app for apartments/studios (single units) as well as cabins/guesthouses (multiple units)?
-            </span>
-            <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>
-              {faqOpen ? '–' : '+'}
-            </span>
-          </button>
-          <div
-            id="faq-answer"
-            hidden={!faqOpen}
-            style={{ display: 'grid', gap: 8, color: 'var(--muted)', fontSize: 14, lineHeight: 1.55 }}
-          >
-            <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
-              Short answer: yes — it works for single units and multi-unit properties.
-            </p>
-            <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
-              <li>Single unit: set one room as the entire property and manage everything from one calendar.</li>
-              <li>Multiple units: add each room or room type and keep calendars, tasks, and messaging per unit.</li>
-              <li>Listed on OTAs with both per-room and “Entire property” options? Keep the individual rooms and add one extra Plan4Host “room” for the entire place; map iCal so room bookings and whole-property bookings block each other.</li>
-            </ul>
-          </div>
-        </div>
+        {[
+          {
+            id: 'units',
+            question: 'Can I use the app for apartments/studios (single units) as well as cabins/guesthouses (multiple units)?',
+            content: (
+              <>
+                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                  Short answer: yes — it works for single units and multi-unit properties.
+                </p>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                  <li>Single unit: set one room as the entire property and manage everything from one calendar.</li>
+                  <li>Multiple units: add each room or room type and keep calendars, tasks, and messaging per unit.</li>
+                  <li>Listed on OTAs with both per-room and “Entire property” options? Keep the individual rooms and add one extra Plan4Host “room” for the entire place; map iCal so room bookings and whole-property bookings block each other.</li>
+                </ul>
+              </>
+            ),
+          },
+          {
+            id: 'guest-data',
+            question: 'How do I collect guest details?',
+            content: (
+              <>
+                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                  Set up your property, then generate check-in form links.
+                </p>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                  <li>Drop the links into auto-replies on each platform where you list the property.</li>
+                  <li>Guests are guided through all steps so their stay starts smoothly.</li>
+                  <li><strong>Need better tracking?</strong> Generate platform-specific links to see which channel each form came from.</li>
+                </ul>
+              </>
+            ),
+          },
+        ].map((item) => {
+          const open = !!faqOpen[item.id];
+          return (
+            <div key={item.id} className={styles.contactCard} style={{ gap: 12, padding: 16 }}>
+              <button
+                type="button"
+                aria-expanded={open}
+                aria-controls={`faq-answer-${item.id}`}
+                onClick={() => setFaqOpen((prev) => ({ ...prev, [item.id]: !open }))}
+                className={`${styles.focusable}`}
+                style={{
+                  display: 'flex',
+                  width: '100%',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '8px 0',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontWeight: 800,
+                  fontSize: 16,
+                }}
+              >
+                <span>{item.question}</span>
+                <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>
+                  {open ? '–' : '+'}
+                </span>
+              </button>
+              <div
+                id={`faq-answer-${item.id}`}
+                hidden={!open}
+                style={{ display: 'grid', gap: 8, color: 'var(--muted)', fontSize: 14, lineHeight: 1.55 }}
+              >
+                {item.content}
+              </div>
+            </div>
+          );
+        })}
       </section>
 
       {/* Contact */}

@@ -333,7 +333,7 @@ export default function HomePageRO() {
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
-  const [faqOpen, setFaqOpen] = useState(false);
+  const [faqOpen, setFaqOpen] = useState<Record<string, boolean>>({});
   const toggleFeaturesPlay = () => {
     const v = featuresVideoRef.current;
     if (!v) return;
@@ -862,51 +862,80 @@ export default function HomePageRO() {
       {/* FAQ */}
       <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
         <h2 id="faq-title">FAQ</h2>
-        <div className={styles.contactCard} style={{ gap: 12, padding: 16 }}>
-          <button
-            type="button"
-            aria-expanded={faqOpen}
-            aria-controls="faq-answer"
-            onClick={() => setFaqOpen((v) => !v)}
-            className={`${styles.focusable}`}
-            style={{
-              display: 'flex',
-              width: '100%',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: 12,
-              padding: '8px 0',
-              background: 'none',
-              border: 'none',
-              color: 'var(--text)',
-              cursor: 'pointer',
-              textAlign: 'left',
-              fontWeight: 800,
-              fontSize: 16,
-            }}
-          >
-            <span>
-              Pot să folosesc aplicația atât pentru apartamente/studiouri (unități singulare), cât și pentru cabane/pensiuni (unități multiple)?
-            </span>
-            <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>
-              {faqOpen ? '–' : '+'}
-            </span>
-          </button>
-          <div
-            id="faq-answer"
-            hidden={!faqOpen}
-            style={{ display: 'grid', gap: 8, color: 'var(--muted)', fontSize: 14, lineHeight: 1.55 }}
-          >
-            <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
-              Pe scurt: da — funcționează și pentru o singură unitate, și pentru proprietăți cu mai multe unități.
-            </p>
-            <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
-              <li>Unitate singulară: setezi o cameră ca întreaga proprietate și gestionezi totul dintr-un singur calendar.</li>
-              <li>Unități multiple: adaugi fiecare cameră sau tip de cameră și ai calendare, task-uri și mesaje per unitate.</li>
-              <li>Listată pe platforme atât pe cameră, cât și cu opțiunea „Întreaga proprietate”? Păstrează camerele separate și adaugă o „cameră” în Plan4Host pentru întreaga cabană; leagi iCal astfel încât rezervările pe camere și pe întreaga proprietate să se blocheze reciproc.</li>
-            </ul>
-          </div>
-        </div>
+        {[
+          {
+            id: 'units',
+            question: 'Pot să folosesc aplicația atât pentru apartamente/studiouri (unități singulare), cât și pentru cabane/pensiuni (unități multiple)?',
+            content: (
+              <>
+                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                  Pe scurt: da — funcționează și pentru o singură unitate, și pentru proprietăți cu mai multe unități.
+                </p>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                  <li>Unitate singulară: setezi o cameră ca întreaga proprietate și gestionezi totul dintr-un singur calendar.</li>
+                  <li>Unități multiple: adaugi fiecare cameră sau tip de cameră și ai calendare, task-uri și mesaje per unitate.</li>
+                  <li>Listată pe platforme atât pe cameră, cât și cu opțiunea „Întreaga proprietate”? Păstrează camerele separate și adaugă o „cameră” în Plan4Host pentru întreaga cabană; leagi iCal astfel încât rezervările pe camere și pe întreaga proprietate să se blocheze reciproc.</li>
+                </ul>
+              </>
+            ),
+          },
+          {
+            id: 'guest-data',
+            question: 'Cum colectez datele oaspeților?',
+            content: (
+              <>
+                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                  Configurezi proprietatea, apoi generezi linkuri de formular de check-in.
+                </p>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                  <li>Pui linkurile ca răspuns automat pe platformele unde ai listată proprietatea.</li>
+                  <li>Oaspeții sunt ghidați să parcurgă toți pașii, ca sosirea să fie simplă.</li>
+                  <li><strong>Vrei o evidență mai bună?</strong> Generează linkuri specifice pentru fiecare platformă și vezi sursa fiecărui formular completat.</li>
+                </ul>
+              </>
+            ),
+          },
+        ].map((item) => {
+          const open = !!faqOpen[item.id];
+          return (
+            <div key={item.id} className={styles.contactCard} style={{ gap: 12, padding: 16 }}>
+              <button
+                type="button"
+                aria-expanded={open}
+                aria-controls={`faq-answer-${item.id}`}
+                onClick={() => setFaqOpen((prev) => ({ ...prev, [item.id]: !open }))}
+                className={`${styles.focusable}`}
+                style={{
+                  display: 'flex',
+                  width: '100%',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '8px 0',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontWeight: 800,
+                  fontSize: 16,
+                }}
+              >
+                <span>{item.question}</span>
+                <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>
+                  {open ? '–' : '+'}
+                </span>
+              </button>
+              <div
+                id={`faq-answer-${item.id}`}
+                hidden={!open}
+                style={{ display: 'grid', gap: 8, color: 'var(--muted)', fontSize: 14, lineHeight: 1.55 }}
+              >
+                {item.content}
+              </div>
+            </div>
+          );
+        })}
       </section>
 
       {/* Contact */}
