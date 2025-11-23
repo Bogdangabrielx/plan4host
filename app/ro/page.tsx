@@ -920,6 +920,7 @@ export default function HomePageRO() {
                 gap: open ? 12 : 0,
                 padding: open ? 16 : '10px 16px',
                 minHeight: 'auto',
+                width: 'min(820px, 100%)',
               }}
             >
               <button
