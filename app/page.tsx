@@ -1240,6 +1240,21 @@ export default function HomePage() {
               </>
             ),
           },
+          {
+            id: 'reservation-notes',
+            question: 'Can I add notes for each reservation?',
+            content: (
+              <>
+                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                  Yes. In “Property Setup” under “Reservation details”, you can create as many note fields as you need.
+                </p>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                  <li>Each note field is unique per reservation—perfect for staff reminders or personal cues.</li>
+                  <li>You can even use checkboxes for options like “breakfast included” or “daily towel change”.</li>
+                </ul>
+              </>
+            ),
+          },
         ].map((item) => {
           const open = !!faqOpen[item.id];
           return (

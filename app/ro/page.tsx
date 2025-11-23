@@ -910,6 +910,21 @@ export default function HomePageRO() {
               </>
             ),
           },
+          {
+            id: 'reservation-notes',
+            question: 'Pot să am o rubrică unde să pun notițe pentru fiecare rezervare?',
+            content: (
+              <>
+                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                  Da. În meniul „Property Setup”, la „Reservation details”, poți crea câte casete de note vrei.
+                </p>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                  <li>Fiecare câmp de notă este unic pentru fiecare rezervare — util pentru staff sau pentru tine.</li>
+                  <li>Poți folosi și bife pentru opțiuni precum „mic dejun inclus” sau „schimbare prosoape zilnic”.</li>
+                </ul>
+              </>
+            ),
+          },
         ].map((item) => {
           const open = !!faqOpen[item.id];
           return (
