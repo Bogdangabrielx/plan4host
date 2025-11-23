@@ -519,6 +519,13 @@ export default function HomePageRO() {
           </a>
           <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Prețuri</a>
           <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>Despre</a>
+          <a
+            href="#faq"
+            className={`${styles.menuLink} ${styles.focusable}`}
+            onClick={(e) => { e.preventDefault(); scrollToId('faq'); }}
+          >
+            FAQ
+          </a>
           <a href="#recenzii" className={`${styles.menuLink} ${styles.focusable}`}>Recenzii</a>
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
         </div>
@@ -564,6 +571,13 @@ export default function HomePageRO() {
         </a>
         <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
         <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Despre</a>
+        <a
+          href="#faq"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq'); }}
+        >
+          FAQ
+        </a>
         <a href="#recenzii" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Recenzii</a>
         <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Contact</a>
       </div>
@@ -840,6 +854,21 @@ export default function HomePageRO() {
               aria-label="Recenzia următoare"
               onClick={() => setRevIdx(i => (i + 1) % recenziiRo.length)}
             />
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
+        <h2 id="faq-title">FAQ</h2>
+        <div className={styles.contactCard} style={{ gap: 10 }}>
+          <div style={{ display: 'grid', gap: 8 }}>
+            <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)' }}>
+              Pot să folosesc aplicația atât pentru apartamente/studiouri (unități singulare), cât și pentru cabane/pensiuni (unități multiple)?
+            </div>
+            <p style={{ margin: 0, color: 'var(--muted)' }}>
+              Da. Aplicația funcționează atât pentru o unitate singulară (poți configura o cameră ca întreaga proprietate), cât și pentru unități multiple, la nivel de camere sau tipuri de camere. Dacă proprietatea este listată pe platforme cu opțiunea „Întreaga proprietate”, recomandăm ca o singură „cameră” din Plan4Host să reprezinte întreaga proprietate.
+            </p>
           </div>
         </div>
       </section>

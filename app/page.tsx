@@ -785,6 +785,13 @@ export default function HomePage() {
           </a>
           <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
           <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
+          <a
+            href="#faq"
+            className={`${styles.menuLink} ${styles.focusable}`}
+            onClick={(e) => { e.preventDefault(); scrollToId('faq'); }}
+          >
+            FAQ
+          </a>
           <a href="#reviews" className={`${styles.menuLink} ${styles.focusable}`}>Reviews</a>
           <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
         </div>
@@ -845,6 +852,13 @@ export default function HomePage() {
           onClick={() => setNavOpen(false)}
         >
           About
+        </a>
+        <a
+          href="#faq"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq'); }}
+        >
+          FAQ
         </a>
         <a
           href="#reviews"
@@ -1170,6 +1184,21 @@ export default function HomePage() {
             >
               E
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
+        <h2 id="faq-title">FAQ</h2>
+        <div className={styles.contactCard} style={{ gap: 10 }}>
+          <div style={{ display: 'grid', gap: 8 }}>
+            <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)' }}>
+              Can I use the app for apartments/studios (single units) as well as cabins/guesthouses (multiple units)?
+            </div>
+            <p style={{ margin: 0, color: 'var(--muted)' }}>
+              Yes. The app works for single units (configure one room as the entire property) and for multiple units, either per room or per room type. If your property is listed on booking platforms with an “Entire property” option, we recommend mapping one “room” in Plan4Host to represent the whole property.
+            </p>
           </div>
         </div>
       </section>
