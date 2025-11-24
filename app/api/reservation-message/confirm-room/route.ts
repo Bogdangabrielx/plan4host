@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     // 2) Fetch booking + property + contact
     const [rBk, rProp, rContact] = await Promise.all([
       admin.from('bookings').select('start_date,end_date,start_time,end_time,guest_first_name,guest_last_name,guest_email,form_id,room_id').eq('id', booking_id).maybeSingle(),
-      admin.from('properties').select('name').eq('id', property_id).maybeSingle(),
+      admin.from('properties').select('name,timezone').eq('id', property_id).maybeSingle(),
       admin.from('booking_contacts').select('email').eq('booking_id', booking_id).maybeSingle(),
     ]);
     if (rBk.error || !rBk.data) return bad(404, { error: 'Booking not found' });
@@ -74,6 +74,7 @@ export async function POST(req: Request) {
       token = (up.data as any).token as string;
     }
     const propName = (rProp.data as any)?.name || '';
+    const propTz = ((rProp.data as any)?.timezone || '') as string;
     let roomName: string | null = null;
     if (bk.room_id) {
       const rRoom = await admin.from('rooms').select('name').eq('id', bk.room_id).maybeSingle();
@@ -92,16 +93,31 @@ export async function POST(req: Request) {
     const st = String(bk.start_time || '14:00');
     const ed = String(bk.end_date || sd);
     const et = String(bk.end_time || '11:00');
-    function toUtcGCal(ymd: string, hm: string){
+    function getUtcDate(ymd: string, hm: string, tz?: string | null): Date | null {
       const m1 = (ymd||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); const m2 = (hm||'').match(/^(\d{2}):(\d{2})$/);
-      if (!m1 || !m2) return '';
-      const dt = new Date(Date.UTC(+m1[1], +m1[2]-1, +m1[3], +m2[1], +m2[2], 0));
-      const yyyy = dt.getUTCFullYear(); const mm = String(dt.getUTCMonth()+1).padStart(2,'0'); const dd = String(dt.getUTCDate()).padStart(2,'0');
-      const HH = String(dt.getUTCHours()).padStart(2,'0'); const MI = String(dt.getUTCMinutes()).padStart(2,'0');
-      return `${yyyy}${mm}${dd}T${HH}${MI}00Z`;
+      if (!m1 || !m2) return null;
+      const year = +m1[1]; const month = +m1[2]-1; const day = +m1[3]; const hour = +m2[1]; const minute = +m2[2];
+      if (!tz) return new Date(Date.UTC(year, month, day, hour, minute, 0));
+      try {
+        const dt = new Date(Date.UTC(year, month, day, hour, minute, 0));
+        const fmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, hour12:false, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+        const parts = fmt.formatToParts(dt).reduce((acc:any, p)=>{ if (p.type!=='literal') acc[p.type]=p.value; return acc; }, {});
+        const asLocal = Date.UTC(+parts.year, (+parts.month||1)-1, +parts.day, +parts.hour, +parts.minute, 0);
+        const offset = asLocal - dt.getTime();
+        return new Date(dt.getTime() - offset);
+      } catch {
+        return new Date(Date.UTC(year, month, day, hour, minute, 0));
+      }
     }
-    const gStart = toUtcGCal(sd, st);
-    const gEnd   = toUtcGCal(ed, et);
+    function fmtIcsUtc(dt: Date | null){
+      if (!dt) return '';
+      const pad = (n: number) => String(n).padStart(2,'0');
+      return `${dt.getUTCFullYear()}${pad(dt.getUTCMonth()+1)}${pad(dt.getUTCDate())}T${pad(dt.getUTCHours())}${pad(dt.getUTCMinutes())}00Z`;
+    }
+    const startUtc = getUtcDate(sd, st, propTz || null);
+    const endUtc   = getUtcDate(ed, et, propTz || null);
+    const gStart = fmtIcsUtc(startUtc);
+    const gEnd   = fmtIcsUtc(endUtc);
     const gcal = (gStart && gEnd)
       ? `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Reservation — ${propName}`)}&dates=${gStart}/${gEnd}&details=${encodeURIComponent(`Guest: ${guestFull}\nLink: ${link}`)}&location=${encodeURIComponent(propName)}`
       : '';
@@ -131,14 +147,8 @@ export async function POST(req: Request) {
 
     // 3b) ICS attachment
     function pad(n: number){ return String(n).padStart(2,'0'); }
-    function toIcsUtc(ymd: string, hm: string){
-      const m1 = (ymd||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); const m2 = (hm||'').match(/^(\d{2}):(\d{2})$/);
-      if (!m1 || !m2) return '';
-      const dt = new Date(Date.UTC(+m1[1], +m1[2]-1, +m1[3], +m2[1], +m2[2], 0));
-      return `${dt.getUTCFullYear()}${pad(dt.getUTCMonth()+1)}${pad(dt.getUTCDate())}T${pad(dt.getUTCHours())}${pad(dt.getUTCMinutes())}00Z`;
-    }
-    const icsStart = toIcsUtc(sd, st);
-    const icsEnd   = toIcsUtc(ed, et);
+    const icsStart = fmtIcsUtc(startUtc);
+    const icsEnd   = fmtIcsUtc(endUtc);
     const now = new Date();
     const dtStamp  = `${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}00Z`;
     const uidIcs = `${booking_id}@plan4host.com`;
