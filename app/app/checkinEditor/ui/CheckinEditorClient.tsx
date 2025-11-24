@@ -113,6 +113,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [noPdfOpen, setNoPdfOpen] = useState(false);
   const [highlightUpload, setHighlightUpload] = useState(false);
   const uploadBtnRef = useRef<HTMLButtonElement | null>(null);
+  // Presentation image prompt
+  const [showImagePrompt, setShowImagePrompt] = useState(false);
+  const [imagePromptDismissed, setImagePromptDismissed] = useState(false);
+  const imageUploadBtnRef = useRef<HTMLButtonElement | null>(null);
 
   // Responsive helper: treat phones/narrow screens differently for layout
   const [isNarrow, setIsNarrow] = useState<boolean>(() => {
@@ -129,6 +133,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       try { mq?.removeEventListener('change', onChange); } catch { mq?.removeListener?.(onChange as any); }
     };
   }, []);
+  // Reset prompt dismissal when property changes
+  useEffect(() => { setImagePromptDismissed(false); }, [propertyId]);
+  // Show prompt on entry if placeholder image is used
+  useEffect(() => {
+    const isPlaceholder = !!prop?.presentation_image_url && prop.presentation_image_url.includes('/hotel_room_1456x816.jpg');
+    if (isPlaceholder && !imagePromptDismissed) setShowImagePrompt(true);
+  }, [prop?.presentation_image_url, imagePromptDismissed]);
 
   async function refresh() {
     if (!propertyId) { setProp(null); return; }
@@ -549,14 +560,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   </small>
                   <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                     <a href={prop.presentation_image_url} target="_blank" rel="noreferrer" className="sb-btn sb-cardglow">Preview</a>
-                    <button className="sb-btn sb-cardglow" onClick={triggerImageUpload}>Replace image</button>
+                    <button className="sb-btn sb-cardglow" onClick={triggerImageUpload} ref={imageUploadBtnRef}>Replace image</button>
                     <Info text={IMAGE_INFO} />
                   </div>
                 </div>
               ) : (
                 <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                   <span style={{ color:'var(--muted)' }}>No image uploaded.</span>
-                  <button className="sb-btn sb-cardglow" onClick={triggerImageUpload}>Upload image</button>
+                  <button className="sb-btn sb-cardglow" onClick={triggerImageUpload} ref={imageUploadBtnRef}>Upload image</button>
                   <Info text={IMAGE_INFO} />
                 </div>
               )}
@@ -584,6 +595,56 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <span>{p.label}</span>
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {showImagePrompt && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e)=>e.stopPropagation()}
+          style={{ position:'fixed', inset:0, zIndex: 265, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
+                   paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(540px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:12, position:'relative' }}>
+            <button
+              aria-label="Close"
+              onClick={() => { setShowImagePrompt(false); setImagePromptDismissed(true); }}
+              style={{ position:'absolute', top:12, right:12, width:28, height:28, borderRadius:999, border:'1px solid var(--border)', background:'var(--card)', cursor:'pointer', fontWeight: 700 }}
+            >
+              ×
+            </button>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingRight:32 }}>
+              <strong>Adaugă o poză reală a proprietății</strong>
+            </div>
+            <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
+              <div>Poza actuală este una generică. Încarcă o fotografie a proprietății tale — apare în formularul de check-in personalizat.</div>
+              <ul style={{ margin:0, paddingLeft:18, color:'var(--muted)', display:'grid', gap:6 }}>
+                <li>Oaspeții văd poza când completează formularul.</li>
+                <li>Cu datele de contact completate, oaspeții pot interacționa mai ușor cu tine din mesajele automate/programate.</li>
+              </ul>
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:8, flexWrap:'wrap' }}>
+              <button
+                className="sb-btn"
+                onClick={() => { setShowImagePrompt(false); setImagePromptDismissed(true); }}
+              >
+                Ok
+              </button>
+              <button
+                className="sb-btn sb-btn--primary"
+                onClick={() => {
+                  setShowImagePrompt(false);
+                  setImagePromptDismissed(true);
+                  try {
+                    imageUploadBtnRef.current?.focus();
+                    imageUploadBtnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  } catch {}
+                  setTimeout(() => { try { triggerImageUpload(); } catch {} }, 80);
+                }}
+              >
+                Upload now
+              </button>
             </div>
           </div>
         </div>
