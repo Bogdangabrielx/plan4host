@@ -615,13 +615,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               ×
             </button>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingRight:32 }}>
-              <strong>Adaugă o poză reală a proprietății</strong>
+              <strong>Upload a real photo of your property</strong>
             </div>
             <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
-              <div>Poza actuală este una generică. Încarcă o fotografie a proprietății tale — apare în formularul de check-in personalizat.</div>
+              <div>Your current photo is a generic placeholder. Upload your real property photo — it shows up in the personalized check-in form.</div>
               <ul style={{ margin:0, paddingLeft:18, color:'var(--muted)', display:'grid', gap:6 }}>
-                <li>Oaspeții văd poza când completează formularul.</li>
-                <li>Cu datele de contact completate, oaspeții pot interacționa mai ușor cu tine din mesajele automate/programate.</li>
+                <li>Guests see the photo while completing the check-in form.</li>
+                <li>With contact details filled in, guests can reach you easily from automated/scheduled messages.</li>
               </ul>
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8, flexWrap:'wrap' }}>
