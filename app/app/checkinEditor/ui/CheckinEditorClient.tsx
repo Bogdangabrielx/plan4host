@@ -113,10 +113,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [noPdfOpen, setNoPdfOpen] = useState(false);
   const [highlightUpload, setHighlightUpload] = useState(false);
   const uploadBtnRef = useRef<HTMLButtonElement | null>(null);
-  // Presentation image reminder gating
-  const [imagePromptOpen, setImagePromptOpen] = useState(false);
-  const [pendingHref, setPendingHref] = useState<string | null>(null);
-  const imageUploadBtnRef = useRef<HTMLButtonElement | null>(null);
 
   // Responsive helper: treat phones/narrow screens differently for layout
   const [isNarrow, setIsNarrow] = useState<boolean>(() => {
@@ -133,32 +129,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       try { mq?.removeEventListener('change', onChange); } catch { mq?.removeListener?.(onChange as any); }
     };
   }, []);
-  // Placeholder presentation image guard
-  useEffect(() => {
-    const hasPlaceholder = !!prop?.presentation_image_url && prop.presentation_image_url.includes("hotel_room_1456x816.jpg");
-    if (!hasPlaceholder) return;
-    const onDocClick = (ev: MouseEvent) => {
-      if (imagePromptOpen) return;
-      if (ev.defaultPrevented) return;
-      if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || ev.button !== 0) return;
-      const target = ev.target as HTMLElement | null;
-      const a = target?.closest?.('a[href]') as HTMLAnchorElement | null;
-      if (!a) return;
-      if (a.target && a.target !== '_self') return;
-      const href = a.getAttribute('href') || '';
-      if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
-      let dest: string;
-      try { dest = new URL(href, window.location.href).toString(); }
-      catch { dest = href; }
-      if (!dest || dest === window.location.href) return;
-      ev.preventDefault();
-      ev.stopPropagation();
-      setPendingHref(dest);
-      setImagePromptOpen(true);
-    };
-    document.addEventListener('click', onDocClick, true);
-    return () => document.removeEventListener('click', onDocClick, true);
-  }, [prop?.presentation_image_url, imagePromptOpen]);
 
   async function refresh() {
     if (!propertyId) { setProp(null); return; }
@@ -577,16 +547,16 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <small style={{ color:'var(--muted)' }}>
                     Uploaded {prop.presentation_image_uploaded_at ? new Date(prop.presentation_image_uploaded_at).toLocaleString() : ''}
                   </small>
-                    <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                  <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                     <a href={prop.presentation_image_url} target="_blank" rel="noreferrer" className="sb-btn sb-cardglow">Preview</a>
-                    <button className="sb-btn sb-cardglow" onClick={triggerImageUpload} ref={imageUploadBtnRef}>Replace image</button>
+                    <button className="sb-btn sb-cardglow" onClick={triggerImageUpload}>Replace image</button>
                     <Info text={IMAGE_INFO} />
                   </div>
                 </div>
               ) : (
                 <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                   <span style={{ color:'var(--muted)' }}>No image uploaded.</span>
-                  <button className="sb-btn sb-cardglow" onClick={triggerImageUpload} ref={imageUploadBtnRef}>Upload image</button>
+                  <button className="sb-btn sb-cardglow" onClick={triggerImageUpload}>Upload image</button>
                   <Info text={IMAGE_INFO} />
                 </div>
               )}
@@ -595,11 +565,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         </>
       )}
       {/* Source picker modal */}
-          {showSrc && (
-            <div role="dialog" aria-modal="true" onClick={()=>setShowSrc(false)}
-              style={{ position:'fixed', inset:0, zIndex: 260, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
-              <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', padding:16 }}>
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+      {showSrc && (
+        <div role="dialog" aria-modal="true" onClick={()=>setShowSrc(false)}
+          style={{ position:'fixed', inset:0, zIndex: 260, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', padding:16 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <strong>Select Check‑in Source</strong>
               <button className="sb-btn" onClick={()=>setShowSrc(false)}>Close</button>
             </div>
@@ -614,58 +584,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <span>{p.label}</span>
                 </button>
               ))}
-                </div>
-              </div>
             </div>
-          )}
-          {imagePromptOpen && (
-            <div
-              role="dialog"
-              aria-modal="true"
-              onClick={(e)=>e.stopPropagation()}
-              style={{ position:'fixed', inset:0, zIndex: 255, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
-                       paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
-              <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:12 }}>
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                  <strong>Upload a real property photo</strong>
-                </div>
-                <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
-                  <div>Your current photo is the default placeholder. Adding your own photo makes the custom check-in form feel trustworthy.</div>
-                  <ul style={{ margin:0, paddingLeft:18, color:'var(--muted)', display:'grid', gap:6 }}>
-                    <li>Guests see this photo when completing the check-in form.</li>
-                    <li>If you also fill contact details, guests can reach you easily from automated/programmed messages.</li>
-                  </ul>
-                </div>
-                <div style={{ display:'flex', justifyContent:'flex-end', gap:8, flexWrap:'wrap' }}>
-                  <button
-                    className="sb-btn"
-                    onClick={() => {
-                      setImagePromptOpen(false);
-                      const href = pendingHref;
-                      setPendingHref(null);
-                      if (href) window.location.href = href;
-                    }}
-                  >
-                    I will upload later
-                  </button>
-                  <button
-                    className="sb-btn sb-btn--primary"
-                    onClick={() => {
-                      setImagePromptOpen(false);
-                      setPendingHref(null);
-                      try {
-                        imageUploadBtnRef.current?.focus();
-                        imageUploadBtnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      } catch {}
-                      setTimeout(() => { try { triggerImageUpload(); } catch {} }, 80);
-                    }}
-                  >
-                    Upload now
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
