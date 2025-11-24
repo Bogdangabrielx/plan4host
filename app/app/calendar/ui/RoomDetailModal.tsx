@@ -1169,8 +1169,8 @@ export default function RoomDetailModal({
 
           {/* Actions */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 6 }}>
-            {!active && (
-              <button onClick={saveCreated} style={primaryBtn} disabled={saving !== false || !on}>
+            {!active && on && (
+              <button onClick={saveCreated} style={primaryBtn} disabled={saving !== false}>
                 Confirm reservation
               </button>
             )}
