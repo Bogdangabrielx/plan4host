@@ -414,17 +414,27 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             <div
               role="dialog"
               aria-modal="true"
-              onClick={(e)=>{ e.stopPropagation(); /* require OK */ }}
+              onClick={(e)=>{ e.stopPropagation(); }}
               style={{ position:'fixed', inset:0, zIndex: 240, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
                        paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
-              <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
+              <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:12 }}>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                  <strong>House Rules required</strong>
+                  <strong>House Rules recommended</strong>
                 </div>
-                <div style={{ color:'var(--text)' }}>
-                  To share the online check-in form, please upload your property's House Rules PDF first so guests can read and acknowledge it.
+                <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
+                  <div>It’s best to upload your House Rules so guests see and sign them when they complete check-in.</div>
+                  <small style={{ color:'var(--muted)' }}>You can continue without it, but guests won’t see your rules until you upload them.</small>
                 </div>
-                <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                <div style={{ display:'flex', justifyContent:'flex-end', gap:8, flexWrap:'wrap' }}>
+                  <button
+                    className="sb-btn"
+                    onClick={() => {
+                      setNoPdfOpen(false);
+                      openSourcePicker();
+                    }}
+                  >
+                    I will upload later
+                  </button>
                   <button
                     className="sb-btn sb-btn--primary"
                     onClick={() => {
@@ -434,8 +444,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         uploadBtnRef.current?.focus();
                         uploadBtnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       } catch {}
+                      setTimeout(() => { try { triggerPdfUpload(); } catch {} }, 60);
                     }}
-                  >OK</button>
+                  >
+                    Upload now
+                  </button>
                 </div>
               </div>
             </div>
