@@ -117,6 +117,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [showImagePrompt, setShowImagePrompt] = useState(false);
   const [imagePromptDismissed, setImagePromptDismissed] = useState(false);
   const imageUploadBtnRef = useRef<HTMLButtonElement | null>(null);
+  const lastSavedContact = useRef<{ email: string; phone: string; address: string }>({ email: "", phone: "", address: "" });
 
   // Responsive helper: treat phones/narrow screens differently for layout
   const [isNarrow, setIsNarrow] = useState<boolean>(() => {
@@ -153,6 +154,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   }
 
   useEffect(() => { refresh(); }, [propertyId, supabase]);
+  useEffect(() => {
+    lastSavedContact.current = {
+      email: prop?.contact_email ?? "",
+      phone: prop?.contact_phone ?? "",
+      address: prop?.contact_address ?? "",
+    };
+  }, [prop?.contact_email, prop?.contact_phone, prop?.contact_address]);
 
   function onPropChange(e: React.ChangeEvent<HTMLSelectElement>) { setPropertyId(e.currentTarget.value); }
 
@@ -198,6 +206,25 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       })
       .eq('id', prop.id);
     if (error) { setStatus('Error'); return; }
+    setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
+  }
+  async function autoSaveContactField(key: 'email' | 'phone' | 'address', value: string) {
+    if (!prop) return;
+    const clean = value.trim();
+    const last = lastSavedContact.current[key];
+    if (clean === last) return;
+    setStatus('Saving…');
+    const payload: Partial<Property> = {};
+    if (key === 'email') payload.contact_email = clean || null;
+    if (key === 'phone') payload.contact_phone = clean || null;
+    if (key === 'address') payload.contact_address = clean || null;
+    const { error } = await supabase.from('properties').update(payload).eq('id', prop.id);
+    if (error) { setStatus('Error'); return; }
+    lastSavedContact.current = {
+      ...lastSavedContact.current,
+      [key]: clean,
+    };
+    await refresh();
     setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
   }
 
@@ -475,6 +502,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   type="email"
                   value={prop.contact_email ?? ''}
                   onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_email: v } : prev); }}
+                  onBlur={(e) => autoSaveContactField('email', e.currentTarget.value)}
                   placeholder="example@hotel.com"
                   style={FIELD}
                 />
@@ -485,6 +513,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   type="tel"
                   value={prop.contact_phone ?? ''}
                   onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_phone: v } : prev); }}
+                  onBlur={(e) => autoSaveContactField('phone', e.currentTarget.value)}
                   placeholder="+40 712 345 678"
                   style={FIELD}
                 />
@@ -494,6 +523,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 <input
                   value={prop.contact_address ?? ''}
                   onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_address: v } : prev); }}
+                  onBlur={(e) => autoSaveContactField('address', e.currentTarget.value)}
                   placeholder="Street, city, optional details"
                   style={FIELD}
                 />
