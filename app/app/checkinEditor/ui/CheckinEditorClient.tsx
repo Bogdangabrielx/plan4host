@@ -117,6 +117,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [showImagePrompt, setShowImagePrompt] = useState(false);
   const [imagePromptDismissed, setImagePromptDismissed] = useState(false);
   const imageUploadBtnRef = useRef<HTMLButtonElement | null>(null);
+  const lastSavedContact = useRef<{ email: string; phone: string; address: string }>({ email: "", phone: "", address: "" });
 
   // Responsive helper: treat phones/narrow screens differently for layout
   const [isNarrow, setIsNarrow] = useState<boolean>(() => {
@@ -148,8 +149,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position,social_facebook,social_instagram,social_tiktok,social_website")
       .eq("id", propertyId)
       .maybeSingle();
-    if (error) { setProp(null); }
-    else setProp((data ?? null) as Property | null);
+    if (error) { setProp(null); lastSavedContact.current = { email: "", phone: "", address: "" }; }
+    else {
+      setProp((data ?? null) as Property | null);
+      lastSavedContact.current = {
+        email: (data?.contact_email ?? "") as string,
+        phone: (data?.contact_phone ?? "") as string,
+        address: (data?.contact_address ?? "") as string,
+      };
+    }
   }
 
   useEffect(() => { refresh(); }, [propertyId, supabase]);
@@ -198,6 +206,22 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       })
       .eq('id', prop.id);
     if (error) { setStatus('Error'); return; }
+    setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
+  }
+  async function autoSaveContactField(key: 'email' | 'phone' | 'address', value: string) {
+    if (!prop) return;
+    const clean = value.trim();
+    const last = lastSavedContact.current[key];
+    if (clean === last) return;
+    setStatus('Saving…');
+    const payload: Partial<Property> = {};
+    if (key === 'email') payload.contact_email = clean || null;
+    if (key === 'phone') payload.contact_phone = clean || null;
+    if (key === 'address') payload.contact_address = clean || null;
+    const { error } = await supabase.from('properties').update(payload).eq('id', prop.id);
+    if (error) { setStatus('Error'); return; }
+    lastSavedContact.current = { ...lastSavedContact.current, [key]: clean };
+    await refresh();
     setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
   }
 
@@ -475,6 +499,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   type="email"
                   value={prop.contact_email ?? ''}
                   onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_email: v } : prev); }}
+                  onBlur={(e) => autoSaveContactField('email', e.currentTarget.value)}
                   placeholder="example@hotel.com"
                   style={FIELD}
                 />
@@ -485,6 +510,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   type="tel"
                   value={prop.contact_phone ?? ''}
                   onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_phone: v } : prev); }}
+                  onBlur={(e) => autoSaveContactField('phone', e.currentTarget.value)}
                   placeholder="+40 712 345 678"
                   style={FIELD}
                 />
@@ -494,6 +520,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 <input
                   value={prop.contact_address ?? ''}
                   onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_address: v } : prev); }}
+                  onBlur={(e) => autoSaveContactField('address', e.currentTarget.value)}
                   placeholder="Street, city, optional details"
                   style={FIELD}
                 />
