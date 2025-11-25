@@ -15,6 +15,12 @@ export default function NotificationsClient() {
   async function refreshActive() {
     setLoading(true);
     try {
+      if (!pushCapable) {
+        setActive(false);
+        setEndpoint(null);
+        setStatus('');
+        return;
+      }
       let ep: string | null = null;
       try {
         const reg = await navigator.serviceWorker.getRegistration();
@@ -68,6 +74,13 @@ export default function NotificationsClient() {
     setStatus('Loading...');
     setLoading(true);
     try {
+      if (!pushCapable) {
+        setFallbackActive(true);
+        setActive(false);
+        setLoading(false);
+        setStatus('Fallback: in-app only while this tab is open');
+        return;
+      }
       if (!('Notification' in window)) return finalize();
       const perm = Notification.permission;
       if (perm !== 'granted') {
@@ -112,6 +125,11 @@ export default function NotificationsClient() {
     setStatus('Loading...');
     setLoading(true);
     try {
+      if (!pushCapable) {
+        setFallbackActive(false);
+        setStatus('Done');
+        return;
+      }
       const reg = await navigator.serviceWorker.getRegistration();
       const sub = await reg?.pushManager.getSubscription();
       let epToRemove: string | null = null;
@@ -142,7 +160,12 @@ export default function NotificationsClient() {
     setStatus('Loading...');
     setLoading(true);
     try {
-      await fetch('/api/push/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+      if (pushCapable && active) {
+        await fetch('/api/push/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+      } else {
+        const now = new Date().toISOString();
+        setFallbackFeed((prev) => [{ ts: now, text: 'Test notification (in-app only while open)' }, ...prev].slice(0, 5));
+      }
     } finally {
       finalize();
     }
@@ -155,6 +178,11 @@ export default function NotificationsClient() {
     <div className="sb-cardglow" style={{ padding: 16, display: 'grid', gap: 12, borderRadius: 13 }}>
       <div style={{ display: 'grid', gap: 6 }}>
         <strong>Notifications</strong>
+        {!pushCapable && (
+          <small style={{ color:'var(--muted)' }}>
+            Push API not supported in this browser. You can enable an in-app fallback that only works while this tab is open.
+          </small>
+        )}
       </div>
       <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
         <button
@@ -173,7 +201,7 @@ export default function NotificationsClient() {
         >
           Turn Off
         </button>
-        {active && (
+        {(active || fallbackActive) && (
           <button
             className="sb-btn"
             onClick={sendTest}
@@ -186,8 +214,20 @@ export default function NotificationsClient() {
       </div>
       <div style={{ display: 'grid', gap: 4 }}>
         <small style={{ color:'var(--muted)' }}>
-          {status === 'Loading...' ? 'Loading...' : `Your notifications are currently ${active ? 'ON' : 'OFF'}.`}
+          {status === 'Loading...' ? 'Loading...' : fallbackActive ? 'Fallback active: in-app only while this tab is open.' : `Your notifications are currently ${active ? 'ON' : 'OFF'}.`}
         </small>
+        {fallbackActive && fallbackFeed.length > 0 && (
+          <div style={{ display:'grid', gap:6, padding:10, border:'1px dashed var(--border)', borderRadius:10, background:'color-mix(in srgb, var(--panel) 70%, transparent)' }}>
+            <small style={{ color:'var(--muted)' }}>In-app notifications (only while this tab is open):</small>
+            <ul style={{ margin:0, paddingLeft:16, display:'grid', gap:4 }}>
+              {fallbackFeed.map((m, i) => (
+                <li key={`${m.ts}-${i}`} style={{ color:'var(--text)', fontSize:13 }}>
+                  {new Date(m.ts).toLocaleString()} — {m.text}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
