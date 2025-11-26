@@ -6,6 +6,11 @@ export default function NotificationsClient() {
   const [status, setStatus] = useState<string>(""); // "Loading..." | "Done"
   const [active, setActive] = useState<boolean>(false);
   const [endpoint, setEndpoint] = useState<string | null>(null);
+  const [pushCapable, setPushCapable] = useState<boolean>(
+    typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window
+  );
+  const [fallbackActive, setFallbackActive] = useState<boolean>(false);
+  const [fallbackFeed, setFallbackFeed] = useState<Array<{ ts: string; text: string }>>([]);
 
   useEffect(() => {
     refreshActive();
@@ -15,6 +20,14 @@ export default function NotificationsClient() {
   async function refreshActive() {
     setLoading(true);
     try {
+      const cap = typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+      setPushCapable(cap);
+      if (!cap) {
+        setActive(false);
+        setEndpoint(null);
+        setStatus('');
+        return;
+      }
       if (!pushCapable) {
         setActive(false);
         setEndpoint(null);
