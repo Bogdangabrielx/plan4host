@@ -60,11 +60,28 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     return () => window.removeEventListener("themechange" as any, onThemeChange);
   }, [initialTheme]);
 
-  // One-shot animation for theme toggle on mount
+  // One-shot animation for theme toggle on mount (zoom + auto theme flip)
   useEffect(() => {
-    const t = window.setTimeout(() => setAnimateTheme(false), 2400);
-    return () => window.clearTimeout(t);
-  }, []);
+    if (!animateTheme) return;
+    const toggleMs = 1200;
+    const endMs = 2400;
+    const toggleId = window.setTimeout(() => {
+      setTheme((prev) => {
+        const next = prev === "light" ? "dark" : "light";
+        try {
+          document.documentElement.setAttribute("data-theme", next);
+          document.cookie = `app_theme=${next}; path=/; max-age=${60 * 60 * 24 * 365}`;
+          window.dispatchEvent(new CustomEvent("themechange", { detail: { theme: next } }));
+        } catch {}
+        return next;
+      });
+    }, toggleMs);
+    const endId = window.setTimeout(() => setAnimateTheme(false), endMs);
+    return () => {
+      window.clearTimeout(toggleId);
+      window.clearTimeout(endId);
+    };
+  }, [animateTheme]);
 
   useEffect(() => {
     const u = new URL(window.location.href);
