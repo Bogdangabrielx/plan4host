@@ -261,7 +261,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
         </div>
 
         <div style={{ display: "grid", gap: 10 }}>
-          <button onClick={signInWithGoogle} className="sb-cardglow" style={oauthBtn}>
+          <button onClick={signInWithGoogle} className="sb-cardglow" style={{ ...oauthBtn, gap: 10, padding: "12px 14px" }}>
             <img
               src={
                 mounted
@@ -269,11 +269,13 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                   : "/Google dark.png"
               }
               alt="Google"
-              width={20}
-              height={20}
+              width={24}
+              height={24}
               style={{ display: "block" }}
             />
-            {mode === "login" ? "Sign in with Google" : "Create account with Google"}
+            <span style={{ fontSize: 16, fontWeight: 800 }}>
+              {mode === "login" ? "Sign in with Google" : "Create account with Google"}
+            </span>
           </button>
 
           <div style={dividerRow}>
