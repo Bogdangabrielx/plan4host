@@ -27,6 +27,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   const [resetCooldown, setResetCooldown] = useState<number>(0);
   const resetTimerRef = useRef<number | null>(null);
   const resetEndAtRef = useRef<number | null>(null);
+  const [animateTheme, setAnimateTheme] = useState<boolean>(true);
 
   // ————— helpers null-safe —————
   const asStr = (v: unknown) => (typeof v === "string" ? v : v == null ? "" : String(v));
@@ -58,6 +59,12 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     window.addEventListener("themechange" as any, onThemeChange);
     return () => window.removeEventListener("themechange" as any, onThemeChange);
   }, [initialTheme]);
+
+  // One-shot animation for theme toggle on mount
+  useEffect(() => {
+    const t = window.setTimeout(() => setAnimateTheme(false), 2400);
+    return () => window.clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const u = new URL(window.location.href);
@@ -248,17 +255,20 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     : "Idle";
 
   return (
-    <div style={outerWrap}>
-      <h1 style={heroTitle}>Welcome to Plan4Host</h1>
-       
-      <div  style={wrap(mounted ? theme : "dark")} >
-        <div  style={headRow}>
-          <h1  style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? "Sign in" : "Create account"}</h1>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <span style={pillStyle(pill)}>{pill}</span>
-            <ThemeToggle size="md" />
+    <>
+      <div style={outerWrap}>
+        <h1 style={heroTitle}>Welcome to Plan4Host</h1>
+         
+        <div  style={wrap(mounted ? theme : "dark")} >
+          <div  style={headRow}>
+            <h1  style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? "Sign in" : "Create account"}</h1>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <span style={pillStyle(pill)}>{pill}</span>
+              <div style={animateTheme ? { animation: "themeFloat 2.2s ease-in-out 1" } : undefined}>
+                <ThemeToggle size="md" />
+              </div>
+            </div>
           </div>
-        </div>
 
         <div style={{ display: "grid", gap: 10 }}>
           <button onClick={signInWithGoogle} className="sb-cardglow" style={{ ...oauthBtn, gap: 10, padding: "12px 14px" }}>
@@ -428,7 +438,16 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
           </div>
         </div>
       )}
-    </div>
+      </div>
+      <style jsx>{`
+        @keyframes themeFloat {
+          0% { transform: translate(0,0) scale(1); }
+          30% { transform: translate(8px,-6px) scale(1.1); }
+          60% { transform: translate(-6px,6px) scale(1.05); }
+          100% { transform: translate(0,0) scale(1); }
+        }
+      `}</style>
+    </>
   );
 }
 
