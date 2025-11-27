@@ -11,6 +11,7 @@ export default function BottomNav() {
   const [forceHide, setForceHide] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
+  const preloadedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -61,6 +62,23 @@ export default function BottomNav() {
       window.removeEventListener("popstate", onPop);
     };
   }, []);
+
+  // Preload theme-specific nav icons to avoid flicker
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const list = theme === "light"
+      ? ["/calendar_forlight.png", "/cleaning_forlight.png", "/guest_forlight.png"]
+      : ["/calendar_fordark.png", "/cleaning_fordark.png", "/guest_fordark.png"];
+    list.forEach((href) => {
+      if (preloadedRef.current.has(href)) return;
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = href;
+      document.head.appendChild(link);
+      preloadedRef.current.add(href);
+    });
+  }, [theme]);
 
   // detectează tastatura (iOS/Android) prin VisualViewport
   useEffect(() => {

@@ -85,6 +85,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   // Press (tap) highlight state for mobile
   const [pressedLeft, setPressedLeft] = useState<string | null>(null);
   const [pressedRight, setPressedRight] = useState<string | null>(null);
+  const preloadedRef = useRef<Set<string>>(new Set());
 
   // Inbox badge
   const [inboxCount, setInboxCount] = useState<number>(() => {
@@ -140,6 +141,21 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     window.addEventListener("themechange" as any, onThemeChange);
     return () => window.removeEventListener("themechange" as any, onThemeChange);
   }, []);
+  // Preload theme-specific nav icons to reduce flicker
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const icons = Object.values(THEME_ICONS)
+      .map((pair) => (theme === "light" ? pair.light : pair.dark));
+    icons.forEach((href) => {
+      if (preloadedRef.current.has(href)) return;
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = href;
+      document.head.appendChild(link);
+      preloadedRef.current.add(href);
+    });
+  }, [theme]);
 
   // Keep header pinned to visual viewport during pinch-zoom only (no adjustment for pull/keyboard)
   useEffect(() => {
