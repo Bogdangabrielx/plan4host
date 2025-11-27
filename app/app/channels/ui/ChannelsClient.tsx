@@ -864,7 +864,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: 0,
+                  padding: 2,
                   fontSize: 12,
                   lineHeight: 1,
                   borderColor: "var(--muted)",
