@@ -867,8 +867,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   padding: 2,
                   fontSize: 12,
                   lineHeight: 1,
-                  borderColor: "var(--muted)",
-                  color:"var(--muted)",
+                  border: '0.5px solid var(--muted)',
+                  color: "var(--muted)",
                 }}
               >
                 i
