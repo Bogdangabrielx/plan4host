@@ -609,7 +609,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             ) : null}
           </div>
 
-          {/* Cards pentru Export/Import */}
+          {/* Cards pentru Export */}
           <div
             style={{
               display: 'grid',
@@ -706,6 +706,76 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               </button>
             </div>
           </div>
+
+          {/* Cards pentru Import */}
+          <div
+            style={{
+              display: 'grid',
+              gap: isSmall ? 10 : 6,
+              gridTemplateColumns: isSmall ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+              justifyItems: isSmall ? 'stretch' : 'center',
+              marginTop: isSmall ? 6 : 10,
+            }}
+          >
+            {types.length > 0 && (
+              <div
+                className="sb-card"
+                style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
+              >
+                <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Room Types</h4>
+                <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics per type</small>
+                <button
+                  className="sb-btn"
+                  style={{
+                    width: isSmall ? '100%' : 340,
+                    padding: '8px 12px',
+                    borderRadius: isSmall ? 29 : 10,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                    fontWeight: 800,
+                    justifySelf: isSmall ? 'stretch' : 'stretch',
+                  }}
+                  disabled={!canWrite}
+                  onClick={() => { if (!canWrite) return; setShowImportModal(true); }}
+                  title="Import · Room Types"
+                >
+                  Import iCal
+                </button>
+              </div>
+            )}
+
+            {types.length === 0 && (
+              <div
+                className="sb-card"
+                style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
+              >
+                <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Rooms</h4>
+                <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics per room</small>
+                <button
+                  className="sb-btn"
+                  style={{
+                    width: isSmall ? '100%' : 340,
+                    padding: '8px 12px',
+                    borderRadius: isSmall ? 29 : 10,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                    fontWeight: 800,
+                    justifySelf: isSmall ? 'stretch' : 'stretch',
+                  }}
+                  disabled={!canWrite}
+                  onClick={() => { if (!canWrite) return; setShowImportModal(true); }}
+                  title="Import · Rooms"
+                >
+                  Import iCal
+                </button>
+                <small style={{ color: 'var(--muted)', margin: 0, fontSize: 11 }}>
+                  Folosește importul pe Rooms doar dacă proprietatea nu are Room Types definite.
+                </small>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -785,54 +855,25 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         </Modal>
       )}
 
-      {/* ======= MODAL C: IMPORT (pe TYPE) ======= */}
+      {/* ======= MODAL C: IMPORT ======= */}
       {showImportModal && (
         <Modal title="Import" onClose={() => { setShowImportModal(false); setManageTypeId(null); }}>
           {types.length === 0 ? (
-            <div style={{ display: 'grid', gap: 10 }}>
-              <p style={{ color: "var(--text)", margin: 0 , background: "var(--card)",}}>No room types defined.</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <div style={tileGrid}>
+              {rooms.length === 0 ? (
+                <p style={{ color: "var(--text)", gridColumn: "1 / -1" }}>No rooms in this property.</p>
+              ) : rooms.map(r => (
                 <button
-                  className="sb-btn sb-btn--primary"
-                  onClick={() => setShowRoomImport(v => !v)}
-                  title="Use this only when the property has no Room Types"
+                  key={r.id}
+                  onClick={() => setManageRoomId(r.id)}
+                  className="sb-card"
+                  style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
+                  title={`Manage ${r.name}`}
                 >
-                  Import · Rooms
+                  <span style={tileTitle}>{r.name}</span>
+                  <span style={tileSub}>Manage feeds</span>
                 </button>
-                <button
-                  type="button"
-                  className="sb-btn sb-btn--ghost sb-btn--small"
-                  onClick={() => setRoomImportInfo(v => !v)}
-                  aria-label="Info"
-                  data-legend="keep"
-                  title="Info"
-                >
-                  i
-                </button>
-                {roomImportInfo && (
-                  <div data-legend="keep" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, padding: 10, color: 'var(--text)' }}>
-                    Use this mode only if the property has no Room Types. If you add Room Types later, prefer per‑type imports for better auto‑assignment.
-                  </div>
-                )}
-              </div>
-              {showRoomImport && (
-                <div style={tileGrid}>
-                  {rooms.length === 0 ? (
-                    <p style={{ color: "var(--text)", gridColumn: "1 / -1" }}>No rooms in this property.</p>
-                  ) : rooms.map(r => (
-                    <button
-                      key={r.id}
-                      onClick={() => setManageRoomId(r.id)}
-                      className="sb-card"
-                      style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
-                      title={`Manage ${r.name}`}
-                    >
-                      <span style={tileTitle}>{r.name}</span>
-                      <span style={tileSub}>Manage feeds</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
           ) : (
             <div style={tileGrid}>
