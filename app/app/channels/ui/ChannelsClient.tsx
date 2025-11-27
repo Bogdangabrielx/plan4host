@@ -857,6 +857,17 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 aria-label="Info"
                 data-legend="keep"
                 title="Info"
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 999,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  fontSize: 12,
+                  lineHeight: 1,
+                }}
               >
                 i
               </button>
