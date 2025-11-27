@@ -618,7 +618,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               justifyItems: isSmall ? 'stretch' : 'center',
             }}
           >
-            {types.length > 0 ? (
+            {types.length > 0 && (
               <div
                 className="sb-card"
                 style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
@@ -644,41 +644,35 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   Export iCal
                 </button>
               </div>
-            ) : (
-              <div
-                className="sb-card"
-                style={{ display: 'grid', gap: 8, padding: 12, width: isSmall ? '100%' : 360, background: 'var(--card)' }}
-              >
-                <h4 style={{ margin: 0, textAlign: 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Room Types</h4>
-                <p style={{ color: "var(--muted)", margin: 0, fontSize: 12 }}>No room types defined. Add room types in Property Setup to export per type.</p>
-              </div>
             )}
 
-            <div
-              className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
-            >
-              <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Import · Room Types</h4>
-              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics per room type</small>
-              <button
-                className="sb-btn"
-                style={{
-                  width: isSmall ? '100%' : 340,
-                  padding: '8px 12px',
-                  borderRadius: isSmall ? 29 : 10,
-                  border: '1px solid var(--border)',
-                  background: 'var(--card)',
-                  color: 'var(--text)',
-                  fontWeight: 800,
-                  justifySelf: isSmall ? 'stretch' : 'stretch',
-                }}
-                disabled={!canWrite}
-                onClick={() => { if (!canWrite) return; setShowImportModal(true); }}
-                title="Import feeds per room type"
+            {types.length > 0 && (
+              <div
+                className="sb-card"
+                style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
               >
-                Import iCal
-              </button>
-            </div>
+                <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Import · Room Types</h4>
+                <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics per room type</small>
+                <button
+                  className="sb-btn"
+                  style={{
+                    width: isSmall ? '100%' : 340,
+                    padding: '8px 12px',
+                    borderRadius: isSmall ? 29 : 10,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                    fontWeight: 800,
+                    justifySelf: isSmall ? 'stretch' : 'stretch',
+                  }}
+                  disabled={!canWrite}
+                  onClick={() => { if (!canWrite) return; setShowImportModal(true); }}
+                  title="Import feeds per room type"
+                >
+                  Import iCal
+                </button>
+              </div>
+            )}
 
             <div
               className="sb-card"
