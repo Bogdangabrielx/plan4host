@@ -654,31 +654,31 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               </div>
             )}
 
-            <div
-              className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
-            >
-              <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Import</h4>
-              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics from other platforms</small>
-              <button
-                className="sb-btn"
-                style={{
-                  width: isSmall ? '100%' : 340,
-                  padding: '8px 12px',
-                  borderRadius: isSmall ? 29 : 10,
-                  border: '1px solid var(--border)',
-                  background: 'var(--card)',
-                  color: 'var(--text)',
-                  fontWeight: 800,
-                  justifySelf: isSmall ? 'stretch' : 'stretch',
-                }}
-                disabled={!canWrite}
-                onClick={() => { if (!canWrite) return; setShowImportModal(true); }}
-                title="Import feeds"
+              <div
+                className="sb-card"
+                style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
               >
-                Import iCal
-              </button>
-            </div>
+                <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Room Types</h4>
+                <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics per type</small>
+                <button
+                  className="sb-btn"
+                  style={{
+                    width: isSmall ? '100%' : 340,
+                    padding: '8px 12px',
+                    borderRadius: isSmall ? 29 : 10,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                    fontWeight: 800,
+                    justifySelf: isSmall ? 'stretch' : 'stretch',
+                  }}
+                  disabled={!canWrite || types.length === 0}
+                  onClick={() => { if (!canWrite || !types.length) return; setManageTypeId(types[0]?.id ?? null); setShowImportModal(true); }}
+                  title="Import · Room Types"
+                >
+                  Import iCal
+                </button>
+              </div>
 
             <div
               className="sb-card"
