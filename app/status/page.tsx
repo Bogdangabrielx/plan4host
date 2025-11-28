@@ -8,7 +8,15 @@ export const metadata: Metadata = {
 
 export default function StatusPage() {
   return (
-    <main style={{ display: 'grid', placeItems: 'center', minHeight: '60vh', padding: 16 }}>
+    <main
+      style={{
+        display: 'grid',
+        placeItems: 'center',
+        minHeight: '100vh',
+        padding: 16,
+        background: 'var(--bg)',
+      }}
+    >
       <ForceDark />
       <img src="/status.png" alt="Service status" style={{ maxWidth: '100%', height: 'auto', borderRadius: 12 }} />
     </main>
