@@ -45,7 +45,15 @@ export default function SincronizareIcalBookingRO() {
       </ul>
 
         <p style={{ marginTop: 24 }}>
-        Gata de conectare? <a href="/auth/login?mode=signup">Începe gratuit</a> sau vezi <a href="/ro#features">Sync Calendars</a> la caracteristici.
+          Gata de conectare?{" "}
+          <a href="/auth/login?mode=signup" style={{ color: "var(--primary)" }}>
+            Începe gratuit
+          </a>{" "}
+          sau vezi{" "}
+          <a href="/ro#features" style={{ color: "var(--primary)" }}>
+            Sync Calendars
+          </a>{" "}
+          la caracteristici.
         </p>
       </article>
     </main>

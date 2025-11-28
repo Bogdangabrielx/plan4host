@@ -25,17 +25,47 @@ export default function RoTravelminitIcalPage() {
         </header>
 
         <p style={{ color: 'var(--muted)' }}>
-        Travelminit suportă iCal pentru sincronizarea calendarului. Urmează pașii de mai jos pentru a-l conecta la Plan4Host.
-      </p>
-      <h2 style={{ marginTop: 24 }}>Pași</h2>
-      <ol>
-        <li>Deschide contul Travelminit → Calendar/iCal.</li>
-        <li>Copiază linkul de export iCal din Travelminit.</li>
-        <li>În Plan4Host, adaugă un canal iCal pentru camera/unitatea dorită și lipește URL-ul.</li>
-        <li>Copiază URL-ul iCal din Plan4Host și importă-l în Travelminit.</li>
-        <li>Reîmprospătează și verifică sincronizarea evenimentelor.</li>
-      </ol>
-        <p style={{ marginTop: 24 }}>Întrebări? <a href="/auth/login?mode=signup">Încearcă gratuit</a> și configurează „Sync Calendars”.</p>
+          Ține Travelminit și celelalte calendare sincronizate cu iCal pentru a evita overbooking-ul. Mai jos găsești explicații și pașii esențiali.
+        </p>
+
+        <h2 style={{ marginTop: 24 }}>Ce este sincronizarea iCal?</h2>
+        <p>
+          iCal este un format standard de calendar (.ics) folosit de multe platforme, inclusiv Travelminit, pentru import și export de rezervări și blocări de
+          disponibilitate. Plan4Host folosește iCal pentru a prelua periodic rezervări noi și pentru a distribui disponibilitatea către alte canale care acceptă iCal.
+        </p>
+
+        <h2 style={{ marginTop: 24 }}>Pași de conectare</h2>
+        <ol>
+          <li>Deschide contul Travelminit și mergi în zona de Calendar / iCal.</li>
+          <li>Copiază linkul de export iCal din Travelminit pentru camera/unitatea dorită.</li>
+          <li>
+            În Plan4Host, deschide Management → Sync Calendars → Import și adaugă un canal nou iCal pentru aceeași cameră/unitate, apoi lipește URL-ul de export
+            Travelminit și salvează.
+          </li>
+          <li>
+            Din Plan4Host, copiază adresa URL iCal de export pentru acea cameră/unitate și importă-o înapoi în Travelminit, în secțiunea de iCal import (dacă este
+            disponibilă).
+          </li>
+          <li>
+            Reîmprospătează și, după prima sincronizare (conform planului tău), verifică apariția evenimentelor în ambele calendare.
+          </li>
+        </ol>
+
+        <h2 style={{ marginTop: 24 }}>Sfaturi</h2>
+        <ul>
+          <li>Folosește un calendar separat per cameră/unitate pentru mapare clară și fără suprapuneri.</li>
+          <li>Nu partaja public link-urile iCal; tratează-le ca pe niște URL-uri private.</li>
+          <li>După configurare, forțează un refresh manual și verifică câteva date de test.</li>
+          <li>Păstrează fusurile orare consistente între Travelminit, Plan4Host și celelalte canale.</li>
+        </ul>
+
+        <p style={{ marginTop: 24 }}>
+          Întrebări?{" "}
+          <a href="/auth/login?mode=signup" style={{ color: "var(--primary)" }}>
+            Încearcă gratuit
+          </a>{" "}
+          și configurează „Sync Calendars” în Plan4Host.
+        </p>
       </article>
     </main>
   );

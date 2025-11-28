@@ -35,7 +35,13 @@ export default function RoExpediaIcalPage() {
         <li>Copiază URL-ul de export iCal din Plan4Host și importă-l înapoi în Expedia.</li>
         <li>Reîmprospătează și verifică apariția evenimentelor.</li>
       </ol>
-        <p style={{ marginTop: 24 }}>Ai nevoie de ajutor? <a href="/auth/login?mode=signup">Încearcă gratuit</a> și configurează „Sync Calendars”.</p>
+        <p style={{ marginTop: 24 }}>
+          Ai nevoie de ajutor?{" "}
+          <a href="/auth/login?mode=signup" style={{ color: "var(--primary)" }}>
+            Încearcă gratuit
+          </a>{" "}
+          și configurează „Sync Calendars”.
+        </p>
       </article>
     </main>
   );

@@ -45,7 +45,15 @@ export default function BookingIcalSyncPage() {
       </ul>
 
         <p style={{ marginTop: 24 }}>
-          Ready to connect? <a href="/auth/login?mode=signup">Start free</a> or see <a href="/#features">Sync Calendars</a> in features.
+          Ready to connect?{" "}
+          <a href="/auth/login?mode=signup" style={{ color: "var(--primary)" }}>
+            Start free
+          </a>{" "}
+          or see{" "}
+          <a href="/#features" style={{ color: "var(--primary)" }}>
+            Sync Calendars
+          </a>{" "}
+          in features.
         </p>
       </article>
     </main>

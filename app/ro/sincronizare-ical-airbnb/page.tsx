@@ -52,7 +52,15 @@ export default function SincronizareIcalAirbnbRO() {
       </ul>
 
         <p style={{ marginTop: 24 }}>
-        Gata de conectare? <a href="/auth/login?mode=signup">Începe gratuit</a> sau vezi mai multe pe pagina de <a href="/ro#features">caracteristici</a>.
+          Gata de conectare?{" "}
+          <a href="/auth/login?mode=signup" style={{ color: "var(--primary)" }}>
+            Începe gratuit
+          </a>{" "}
+          sau vezi mai multe pe pagina de{" "}
+          <a href="/ro#features" style={{ color: "var(--primary)" }}>
+            caracteristici
+          </a>
+          .
         </p>
 
       {/* JSON-LD HowTo (RO) */}

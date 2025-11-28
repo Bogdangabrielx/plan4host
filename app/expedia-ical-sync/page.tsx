@@ -42,7 +42,11 @@ export default function ExpediaIcalSyncPage() {
         <li>Keep timezones aligned across platforms.</li>
       </ul>
         <p style={{ marginTop: 24 }}>
-        Need help? <a href="/auth/login?mode=signup">Start free</a> and configure Sync Calendars in Plan4Host.
+          Need help?{" "}
+          <a href="/auth/login?mode=signup" style={{ color: "var(--primary)" }}>
+            Start free
+          </a>{" "}
+          and configure Sync Calendars in Plan4Host.
         </p>
       </article>
     </main>

@@ -52,7 +52,15 @@ export default function AirbnbIcalSyncPage() {
       </ul>
 
         <p style={{ marginTop: 24 }}>
-          Ready to connect? <a href="/auth/login?mode=signup">Start free</a> or learn more on the <a href="/#features">features</a> page.
+          Ready to connect?{" "}
+          <a href="/auth/login?mode=signup" style={{ color: "var(--primary)" }}>
+            Start free
+          </a>{" "}
+          or learn more on the{" "}
+          <a href="/#features" style={{ color: "var(--primary)" }}>
+            features
+          </a>{" "}
+          page.
         </p>
 
       {/* JSON-LD HowTo */}
