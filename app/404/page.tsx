@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import NotFoundImage from "./ui/NotFoundImage";
-import ForceDark from "@/components/theme/ForceDark";
+import s from "../legal/legal.module.css";
 
 export const metadata: Metadata = {
   title: "404 Not Found — Plan4host",
@@ -9,20 +9,8 @@ export const metadata: Metadata = {
 
 export default function NotFoundLanding() {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        padding: 32,
-        fontFamily:
-          "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
-        color: "var(--text)",
-        background: "var(--bg)",
-      }}
-    >
-      <ForceDark />
-      <div style={{ textAlign: "center", maxWidth: 720, margin: "0 auto" }}>
+    <main className={s.page}>
+      <div className={s.container} style={{ textAlign: "center", maxWidth: 720 }}>
         <header
           style={{
             marginBottom: 20,
@@ -54,16 +42,7 @@ export default function NotFoundLanding() {
         <div style={{ marginTop: 16 }}>
           <a
             href="/"
-            style={{
-              display: "inline-block",
-              padding: "10px 14px",
-              borderRadius: 10,
-              border: "1px solid var(--primary)",
-              background: "var(--primary)",
-              color: "#0c111b",
-              fontWeight: 900,
-              textDecoration: "none",
-            }}
+            className={s.btn}
           >
             Take me home
           </a>
