@@ -1,8 +1,30 @@
 export default function SincronizareIcalAirbnbRO() {
   return (
-    <main style={{ maxWidth: 860, margin: "0 auto", padding: "24px 20px" }}>
-      <h1 style={{ fontSize: 28, marginBottom: 10 }}>Sincronizare iCal Airbnb — Cum conectezi calendarul</h1>
-      <p style={{ color: "var(--muted)" }}>
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        padding: "32px 20px",
+        background: "var(--bg)",
+      }}
+    >
+      <article style={{ width: "100%", maxWidth: 860 }}>
+        <header style={{ textAlign: "center", marginBottom: 24, display: "grid", gap: 10, placeItems: "center" }}>
+          <img
+            src="/p4h_logo_rotund.png"
+            alt="Plan4Host"
+            width={80}
+            height={80}
+            style={{ borderRadius: 999, border: "2px solid var(--border)", background: "var(--card)" }}
+          />
+          <h1 style={{ fontSize: 28, marginBottom: 4 }}>Sincronizare iCal Airbnb — Cum conectezi calendarul</h1>
+          <p style={{ color: "var(--muted)", margin: 0, fontSize: 14 }}>
+            Ghid scurt, practic, pentru a sincroniza Airbnb cu Plan4Host.
+          </p>
+        </header>
+
+        <p style={{ color: "var(--muted)" }}>
         Ține Airbnb și celelalte calendare sincronizate cu iCal pentru a evita overbooking-ul. Mai jos găsești pașii esențiali și bune practici.
       </p>
 
@@ -29,12 +51,12 @@ export default function SincronizareIcalAirbnbRO() {
         <li>Păstrează fusurile orare consistente pe canale.</li>
       </ul>
 
-      <p style={{ marginTop: 24 }}>
+        <p style={{ marginTop: 24 }}>
         Gata de conectare? <a href="/auth/login?mode=signup">Începe gratuit</a> sau vezi mai multe pe pagina de <a href="/ro#features">caracteristici</a>.
-      </p>
+        </p>
 
       {/* JSON-LD HowTo (RO) */}
-      <script
+        <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
@@ -51,7 +73,7 @@ export default function SincronizareIcalAirbnbRO() {
           })
         }}
       />
+      </article>
     </main>
   );
 }
-

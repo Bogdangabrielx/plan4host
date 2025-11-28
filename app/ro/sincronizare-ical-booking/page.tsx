@@ -1,8 +1,30 @@
 export default function SincronizareIcalBookingRO() {
   return (
-    <main style={{ maxWidth: 860, margin: "0 auto", padding: "24px 20px" }}>
-      <h1 style={{ fontSize: 28, marginBottom: 10 }}>Sincronizare iCal Booking.com — Cum conectezi calendarul</h1>
-      <p style={{ color: "var(--muted)" }}>
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        padding: "32px 20px",
+        background: "var(--bg)",
+      }}
+    >
+      <article style={{ width: "100%", maxWidth: 860 }}>
+        <header style={{ textAlign: "center", marginBottom: 24, display: "grid", gap: 10, placeItems: "center" }}>
+          <img
+            src="/p4h_logo_rotund.png"
+            alt="Plan4Host"
+            width={80}
+            height={80}
+            style={{ borderRadius: 999, border: "2px solid var(--border)", background: "var(--card)" }}
+          />
+          <h1 style={{ fontSize: 28, marginBottom: 4 }}>Sincronizare iCal Booking.com — Cum conectezi calendarul</h1>
+          <p style={{ color: "var(--muted)", margin: 0, fontSize: 14 }}>
+            Ghid rapid pentru conectarea Booking.com cu Plan4Host prin iCal.
+          </p>
+        </header>
+
+        <p style={{ color: "var(--muted)" }}>
         Ține Booking.com și celelalte calendare sincronizate cu iCal pentru a evita overbooking-ul. Urmează pașii de mai jos.
       </p>
 
@@ -22,10 +44,10 @@ export default function SincronizareIcalBookingRO() {
         <li>Ține fusurile orare consistente.</li>
       </ul>
 
-      <p style={{ marginTop: 24 }}>
+        <p style={{ marginTop: 24 }}>
         Gata de conectare? <a href="/auth/login?mode=signup">Începe gratuit</a> sau vezi <a href="/ro#features">Sync Calendars</a> la caracteristici.
-      </p>
+        </p>
+      </article>
     </main>
   );
 }
-
