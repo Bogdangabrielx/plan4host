@@ -16,8 +16,17 @@ export default function TermsOfServicePage() {
     <main className={s.page}>
       <div className={s.container}>
         <header className={s.header}>
-          <h1 className={s.h1}>Terms of Service</h1>
-          <p className={s.meta}>Last updated: {lastUpdated}</p>
+          <div style={{ display: "grid", placeItems: "center", gap: 10, textAlign: "center" }}>
+            <img
+              src="/p4h_logo_rotund.png"
+              alt="Plan4Host"
+              width={80}
+              height={80}
+              style={{ borderRadius: 999, border: "2px solid var(--border)", background: "var(--card)" }}
+            />
+            <h1 className={s.h1} style={{ marginBottom: 4 }}>Terms of Service</h1>
+            <p className={s.meta}>Last updated: {lastUpdated}</p>
+          </div>
         </header>
 
         <section>
