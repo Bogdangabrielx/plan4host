@@ -37,7 +37,7 @@ export default function SincronizareIcalAirbnbRO() {
       <h2 style={{ marginTop: 24 }}>Pași de conectare</h2>
       <ol>
         <li>Deschide Airbnb → Listings → Availability → iCal export și copiază adresa URL de export.</li>
-        <li>În Plan4Host, deschide Channels și adaugă un canal nou iCal pentru listarea ta.</li>
+        <li>În Plan4Host, deschide Management -  Sync Calendars -Import și adaugă un canal nou iCal pentru listarea ta.</li>
         <li>Lipește adresa URL de export Airbnb și salvează.</li>
         <li>Din Plan4Host, copiază adresa URL iCal de export și adaug-o în Airbnb, la iCal import.</li>
         <li>Așteaptă prima sincronizare (conform planului) și verifică apariția evenimentelor în ambele calendare.</li>
