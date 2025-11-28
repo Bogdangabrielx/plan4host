@@ -25,24 +25,39 @@ export default function SincronizareIcalBookingRO() {
         </header>
 
         <p style={{ color: "var(--muted)" }}>
-        Ține Booking.com și celelalte calendare sincronizate cu iCal pentru a evita overbooking-ul. Urmează pașii de mai jos.
-      </p>
+          Ține Booking.com și celelalte calendare sincronizate cu iCal pentru a evita overbooking-ul. Mai jos găsești explicații și pașii esențiali.
+        </p>
 
-      <h2 style={{ marginTop: 24 }}>Pași de conectare</h2>
-      <ol>
-        <li>Deschide Booking.com Extranet → Rates & Availability → Calendar & pricing → Sync calendars (iCal).</li>
-        <li>Copiază URL-ul de export iCal din Booking.com.</li>
-        <li>În Plan4Host, adaugă un canal iCal pentru camera/unitatea ta și lipește URL-ul de export.</li>
-        <li>Copie URL-ul iCal de export din Plan4Host și importă-l în Booking.com.</li>
-        <li>Forțează un refresh manual și verifică apariția evenimentelor în ambele calendare.</li>
-      </ol>
+        <h2 style={{ marginTop: 24 }}>Ce este sincronizarea iCal?</h2>
+        <p>
+          iCal este un format standard de calendar (.ics) suportat de Booking.com pentru import și export de rezervări și blocări de disponibilitate.
+          Plan4Host folosește iCal pentru a prelua periodic rezervări noi din Booking.com și pentru a trimite înapoi blocări de disponibilitate, astfel
+          încât să reduci riscul de suprapuneri între canale.
+        </p>
 
-      <h2 style={{ marginTop: 24 }}>Sfaturi</h2>
-      <ul>
-        <li>Un calendar per cameră/unitate pentru mapare curată.</li>
-        <li>Reține că iCal transportă evenimente, nu reguli de preț; menține setările în Extranet.</li>
-        <li>Ține fusurile orare consistente.</li>
-      </ul>
+        <h2 style={{ marginTop: 24 }}>Pași de conectare</h2>
+        <ol>
+          <li>Deschide Booking.com Extranet → Rates &amp; Availability → Calendar &amp; pricing → Sync calendars (iCal).</li>
+          <li>Copiază URL-ul de export iCal din Booking.com pentru camera/unitatea dorită.</li>
+          <li>
+            În Plan4Host, deschide Management → Sync Calendars → Import și adaugă un canal iCal pentru aceeași cameră/unitate, apoi lipește URL-ul de export
+            Booking.com și salvează.
+          </li>
+          <li>
+            Din Plan4Host, copiază URL-ul iCal de export pentru acea cameră/unitate și importă-l înapoi în Booking.com, în secțiunea de iCal import.
+          </li>
+          <li>
+            Forțează un refresh manual și, după prima sincronizare (conform planului tău), verifică apariția evenimentelor în ambele calendare.
+          </li>
+        </ol>
+
+        <h2 style={{ marginTop: 24 }}>Sfaturi</h2>
+        <ul>
+          <li>Folosește un calendar separat per cameră/unitate pentru mapare curată și fără suprapuneri.</li>
+          <li>Nu partaja public URL-urile iCal; tratează-le ca pe niște link-uri private.</li>
+          <li>Reține că iCal transportă evenimente/blocări, nu reguli de preț; păstrează setările de tarife în Extranet.</li>
+          <li>Ține fusurile orare consistente între Booking.com, Plan4Host și celelalte canale.</li>
+        </ul>
 
         <p style={{ marginTop: 24 }}>
           Gata de conectare?{" "}

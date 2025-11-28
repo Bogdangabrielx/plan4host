@@ -25,22 +25,34 @@ export default function TravelminitIcalSyncPage() {
         </header>
 
         <p style={{ color: "var(--muted)" }}>
-        Travelminit supports calendar sync via iCal. Use the steps below to connect with Plan4Host.
-      </p>
-      <h2 style={{ marginTop: 24 }}>Steps to connect</h2>
-      <ol>
-        <li>Open your Travelminit extranet account and go to Calendar/iCal.</li>
-        <li>Copy your iCal export URL from Travelminit.</li>
-        <li>In Plan4Host, add a new iCal channel for the specific room/unit and paste the export URL.</li>
-        <li>Copy the Plan4Host iCal export URL and import it back into Travelminit.</li>
-        <li>Refresh and verify events sync both ways.</li>
-      </ol>
-      <h2 style={{ marginTop: 24 }}>Tips</h2>
-      <ul>
-        <li>One calendar per room/unit for clean mapping.</li>
-        <li>iCal carries availability blocks and reservations, not price rules.</li>
-        <li>Check timezones to avoid offset issues.</li>
-      </ul>
+          Travelminit supports calendar sync via iCal. Below you&apos;ll find what that means and how to connect it with Plan4Host.
+        </p>
+
+        <h2 style={{ marginTop: 24 }}>What is iCal sync?</h2>
+        <p>
+          iCal is a standard calendar format (.ics) that Travelminit and other OTAs use to import and export reservations and availability blocks.
+          Plan4Host uses iCal to pull new bookings from Travelminit and push availability back, helping to keep your calendars consistent and avoid
+          double bookings.
+        </p>
+
+        <h2 style={{ marginTop: 24 }}>Steps to connect</h2>
+        <ol>
+          <li>Open your Travelminit extranet account and go to the Calendar / iCal section.</li>
+          <li>Copy the iCal export URL from Travelminit for the room/unit you want to sync.</li>
+          <li>
+            In Plan4Host, go to Management → Sync Calendars → Import, add a new iCal channel for that specific room/unit and paste the Travelminit
+            export URL.
+          </li>
+          <li>Copy the Plan4Host iCal export URL for that room/unit and import it back into Travelminit under iCal import.</li>
+          <li>Refresh and verify that events sync in both directions as expected.</li>
+        </ol>
+
+        <h2 style={{ marginTop: 24 }}>Tips</h2>
+        <ul>
+          <li>Use one calendar per room/unit for clean mapping and fewer surprises.</li>
+          <li>iCal carries availability blocks and reservations, not price rules — keep your pricing in Travelminit.</li>
+          <li>Check timezones across Plan4Host and Travelminit to avoid date offsets.</li>
+        </ul>
         <p style={{ marginTop: 24 }}>
           Questions?{" "}
           <a href="/auth/login?mode=signup" style={{ color: "var(--primary)" }}>

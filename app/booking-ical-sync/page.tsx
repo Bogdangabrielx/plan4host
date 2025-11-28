@@ -25,24 +25,34 @@ export default function BookingIcalSyncPage() {
         </header>
 
         <p style={{ color: "var(--muted)" }}>
-          Keep Booking.com and your other calendars in sync with iCal to avoid double bookings. This guide shows the basic steps and tips.
+          Keep Booking.com and your other calendars in sync with iCal to avoid double bookings. Below you&apos;ll find a short explanation and the key steps.
         </p>
 
-      <h2 style={{ marginTop: 24 }}>Steps to connect</h2>
-      <ol>
-        <li>Open Booking.com Extranet → Rates & Availability → Calendar & pricing → Sync calendars (iCal).</li>
-        <li>Copy the iCal export URL from Booking.com.</li>
-        <li>In Plan4Host, add a new iCal channel for your room/unit and paste the export URL.</li>
-        <li>Copy the Plan4Host iCal export URL and import it back in Booking.com.</li>
-        <li>Trigger a manual refresh and verify events appear in both calendars.</li>
-      </ol>
+        <h2 style={{ marginTop: 24 }}>What is iCal sync?</h2>
+        <p>
+          iCal is a standard calendar format (.ics) that Booking.com supports for importing and exporting reservations and availability blocks.
+          Plan4Host uses iCal to periodically pull new bookings from Booking.com and push availability updates back, helping you reduce the risk
+          of overlaps across channels.
+        </p>
 
-      <h2 style={{ marginTop: 24 }}>Tips</h2>
-      <ul>
-        <li>One calendar per room/unit for clean mapping.</li>
-        <li>Mind minimum/maximum stay and closures — iCal carries events, not pricing rules.</li>
-        <li>Keep timezones consistent.</li>
-      </ul>
+        <h2 style={{ marginTop: 24 }}>Steps to connect</h2>
+        <ol>
+          <li>Open Booking.com Extranet → Rates &amp; Availability → Calendar &amp; pricing → Sync calendars (iCal).</li>
+          <li>Copy the iCal export URL from Booking.com for the room/unit you want to sync.</li>
+          <li>
+            In Plan4Host, go to Management → Sync Calendars → Import, add a new iCal channel for the same room/unit,
+            paste the Booking.com export URL and save.
+          </li>
+          <li>From Plan4Host, copy the iCal export URL for that room/unit and import it back into Booking.com under iCal import.</li>
+          <li>Trigger a manual refresh and verify that events appear in both calendars without overlaps.</li>
+        </ol>
+
+        <h2 style={{ marginTop: 24 }}>Tips</h2>
+        <ul>
+          <li>Use one calendar per room/unit for clean mapping and easier troubleshooting.</li>
+          <li>Remember that iCal carries events/blocks, not pricing rules — keep your rate settings in the Extranet.</li>
+          <li>Keep timezones consistent across Booking.com, Plan4Host and any other channels you connect.</li>
+        </ul>
 
         <p style={{ marginTop: 24 }}>
           Ready to connect?{" "}
