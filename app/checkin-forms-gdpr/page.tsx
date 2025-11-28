@@ -10,7 +10,20 @@ export default function CheckinFormsGdprPage() {
       }}
     >
       <article style={{ width: '100%', maxWidth: 860 }}>
-        <h1 style={{ fontSize: 28, marginBottom: 10 }}>GDPR‑friendly Guest Check‑in Forms</h1>
+        <header style={{ textAlign: 'center', marginBottom: 24, display: 'grid', gap: 10, placeItems: 'center' }}>
+          <img
+            src="/p4h_logo_rotund.png"
+            alt="Plan4Host"
+            width={80}
+            height={80}
+            style={{ borderRadius: 999, border: '2px solid var(--border)', background: 'var(--card)' }}
+          />
+          <h1 style={{ fontSize: 28, marginBottom: 4 }}>GDPR‑friendly Guest Check‑in Forms</h1>
+          <p style={{ color: 'var(--muted)', margin: 0, fontSize: 14 }}>
+            Secure, consent‑first online check‑in for modern hospitality.
+          </p>
+        </header>
+
         <p style={{ color: 'var(--muted)' }}>
           Plan4Host provides secure online check‑in forms to collect guest details, capture consent and speed up arrivals.
         </p>
