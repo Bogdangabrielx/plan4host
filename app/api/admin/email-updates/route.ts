@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const subject: string = (body?.subject || "").toString().trim();
     const htmlRaw: string = (body?.html || "").toString();
+    const toOverrideRaw: string = (body?.to || "").toString().trim();
 
     if (!subject) return bad(400, { error: "Missing subject" });
     if (!htmlRaw.trim()) return bad(400, { error: "Missing HTML body" });
@@ -38,27 +39,34 @@ export async function POST(req: NextRequest) {
     if (!URL || !SERVICE) return bad(500, { error: "Missing service credentials" });
     const admin = createAdmin(URL, SERVICE, { auth: { persistSession: false } });
 
-    // Collect all unique, non-empty emails from auth.users
-    const perPage = 1000;
-    let page = 1;
-    const emails = new Set<string>();
+    let uniqueEmails: string[] = [];
 
-    for (;;) {
-      const { data, error } = await (admin as any).auth.admin.listUsers({ page, perPage });
-      if (error) return bad(500, { error: error.message || "Failed to list users" });
-      const users = (data?.users ?? []) as Array<{ email?: string | null }>;
-      for (const u of users) {
-        const e = (u.email || "").toString().trim();
-        if (!e) continue;
-        emails.add(e.toLowerCase());
+    if (toOverrideRaw) {
+      // Testing mode: send only to explicitly provided address
+      uniqueEmails = [toOverrideRaw];
+    } else {
+      // Collect all unique, non-empty emails from auth.users
+      const perPage = 1000;
+      let page = 1;
+      const emails = new Set<string>();
+
+      for (;;) {
+        const { data, error } = await (admin as any).auth.admin.listUsers({ page, perPage });
+        if (error) return bad(500, { error: error.message || "Failed to list users" });
+        const users = (data?.users ?? []) as Array<{ email?: string | null }>;
+        for (const u of users) {
+          const e = (u.email || "").toString().trim();
+          if (!e) continue;
+          emails.add(e.toLowerCase());
+        }
+        if (!users.length || users.length < perPage) break;
+        page++;
       }
-      if (!users.length || users.length < perPage) break;
-      page++;
-    }
 
-    const uniqueEmails = Array.from(emails);
-    if (!uniqueEmails.length) {
-      return NextResponse.json({ ok: true, sent: 0, total: 0 });
+      uniqueEmails = Array.from(emails);
+      if (!uniqueEmails.length) {
+        return NextResponse.json({ ok: true, sent: 0, total: 0 });
+      }
     }
 
     const transporter = createTransport({
@@ -91,4 +99,3 @@ export async function POST(req: NextRequest) {
     return bad(500, { error: e?.message || "Unexpected error" });
   }
 }
-

@@ -7,6 +7,7 @@ type Props = {
 };
 
 export default function EmailUpdatesClient({ adminEmail }: Props) {
+  const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [html, setHtml] = useState("");
   const [sending, setSending] = useState(false);
@@ -17,6 +18,7 @@ export default function EmailUpdatesClient({ adminEmail }: Props) {
     e.preventDefault();
     setError(null);
     setResult(null);
+    const toTrimmed = to.trim();
     const subj = subject.trim();
     const body = html.trim();
     if (!subj || !body) {
@@ -28,7 +30,7 @@ export default function EmailUpdatesClient({ adminEmail }: Props) {
       const res = await fetch("/api/admin/email-updates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject: subj, html: body }),
+        body: JSON.stringify({ subject: subj, html: body, to: toTrimmed || undefined }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -81,12 +83,40 @@ export default function EmailUpdatesClient({ adminEmail }: Props) {
               color: "var(--muted)",
             }}
           >
-            Use this only for legal / product updates (e.g. Terms, Privacy, DPA). It will send an email to
-            every active user with a non‑empty, unique email address.
+            Use this only for legal / product updates (e.g. Terms, Privacy, DPA). If the <strong>TO</strong> field
+            is left empty, the email will be sent to every active user with a non‑empty, unique email address. If you
+            fill in <strong>TO</strong>, it will be sent only to that address (for testing).
           </div>
         </header>
 
         <form onSubmit={onSend} style={{ display: "grid", gap: 16 }}>
+          <div>
+            <label
+              htmlFor="email-updates-to"
+              style={{ display: "block", fontSize: 13, fontWeight: 800, marginBottom: 4 }}
+            >
+              TO (optional, for testing)
+            </label>
+            <input
+              id="email-updates-to"
+              type="email"
+              value={to}
+              onChange={(e) => setTo(e.currentTarget.value)}
+              placeholder="Leave empty to send to all users (or type a single email to test)…"
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: "1px solid var(--border)",
+                background: "var(--card)",
+                color: "var(--text)",
+                fontSize: 14,
+                fontWeight: 500,
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+
           <div>
             <label
               htmlFor="email-updates-subject"
@@ -209,4 +239,3 @@ export default function EmailUpdatesClient({ adminEmail }: Props) {
     </main>
   );
 }
-
