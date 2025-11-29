@@ -252,6 +252,8 @@ export default async function CheckinQrView({ params }: { params: { id: string }
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Last name</div>
             <div>{guestLastName || '—'}</div>
+            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
+
             <div aria-hidden style={{ width:18 }}>
               <Icon pair={iconPairForForm('email')} />
             </div>
