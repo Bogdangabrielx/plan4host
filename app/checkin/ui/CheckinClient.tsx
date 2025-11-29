@@ -23,6 +23,21 @@ type SubmitState = "idle" | "submitting" | "success" | "error";
 
 type Country = { iso2: string; name: string; nationality_en?: string | null };
 
+type CompanionDocType = "id_card" | "passport" | "";
+type Companion = {
+  firstName: string;
+  lastName: string;
+  birthDate: string;
+  citizenship: string;
+  residenceCountry: string;
+  isMinor: boolean;
+  guardianName: string;
+  docType: CompanionDocType;
+  docSeries: string;
+  docNumber: string;
+  docNationality: string;
+};
+
 // Small helper to render emoji flags from ISO country code
 function flagEmoji(cc: string | null | undefined): string {
   if (!cc) return "";
@@ -311,6 +326,18 @@ export default function CheckinClient() {
       unexpectedError: 'Unexpected error. Please try again.',
       langEN: 'EN',
       langRO: 'RO',
+      totalGuestsLabel: 'Total guests',
+      totalGuestsHint: (first: string, last: string) => `Please select the total number of guests, including ${first} ${last}.`,
+      editCompanions: 'Edit companions',
+      companionTitle: (current: number, total: number) => `Guest ${current} of ${total}`,
+      birthDate: 'Birth date',
+      residenceCountry: 'Country of residence',
+      isMinor: 'Guest is a minor',
+      guardianLabel: 'Parent/guardian name',
+      next: 'Next',
+      back: 'Back',
+      saveAndClose: 'Save & close',
+      companionMissing: 'Please fill in all required fields for this guest.',
     },
     ro: {
       checkinTitle: 'Check‑in',
@@ -357,6 +384,18 @@ export default function CheckinClient() {
       unexpectedError: 'Eroare neașteptată. Încearcă din nou.',
       langEN: 'EN',
       langRO: 'RO',
+      totalGuestsLabel: 'Număr total de oaspeți',
+      totalGuestsHint: (first: string, last: string) => `Te rugăm să selectezi numărul total de oaspeți, incluzând ${first} ${last}.`,
+      editCompanions: 'Editează însoțitorii',
+      companionTitle: (current: number, total: number) => `Oaspete ${current} din ${total}`,
+      birthDate: 'Data nașterii',
+      residenceCountry: 'Țara de rezidență',
+      isMinor: 'Oaspetele este minor',
+      guardianLabel: 'Nume părinte/tutore',
+      next: 'Următorul',
+      back: 'Înapoi',
+      saveAndClose: 'Salvează și închide',
+      companionMissing: 'Te rugăm să completezi toate câmpurile obligatorii pentru acest oaspete.',
     }
   }), []);
   const T = (key: keyof typeof TXT['en']) => (TXT as any)[lang][key];
@@ -586,6 +625,13 @@ export default function CheckinClient() {
   const [privacyVisited, setPrivacyVisited] = useState<boolean>(false);
   const [privacyConfirm, setPrivacyConfirm] = useState<boolean>(false);
   const [privacySaving, setPrivacySaving] = useState<boolean>(false);
+
+  // Companions (additional guests)
+  const [guestCount, setGuestCount] = useState<number>(1);
+  const [companions, setCompanions] = useState<Companion[]>([]);
+  const [companionsOpen, setCompanionsOpen] = useState<boolean>(false);
+  const [companionsIndex, setCompanionsIndex] = useState<number>(0);
+  const [companionsError, setCompanionsError] = useState<string>("");
 
   // Confirmation email modal state
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -934,6 +980,23 @@ export default function CheckinClient() {
   }
 
   const normalizedPhone = `${phoneDial}${(phone || '').replace(/\D/g, '')}`;
+  const expectedCompanions = Math.max(guestCount - 1, 0);
+  function validateCompanion(c: Companion): boolean {
+    if (!c.firstName.trim() || !c.lastName.trim() || !c.birthDate || !c.citizenship.trim() || !c.residenceCountry.trim()) {
+      return false;
+    }
+    if (c.isMinor) {
+      return !!c.guardianName.trim();
+    }
+    if (!c.docType || !c.docNumber.trim()) return false;
+    if (c.docType === "id_card" && !c.docSeries.trim()) return false;
+    if (c.docType === "passport" && !c.docNationality.trim()) return false;
+    return true;
+  }
+  const companionsValid =
+    expectedCompanions === 0 ||
+    (companions.length === expectedCompanions && companions.every(validateCompanion));
+
   const canSubmit =
     !!propertyId &&
     !!prop?.id &&
@@ -947,6 +1010,7 @@ export default function CheckinClient() {
     docValid &&
     !!docFile && // document upload obligatoriu
     sigDirty && // semnătura este obligatorie
+    companionsValid &&
     consentGatePassed && agree &&
     submitState !== "submitting";
 
@@ -1317,6 +1381,74 @@ export default function CheckinClient() {
                 <input id="checkin-last-name" style={INPUT} value={lastName} onChange={e => setLastName(e.currentTarget.value)} placeholder="Last Name" />
               </div>
             </div>
+
+            {/* Total guests selector (after name) */}
+            {(firstName.trim().length > 0 && lastName.trim().length > 0) && (
+              <div style={ROW_1}>
+                <div>
+                  <label htmlFor="checkin-total-guests" style={LABEL_ROW}>
+                    <span>{(TXT as any)[lang].totalGuestsLabel}</span>
+                  </label>
+                  <select
+                    id="checkin-total-guests"
+                    style={SELECT}
+                    value={guestCount}
+                    onChange={(e) => {
+                      const n = Math.max(1, Math.min(99, parseInt(e.currentTarget.value || "1", 10) || 1));
+                      setGuestCount(n);
+                      setCompanions(prev => {
+                        const target = Math.max(n - 1, 0);
+                        const trimmed = prev.slice(0, target);
+                        if (trimmed.length < target) {
+                          const extra: Companion[] = [];
+                          for (let i = trimmed.length; i < target; i++) {
+                            extra.push({
+                              firstName: "",
+                              lastName: "",
+                              birthDate: "",
+                              citizenship: "",
+                              residenceCountry: "",
+                              isMinor: false,
+                              guardianName: "",
+                              docType: "",
+                              docSeries: "",
+                              docNumber: "",
+                              docNationality: "",
+                            });
+                          }
+                          return [...trimmed, ...extra];
+                        }
+                        return trimmed;
+                      });
+                      if (n > 1) {
+                        setCompanionsIndex(0);
+                        setCompanionsError("");
+                        setCompanionsOpen(true);
+                      } else {
+                        setCompanions([]);
+                        setCompanionsOpen(false);
+                      }
+                    }}
+                  >
+                    {Array.from({ length: 99 }, (_, i) => i + 1).map(v => (
+                      <option key={v} value={v}>{v}</option>
+                    ))}
+                  </select>
+                  <p style={{ marginTop: 6, fontSize: 12, color: "var(--muted)" }}>
+                    {(TXT as any)[lang].totalGuestsHint(firstName.trim(), lastName.trim())}
+                  </p>
+                  {guestCount > 1 && expectedCompanions > 0 && companions.length === expectedCompanions && (
+                    <button
+                      type="button"
+                      onClick={() => { setCompanionsIndex(0); setCompanionsError(""); setCompanionsOpen(true); }}
+                      style={{ marginTop: 6, ...BTN_GHOST }}
+                    >
+                      {(TXT as any)[lang].editCompanions}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Contact */}
             <div style={isSmall ? ROW_1 : ROW_2}>
@@ -1699,7 +1831,225 @@ export default function CheckinClient() {
         )}
       </section>
 
-      
+      {/* Companions wizard modal */}
+      {companionsOpen && expectedCompanions > 0 && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setCompanionsOpen(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 340, background: "rgba(0,0,0,.55)", display: "grid", placeItems: "center", padding: 12 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sb-card"
+            style={{ width: "min(560px, 100%)", padding: 16 }}
+          >
+            {(() => {
+              const total = guestCount;
+              const index = Math.min(companionsIndex, Math.max(expectedCompanions - 1, 0));
+              const currentNumber = index + 2; // guest numbering includes main guest
+              const existing = companions[index] || {
+                firstName: "",
+                lastName: "",
+                birthDate: "",
+                citizenship: "",
+                residenceCountry: "",
+                isMinor: false,
+                guardianName: "",
+                docType: "",
+                docSeries: "",
+                docNumber: "",
+                docNationality: "",
+              };
+
+              function update(field: keyof Companion, value: any) {
+                setCompanions(prev => {
+                  const next = [...prev];
+                  while (next.length < expectedCompanions) {
+                    next.push({
+                      firstName: "",
+                      lastName: "",
+                      birthDate: "",
+                      citizenship: "",
+                      residenceCountry: "",
+                      isMinor: false,
+                      guardianName: "",
+                      docType: "",
+                      docSeries: "",
+                      docNumber: "",
+                      docNationality: "",
+                    });
+                  }
+                  next[index] = { ...next[index], [field]: value };
+                  return next;
+                });
+              }
+
+              function onNext() {
+                const c = companions[index] || existing;
+                if (!validateCompanion(c)) {
+                  setCompanionsError((TXT as any)[lang].companionMissing);
+                  return;
+                }
+                setCompanionsError("");
+                if (index < expectedCompanions - 1) {
+                  setCompanionsIndex(index + 1);
+                } else {
+                  setCompanionsOpen(false);
+                }
+              }
+
+              function onBack() {
+                if (index > 0) {
+                  setCompanionsIndex(index - 1);
+                  setCompanionsError("");
+                }
+              }
+
+              return (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <strong>
+                      {(TXT as any)[lang].companionTitle(currentNumber, total)}
+                    </strong>
+                    <button className="sb-btn" onClick={() => setCompanionsOpen(false)}>Close</button>
+                  </div>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <div style={ROW_2}>
+                      <div>
+                        <label style={LABEL}>{T('firstName').replace('*', '')}</label>
+                        <input
+                          style={INPUT}
+                          value={existing.firstName}
+                          onChange={e => update("firstName", e.currentTarget.value)}
+                        />
+                      </div>
+                      <div>
+                        <label style={LABEL}>{T('lastName').replace('*', '')}</label>
+                        <input
+                          style={INPUT}
+                          value={existing.lastName}
+                          onChange={e => update("lastName", e.currentTarget.value)}
+                        />
+                      </div>
+                    </div>
+                    <div style={ROW_2}>
+                      <div>
+                        <label style={LABEL}>{(TXT as any)[lang].birthDate}</label>
+                        <input
+                          type="date"
+                          style={INPUT}
+                          value={existing.birthDate}
+                          onChange={e => update("birthDate", e.currentTarget.value)}
+                        />
+                      </div>
+                      <div>
+                        <label style={LABEL}>{T('nationality').replace('*', '')}</label>
+                        <input
+                          style={INPUT}
+                          value={existing.citizenship}
+                          onChange={e => update("citizenship", e.currentTarget.value)}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={LABEL}>{(TXT as any)[lang].residenceCountry}</label>
+                      <input
+                        style={INPUT}
+                        value={existing.residenceCountry}
+                        onChange={e => update("residenceCountry", e.currentTarget.value)}
+                      />
+                    </div>
+                    <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+                      <input
+                        type="checkbox"
+                        checked={existing.isMinor}
+                        onChange={e => update("isMinor", e.currentTarget.checked)}
+                      />
+                      <span>{(TXT as any)[lang].isMinor}</span>
+                    </label>
+                    {existing.isMinor ? (
+                      <div>
+                        <label style={LABEL}>{(TXT as any)[lang].guardianLabel}</label>
+                        <input
+                          style={INPUT}
+                          value={existing.guardianName}
+                          onChange={e => update("guardianName", e.currentTarget.value)}
+                        />
+                      </div>
+                    ) : (
+                      <div style={ROW_2}>
+                        <div>
+                          <label style={LABEL}>{T('docTypeLabel').replace('*', '')}</label>
+                          <select
+                            style={SELECT}
+                            value={existing.docType}
+                            onChange={e => update("docType", e.currentTarget.value as CompanionDocType)}
+                          >
+                            <option value="">{T('selectDocType')}</option>
+                            <option value="id_card">{T('docOptionId')}</option>
+                            <option value="passport">{T('docOptionPassport')}</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label style={LABEL}>{T('docOptionId').replace('*', '')}</label>
+                          <input
+                            style={INPUT}
+                            value={existing.docNumber}
+                            onChange={e => update("docNumber", e.currentTarget.value)}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {!existing.isMinor && existing.docType === "id_card" && (
+                      <div>
+                        <label style={LABEL}>{T('docOptionId')} series</label>
+                        <input
+                          style={INPUT}
+                          value={existing.docSeries}
+                          onChange={e => update("docSeries", e.currentTarget.value.toUpperCase())}
+                        />
+                      </div>
+                    )}
+                    {!existing.isMinor && existing.docType === "passport" && (
+                      <div>
+                        <label style={LABEL}>{T('nationality').replace('*', '')}</label>
+                        <input
+                          style={INPUT}
+                          value={existing.docNationality}
+                          onChange={e => update("docNationality", e.currentTarget.value)}
+                        />
+                      </div>
+                    )}
+                    {companionsError && (
+                      <div style={{ padding: 8, borderRadius: 8, background: "var(--danger)", color: "#0c111b", fontWeight: 800 }}>
+                        {companionsError}
+                      </div>
+                    )}
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginTop: 8 }}>
+                      <button
+                        type="button"
+                        className="sb-btn"
+                        onClick={onBack}
+                        disabled={index === 0}
+                      >
+                        {(TXT as any)[lang].back}
+                      </button>
+                      <button
+                        type="button"
+                        className="sb-btn sb-btn--primary"
+                        onClick={onNext}
+                      >
+                        {index < expectedCompanions - 1 ? (TXT as any)[lang].next : (TXT as any)[lang].saveAndClose}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       {/* Confirmation email modal */}
       {confirmOpen && (
