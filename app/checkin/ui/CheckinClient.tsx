@@ -1953,7 +1953,97 @@ export default function CheckinClient() {
                     </div>
                     <div style={ROW_2}>
                       <div>
-                        <label style={LABEL}>{(TXT as any)[lang].birthDate}</label>
+                        <label style={{ ...LABEL, display: "flex", alignItems: "center", gap: 6 }}>
+                          <span>{(TXT as any)[lang].birthDate}</span>
+                          <svg
+                            width={16}
+                            height={16}
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                            style={{ display: "block", flexShrink: 0 }}
+                          >
+                            <circle
+                              cx="12"
+                              cy="12"
+                              r="4.5"
+                              fill="none"
+                              stroke="#6b7280"
+                              strokeWidth={1.6}
+                            />
+                            <line
+                              x1="12"
+                              y1="2.5"
+                              x2="12"
+                              y2="5.5"
+                              stroke="#6b7280"
+                              strokeWidth={1.4}
+                              strokeLinecap="round"
+                            />
+                            <line
+                              x1="12"
+                              y1="18.5"
+                              x2="12"
+                              y2="21.5"
+                              stroke="#6b7280"
+                              strokeWidth={1.4}
+                              strokeLinecap="round"
+                            />
+                            <line
+                              x1={4.22}
+                              y1={4.22}
+                              x2={6.0}
+                              y2={5.98}
+                              stroke="#6b7280"
+                              strokeWidth={1.4}
+                              strokeLinecap="round"
+                            />
+                            <line
+                              x1={18.0}
+                              y1={18.0}
+                              x2={19.78}
+                              y2={19.78}
+                              stroke="#6b7280"
+                              strokeWidth={1.4}
+                              strokeLinecap="round"
+                            />
+                            <line
+                              x1={2.5}
+                              y1={12}
+                              x2={5.5}
+                              y2={12}
+                              stroke="#6b7280"
+                              strokeWidth={1.4}
+                              strokeLinecap="round"
+                            />
+                            <line
+                              x1={18.5}
+                              y1={12}
+                              x2={21.5}
+                              y2={12}
+                              stroke="#6b7280"
+                              strokeWidth={1.4}
+                              strokeLinecap="round"
+                            />
+                            <line
+                              x1={4.22}
+                              y1={19.78}
+                              x2={6.0}
+                              y2={18.02}
+                              stroke="#6b7280"
+                              strokeWidth={1.4}
+                              strokeLinecap="round"
+                            />
+                            <line
+                              x1={18.0}
+                              y1={6.0}
+                              x2={19.78}
+                              y2={4.22}
+                              stroke="#6b7280"
+                              strokeWidth={1.4}
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                        </label>
                         <input
                           type="date"
                           style={INPUT}
