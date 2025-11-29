@@ -1019,96 +1019,49 @@ export default function RoomDetailModal({
                 {/* Document (read-only, from check-in) */}
                 <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
                   <strong style={{ letterSpacing: 0.3 }}>Guest ID document</strong>
-                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
-                    {/* Type + link */}
-                    <div style={{ display: "grid", gap: 6 }}>
-                      <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Document type</label>
-                      <input
-                        type="text"
-                        disabled
-                        value={fmtDocType(primaryDoc?.doc_type)}
-                        placeholder="—"
-                        style={{
-                          padding: "12px 12px",
-                          background: "var(--card)",
-                          color: "var(--text)",
-                          border: "1px solid var(--border)",
-                          borderRadius: 10,
-                          fontSize: 14,
-                          fontWeight: 600,
-                          opacity: 0.9,
-                        }}
-                      />
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: isMobile ? "auto 1fr" : "auto 1fr",
+                      rowGap: 6,
+                      columnGap: 10,
+                      alignItems: "center",
+                    }}
+                  >
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Document type</div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>
+                      {fmtDocType(primaryDoc?.doc_type) || "—"}
+                    </div>
+
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Number</div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>
+                      {primaryDoc?.doc_number || "—"}
+                    </div>
+
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Series</div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>
+                      {primaryDoc?.doc_series || "—"}
+                    </div>
+
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Nationality</div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>
+                      {primaryDoc?.doc_nationality || "—"}
+                    </div>
+
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>File</div>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>
                       {primaryDoc?.url ? (
-                        <a href={primaryDoc.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline", fontWeight: 800 }}>
-                          View file
+                        <a
+                          href={primaryDoc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ textDecoration: "underline" }}
+                        >
+                          View document
                         </a>
                       ) : (
-                        <small style={{ color: "var(--muted)" }}>No file available</small>
+                        <span style={{ color: "var(--muted)" }}>No file available</span>
                       )}
-                    </div>
-
-                    {/* Number */}
-                    <div style={{ display: "grid", gap: 6 }}>
-                      <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Number</label>
-                      <input
-                        type="text"
-                        disabled
-                        value={primaryDoc?.doc_number || ""}
-                        placeholder="—"
-                        style={{
-                          padding: "12px 12px",
-                          background: "var(--card)",
-                          color: "var(--text)",
-                          border: "1px solid var(--border)",
-                          borderRadius: 10,
-                          fontSize: 14,
-                          fontWeight: 600,
-                          opacity: 0.9,
-                        }}
-                      />
-                    </div>
-
-                    {/* Series */}
-                    <div style={{ display: "grid", gap: 6 }}>
-                      <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Series</label>
-                      <input
-                        type="text"
-                        disabled
-                        value={primaryDoc?.doc_series || ""}
-                        placeholder="—"
-                        style={{
-                          padding: "12px 12px",
-                          background: "var(--card)",
-                          color: "var(--text)",
-                          border: "1px solid var(--border)",
-                          borderRadius: 10,
-                          fontSize: 14,
-                          fontWeight: 600,
-                          opacity: 0.9,
-                        }}
-                      />
-                    </div>
-
-                    {/* Nationality */}
-                    <div style={{ display: "grid", gap: 6 }}>
-                      <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Nationality</label>
-                      <input
-                        type="text"
-                        disabled
-                        value={primaryDoc?.doc_nationality || ""}
-                        placeholder="—"
-                        style={{
-                          padding: "12px 12px",
-                          background: "var(--card)",
-                          color: "var(--text)",
-                          border: "1px solid var(--border)",
-                          borderRadius: 10,
-                          fontSize: 14,
-                          fontWeight: 600,
-                          opacity: 0.9,
-                        }}
-                      />
                     </div>
                   </div>
 
