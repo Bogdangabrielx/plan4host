@@ -841,7 +841,7 @@ export default function RoomDetailModal({
               style={{
                 marginTop: 6,
                 padding: 12,
-                border: "1px solid var(--border)",
+                border: "1px solid var(--primary)",
                 borderRadius: 10,
                 background: "var(--panel)",
                 display: "grid",
