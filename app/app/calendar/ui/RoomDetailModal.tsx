@@ -14,6 +14,7 @@ type TextDef  = { id: string; label: string; placeholder: string | null; sort_in
 type Booking = BaseBooking & {
   guest_first_name?: string | null;
   guest_last_name?: string | null;
+  guest_companions?: any[] | null;
 };
 
 type BookingContact = {
@@ -121,6 +122,9 @@ export default function RoomDetailModal({
   const [guestAddr, setGuestAddr]       = useState<string>("");
   const [guestCity, setGuestCity]       = useState<string>("");
   const [guestCountry, setGuestCountry] = useState<string>("");
+  // Companions (read-only from booking)
+  const [companions, setCompanions] = useState<any[]>([]);
+  const [companionsOpen, setCompanionsOpen] = useState<boolean>(false);
 
   const [showGuest, setShowGuest] = useState<boolean>(false);
   // Auto-collapse Guest Details when Reservation is OFF
@@ -212,7 +216,7 @@ export default function RoomDetailModal({
           .maybeSingle(),
         supabase
           .from("bookings")
-          .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status,guest_first_name,guest_last_name")
+          .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status,guest_first_name,guest_last_name,guest_companions")
           .eq("property_id", PID)
           .eq("room_id", room.id)
           .neq("status", "cancelled")
@@ -275,10 +279,13 @@ export default function RoomDetailModal({
         setGuestCity(contact?.city ?? "");
         setGuestCountry(contact?.country ?? "");
         await fetchDocuments(act.id);
+        const gc = (act as any).guest_companions;
+        setCompanions(Array.isArray(gc) ? gc : []);
       } else {
         setGuestFirst(""); setGuestLast("");
         setGuestEmail(""); setGuestPhone(""); setGuestAddr(""); setGuestCity(""); setGuestCountry("");
         setDocs([]);
+        setCompanions([]);
       }
 
       // Saved values / defaults
@@ -1162,6 +1169,134 @@ export default function RoomDetailModal({
                       />
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Companions (collapsible, read-only) */}
+          {companions.length > 0 && (
+            <div
+              className="sb-card"
+              style={{
+                padding: 12,
+                border: "1px solid var(--border)",
+                borderRadius: 10,
+                background: "var(--panel)",
+                display: "grid",
+                gap: 10,
+                marginTop: 6,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setCompanionsOpen(v => !v)}
+                aria-expanded={companionsOpen}
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <span style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Companions</span>
+                <span aria-hidden style={{ color: "var(--muted)", fontWeight: 800 }}>
+                  {companionsOpen ? "▾" : "▸"}
+                </span>
+              </button>
+              {companionsOpen && (
+                <div style={{ display: "grid", gap: 8 }}>
+                  {companions.map((c, idx) => {
+                    const name =
+                      [c.first_name, c.last_name].filter(Boolean).join(" ").trim() || `Guest ${idx + 2}`;
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          border: "1px solid var(--border)",
+                          borderRadius: 8,
+                          padding: 8,
+                          display: "grid",
+                          gap: 4,
+                          background: "var(--card)",
+                        }}
+                      >
+                        <div style={{ fontWeight: 800 }}>{name}</div>
+                        {c.birth_date && (
+                          <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                            Birth date:{" "}
+                            <span style={{ color: "var(--text)" }}>{c.birth_date}</span>
+                          </div>
+                        )}
+                        {(c.citizenship || c.residence_country) && (
+                          <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                            {c.citizenship && (
+                              <>
+                                Citizenship:{" "}
+                                <span style={{ color: "var(--text)" }}>{c.citizenship}</span>
+                              </>
+                            )}
+                            {c.citizenship && c.residence_country && <span> • </span>}
+                            {c.residence_country && (
+                              <>
+                                Residence:{" "}
+                                <span style={{ color: "var(--text)" }}>
+                                  {c.residence_country}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        )}
+                        {c.is_minor ? (
+                          <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                            Minor guest
+                            {c.guardian_name && (
+                              <>
+                                {" "}
+                                — Guardian:{" "}
+                                <span style={{ color: "var(--text)" }}>
+                                  {c.guardian_name}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          (c.doc_type || c.doc_number) && (
+                            <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                              {c.doc_type === "id_card" && "ID card"}
+                              {c.doc_type === "passport" && "Passport"}
+                              {!c.doc_type ||
+                              (c.doc_type !== "id_card" && c.doc_type !== "passport")
+                                ? "Document"
+                                : ""}
+                              {c.doc_series && (
+                                <>
+                                  {" "}
+                                  series{" "}
+                                  <span style={{ color: "var(--text)" }}>
+                                    {c.doc_series}
+                                  </span>
+                                </>
+                              )}
+                              {c.doc_number && (
+                                <>
+                                  {c.doc_series ? " • number " : " number "}
+                                  <span style={{ color: "var(--text)" }}>
+                                    {c.doc_number}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
