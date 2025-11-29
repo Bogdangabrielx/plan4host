@@ -990,7 +990,6 @@ export default function CheckinClient() {
     }
     if (!c.docType || !c.docNumber.trim()) return false;
     if (c.docType === "id_card" && !c.docSeries.trim()) return false;
-    if (c.docType === "passport" && !c.docNationality.trim()) return false;
     return true;
   }
   const companionsValid =
@@ -1996,7 +1995,7 @@ export default function CheckinClient() {
                         />
                       </div>
                     ) : (
-                      <div style={ROW_2}>
+                      <>
                         <div>
                           <label style={LABEL_ROW}>
                             <Image src={formIcon("id")} alt="" width={16} height={16} />
@@ -2012,38 +2011,40 @@ export default function CheckinClient() {
                             <option value="passport">{T('docOptionPassport')}</option>
                           </select>
                         </div>
-                        <div>
-                          <label style={LABEL}>{T('docOptionId').replace('*', '')}</label>
-                          <input
-                            style={INPUT}
-                            value={existing.docNumber}
-                            onChange={e => update("docNumber", e.currentTarget.value)}
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {!existing.isMinor && existing.docType === "id_card" && (
-                      <div>
-                        <label style={LABEL}>{T('docOptionId')} series</label>
-                        <input
-                          style={INPUT}
-                          value={existing.docSeries}
-                          onChange={e => update("docSeries", e.currentTarget.value.toUpperCase())}
-                        />
-                      </div>
-                    )}
-                    {!existing.isMinor && existing.docType === "passport" && (
-                      <div>
-                        <label style={LABEL}>{T('nationality').replace('*', '')}</label>
-                        <input
-                          style={INPUT}
-                          value={existing.docNationality}
-                          onChange={e => update("docNationality", e.currentTarget.value)}
-                        />
-                      </div>
+                        {!existing.isMinor && existing.docType === "id_card" && (
+                          <div style={ROW_2}>
+                            <div>
+                              <label style={LABEL}>Series*</label>
+                              <input
+                                style={INPUT}
+                                value={existing.docSeries}
+                                onChange={e => update("docSeries", e.currentTarget.value.toUpperCase())}
+                              />
+                            </div>
+                            <div>
+                              <label style={LABEL}>Number*</label>
+                              <input
+                                style={INPUT}
+                                value={existing.docNumber}
+                                onChange={e => update("docNumber", e.currentTarget.value)}
+                              />
+                            </div>
+                          </div>
+                        )}
+                        {!existing.isMinor && existing.docType === "passport" && (
+                          <div>
+                            <label style={LABEL}>Number*</label>
+                            <input
+                              style={INPUT}
+                              value={existing.docNumber}
+                              onChange={e => update("docNumber", e.currentTarget.value)}
+                            />
+                          </div>
+                        )}
+                      </>
                     )}
                     {companionsError && (
-                      <div style={{ padding: 8, borderRadius: 8, background: "var(--danger)", color: "#0c111b", fontWeight: 800 }}>
+                      <div style={{ fontSize: 12, color: "var(--danger)", fontWeight: 700 }}>
                         {companionsError}
                       </div>
                     )}
