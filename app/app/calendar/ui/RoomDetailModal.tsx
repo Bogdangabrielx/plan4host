@@ -1119,61 +1119,6 @@ export default function RoomDetailModal({
             </div>
           )}
 
-          {/* Custom detail fields */}
-          {(checkDefs.length > 0 || textDefs.length > 0) && (
-            <div style={{ display: "grid", gap: 10, marginTop: 6 }}>
-              <strong style={{ letterSpacing: 0.3 }}>Room details</strong>
-
-              {checkDefs.length > 0 && (
-                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
-                  {checkDefs.map(c => (
-                    <li key={c.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <input
-                        type="checkbox"
-                        checked={!!checkValues[c.id]}
-                        onChange={(e) => {
-                          const el = e.target as HTMLInputElement;
-                          setCheckValues(v => ({ ...v, [c.id]: el.checked }));
-                          setDetailsDirty(true);
-                        }}
-                      />
-                      <span style={{ fontWeight: 600 }}>{c.label}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {textDefs.length > 0 && (
-                <div style={{ display: "grid", gap: 10 }}>
-                  {textDefs.map(t => (
-                    <div key={t.id} style={{ display: "grid", gap: 6 }}>
-                      <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.label}</label>
-                      <input
-                        type="text"
-                        placeholder={t.placeholder ?? ""}
-                        value={textValues[t.id] ?? ""}
-                        onChange={(e) => {
-                          const el = e.target as HTMLInputElement;
-                          setTextValues(v => ({ ...v, [t.id]: el.value }));
-                          setDetailsDirty(true);
-                        }}
-                        style={{
-                          padding: "12px 12px",
-                          background: "var(--card)",
-                          color: "var(--text)",
-                          border: "1px solid var(--border)",
-                          borderRadius: 10,
-                          fontSize: 14,
-                          fontWeight: 600,
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Companions (collapsible, read-only) */}
           {companions.length > 0 && (
             <div
@@ -1297,6 +1242,61 @@ export default function RoomDetailModal({
                       </div>
                     );
                   })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Custom detail fields */}
+          {(checkDefs.length > 0 || textDefs.length > 0) && (
+            <div style={{ display: "grid", gap: 10, marginTop: 6 }}>
+              <strong style={{ letterSpacing: 0.3 }}>Room details</strong>
+
+              {checkDefs.length > 0 && (
+                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
+                  {checkDefs.map(c => (
+                    <li key={c.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <input
+                        type="checkbox"
+                        checked={!!checkValues[c.id]}
+                        onChange={(e) => {
+                          const el = e.target as HTMLInputElement;
+                          setCheckValues(v => ({ ...v, [c.id]: el.checked }));
+                          setDetailsDirty(true);
+                        }}
+                      />
+                      <span style={{ fontWeight: 600 }}>{c.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {textDefs.length > 0 && (
+                <div style={{ display: "grid", gap: 10 }}>
+                  {textDefs.map(t => (
+                    <div key={t.id} style={{ display: "grid", gap: 6 }}>
+                      <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.label}</label>
+                      <input
+                        type="text"
+                        placeholder={t.placeholder ?? ""}
+                        value={textValues[t.id] ?? ""}
+                        onChange={(e) => {
+                          const el = e.target as HTMLInputElement;
+                          setTextValues(v => ({ ...v, [t.id]: el.value }));
+                          setDetailsDirty(true);
+                        }}
+                        style={{
+                          padding: "12px 12px",
+                          background: "var(--card)",
+                          color: "var(--text)",
+                          border: "1px solid var(--border)",
+                          borderRadius: 10,
+                          fontSize: 14,
+                          fontWeight: 600,
+                        }}
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
