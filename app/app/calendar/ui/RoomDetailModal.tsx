@@ -751,17 +751,7 @@ export default function RoomDetailModal({
             >
               {on ? "ON" : "OFF"}
             </button>
-
-            {on && (
-              <button
-                onClick={() => setShowGuest(v => !v)}
-                style={showGuest ? baseBtn : baseBtnGuest}
-                title={showGuest ? "Hide guest details" : "Add guest details"}
-              >
-                {showGuest ? "Hide guest details" : "Guest details"}
-              </button>
-            )}
-             </div>
+          </div>
 
           {/* Dates row */}
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
@@ -844,8 +834,8 @@ export default function RoomDetailModal({
             </div>
           </div>
 
-          {/* Guest details */}
-          {on && showGuest && (
+          {/* Guest details (collapsible card) */}
+          {on && (
             <div
               className="sb-card"
               style={{
@@ -858,238 +848,250 @@ export default function RoomDetailModal({
                 gap: 10,
               }}
             >
-              <div
+              <button
+                type="button"
+                onClick={() => setShowGuest(v => !v)}
+                aria-expanded={showGuest}
                 style={{
+                  width: "100%",
+                  textAlign: "left",
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                 }}
               >
-                <span style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
-                  Guest
+                <span style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Guest details</span>
+                <span aria-hidden style={{ color: "var(--muted)", fontWeight: 800 }}>
+                  {showGuest ? "▾" : "▸"}
                 </span>
-              </div>
+              </button>
 
-              <div
-                style={{
-                  border: "1px solid var(--border)",
-                  borderRadius: 8,
-                  padding: 8,
-                  background: "var(--card)",
-                  display: "grid",
-                  gap: 10,
-                }}
-              >
+              {showGuest && (
                 <div
                   style={{
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
+                    padding: 8,
+                    background: "var(--card)",
                     display: "grid",
-                    gridTemplateColumns: isMobile ? "auto 1fr" : "auto 1fr",
-                    rowGap: 8,
-                    columnGap: 10,
-                    alignItems: "center",
+                    gap: 10,
                   }}
                 >
-                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>First name</div>
-                  <input
-                    type="text"
-                    value={guestFirst}
-                    onChange={(e) => setGuestFirst((e.target as HTMLInputElement).value)}
-                    placeholder="John"
-                    style={{
-                      padding: 0,
-                      background: "transparent",
-                      color: "var(--text)",
-                      border: "none",
-                      borderBottom: "1px dashed var(--border)",
-                      fontSize: 14,
-                      fontWeight: 600,
-                      outline: "none",
-                    }}
-                  />
-
-                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Last name</div>
-                  <input
-                    type="text"
-                    value={guestLast}
-                    onChange={(e) => setGuestLast((e.target as HTMLInputElement).value)}
-                    placeholder="Doe"
-                    style={{
-                      padding: 0,
-                      background: "transparent",
-                      color: "var(--text)",
-                      border: "none",
-                      borderBottom: "1px dashed var(--border)",
-                      fontSize: 14,
-                      fontWeight: 600,
-                      outline: "none",
-                    }}
-                  />
-
-                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Email</div>
-                  <input
-                    type="email"
-                    value={guestEmail}
-                    onChange={(e) => setGuestEmail((e.target as HTMLInputElement).value)}
-                    placeholder="john.doe@example.com"
-                    style={{
-                      padding: 0,
-                      background: "transparent",
-                      color: "var(--text)",
-                      border: "none",
-                      borderBottom: "1px dashed var(--border)",
-                      fontSize: 14,
-                      fontWeight: 600,
-                      outline: "none",
-                    }}
-                  />
-
-                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Phone</div>
-                  <input
-                    type="tel"
-                    value={guestPhone}
-                    onChange={(e) => setGuestPhone((e.target as HTMLInputElement).value)}
-                    placeholder="+40 7xx xxx xxx"
-                    style={{
-                      padding: 0,
-                      background: "transparent",
-                      color: "var(--text)",
-                      border: "none",
-                      borderBottom: "1px dashed var(--border)",
-                      fontSize: 14,
-                      fontWeight: 600,
-                      outline: "none",
-                    }}
-                  />
-
-                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Address</div>
-                  <input
-                    type="text"
-                    value={guestAddr}
-                    onChange={(e) => setGuestAddr((e.target as HTMLInputElement).value)}
-                    placeholder="Street, No."
-                    style={{
-                      padding: 0,
-                      background: "transparent",
-                      color: "var(--text)",
-                      border: "none",
-                      borderBottom: "1px dashed var(--border)",
-                      fontSize: 14,
-                      fontWeight: 600,
-                      outline: "none",
-                    }}
-                  />
-
-                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>City</div>
-                  <input
-                    type="text"
-                    value={guestCity}
-                    onChange={(e) => setGuestCity((e.target as HTMLInputElement).value)}
-                    placeholder="City"
-                    style={{
-                      padding: 0,
-                      background: "transparent",
-                      color: "var(--text)",
-                      border: "none",
-                      borderBottom: "1px dashed var(--border)",
-                      fontSize: 14,
-                      fontWeight: 600,
-                      outline: "none",
-                    }}
-                  />
-
-                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Country</div>
-                  <input
-                    type="text"
-                    value={guestCountry}
-                    onChange={(e) => setGuestCountry((e.target as HTMLInputElement).value)}
-                    placeholder="Country"
-                    style={{
-                      padding: 0,
-                      background: "transparent",
-                      color: "var(--text)",
-                      border: "none",
-                      borderBottom: "1px dashed var(--border)",
-                      fontSize: 14,
-                      fontWeight: 600,
-                      outline: "none",
-                    }}
-                  />
-                </div>
-
-                {/* Document (read-only, from check-in) */}
-                <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
-                  <strong style={{ letterSpacing: 0.3 }}>Guest ID document</strong>
                   <div
                     style={{
                       display: "grid",
                       gridTemplateColumns: isMobile ? "auto 1fr" : "auto 1fr",
-                      rowGap: 6,
+                      rowGap: 8,
                       columnGap: 10,
                       alignItems: "center",
                     }}
                   >
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Document type</div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>
-                      {fmtDocType(primaryDoc?.doc_type) || "—"}
-                    </div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>First name</div>
+                    <input
+                      type="text"
+                      value={guestFirst}
+                      onChange={(e) => setGuestFirst((e.target as HTMLInputElement).value)}
+                      placeholder="John"
+                      style={{
+                        padding: 0,
+                        background: "transparent",
+                        color: "var(--text)",
+                        border: "none",
+                        borderBottom: "1px dashed var(--border)",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        outline: "none",
+                      }}
+                    />
 
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Number</div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>
-                      {primaryDoc?.doc_number || "—"}
-                    </div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Last name</div>
+                    <input
+                      type="text"
+                      value={guestLast}
+                      onChange={(e) => setGuestLast((e.target as HTMLInputElement).value)}
+                      placeholder="Doe"
+                      style={{
+                        padding: 0,
+                        background: "transparent",
+                        color: "var(--text)",
+                        border: "none",
+                        borderBottom: "1px dashed var(--border)",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        outline: "none",
+                      }}
+                    />
 
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Series</div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>
-                      {primaryDoc?.doc_series || "—"}
-                    </div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Email</div>
+                    <input
+                      type="email"
+                      value={guestEmail}
+                      onChange={(e) => setGuestEmail((e.target as HTMLInputElement).value)}
+                      placeholder="john.doe@example.com"
+                      style={{
+                        padding: 0,
+                        background: "transparent",
+                        color: "var(--text)",
+                        border: "none",
+                        borderBottom: "1px dashed var(--border)",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        outline: "none",
+                      }}
+                    />
 
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Nationality</div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>
-                      {primaryDoc?.doc_nationality || "—"}
-                    </div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Phone</div>
+                    <input
+                      type="tel"
+                      value={guestPhone}
+                      onChange={(e) => setGuestPhone((e.target as HTMLInputElement).value)}
+                      placeholder="+40 7xx xxx xxx"
+                      style={{
+                        padding: 0,
+                        background: "transparent",
+                        color: "var(--text)",
+                        border: "none",
+                        borderBottom: "1px dashed var(--border)",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        outline: "none",
+                      }}
+                    />
 
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>File</div>
-                    <div style={{ fontSize: 13, fontWeight: 600 }}>
-                      {primaryDoc?.url ? (
-                        <a
-                          href={primaryDoc.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ textDecoration: "underline" }}
-                        >
-                          View document
-                        </a>
-                      ) : (
-                        <span style={{ color: "var(--muted)" }}>No file available</span>
-                      )}
-                    </div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Address</div>
+                    <input
+                      type="text"
+                      value={guestAddr}
+                      onChange={(e) => setGuestAddr((e.target as HTMLInputElement).value)}
+                      placeholder="Street, No."
+                      style={{
+                        padding: 0,
+                        background: "transparent",
+                        color: "var(--text)",
+                        border: "none",
+                        borderBottom: "1px dashed var(--border)",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        outline: "none",
+                      }}
+                    />
+
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>City</div>
+                    <input
+                      type="text"
+                      value={guestCity}
+                      onChange={(e) => setGuestCity((e.target as HTMLInputElement).value)}
+                      placeholder="City"
+                      style={{
+                        padding: 0,
+                        background: "transparent",
+                        color: "var(--text)",
+                        border: "none",
+                        borderBottom: "1px dashed var(--border)",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        outline: "none",
+                      }}
+                    />
+
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Country</div>
+                    <input
+                      type="text"
+                      value={guestCountry}
+                      onChange={(e) => setGuestCountry((e.target as HTMLInputElement).value)}
+                      placeholder="Country"
+                      style={{
+                        padding: 0,
+                        background: "transparent",
+                        color: "var(--text)",
+                        border: "none",
+                        borderBottom: "1px dashed var(--border)",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        outline: "none",
+                      }}
+                    />
                   </div>
 
-                  {/* Inline previews: ID image (if image) and Signature side by side */}
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginTop: 6 }}>
-                    <div style={{ display: 'grid', gap: 6 }}>
-                      <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>ID preview</label>
-                      {primaryDoc?.url && (primaryDoc?.mime_type || '').startsWith('image/') ? (
-                        <img src={primaryDoc.url} alt="ID document" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
-                      ) : (
-                        <small style={{ color: 'var(--muted)' }}>No image preview</small>
-                      )}
-                    </div>
-                    <div style={{ display: 'grid', gap: 6 }}>
-                      <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Signature</label>
-                      {signatureDoc?.url ? (
-                        <img src={signatureDoc.url} alt="Signature" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
-                      ) : (
-                        <small style={{ color: 'var(--muted)' }}>No signature provided</small>
-                      )}
-                    </div>
-                  </div>
+                  {/* Document (read-only, from check-in) */}
+                  <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
+                    <strong style={{ letterSpacing: 0.3 }}>Guest ID document</strong>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: isMobile ? "auto 1fr" : "auto 1fr",
+                        rowGap: 6,
+                        columnGap: 10,
+                        alignItems: "center",
+                      }}
+                    >
+                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Document type</div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>
+                        {fmtDocType(primaryDoc?.doc_type) || "—"}
+                      </div>
 
-                  <small style={{ color: "var(--muted)" }}>
-                    Document data is read-only and comes from the guest’s online check-in.
-                  </small>
+                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Number</div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>
+                        {primaryDoc?.doc_number || "—"}
+                      </div>
+
+                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Series</div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>
+                        {primaryDoc?.doc_series || "—"}
+                      </div>
+
+                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Nationality</div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>
+                        {primaryDoc?.doc_nationality || "—"}
+                      </div>
+
+                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>File</div>
+                      <div style={{ fontSize: 13, fontWeight: 600 }}>
+                        {primaryDoc?.url ? (
+                          <a
+                            href={primaryDoc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ textDecoration: "underline" }}
+                          >
+                            View document
+                          </a>
+                        ) : (
+                          <span style={{ color: "var(--muted)" }}>No file available</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Inline previews: ID image (if image) and Signature side by side */}
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginTop: 6 }}>
+                      <div style={{ display: 'grid', gap: 6 }}>
+                        <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>ID preview</label>
+                        {primaryDoc?.url && (primaryDoc?.mime_type || '').startsWith('image/') ? (
+                          <img src={primaryDoc.url} alt="ID document" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
+                        ) : (
+                          <small style={{ color: 'var(--muted)' }}>No image preview</small>
+                        )}
+                      </div>
+                      <div style={{ display: 'grid', gap: 6 }}>
+                        <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Signature</label>
+                        {signatureDoc?.url ? (
+                          <img src={signatureDoc.url} alt="Signature" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
+                        ) : (
+                          <small style={{ color: 'var(--muted)' }}>No signature provided</small>
+                        )}
+                      </div>
+                    </div>
+
+                    <small style={{ color: "var(--muted)" }}>
+                      Document data is read-only and comes from the guest’s online check-in.
+                    </small>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
