@@ -51,8 +51,12 @@ export default function DpaPage() {
 
           <h2 className={s.h2}>3. Categories of Data & Data Subjects</h2>
           <ul className={s.list}>
-            <li className={s.p}><strong>Data Subjects</strong>: Controller’s staff and end‑customers/guests.</li>
-            <li className={s.p}><strong>Personal Data</strong>: names, emails, reservation data (dates/room types), optional contact details provided by Controller, technical logs.</li>
+            <li className={s.p}><strong>Data Subjects</strong>: Controller’s staff and end‑customers/guests, including additional guests/companions in a reservation.</li>
+            <li className={s.p}>
+              <strong>Personal Data</strong>: names, emails, reservation data (dates/room/room type), optional contact details provided by Controller,
+              online check‑in data (address, nationality, document metadata such as document type/series/number and issuing country, where requested by the Controller or required by law),
+              and technical logs.
+            </li>
             <li className={s.p}>No special categories are intended to be processed by the Service.</li>
           </ul>
 
