@@ -252,80 +252,6 @@ export default async function CheckinQrView({ params }: { params: { id: string }
             </div>
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Last name</div>
             <div>{guestLastName || '—'}</div>
-            <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
-
-            {companions.length > 0 && (
-              <>
-                <div aria-hidden style={{ width:18 }}>
-                  <Icon pair={iconPairForForm('firstname')} />
-                </div>
-                <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Companions</div>
-                <div>
-                  <div style={{ display:'grid', gap:6 }}>
-                    {companions.map((c, idx) => {
-                      const name = [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || `Guest ${idx+2}`;
-                      return (
-                        <div key={idx} style={{ fontSize:12, display:'grid', gap:2 }}>
-                          <strong>{name}</strong>
-                          {c.birth_date && (
-                            <div style={{ color:'var(--muted)' }}>
-                              Birth date: <span style={{ color:'var(--text)' }}>{c.birth_date}</span>
-                            </div>
-                          )}
-                          {(c.citizenship || c.residence_country) && (
-                            <div style={{ color:'var(--muted)' }}>
-                              {c.citizenship && (
-                                <>
-                                  Citizenship: <span style={{ color:'var(--text)' }}>{c.citizenship}</span>
-                                </>
-                              )}
-                              {c.citizenship && c.residence_country && <span> • </span>}
-                              {c.residence_country && (
-                                <>
-                                  Residence: <span style={{ color:'var(--text)' }}>{c.residence_country}</span>
-                                </>
-                              )}
-                            </div>
-                          )}
-                          {c.is_minor ? (
-                            <div style={{ color:'var(--muted)' }}>
-                              Minor guest
-                              {c.guardian_name && (
-                                <>
-                                  {' '}— Guardian:{' '}
-                                  <span style={{ color:'var(--text)' }}>{c.guardian_name}</span>
-                                </>
-                              )}
-                            </div>
-                          ) : (
-                            (c.doc_type || c.doc_number) && (
-                              <div style={{ color:'var(--muted)' }}>
-                                {c.doc_type === 'id_card' && 'ID card'}
-                                {c.doc_type === 'passport' && 'Passport'}
-                                {(!c.doc_type || (c.doc_type !== 'id_card' && c.doc_type !== 'passport')) && 'Document'}
-                                {c.doc_series && (
-                                  <>
-                                    {' '}series <span style={{ color:'var(--text)' }}>{c.doc_series}</span>
-                                  </>
-                                )}
-                                {c.doc_number && (
-                                  <>
-                                    {c.doc_series ? ' • number ' : ' number '}
-                                    <span style={{ color:'var(--text)' }}>{c.doc_number}</span>
-                                  </>
-                                )}
-                              </div>
-                            )
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
-              </>
-            )}
-
             <div aria-hidden style={{ width:18 }}>
               <Icon pair={iconPairForForm('email')} />
             </div>
@@ -388,6 +314,77 @@ export default async function CheckinQrView({ params }: { params: { id: string }
                 </div>
                 <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>QR valid until</div>
                 <div>{validUntilText}</div>
+                {companions.length > 0 && (
+                  <>
+                    <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
+                    <div aria-hidden style={{ width:18 }}>
+                      <img src="/logoguest_forlight.png" alt="" width={16} height={16} style={{ display:'block' }} />
+                    </div>
+                    <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Companions</div>
+                    <div>
+                      <div style={{ display:'grid', gap:6 }}>
+                        {companions.map((c, idx) => {
+                          const name = [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || `Guest ${idx+2}`;
+                          return (
+                            <div key={idx} style={{ fontSize:12, display:'grid', gap:2 }}>
+                              <strong>{name}</strong>
+                              {c.birth_date && (
+                                <div style={{ color:'var(--muted)' }}>
+                                  Birth date: <span style={{ color:'var(--text)' }}>{c.birth_date}</span>
+                                </div>
+                              )}
+                              {(c.citizenship || c.residence_country) && (
+                                <div style={{ color:'var(--muted)' }}>
+                                  {c.citizenship && (
+                                    <>
+                                      Citizenship: <span style={{ color:'var(--text)' }}>{c.citizenship}</span>
+                                    </>
+                                  )}
+                                  {c.citizenship && c.residence_country && <span> • </span>}
+                                  {c.residence_country && (
+                                    <>
+                                      Residence: <span style={{ color:'var(--text)' }}>{c.residence_country}</span>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                              {c.is_minor ? (
+                                <div style={{ color:'var(--muted)' }}>
+                                  Minor guest
+                                  {c.guardian_name && (
+                                    <>
+                                      {' '}— Guardian:{' '}
+                                      <span style={{ color:'var(--text)' }}>{c.guardian_name}</span>
+                                    </>
+                                  )}
+                                </div>
+                              ) : (
+                                (c.doc_type || c.doc_number) && (
+                                  <div style={{ color:'var(--muted)' }}>
+                                    {c.doc_type === 'id_card' && 'ID card'}
+                                    {c.doc_type === 'passport' && 'Passport'}
+                                    {(!c.doc_type || (c.doc_type !== 'id_card' && c.doc_type !== 'passport')) && 'Document'}
+                                    {c.doc_series && (
+                                      <>
+                                        {' '}series <span style={{ color:'var(--text)' }}>{c.doc_series}</span>
+                                      </>
+                                    )}
+                                    {c.doc_number && (
+                                      <>
+                                        {c.doc_series ? ' • number ' : ' number '}
+                                        <span style={{ color:'var(--text)' }}>{c.doc_number}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>
