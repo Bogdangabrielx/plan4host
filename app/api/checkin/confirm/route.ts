@@ -76,6 +76,7 @@ export async function POST(req: Request) {
     let guestFirst: string | null = null;
     let guestLast: string | null = null;
     let validUntil: string | null = null;
+    let guestCompanions: any[] | null = null;
     try {
       // Try form_bookings first
       const rF = await admin
@@ -99,6 +100,9 @@ export async function POST(req: Request) {
         }
         const rtId = b.room_type_id || null;
         const rId = b.room_id || null;
+        if (Array.isArray((b as any).guest_companions)) {
+          guestCompanions = (b as any).guest_companions as any[];
+        }
         if (rtId) {
           try {
             const rT = await admin.from('room_types').select('name').eq('id', rtId).maybeSingle();
@@ -125,7 +129,7 @@ export async function POST(req: Request) {
           .eq('id', booking_id)
           .maybeSingle();
         if (!rB.error && rB.data) {
-          const b: any = rB.data;
+        const b: any = rB.data;
           startYMD = b.start_date || null;
           endYMD = b.end_date || null;
           guestFirst = (b.guest_first_name || null);
@@ -137,6 +141,9 @@ export async function POST(req: Request) {
               until.setUTCDate(until.getUTCDate() + 30);
               validUntil = `${String(until.getUTCDate()).padStart(2,'0')}.${String(until.getUTCMonth()+1).padStart(2,'0')}.${until.getUTCFullYear()}`;
             } catch {}
+          }
+          if (Array.isArray((b as any).guest_companions) && !guestCompanions) {
+            guestCompanions = (b as any).guest_companions as any[];
           }
           const rtId = b.room_type_id || null;
           const rId = b.room_id || null;
@@ -171,6 +178,10 @@ export async function POST(req: Request) {
     const arrival = fmt(startYMD);
     const depart = fmt(endYMD);
     const guestFull = [guestFirst, guestLast].filter(Boolean).join(' ').trim() || null;
+    const companionsCount = Array.isArray(guestCompanions) ? guestCompanions.length : 0;
+    const totalGuestsText = companionsCount > 0 && guestFull
+      ? `${guestFull} + ${companionsCount} guest${companionsCount > 1 ? 's' : ''}`
+      : guestFull;
     // validUntil already computed above when we loaded booking (based on start_date)
 
     const base = (process.env.NEXT_PUBLIC_APP_URL || 'https://plan4host.com').toString().replace(/\/+$/, '');
@@ -186,7 +197,7 @@ export async function POST(req: Request) {
         <h2 style="margin:0 0 12px;">Check-in received${propName ? ` for <span style=\"color:#3ECF8E\">${escapeHtml(propName)}</span>` : ''}</h2>
         <p style="margin:8px 0;">Thank you for submitting your check-in details${propName ? ` for <strong>${escapeHtml(propName)}</strong>` : ''}. We’ve forwarded your information to the property.</p>
         <div style="margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:grid; gap:10px;">
-          ${guestFull ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconGuest}\" alt=\"guest\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Guest:</strong> <span>${escapeHtml(guestFull)}</span></div>` : ''}
+          ${totalGuestsText ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconGuest}\" alt=\"guest\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Guest:</strong> <span>${escapeHtml(totalGuestsText)}</span></div>` : ''}
           ${(arrival && depart) ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconNight}\" alt=\"stay\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Stay:</strong> <span>${arrival} → ${depart}</span></div>` : ''}
         </div>
         <p style="margin:8px 0; color:#475569;">Once your reservation is confirmed, we’ll inform you which room you’ll be staying in and share any arrival details you’ll need.</p>
@@ -207,7 +218,7 @@ export async function POST(req: Request) {
     const lines: string[] = [];
     lines.push(`Check-in received${propName ? ` for ${propName}` : ''}`);
     if (arrival && depart) lines.push(`Stay: ${arrival} -> ${depart}`);
-    if (guestFull) lines.push(`Guest: ${guestFull}`);
+    if (totalGuestsText) lines.push(`Guest: ${totalGuestsText}`);
     lines.push('');
     lines.push('We’ve received your details and forwarded them to the property.\nQR: ${qrLink}');
     lines.push('Once your reservation is confirmed, we will inform you about your room and arrival details.');

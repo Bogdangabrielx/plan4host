@@ -125,6 +125,9 @@ export default async function CheckinQrView({ params }: { params: { id: string }
   const guestLastName = form?.guest_last_name ?? booking?.guest_last_name ?? null;
   const startDate = form?.start_date ?? booking?.start_date ?? null;
   const endDate = form?.end_date ?? booking?.end_date ?? null;
+  const companions: any[] =
+    (Array.isArray((form as any)?.guest_companions) ? (form as any).guest_companions :
+      Array.isArray((booking as any)?.guest_companions) ? (booking as any).guest_companions : []) as any[];
 
   const contact = {
     email: form?.guest_email ?? booking?.guest_email ?? bookingContact?.email ?? null,
@@ -250,6 +253,37 @@ export default async function CheckinQrView({ params }: { params: { id: string }
             <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Last name</div>
             <div>{guestLastName || '—'}</div>
             <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
+
+            {companions.length > 0 && (
+              <>
+                <div aria-hidden style={{ width:18 }}>
+                  <Icon pair={iconPairForForm('firstname')} />
+                </div>
+                <div style={{ color:'var(--muted)', fontSize:12, fontWeight:800 }}>Companions</div>
+                <div>
+                  <div style={{ display:'grid', gap:6 }}>
+                    {companions.map((c, idx) => {
+                      const name = [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || `Guest ${idx+2}`;
+                      const metaParts: string[] = [];
+                      if (c.birth_date) metaParts.push(c.birth_date);
+                      if (c.citizenship) metaParts.push(c.citizenship);
+                      if (c.residence_country) metaParts.push(c.residence_country);
+                      return (
+                        <div key={idx} style={{ fontSize:12 }}>
+                          <strong>{name}</strong>
+                          {metaParts.length > 0 && (
+                            <span style={{ color:'var(--muted)', marginLeft:6 }}>
+                              ({metaParts.join(' • ')})
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div style={{ gridColumn:'1 / -1', height:1, background:'var(--border)', margin:'6px 0' }} />
+              </>
+            )}
 
             <div aria-hidden style={{ width:18 }}>
               <Icon pair={iconPairForForm('email')} />

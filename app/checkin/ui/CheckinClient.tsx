@@ -1156,6 +1156,19 @@ export default function CheckinClient() {
             mime_type: uploadedSig.mime,
           }] : []),
         ],
+        guest_companions: expectedCompanions > 0 ? companions.slice(0, expectedCompanions).map(c => ({
+          first_name: c.firstName.trim(),
+          last_name: c.lastName.trim(),
+          birth_date: c.birthDate || null,
+          citizenship: c.citizenship.trim() || null,
+          residence_country: c.residenceCountry.trim() || null,
+          is_minor: !!c.isMinor,
+          guardian_name: c.isMinor ? (c.guardianName.trim() || null) : null,
+          doc_type: c.isMinor ? null : (c.docType || null),
+          doc_series: c.isMinor || c.docType !== "id_card" ? null : (c.docSeries.trim() || null),
+          doc_number: c.isMinor ? null : (c.docNumber.trim() || null),
+          doc_nationality: null,
+        })) : [],
         ota_provider_hint: providerHint || null,
       };
 

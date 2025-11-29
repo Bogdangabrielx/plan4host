@@ -191,6 +191,8 @@ export async function POST(req: NextRequest) {
 
       // docs v2
       docs,
+      // companions JSON
+      guest_companions,
     } = body ?? {};
 
     if (!property_id) {
@@ -277,7 +279,9 @@ export async function POST(req: NextRequest) {
         form_submitted_at: new Date().toISOString(),
       };
       if (matchedIsIcal) updatePayload.source = "ical";
-
+      if (Array.isArray(guest_companions)) {
+        updatePayload.guest_companions = guest_companions;
+      }
       await admin.from("bookings").update(updatePayload).eq("id", matchedBookingId);
 
       // auto-assign room dacă lipsește
@@ -407,6 +411,10 @@ export async function POST(req: NextRequest) {
       ota_provider_hint: mapProviderLabel((body as any)?.ota_provider_hint),
     };
 
+    if (Array.isArray(guest_companions)) {
+      basePayload.guest_companions = guest_companions;
+    }
+
     const ins = await admin.from("form_bookings").insert(basePayload).select("id").single();
     if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 });
 
@@ -531,6 +539,7 @@ export async function POST(req: NextRequest) {
       start_time,
       end_time,
       documents_saved,
+      guest_companions: Array.isArray(guest_companions) ? guest_companions : [],
     });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "Unexpected error" }, { status: 500 });
