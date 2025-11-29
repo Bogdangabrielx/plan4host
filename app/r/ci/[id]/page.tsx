@@ -264,17 +264,58 @@ export default async function CheckinQrView({ params }: { params: { id: string }
                   <div style={{ display:'grid', gap:6 }}>
                     {companions.map((c, idx) => {
                       const name = [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || `Guest ${idx+2}`;
-                      const metaParts: string[] = [];
-                      if (c.birth_date) metaParts.push(c.birth_date);
-                      if (c.citizenship) metaParts.push(c.citizenship);
-                      if (c.residence_country) metaParts.push(c.residence_country);
                       return (
-                        <div key={idx} style={{ fontSize:12 }}>
+                        <div key={idx} style={{ fontSize:12, display:'grid', gap:2 }}>
                           <strong>{name}</strong>
-                          {metaParts.length > 0 && (
-                            <span style={{ color:'var(--muted)', marginLeft:6 }}>
-                              ({metaParts.join(' • ')})
-                            </span>
+                          {c.birth_date && (
+                            <div style={{ color:'var(--muted)' }}>
+                              Birth date: <span style={{ color:'var(--text)' }}>{c.birth_date}</span>
+                            </div>
+                          )}
+                          {(c.citizenship || c.residence_country) && (
+                            <div style={{ color:'var(--muted)' }}>
+                              {c.citizenship && (
+                                <>
+                                  Citizenship: <span style={{ color:'var(--text)' }}>{c.citizenship}</span>
+                                </>
+                              )}
+                              {c.citizenship && c.residence_country && <span> • </span>}
+                              {c.residence_country && (
+                                <>
+                                  Residence: <span style={{ color:'var(--text)' }}>{c.residence_country}</span>
+                                </>
+                              )}
+                            </div>
+                          )}
+                          {c.is_minor ? (
+                            <div style={{ color:'var(--muted)' }}>
+                              Minor guest
+                              {c.guardian_name && (
+                                <>
+                                  {' '}— Guardian:{' '}
+                                  <span style={{ color:'var(--text)' }}>{c.guardian_name}</span>
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            (c.doc_type || c.doc_number) && (
+                              <div style={{ color:'var(--muted)' }}>
+                                {c.doc_type === 'id_card' && 'ID card'}
+                                {c.doc_type === 'passport' && 'Passport'}
+                                {(!c.doc_type || (c.doc_type !== 'id_card' && c.doc_type !== 'passport')) && 'Document'}
+                                {c.doc_series && (
+                                  <>
+                                    {' '}series <span style={{ color:'var(--text)' }}>{c.doc_series}</span>
+                                  </>
+                                )}
+                                {c.doc_number && (
+                                  <>
+                                    {c.doc_series ? ' • number ' : ' number '}
+                                    <span style={{ color:'var(--text)' }}>{c.doc_number}</span>
+                                  </>
+                                )}
+                              </div>
+                            )
                           )}
                         </div>
                       );
