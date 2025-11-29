@@ -1917,7 +1917,10 @@ export default function CheckinClient() {
                   <div style={{ display: "grid", gap: 10 }}>
                     <div style={ROW_2}>
                       <div>
-                        <label style={LABEL}>{T('firstName').replace('*', '')}</label>
+                        <label style={LABEL_ROW}>
+                          <Image src={formIcon("firstname")} alt="" width={16} height={16} />
+                          <span>{T('firstName').replace('*', '')}</span>
+                        </label>
                         <input
                           style={INPUT}
                           value={existing.firstName}
@@ -1925,7 +1928,10 @@ export default function CheckinClient() {
                         />
                       </div>
                       <div>
-                        <label style={LABEL}>{T('lastName').replace('*', '')}</label>
+                        <label style={LABEL_ROW}>
+                          <Image src={formIcon("lastname")} alt="" width={16} height={16} />
+                          <span>{T('lastName').replace('*', '')}</span>
+                        </label>
                         <input
                           style={INPUT}
                           value={existing.lastName}
@@ -1944,20 +1950,32 @@ export default function CheckinClient() {
                         />
                       </div>
                       <div>
-                        <label style={LABEL}>{T('nationality').replace('*', '')}</label>
-                        <input
-                          style={INPUT}
+                        <label style={LABEL_ROW}>
+                          <Image src={formIcon("country")} alt="" width={16} height={16} />
+                          <span>{T('nationality').replace('*', '')}</span>
+                        </label>
+                        <Combobox
                           value={existing.citizenship}
-                          onChange={e => update("citizenship", e.currentTarget.value)}
+                          onCommit={(v) => update("citizenship", v)}
+                          options={countries.map(c => c.name)}
+                          placeholder="Start typing… e.g. Romania"
+                          minChars={0}
+                          inputStyle={INPUT}
                         />
                       </div>
                     </div>
                     <div>
-                      <label style={LABEL}>{(TXT as any)[lang].residenceCountry}</label>
-                      <input
-                        style={INPUT}
+                      <label style={LABEL_ROW}>
+                        <Image src={formIcon("country")} alt="" width={16} height={16} />
+                        <span>{(TXT as any)[lang].residenceCountry}</span>
+                      </label>
+                      <Combobox
                         value={existing.residenceCountry}
-                        onChange={e => update("residenceCountry", e.currentTarget.value)}
+                        onCommit={(v) => update("residenceCountry", v)}
+                        options={countries.map(c => c.name)}
+                        placeholder="Start typing… e.g. Romania"
+                        minChars={0}
+                        inputStyle={INPUT}
                       />
                     </div>
                     <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
@@ -1980,7 +1998,10 @@ export default function CheckinClient() {
                     ) : (
                       <div style={ROW_2}>
                         <div>
-                          <label style={LABEL}>{T('docTypeLabel').replace('*', '')}</label>
+                          <label style={LABEL_ROW}>
+                            <Image src={formIcon("id")} alt="" width={16} height={16} />
+                            <span>{T('docTypeLabel').replace('*', '')}</span>
+                          </label>
                           <select
                             style={SELECT}
                             value={existing.docType}
