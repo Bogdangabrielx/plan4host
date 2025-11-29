@@ -880,142 +880,140 @@ export default function RoomDetailModal({
                   gap: 10,
                 }}
               >
-                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
-                  {/* Names */}
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>First name</label>
-                    <input
-                      type="text"
-                      value={guestFirst}
-                      onChange={(e) => setGuestFirst((e.target as HTMLInputElement).value)}
-                      placeholder="John"
-                      style={{
-                        padding: "12px 12px",
-                        background: "var(--card)",
-                        color: "var(--text)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 10,
-                        fontSize: 14,
-                        fontWeight: 600,
-                      }}
-                    />
-                  </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: isMobile ? "auto 1fr" : "auto 1fr",
+                    rowGap: 8,
+                    columnGap: 10,
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>First name</div>
+                  <input
+                    type="text"
+                    value={guestFirst}
+                    onChange={(e) => setGuestFirst((e.target as HTMLInputElement).value)}
+                    placeholder="John"
+                    style={{
+                      padding: 0,
+                      background: "transparent",
+                      color: "var(--text)",
+                      border: "none",
+                      borderBottom: "1px dashed var(--border)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      outline: "none",
+                    }}
+                  />
 
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Last name</label>
-                    <input
-                      type="text"
-                      value={guestLast}
-                      onChange={(e) => setGuestLast((e.target as HTMLInputElement).value)}
-                      placeholder="Doe"
-                      style={{
-                        padding: "12px 12px",
-                        background: "var(--card)",
-                        color: "var(--text)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 10,
-                        fontSize: 14,
-                        fontWeight: 600,
-                      }}
-                    />
-                  </div>
+                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Last name</div>
+                  <input
+                    type="text"
+                    value={guestLast}
+                    onChange={(e) => setGuestLast((e.target as HTMLInputElement).value)}
+                    placeholder="Doe"
+                    style={{
+                      padding: 0,
+                      background: "transparent",
+                      color: "var(--text)",
+                      border: "none",
+                      borderBottom: "1px dashed var(--border)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      outline: "none",
+                    }}
+                  />
 
-                  {/* Contact */}
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Email</label>
-                    <input
-                      type="email"
-                      value={guestEmail}
-                      onChange={(e) => setGuestEmail((e.target as HTMLInputElement).value)}
-                      placeholder="john.doe@example.com"
-                      style={{
-                        padding: "12px 12px",
-                        background: "var(--card)",
-                        color: "var(--text)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 10,
-                        fontSize: 14,
-                        fontWeight: 600,
-                      }}
-                    />
-                  </div>
+                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Email</div>
+                  <input
+                    type="email"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail((e.target as HTMLInputElement).value)}
+                    placeholder="john.doe@example.com"
+                    style={{
+                      padding: 0,
+                      background: "transparent",
+                      color: "var(--text)",
+                      border: "none",
+                      borderBottom: "1px dashed var(--border)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      outline: "none",
+                    }}
+                  />
 
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Phone</label>
-                    <input
-                      type="tel"
-                      value={guestPhone}
-                      onChange={(e) => setGuestPhone((e.target as HTMLInputElement).value)}
-                      placeholder="+40 7xx xxx xxx"
-                      style={{
-                        padding: "12px 12px",
-                        background: "var(--card)",
-                        color: "var(--text)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 10,
-                        fontSize: 14,
-                        fontWeight: 600,
-                      }}
-                    />
-                  </div>
+                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Phone</div>
+                  <input
+                    type="tel"
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone((e.target as HTMLInputElement).value)}
+                    placeholder="+40 7xx xxx xxx"
+                    style={{
+                      padding: 0,
+                      background: "transparent",
+                      color: "var(--text)",
+                      border: "none",
+                      borderBottom: "1px dashed var(--border)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      outline: "none",
+                    }}
+                  />
 
-                  {/* Address */}
-                  <div style={{ gridColumn: isMobile ? "auto" : "1 / -1", display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Address (street & number)</label>
-                    <input
-                      type="text"
-                      value={guestAddr}
-                      onChange={(e) => setGuestAddr((e.target as HTMLInputElement).value)}
-                      placeholder="Street, No."
-                      style={{
-                        padding: "12px 12px",
-                        background: "var(--card)",
-                        color: "var(--text)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 10,
-                        fontSize: 14,
-                        fontWeight: 600,
-                      }}
-                    />
-                  </div>
+                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Address</div>
+                  <input
+                    type="text"
+                    value={guestAddr}
+                    onChange={(e) => setGuestAddr((e.target as HTMLInputElement).value)}
+                    placeholder="Street, No."
+                    style={{
+                      padding: 0,
+                      background: "transparent",
+                      color: "var(--text)",
+                      border: "none",
+                      borderBottom: "1px dashed var(--border)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      outline: "none",
+                    }}
+                  />
 
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>City</label>
-                    <input
-                      type="text"
-                      value={guestCity}
-                      onChange={(e) => setGuestCity((e.target as HTMLInputElement).value)}
-                      placeholder="City"
-                      style={{
-                        padding: "12px 12px",
-                        background: "var(--card)",
-                        color: "var(--text)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 10,
-                        fontSize: 14,
-                        fontWeight: 600,
-                      }}
-                    />
-                  </div>
+                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>City</div>
+                  <input
+                    type="text"
+                    value={guestCity}
+                    onChange={(e) => setGuestCity((e.target as HTMLInputElement).value)}
+                    placeholder="City"
+                    style={{
+                      padding: 0,
+                      background: "transparent",
+                      color: "var(--text)",
+                      border: "none",
+                      borderBottom: "1px dashed var(--border)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      outline: "none",
+                    }}
+                  />
 
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Country</label>
-                    <input
-                      type="text"
-                      value={guestCountry}
-                      onChange={(e) => setGuestCountry((e.target as HTMLInputElement).value)}
-                      placeholder="Country"
-                      style={{
-                        padding: "12px 12px",
-                        background: "var(--card)",
-                        color: "var(--text)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 10,
-                        fontSize: 14,
-                        fontWeight: 600,
-                      }}
-                    />
-                  </div>
+                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Country</div>
+                  <input
+                    type="text"
+                    value={guestCountry}
+                    onChange={(e) => setGuestCountry((e.target as HTMLInputElement).value)}
+                    placeholder="Country"
+                    style={{
+                      padding: 0,
+                      background: "transparent",
+                      color: "var(--text)",
+                      border: "none",
+                      borderBottom: "1px dashed var(--border)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      outline: "none",
+                    }}
+                  />
                 </div>
 
                 {/* Document (read-only, from check-in) */}
