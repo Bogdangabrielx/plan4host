@@ -60,7 +60,7 @@ export default async function CheckinQrView({ params }: { params: { id: string }
     const rForm = await admin
       .from("form_bookings")
       .select(
-        "id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, guest_address, guest_city, guest_country, room_id, room_type_id, created_at, submitted_at"
+        "id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, guest_address, guest_city, guest_country, room_id, room_type_id, created_at, submitted_at, guest_companions"
       )
       .eq("id", bookingId)
       .maybeSingle();
@@ -71,7 +71,7 @@ export default async function CheckinQrView({ params }: { params: { id: string }
     const rBooking = await admin
       .from("bookings")
       .select(
-        "id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, guest_address, room_id, room_type_id, form_id, form_submitted_at, created_at"
+        "id, property_id, start_date, end_date, guest_first_name, guest_last_name, guest_email, guest_phone, guest_address, room_id, room_type_id, form_id, form_submitted_at, created_at, guest_companions"
       )
       .eq("id", bookingId)
       .maybeSingle();

@@ -77,13 +77,13 @@ export async function POST(req: Request) {
     let guestLast: string | null = null;
     let validUntil: string | null = null;
     let guestCompanions: any[] | null = null;
-    try {
-      // Try form_bookings first
-      const rF = await admin
-        .from('form_bookings')
-        .select('room_id, room_type_id, start_date, end_date, guest_first_name, guest_last_name, submitted_at, created_at')
-        .eq('id', booking_id)
-        .maybeSingle();
+  try {
+    // Try form_bookings first
+    const rF = await admin
+      .from('form_bookings')
+      .select('room_id, room_type_id, start_date, end_date, guest_first_name, guest_last_name, submitted_at, created_at, guest_companions')
+      .eq('id', booking_id)
+      .maybeSingle();
       if (!rF.error && rF.data) {
         const b: any = rF.data;
         startYMD = b.start_date || null;
@@ -125,7 +125,7 @@ export async function POST(req: Request) {
         // fallback: bookings
         const rB = await admin
           .from('bookings')
-          .select('room_id, room_type_id, start_date, end_date, guest_first_name, guest_last_name, form_submitted_at, created_at')
+          .select('room_id, room_type_id, start_date, end_date, guest_first_name, guest_last_name, form_submitted_at, created_at, guest_companions')
           .eq('id', booking_id)
           .maybeSingle();
         if (!rB.error && rB.data) {
