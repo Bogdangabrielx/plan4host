@@ -1183,6 +1183,9 @@ function EditFormBookingModal({
   const hasRoomTypes = roomTypes.length > 0;
   // Camere eligibile: au un eveniment în bookings pentru intervalul formularului (fără form atașat)
   const [eligibleRooms, setEligibleRooms] = useState<Set<string>>(new Set());
+  // Guest companions (read-only)
+  const [companions, setCompanions] = useState<any[]>([]);
+  const [companionsOpen, setCompanionsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     let alive = true;
@@ -1193,7 +1196,7 @@ function EditFormBookingModal({
         const [bRes, rRes, rtRes, cRes] = await Promise.all([
           supabase
             .from("form_bookings")
-            .select("id,property_id,start_date,end_date,room_id,room_type_id,state,guest_first_name,guest_last_name,guest_email,guest_phone")
+            .select("id,property_id,start_date,end_date,room_id,room_type_id,state,guest_first_name,guest_last_name,guest_email,guest_phone,guest_companions")
             .eq("id", bookingId)
             .maybeSingle(),
           supabase
@@ -1236,6 +1239,8 @@ function EditFormBookingModal({
         setGuestLast(bRes.data.guest_last_name || "");
         setGuestEmail((bRes.data.guest_email || cRes.data?.email || "") as string);
         setGuestPhone(((bRes.data as any).guest_phone || cRes.data?.phone || "") as string);
+        const gc = (bRes.data as any).guest_companions;
+        setCompanions(Array.isArray(gc) ? gc : []);
 
         if (rRes.error) throw new Error(rRes.error.message);
         setRooms((rRes.data || []) as any);
@@ -1799,6 +1804,86 @@ function EditFormBookingModal({
                 </div>
               )}
             </div>
+
+            {/* Companions (collapsible) */}
+            {companions.length > 0 && (
+              <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)", display:"grid", gap:10 }}>
+                <button
+                  type="button"
+                  onClick={() => setCompanionsOpen(v => !v)}
+                  aria-expanded={companionsOpen}
+                  style={{
+                    width:'100%', textAlign:'left', background:'transparent', border:'none', padding:0, cursor:'pointer',
+                    display:'flex', alignItems:'center', justifyContent:'space-between'
+                  }}
+                >
+                  <span style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Companions</span>
+                  <span aria-hidden style={{ color:'var(--muted)', fontWeight:800 }}>{companionsOpen ? '▾' : '▸'}</span>
+                </button>
+                {companionsOpen && (
+                  <div style={{ display:'grid', gap:8 }}>
+                    {companions.map((c, idx) => {
+                      const name = [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || `Guest ${idx+2}`;
+                      return (
+                        <div key={idx} style={{ border:'1px solid var(--border)', borderRadius:8, padding:8, display:'grid', gap:4, background:'var(--card)' }}>
+                          <div style={{ fontWeight:800 }}>{name}</div>
+                          {c.birth_date && (
+                            <div style={{ fontSize:12, color:'var(--muted)' }}>
+                              Birth date: <span style={{ color:'var(--text)' }}>{c.birth_date}</span>
+                            </div>
+                          )}
+                          {(c.citizenship || c.residence_country) && (
+                            <div style={{ fontSize:12, color:'var(--muted)' }}>
+                              {c.citizenship && (
+                                <>
+                                  Citizenship: <span style={{ color:'var(--text)' }}>{c.citizenship}</span>
+                                </>
+                              )}
+                              {c.citizenship && c.residence_country && <span> • </span>}
+                              {c.residence_country && (
+                                <>
+                                  Residence: <span style={{ color:'var(--text)' }}>{c.residence_country}</span>
+                                </>
+                              )}
+                            </div>
+                          )}
+                          {c.is_minor ? (
+                            <div style={{ fontSize:12, color:'var(--muted)' }}>
+                              Minor guest
+                              {c.guardian_name && (
+                                <>
+                                  {' '}— Guardian:{' '}
+                                  <span style={{ color:'var(--text)' }}>{c.guardian_name}</span>
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            (c.doc_type || c.doc_number) && (
+                              <div style={{ fontSize:12, color:'var(--muted)' }}>
+                                {c.doc_type === 'id_card' && 'ID card'}
+                                {c.doc_type === 'passport' && 'Passport'}
+                                {(!c.doc_type || (c.doc_type !== 'id_card' && c.doc_type !== 'passport')) && 'Document'}
+                                {c.doc_series && (
+                                  <>
+                                    {' '}series <span style={{ color:'var(--text)' }}>{c.doc_series}</span>
+                                  </>
+                                )}
+                                {c.doc_number && (
+                                  <>
+                                    {c.doc_series ? ' • number ' : ' number '}
+                                    <span style={{ color:'var(--text)' }}>{c.doc_number}</span>
+                                  </>
+                                )}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Editable fields */}
             <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)", display:"grid", gap:10 }}>
