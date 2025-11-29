@@ -104,7 +104,7 @@ export async function PATCH(
     const { data: booking, error: e1 } = await supa
       .from("form_bookings")
       .select(
-        "id,property_id,start_date,end_date,room_id,room_type_id,state,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address,guest_city,guest_country"
+        "id,property_id,start_date,end_date,room_id,room_type_id,state,guest_first_name,guest_last_name,guest_email,guest_phone,guest_address,guest_city,guest_country,guest_companions"
       )
       .eq("id", id)
       .single();
@@ -230,6 +230,10 @@ export async function PATCH(
       // Bring non-empty guest fields from form onto booking, without overwriting existing non-empty values
       const fb = booking as any;
       const upd: any = { form_id: id, status: 'confirmed', start_date, end_date };
+      // Always copy companions JSON from form onto booking so calendar / admin views can render them
+      if (Array.isArray(fb.guest_companions)) {
+        upd.guest_companions = fb.guest_companions;
+      }
       // sincronizează camera și type pe booking
       if (room_id) {
         upd.room_id = room_id;
@@ -328,9 +332,14 @@ export async function PATCH(
         await cleanupPhotos('form_documents', 'form_id', String(id));
       } catch {}
     } else if (linkedBooking) {
-      // No target booking change (e.g., no room change), but dates changed → sync dates to linked booking
+      // No target booking change (e.g., no room change), but dates changed → sync dates (and companions) to linked booking
       try {
-        await admin.from('bookings').update({ start_date, end_date }).eq('id', linkedBooking.id);
+        const fb = booking as any;
+        const upd: any = { start_date, end_date };
+        if (Array.isArray(fb.guest_companions)) {
+          upd.guest_companions = fb.guest_companions;
+        }
+        await admin.from('bookings').update(upd).eq('id', linkedBooking.id);
       } catch {}
     }
 
