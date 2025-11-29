@@ -847,167 +847,48 @@ export default function RoomDetailModal({
           {/* Guest details */}
           {on && showGuest && (
             <div
+              className="sb-card"
               style={{
                 marginTop: 6,
                 padding: 12,
-                border: "0.5px solid var(--border)",
-                borderRadius: 12,
+                border: "1px solid var(--border)",
+                borderRadius: 10,
                 background: "var(--panel)",
                 display: "grid",
-                gap: 12,
+                gap: 10,
               }}
             >
-              <strong style={{ letterSpacing: 0.3 }}>Guest details</strong>
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
-                {/* Names */}
-                <div style={{ display: "grid", gap: 6 }}>
-                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>First name</label>
-                  <input
-                    type="text"
-                    value={guestFirst}
-                    onChange={(e) => setGuestFirst((e.target as HTMLInputElement).value)}
-                    placeholder="John"
-                    style={{
-                      padding: "12px 12px",
-                      background: "var(--card)",
-                      color: "var(--text)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 10,
-                      fontSize: 14,
-                      fontWeight: 600,
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: "grid", gap: 6 }}>
-                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Last name</label>
-                  <input
-                    type="text"
-                    value={guestLast}
-                    onChange={(e) => setGuestLast((e.target as HTMLInputElement).value)}
-                    placeholder="Doe"
-                    style={{
-                      padding: "12px 12px",
-                      background: "var(--card)",
-                      color: "var(--text)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 10,
-                      fontSize: 14,
-                      fontWeight: 600,
-                    }}
-                  />
-                </div>
-
-                {/* Contact */}
-                <div style={{ display: "grid", gap: 6 }}>
-                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Email</label>
-                  <input
-                    type="email"
-                    value={guestEmail}
-                    onChange={(e) => setGuestEmail((e.target as HTMLInputElement).value)}
-                    placeholder="john.doe@example.com"
-                    style={{
-                      padding: "12px 12px",
-                      background: "var(--card)",
-                      color: "var(--text)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 10,
-                      fontSize: 14,
-                      fontWeight: 600,
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: "grid", gap: 6 }}>
-                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Phone</label>
-                  <input
-                    type="tel"
-                    value={guestPhone}
-                    onChange={(e) => setGuestPhone((e.target as HTMLInputElement).value)}
-                    placeholder="+40 7xx xxx xxx"
-                    style={{
-                      padding: "12px 12px",
-                      background: "var(--card)",
-                      color: "var(--text)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 10,
-                      fontSize: 14,
-                      fontWeight: 600,
-                    }}
-                  />
-                </div>
-
-                {/* Address */}
-                <div style={{ gridColumn: isMobile ? "auto" : "1 / -1", display: "grid", gap: 6 }}>
-                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Address (street & number)</label>
-                  <input
-                    type="text"
-                    value={guestAddr}
-                    onChange={(e) => setGuestAddr((e.target as HTMLInputElement).value)}
-                    placeholder="Street, No."
-                    style={{
-                      padding: "12px 12px",
-                      background: "var(--card)",
-                      color: "var(--text)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 10,
-                      fontSize: 14,
-                      fontWeight: 600,
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: "grid", gap: 6 }}>
-                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>City</label>
-                  <input
-                    type="text"
-                    value={guestCity}
-                    onChange={(e) => setGuestCity((e.target as HTMLInputElement).value)}
-                    placeholder="City"
-                    style={{
-                      padding: "12px 12px",
-                      background: "var(--card)",
-                      color: "var(--text)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 10,
-                      fontSize: 14,
-                      fontWeight: 600,
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: "grid", gap: 6 }}>
-                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Country</label>
-                  <input
-                    type="text"
-                    value={guestCountry}
-                    onChange={(e) => setGuestCountry((e.target as HTMLInputElement).value)}
-                    placeholder="Country"
-                    style={{
-                      padding: "12px 12px",
-                      background: "var(--card)",
-                      color: "var(--text)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 10,
-                      fontSize: 14,
-                      fontWeight: 600,
-                    }}
-                  />
-                </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <span style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
+                  Guest
+                </span>
               </div>
 
-              {/* Document (read-only, from check-in) */}
-              <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
-                <strong style={{ letterSpacing: 0.3 }}>Guest ID document</strong>
+              <div
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: 8,
+                  padding: 8,
+                  background: "var(--card)",
+                  display: "grid",
+                  gap: 10,
+                }}
+              >
                 <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
-                  {/* Type + link */}
+                  {/* Names */}
                   <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Document type</label>
+                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>First name</label>
                     <input
                       type="text"
-                      disabled
-                      value={fmtDocType(primaryDoc?.doc_type)}
-                      placeholder="—"
+                      value={guestFirst}
+                      onChange={(e) => setGuestFirst((e.target as HTMLInputElement).value)}
+                      placeholder="John"
                       style={{
                         padding: "12px 12px",
                         background: "var(--card)",
@@ -1016,47 +897,17 @@ export default function RoomDetailModal({
                         borderRadius: 10,
                         fontSize: 14,
                         fontWeight: 600,
-                        opacity: 0.9,
-                      }}
-                    />
-                    {primaryDoc?.url ? (
-                      <a href={primaryDoc.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline", fontWeight: 800 }}>
-                        View file
-                      </a>
-                    ) : (
-                      <small style={{ color: "var(--muted)" }}>No file available</small>
-                    )}
-                  </div>
-
-                  {/* Number */}
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Number</label>
-                    <input
-                      type="text"
-                      disabled
-                      value={primaryDoc?.doc_number || ""}
-                      placeholder="—"
-                      style={{
-                        padding: "12px 12px",
-                        background: "var(--card)",
-                        color: "var(--text)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 10,
-                        fontSize: 14,
-                        fontWeight: 600,
-                        opacity: 0.9,
                       }}
                     />
                   </div>
 
-                  {/* Series */}
                   <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Series</label>
+                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Last name</label>
                     <input
                       type="text"
-                      disabled
-                      value={primaryDoc?.doc_series || ""}
-                      placeholder="—"
+                      value={guestLast}
+                      onChange={(e) => setGuestLast((e.target as HTMLInputElement).value)}
+                      placeholder="Doe"
                       style={{
                         padding: "12px 12px",
                         background: "var(--card)",
@@ -1065,19 +916,18 @@ export default function RoomDetailModal({
                         borderRadius: 10,
                         fontSize: 14,
                         fontWeight: 600,
-                        opacity: 0.9,
                       }}
                     />
                   </div>
 
-                  {/* Nationality */}
+                  {/* Contact */}
                   <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Nationality</label>
+                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Email</label>
                     <input
-                      type="text"
-                      disabled
-                      value={primaryDoc?.doc_nationality || ""}
-                      placeholder="—"
+                      type="email"
+                      value={guestEmail}
+                      onChange={(e) => setGuestEmail((e.target as HTMLInputElement).value)}
+                      placeholder="john.doe@example.com"
                       style={{
                         padding: "12px 12px",
                         background: "var(--card)",
@@ -1086,35 +936,208 @@ export default function RoomDetailModal({
                         borderRadius: 10,
                         fontSize: 14,
                         fontWeight: 600,
-                        opacity: 0.9,
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Phone</label>
+                    <input
+                      type="tel"
+                      value={guestPhone}
+                      onChange={(e) => setGuestPhone((e.target as HTMLInputElement).value)}
+                      placeholder="+40 7xx xxx xxx"
+                      style={{
+                        padding: "12px 12px",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        fontSize: 14,
+                        fontWeight: 600,
+                      }}
+                    />
+                  </div>
+
+                  {/* Address */}
+                  <div style={{ gridColumn: isMobile ? "auto" : "1 / -1", display: "grid", gap: 6 }}>
+                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Address (street & number)</label>
+                    <input
+                      type="text"
+                      value={guestAddr}
+                      onChange={(e) => setGuestAddr((e.target as HTMLInputElement).value)}
+                      placeholder="Street, No."
+                      style={{
+                        padding: "12px 12px",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        fontSize: 14,
+                        fontWeight: 600,
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>City</label>
+                    <input
+                      type="text"
+                      value={guestCity}
+                      onChange={(e) => setGuestCity((e.target as HTMLInputElement).value)}
+                      placeholder="City"
+                      style={{
+                        padding: "12px 12px",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        fontSize: 14,
+                        fontWeight: 600,
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Country</label>
+                    <input
+                      type="text"
+                      value={guestCountry}
+                      onChange={(e) => setGuestCountry((e.target as HTMLInputElement).value)}
+                      placeholder="Country"
+                      style={{
+                        padding: "12px 12px",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        fontSize: 14,
+                        fontWeight: 600,
                       }}
                     />
                   </div>
                 </div>
 
-                {/* Inline previews: ID image (if image) and Signature side by side */}
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginTop: 6 }}>
-                  <div style={{ display: 'grid', gap: 6 }}>
-                    <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>ID preview</label>
-                    {primaryDoc?.url && (primaryDoc?.mime_type || '').startsWith('image/') ? (
-                      <img src={primaryDoc.url} alt="ID document" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
-                    ) : (
-                      <small style={{ color: 'var(--muted)' }}>No image preview</small>
-                    )}
-                  </div>
-                  <div style={{ display: 'grid', gap: 6 }}>
-                    <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Signature</label>
-                    {signatureDoc?.url ? (
-                      <img src={signatureDoc.url} alt="Signature" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
-                    ) : (
-                      <small style={{ color: 'var(--muted)' }}>No signature provided</small>
-                    )}
-                  </div>
-                </div>
+                {/* Document (read-only, from check-in) */}
+                <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
+                  <strong style={{ letterSpacing: 0.3 }}>Guest ID document</strong>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+                    {/* Type + link */}
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Document type</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={fmtDocType(primaryDoc?.doc_type)}
+                        placeholder="—"
+                        style={{
+                          padding: "12px 12px",
+                          background: "var(--card)",
+                          color: "var(--text)",
+                          border: "1px solid var(--border)",
+                          borderRadius: 10,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          opacity: 0.9,
+                        }}
+                      />
+                      {primaryDoc?.url ? (
+                        <a href={primaryDoc.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline", fontWeight: 800 }}>
+                          View file
+                        </a>
+                      ) : (
+                        <small style={{ color: "var(--muted)" }}>No file available</small>
+                      )}
+                    </div>
 
-                <small style={{ color: "var(--muted)" }}>
-                  Document data is read-only and comes from the guest’s online check-in.
-                </small>
+                    {/* Number */}
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Number</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={primaryDoc?.doc_number || ""}
+                        placeholder="—"
+                        style={{
+                          padding: "12px 12px",
+                          background: "var(--card)",
+                          color: "var(--text)",
+                          border: "1px solid var(--border)",
+                          borderRadius: 10,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          opacity: 0.9,
+                        }}
+                      />
+                    </div>
+
+                    {/* Series */}
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Series</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={primaryDoc?.doc_series || ""}
+                        placeholder="—"
+                        style={{
+                          padding: "12px 12px",
+                          background: "var(--card)",
+                          color: "var(--text)",
+                          border: "1px solid var(--border)",
+                          borderRadius: 10,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          opacity: 0.9,
+                        }}
+                      />
+                    </div>
+
+                    {/* Nationality */}
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Nationality</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={primaryDoc?.doc_nationality || ""}
+                        placeholder="—"
+                        style={{
+                          padding: "12px 12px",
+                          background: "var(--card)",
+                          color: "var(--text)",
+                          border: "1px solid var(--border)",
+                          borderRadius: 10,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          opacity: 0.9,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Inline previews: ID image (if image) and Signature side by side */}
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginTop: 6 }}>
+                    <div style={{ display: 'grid', gap: 6 }}>
+                      <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>ID preview</label>
+                      {primaryDoc?.url && (primaryDoc?.mime_type || '').startsWith('image/') ? (
+                        <img src={primaryDoc.url} alt="ID document" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
+                      ) : (
+                        <small style={{ color: 'var(--muted)' }}>No image preview</small>
+                      )}
+                    </div>
+                    <div style={{ display: 'grid', gap: 6 }}>
+                      <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Signature</label>
+                      {signatureDoc?.url ? (
+                        <img src={signatureDoc.url} alt="Signature" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
+                      ) : (
+                        <small style={{ color: 'var(--muted)' }}>No signature provided</small>
+                      )}
+                    </div>
+                  </div>
+
+                  <small style={{ color: "var(--muted)" }}>
+                    Document data is read-only and comes from the guest’s online check-in.
+                  </small>
+                </div>
               </div>
             </div>
           )}
