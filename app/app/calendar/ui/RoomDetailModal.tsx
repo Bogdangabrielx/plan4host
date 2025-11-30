@@ -667,47 +667,24 @@ export default function RoomDetailModal({
           padding: 16,
         }}
       >
-        {/* ── Sticky TOP painter (maschează spațiul de deasupra headerului la scroll) ── */}
+        {/* Header + status (sticky while scrolling) */}
         <div
-          aria-hidden
           style={{
             position: "sticky",
             top: 0,
-            zIndex: 2,
-            height: 0,
-            pointerEvents: "none",
+            zIndex: 3,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+            flexWrap: "nowrap",
+            background: "var(--panel)",
+            paddingTop: 8,
+            paddingBottom: 8,
+            marginBottom: 12,
+            boxShadow: "0 1px 0 var(--border)",
           }}
         >
-          <div
-            style={{
-              height: 14,                     // grosimea „painter”-ului
-              transform: "translateY(-14px)", // urcă peste marginea superioară
-              background: "var(--panel)",     // aceeași culoare ca fundalul modalului
-            }}
-          />
-        </div>
-         
-          {/* Header + status (flushed to container top, no gap while scrolling) */}
-          <div
-            style={{
-              position: "sticky",
-              // lipim headerul de muchia containerului care are padding: 16
-              top: -16,
-              marginTop: -16,
-              paddingTop: 16,
-              zIndex: 3,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 8,
-              flexWrap: "wrap",
-              background: "var(--panel)",
-              paddingBottom: 8,
-              marginBottom: 12,
-              // înlocuiește borderBottom pentru o linie curată fără artefacte
-              boxShadow: "0 1px 0 var(--border)",
-            }}
-          >
             <strong>{room.name} — {dateStr} — Reservation</strong>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span
