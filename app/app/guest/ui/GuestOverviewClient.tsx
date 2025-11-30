@@ -1506,7 +1506,9 @@ function EditFormBookingModal({
   const card: React.CSSProperties = {
     width: "min(680px, 100%)",
     maxHeight: "calc(100dvh - 32px)",
-    overflowY: "auto",
+    display: "grid",
+    gridTemplateRows: "auto 1fr",
+    overflow: "hidden",
     WebkitOverflowScrolling: "touch",
     overscrollBehavior: "contain",
     touchAction: "pan-y",
@@ -1699,6 +1701,7 @@ function EditFormBookingModal({
         </div>
       )}
       <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={card}>
+        {/* Fixed header inside modal card */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:8 }}>
           <strong>{confirmOnSave ? 'Modify booking' : 'Confirm booking'}</strong>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
@@ -1706,12 +1709,14 @@ function EditFormBookingModal({
           </div>
         </div>
 
-        {loading ? (
-          <div style={{ color:"var(--muted)" }}>Loading…</div>
-        ) : error ? (
-          <div style={{ color:"var(--danger)" }}>{error}</div>
-        ) : (
-          <div style={{ display:"grid", gap:12 }}>
+        {/* Scrollable content */}
+        <div style={{ overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
+          {loading ? (
+            <div style={{ color:"var(--muted)" }}>Loading…</div>
+          ) : error ? (
+            <div style={{ color:"var(--danger)" }}>{error}</div>
+          ) : (
+            <div style={{ display:"grid", gap:12 }}>
             {/* Read-only guest details */}
             <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)" }}>
               <div style={{ fontSize:12, color:"var(--muted)", fontWeight:800, marginBottom:6 }}>Guest</div>
@@ -1979,7 +1984,9 @@ function EditFormBookingModal({
               <div style={{ color:"var(--danger)" }}>End date cannot be before start date.</div>
             )}
           </div>
-        )}
+          {/* Extra spacer so actions can scroll above bottom nav / keyboard */}
+          <div style={{ height: 64 }} aria-hidden />
+        </div>
       </div>
     </div>
   );
