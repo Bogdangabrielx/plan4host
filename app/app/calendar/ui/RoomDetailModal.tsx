@@ -667,6 +667,18 @@ export default function RoomDetailModal({
           padding: 16,
         }}
       >
+        {/* ── Sticky TOP painter (full-width mask above header) ── */}
+        <div
+          aria-hidden
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 2,
+            height: 8,
+            background: "var(--panel)",
+          }}
+        />
+
         {/* Header + status (sticky while scrolling) */}
         <div
           style={{
