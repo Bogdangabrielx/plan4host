@@ -659,13 +659,14 @@ export default function RoomDetailModal({
         style={{
           width: "min(1000px, 100%)",
           maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 24px + 24px))",
-          overflow: "auto",
           background: "var(--panel)",
           color: "var(--text)",
           border: "1px solid var(--border)",
           borderRadius: 12,
           padding: 16,
           paddingTop: 0,
+          display: "grid",
+          gridTemplateRows: "auto 1fr",
         }}
       >
         {/* ── Sticky TOP painter (full-width mask above header) ── */}
@@ -743,8 +744,17 @@ export default function RoomDetailModal({
             </div>
           </div>
 
-        {/* Reservation toggle + dates */}
-        <div style={{ display: "grid", gap: 16 }}>
+        {/* Scrollable content below fixed header */}
+        <div
+          style={{
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
+            paddingTop: 0,
+            paddingBottom: 0,
+          }}
+        >
+          {/* Reservation toggle + dates */}
+          <div style={{ display: "grid", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <label style={{ fontWeight: 800, fontSize: 14, letterSpacing: 0.2 }}>Reservation</label>
             <button
@@ -1324,6 +1334,7 @@ export default function RoomDetailModal({
           </div>
           {/* Extra spacer at bottom so action buttons can be scrolled above bottom nav / keyboard */}
           <div style={{ height: 64 }} aria-hidden />
+        </div>
         </div>
       </div>
       {releaseConfirmOpen && (
