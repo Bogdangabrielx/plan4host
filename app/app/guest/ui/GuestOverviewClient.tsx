@@ -195,11 +195,23 @@ function useIsSmall() {
 }
 
 function useTap(handler: () => void) {
-  // pointer-up = fără delay pe mobil, funcționează și pe desktop
   return {
+    // Prefer pointer events when disponibile (no 300ms delay, unified for touch/mouse)
     onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => {
       // ignoră clickul non-primar la mouse
       if (e.pointerType === "mouse" && (e.button ?? 0) !== 0) return;
+      e.preventDefault();
+      // Marchează evenimentul ca deja tratat, pentru a evita dublarea cu onClick
+      try {
+        (e.nativeEvent as any).__p4hHandled = true;
+      } catch {/* noop */}
+      handler();
+    },
+    // Fallback pentru browsere fără Pointer Events sau pentru activare prin tastatură
+    onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+      const native: any = e.nativeEvent as any;
+      // Dacă a fost deja tratat de onPointerUp, nu mai facem nimic
+      if (native && native.__p4hHandled) return;
       e.preventDefault();
       handler();
     },
