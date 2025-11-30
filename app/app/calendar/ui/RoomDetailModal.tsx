@@ -646,10 +646,11 @@ export default function RoomDetailModal({
         zIndex: 250,
         background: "rgba(0,0,0,0.6)",
         display: "grid",
-        placeItems: "center",
+        alignItems: "stretch",
+        justifyItems: "center",
         fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-        paddingTop: "calc(var(--safe-top) + 12px)",
-        paddingBottom: "calc(var(--safe-bottom) + 12px)",
+        paddingTop: "calc(var(--safe-top) + 8px)",
+        paddingBottom: "calc(var(--safe-bottom) + 8px)",
         paddingLeft: "12px",
         paddingRight: "12px",
       }}
@@ -658,7 +659,7 @@ export default function RoomDetailModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "min(1000px, 100%)",
-          maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 24px + 24px))",
+          maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 16px))",
           overflow: "auto",
           background: "var(--panel)",
           color: "var(--text)",
@@ -689,49 +690,69 @@ export default function RoomDetailModal({
          
           {/* Header + status (flushed to container top, no gap while scrolling) */}
           <div
-          style={{
-         position: "sticky",
-          // lipim headerul de muchia containerului care are padding: 16
-          top: -16,
-          marginTop: -16,
-            paddingTop: 16,
-           zIndex: 3,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-           gap: 8,
-            flexWrap: "wrap",
-            background: "var(--panel)",
-            paddingBottom: 8,
-            marginBottom: 12,
-            // înlocuiește borderBottom pentru o linie curată fără artefacte
-            boxShadow: "0 1px 0 var(--border)",
-           }}
-            > 
-           <strong>{room.name} — {dateStr} — Reservation</strong>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span
-              style={{
-                fontSize: 12,
-                padding: "4px 8px",
-                borderRadius: 999,
-                background:
-                  status === "Idle"      ? "transparent"      :
-                  status === "Saving..." ? "var(--primary)"   :
-                  status === "Error"     ? "var(--danger)"    :
-                  status === "Saved"     ? "var(--success, #22c55e)" : "#2a2f3a",
-                color:
-                  status === "Idle"      ? "transparent"      :
-                  status === "Saving..." ? "#0c111b"          : "#fff",
-                border: status === "Idle" ? "1px solid transparent" : undefined,
-                fontWeight: 700,
-              }}
-            >
-              {status}
-            </span>
-            {statusHint && <small style={{ color: "var(--muted)" }}>{statusHint}</small>}
+            style={{
+              position: "sticky",
+              // lipim headerul de muchia containerului care are padding: 16
+              top: -16,
+              marginTop: -16,
+              paddingTop: 16,
+              zIndex: 3,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+              flexWrap: "wrap",
+              background: "var(--panel)",
+              paddingBottom: 8,
+              marginBottom: 12,
+              // înlocuiește borderBottom pentru o linie curată fără artefacte
+              boxShadow: "0 1px 0 var(--border)",
+            }}
+          >
+            <strong>{room.name} — {dateStr} — Reservation</strong>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  fontSize: 12,
+                  padding: "4px 8px",
+                  borderRadius: 999,
+                  background:
+                    status === "Idle"      ? "transparent"      :
+                    status === "Saving..." ? "var(--primary)"   :
+                    status === "Error"     ? "var(--danger)"    :
+                    status === "Saved"     ? "var(--success, #22c55e)" : "#2a2f3a",
+                  color:
+                    status === "Idle"      ? "transparent"      :
+                    status === "Saving..." ? "#0c111b"          : "#fff",
+                  border: status === "Idle" ? "1px solid transparent" : undefined,
+                  fontWeight: 700,
+                }}
+              >
+                {status}
+              </span>
+              {statusHint && <small style={{ color: "var(--muted)" }}>{statusHint}</small>}
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 999,
+                  border: "1px solid var(--border)",
+                  background: "var(--card)",
+                  color: "var(--text)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                }}
+              >
+                ×
+              </button>
+            </div>
           </div>
-        </div>
 
         {/* Reservation toggle + dates */}
         <div style={{ display: "grid", gap: 16 }}>
