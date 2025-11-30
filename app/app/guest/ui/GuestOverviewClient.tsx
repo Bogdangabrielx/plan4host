@@ -1,6 +1,7 @@
 // app/app/guestOverview/ui/GuestOverviewClient.tsx
 "use client";
 
+import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import QrWithLogo from "@/components/QrWithLogo";
@@ -1517,7 +1518,7 @@ function EditFormBookingModal({
   };
 
   return (
-    <div  className="sb-cardglow" role="dialog" aria-modal="true" onClick={() => { if (!popupMsg) onClose(); }} style={wrap}>
+    <div className="sb-cardglow" role="dialog" aria-modal="true" onClick={() => { if (!popupMsg) onClose(); }} style={wrap}>
       {popupMsg && (
         <div 
           role="dialog"
@@ -1983,9 +1984,9 @@ function EditFormBookingModal({
             {(!valid() && startDate && endDate && endDate < startDate) && (
               <div style={{ color:"var(--danger)" }}>End date cannot be before start date.</div>
             )}
+            <div style={{ height: 64 }} aria-hidden />
           </div>
-          {/* Extra spacer so actions can scroll above bottom nav / keyboard */}
-          <div style={{ height: 64 }} aria-hidden />
+          )}
         </div>
       </div>
     </div>
