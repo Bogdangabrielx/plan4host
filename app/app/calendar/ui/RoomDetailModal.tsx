@@ -674,7 +674,9 @@ export default function RoomDetailModal({
             position: "sticky",
             top: 0,
             zIndex: 2,
-            height: 8,
+            // extinde pictorul peste paddingul de sus, astfel încât să fie „lipit” de marginea modalului
+            marginTop: -16,
+            height: 16,
             background: "var(--panel)",
           }}
         />
