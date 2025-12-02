@@ -1059,14 +1059,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                                 rx="0.75"
                                 fill="#e5e7eb"
                               />
-                              <rect
-                                x="11.25"
-                                y="7"
-                                width="1.5"
-                                height="2"
-                                rx="0.75"
-                                fill="#e5e7eb"
-                              />
+                              <circle cx="12" cy="6" r="0.9" fill="#e5e7eb" />
                             </svg>
                           )}
                           {id === "amenities" && (
@@ -1114,7 +1107,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                               aria-hidden="true"
                             >
                               <path
-                                d="M12 3l7 7-1.1 1.1L13 6.2V21h-2V6.2L6.1 11.1 5 10l7-7z"
+                                d="M12 3a5 5 0 00-5 5c0 3.3 4.2 8 5 9 0.8-1 5-5.7 5-9a5 5 0 00-5-5zm0 2a3 3 0 110 6 3 3 0 010-6z"
                                 fill="#e5e7eb"
                               />
                             </svg>
