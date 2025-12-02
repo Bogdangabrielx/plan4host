@@ -391,7 +391,19 @@ type ChatLangCode =
   | "pl"
   | "hu"
   | "cs"
-  | "sk";
+  | "sk"
+  | "bg"
+  | "ru"
+  | "uk"
+  | "el"
+  | "tr"
+  | "sv"
+  | "no"
+  | "da"
+  | "fi"
+  | "hr"
+  | "sr"
+  | "sl";
 
 type ChatLangOption = {
   code: ChatLangCode;
@@ -413,6 +425,18 @@ const CHAT_LANG_OPTIONS: ChatLangOption[] = [
   { code: "hu", flag: "🇭🇺", nameEn: "Hungarian", nameRo: "Maghiară" },
   { code: "cs", flag: "🇨🇿", nameEn: "Czech", nameRo: "Cehă" },
   { code: "sk", flag: "🇸🇰", nameEn: "Slovak", nameRo: "Slovacă" },
+  { code: "bg", flag: "🇧🇬", nameEn: "Bulgarian", nameRo: "Bulgară" },
+  { code: "ru", flag: "🇷🇺", nameEn: "Russian", nameRo: "Rusă" },
+  { code: "uk", flag: "🇺🇦", nameEn: "Ukrainian", nameRo: "Ucraineană" },
+  { code: "el", flag: "🇬🇷", nameEn: "Greek", nameRo: "Greacă" },
+  { code: "tr", flag: "🇹🇷", nameEn: "Turkish", nameRo: "Turcă" },
+  { code: "sv", flag: "🇸🇪", nameEn: "Swedish", nameRo: "Suedeză" },
+  { code: "no", flag: "🇳🇴", nameEn: "Norwegian", nameRo: "Norvegiană" },
+  { code: "da", flag: "🇩🇰", nameEn: "Danish", nameRo: "Daneză" },
+  { code: "fi", flag: "🇫🇮", nameEn: "Finnish", nameRo: "Finlandeză" },
+  { code: "hr", flag: "🇭🇷", nameEn: "Croatian", nameRo: "Croată" },
+  { code: "sr", flag: "🇷🇸", nameEn: "Serbian", nameRo: "Sârbă" },
+  { code: "sl", flag: "🇸🇮", nameEn: "Slovenian", nameRo: "Slovenă" },
 ];
 
 type ChatTopicId = "arrival" | "amenities" | "extras" | "checkout" | "contact_host";
