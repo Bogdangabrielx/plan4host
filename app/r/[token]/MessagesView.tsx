@@ -771,7 +771,8 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
-                  background: "var(--primary)",
+                  background:
+                    "linear-gradient(135deg, #00d1ff, #7c3aed)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -789,10 +790,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
               </div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700 }}>
-                  Guest assistant
-                </div>
-                <div style={{ fontSize: 11, color: "var(--muted)" }}>
-                  Demo – answers are not live yet.
+                  Guest AI assistant
                 </div>
               </div>
             </div>
