@@ -412,7 +412,7 @@ function ChatFab({ lang }: ChatFabProps) {
     boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
     display: "grid",
     gridTemplateRows: "auto auto 1fr auto",
-    overflow: "hidden",
+    overflow: "visible",
     zIndex: 215,
   };
 
