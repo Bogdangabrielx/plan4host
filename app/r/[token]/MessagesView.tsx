@@ -343,9 +343,22 @@ const CHAT_LANG_OPTIONS: ChatLangOption[] = [
   { code: "sk", flag: "🇸🇰", nameEn: "Slovak", nameRo: "Slovacă" },
 ];
 
+type PredefinedQuestion = {
+  id: string;
+  label: string;
+};
+
+const PREDEFINED_QUESTIONS: PredefinedQuestion[] = [
+  { id: "checkin", label: "What time is check-in and where do I get the keys?" },
+  { id: "checkout", label: "What time is check-out and what should I do before leaving?" },
+  { id: "parking", label: "Where can I park and is it free or paid?" },
+  { id: "pets", label: "Are pets allowed and are there any extra fees or rules?" },
+  { id: "noise", label: "Are there any quiet hours or noise rules I should know about?" },
+  { id: "wifi", label: "What is the Wi‑Fi information and are there any usage limits?" },
+];
+
 function ChatFab({ lang }: ChatFabProps) {
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
   const [chatLang, setChatLang] = useState<ChatLangCode | null>(null);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
@@ -362,19 +375,15 @@ function ChatFab({ lang }: ChatFabProps) {
     [chatLang]
   );
 
-  function handleSend(e: React.FormEvent) {
-    e.preventDefault();
+  function handleQuestionClick(q: PredefinedQuestion) {
     if (!chatLang) return;
-    const trimmed = input.trim();
-    if (!trimmed) return;
-    setInput("");
     setMessages((prev) => {
       const nextId = (prev[prev.length - 1]?.id ?? 0) + 1;
-      const withGuest: ChatMessage[] = [...prev, { id: nextId, from: "guest", text: trimmed }];
+      const withGuest: ChatMessage[] = [...prev, { id: nextId, from: "guest", text: q.label }];
       const opt = CHAT_LANG_OPTIONS.find((o) => o.code === chatLang);
       const targetName = opt?.nameEn || "the selected language";
       const replyText =
-        `Thanks for your message! In the final version, this area will show automatic answers, translated into ${targetName}, based on house rules and your reservation details.`;
+        `Demo: in the final version, this question will be answered using the property's house rules and reservation details, and the answer will be translated into ${targetName}.`;
       return [
         ...withGuest,
         { id: nextId + 1, from: "assistant", text: replyText },
@@ -436,36 +445,27 @@ function ChatFab({ lang }: ChatFabProps) {
     overflowY: "auto",
   };
 
-  const formStyle: React.CSSProperties = {
+  const questionsBarStyle: React.CSSProperties = {
     padding: 10,
     borderTop: "1px solid var(--border)",
-    display: "flex",
+    display: "grid",
     gap: 8,
-    alignItems: "center",
+    background: "rgba(12,17,27,0.65)",
   };
 
-  const inputStyle: React.CSSProperties = {
-    flex: 1,
+  const questionBtnStyle: React.CSSProperties = {
+    width: "100%",
+    textAlign: "left",
     borderRadius: 999,
-    border: "1px solid var(--border)",
-    padding: "8px 12px",
-    fontFamily: "inherit",
-    fontSize: 14,
-    outline: "none",
-    background: "var(--card)",
-    color: "var(--text)",
-  };
-
-  const sendBtnStyle: React.CSSProperties = {
-    borderRadius: 999,
-    border: "1px solid var(--border)",
-    background: "var(--primary)",
-    color: "#0c111b",
-    padding: "8px 12px",
-    fontSize: 13,
-    fontWeight: 600,
+    border: "1px solid rgba(255,255,255,0.18)",
+    background: "rgba(15,23,42,0.92)",
+    color: "#e5e7eb",
+    padding: "7px 10px",
+    fontSize: 12,
     cursor: "pointer",
-    whiteSpace: "nowrap",
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
   };
 
   const languageBarStyle: React.CSSProperties = {
@@ -522,11 +522,6 @@ function ChatFab({ lang }: ChatFabProps) {
     cursor: "pointer",
     color: "var(--text)",
   };
-
-  const sendDisabled = !chatLang || !input.trim();
-  const inputPlaceholder = !chatLang
-    ? "Please choose a language above first…"
-    : "Type a question...";
 
   function handleSelectLanguage(option: ChatLangOption) {
     setChatLang(option.code);
@@ -688,27 +683,28 @@ function ChatFab({ lang }: ChatFabProps) {
             ))}
           </div>
 
-          <form onSubmit={handleSend} style={formStyle}>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.currentTarget.value)}
-              placeholder={inputPlaceholder}
-              disabled={!chatLang}
-              style={inputStyle}
-            />
-            <button
-              type="submit"
-              style={{
-                ...sendBtnStyle,
-                opacity: sendDisabled ? 0.6 : 1,
-                cursor: sendDisabled ? "not-allowed" : "pointer",
-              }}
-              disabled={sendDisabled}
-            >
-              Send
-            </button>
-          </form>
+          <div style={questionsBarStyle}>
+            <div style={{ fontSize: 11, color: "var(--muted)" }}>
+              Choose a question you need help with. In the final version, answers will be tailored to this property.
+            </div>
+            <div style={{ display: "grid", gap: 6 }}>
+              {PREDEFINED_QUESTIONS.map((q) => (
+                <button
+                  key={q.id}
+                  type="button"
+                  style={{
+                    ...questionBtnStyle,
+                    opacity: chatLang ? 1 : 0.5,
+                    cursor: chatLang ? "pointer" : "not-allowed",
+                  }}
+                  onClick={() => { if (chatLang) handleQuestionClick(q); }}
+                >
+                  <span aria-hidden style={{ fontSize: 14 }}>•</span>
+                  <span>{q.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
