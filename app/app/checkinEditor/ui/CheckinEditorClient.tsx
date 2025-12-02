@@ -611,6 +611,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   type="button"
                   onClick={openAiHouseRulesModalFromPdf}
                   title="Read PDF text and prepare it as source for the guest AI assistant"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #00d1ff, #7c3aed)",
+                    borderColor: "transparent",
+                    color: "#0c111b",
+                    fontWeight: 600,
+                  }}
                 >
                   Read &amp; prepare text for AI
                 </button>
