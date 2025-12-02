@@ -501,6 +501,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 onClick={(e) => e.stopPropagation()}
                 className="sb-card"
                 style={{
+                  position: "relative",
                   width: "min(720px, 100%)",
                   maxHeight: "calc(100dvh - 40px)",
                   background: "var(--panel)",
@@ -529,10 +530,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   </button>
                 </div>
                 <div style={{ fontSize: 13, color: "var(--muted)" }}>
-                  {aiModalLoading
-                    ? "Reading your House Rules PDF…"
-                    : aiModalError === "extract_failed"
-                    ? "We couldn't automatically extract the text from your House Rules PDF. Please paste or type below the rules you want the guest assistant to use."
+                  {aiModalError === "extract_failed"
+                    ? "We couldn't automatically extract the text from your House Rules PDF. Please paste or type below the rules you want the guest AI assistant to use."
                     : "This text will be used as input for the guest AI assistant (arrival details, amenities, etc.). Review it, remove any sensitive information (door codes, passwords, private links), then confirm."}
                 </div>
                 <textarea
@@ -564,7 +563,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   }}
                 >
                   <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                    {aiModalLoading ? "Reading PDF…" : ""}
+                    {aiModalLoading ? "" : ""}
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button
@@ -595,6 +594,43 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     )}
                   </div>
                 </div>
+
+                {aiModalLoading && (
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      borderRadius: 12,
+                      background: "rgba(15,23,42,0.82)",
+                      display: "grid",
+                      placeItems: "center",
+                    }}
+                  >
+                    <div
+                      className="sb-card"
+                      style={{
+                        padding: 12,
+                        borderRadius: 10,
+                        border: "1px solid var(--border)",
+                        background:
+                          "linear-gradient(135deg, rgba(0,209,255,0.16), rgba(124,58,237,0.28))",
+                        color: "#f9fafb",
+                        minWidth: 260,
+                        textAlign: "center",
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
+                      }}
+                    >
+                      <div style={{ marginBottom: 4, fontWeight: 600 }}>
+                        Reading your House Rules PDF…
+                      </div>
+                      <div style={{ fontSize: 12, opacity: 0.9 }}>
+                        Please wait while we prepare the text for your guest AI
+                        assistant.
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
