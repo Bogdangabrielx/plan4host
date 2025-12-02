@@ -47,9 +47,9 @@ export default function ChangelogPage() {
                 Help guests find answers instantly with Guest AI assistant
               </h2>
               <p className={s.p}>
-                We’ve added a floating AI assistant to the public reservation page{" "}
-                <code style={{ fontFamily: "monospace", fontSize: 12 }}>r/[token]</code>. Guests choose their
-                preferred language and tap smart menus instead of typing long questions.
+                We’ve added a floating AI assistant to the dedicated guest page where each reservation sees your
+                automated messages and key stay details. Guests choose their preferred language and tap smart menus
+                instead of typing long questions.
               </p>
               <ul className={s.list} style={{ marginTop: 0 }}>
                 <li className={s.p}>
