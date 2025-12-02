@@ -613,8 +613,17 @@ export default function HomePageRO() {
           </h2>
           <p>
             Plan4Host este soluția completă pentru gestionarea rezervărilor, calendar centralizat și check‑in online,
-            <br />ajutând pensiunile și apartamentele în regim hotelier să evite overbooking, să automatizeze mesajele către oaspeți
+            <br />
+            ajutând pensiunile și apartamentele în regim hotelier să evite overbooking, să automatizeze mesajele către oaspeți
             și să își eficientizeze administrarea zilnică.
+            <br />
+            <span
+              className={styles.betterGrad}
+              style={{ textTransform: "uppercase", fontWeight: 800 }}
+            >
+              Guest AI assistant
+            </span>{" "}
+            îi ajută pe oaspeți să găsească rapid detalii despre sosire, facilități, recomandări și check‑out.
           </p>
           <div className={styles.heroCta}>
             <button
@@ -626,7 +635,7 @@ export default function HomePageRO() {
             </button>
             <CtaLink
               href="/ro/asistent-ai-oaspeti"
-              className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}
+              className={`sb-cardglow ${styles.btn} ${styles.btnAi} ${styles.focusable}`}
             >
               Vezi Guest AI assistant
             </CtaLink>

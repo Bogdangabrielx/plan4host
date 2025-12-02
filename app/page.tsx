@@ -912,7 +912,16 @@ export default function HomePage() {
           </h2>
           <p>
             Plan4Host is the complete solution for reservation management, a centralized calendar and online check‑in —
-            <br />helping guesthouses and serviced apartments avoid overbooking, automate guest messaging, and streamline daily operations.
+            <br />
+            helping guesthouses and serviced apartments avoid overbooking, automate guest messaging, and streamline daily operations.
+            <br />
+            <span
+              className={styles.betterGrad}
+              style={{ textTransform: "uppercase", fontWeight: 800 }}
+            >
+              Guest AI assistant
+            </span>{" "}
+            helps your guests quickly find answers about arrival, amenities, recommendations and check‑out.
           </p>
           <div className={styles.heroCta}>
             {/* Start free -> login in signup mode (animated) */}
@@ -925,7 +934,7 @@ export default function HomePage() {
             </button>
             <CtaLink
               href="/guest-ai-assistant"
-              className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}
+              className={`sb-cardglow ${styles.btn} ${styles.btnAi} ${styles.focusable}`}
               onNavigate={() => { /* no-op for now */ }}
             >
               See Guest AI assistant

@@ -89,6 +89,17 @@ will-change: transform;
 .btnPrimary:hover { box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 45%, transparent); }
 .btnGhost { background: transparent; color: var(--text); }
 
+/* AI gradient CTA */
+.btnAi {
+  background: linear-gradient(135deg, #00d1ff, #7c3aed);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.5);
+}
+.btnAi:hover {
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.6);
+}
+
 /* Mobile nav */
 .menuToggle { display: none; }
 .mobileMenu { display: none; font-size: 18; padding: 10px 20px; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--bg) 92%, transparent); }
