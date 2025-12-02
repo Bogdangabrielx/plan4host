@@ -536,8 +536,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     borderBottom: "1px solid rgba(255,255,255,0.06)",
-    background:
-      "linear-gradient(135deg, rgba(0,209,255,0.16), rgba(124,58,237,0.32))",
+    background: "linear-gradient(135deg, #00d1ff, #7c3aed)",
     color: "#f9fafb",
   };
 
@@ -568,7 +567,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
     padding: "8px 12px",
     borderBottom: "1px solid rgba(255,255,255,0.12)",
     background:
-      "linear-gradient(135deg, rgba(0,209,255,0.06), rgba(124,58,237,0.16))",
+      "linear-gradient(135deg, rgba(0,209,255,0.3), rgba(124,58,237,0.7))",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
