@@ -366,7 +366,13 @@ export default function MessagesView({ token, data }: { token: string; data: any
       )}
 
       {prop?.guest_ai_enabled && (
-        <ChatFab lang={lang} prop={prop} details={details} items={items} />
+        <ChatFab
+          lang={lang}
+          prop={prop}
+          details={details}
+          items={items}
+          token={token}
+        />
       )}
     </>
   );
@@ -377,6 +383,7 @@ type ChatFabProps = {
   prop: PropInfo;
   details: Details;
   items: Item[];
+  token: string;
 };
 
 type ChatLangCode =
@@ -498,7 +505,7 @@ const QUESTION_GROUPS: ChatTopicId[] = [
   "contact_host",
 ];
 
-function ChatFab({ lang, prop, details, items }: ChatFabProps) {
+function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
   const [open, setOpen] = useState(false);
   const [chatLang, setChatLang] = useState<ChatLangCode | null>(null);
   const [showLangMenu, setShowLangMenu] = useState(false);
@@ -531,6 +538,17 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   const [extrasSubtopic, setExtrasSubtopic] = useState<ExtrasSubtopic | null>(null);
   const [extrasLoading, setExtrasLoading] = useState(false);
   const [extrasAnswer, setExtrasAnswer] = useState<string | null>(null);
+  const [aiLimitReached, setAiLimitReached] = useState(false);
+  const [aiUsage, setAiUsage] = useState<number>(() => {
+    if (typeof window === "undefined") return 0;
+    try {
+      const raw = window.localStorage.getItem(`p4h:guestai:usage:${token}`);
+      const n = raw ? parseInt(raw, 10) : 0;
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    } catch {
+      return 0;
+    }
+  });
   const selectedLang = useMemo(
     () => (chatLang ? CHAT_LANG_OPTIONS.find((o) => o.code === chatLang) ?? null : null),
     [chatLang]
@@ -670,6 +688,37 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   const backLabel = menuLabels.back;
   const contactCtaLabel = menuLabels.contact_cta;
 
+  const AI_LIMIT = 30;
+
+  function incrementAiUsage() {
+    setAiUsage((prev) => {
+      const next = prev + 1;
+      try {
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(
+            `p4h:guestai:usage:${token}`,
+            String(next),
+          );
+        }
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  }
+
+  function ensureAiQuota(): boolean {
+    if (aiUsage >= AI_LIMIT) {
+      setAiLimitReached(true);
+      return false;
+    }
+    incrementAiUsage();
+    if (aiUsage + 1 >= AI_LIMIT) {
+      setAiLimitReached(true);
+    }
+    return true;
+  }
+
   async function handleArrivalSubtopic(kind: "parking" | "access_codes" | "access_instructions" | "arrival_time") {
     if (!chatLang) return;
     setArrivalSubtopic(kind);
@@ -679,6 +728,10 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
     if (kind === "arrival_time") {
       // No AI logic for arrival time; we just read the configured value.
       setArrivalLoading(false);
+      return;
+    }
+
+    if (!ensureAiQuota()) {
       return;
     }
 
@@ -732,6 +785,9 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
 
   async function handleCheckout() {
     if (!chatLang) return;
+    if (!ensureAiQuota()) {
+      return;
+    }
     setCheckoutLoading(true);
     setCheckoutAnswer(null);
 
@@ -780,6 +836,9 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
 
   async function handleAmenitiesSubtopic(kind: AmenitiesSubtopic) {
     if (!chatLang) return;
+    if (!ensureAiQuota()) {
+      return;
+    }
     setAmenitiesSubtopic(kind);
     setAmenitiesAnswer(null);
     setAmenitiesLoading(true);
@@ -829,6 +888,9 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
 
   async function handleExtrasSubtopic(kind: ExtrasSubtopic) {
     if (!chatLang) return;
+    if (!ensureAiQuota()) {
+      return;
+    }
     setExtrasSubtopic(kind);
     setExtrasAnswer(null);
     setExtrasLoading(true);
@@ -1195,6 +1257,86 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                       </button>
                     ))}
                   </div>
+                  {aiLimitReached && (
+                    <div
+                      style={{
+                        marginTop: 10,
+                        padding: 10,
+                        borderRadius: 12,
+                        border: "1px solid rgba(148,163,184,0.7)",
+                        background:
+                          "linear-gradient(135deg, rgba(0,209,255,0.18), rgba(124,58,237,0.42))",
+                        fontSize: 11,
+                        color: "#e5e7eb",
+                        display: "grid",
+                        gap: 8,
+                      }}
+                    >
+                      <div style={{ fontWeight: 600 }}>
+                        {lang === "ro"
+                          ? "Ai atins limita maximă de întrebări pentru acest asistent."
+                          : "You’ve reached the maximum number of questions for this assistant."}
+                      </div>
+                      <div style={{ opacity: 0.95 }}>
+                        {lang === "ro"
+                          ? "Pentru alte detalii poți consulta Regulamentul casei sau poți contacta oricând gazda."
+                          : "For anything else, please check the House Rules or contact the host directly."}
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 8,
+                          marginTop: 2,
+                        }}
+                      >
+                        {prop?.regulation_pdf_url && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              try {
+                                window.open(
+                                  prop.regulation_pdf_url as string,
+                                  "_blank",
+                                  "noopener,noreferrer",
+                                );
+                              } catch {
+                                // ignore
+                              }
+                            }}
+                            style={{
+                              ...questionBtnStyle,
+                              padding: "6px 10px",
+                              fontSize: 11,
+                              background: "rgba(15,23,42,0.92)",
+                              borderColor: "rgba(148,163,184,0.8)",
+                            }}
+                          >
+                            {lang === "ro"
+                              ? "Deschide Regulamentul casei"
+                              : "Open House Rules"}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setActiveTopic("contact_host")}
+                          style={{
+                            ...questionBtnStyle,
+                            padding: "6px 10px",
+                            fontSize: 11,
+                            background: "transparent",
+                            borderColor: "rgba(148,163,184,0.8)",
+                            color: "#e5e7eb",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {lang === "ro"
+                            ? "Contactează gazda"
+                            : "Contact the host"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
 
