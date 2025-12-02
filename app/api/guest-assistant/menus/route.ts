@@ -17,6 +17,9 @@ type ChatLabelKey =
   | "amenities_washer"
   | "amenities_dishwasher"
   | "amenities_house_rules"
+  | "extras_eat_drink"
+  | "extras_visit"
+  | "checkout_cta"
   | "contact_cta"
   | "tap_call"
   | "tap_email";
@@ -39,6 +42,9 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   amenities_washer: "Washing machine",
   amenities_dishwasher: "Dishwasher",
   amenities_house_rules: "House Rules (full document)",
+  extras_eat_drink: "Where to eat or have a coffee",
+  extras_visit: "What to visit nearby",
+  checkout_cta: "For late check-out or other details, contact the host",
   contact_cta: "If you still have questions, contact the host",
   tap_call: "Tap to call",
   tap_email: "Tap to email",
@@ -67,7 +73,7 @@ Target language: ${language}
 
 Return ONLY a minified JSON object with exactly these keys:
 
-{"arrival":"...","amenities":"...","extras":"...","checkout":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","amenities_wifi":"...","amenities_iron":"...","amenities_minibar":"...","amenities_coffee":"...","amenities_ac":"...","amenities_washer":"...","amenities_dishwasher":"...","amenities_house_rules":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
+{"arrival":"...","amenities":"...","extras":"...","checkout":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","amenities_wifi":"...","amenities_iron":"...","amenities_minibar":"...","amenities_coffee":"...","amenities_ac":"...","amenities_washer":"...","amenities_dishwasher":"...","amenities_house_rules":"...","extras_eat_drink":"...","extras_visit":"...","checkout_cta":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
 
 Use natural, concise wording and keep the meaning of each label.
 
@@ -89,6 +95,9 @@ amenities_ac: "${BASE_LABELS.amenities_ac}"
 amenities_washer: "${BASE_LABELS.amenities_washer}"
 amenities_dishwasher: "${BASE_LABELS.amenities_dishwasher}"
 amenities_house_rules: "${BASE_LABELS.amenities_house_rules}"
+extras_eat_drink: "${BASE_LABELS.extras_eat_drink}"
+extras_visit: "${BASE_LABELS.extras_visit}"
+checkout_cta: "${BASE_LABELS.checkout_cta}"
 contact_cta: "${BASE_LABELS.contact_cta}"
 tap_call: "${BASE_LABELS.tap_call}"
 tap_email: "${BASE_LABELS.tap_email}"
@@ -144,6 +153,9 @@ tap_email: "${BASE_LABELS.tap_email}"
         "amenities_washer",
         "amenities_dishwasher",
         "amenities_house_rules",
+        "extras_eat_drink",
+        "extras_visit",
+        "checkout_cta",
         "contact_cta",
         "tap_call",
         "tap_email",

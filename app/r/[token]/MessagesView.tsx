@@ -414,6 +414,9 @@ type ChatLabelKey =
   | "amenities_washer"
   | "amenities_dishwasher"
   | "amenities_house_rules"
+  | "extras_eat_drink"
+  | "extras_visit"
+  | "checkout_cta"
   | "contact_cta"
   | "tap_call"
   | "tap_email";
@@ -436,6 +439,9 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   amenities_washer: "Washing machine",
   amenities_dishwasher: "Dishwasher",
   amenities_house_rules: "House Rules (full document)",
+  extras_eat_drink: "Where to eat or have a coffee",
+  extras_visit: "What to visit nearby",
+  checkout_cta: "For late check-out or other details, contact the host",
   contact_cta: "If you still have questions, contact the host",
   tap_call: "Tap to call",
   tap_email: "Tap to email",
@@ -478,6 +484,10 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   const [amenitiesSubtopic, setAmenitiesSubtopic] = useState<AmenitiesSubtopic | null>(null);
   const [amenitiesLoading, setAmenitiesLoading] = useState(false);
   const [amenitiesAnswer, setAmenitiesAnswer] = useState<string | null>(null);
+  type ExtrasSubtopic = "eat_drink" | "visit";
+  const [extrasSubtopic, setExtrasSubtopic] = useState<ExtrasSubtopic | null>(null);
+  const [extrasLoading, setExtrasLoading] = useState(false);
+  const [extrasAnswer, setExtrasAnswer] = useState<string | null>(null);
   const selectedLang = useMemo(
     () => (chatLang ? CHAT_LANG_OPTIONS.find((o) => o.code === chatLang) ?? null : null),
     [chatLang]
@@ -769,6 +779,55 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
     }
   }
 
+  async function handleExtrasSubtopic(kind: ExtrasSubtopic) {
+    if (!chatLang) return;
+    setExtrasSubtopic(kind);
+    setExtrasAnswer(null);
+    setExtrasLoading(true);
+
+    try {
+      const res = await fetch("/api/guest-assistant/extras", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          language: selectedLang?.nameEn || (chatLang === "ro" ? "Romanian" : "English"),
+          topic: kind,
+          details,
+          property: {
+            name: prop?.name || null,
+            regulation_pdf_url: prop?.regulation_pdf_url || null,
+            ai_house_rules_text: prop?.ai_house_rules_text || null,
+          },
+          messages: items.map((it) => ({
+            title: it.title,
+            html_ro: it.html_ro,
+            html_en: it.html_en,
+          })),
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { status?: "found" | "missing"; answer?: string }
+        | null;
+      if (!data || !data.answer) {
+        setExtrasAnswer(
+          chatLang === "ro"
+            ? "Nu există informații clare în acest moment. Te rugăm să soliciți detalii de la gazdă."
+            : "There is no clear information available right now. Please ask the host for more details.",
+        );
+      } else {
+        setExtrasAnswer(data.answer);
+      }
+    } catch {
+      setExtrasAnswer(
+        chatLang === "ro"
+          ? "Nu există informații clare în acest moment. Te rugăm să soliciți detalii de la gazdă."
+          : "There is no clear information available right now. Please ask the host for more details.",
+      );
+    } finally {
+      setExtrasLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (!chatLang || !selectedLang) {
       setMenuLabels(BASE_LABELS);
@@ -811,11 +870,6 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
     setChatLang(option.code);
     setShowLangMenu(false);
   }
-
-  const checkoutCtaText =
-    chatLang === "ro"
-      ? "Pentru late check-out sau alte detalii, contactează gazda."
-      : "For late check-out or other details, contact the host.";
 
   return (
     <>
@@ -1216,7 +1270,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                     }}
                     onClick={() => setActiveTopic("contact_host")}
                   >
-                    {checkoutCtaText}
+                    {menuLabels.checkout_cta}
                   </button>
                   <button
                     type="button"
@@ -1388,19 +1442,88 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                 </div>
               )}
 
-              {activeTopic === "extras" && (
+              {activeTopic === "extras" && extrasSubtopic === null && (
                 <div
                   style={{
-                    marginTop: 10,
-                    paddingTop: 8,
-                    borderTop: "1px solid var(--border)",
                     display: "grid",
                     gap: 6,
                   }}
                 >
                   <button
                     type="button"
-                    onClick={() => setActiveTopic(null)}
+                    style={questionBtnStyle}
+                    onClick={() => handleExtrasSubtopic("eat_drink")}
+                  >
+                    <span>{menuLabels.extras_eat_drink}</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                    onClick={() => handleExtrasSubtopic("visit")}
+                  >
+                    <span>{menuLabels.extras_visit}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTopic(null);
+                      setExtrasSubtopic(null);
+                      setExtrasAnswer(null);
+                    }}
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                      background: "transparent",
+                      color: "var(--muted)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {backLabel}
+                  </button>
+                </div>
+              )}
+
+              {activeTopic === "extras" && extrasSubtopic !== null && (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      borderRadius: 12,
+                      border: "1px solid var(--border)",
+                      background: "var(--panel)",
+                      padding: 10,
+                      fontSize: 13,
+                    }}
+                  >
+                    {extrasLoading && (
+                      <span style={{ color: "var(--muted)" }}>
+                        {chatLang === "ro" ? "Se încarcă..." : "Loading..."}
+                      </span>
+                    )}
+                    {!extrasLoading && extrasAnswer && (
+                      <span>{extrasAnswer}</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                    }}
+                    onClick={() => setActiveTopic("contact_host")}
+                  >
+                    {contactCtaLabel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExtrasSubtopic(null);
+                      setExtrasAnswer(null);
+                    }}
                     style={{
                       ...questionBtnStyle,
                       justifyContent: "center",
