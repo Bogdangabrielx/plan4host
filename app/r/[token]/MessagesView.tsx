@@ -405,6 +405,14 @@ type ChatLabelKey =
   | "arrival_parking"
   | "arrival_access_codes"
   | "arrival_time"
+  | "amenities_wifi"
+  | "amenities_iron"
+  | "amenities_minibar"
+  | "amenities_coffee"
+  | "amenities_ac"
+  | "amenities_washer"
+  | "amenities_dishwasher"
+  | "amenities_house_rules"
   | "contact_cta"
   | "tap_call"
   | "tap_email";
@@ -418,6 +426,14 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   arrival_parking: "Parking information",
   arrival_access_codes: "Access codes",
   arrival_time: "Arrival time",
+  amenities_wifi: "Wi‑Fi (network & password)",
+  amenities_iron: "Iron / ironing",
+  amenities_minibar: "Minibar",
+  amenities_coffee: "Coffee machine",
+  amenities_ac: "Air conditioning / climate control",
+  amenities_washer: "Washing machine",
+  amenities_dishwasher: "Dishwasher",
+  amenities_house_rules: "House Rules (full document)",
   contact_cta: "If you still have questions, contact the host",
   tap_call: "Tap to call",
   tap_email: "Tap to email",
@@ -435,7 +451,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   const [chatLang, setChatLang] = useState<ChatLangCode | null>(null);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [menuLabels, setMenuLabels] = useState<Record<ChatLabelKey, string>>(
-    () => BASE_LABELS
+    () => BASE_LABELS,
   );
   const [activeTopic, setActiveTopic] = useState<ChatTopicId | null>(null);
   const [arrivalSubtopic, setArrivalSubtopic] = useState<
@@ -446,6 +462,17 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   const [arrivalStatus, setArrivalStatus] = useState<"found" | "missing" | null>(
     null,
   );
+  type AmenitiesSubtopic =
+    | "wifi"
+    | "iron"
+    | "minibar"
+    | "coffee_machine"
+    | "ac"
+    | "washing_machine"
+    | "dishwasher";
+  const [amenitiesSubtopic, setAmenitiesSubtopic] = useState<AmenitiesSubtopic | null>(null);
+  const [amenitiesLoading, setAmenitiesLoading] = useState(false);
+  const [amenitiesAnswer, setAmenitiesAnswer] = useState<string | null>(null);
   const selectedLang = useMemo(
     () => (chatLang ? CHAT_LANG_OPTIONS.find((o) => o.code === chatLang) ?? null : null),
     [chatLang]
@@ -637,6 +664,55 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
       );
     } finally {
       setArrivalLoading(false);
+    }
+  }
+
+  async function handleAmenitiesSubtopic(kind: AmenitiesSubtopic) {
+    if (!chatLang) return;
+    setAmenitiesSubtopic(kind);
+    setAmenitiesAnswer(null);
+    setAmenitiesLoading(true);
+
+    try {
+      const res = await fetch("/api/guest-assistant/amenities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          language: selectedLang?.nameEn || (chatLang === "ro" ? "Romanian" : "English"),
+          topic: kind,
+          details,
+          property: {
+            name: prop?.name || null,
+            regulation_pdf_url: prop?.regulation_pdf_url || null,
+            ai_house_rules_text: prop?.ai_house_rules_text || null,
+          },
+          messages: items.map((it) => ({
+            title: it.title,
+            html_ro: it.html_ro,
+            html_en: it.html_en,
+          })),
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { status?: "found" | "missing"; answer?: string }
+        | null;
+      if (!data || !data.answer) {
+        setAmenitiesAnswer(
+          chatLang === "ro"
+            ? "Nu este clar din informațiile disponibile. Te rugăm să contactezi gazda pentru detalii exacte."
+            : "It is not clear from the available information. Please contact the host for precise details.",
+        );
+      } else {
+        setAmenitiesAnswer(data.answer);
+      }
+    } catch {
+      setAmenitiesAnswer(
+        chatLang === "ro"
+          ? "Nu este clar din informațiile disponibile. Te rugăm să contactezi gazda pentru detalii exacte."
+          : "It is not clear from the available information. Please contact the host for precise details.",
+      );
+    } finally {
+      setAmenitiesLoading(false);
     }
   }
 
@@ -1029,7 +1105,158 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                 </div>
               )}
 
-              {(activeTopic === "amenities" || activeTopic === "extras") && (
+              {activeTopic === "amenities" && amenitiesSubtopic === null && (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                    onClick={() => handleAmenitiesSubtopic("wifi")}
+                  >
+                    <span>{menuLabels.amenities_wifi}</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                    onClick={() => handleAmenitiesSubtopic("iron")}
+                  >
+                    <span>{menuLabels.amenities_iron}</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                    onClick={() => handleAmenitiesSubtopic("minibar")}
+                  >
+                    <span>{menuLabels.amenities_minibar}</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                    onClick={() => handleAmenitiesSubtopic("coffee_machine")}
+                  >
+                    <span>{menuLabels.amenities_coffee}</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                    onClick={() => handleAmenitiesSubtopic("ac")}
+                  >
+                    <span>{menuLabels.amenities_ac}</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                    onClick={() => handleAmenitiesSubtopic("washing_machine")}
+                  >
+                    <span>{menuLabels.amenities_washer}</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                    onClick={() => handleAmenitiesSubtopic("dishwasher")}
+                  >
+                    <span>{menuLabels.amenities_dishwasher}</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                    onClick={() => {
+                      try {
+                        if (prop?.regulation_pdf_url) {
+                          window.open(prop.regulation_pdf_url, "_blank", "noopener,noreferrer");
+                        } else {
+                          alert(
+                            chatLang === "ro"
+                              ? "Regulile casei nu sunt disponibile momentan."
+                              : "House Rules are not available right now.",
+                          );
+                        }
+                      } catch {
+                        // ignore
+                      }
+                    }}
+                  >
+                    <span>{menuLabels.amenities_house_rules}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTopic(null);
+                      setAmenitiesSubtopic(null);
+                      setAmenitiesAnswer(null);
+                    }}
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                      background: "transparent",
+                      color: "var(--muted)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {backLabel}
+                  </button>
+                </div>
+              )}
+
+              {activeTopic === "amenities" && amenitiesSubtopic !== null && (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      borderRadius: 12,
+                      border: "1px solid var(--border)",
+                      background: "var(--panel)",
+                      padding: 10,
+                      fontSize: 13,
+                    }}
+                  >
+                    {amenitiesLoading && (
+                      <span style={{ color: "var(--muted)" }}>
+                        {chatLang === "ro" ? "Se încarcă..." : "Loading..."}
+                      </span>
+                    )}
+                    {!amenitiesLoading && amenitiesAnswer && (
+                      <span>{amenitiesAnswer}</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                    }}
+                    onClick={() => setActiveTopic("contact_host")}
+                  >
+                    {contactCtaLabel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAmenitiesSubtopic(null);
+                      setAmenitiesAnswer(null);
+                    }}
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                      background: "transparent",
+                      color: "var(--muted)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {backLabel}
+                  </button>
+                </div>
+              )}
+
+              {activeTopic === "extras" && (
                 <div
                   style={{
                     marginTop: 10,

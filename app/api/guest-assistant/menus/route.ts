@@ -9,6 +9,14 @@ type ChatLabelKey =
   | "arrival_parking"
   | "arrival_access_codes"
   | "arrival_time"
+  | "amenities_wifi"
+  | "amenities_iron"
+  | "amenities_minibar"
+  | "amenities_coffee"
+  | "amenities_ac"
+  | "amenities_washer"
+  | "amenities_dishwasher"
+  | "amenities_house_rules"
   | "contact_cta"
   | "tap_call"
   | "tap_email";
@@ -22,6 +30,14 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   arrival_parking: "Parking information",
   arrival_access_codes: "Access codes",
   arrival_time: "Arrival time",
+  amenities_wifi: "Wi‑Fi (network & password)",
+  amenities_iron: "Iron / ironing",
+  amenities_minibar: "Minibar",
+  amenities_coffee: "Coffee machine",
+  amenities_ac: "Air conditioning / climate control",
+  amenities_washer: "Washing machine",
+  amenities_dishwasher: "Dishwasher",
+  amenities_house_rules: "House Rules (full document)",
   contact_cta: "If you still have questions, contact the host",
   tap_call: "Tap to call",
   tap_email: "Tap to email",
@@ -50,7 +66,7 @@ Target language: ${language}
 
 Return ONLY a minified JSON object with exactly these keys:
 
-{"arrival":"...","amenities":"...","extras":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
+{"arrival":"...","amenities":"...","extras":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","amenities_wifi":"...","amenities_iron":"...","amenities_minibar":"...","amenities_coffee":"...","amenities_ac":"...","amenities_washer":"...","amenities_dishwasher":"...","amenities_house_rules":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
 
 Use natural, concise wording and keep the meaning of each label.
 
@@ -63,6 +79,14 @@ back: "${BASE_LABELS.back}"
 arrival_parking: "${BASE_LABELS.arrival_parking}"
 arrival_access_codes: "${BASE_LABELS.arrival_access_codes}"
 arrival_time: "${BASE_LABELS.arrival_time}"
+amenities_wifi: "${BASE_LABELS.amenities_wifi}"
+amenities_iron: "${BASE_LABELS.amenities_iron}"
+amenities_minibar: "${BASE_LABELS.amenities_minibar}"
+amenities_coffee: "${BASE_LABELS.amenities_coffee}"
+amenities_ac: "${BASE_LABELS.amenities_ac}"
+amenities_washer: "${BASE_LABELS.amenities_washer}"
+amenities_dishwasher: "${BASE_LABELS.amenities_dishwasher}"
+amenities_house_rules: "${BASE_LABELS.amenities_house_rules}"
 contact_cta: "${BASE_LABELS.contact_cta}"
 tap_call: "${BASE_LABELS.tap_call}"
 tap_email: "${BASE_LABELS.tap_email}"
@@ -109,6 +133,14 @@ tap_email: "${BASE_LABELS.tap_email}"
         "arrival_parking",
         "arrival_access_codes",
         "arrival_time",
+        "amenities_wifi",
+        "amenities_iron",
+        "amenities_minibar",
+        "amenities_coffee",
+        "amenities_ac",
+        "amenities_washer",
+        "amenities_dishwasher",
+        "amenities_house_rules",
         "contact_cta",
         "tap_call",
         "tap_email",
