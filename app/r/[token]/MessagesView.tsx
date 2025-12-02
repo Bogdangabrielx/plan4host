@@ -343,11 +343,28 @@ const CHAT_LANG_OPTIONS: ChatLangOption[] = [
 
 type ChatTopicId = "arrival" | "amenities" | "extras" | "contact_host";
 
-const BASE_MENU_LABELS: Record<ChatTopicId, string> = {
+type ChatLabelKey =
+  | ChatTopicId
+  | "back"
+  | "arrival_parking"
+  | "arrival_access_codes"
+  | "arrival_time"
+  | "contact_cta"
+  | "tap_call"
+  | "tap_email";
+
+const BASE_LABELS: Record<ChatLabelKey, string> = {
   arrival: "Arrival details",
   amenities: "Amenities",
   extras: "Extras",
   contact_host: "Contact the host",
+  back: "Back",
+  arrival_parking: "Parking information",
+  arrival_access_codes: "Access codes",
+  arrival_time: "Arrival time",
+  contact_cta: "If you still have questions, contact the host",
+  tap_call: "Tap to call",
+  tap_email: "Tap to email",
 };
 
 const QUESTION_GROUPS: ChatTopicId[] = [
@@ -361,8 +378,8 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   const [open, setOpen] = useState(false);
   const [chatLang, setChatLang] = useState<ChatLangCode | null>(null);
   const [showLangMenu, setShowLangMenu] = useState(false);
-  const [menuLabels, setMenuLabels] = useState<Record<ChatTopicId, string>>(
-    () => BASE_MENU_LABELS
+  const [menuLabels, setMenuLabels] = useState<Record<ChatLabelKey, string>>(
+    () => BASE_LABELS
   );
   const [activeTopic, setActiveTopic] = useState<ChatTopicId | null>(null);
   const [arrivalSubtopic, setArrivalSubtopic] = useState<
@@ -504,11 +521,8 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
     color: "var(--text)",
   };
 
-  const backLabel = chatLang === "ro" ? "Înapoi" : "Back";
-  const contactCtaLabel =
-    chatLang === "ro"
-      ? "Dacă încă ai întrebări, contactează gazda"
-      : "If you still have questions, contact the host";
+  const backLabel = menuLabels.back;
+  const contactCtaLabel = menuLabels.contact_cta;
 
   async function handleArrivalSubtopic(kind: "parking" | "access_codes" | "arrival_time") {
     if (!chatLang) return;
@@ -571,7 +585,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
 
   useEffect(() => {
     if (!chatLang || !selectedLang) {
-      setMenuLabels(BASE_MENU_LABELS);
+      setMenuLabels(BASE_LABELS);
       return;
     }
 
@@ -584,21 +598,21 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
           body: JSON.stringify({ language: selectedLang.nameEn }),
         });
         const data = (await res.json().catch(() => null)) as
-          | { labels?: Partial<Record<ChatTopicId, string>> }
+          | { labels?: Partial<Record<ChatLabelKey, string>> }
           | null;
         if (cancelled) return;
         const labels = data?.labels || null;
         if (labels) {
           setMenuLabels((prev) => ({
-            ...BASE_MENU_LABELS,
+            ...BASE_LABELS,
             ...prev,
             ...labels,
           }));
         } else {
-          setMenuLabels(BASE_MENU_LABELS);
+          setMenuLabels(BASE_LABELS);
         }
       } catch {
-        if (!cancelled) setMenuLabels(BASE_MENU_LABELS);
+        if (!cancelled) setMenuLabels(BASE_LABELS);
       }
     })();
 
@@ -745,7 +759,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
               {!activeTopic && (
                 <>
                   <div style={{ fontSize: 11, color: "var(--muted)" }}>
-                    {chatLang === "ro"
+                    {lang === "ro"
                       ? "Alege un subiect pentru care ai nevoie de ajutor. În versiunea finală, răspunsurile vor fi adaptate acestei proprietăți și traduse în limba selectată."
                       : "Choose a topic you need help with. In the final version, answers will be tailored to this property and translated into your selected language."}
                   </div>
@@ -842,29 +856,21 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                     style={questionBtnStyle}
                     onClick={() => handleArrivalSubtopic("parking")}
                   >
-                    <span>
-                      {chatLang === "ro"
-                        ? "Informații parcare"
-                        : "Parking information"}
-                    </span>
+                    <span>{menuLabels.arrival_parking}</span>
                   </button>
                   <button
                     type="button"
                     style={questionBtnStyle}
                     onClick={() => handleArrivalSubtopic("access_codes")}
                   >
-                    <span>
-                      {chatLang === "ro" ? "Coduri de acces" : "Access codes"}
-                    </span>
+                    <span>{menuLabels.arrival_access_codes}</span>
                   </button>
                   <button
                     type="button"
                     style={questionBtnStyle}
                     onClick={() => handleArrivalSubtopic("arrival_time")}
                   >
-                    <span>
-                      {chatLang === "ro" ? "Oră de sosire" : "Arrival time"}
-                    </span>
+                    <span>{menuLabels.arrival_time}</span>
                   </button>
                   <button
                     type="button"
@@ -997,7 +1003,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                         <span>{prop.contact_phone}</span>
                       </span>
                       <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                        {chatLang === "ro" ? "Apasă pentru a apela" : "Tap to call"}
+                        {menuLabels.tap_call}
                       </span>
                     </button>
                   )}
@@ -1023,9 +1029,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                         <span>{prop.contact_email}</span>
                       </span>
                       <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                        {chatLang === "ro"
-                          ? "Apasă pentru a trimite email"
-                          : "Tap to email"}
+                        {menuLabels.tap_email}
                       </span>
                     </button>
                   )}
