@@ -292,13 +292,14 @@ export default function MessagesView({ token, data }: { token: string; data: any
       )}
 
       {/* Floating chat assistant button (UI-only demo) */}
-      <ChatFab lang={lang} />
+      <ChatFab lang={lang} prop={prop} />
     </>
   );
 }
 
 type ChatFabProps = {
   lang: "ro" | "en";
+  prop: PropInfo;
 };
 
 type ChatLangCode =
@@ -353,13 +354,14 @@ const QUESTION_GROUPS: ChatTopicId[] = [
   "contact_host",
 ];
 
-function ChatFab({ lang }: ChatFabProps) {
+function ChatFab({ lang, prop }: ChatFabProps) {
   const [open, setOpen] = useState(false);
   const [chatLang, setChatLang] = useState<ChatLangCode | null>(null);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [menuLabels, setMenuLabels] = useState<Record<ChatTopicId, string>>(
     () => BASE_MENU_LABELS
   );
+  const [activeTopic, setActiveTopic] = useState<ChatTopicId | null>(null);
   const selectedLang = useMemo(
     () => (chatLang ? CHAT_LANG_OPTIONS.find((o) => o.code === chatLang) ?? null : null),
     [chatLang]
@@ -673,6 +675,7 @@ function ChatFab({ lang }: ChatFabProps) {
                     key={id}
                     type="button"
                     style={questionBtnStyle}
+                    onClick={() => setActiveTopic(id)}
                   >
                     <span
                       aria-hidden
@@ -744,6 +747,104 @@ function ChatFab({ lang }: ChatFabProps) {
                   </button>
                 ))}
               </div>
+
+              {activeTopic === "contact_host" && prop && (prop.contact_phone || prop.contact_email) && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    paddingTop: 8,
+                    borderTop: "1px solid var(--border)",
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
+                  {prop.contact_phone && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          const tel = String(prop.contact_phone || "").replace(/\s+/g, "");
+                          if (tel) window.location.href = `tel:${tel}`;
+                        } catch {
+                          // ignore
+                        }
+                      }}
+                      style={{
+                        width: "100%",
+                        borderRadius: 999,
+                        border: "1px solid var(--border)",
+                        background: "var(--card)",
+                        padding: "8px 10px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 8,
+                        cursor: "pointer",
+                        fontSize: 13,
+                      }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span aria-hidden>📞</span>
+                        <span>{prop.contact_phone}</span>
+                      </span>
+                      <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                        Tap to call
+                      </span>
+                    </button>
+                  )}
+                  {prop.contact_email && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          if (prop.contact_email) {
+                            window.location.href = `mailto:${prop.contact_email}`;
+                          }
+                        } catch {
+                          // ignore
+                        }
+                      }}
+                      style={{
+                        width: "100%",
+                        borderRadius: 999,
+                        border: "1px solid var(--border)",
+                        background: "var(--card)",
+                        padding: "8px 10px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 8,
+                        cursor: "pointer",
+                        fontSize: 13,
+                      }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span aria-hidden>✉</span>
+                        <span>{prop.contact_email}</span>
+                      </span>
+                      <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                        Tap to email
+                      </span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTopic(null)}
+                    style={{
+                      width: "100%",
+                      borderRadius: 999,
+                      border: "1px solid var(--border)",
+                      background: "transparent",
+                      padding: "6px 10px",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      color: "var(--muted)",
+                    }}
+                  >
+                    Back
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
