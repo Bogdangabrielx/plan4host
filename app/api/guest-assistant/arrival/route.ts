@@ -16,6 +16,7 @@ type ArrivalRequest = {
   property?: {
     name?: string | null;
     regulation_pdf_url?: string | null;
+    ai_house_rules_text?: string | null;
   };
   messages?: Array<{
     title?: string;
@@ -73,7 +74,7 @@ You are a guest assistant for a property.
 You will receive:
 - Target answer language
 - Reservation details
-- Property info
+- Property info (including optional AI-configured house rules text)
 - Reservation messages text (which may contain house rules and arrival instructions) in Romanian and/or English.
 
 You must answer a single arrival-related question for the guest:
@@ -110,6 +111,7 @@ ${JSON.stringify(
   {
     name: property.name || null,
     regulation_pdf_url: property.regulation_pdf_url || null,
+    ai_house_rules_text: property.ai_house_rules_text || null,
   },
   null,
   2,

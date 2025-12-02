@@ -22,6 +22,7 @@ type PropInfo = {
   contact_address?: string | null;
   presentation_image_url?: string | null;
   regulation_pdf_url?: string | null;
+   ai_house_rules_text?: string | null;
   contact_overlay_position?: 'top' | 'center' | 'down' | null;
   social_facebook?: string | null;
   social_instagram?: string | null;
@@ -549,6 +550,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
           property: {
             name: prop?.name || null,
             regulation_pdf_url: prop?.regulation_pdf_url || null,
+            ai_house_rules_text: prop?.ai_house_rules_text || null,
           },
           messages: items.map((it) => ({
             title: it.title,

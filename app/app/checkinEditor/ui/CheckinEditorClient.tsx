@@ -11,6 +11,7 @@ type Property = {
   name: string;
   regulation_pdf_url?: string | null;
   regulation_pdf_uploaded_at?: string | null;
+  ai_house_rules_text?: string | null;
   contact_email?: string | null;
   contact_phone?: string | null;
   contact_address?: string | null;
@@ -119,6 +120,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const imageUploadBtnRef = useRef<HTMLButtonElement | null>(null);
   const lastSavedContact = useRef<{ email: string; phone: string; address: string }>({ email: "", phone: "", address: "" });
 
+  // AI assistant – house rules text source
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiModalLoading, setAiModalLoading] = useState(false);
+  const [aiModalText, setAiModalText] = useState<string>("");
+  const [aiModalError, setAiModalError] = useState<string | null>(null);
+
   // Responsive helper: treat phones/narrow screens differently for layout
   const [isNarrow, setIsNarrow] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -146,7 +153,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     if (!propertyId) { setProp(null); return; }
     const { data, error } = await supabase
       .from("properties")
-      .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position,social_facebook,social_instagram,social_tiktok,social_website")
+      .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,ai_house_rules_text,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position,social_facebook,social_instagram,social_tiktok,social_website")
       .eq("id", propertyId)
       .maybeSingle();
     if (error) { setProp(null); lastSavedContact.current = { email: "", phone: "", address: "" }; }
@@ -183,6 +190,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         if (!res.ok) { alert(j?.error || 'Upload failed'); setStatus('Error'); return; }
         await refresh();
         setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
+        // After successful upload, offer to extract text for the guest AI assistant
+        try {
+          await openAiHouseRulesModalFromPdf();
+        } catch {
+          // Non-fatal; ignore errors here
+        }
       } catch { setStatus('Error'); }
       finally { input.remove(); }
     };
@@ -339,6 +352,62 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     input.click();
   }
 
+  async function openAiHouseRulesModalFromPdf() {
+    if (!propertyId) return;
+    setAiModalOpen(true);
+    setAiModalLoading(true);
+    setAiModalError(null);
+    setAiModalText("");
+    try {
+      const res = await fetch(
+        `/api/property/regulation/read-text?propertyId=${encodeURIComponent(
+          propertyId,
+        )}`,
+        { cache: "no-store" },
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.text) {
+        setAiModalError(
+          data?.error || "Could not extract readable text from PDF.",
+        );
+      } else {
+        setAiModalText(String(data.text || ""));
+      }
+    } catch (e: any) {
+      setAiModalError(e?.message || "Failed to read PDF.");
+    } finally {
+      setAiModalLoading(false);
+    }
+  }
+
+  async function saveAiHouseRules() {
+    if (!propertyId) return;
+    setStatus("Saving…");
+    try {
+      const res = await fetch("/api/property/ai-context", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          propertyId,
+          houseRulesText: aiModalText,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.ok) {
+        alert(data?.error || "Failed to save AI house rules.");
+        setStatus("Error");
+        return;
+      }
+      await refresh();
+      setStatus("Synced");
+      setTimeout(() => setStatus("Idle"), 800);
+      setAiModalOpen(false);
+    } catch (e: any) {
+      alert(e?.message || "Failed to save AI house rules.");
+      setStatus("Error");
+    }
+  }
+
   return (
     <div style={{ display:'grid', gap:16 }}>
       <PlanHeaderBadge title="Check-in Editor" slot="header-right" />
@@ -413,13 +482,133 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             </div>
           </section>
 
+          {aiModalOpen && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              onClick={() => setAiModalOpen(false)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 240,
+                background: "rgba(0,0,0,0.55)",
+                display: "grid",
+                placeItems: "center",
+                padding: 12,
+                paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+                paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
+              }}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="sb-card"
+                style={{
+                  width: "min(720px, 100%)",
+                  maxHeight: "calc(100dvh - 40px)",
+                  background: "var(--panel)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  padding: 16,
+                  display: "grid",
+                  gridTemplateRows: "auto auto 1fr auto",
+                  gap: 10,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <strong>Use House Rules for guest assistant</strong>
+                  <button
+                    type="button"
+                    className="sb-btn"
+                    onClick={() => setAiModalOpen(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div style={{ fontSize: 13, color: "var(--muted)" }}>
+                  This text will be used as input for the guest AI assistant
+                  (arrival details, amenities, etc.). Review it, remove any
+                  sensitive information (door codes, passwords, private links),
+                  then confirm.
+                </div>
+                <textarea
+                  value={aiModalText}
+                  onChange={(e) => setAiModalText(e.currentTarget.value)}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: 8,
+                    border: "1px solid var(--border)",
+                    background: "var(--card)",
+                    color: "var(--text)",
+                    padding: 10,
+                    resize: "none",
+                    fontFamily:
+                      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace",
+                    fontSize: 12,
+                    whiteSpace: "pre-wrap",
+                  }}
+                  disabled={aiModalLoading}
+                />
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                    {aiModalLoading
+                      ? "Reading PDF…"
+                      : aiModalError
+                      ? aiModalError
+                      : ""}
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      type="button"
+                      className="sb-btn"
+                      onClick={() => setAiModalOpen(false)}
+                      disabled={aiModalLoading}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="sb-btn sb-btn--primary"
+                      onClick={saveAiHouseRules}
+                      disabled={aiModalLoading}
+                    >
+                      {aiModalLoading ? "Saving…" : "Use for AI"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* House Rules PDF */}
           <section  className="sb-cardglow"  style={card}>
             <h3 style={{ marginTop: 0 }}>House Rules PDF</h3>
             {prop.regulation_pdf_url ? (
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                 <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" className="sb-btn sb-btn--primary">Open</a>
-                <button className="sb-btn sb-cardglow" onClick={triggerPdfUpload}>Replace PDF</button>
+                <button className="sb-btn" onClick={triggerPdfUpload}>Replace PDF</button>
+                <button
+                  className="sb-btn sb-cardglow"
+                  type="button"
+                  onClick={openAiHouseRulesModalFromPdf}
+                  title="Read PDF text and prepare it as source for the guest AI assistant"
+                >
+                  Read &amp; prepare text for AI
+                </button>
                 <Info text={PDF_INFO} />
                 <small style={{ color:'var(--muted)' }}>
                   Uploaded {prop.regulation_pdf_uploaded_at ? new Date(prop.regulation_pdf_uploaded_at).toLocaleString() : ''}

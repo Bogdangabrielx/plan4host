@@ -63,7 +63,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
     // booking + property
     const [rBk, rProp] = await Promise.all([
       admin.from('bookings').select('id, property_id, start_date, end_date, start_time, end_time, room_id, status, guest_first_name, guest_last_name').eq('id', msg.booking_id).maybeSingle(),
-      admin.from('properties').select('id, name, timezone, check_in_time, check_out_time, contact_email, contact_phone, contact_address, presentation_image_url, regulation_pdf_url, contact_overlay_position, social_facebook, social_instagram, social_tiktok, social_website').eq('id', msg.property_id).maybeSingle(),
+      admin.from('properties').select('id, name, timezone, check_in_time, check_out_time, contact_email, contact_phone, contact_address, presentation_image_url, regulation_pdf_url, ai_house_rules_text, contact_overlay_position, social_facebook, social_instagram, social_tiktok, social_website').eq('id', msg.property_id).maybeSingle(),
     ]);
     if (rBk.error || !rBk.data) return bad(404, { error: 'Booking not found' });
     if (rProp.error || !rProp.data) return bad(404, { error: 'Property not found' });
@@ -237,6 +237,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
           contact_address: (prop as any)?.contact_address || null,
           presentation_image_url: (prop as any)?.presentation_image_url || null,
           regulation_pdf_url: (prop as any)?.regulation_pdf_url || null,
+          ai_house_rules_text: (prop as any)?.ai_house_rules_text || null,
           contact_overlay_position: (prop as any)?.contact_overlay_position || null,
           social_facebook: (prop as any)?.social_facebook || null,
           social_instagram: (prop as any)?.social_instagram || null,
