@@ -292,7 +292,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
       )}
 
       {/* Floating chat assistant button (UI-only demo) */}
-      <ChatFab lang={lang} prop={prop} />
+      <ChatFab lang={lang} prop={prop} details={details} items={items} />
     </>
   );
 }
@@ -300,6 +300,8 @@ export default function MessagesView({ token, data }: { token: string; data: any
 type ChatFabProps = {
   lang: "ro" | "en";
   prop: PropInfo;
+  details: Details;
+  items: Item[];
 };
 
 type ChatLangCode =
@@ -354,7 +356,7 @@ const QUESTION_GROUPS: ChatTopicId[] = [
   "contact_host",
 ];
 
-function ChatFab({ lang, prop }: ChatFabProps) {
+function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   const [open, setOpen] = useState(false);
   const [chatLang, setChatLang] = useState<ChatLangCode | null>(null);
   const [showLangMenu, setShowLangMenu] = useState(false);
@@ -362,6 +364,14 @@ function ChatFab({ lang, prop }: ChatFabProps) {
     () => BASE_MENU_LABELS
   );
   const [activeTopic, setActiveTopic] = useState<ChatTopicId | null>(null);
+  const [arrivalSubtopic, setArrivalSubtopic] = useState<
+    "parking" | "access_codes" | "arrival_time" | null
+  >(null);
+  const [arrivalLoading, setArrivalLoading] = useState(false);
+  const [arrivalAnswer, setArrivalAnswer] = useState<string | null>(null);
+  const [arrivalStatus, setArrivalStatus] = useState<"found" | "missing" | null>(
+    null,
+  );
   const selectedLang = useMemo(
     () => (chatLang ? CHAT_LANG_OPTIONS.find((o) => o.code === chatLang) ?? null : null),
     [chatLang]
@@ -494,6 +504,58 @@ function ChatFab({ lang, prop }: ChatFabProps) {
   };
 
   const backLabel = chatLang === "ro" ? "Înapoi" : "Back";
+
+  async function handleArrivalSubtopic(kind: "parking" | "access_codes" | "arrival_time") {
+    if (!chatLang) return;
+    setArrivalSubtopic(kind);
+    setArrivalLoading(true);
+    setArrivalAnswer(null);
+    setArrivalStatus(null);
+
+    try {
+      const res = await fetch("/api/guest-assistant/arrival", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          language: selectedLang?.nameEn || (chatLang === "ro" ? "Romanian" : "English"),
+          topic: kind,
+          details,
+          property: {
+            name: prop?.name || null,
+            regulation_pdf_url: prop?.regulation_pdf_url || null,
+          },
+          messages: items.map((it) => ({
+            title: it.title,
+            html_ro: it.html_ro,
+            html_en: it.html_en,
+          })),
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { status?: "found" | "missing"; answer?: string }
+        | null;
+      if (!data || !data.answer) {
+        setArrivalStatus("missing");
+        setArrivalAnswer(
+          chatLang === "ro"
+            ? "Nu este clar din informațiile disponibile. Te rugăm să contactezi gazda pentru detalii exacte."
+            : "It is not clear from the available information. Please contact the host for precise details.",
+        );
+      } else {
+        setArrivalStatus((data.status as any) || "found");
+        setArrivalAnswer(data.answer);
+      }
+    } catch {
+      setArrivalStatus("missing");
+      setArrivalAnswer(
+        chatLang === "ro"
+          ? "Nu este clar din informațiile disponibile. Te rugăm să contactezi gazda pentru detalii exacte."
+          : "It is not clear from the available information. Please contact the host for precise details.",
+      );
+    } finally {
+      setArrivalLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (!chatLang || !selectedLang) {
@@ -754,7 +816,7 @@ function ChatFab({ lang, prop }: ChatFabProps) {
                 </>
               )}
 
-              {activeTopic === "arrival" && (
+              {activeTopic === "arrival" && arrivalSubtopic === null && (
                 <div
                   style={{
                     display: "grid",
@@ -764,24 +826,84 @@ function ChatFab({ lang, prop }: ChatFabProps) {
                   <button
                     type="button"
                     style={questionBtnStyle}
+                    onClick={() => handleArrivalSubtopic("parking")}
                   >
                     <span>Parking information</span>
                   </button>
                   <button
                     type="button"
                     style={questionBtnStyle}
+                    onClick={() => handleArrivalSubtopic("access_codes")}
                   >
                     <span>Access codes</span>
                   </button>
                   <button
                     type="button"
                     style={questionBtnStyle}
+                    onClick={() => handleArrivalSubtopic("arrival_time")}
                   >
                     <span>Arrival time</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveTopic(null)}
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                      background: "transparent",
+                      color: "var(--muted)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {backLabel}
+                  </button>
+                </div>
+              )}
+
+              {activeTopic === "arrival" && arrivalSubtopic !== null && (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      borderRadius: 12,
+                      border: "1px solid var(--border)",
+                      background: "var(--panel)",
+                      padding: 10,
+                      fontSize: 13,
+                    }}
+                  >
+                    {arrivalLoading && (
+                      <span style={{ color: "var(--muted)" }}>
+                        {chatLang === "ro" ? "Se încarcă..." : "Loading..."}
+                      </span>
+                    )}
+                    {!arrivalLoading && arrivalAnswer && (
+                      <span>{arrivalAnswer}</span>
+                    )}
+                  </div>
+                  {arrivalStatus === "missing" && (
+                    <button
+                      type="button"
+                      style={{
+                        ...questionBtnStyle,
+                        justifyContent: "center",
+                      }}
+                      onClick={() => setActiveTopic("contact_host")}
+                    >
+                      {chatLang === "ro" ? "Contactează gazda" : "Contact the host"}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setArrivalSubtopic(null);
+                      setArrivalAnswer(null);
+                      setArrivalStatus(null);
+                    }}
                     style={{
                       ...questionBtnStyle,
                       justifyContent: "center",
