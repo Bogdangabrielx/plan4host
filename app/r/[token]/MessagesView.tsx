@@ -55,6 +55,14 @@ export default function MessagesView({ token, data }: { token: string; data: any
   const [showAssistantHint, setShowAssistantHint] = useState(true);
 
   useEffect(() => {
+    if (!showAssistantHint) return;
+    const t = setTimeout(() => {
+      setShowAssistantHint(false);
+    }, 5000);
+    return () => clearTimeout(t);
+  }, [showAssistantHint]);
+
+  useEffect(() => {
     try {
       const r: Record<string, boolean> = {};
       for (const it of items) {
@@ -1008,6 +1016,32 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                       setArrivalAnswer(null);
                       setArrivalStatus(null);
                     }}
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                      background: "transparent",
+                      color: "var(--muted)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {backLabel}
+                  </button>
+                </div>
+              )}
+
+              {(activeTopic === "amenities" || activeTopic === "extras") && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    paddingTop: 8,
+                    borderTop: "1px solid var(--border)",
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setActiveTopic(null)}
                     style={{
                       ...questionBtnStyle,
                       justifyContent: "center",
