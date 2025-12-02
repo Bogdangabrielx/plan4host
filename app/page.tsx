@@ -1067,6 +1067,7 @@ export default function HomePage() {
                   'Real-time cleaning status',
                   'Share daily tasks',
                   'Instant sync of reservations in the app calendar',
+                  'Guest AI assistant',
                 ].some((s) => b.includes(s));
                 return (
                   <li key={`basic-b-${i}`}>
@@ -1100,6 +1101,7 @@ export default function HomePage() {
                 const standardX = [
                   'Share daily tasks',
                   'Instant sync of reservations in the app calendar',
+                  'Guest AI assistant',
                 ].some((s) => b.includes(s));
                 return (
                   <li key={`standard-b-${i}`}>
