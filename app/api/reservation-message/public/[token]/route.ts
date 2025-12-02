@@ -63,13 +63,27 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
     // booking + property
     const [rBk, rProp] = await Promise.all([
       admin.from('bookings').select('id, property_id, start_date, end_date, start_time, end_time, room_id, status, guest_first_name, guest_last_name').eq('id', msg.booking_id).maybeSingle(),
-      admin.from('properties').select('id, name, timezone, check_in_time, check_out_time, contact_email, contact_phone, contact_address, presentation_image_url, regulation_pdf_url, ai_house_rules_text, contact_overlay_position, social_facebook, social_instagram, social_tiktok, social_website').eq('id', msg.property_id).maybeSingle(),
+      admin.from('properties').select('id, account_id, name, timezone, check_in_time, check_out_time, contact_email, contact_phone, contact_address, presentation_image_url, regulation_pdf_url, ai_house_rules_text, contact_overlay_position, social_facebook, social_instagram, social_tiktok, social_website').eq('id', msg.property_id).maybeSingle(),
     ]);
     if (rBk.error || !rBk.data) return bad(404, { error: 'Booking not found' });
     if (rProp.error || !rProp.data) return bad(404, { error: 'Property not found' });
 
     const booking = rBk.data as any;
     const prop = rProp.data as any;
+
+    let guestAiEnabled = false;
+    try {
+      const accId = (prop as any)?.account_id as string | null;
+      if (accId) {
+        const rAcc = await admin.from('accounts').select('plan').eq('id', accId).maybeSingle();
+        if (!rAcc.error && rAcc.data) {
+          const plan = String((rAcc.data as any).plan || '').toLowerCase();
+          guestAiEnabled = plan === 'premium';
+        }
+      }
+    } catch {
+      guestAiEnabled = false;
+    }
 
     // Prepare snapshot content if present
     let snapshotItems: Array<{ id:string; title?:string; html_ro?:string; html_en?:string; schedule_kind?: string | null; schedule_offset_hours?: number | null; blocks?: Array<{ sort_index:number; type:string; lang?:string; text?:string | null }> }> | null = null;
@@ -249,6 +263,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
           social_instagram: (prop as any)?.social_instagram || null,
           social_tiktok: (prop as any)?.social_tiktok || null,
           social_website: (prop as any)?.social_website || null,
+          guest_ai_enabled: guestAiEnabled,
         },
         ...(wantDebug ? { debug: { tz: propTz, now_key: nowKey, check_in_time: ciTimeRaw, check_out_time: coTimeRaw } } : {})
       },

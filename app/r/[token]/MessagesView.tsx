@@ -24,12 +24,13 @@ type PropInfo = {
   contact_address?: string | null;
   presentation_image_url?: string | null;
   regulation_pdf_url?: string | null;
-   ai_house_rules_text?: string | null;
+  ai_house_rules_text?: string | null;
   contact_overlay_position?: 'top' | 'center' | 'down' | null;
   social_facebook?: string | null;
   social_instagram?: string | null;
   social_tiktok?: string | null;
   social_website?: string | null;
+  guest_ai_enabled?: boolean | null;
 };
 
 export default function MessagesView({ token, data }: { token: string; data: any }) {
@@ -55,7 +56,9 @@ export default function MessagesView({ token, data }: { token: string; data: any
     room: lang === 'ro' ? 'Unitate' : 'Room',
     houseRules: lang === 'ro' ? 'Regulament' : 'House Rules',
   }), [lang]);
-  const [showAssistantHint, setShowAssistantHint] = useState(true);
+  const [showAssistantHint, setShowAssistantHint] = useState(
+    () => !!prop?.guest_ai_enabled,
+  );
 
   useEffect(() => {
     if (!showAssistantHint) return;
@@ -362,7 +365,9 @@ export default function MessagesView({ token, data }: { token: string; data: any
         </button>
       )}
 
-      <ChatFab lang={lang} prop={prop} details={details} items={items} />
+      {prop?.guest_ai_enabled && (
+        <ChatFab lang={lang} prop={prop} details={details} items={items} />
+      )}
     </>
   );
 }
