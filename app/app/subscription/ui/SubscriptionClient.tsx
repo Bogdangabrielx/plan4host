@@ -58,6 +58,7 @@ const BENEFITS: string[] = [
   "Real-time cleaning status updates",
   "Share daily tasks with team members",
   "Instant sync of reservations in the app calendar with Sync Now button",
+  "Guest AI assistant (arrival, amenities, extras, check-out)",
 ];
 
 function planLabel(slug: string) {
@@ -72,10 +73,12 @@ const basicX = [
   'Real-time cleaning status',
   'Share daily tasks',
   'Instant sync of reservations in the app calendar',
+  'Guest AI assistant',
 ];
 const standardX = [
   'Share daily tasks',
   'Instant sync of reservations in the app calendar',
+  'Guest AI assistant',
 ];
 
 export default function SubscriptionClient({

@@ -438,6 +438,7 @@ export default function HomePageRO() {
     "Actualizează în timp real statusul curățeniei",
     "Împarte activitățile zilnice cu membrii din echipă",
     "Sincronizare instantă a rezervărilor în calendarul aplicației prin butonul (Sync Now)",
+    "Guest AI assistant (detalii sosire, facilități, recomandări și check-out)",
   ];
 
   // Recenzii (RO)

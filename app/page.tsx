@@ -684,6 +684,7 @@ export default function HomePage() {
     "Real-time cleaning status updates",
     "Share daily tasks with team members",
     "Instant sync of reservations in the app calendar with Sync Now button",
+    "Guest AI assistant (arrival, amenities, extras, check-out)",
   ];
 
   // Reviews (EN)
