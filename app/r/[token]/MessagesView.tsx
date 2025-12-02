@@ -442,7 +442,7 @@ type ChatLabelKey =
 const BASE_LABELS: Record<ChatLabelKey, string> = {
   arrival: "Arrival details",
   amenities: "Amenities",
-  extras: "Extras",
+  extras: "Recommendations",
   contact_host: "Contact the host",
   checkout: "Check-out",
   back: "Back",

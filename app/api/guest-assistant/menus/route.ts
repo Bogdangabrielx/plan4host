@@ -28,7 +28,7 @@ type ChatLabelKey =
 const BASE_LABELS: Record<ChatLabelKey, string> = {
   arrival: "Arrival details",
   amenities: "Amenities",
-  extras: "Extras",
+  extras: "Recommendations",
   checkout: "Check-out",
   contact_host: "Contact the host",
   back: "Back",
