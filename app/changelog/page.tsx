@@ -78,7 +78,7 @@ export default function ChangelogPage() {
                 }}
               >
                 <img
-                  src="/AI_chatbot.png"
+                  src="/AI_chatbot.PNG"
                   alt="Guest AI assistant preview"
                   style={{ display: "block", width: "100%", height: "auto" }}
                 />
