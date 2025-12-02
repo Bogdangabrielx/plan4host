@@ -754,8 +754,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <strong>House Rules recommended</strong>
                 </div>
                 <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
-                  <div>It’s best to upload your House Rules so guests see and sign them when they complete check-in.</div>
-                  <small style={{ color:'var(--muted)' }}>You can continue without it, but guests won’t see your rules until you upload them.</small>
+                  <div>
+                    It’s best to upload your House Rules so guests see and sign them when they complete check-in and so
+                    we can prepare the text that the Guest AI assistant will use to support them.*
+                  </div>
+                  <small style={{ color:'var(--muted)' }}>
+                    You can continue without it, but guests won’t see your rules until you upload them.<br />
+                    * Guest AI assistant is available only on Premium plans.
+                  </small>
                 </div>
                 <div style={{ display:'flex', justifyContent:'flex-end', gap:8, flexWrap:'wrap' }}>
                   <button
