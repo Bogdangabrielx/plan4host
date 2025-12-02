@@ -290,6 +290,252 @@ export default function MessagesView({ token, data }: { token: string; data: any
           );})}
         </div>
       )}
+
+      {/* Floating chat assistant button (UI-only demo) */}
+      <ChatFab lang={lang} />
+    </>
+  );
+}
+
+type ChatFabProps = {
+  lang: "ro" | "en";
+};
+
+type ChatMessage = {
+  id: number;
+  from: "guest" | "assistant";
+  text: string;
+};
+
+function ChatFab({ lang }: ChatFabProps) {
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
+    {
+      id: 1,
+      from: "assistant",
+      text:
+        lang === "ro"
+          ? "Bună! Sunt asistentul tău virtual. Îți pot răspunde la întrebări despre cazare pe baza regulilor casei și a mesajelor de rezervare. Momentan este doar un demo UI."
+          : "Hi! I’m your virtual assistant. I can answer questions about your stay based on house rules and reservation messages. For now this is only a UI demo.",
+    },
+  ]);
+
+  function handleSend(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    setInput("");
+    setMessages((prev) => {
+      const nextId = (prev[prev.length - 1]?.id ?? 0) + 1;
+      const withGuest: ChatMessage[] = [...prev, { id: nextId, from: "guest", text: trimmed }];
+      const replyText =
+        lang === "ro"
+          ? "Mulțumim pentru mesaj! În versiunea finală, aici vei primi răspunsuri automate bazate pe regulile casei și informațiile rezervării."
+          : "Thanks for your message! In the final version, this area will show automatic answers based on house rules and your reservation details.";
+      return [
+        ...withGuest,
+        { id: nextId + 1, from: "assistant", text: replyText },
+      ];
+    });
+  }
+
+  const fabStyle: React.CSSProperties = {
+    position: "fixed",
+    right: 16,
+    bottom: 16,
+    width: 60,
+    height: 60,
+    borderRadius: "50%",
+    border: "none",
+    background: "var(--primary)",
+    color: "#0c111b",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+    cursor: "pointer",
+    zIndex: 210,
+  };
+
+  const panelStyle: React.CSSProperties = {
+    position: "fixed",
+    right: 16,
+    bottom: 88,
+    width: "min(360px, calc(100vw - 32px))",
+    maxHeight: "min(440px, calc(100vh - 120px))",
+    background: "var(--panel)",
+    borderRadius: 16,
+    border: "1px solid var(--border)",
+    boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
+    display: "grid",
+    gridTemplateRows: "auto 1fr auto",
+    overflow: "hidden",
+    zIndex: 215,
+  };
+
+  const headerStyle: React.CSSProperties = {
+    padding: "10px 12px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    borderBottom: "1px solid var(--border)",
+  };
+
+  const listStyle: React.CSSProperties = {
+    padding: 12,
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    overflowY: "auto",
+  };
+
+  const formStyle: React.CSSProperties = {
+    padding: 10,
+    borderTop: "1px solid var(--border)",
+    display: "flex",
+    gap: 8,
+    alignItems: "center",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    flex: 1,
+    borderRadius: 999,
+    border: "1px solid var(--border)",
+    padding: "8px 12px",
+    fontFamily: "inherit",
+    fontSize: 14,
+    outline: "none",
+    background: "var(--card)",
+    color: "var(--text)",
+  };
+
+  const sendBtnStyle: React.CSSProperties = {
+    borderRadius: 999,
+    border: "1px solid var(--border)",
+    background: "var(--primary)",
+    color: "#0c111b",
+    padding: "8px 12px",
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  };
+
+  return (
+    <>
+      {open && (
+        <div style={panelStyle} aria-label={lang === "ro" ? "Asistent pentru oaspeți" : "Guest assistant"}>
+          <div style={headerStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div
+                aria-hidden
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  background: "var(--primary)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#0c111b",
+                }}
+              >
+                {/* Simple valet / concierge style SVG icon */}
+                <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
+                  <circle cx="12" cy="7" r="3.2" fill="currentColor" />
+                  <path
+                    d="M7 19.5c0-2.5 2.2-4.5 5-4.5s5 2 5 4.5v0.5H7v-0.5z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M8.5 11.5h7l-0.6-3.2c-0.1-0.5-0.6-0.8-1.1-0.8H10.2c-0.5 0-1 .3-1.1.8L8.5 11.5z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700 }}>
+                  {lang === "ro" ? "Asistent pentru oaspeți" : "Guest assistant"}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--muted)" }}>
+                  {lang === "ro"
+                    ? "Demo — răspunsurile nu sunt încă reale."
+                    : "Demo – answers are not live yet."}
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              style={{
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                color: "var(--muted)",
+                fontSize: 16,
+                lineHeight: 1,
+              }}
+              aria-label={lang === "ro" ? "Închide asistent" : "Close assistant"}
+            >
+              ×
+            </button>
+          </div>
+
+          <div style={listStyle}>
+            {messages.map((m) => (
+              <div
+                key={m.id}
+                style={{
+                  alignSelf: m.from === "guest" ? "flex-end" : "flex-start",
+                  maxWidth: "80%",
+                  padding: "6px 10px",
+                  borderRadius: 14,
+                  fontSize: 13,
+                  lineHeight: 1.4,
+                  background: m.from === "guest" ? "var(--primary)" : "var(--card)",
+                  color: m.from === "guest" ? "#0c111b" : "var(--text)",
+                }}
+              >
+                {m.text}
+              </div>
+            ))}
+          </div>
+
+          <form onSubmit={handleSend} style={formStyle}>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.currentTarget.value)}
+              placeholder={lang === "ro" ? "Scrie o întrebare..." : "Type a question..."}
+              style={inputStyle}
+            />
+            <button type="submit" style={sendBtnStyle}>
+              {lang === "ro" ? "Trimite" : "Send"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={fabStyle}
+        aria-label={lang === "ro" ? "Deschide asistentul pentru oaspeți" : "Open guest assistant"}
+      >
+        <svg viewBox="0 0 24 24" width={24} height={24} aria-hidden="true">
+          <circle cx="12" cy="7" r="3.2" fill="#0c111b" />
+          <path
+            d="M7 19.5c0-2.5 2.2-4.5 5-4.5s5 2 5 4.5v0.5H7v-0.5z"
+            fill="#0c111b"
+          />
+          <path
+            d="M5 10.5h14v1.5H5z"
+            fill="#0c111b"
+          />
+        </svg>
+      </button>
     </>
   );
 }
