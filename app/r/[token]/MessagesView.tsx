@@ -395,7 +395,7 @@ function ChatFab({ lang }: ChatFabProps) {
     boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
     display: "grid",
     gridTemplateRows: "auto auto auto",
-    overflow: "hidden",
+    overflow: "visible",
     zIndex: 215,
   };
 
@@ -405,6 +405,8 @@ function ChatFab({ lang }: ChatFabProps) {
     alignItems: "center",
     justifyContent: "space-between",
     gap: 8,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     borderBottom: "1px solid rgba(255,255,255,0.06)",
     background:
       "linear-gradient(135deg, rgba(0,209,255,0.16), rgba(124,58,237,0.32))",
