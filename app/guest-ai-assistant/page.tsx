@@ -1,14 +1,11 @@
+import s from "../legal/legal.module.css";
+import ForceDark from "@/components/theme/ForceDark";
+
 export default function GuestAiAssistantPage() {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        padding: "32px 20px",
-        background: "var(--bg)",
-      }}
-    >
+    <main className={s.page}>
+      <ForceDark />
+      <div className={s.container}>
       <article style={{ width: "100%", maxWidth: 960 }}>
         <header
           style={{
@@ -220,7 +217,7 @@ export default function GuestAiAssistantPage() {
           </div>
         </section>
       </article>
+      </div>
     </main>
   );
 }
-
