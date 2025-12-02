@@ -538,7 +538,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
   const [extrasSubtopic, setExtrasSubtopic] = useState<ExtrasSubtopic | null>(null);
   const [extrasLoading, setExtrasLoading] = useState(false);
   const [extrasAnswer, setExtrasAnswer] = useState<string | null>(null);
-  const [aiLimitReached, setAiLimitReached] = useState(false);
+  const AI_LIMIT = 30;
   const [aiUsage, setAiUsage] = useState<number>(() => {
     if (typeof window === "undefined") return 0;
     try {
@@ -547,6 +547,16 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
       return Number.isFinite(n) && n > 0 ? n : 0;
     } catch {
       return 0;
+    }
+  });
+  const [aiLimitReached, setAiLimitReached] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const raw = window.localStorage.getItem(`p4h:guestai:usage:${token}`);
+      const n = raw ? parseInt(raw, 10) : 0;
+      return Number.isFinite(n) && n >= AI_LIMIT;
+    } catch {
+      return false;
     }
   });
   const selectedLang = useMemo(
@@ -687,8 +697,6 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
 
   const backLabel = menuLabels.back;
   const contactCtaLabel = menuLabels.contact_cta;
-
-  const AI_LIMIT = 30;
 
   function incrementAiUsage() {
     setAiUsage((prev) => {
