@@ -915,10 +915,7 @@ export default function HomePage() {
             <br />
             helping guesthouses and serviced apartments avoid overbooking, automate guest messaging, and streamline daily operations.
             <br />
-            <span
-              className={styles.betterGrad}
-              style={{ textTransform: "uppercase", fontWeight: 800 }}
-            >
+            <span className={styles.aiGrad} style={{ textTransform: "uppercase", fontWeight: 800 }}>
               Guest AI assistant
             </span>{" "}
             helps your guests quickly find answers about arrival, amenities, recommendations and check‑out.
