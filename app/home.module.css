@@ -178,7 +178,13 @@ will-change: transform;
 @media (max-width: 380px) {
   .nav { gap: 10px; padding: 10px 0 10px 8px; }
   .actions { gap: 4px; }
-  .nav .actions .btn { padding: 6px 8px; min-height: 28px; font-size: 11px; }
+  .nav .actions .btn {
+    padding: 6px 8px;
+    min-height: 28px;
+    font-size: 11px;
+    min-width: 0;
+    white-space: normal;
+  }
   .menuToggle { padding: 5px 7px; min-height: 28px; font-size: 11px; margin-right: calc(-1 * (var(--safe-right, 0px) + 8px)); }
   .menuIcon { width: 18px; height: 12px; }
   .menuIcon svg { width: 18px; height: 12px; }
@@ -437,6 +443,18 @@ will-change: transform;
 }
 
 .heroCta { display: flex; gap: 12px; }
+@media (max-width: 380px) {
+  .heroCta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .heroCta .btn {
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+  }
+}
 .heroVisual { background: linear-gradient(180deg, rgba(2,6,23,.02), transparent); border: 1px solid var(--border); border-radius: 18px; padding: 16px; min-height: 320px; display: grid; place-items: center; overflow: hidden; }
 .heroVisual img { width: 100%; height: auto; object-fit: contain; }
 
