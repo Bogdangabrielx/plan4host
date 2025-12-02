@@ -12,6 +12,7 @@ type Details = {
   room_name?: string;
   check_in_time?: string;
   check_out_time?: string;
+  guest_companions_count?: number;
 };
 
 type Item = { id: string; title: string; html_ro: string; html_en: string; visible: boolean };
@@ -49,6 +50,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
     details: lang === 'ro' ? 'Detalii rezervare' : 'Reservation details',
     property: lang === 'ro' ? 'Locatie' : 'Property',
     guest: lang === 'ro' ? 'Oaspete' : 'Guest',
+    guestWithCompanions: lang === 'ro' ? 'Oaspete & însoțitori' : 'Guest & companions',
     stay: lang === 'ro' ? 'Perioada' : 'Stay',
     room: lang === 'ro' ? 'Unitate' : 'Room',
     houseRules: lang === 'ro' ? 'Regulament' : 'House Rules',
@@ -226,7 +228,17 @@ export default function MessagesView({ token, data }: { token: string; data: any
             <div aria-hidden style={{ width:18 }}><img src="/dashboard_forlight.png" alt="" width={16} height={16} /></div>
             <div><strong>{labels.property}</strong>: {details.property_name || '—'}</div>
             <div aria-hidden style={{ width:18 }}><img src="/logoguest_forlight.png" alt="" width={16} height={16} /></div>
-            <div><strong>{labels.guest}</strong>: {[details.guest_first_name||'', details.guest_last_name||''].filter(Boolean).join(' ') || '—'}</div>
+            <div>
+              <strong>{details.guest_companions_count && details.guest_companions_count > 0 ? labels.guestWithCompanions : labels.guest}</strong>:{" "}
+              {(() => {
+                const fullName = [details.guest_first_name || '', details.guest_last_name || ''].filter(Boolean).join(' ') || '—';
+                const count = details.guest_companions_count || 0;
+                if (!count) return fullName;
+                return lang === 'ro'
+                  ? `${fullName} + ${count} însoțitor${count > 1 ? 'i' : ''}`
+                  : `${fullName} + ${count} companion${count > 1 ? 's' : ''}`;
+              })()}
+            </div>
             <div aria-hidden style={{ width:18 }}><img src="/night_forlight.png" alt="" width={16} height={16} /></div>
             <div><strong>{labels.stay}</strong>: {details.start_date || '—'} → {details.end_date || '—'}</div>
             {details.room_name ? (
@@ -406,6 +418,7 @@ type ChatLabelKey =
   | "arrival_parking"
   | "arrival_access_codes"
   | "arrival_time"
+  | "arrival_access_instructions"
   | "amenities_wifi"
   | "amenities_iron"
   | "amenities_minibar"
@@ -464,7 +477,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   );
   const [activeTopic, setActiveTopic] = useState<ChatTopicId | null>(null);
   const [arrivalSubtopic, setArrivalSubtopic] = useState<
-    "parking" | "access_codes" | "arrival_time" | null
+    "parking" | "access_codes" | "access_instructions" | "arrival_time" | null
   >(null);
   const [arrivalLoading, setArrivalLoading] = useState(false);
   const [arrivalAnswer, setArrivalAnswer] = useState<string | null>(null);
@@ -627,7 +640,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   const backLabel = menuLabels.back;
   const contactCtaLabel = menuLabels.contact_cta;
 
-  async function handleArrivalSubtopic(kind: "parking" | "access_codes" | "arrival_time") {
+  async function handleArrivalSubtopic(kind: "parking" | "access_codes" | "access_instructions" | "arrival_time") {
     if (!chatLang) return;
     setArrivalSubtopic(kind);
     setArrivalAnswer(null);
@@ -1175,6 +1188,13 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                     onClick={() => handleArrivalSubtopic("access_codes")}
                   >
                     <span>{menuLabels.arrival_access_codes}</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                    onClick={() => handleArrivalSubtopic("access_instructions")}
+                  >
+                    <span>{menuLabels.arrival_access_instructions}</span>
                   </button>
                   <button
                     type="button"

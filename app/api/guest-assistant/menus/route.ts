@@ -9,6 +9,7 @@ type ChatLabelKey =
   | "arrival_parking"
   | "arrival_access_codes"
   | "arrival_time"
+  | "arrival_access_instructions"
   | "amenities_wifi"
   | "amenities_iron"
   | "amenities_minibar"
@@ -73,7 +74,7 @@ Target language: ${language}
 
 Return ONLY a minified JSON object with exactly these keys:
 
-{"arrival":"...","amenities":"...","extras":"...","checkout":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","amenities_wifi":"...","amenities_iron":"...","amenities_minibar":"...","amenities_coffee":"...","amenities_ac":"...","amenities_washer":"...","amenities_dishwasher":"...","amenities_house_rules":"...","extras_eat_drink":"...","extras_visit":"...","checkout_cta":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
+{"arrival":"...","amenities":"...","extras":"...","checkout":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","arrival_access_instructions":"...","amenities_wifi":"...","amenities_iron":"...","amenities_minibar":"...","amenities_coffee":"...","amenities_ac":"...","amenities_washer":"...","amenities_dishwasher":"...","amenities_house_rules":"...","extras_eat_drink":"...","extras_visit":"...","checkout_cta":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
 
 Use natural, concise wording and keep the meaning of each label.
 
@@ -87,6 +88,7 @@ back: "${BASE_LABELS.back}"
 arrival_parking: "${BASE_LABELS.arrival_parking}"
 arrival_access_codes: "${BASE_LABELS.arrival_access_codes}"
 arrival_time: "${BASE_LABELS.arrival_time}"
+arrival_access_instructions: "Access instructions (how to enter)",
 amenities_wifi: "${BASE_LABELS.amenities_wifi}"
 amenities_iron: "${BASE_LABELS.amenities_iron}"
 amenities_minibar: "${BASE_LABELS.amenities_minibar}"
@@ -145,6 +147,7 @@ tap_email: "${BASE_LABELS.tap_email}"
         "arrival_parking",
         "arrival_access_codes",
         "arrival_time",
+        "arrival_access_instructions",
         "amenities_wifi",
         "amenities_iron",
         "amenities_minibar",

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 
-type ArrivalTopic = "parking" | "access_codes" | "arrival_time";
+type ArrivalTopic = "parking" | "access_codes" | "access_instructions" | "arrival_time";
 
 type ArrivalRequest = {
   language?: string;
@@ -65,7 +65,9 @@ export async function POST(req: Request) {
       topic === "parking"
         ? "parking information (where to park, whether it is free or paid, and any important rules)"
         : topic === "access_codes"
-        ? "access codes or instructions for how to enter the property (door codes, lockbox codes, instructions on how to use them)"
+        ? "access codes: the exact entry codes (door, gate, lockbox) and, if present, very short usage notes."
+        : topic === "access_instructions"
+        ? "full access instructions: how the guest should enter the property (where to find keys or lockbox, how to use codes, which entrance to use, and any important steps)."
         : "arrival time (the usual or specific check-in time for this reservation)";
 
     const prompt = `

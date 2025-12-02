@@ -219,6 +219,10 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
           })
         );
 
+    const companions: any[] = Array.isArray((booking as any)?.guest_companions)
+      ? ((booking as any).guest_companions as any[])
+      : [];
+
     return NextResponse.json(
       { ok: true, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at, items,
         details: {
@@ -230,6 +234,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
           room_name: roomLabel,
           check_in_time: ciTimeRaw,
           check_out_time: coTimeRaw,
+          guest_companions_count: companions.length,
         },
         property: {
           name: (prop as any)?.name || null,
