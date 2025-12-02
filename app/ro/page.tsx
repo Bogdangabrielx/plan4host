@@ -762,6 +762,7 @@ export default function HomePageRO() {
                   'Actualizează în timp real statusul curățeniei',
                   'Împarte activitățile zilnice cu membrii din echipă',
                   'Sincronizare instantă a rezervărilor în calendarul aplicației',
+                  'Guest AI assistant',
                 ].some((s) => b.includes(s));
                 return (
                   <li key={`basic-b-${i}`}>
@@ -790,6 +791,7 @@ export default function HomePageRO() {
                 const standardX = [
                   'Împarte activitățile zilnice cu membrii din echipă',
                   'Sincronizare instantă a rezervărilor în calendarul aplicației',
+                  'Guest AI assistant',
                 ].some((s) => b.includes(s));
                 return (
                   <li key={`standard-b-${i}`}>
