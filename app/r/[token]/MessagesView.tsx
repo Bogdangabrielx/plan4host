@@ -337,22 +337,29 @@ const CHAT_LANG_OPTIONS: ChatLangOption[] = [
   { code: "sk", flag: "🇸🇰", nameEn: "Slovak", nameRo: "Slovacă" },
 ];
 
-type PredefinedQuestion = {
-  id: string;
-  label: string;
+type ChatTopicId = "arrival" | "amenities" | "extras" | "contact_host";
+
+const BASE_MENU_LABELS: Record<ChatTopicId, string> = {
+  arrival: "Arrival details",
+  amenities: "Amenities",
+  extras: "Extras",
+  contact_host: "Contact the host",
 };
 
-const QUESTION_GROUPS: PredefinedQuestion[] = [
-  { id: "arrival", label: "Arrival details" },
-  { id: "amenities", label: "Amenities" },
-  { id: "extras", label: "Extras" },
-  { id: "contact_host", label: "Contact the host" },
+const QUESTION_GROUPS: ChatTopicId[] = [
+  "arrival",
+  "amenities",
+  "extras",
+  "contact_host",
 ];
 
 function ChatFab({ lang }: ChatFabProps) {
   const [open, setOpen] = useState(false);
   const [chatLang, setChatLang] = useState<ChatLangCode | null>(null);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [menuLabels, setMenuLabels] = useState<Record<ChatTopicId, string>>(
+    () => BASE_MENU_LABELS
+  );
   const selectedLang = useMemo(
     () => (chatLang ? CHAT_LANG_OPTIONS.find((o) => o.code === chatLang) ?? null : null),
     [chatLang]
@@ -481,6 +488,44 @@ function ChatFab({ lang }: ChatFabProps) {
     cursor: "pointer",
     color: "var(--text)",
   };
+
+  useEffect(() => {
+    if (!chatLang || !selectedLang) {
+      setMenuLabels(BASE_MENU_LABELS);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/guest-assistant/menus", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ language: selectedLang.nameEn }),
+        });
+        const data = (await res.json().catch(() => null)) as
+          | { labels?: Partial<Record<ChatTopicId, string>> }
+          | null;
+        if (cancelled) return;
+        const labels = data?.labels || null;
+        if (labels) {
+          setMenuLabels((prev) => ({
+            ...BASE_MENU_LABELS,
+            ...prev,
+            ...labels,
+          }));
+        } else {
+          setMenuLabels(BASE_MENU_LABELS);
+        }
+      } catch {
+        if (!cancelled) setMenuLabels(BASE_MENU_LABELS);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [chatLang, selectedLang?.nameEn]);
 
   function handleSelectLanguage(option: ChatLangOption) {
     setChatLang(option.code);
@@ -621,14 +666,14 @@ function ChatFab({ lang }: ChatFabProps) {
                 Choose a topic you need help with. In the final version, answers will be tailored to this property and translated into your selected language.
               </div>
               <div style={{ display: "grid", gap: 6 }}>
-                {QUESTION_GROUPS.map((q) => (
+                {QUESTION_GROUPS.map((id) => (
                   <button
-                    key={q.id}
+                    key={id}
                     type="button"
                     style={questionBtnStyle}
                   >
                     <span aria-hidden style={{ fontSize: 14 }}>•</span>
-                    <span>{q.label}</span>
+                    <span>{menuLabels[id]}</span>
                   </button>
                 ))}
               </div>
