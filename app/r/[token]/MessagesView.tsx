@@ -395,7 +395,7 @@ function ChatFab({ lang }: ChatFabProps) {
     boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
     display: "grid",
     gridTemplateRows: "auto auto auto",
-    overflow: "visible",
+    overflow: "hidden",
     zIndex: 215,
   };
 
@@ -413,25 +413,28 @@ function ChatFab({ lang }: ChatFabProps) {
 
   const questionsBarStyle: React.CSSProperties = {
     padding: 10,
-    borderTop: "1px solid var(--border)",
+    borderTop: "1px solid rgba(148,163,184,0.35)",
     display: "grid",
     gap: 8,
-    background: "rgba(12,17,27,0.65)",
+    background:
+      "linear-gradient(135deg, rgba(0,209,255,0.06), rgba(124,58,237,0.2))",
   };
 
   const questionBtnStyle: React.CSSProperties = {
     width: "100%",
     textAlign: "left",
-    borderRadius: 999,
-    border: "1px solid rgba(255,255,255,0.18)",
-    background: "rgba(15,23,42,0.92)",
-    color: "#e5e7eb",
-    padding: "7px 10px",
-    fontSize: 12,
+    borderRadius: 14,
+    border: "1px solid rgba(148,163,184,0.55)",
+    background:
+      "radial-gradient(circle at top left, rgba(56,189,248,0.18), rgba(15,23,42,0.96))",
+    color: "#f9fafb",
+    padding: "9px 12px",
+    fontSize: 13,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     gap: 6,
+    boxShadow: "0 6px 18px rgba(15,23,42,0.75)",
   };
 
   const languageBarStyle: React.CSSProperties = {
