@@ -301,12 +301,6 @@ type ChatFabProps = {
   lang: "ro" | "en";
 };
 
-type ChatMessage = {
-  id: number;
-  from: "guest" | "assistant";
-  text: string;
-};
-
 type ChatLangCode =
   | "ro"
   | "en"
@@ -348,48 +342,21 @@ type PredefinedQuestion = {
   label: string;
 };
 
-const PREDEFINED_QUESTIONS: PredefinedQuestion[] = [
-  { id: "checkin", label: "What time is check-in and where do I get the keys?" },
-  { id: "checkout", label: "What time is check-out and what should I do before leaving?" },
-  { id: "parking", label: "Where can I park and is it free or paid?" },
-  { id: "pets", label: "Are pets allowed and are there any extra fees or rules?" },
-  { id: "noise", label: "Are there any quiet hours or noise rules I should know about?" },
-  { id: "wifi", label: "What is the Wi‑Fi information and are there any usage limits?" },
+const QUESTION_GROUPS: PredefinedQuestion[] = [
+  { id: "arrival", label: "Arrival details" },
+  { id: "amenities", label: "Amenities" },
+  { id: "extras", label: "Extras" },
+  { id: "contact_host", label: "Contact the host" },
 ];
 
 function ChatFab({ lang }: ChatFabProps) {
   const [open, setOpen] = useState(false);
   const [chatLang, setChatLang] = useState<ChatLangCode | null>(null);
   const [showLangMenu, setShowLangMenu] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [
-    {
-      id: 1,
-      from: "assistant",
-      text:
-        "Hi! To get started, please choose the language you prefer for answers. Use the “Select language” area above.",
-    },
-  ]);
-
   const selectedLang = useMemo(
     () => (chatLang ? CHAT_LANG_OPTIONS.find((o) => o.code === chatLang) ?? null : null),
     [chatLang]
   );
-
-  function handleQuestionClick(q: PredefinedQuestion) {
-    if (!chatLang) return;
-    setMessages((prev) => {
-      const nextId = (prev[prev.length - 1]?.id ?? 0) + 1;
-      const withGuest: ChatMessage[] = [...prev, { id: nextId, from: "guest", text: q.label }];
-      const opt = CHAT_LANG_OPTIONS.find((o) => o.code === chatLang);
-      const targetName = opt?.nameEn || "the selected language";
-      const replyText =
-        `Demo: in the final version, this question will be answered using the property's house rules and reservation details, and the answer will be translated into ${targetName}.`;
-      return [
-        ...withGuest,
-        { id: nextId + 1, from: "assistant", text: replyText },
-      ];
-    });
-  }
 
   const fabStyle: React.CSSProperties = {
     position: "fixed",
@@ -420,7 +387,7 @@ function ChatFab({ lang }: ChatFabProps) {
     border: "1px solid var(--border)",
     boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
     display: "grid",
-    gridTemplateRows: "auto auto 1fr auto",
+    gridTemplateRows: "auto auto auto",
     overflow: "visible",
     zIndex: 215,
   };
@@ -435,14 +402,6 @@ function ChatFab({ lang }: ChatFabProps) {
     background:
       "linear-gradient(135deg, rgba(0,209,255,0.16), rgba(124,58,237,0.32))",
     color: "#f9fafb",
-  };
-
-  const listStyle: React.CSSProperties = {
-    padding: 12,
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    overflowY: "auto",
   };
 
   const questionsBarStyle: React.CSSProperties = {
@@ -526,12 +485,6 @@ function ChatFab({ lang }: ChatFabProps) {
   function handleSelectLanguage(option: ChatLangOption) {
     setChatLang(option.code);
     setShowLangMenu(false);
-    setMessages((prev) => {
-      const nextId = (prev[prev.length - 1]?.id ?? 0) + 1;
-      const text =
-        `Great! We will automatically translate answers into ${option.nameEn}.`;
-      return [...prev, { id: nextId, from: "assistant", text }];
-    });
   }
 
   return (
@@ -662,49 +615,25 @@ function ChatFab({ lang }: ChatFabProps) {
               </div>
             )}
           </div>
-
-          <div style={listStyle}>
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                style={{
-                  alignSelf: m.from === "guest" ? "flex-end" : "flex-start",
-                  maxWidth: "80%",
-                  padding: "6px 10px",
-                  borderRadius: 14,
-                  fontSize: 13,
-                  lineHeight: 1.4,
-                  background: m.from === "guest" ? "var(--primary)" : "var(--card)",
-                  color: m.from === "guest" ? "#0c111b" : "var(--text)",
-                }}
-              >
-                {m.text}
+          {chatLang && (
+            <div style={questionsBarStyle}>
+              <div style={{ fontSize: 11, color: "var(--muted)" }}>
+                Choose a topic you need help with. In the final version, answers will be tailored to this property and translated into your selected language.
               </div>
-            ))}
-          </div>
-
-          <div style={questionsBarStyle}>
-            <div style={{ fontSize: 11, color: "var(--muted)" }}>
-              Choose a question you need help with. In the final version, answers will be tailored to this property.
+              <div style={{ display: "grid", gap: 6 }}>
+                {QUESTION_GROUPS.map((q) => (
+                  <button
+                    key={q.id}
+                    type="button"
+                    style={questionBtnStyle}
+                  >
+                    <span aria-hidden style={{ fontSize: 14 }}>•</span>
+                    <span>{q.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div style={{ display: "grid", gap: 6 }}>
-              {PREDEFINED_QUESTIONS.map((q) => (
-                <button
-                  key={q.id}
-                  type="button"
-                  style={{
-                    ...questionBtnStyle,
-                    opacity: chatLang ? 1 : 0.5,
-                    cursor: chatLang ? "pointer" : "not-allowed",
-                  }}
-                  onClick={() => { if (chatLang) handleQuestionClick(q); }}
-                >
-                  <span aria-hidden style={{ fontSize: 14 }}>•</span>
-                  <span>{q.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       )}
 
