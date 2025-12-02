@@ -307,22 +307,66 @@ type ChatMessage = {
   text: string;
 };
 
+type ChatLangCode =
+  | "ro"
+  | "en"
+  | "de"
+  | "fr"
+  | "es"
+  | "it"
+  | "pt"
+  | "nl"
+  | "pl"
+  | "hu"
+  | "cs"
+  | "sk";
+
+type ChatLangOption = {
+  code: ChatLangCode;
+  flag: string;
+  nameEn: string;
+  nameRo: string;
+};
+
+const CHAT_LANG_OPTIONS: ChatLangOption[] = [
+  { code: "ro", flag: "🇷🇴", nameEn: "Romanian", nameRo: "Română" },
+  { code: "en", flag: "🇬🇧", nameEn: "English", nameRo: "Engleză" },
+  { code: "de", flag: "🇩🇪", nameEn: "German", nameRo: "Germană" },
+  { code: "fr", flag: "🇫🇷", nameEn: "French", nameRo: "Franceză" },
+  { code: "es", flag: "🇪🇸", nameEn: "Spanish", nameRo: "Spaniolă" },
+  { code: "it", flag: "🇮🇹", nameEn: "Italian", nameRo: "Italiană" },
+  { code: "pt", flag: "🇵🇹", nameEn: "Portuguese", nameRo: "Portugheză" },
+  { code: "nl", flag: "🇳🇱", nameEn: "Dutch", nameRo: "Neerlandeză" },
+  { code: "pl", flag: "🇵🇱", nameEn: "Polish", nameRo: "Poloneză" },
+  { code: "hu", flag: "🇭🇺", nameEn: "Hungarian", nameRo: "Maghiară" },
+  { code: "cs", flag: "🇨🇿", nameEn: "Czech", nameRo: "Cehă" },
+  { code: "sk", flag: "🇸🇰", nameEn: "Slovak", nameRo: "Slovacă" },
+];
+
 function ChatFab({ lang }: ChatFabProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [chatLang, setChatLang] = useState<ChatLangCode | null>(null);
+  const [showLangMenu, setShowLangMenu] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: 1,
       from: "assistant",
       text:
         lang === "ro"
-          ? "Bună! Sunt asistentul tău virtual. Îți pot răspunde la întrebări despre cazare pe baza regulilor casei și a mesajelor de rezervare. Momentan este doar un demo UI."
-          : "Hi! I’m your virtual assistant. I can answer questions about your stay based on house rules and reservation messages. For now this is only a UI demo.",
+          ? "Bună! Pentru început, te rog să selectezi limba în care vrei să continuăm. Folosește zona „Selectează limba / Select language” de mai sus."
+          : "Hi! To get started, please choose the language you prefer. Use the “Select language / Selectează limba” area above.",
     },
   ]);
 
+  const selectedLang = useMemo(
+    () => (chatLang ? CHAT_LANG_OPTIONS.find((o) => o.code === chatLang) ?? null : null),
+    [chatLang]
+  );
+
   function handleSend(e: React.FormEvent) {
     e.preventDefault();
+    if (!chatLang) return;
     const trimmed = input.trim();
     if (!trimmed) return;
     setInput("");
@@ -331,8 +375,8 @@ function ChatFab({ lang }: ChatFabProps) {
       const withGuest: ChatMessage[] = [...prev, { id: nextId, from: "guest", text: trimmed }];
       const replyText =
         lang === "ro"
-          ? "Mulțumim pentru mesaj! În versiunea finală, aici vei primi răspunsuri automate bazate pe regulile casei și informațiile rezervării."
-          : "Thanks for your message! In the final version, this area will show automatic answers based on house rules and your reservation details.";
+          ? "Mulțumim pentru mesaj! În versiunea finală, aici vei primi răspunsuri automate, traduse în limba aleasă, pe baza regulilor casei și a informațiilor rezervării."
+          : "Thanks for your message! In the final version, this area will show automatic answers, translated into your chosen language, based on house rules and your reservation details.";
       return [
         ...withGuest,
         { id: nextId + 1, from: "assistant", text: replyText },
@@ -348,7 +392,7 @@ function ChatFab({ lang }: ChatFabProps) {
     height: 60,
     borderRadius: "50%",
     border: "none",
-    background: "var(--primary)",
+    background: "linear-gradient(135deg, #00d1ff, #7c3aed)",
     color: "#0c111b",
     display: "flex",
     alignItems: "center",
@@ -364,12 +408,12 @@ function ChatFab({ lang }: ChatFabProps) {
     bottom: 88,
     width: "min(360px, calc(100vw - 32px))",
     maxHeight: "min(440px, calc(100vh - 120px))",
-    background: "var(--panel)",
+    background: "radial-gradient(circle at top, rgba(0,209,255,0.08), transparent 55%), var(--panel)",
     borderRadius: 16,
     border: "1px solid var(--border)",
     boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
     display: "grid",
-    gridTemplateRows: "auto 1fr auto",
+    gridTemplateRows: "auto auto 1fr auto",
     overflow: "hidden",
     zIndex: 215,
   };
@@ -380,7 +424,10 @@ function ChatFab({ lang }: ChatFabProps) {
     alignItems: "center",
     justifyContent: "space-between",
     gap: 8,
-    borderBottom: "1px solid var(--border)",
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    background:
+      "linear-gradient(135deg, rgba(0,209,255,0.16), rgba(124,58,237,0.32))",
+    color: "#f9fafb",
   };
 
   const listStyle: React.CSSProperties = {
@@ -422,6 +469,83 @@ function ChatFab({ lang }: ChatFabProps) {
     cursor: "pointer",
     whiteSpace: "nowrap",
   };
+
+  const languageBarStyle: React.CSSProperties = {
+    padding: "8px 12px",
+    borderBottom: "1px solid rgba(255,255,255,0.12)",
+    background:
+      "linear-gradient(135deg, rgba(0,209,255,0.06), rgba(124,58,237,0.16))",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    fontSize: 11,
+  };
+
+  const langTriggerStyle: React.CSSProperties = {
+    borderRadius: 999,
+    border: "1px solid rgba(255,255,255,0.45)",
+    background: "rgba(12,17,27,0.12)",
+    padding: "6px 10px",
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    cursor: "pointer",
+    fontSize: 12,
+    color: "#f9fafb",
+  };
+
+  const dropdownStyle: React.CSSProperties = {
+    position: "absolute",
+    right: 12,
+    top: "calc(100% + 6px)",
+    width: "min(260px, calc(100vw - 48px))",
+    maxHeight: 260,
+    overflowY: "auto",
+    borderRadius: 12,
+    border: "1px solid var(--border)",
+    background: "var(--panel)",
+    boxShadow: "0 14px 40px rgba(0,0,0,0.45)",
+    padding: 6,
+    zIndex: 220,
+  };
+
+  const dropdownItemStyle: React.CSSProperties = {
+    width: "100%",
+    border: "none",
+    background: "transparent",
+    padding: "6px 8px",
+    borderRadius: 8,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    fontSize: 12,
+    cursor: "pointer",
+    color: "var(--text)",
+  };
+
+  const sendDisabled = !chatLang || !input.trim();
+  const inputPlaceholder = !chatLang
+    ? lang === "ro"
+      ? "Selectează mai întâi limba de mai sus…"
+      : "Please choose a language above first…"
+    : lang === "ro"
+    ? "Scrie o întrebare..."
+    : "Type a question...";
+
+  function handleSelectLanguage(option: ChatLangOption) {
+    setChatLang(option.code);
+    setShowLangMenu(false);
+    setMessages((prev) => {
+      const nextId = (prev[prev.length - 1]?.id ?? 0) + 1;
+      const text =
+        lang === "ro"
+          ? `Perfect! Vom folosi ${option.nameRo} (${option.nameEn}) pentru conversație. În versiunea finală, răspunsurile vor fi traduse automat în această limbă.`
+          : `Great! We will use ${option.nameEn} (${option.nameRo}) for this chat. In the final version, answers will be automatically translated into this language.`;
+      return [...prev, { id: nextId, from: "assistant", text }];
+    });
+  }
 
   return (
     <>
@@ -483,6 +607,87 @@ function ChatFab({ lang }: ChatFabProps) {
             </button>
           </div>
 
+          <div style={{ ...languageBarStyle, position: "relative" }}>
+            <div style={{ display: "grid", gap: 2 }}>
+              <span style={{ opacity: 0.9 }}>
+                {lang === "ro"
+                  ? "Selectează limba · Select language"
+                  : "Select language · Selectează limba"}
+              </span>
+              <span style={{ opacity: 0.7 }}>
+                {lang === "ro"
+                  ? "Răspunsurile vor fi afișate în limba aleasă."
+                  : "Answers will be shown in your selected language."}
+              </span>
+            </div>
+            <button
+              type="button"
+              style={langTriggerStyle}
+              onClick={() => setShowLangMenu((v) => !v)}
+              aria-haspopup="listbox"
+              aria-expanded={showLangMenu}
+            >
+              <span aria-hidden style={{ fontSize: 15 }}>
+                {selectedLang ? selectedLang.flag : "🌍"}
+              </span>
+              <span>
+                {selectedLang
+                  ? `${selectedLang.nameEn} · ${selectedLang.nameRo}`
+                  : lang === "ro"
+                  ? "Alege limba"
+                  : "Choose language"}
+              </span>
+              <span aria-hidden style={{ fontSize: 10, opacity: 0.8 }}>
+                ▾
+              </span>
+            </button>
+            {showLangMenu && (
+              <div style={dropdownStyle} role="listbox">
+                {CHAT_LANG_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.code}
+                    type="button"
+                    style={{
+                      ...dropdownItemStyle,
+                      background:
+                        chatLang === opt.code
+                          ? "rgba(0,209,255,0.08)"
+                          : "transparent",
+                    }}
+                    onClick={() => handleSelectLanguage(opt)}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <span aria-hidden style={{ fontSize: 16 }}>
+                        {opt.flag}
+                      </span>
+                      <span>
+                        {opt.nameEn} · {opt.nameRo}
+                      </span>
+                    </div>
+                    {chatLang === opt.code && (
+                      <span
+                        aria-hidden
+                        style={{
+                          fontSize: 12,
+                          color: "var(--primary)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div style={listStyle}>
             {messages.map((m) => (
               <div
@@ -508,10 +713,19 @@ function ChatFab({ lang }: ChatFabProps) {
               type="text"
               value={input}
               onChange={(e) => setInput(e.currentTarget.value)}
-              placeholder={lang === "ro" ? "Scrie o întrebare..." : "Type a question..."}
+              placeholder={inputPlaceholder}
+              disabled={!chatLang}
               style={inputStyle}
             />
-            <button type="submit" style={sendBtnStyle}>
+            <button
+              type="submit"
+              style={{
+                ...sendBtnStyle,
+                opacity: sendDisabled ? 0.6 : 1,
+                cursor: sendDisabled ? "not-allowed" : "pointer",
+              }}
+              disabled={sendDisabled}
+            >
               {lang === "ro" ? "Trimite" : "Send"}
             </button>
           </form>
