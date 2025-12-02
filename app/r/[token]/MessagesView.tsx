@@ -504,7 +504,7 @@ function ChatFab({ lang }: ChatFabProps) {
     border: "1px solid var(--border)",
     background: "var(--panel)",
     boxShadow: "0 14px 40px rgba(0,0,0,0.45)",
-    padding: 6,
+    padding: "6px 6px 14px",
     zIndex: 220,
   };
 
