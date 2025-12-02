@@ -462,7 +462,7 @@ function ChatFab({ lang }: ChatFabProps) {
   const dropdownStyle: React.CSSProperties = {
     position: "absolute",
     right: 12,
-    top: "calc(100% + 6px)",
+    bottom: "calc(100% + 6px)",
     width: "min(260px, calc(100vw - 48px))",
     maxHeight: 260,
     overflowY: "auto",
@@ -640,7 +640,7 @@ function ChatFab({ lang }: ChatFabProps) {
                         {opt.flag}
                       </span>
                       <span>
-                        {opt.nameEn} · {opt.nameRo}
+                        {opt.nameEn}
                       </span>
                     </div>
                     {chatLang === opt.code && (
