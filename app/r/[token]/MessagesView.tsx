@@ -493,6 +493,8 @@ function ChatFab({ lang, prop }: ChatFabProps) {
     color: "var(--text)",
   };
 
+  const backLabel = chatLang === "ro" ? "Înapoi" : "Back";
+
   useEffect(() => {
     if (!chatLang || !selectedLang) {
       setMenuLabels(BASE_MENU_LABELS);
@@ -752,6 +754,47 @@ function ChatFab({ lang, prop }: ChatFabProps) {
                 </>
               )}
 
+              {activeTopic === "arrival" && (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                  >
+                    <span>Parking information</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                  >
+                    <span>Access codes</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                  >
+                    <span>Arrival time</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTopic(null)}
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                      background: "transparent",
+                      color: "var(--muted)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {backLabel}
+                  </button>
+                </div>
+              )}
+
               {activeTopic === "contact_host" && prop && (prop.contact_phone || prop.contact_email) && (
                 <div
                   style={{
@@ -824,7 +867,7 @@ function ChatFab({ lang, prop }: ChatFabProps) {
                       border: "1px solid var(--border)",
                     }}
                   >
-                    Back
+                    {backLabel}
                   </button>
                 </div>
               )}
