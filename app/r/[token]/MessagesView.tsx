@@ -52,6 +52,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
     room: lang === 'ro' ? 'Unitate' : 'Room',
     houseRules: lang === 'ro' ? 'Regulament' : 'House Rules',
   }), [lang]);
+  const [showAssistantHint, setShowAssistantHint] = useState(true);
 
   useEffect(() => {
     try {
@@ -293,7 +294,53 @@ export default function MessagesView({ token, data }: { token: string; data: any
         </div>
       )}
 
-      {/* Floating chat assistant button (UI-only demo) */}
+      {/* Floating guest assistant hint + button */}
+      {showAssistantHint && (
+        <button
+          type="button"
+          onClick={() => setShowAssistantHint(false)}
+          style={{
+            position: "fixed",
+            right: 16,
+            bottom: 92,
+            maxWidth: "min(320px, calc(100vw - 32px))",
+            borderRadius: 999,
+            border: "1px solid rgba(148,163,184,0.7)",
+            background:
+              "linear-gradient(135deg, rgba(0,209,255,0.12), rgba(124,58,237,0.3))",
+            color: "#f9fafb",
+            padding: "8px 12px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            boxShadow: "0 8px 20px rgba(15,23,42,0.55)",
+            cursor: "pointer",
+            zIndex: 214,
+          }}
+        >
+          <span
+            aria-hidden
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: "50%",
+              background: "rgba(15,23,42,0.95)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 14,
+            }}
+          >
+            ?
+          </span>
+          <span style={{ fontSize: 13, textAlign: "left" }}>
+            {lang === "ro"
+              ? "Ai o întrebare? Guest AI assistant te poate ajuta."
+              : "Have a question? Guest AI assistant can help."}
+          </span>
+        </button>
+      )}
+
       <ChatFab lang={lang} prop={prop} details={details} items={items} />
     </>
   );
