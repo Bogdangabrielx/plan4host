@@ -37,13 +37,7 @@ export default function GuestAiAssistantPage() {
 
         <section>
           <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 3fr) minmax(0, 2.5fr)",
-              gap: 20,
-              alignItems: "center",
-              marginBottom: 32,
-            }}
+            className={s.heroSplit}
           >
           <div
             style={{
@@ -67,16 +61,9 @@ export default function GuestAiAssistantPage() {
               PDF and the curated “House rules for AI” text from the Check‑in Editor.
             </p>
           </div>
-          <div style={{ justifySelf: "center" }}>
+          <div className={s.heroSplitMedia}>
             <div
-              style={{
-                borderRadius: 22,
-                overflow: "hidden",
-                border: "1px solid rgba(148,163,184,0.45)",
-                boxShadow: "0 18px 40px rgba(0,0,0,0.65)",
-                maxWidth: 380,
-                width: "100%",
-              }}
+              className={s.heroSplitMediaInner}
             >
               <img
                 src="/AI_chatbot.png"

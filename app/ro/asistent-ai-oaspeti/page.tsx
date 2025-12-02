@@ -37,13 +37,7 @@ export default function RoGuestAiAssistantPage() {
 
         <section>
           <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 3fr) minmax(0, 2.5fr)",
-              gap: 20,
-              alignItems: "center",
-              marginBottom: 32,
-            }}
+            className={s.heroSplit}
           >
           <div
             style={{
@@ -67,16 +61,9 @@ export default function RoGuestAiAssistantPage() {
               cu Regulamentul și textul pregătit special pentru AI în editorul de Check‑in.
             </p>
           </div>
-          <div style={{ justifySelf: "center" }}>
+          <div className={s.heroSplitMedia}>
             <div
-              style={{
-                borderRadius: 22,
-                overflow: "hidden",
-                border: "1px solid rgba(148,163,184,0.45)",
-                boxShadow: "0 18px 40px rgba(0,0,0,0.65)",
-                maxWidth: 380,
-                width: "100%",
-              }}
+              className={s.heroSplitMediaInner}
             >
               <img
                 src="/AI_chatbot.png"

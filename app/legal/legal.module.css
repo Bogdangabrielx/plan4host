@@ -45,6 +45,38 @@
 .h1 { font-size: clamp(32px, 5vw, 44px); line-height: 1.1; margin: 0 0 6px; }
 .meta { margin: 0; font-size: 14px; color: var(--muted); }
 
+/* Hero split (text + image) for AI assistant pages */
+.heroSplit {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2.5fr);
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 32px;
+}
+.heroSplitMedia {
+  justify-self: center;
+}
+.heroSplitMediaInner {
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(148,163,184,0.45);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.65);
+  max-width: 380px;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .heroSplit {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .heroSplitMedia {
+    justify-self: stretch;
+  }
+  .heroSplitMediaInner {
+    max-width: 100%;
+  }
+}
+
 /* Card-ish info block */
 .card {
   background: var(--panel);
