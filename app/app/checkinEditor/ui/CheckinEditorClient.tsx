@@ -128,6 +128,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [aiStatusPopupOpen, setAiStatusPopupOpen] = useState(false);
   const [aiStatusPhase, setAiStatusPhase] = useState<"idle" | "reading" | "success" | "failed">("idle");
   const [currentPlan, setCurrentPlan] = useState<"basic" | "standard" | "premium" | null>(null);
+  const [aiPremiumPopupOpen, setAiPremiumPopupOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -712,6 +713,78 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             </div>
           )}
 
+          {aiPremiumPopupOpen && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 260,
+                background: "rgba(0,0,0,0.55)",
+                display: "grid",
+                placeItems: "center",
+                padding: 12,
+                paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+                paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
+              }}
+            >
+              <div
+                className="sb-card"
+                style={{
+                  width: "min(420px, 100%)",
+                  borderRadius: 14,
+                  border: "1px solid var(--border)",
+                  background:
+                    "linear-gradient(135deg, rgba(0,209,255,0.25), rgba(124,58,237,0.75))",
+                  padding: 16,
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.65)",
+                  color: "#f9fafb",
+                  textAlign: "left",
+                  display: "grid",
+                  gap: 12,
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: 15 }}>
+                  Guest AI assistant is a Premium feature
+                </div>
+                <div style={{ fontSize: 13, opacity: 0.95 }}>
+                  To read and prepare House Rules text for the guest AI assistant, you need an active{" "}
+                  <strong>Premium</strong> plan. Upgrade your account to unlock AI answers for arrival details,
+                  amenities, extras and check-out.
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="sb-btn"
+                    onClick={() => setAiPremiumPopupOpen(false)}
+                  >
+                    Close
+                  </button>
+                  <a
+                    href="/app/subscription?plan=premium&hl=1"
+                    className="sb-btn sb-cardglow"
+                    style={{
+                      background: "#0b1120",
+                      borderColor: "rgba(148,163,184,0.6)",
+                      color: "#f9fafb",
+                      fontWeight: 700,
+                    }}
+                  >
+                    View Premium plans
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* House Rules PDF */}
           <section  className="sb-cardglow"  style={card}>
             <h3 style={{ marginTop: 0 }}>House Rules PDF</h3>
@@ -724,7 +797,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   type="button"
                   onClick={() => {
                     if (currentPlan !== "premium") {
-                      alert("Guest AI assistant is available only on the Premium plan.");
+                      setAiPremiumPopupOpen(true);
                       return;
                     }
                     openAiHouseRulesModalFromPdf();
