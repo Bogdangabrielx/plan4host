@@ -35,6 +35,7 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   arrival_parking: "Parking information",
   arrival_access_codes: "Access codes",
   arrival_time: "Arrival time",
+  arrival_access_instructions: "Access instructions (how to enter)",
   amenities_wifi: "Wi‑Fi (network & password)",
   amenities_iron: "Iron / ironing",
   amenities_minibar: "Minibar",
@@ -88,7 +89,7 @@ back: "${BASE_LABELS.back}"
 arrival_parking: "${BASE_LABELS.arrival_parking}"
 arrival_access_codes: "${BASE_LABELS.arrival_access_codes}"
 arrival_time: "${BASE_LABELS.arrival_time}"
-arrival_access_instructions: "Access instructions (how to enter)",
+arrival_access_instructions: "${BASE_LABELS.arrival_access_instructions}"
 amenities_wifi: "${BASE_LABELS.amenities_wifi}"
 amenities_iron: "${BASE_LABELS.amenities_iron}"
 amenities_minibar: "${BASE_LABELS.amenities_minibar}"

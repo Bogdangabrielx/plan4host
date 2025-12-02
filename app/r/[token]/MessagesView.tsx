@@ -444,6 +444,7 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   arrival_parking: "Parking information",
   arrival_access_codes: "Access codes",
   arrival_time: "Arrival time",
+  arrival_access_instructions: "Access instructions (how to enter)",
   amenities_wifi: "Wi‑Fi (network & password)",
   amenities_iron: "Iron / ironing",
   amenities_minibar: "Minibar",
