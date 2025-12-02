@@ -70,18 +70,18 @@ export async function POST(req: Request) {
 
     const topicLabel =
       topic === "wifi"
-        ? "Wi‑Fi access: whether Wi‑Fi is available, the exact network name (SSID) and password, and any connection instructions."
+        ? "Wi‑Fi access: whether Wi‑Fi is available, the exact network name (SSID) and password, any connection instructions, and whether there are usage limits or extra fees if clearly mentioned."
         : topic === "iron"
-        ? "Iron / ironing: whether there is an iron or ironing board available and where the guest can find it or request it."
+        ? "Iron / ironing: whether there is an iron or ironing board available, where the guest can find it or request it, and whether using it is free or requires an extra fee if clearly mentioned."
         : topic === "minibar"
-        ? "Minibar: whether there is a minibar, where it is, and whether items inside are complimentary or paid extra."
+        ? "Minibar: whether there is a minibar, where it is, and whether items inside are complimentary or paid extra (and under which conditions) if clearly mentioned."
         : topic === "coffee_machine"
-        ? "Coffee machine: whether there is a coffee machine and how to use it (capsules, filter, buttons, etc.)."
+        ? "Coffee machine: whether there is a coffee machine, how to use it (capsules, filter, buttons, etc.), and whether coffee/capsules are free or paid extra if clearly mentioned."
         : topic === "ac"
-        ? "Air conditioning / climate control: whether there is AC or climate control and how to operate it."
+        ? "Air conditioning / climate control: whether there is AC or climate control, how to operate it, and whether using it is free or subject to extra charges if clearly mentioned."
         : topic === "washing_machine"
-        ? "Washing machine: whether there is a washing machine and how to use it (programs, detergents, location)."
-        : "Dishwasher: whether there is a dishwasher and how to use it (programs, detergents, location).";
+        ? "Washing machine: whether there is a washing machine, how to use it (programs, detergents, location), and whether using it is free or paid extra if clearly mentioned."
+        : "Dishwasher: whether there is a dishwasher, how to use it (programs, detergents, location), and whether using it is free or paid extra if clearly mentioned.";
 
     const prompt = `
 You are a guest assistant for a property.
@@ -100,7 +100,7 @@ Rules:
 - First look for the answer in the reservation messages. Only if it is not clearly present there, you may also use the AI-configured house rules text from Property info.
 - NEVER invent or guess equipment that is not clearly mentioned, and NEVER invent or guess Wi‑Fi network names, passwords, codes, phone numbers, or addresses.
 - For Wi‑Fi, only output the network name (SSID) and password if they are explicitly present in the text; do not create or modify them.
-- If information is clearly present, answer briefly and clearly in the target language.
+- If information is clearly present, answer briefly and clearly in the target language. If the text explicitly states that the amenity is free, included, paid extra, coin‑operated or requires a deposit, mention this clearly in the answer.
 - If information is not present or is unclear, set status to "missing" and in the answer text politely say that it's not clear from the information available and that the guest should contact the host.
 - If you are not 100% sure, treat it as missing – do NOT infer or approximate.
 - Keep the answer short (1–3 sentences).
@@ -198,4 +198,3 @@ ${messagesPlain || "(none)"}
     );
   }
 }
-
