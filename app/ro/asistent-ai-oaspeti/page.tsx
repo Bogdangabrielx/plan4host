@@ -1,4 +1,4 @@
-import s from "../legal/legal.module.css";
+import s from "../../legal/legal.module.css";
 import ForceDark from "@/components/theme/ForceDark";
 
 export default function RoGuestAiAssistantPage() {
