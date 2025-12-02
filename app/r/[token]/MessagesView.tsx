@@ -812,6 +812,11 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
     setShowLangMenu(false);
   }
 
+  const checkoutCtaText =
+    chatLang === "ro"
+      ? "Pentru late check-out sau alte detalii, contactează gazda."
+      : "For late check-out or other details, contact the host.";
+
   return (
     <>
       {open && (
@@ -1020,7 +1025,11 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                               aria-hidden="true"
                             >
                               <path
-                                d="M9 4h8a1 1 0 011 1v14h-2V7H9V4zm-4.7 8.3l3-3 1.4 1.4L7.42 12H15v2H7.4l1.3 1.3-1.4 1.4-3-3a1 1 0 010-1.4z"
+                                d="M5 4h8a1 1 0 011 1v14H5a1 1 0 01-1-1V5a1 1 0 011-1zm2 2v10h6V6H7z"
+                                fill="#e5e7eb"
+                              />
+                              <path
+                                d="M16 10l3 2-3 2v-1.5h-3v-1h3V10z"
                                 fill="#e5e7eb"
                               />
                             </svg>
@@ -1207,7 +1216,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                     }}
                     onClick={() => setActiveTopic("contact_host")}
                   >
-                    {contactCtaLabel}
+                    {checkoutCtaText}
                   </button>
                   <button
                     type="button"
