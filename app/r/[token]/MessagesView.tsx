@@ -418,7 +418,7 @@ function ChatFab({ lang }: ChatFabProps) {
     borderTop: "1px solid var(--border)",
     display: "grid",
     gap: 8,
-    background: "rgba(12,17,27,0.65)",
+    background: "#ffffff",
   };
 
   const questionBtnStyle: React.CSSProperties = {
@@ -433,7 +433,7 @@ function ChatFab({ lang }: ChatFabProps) {
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
-    gap: 6,
+    gap: 10,
   };
 
   const languageBarStyle: React.CSSProperties = {
@@ -674,7 +674,72 @@ function ChatFab({ lang }: ChatFabProps) {
                     type="button"
                     style={questionBtnStyle}
                   >
-                    <span aria-hidden style={{ fontSize: 14 }}>•</span>
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        border: "1px solid rgba(148,163,184,0.7)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "rgba(15,23,42,0.9)",
+                      }}
+                    >
+                      {id === "arrival" && (
+                        <svg
+                          viewBox="0 0 24 24"
+                          width={16}
+                          height={16}
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M5 19h14v1.5H5V19zm2-2.5h10V11a5 5 0 00-10 0v5.5zm1.5-5.5a3.5 3.5 0 017 0v1h-7v-1z"
+                            fill="#e5e7eb"
+                          />
+                        </svg>
+                      )}
+                      {id === "amenities" && (
+                        <svg
+                          viewBox="0 0 24 24"
+                          width={16}
+                          height={16}
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M11 3h2v6h3l-4 7v-5H9l2-8zM8 20h8v1.5H8V20z"
+                            fill="#e5e7eb"
+                          />
+                        </svg>
+                      )}
+                      {id === "extras" && (
+                        <svg
+                          viewBox="0 0 24 24"
+                          width={16}
+                          height={16}
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M12 3l7 7-1.1 1.1L13 6.2V21h-2V6.2L6.1 11.1 5 10l7-7z"
+                            fill="#e5e7eb"
+                          />
+                        </svg>
+                      )}
+                      {id === "contact_host" && (
+                        <svg
+                          viewBox="0 0 24 24"
+                          width={16}
+                          height={16}
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M7.3 5.3L9.6 7.6a1 1 0 01.2 1.1l-1 2.3a10.5 10.5 0 004.2 4.2l2.3-1a1 1 0 011.1.2l2.3 2.3a1 1 0 01.1 1.3l-1.4 2a2 2 0 01-2.1.8c-2.5-.6-4.9-2-7.1-4.2-2.2-2.2-3.6-4.6-4.2-7.1a2 2 0 01.8-2.1l2-1.4a1 1 0 011.3.1z"
+                            fill="#e5e7eb"
+                          />
+                        </svg>
+                      )}
+                    </span>
                     <span>{menuLabels[id]}</span>
                   </button>
                 ))}
