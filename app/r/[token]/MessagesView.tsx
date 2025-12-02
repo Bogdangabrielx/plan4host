@@ -719,6 +719,12 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
     return true;
   }
 
+  useEffect(() => {
+    if (aiUsage >= AI_LIMIT) {
+      setAiLimitReached(true);
+    }
+  }, [aiUsage]);
+
   async function handleArrivalSubtopic(kind: "parking" | "access_codes" | "access_instructions" | "arrival_time") {
     if (!chatLang) return;
     setArrivalSubtopic(kind);
@@ -939,7 +945,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
   }
 
   useEffect(() => {
-    if (!chatLang || !selectedLang) {
+    if (!chatLang || !selectedLang || aiUsage >= AI_LIMIT) {
       setMenuLabels(BASE_LABELS);
       return;
     }
@@ -974,7 +980,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
     return () => {
       cancelled = true;
     };
-  }, [chatLang, selectedLang?.nameEn]);
+  }, [chatLang, selectedLang?.nameEn, aiUsage]);
 
   function handleSelectLanguage(option: ChatLangOption) {
     setChatLang(option.code);
@@ -1174,9 +1180,8 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                         ...questionBtnStyle,
                         padding: "6px 10px",
                         fontSize: 11,
-                        background: "transparent",
-                        borderColor: "var(--border)",
-                        color: "var(--muted)",
+                        background: "rgba(15,23,42,0.92)",
+                        borderColor: "rgba(148,163,184,0.8)",
                         justifyContent: "center",
                       }}
                     >
