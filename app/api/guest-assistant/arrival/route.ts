@@ -81,7 +81,8 @@ You must answer a single arrival-related question for the guest:
 - Topic: ${topicLabel}
 
 Rules:
-- Use ONLY the information found in the messages and details below.
+- Use ONLY the information found in the messages, house rules text and details below.
+- First look for the answer in the reservation messages. Only if it is not clearly present there, you may also use the AI-configured house rules text from Property info.
 - NEVER invent or guess codes, phone numbers, addresses, parking locations, or times.
 - If information is clearly present, answer briefly and clearly in the target language.
 - If information is not present or is unclear, set status to "missing" and in the answer text politely say that it's not clear from the information available and that the guest should contact the host.
