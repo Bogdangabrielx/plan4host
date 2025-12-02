@@ -1109,236 +1109,242 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
           </div>
           {chatLang && (
             <div style={questionsBarStyle}>
-              {!activeTopic && (
-                <>
-                  <div style={{ fontSize: 11, color: "var(--muted)" }}>
+              {aiLimitReached ? (
+                <div
+                  style={{
+                    marginTop: 0,
+                    padding: 10,
+                    borderRadius: 12,
+                    border: "1px solid rgba(148,163,184,0.7)",
+                    background:
+                      "linear-gradient(135deg, rgba(0,209,255,0.18), rgba(124,58,237,0.42))",
+                    fontSize: 11,
+                    color: "#e5e7eb",
+                    display: "grid",
+                    gap: 8,
+                  }}
+                >
+                  <div style={{ fontWeight: 600 }}>
                     {lang === "ro"
-                      ? "Alege un subiect pentru care ai nevoie de ajutor. În versiunea finală, răspunsurile vor fi adaptate acestei proprietăți și traduse în limba selectată."
-                      : "Choose a topic you need help with. In the final version, answers will be tailored to this property and translated into your selected language."}
+                      ? "Ai atins limita maximă de întrebări pentru acest asistent."
+                      : "You’ve reached the maximum number of questions for this assistant."}
                   </div>
-                  <div style={{ display: "grid", gap: 6 }}>
-                    {QUESTION_GROUPS.map((id) => (
+                  <div style={{ opacity: 0.95 }}>
+                    {lang === "ro"
+                      ? "Pentru alte detalii poți consulta Regulamentul casei sau poți contacta oricând gazda."
+                      : "For anything else, please check the House Rules or contact the host directly."}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 8,
+                      marginTop: 2,
+                    }}
+                  >
+                    {prop?.regulation_pdf_url && (
                       <button
-                        key={id}
                         type="button"
-                        style={questionBtnStyle}
                         onClick={() => {
-                          setActiveTopic(id);
-                          if (id === "checkout") {
-                            handleCheckout();
+                          try {
+                            window.open(
+                              prop.regulation_pdf_url as string,
+                              "_blank",
+                              "noopener,noreferrer",
+                            );
+                          } catch {
+                            // ignore
                           }
                         }}
-                      >
-                        <span
-                          aria-hidden
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: "50%",
-                            border: "1px solid rgba(148,163,184,0.7)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: "rgba(15,23,42,0.9)",
-                          }}
-                        >
-                          {id === "arrival" && (
-                            <svg
-                              viewBox="0 0 24 24"
-                              width={16}
-                              height={16}
-                              aria-hidden="true"
-                            >
-                              <path
-                                d="M8 11a4 4 0 118 0"
-                                fill="#e5e7eb"
-                              />
-                              <rect
-                                x="7"
-                                y="11"
-                                width="10"
-                                height="3"
-                                rx="1.5"
-                                fill="#e5e7eb"
-                              />
-                              <rect
-                                x="5"
-                                y="16"
-                                width="14"
-                                height="1.5"
-                                rx="0.75"
-                                fill="#e5e7eb"
-                              />
-                              <circle cx="12" cy="6" r="0.9" fill="#e5e7eb" />
-                            </svg>
-                          )}
-                          {id === "amenities" && (
-                            <svg
-                              viewBox="0 0 24 24"
-                              width={16}
-                              height={16}
-                              aria-hidden="true"
-                            >
-                              <path
-                                d="M12 3a5 5 0 00-3.8 8.2c.6.7.8 1.2.8 1.8V15h6v-2c0-.6.2-1.1.8-1.8A5 5 0 0012 3z"
-                                fill="#e5e7eb"
-                              />
-                              <rect
-                                x="10"
-                                y="15"
-                                width="4"
-                                height="1.5"
-                                rx="0.75"
-                                fill="#e5e7eb"
-                              />
-                              <rect
-                                x="9"
-                                y="17"
-                                width="6"
-                                height="1.5"
-                                rx="0.75"
-                                fill="#e5e7eb"
-                              />
-                              <rect
-                                x="11"
-                                y="19"
-                                width="2"
-                                height="1.5"
-                                rx="0.75"
-                                fill="#e5e7eb"
-                              />
-                            </svg>
-                      )}
-                          {id === "extras" && (
-                            <svg
-                              viewBox="0 0 24 24"
-                              width={16}
-                              height={16}
-                              aria-hidden="true"
-                            >
-                              <path
-                                d="M12 3a5 5 0 00-5 5c0 3.3 4.2 8 5 9 0.8-1 5-5.7 5-9a5 5 0 00-5-5zm0 2a3 3 0 110 6 3 3 0 010-6z"
-                                fill="#e5e7eb"
-                              />
-                            </svg>
-                          )}
-                          {id === "checkout" && (
-                            <svg
-                              viewBox="0 0 24 24"
-                              width={16}
-                              height={16}
-                              aria-hidden="true"
-                            >
-                              <path
-                                d="M5 4h8a1 1 0 011 1v14H5a1 1 0 01-1-1V5a1 1 0 011-1zm2 2v10h6V6H7z"
-                                fill="#e5e7eb"
-                              />
-                              <path
-                                d="M16 10l3 2-3 2v-1.5h-3v-1h3V10z"
-                                fill="#e5e7eb"
-                              />
-                            </svg>
-                          )}
-                          {id === "contact_host" && (
-                            <svg
-                              viewBox="0 0 24 24"
-                              width={16}
-                              height={16}
-                              aria-hidden="true"
-                            >
-                              <path
-                                d="M7.3 5.3L9.6 7.6a1 1 0 01.2 1.1l-1 2.3a10.5 10.5 0 004.2 4.2l2.3-1a1 1 0 011.1.2l2.3 2.3a1 1 0 01.1 1.3l-1.4 2a2 2 0 01-2.1.8c-2.5-.6-4.9-2-7.1-4.2-2.2-2.2-3.6-4.6-4.2-7.1a2 2 0 01.8-2.1l2-1.4a1 1 0 011.3.1z"
-                                fill="#e5e7eb"
-                              />
-                            </svg>
-                          )}
-                        </span>
-                        <span>{menuLabels[id]}</span>
-                      </button>
-                    ))}
-                  </div>
-                  {aiLimitReached && (
-                    <div
-                      style={{
-                        marginTop: 10,
-                        padding: 10,
-                        borderRadius: 12,
-                        border: "1px solid rgba(148,163,184,0.7)",
-                        background:
-                          "linear-gradient(135deg, rgba(0,209,255,0.18), rgba(124,58,237,0.42))",
-                        fontSize: 11,
-                        color: "#e5e7eb",
-                        display: "grid",
-                        gap: 8,
-                      }}
-                    >
-                      <div style={{ fontWeight: 600 }}>
-                        {lang === "ro"
-                          ? "Ai atins limita maximă de întrebări pentru acest asistent."
-                          : "You’ve reached the maximum number of questions for this assistant."}
-                      </div>
-                      <div style={{ opacity: 0.95 }}>
-                        {lang === "ro"
-                          ? "Pentru alte detalii poți consulta Regulamentul casei sau poți contacta oricând gazda."
-                          : "For anything else, please check the House Rules or contact the host directly."}
-                      </div>
-                      <div
                         style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: 8,
-                          marginTop: 2,
+                          ...questionBtnStyle,
+                          padding: "6px 10px",
+                          fontSize: 11,
+                          background: "rgba(15,23,42,0.92)",
+                          borderColor: "rgba(148,163,184,0.8)",
                         }}
                       >
-                        {prop?.regulation_pdf_url && (
+                        {lang === "ro"
+                          ? "Deschide Regulamentul casei"
+                          : "Open House Rules"}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setActiveTopic("contact_host")}
+                      style={{
+                        ...questionBtnStyle,
+                        padding: "6px 10px",
+                        fontSize: 11,
+                        background: "transparent",
+                        borderColor: "rgba(148,163,184,0.8)",
+                        color: "#e5e7eb",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {lang === "ro"
+                        ? "Contactează gazda"
+                        : "Contact the host"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {!activeTopic && (
+                    <>
+                      <div style={{ fontSize: 11, color: "var(--muted)" }}>
+                        {lang === "ro"
+                          ? "Alege un subiect pentru care ai nevoie de ajutor. În versiunea finală, răspunsurile vor fi adaptate acestei proprietăți și traduse în limba selectată."
+                          : "Choose a topic you need help with. In the final version, answers will be tailored to this property and translated into your selected language."}
+                      </div>
+                      <div style={{ display: "grid", gap: 6 }}>
+                        {QUESTION_GROUPS.map((id) => (
                           <button
+                            key={id}
                             type="button"
+                            style={questionBtnStyle}
                             onClick={() => {
-                              try {
-                                window.open(
-                                  prop.regulation_pdf_url as string,
-                                  "_blank",
-                                  "noopener,noreferrer",
-                                );
-                              } catch {
-                                // ignore
+                              setActiveTopic(id);
+                              if (id === "checkout") {
+                                handleCheckout();
                               }
                             }}
-                            style={{
-                              ...questionBtnStyle,
-                              padding: "6px 10px",
-                              fontSize: 11,
-                              background: "rgba(15,23,42,0.92)",
-                              borderColor: "rgba(148,163,184,0.8)",
-                            }}
                           >
-                            {lang === "ro"
-                              ? "Deschide Regulamentul casei"
-                              : "Open House Rules"}
+                            <span
+                              aria-hidden
+                              style={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: "50%",
+                                border: "1px solid rgba(148,163,184,0.7)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                background: "rgba(15,23,42,0.9)",
+                              }}
+                            >
+                              {id === "arrival" && (
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width={16}
+                                  height={16}
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    d="M8 11a4 4 0 118 0"
+                                    fill="#e5e7eb"
+                                  />
+                                  <rect
+                                    x="7"
+                                    y="11"
+                                    width="10"
+                                    height="3"
+                                    rx="1.5"
+                                    fill="#e5e7eb"
+                                  />
+                                  <rect
+                                    x="5"
+                                    y="16"
+                                    width="14"
+                                    height="1.5"
+                                    rx="0.75"
+                                    fill="#e5e7eb"
+                                  />
+                                  <circle
+                                    cx="12"
+                                    cy="6"
+                                    r="0.9"
+                                    fill="#e5e7eb"
+                                  />
+                                </svg>
+                              )}
+                              {id === "amenities" && (
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width={16}
+                                  height={16}
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    d="M12 3a5 5 0 00-3.8 8.2c.6.7.8 1.2.8 1.8V15h6v-2c0-.6.2-1.1.8-1.8A5 5 0 0012 3z"
+                                    fill="#e5e7eb"
+                                  />
+                                  <rect
+                                    x="10"
+                                    y="15"
+                                    width="4"
+                                    height="1.5"
+                                    rx="0.75"
+                                    fill="#e5e7eb"
+                                  />
+                                  <rect
+                                    x="9"
+                                    y="17"
+                                    width="6"
+                                    height="1.5"
+                                    rx="0.75"
+                                    fill="#e5e7eb"
+                                  />
+                                  <rect
+                                    x="11"
+                                    y="19"
+                                    width="2"
+                                    height="1.5"
+                                    rx="0.75"
+                                    fill="#e5e7eb"
+                                  />
+                                </svg>
+                              )}
+                              {id === "extras" && (
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width={16}
+                                  height={16}
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    d="M12 3a5 5 0 00-5 5c0 3.3 4.2 8 5 9 0.8-1 5-5.7 5-9a5 5 0 00-5-5zm0 2a3 3 0 110 6 3 3 0 010-6z"
+                                    fill="#e5e7eb"
+                                  />
+                                </svg>
+                              )}
+                              {id === "checkout" && (
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width={16}
+                                  height={16}
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    d="M5 4h8a1 1 0 011 1v14H5a1 1 0 01-1-1V5a1 1 0 011-1zm2 2v10h6V6H7z"
+                                    fill="#e5e7eb"
+                                  />
+                                  <path
+                                    d="M16 10l3 2-3 2v-1.5h-3v-1h3V10z"
+                                    fill="#e5e7eb"
+                                  />
+                                </svg>
+                              )}
+                              {id === "contact_host" && (
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width={16}
+                                  height={16}
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    d="M7.3 5.3L9.6 7.6a1 1 0 01.2 1.1l-1 2.3a10.5 10.5 0 004.2 4.2l2.3-1a1 1 0 011.1.2l2.3 2.3a1 1 0 01.1 1.3l-1.4 2a2 2 0 01-2.1.8c-2.5-.6-4.9-2-7.1-4.2-2.2-2.2-3.6-4.6-4.2-7.1a2 2 0 01.8-2.1l2-1.4a1 1 0 011.3.1z"
+                                    fill="#e5e7eb"
+                                  />
+                                </svg>
+                              )}
+                            </span>
+                            <span>{menuLabels[id]}</span>
                           </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => setActiveTopic("contact_host")}
-                          style={{
-                            ...questionBtnStyle,
-                            padding: "6px 10px",
-                            fontSize: 11,
-                            background: "transparent",
-                            borderColor: "rgba(148,163,184,0.8)",
-                            color: "#e5e7eb",
-                            justifyContent: "center",
-                          }}
-                        >
-                          {lang === "ro"
-                            ? "Contactează gazda"
-                            : "Contact the host"}
-                        </button>
+                        ))}
                       </div>
-                    </div>
+                    </>
                   )}
-                </>
-              )}
 
               {activeTopic === "arrival" && arrivalSubtopic === null && (
                 <div
@@ -1850,6 +1856,8 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                     {backLabel}
                   </button>
                 </div>
+              )}
+                </>
               )}
             </div>
           )}
