@@ -395,7 +395,7 @@ function ChatFab({ lang }: ChatFabProps) {
     boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
     display: "grid",
     gridTemplateRows: "auto auto auto",
-    overflow: "visible",
+    overflow: "hidden",
     zIndex: 215,
   };
 
@@ -553,10 +553,10 @@ function ChatFab({ lang }: ChatFabProps) {
               >
                 {/* Simple person avatar icon */}
                 <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
-                  <circle cx="12" cy="7" r="3.2" fill="currentColor" />
+                  <circle cx="12" cy="7" r="3.2" fill="#ffffff" />
                   <path
                     d="M6 19c0-3 2.7-5.5 6-5.5s6 2.5 6 5.5v0.5H6V19z"
-                    fill="currentColor"
+                    fill="#ffffff"
                   />
                 </svg>
               </div>
@@ -689,10 +689,10 @@ function ChatFab({ lang }: ChatFabProps) {
         aria-label="Open guest assistant"
       >
         <svg viewBox="0 0 24 24" width={24} height={24} aria-hidden="true">
-          <circle cx="12" cy="7" r="3.2" fill="#0c111b" />
+          <circle cx="12" cy="7" r="3.2" fill="#ffffff" />
           <path
             d="M6 19c0-3 2.7-5.5 6-5.5s6 2.5 6 5.5v0.5H6V19z"
-            fill="#0c111b"
+            fill="#ffffff"
           />
         </svg>
       </button>
