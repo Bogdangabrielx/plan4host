@@ -221,7 +221,15 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
 
     return NextResponse.json(
       { ok: true, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at, items,
-        details: { property_name: (prop as any)?.name || '', guest_first_name: booking.guest_first_name || '', guest_last_name: booking.guest_last_name || '', start_date: booking.start_date, end_date: booking.end_date, room_name: roomLabel },
+        details: {
+          property_name: (prop as any)?.name || '',
+          guest_first_name: booking.guest_first_name || '',
+          guest_last_name: booking.guest_last_name || '',
+          start_date: booking.start_date,
+          end_date: booking.end_date,
+          room_name: roomLabel,
+          check_in_time: ciTimeRaw,
+        },
         property: {
           name: (prop as any)?.name || null,
           contact_email: (prop as any)?.contact_email || null,

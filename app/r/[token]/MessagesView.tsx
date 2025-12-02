@@ -10,6 +10,7 @@ type Details = {
   start_date?: string;
   end_date?: string;
   room_name?: string;
+  check_in_time?: string;
 };
 
 type Item = { id: string; title: string; html_ro: string; html_en: string; visible: boolean };
@@ -508,9 +509,16 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   async function handleArrivalSubtopic(kind: "parking" | "access_codes" | "arrival_time") {
     if (!chatLang) return;
     setArrivalSubtopic(kind);
-    setArrivalLoading(true);
     setArrivalAnswer(null);
     setArrivalStatus(null);
+
+    if (kind === "arrival_time") {
+      // No AI logic for arrival time; we just read the configured value.
+      setArrivalLoading(false);
+      return;
+    }
+
+    setArrivalLoading(true);
 
     try {
       const res = await fetch("/api/guest-assistant/arrival", {
@@ -842,7 +850,9 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                     style={questionBtnStyle}
                     onClick={() => handleArrivalSubtopic("arrival_time")}
                   >
-                    <span>Arrival time</span>
+                    <span>
+                      {chatLang === "ro" ? "Oră de sosire" : "Arrival time"}
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -867,35 +877,66 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                     gap: 8,
                   }}
                 >
-                  <div
-                    style={{
-                      borderRadius: 12,
-                      border: "1px solid var(--border)",
-                      background: "var(--panel)",
-                      padding: 10,
-                      fontSize: 13,
-                    }}
-                  >
-                    {arrivalLoading && (
-                      <span style={{ color: "var(--muted)" }}>
-                        {chatLang === "ro" ? "Se încarcă..." : "Loading..."}
-                      </span>
-                    )}
-                    {!arrivalLoading && arrivalAnswer && (
-                      <span>{arrivalAnswer}</span>
-                    )}
-                  </div>
-                  {arrivalStatus === "missing" && (
-                    <button
-                      type="button"
+                  {arrivalSubtopic !== "arrival_time" && (
+                    <>
+                      <div
+                        style={{
+                          borderRadius: 12,
+                          border: "1px solid var(--border)",
+                          background: "var(--panel)",
+                          padding: 10,
+                          fontSize: 13,
+                        }}
+                      >
+                        {arrivalLoading && (
+                          <span style={{ color: "var(--muted)" }}>
+                            {chatLang === "ro" ? "Se încarcă..." : "Loading..."}
+                          </span>
+                        )}
+                        {!arrivalLoading && arrivalAnswer && (
+                          <span>{arrivalAnswer}</span>
+                        )}
+                      </div>
+                      {arrivalStatus === "missing" && (
+                        <button
+                          type="button"
+                          style={{
+                            ...questionBtnStyle,
+                            justifyContent: "center",
+                          }}
+                          onClick={() => setActiveTopic("contact_host")}
+                        >
+                          {chatLang === "ro"
+                            ? "Contactează gazda"
+                            : "Contact the host"}
+                        </button>
+                      )}
+                    </>
+                  )}
+                  {arrivalSubtopic === "arrival_time" && (
+                    <div
                       style={{
-                        ...questionBtnStyle,
-                        justifyContent: "center",
+                        borderRadius: 12,
+                        border: "1px solid var(--border)",
+                        background: "var(--panel)",
+                        padding: 10,
+                        fontSize: 13,
                       }}
-                      onClick={() => setActiveTopic("contact_host")}
                     >
-                      {chatLang === "ro" ? "Contactează gazda" : "Contact the host"}
-                    </button>
+                      {details.check_in_time ? (
+                        <span>
+                          {chatLang === "ro"
+                            ? `Ora ta de check-in pentru această rezervare este ${details.check_in_time}.`
+                            : `Your check-in time for this reservation is ${details.check_in_time}.`}
+                        </span>
+                      ) : (
+                        <span style={{ color: "var(--muted)" }}>
+                          {chatLang === "ro"
+                            ? "Nu avem o oră de check-in configurată pentru această rezervare. Te rugăm să contactezi gazda."
+                            : "There is no check-in time configured for this reservation. Please contact the host."}
+                        </span>
+                      )}
+                    </div>
                   )}
                   <button
                     type="button"

@@ -81,8 +81,10 @@ You must answer a single arrival-related question for the guest:
 
 Rules:
 - Use ONLY the information found in the messages and details below.
+- NEVER invent or guess codes, phone numbers, addresses, parking locations, or times.
 - If information is clearly present, answer briefly and clearly in the target language.
 - If information is not present or is unclear, set status to "missing" and in the answer text politely say that it's not clear from the information available and that the guest should contact the host.
+- If you are not 100% sure, treat it as missing – do NOT infer or approximate.
 - Keep the answer short (1–3 sentences).
 
 Return ONLY a minified JSON object with this shape:
@@ -123,7 +125,7 @@ ${messagesPlain || "(none)"}
         {
           role: "system",
           content:
-            "You return only valid JSON for UI consumption. Do not include explanations or extra text.",
+            "You return only valid JSON for UI consumption. Do not include explanations or extra text. Never make up or guess facts: do not fabricate codes, phone numbers, addresses, locations, or times. If unsure, respond with status \"missing\".",
         },
         { role: "user", content: prompt },
       ],
@@ -177,4 +179,3 @@ ${messagesPlain || "(none)"}
     );
   }
 }
-
