@@ -617,16 +617,19 @@ export default function HomePageRO() {
             și să își eficientizeze administrarea zilnică.
           </p>
           <div className={styles.heroCta}>
-            <button type="button" onClick={()=>setTryModalOpen(true)} className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>
+            <button
+              type="button"
+              onClick={() => setTryModalOpen(true)}
+              className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+            >
               Testează formularul de check‑in
             </button>
-            <a
-              href="#features-title"
-              className={`${styles.btn} ${styles.btnGhost} ${styles.focusable}`}
-              onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+            <CtaLink
+              href="/ro/asistent-ai-oaspeti"
+              className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}
             >
-              Vezi funcțiile
-            </a>
+              Vezi Guest AI assistant
+            </CtaLink>
           </div>
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview">

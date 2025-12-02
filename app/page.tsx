@@ -923,13 +923,13 @@ export default function HomePage() {
             >
               Try the guest check-in form
             </button>
-            <a
-              href="#features-title"
+            <CtaLink
+              href="/guest-ai-assistant"
               className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}
-              onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+              onNavigate={() => { /* no-op for now */ }}
             >
-              See features
-            </a>
+              See Guest AI assistant
+            </CtaLink>
           </div>
         </div>
 
