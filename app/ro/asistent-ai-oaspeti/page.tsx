@@ -35,15 +35,16 @@ export default function RoGuestAiAssistantPage() {
           </p>
         </header>
 
-        <section
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 3fr) minmax(0, 2.5fr)",
-            gap: 20,
-            alignItems: "center",
-            marginBottom: 32,
-          }}
-        >
+        <section>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 3fr) minmax(0, 2.5fr)",
+              gap: 20,
+              alignItems: "center",
+              marginBottom: 32,
+            }}
+          >
           <div
             style={{
               padding: 16,
@@ -58,7 +59,7 @@ export default function RoGuestAiAssistantPage() {
             <p style={{ marginTop: 8 }}>
               Guest AI assistant este un mic asistent fix în colțul paginii dedicate oaspetelui, acolo unde vede toate
               mesajele automate și detaliile rezervării. În loc să scrie mesaje lungi, oaspetele apasă pe meniuri precum{" "}
-              <strong>Detalii la sosire</strong>, <strong>Facilități</strong>, <strong>Extra</strong> sau{" "}
+              <strong>Detalii la sosire</strong>, <strong>Facilități</strong>, <strong>Recomandări</strong> sau{" "}
               <strong>Check‑out</strong> și primește răspunsuri scurte și clare.
             </p>
             <p style={{ marginTop: 8 }}>
@@ -84,6 +85,7 @@ export default function RoGuestAiAssistantPage() {
               />
             </div>
           </div>
+          </div>
         </section>
 
         <section>
@@ -99,7 +101,7 @@ export default function RoGuestAiAssistantPage() {
               este menționat în mesajele sau regulile tale.
             </li>
             <li>
-              <strong>Extra:</strong> recomandări locale despre unde poate mânca, bea o cafea sau ce poate vizita în
+              <strong>Recomandări:</strong> recomandări locale despre unde poate mânca, bea o cafea sau ce poate vizita în
               apropiere, dacă le-ai menționat în conținut.
             </li>
             <li>

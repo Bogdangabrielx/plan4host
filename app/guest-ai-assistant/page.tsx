@@ -35,15 +35,16 @@ export default function GuestAiAssistantPage() {
           </p>
         </header>
 
-        <section
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 3fr) minmax(0, 2.5fr)",
-            gap: 20,
-            alignItems: "center",
-            marginBottom: 32,
-          }}
-        >
+        <section>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 3fr) minmax(0, 2.5fr)",
+              gap: 20,
+              alignItems: "center",
+              marginBottom: 32,
+            }}
+          >
           <div
             style={{
               padding: 16,
@@ -84,6 +85,7 @@ export default function GuestAiAssistantPage() {
               />
             </div>
           </div>
+          </div>
         </section>
 
         <section>
@@ -99,7 +101,7 @@ export default function GuestAiAssistantPage() {
               rules or messages.
             </li>
             <li>
-              <strong>Extras:</strong> local tips for where to eat, have a coffee or what to visit nearby, when you
+              <strong>Recommendations:</strong> local tips for where to eat, have a coffee or what to visit nearby, when you
               mention them in your content.
             </li>
             <li>
