@@ -1040,7 +1040,31 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                               aria-hidden="true"
                             >
                               <path
-                                d="M5 19h14v1.5H5V19zm2-2.5h10V11a5 5 0 00-10 0v5.5zm1.5-5.5a3.5 3.5 0 017 0v1h-7v-1z"
+                                d="M8 11a4 4 0 118 0"
+                                fill="#e5e7eb"
+                              />
+                              <rect
+                                x="7"
+                                y="11"
+                                width="10"
+                                height="3"
+                                rx="1.5"
+                                fill="#e5e7eb"
+                              />
+                              <rect
+                                x="5"
+                                y="16"
+                                width="14"
+                                height="1.5"
+                                rx="0.75"
+                                fill="#e5e7eb"
+                              />
+                              <rect
+                                x="11.25"
+                                y="7"
+                                width="1.5"
+                                height="2"
+                                rx="0.75"
                                 fill="#e5e7eb"
                               />
                             </svg>
@@ -1053,7 +1077,31 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                               aria-hidden="true"
                             >
                               <path
-                                d="M11 3h2v6h3l-4 7v-5H9l2-8zM8 20h8v1.5H8V20z"
+                                d="M12 3a5 5 0 00-3.8 8.2c.6.7.8 1.2.8 1.8V15h6v-2c0-.6.2-1.1.8-1.8A5 5 0 0012 3z"
+                                fill="#e5e7eb"
+                              />
+                              <rect
+                                x="10"
+                                y="15"
+                                width="4"
+                                height="1.5"
+                                rx="0.75"
+                                fill="#e5e7eb"
+                              />
+                              <rect
+                                x="9"
+                                y="17"
+                                width="6"
+                                height="1.5"
+                                rx="0.75"
+                                fill="#e5e7eb"
+                              />
+                              <rect
+                                x="11"
+                                y="19"
+                                width="2"
+                                height="1.5"
+                                rx="0.75"
                                 fill="#e5e7eb"
                               />
                             </svg>
