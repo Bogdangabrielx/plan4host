@@ -505,6 +505,10 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   };
 
   const backLabel = chatLang === "ro" ? "Înapoi" : "Back";
+  const contactCtaLabel =
+    chatLang === "ro"
+      ? "Dacă încă ai întrebări, contactează gazda"
+      : "If you still have questions, contact the host";
 
   async function handleArrivalSubtopic(kind: "parking" | "access_codes" | "arrival_time") {
     if (!chatLang) return;
@@ -897,20 +901,16 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                           <span>{arrivalAnswer}</span>
                         )}
                       </div>
-                      {arrivalStatus === "missing" && (
-                        <button
-                          type="button"
-                          style={{
-                            ...questionBtnStyle,
-                            justifyContent: "center",
-                          }}
-                          onClick={() => setActiveTopic("contact_host")}
-                        >
-                          {chatLang === "ro"
-                            ? "Contactează gazda"
-                            : "Contact the host"}
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        style={{
+                          ...questionBtnStyle,
+                          justifyContent: "center",
+                        }}
+                        onClick={() => setActiveTopic("contact_host")}
+                      >
+                        {contactCtaLabel}
+                      </button>
                     </>
                   )}
                   {arrivalSubtopic === "arrival_time" && (
