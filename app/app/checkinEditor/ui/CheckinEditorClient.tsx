@@ -127,6 +127,23 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [aiModalError, setAiModalError] = useState<string | null>(null);
   const [aiStatusPopupOpen, setAiStatusPopupOpen] = useState(false);
   const [aiStatusPhase, setAiStatusPhase] = useState<"idle" | "reading" | "success" | "failed">("idle");
+  const [currentPlan, setCurrentPlan] = useState<"basic" | "standard" | "premium" | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const r = await supabase.rpc("account_current_plan");
+        const p = (r.data as string | null)?.toLowerCase?.() as "basic" | "standard" | "premium" | null;
+        if (mounted) setCurrentPlan((p ?? "basic") as any);
+      } catch {
+        if (mounted) setCurrentPlan("basic");
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [supabase]);
 
   // Responsive helper: treat phones/narrow screens differently for layout
   const [isNarrow, setIsNarrow] = useState<boolean>(() => {
@@ -705,7 +722,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 <button
                   className="sb-btn sb-cardglow"
                   type="button"
-                  onClick={openAiHouseRulesModalFromPdf}
+                  onClick={() => {
+                    if (currentPlan !== "premium") {
+                      alert("Guest AI assistant is available only on the Premium plan.");
+                      return;
+                    }
+                    openAiHouseRulesModalFromPdf();
+                  }}
                   title="Read PDF text and prepare it as source for the guest AI assistant"
                   style={{
                     background:
