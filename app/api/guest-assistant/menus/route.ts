@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 
-type ChatTopicId = "arrival" | "amenities" | "extras" | "checkout" | "contact_host";
+type ChatTopicId =
+  | "arrival"
+  | "amenities"
+  | "extras"
+  | "checkout"
+  | "forbidden"
+  | "contact_host";
 
 type ChatLabelKey =
   | ChatTopicId
@@ -30,6 +36,7 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   amenities: "Amenities",
   extras: "Recommendations",
   checkout: "Check-out",
+  forbidden: "What is forbidden",
   contact_host: "Contact the host",
   back: "Back",
   arrival_parking: "Parking information",
@@ -75,7 +82,7 @@ Target language: ${language}
 
 Return ONLY a minified JSON object with exactly these keys:
 
-{"arrival":"...","amenities":"...","extras":"...","checkout":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","arrival_access_instructions":"...","amenities_wifi":"...","amenities_iron":"...","amenities_minibar":"...","amenities_coffee":"...","amenities_ac":"...","amenities_washer":"...","amenities_dishwasher":"...","amenities_house_rules":"...","extras_eat_drink":"...","extras_visit":"...","checkout_cta":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
+{"arrival":"...","amenities":"...","extras":"...","checkout":"...","forbidden":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","arrival_access_instructions":"...","amenities_wifi":"...","amenities_iron":"...","amenities_minibar":"...","amenities_coffee":"...","amenities_ac":"...","amenities_washer":"...","amenities_dishwasher":"...","amenities_house_rules":"...","extras_eat_drink":"...","extras_visit":"...","checkout_cta":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
 
 Use natural, concise wording and keep the meaning of each label.
 
@@ -84,6 +91,7 @@ arrival: "${BASE_LABELS.arrival}"
 amenities: "${BASE_LABELS.amenities}"
 extras: "${BASE_LABELS.extras}"
 checkout: "${BASE_LABELS.checkout}"
+forbidden: "${BASE_LABELS.forbidden}"
 contact_host: "${BASE_LABELS.contact_host}"
 back: "${BASE_LABELS.back}"
 arrival_parking: "${BASE_LABELS.arrival_parking}"
@@ -143,6 +151,7 @@ tap_email: "${BASE_LABELS.tap_email}"
         "amenities",
         "extras",
         "checkout",
+        "forbidden",
         "contact_host",
         "back",
         "arrival_parking",

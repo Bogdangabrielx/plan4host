@@ -446,7 +446,13 @@ const CHAT_LANG_OPTIONS: ChatLangOption[] = [
   { code: "sl", flag: "🇸🇮", nameEn: "Slovenian", nameRo: "Slovenă" },
 ];
 
-type ChatTopicId = "arrival" | "amenities" | "extras" | "checkout" | "contact_host";
+type ChatTopicId =
+  | "arrival"
+  | "amenities"
+  | "extras"
+  | "checkout"
+  | "forbidden"
+  | "contact_host";
 
 type ChatLabelKey =
   | ChatTopicId
@@ -476,6 +482,7 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   extras: "Recommendations",
   contact_host: "Contact the host",
   checkout: "Check-out",
+  forbidden: "What is forbidden",
   back: "Back",
   arrival_parking: "Parking information",
   arrival_access_codes: "Access codes",
@@ -502,6 +509,7 @@ const QUESTION_GROUPS: ChatTopicId[] = [
   "amenities",
   "extras",
   "checkout",
+   "forbidden",
   "contact_host",
 ];
 
@@ -538,6 +546,8 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
   const [extrasSubtopic, setExtrasSubtopic] = useState<ExtrasSubtopic | null>(null);
   const [extrasLoading, setExtrasLoading] = useState(false);
   const [extrasAnswer, setExtrasAnswer] = useState<string | null>(null);
+  const [forbiddenLoading, setForbiddenLoading] = useState(false);
+  const [forbiddenAnswer, setForbiddenAnswer] = useState<string | null>(null);
   const AI_LIMIT = 30;
   const [aiUsage, setAiUsage] = useState<number>(() => {
     if (typeof window === "undefined") return 0;
@@ -952,6 +962,57 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
     }
   }
 
+  async function handleForbidden() {
+    if (!chatLang) return;
+    if (!ensureAiQuota()) {
+      return;
+    }
+    setForbiddenLoading(true);
+    setForbiddenAnswer(null);
+
+    try {
+      const res = await fetch("/api/guest-assistant/forbidden", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          language:
+            selectedLang?.nameEn || (chatLang === "ro" ? "Romanian" : "English"),
+          details,
+          property: {
+            name: prop?.name || null,
+            regulation_pdf_url: prop?.regulation_pdf_url || null,
+            ai_house_rules_text: prop?.ai_house_rules_text || null,
+          },
+          messages: items.map((it) => ({
+            title: it.title,
+            html_ro: it.html_ro,
+            html_en: it.html_en,
+          })),
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { status?: "found" | "missing"; answer?: string }
+        | null;
+      if (!data || !data.answer) {
+        setForbiddenAnswer(
+          chatLang === "ro"
+            ? "Din informațiile disponibile nu rezultă o listă clară de lucruri interzise. Te rugăm să consulți Regulamentul casei sau să contactezi gazda pentru detalii."
+            : "From the available information there is no clear list of forbidden actions. Please check the House Rules or contact the host for details.",
+        );
+      } else {
+        setForbiddenAnswer(data.answer);
+      }
+    } catch {
+      setForbiddenAnswer(
+        chatLang === "ro"
+          ? "Din informațiile disponibile nu rezultă o listă clară de lucruri interzise. Te rugăm să consulți Regulamentul casei sau să contactezi gazda pentru detalii."
+          : "From the available information there is no clear list of forbidden actions. Please check the House Rules or contact the host for details.",
+      );
+    } finally {
+      setForbiddenLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (!chatLang || !selectedLang || aiUsage >= AI_LIMIT) {
       setMenuLabels(BASE_LABELS);
@@ -1218,6 +1279,8 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                               setActiveTopic(id);
                               if (id === "checkout") {
                                 handleCheckout();
+                              } else if (id === "forbidden") {
+                                handleForbidden();
                               }
                             }}
                           >
@@ -1333,6 +1396,29 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                                   <path
                                     d="M16 10l3 2-3 2v-1.5h-3v-1h3V10z"
                                     fill="#e5e7eb"
+                                  />
+                                </svg>
+                              )}
+                              {id === "forbidden" && (
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width={16}
+                                  height={16}
+                                  aria-hidden="true"
+                                >
+                                  <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="7"
+                                    fill="none"
+                                    stroke="#e5e7eb"
+                                    strokeWidth="1.6"
+                                  />
+                                  <path
+                                    d="M8.5 8.5l7 7"
+                                    stroke="#e5e7eb"
+                                    strokeWidth="1.6"
+                                    strokeLinecap="round"
                                   />
                                 </svg>
                               )}
@@ -1532,6 +1618,60 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                     onClick={() => {
                       setActiveTopic(null);
                       setCheckoutAnswer(null);
+                    }}
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                      background: "transparent",
+                      color: "var(--muted)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {backLabel}
+                  </button>
+                </div>
+              )}
+
+              {activeTopic === "forbidden" && (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      borderRadius: 12,
+                      border: "1px solid var(--border)",
+                      background: "var(--panel)",
+                      padding: 10,
+                      fontSize: 13,
+                    }}
+                  >
+                    {forbiddenLoading && (
+                      <span style={{ color: "var(--muted)" }}>
+                        {chatLang === "ro" ? "Se încarcă..." : "Loading..."}
+                      </span>
+                    )}
+                    {!forbiddenLoading && forbiddenAnswer && (
+                      <span>{forbiddenAnswer}</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                    }}
+                    onClick={() => setActiveTopic("contact_host")}
+                  >
+                    {contactCtaLabel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTopic(null);
+                      setForbiddenAnswer(null);
                     }}
                     style={{
                       ...questionBtnStyle,
