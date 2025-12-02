@@ -557,6 +557,9 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
     color: "#e5e7eb",
     padding: "7px 10px",
     fontSize: 12,
+    fontFamily:
+      "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif",
+    letterSpacing: 0.02,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
@@ -585,6 +588,9 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
     gap: 8,
     cursor: "pointer",
     fontSize: 12,
+    fontFamily:
+      "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif",
+    letterSpacing: 0.02,
     color: "#f9fafb",
   };
 
