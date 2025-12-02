@@ -842,14 +842,20 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                     style={questionBtnStyle}
                     onClick={() => handleArrivalSubtopic("parking")}
                   >
-                    <span>Parking information</span>
+                    <span>
+                      {chatLang === "ro"
+                        ? "Informații parcare"
+                        : "Parking information"}
+                    </span>
                   </button>
                   <button
                     type="button"
                     style={questionBtnStyle}
                     onClick={() => handleArrivalSubtopic("access_codes")}
                   >
-                    <span>Access codes</span>
+                    <span>
+                      {chatLang === "ro" ? "Coduri de acces" : "Access codes"}
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -991,7 +997,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                         <span>{prop.contact_phone}</span>
                       </span>
                       <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                        Tap to call
+                        {chatLang === "ro" ? "Apasă pentru a apela" : "Tap to call"}
                       </span>
                     </button>
                   )}
@@ -1017,7 +1023,9 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                         <span>{prop.contact_email}</span>
                       </span>
                       <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                        Tap to email
+                        {chatLang === "ro"
+                          ? "Apasă pentru a trimite email"
+                          : "Tap to email"}
                       </span>
                     </button>
                   )}
