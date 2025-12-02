@@ -463,10 +463,8 @@ function ChatFab({ lang }: ChatFabProps) {
   };
 
   const dropdownStyle: React.CSSProperties = {
-    position: "absolute",
-    right: 12,
-    top: "calc(100% + 6px)",
-    width: "min(260px, calc(100vw - 48px))",
+    marginTop: 8,
+    width: "100%",
     maxHeight: 260,
     overflowY: "auto",
     borderRadius: 12,
@@ -474,7 +472,6 @@ function ChatFab({ lang }: ChatFabProps) {
     background: "var(--panel)",
     boxShadow: "0 14px 40px rgba(0,0,0,0.45)",
     padding: "6px 6px 14px",
-    zIndex: 220,
   };
 
   const dropdownItemStyle: React.CSSProperties = {
