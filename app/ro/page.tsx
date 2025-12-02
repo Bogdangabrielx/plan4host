@@ -634,7 +634,7 @@ export default function HomePageRO() {
               href="/ro/asistent-ai-oaspeti"
               className={`sb-cardglow ${styles.btn} ${styles.btnAi} ${styles.focusable}`}
             >
-              Vezi Guest AI assistant
+              <span className={styles.btnAiLabel}>Vezi Guest AI assistant</span>
             </CtaLink>
           </div>
         </div>

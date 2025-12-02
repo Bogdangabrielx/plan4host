@@ -934,7 +934,7 @@ export default function HomePage() {
               className={`sb-cardglow ${styles.btn} ${styles.btnAi} ${styles.focusable}`}
               onNavigate={() => { /* no-op for now */ }}
             >
-              See Guest AI assistant
+              <span className={styles.btnAiLabel}>See Guest AI assistant</span>
             </CtaLink>
           </div>
         </div>
