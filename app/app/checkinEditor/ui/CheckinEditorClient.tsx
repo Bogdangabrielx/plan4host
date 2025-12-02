@@ -357,7 +357,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     setAiModalOpen(true);
     setAiModalLoading(true);
     setAiModalError(null);
-    setAiModalText("");
+    setAiModalText(prop?.ai_house_rules_text || "");
     try {
       const res = await fetch(
         `/api/property/regulation/read-text?propertyId=${encodeURIComponent(
@@ -366,17 +366,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         { cache: "no-store" },
       );
       const data = await res.json().catch(() => ({}));
-      if (res.ok && data?.text) {
+      if (res.ok && data?.text && !prop?.ai_house_rules_text) {
         setAiModalText(String(data.text || ""));
-      } else {
-        setAiModalError(
-          "We couldn't automatically extract the text from your House Rules PDF. Please paste or type below the rules you want the guest assistant to use.",
-        );
+      } else if (!res.ok || !data?.text) {
+        setAiModalError("extract_failed");
       }
     } catch {
-      setAiModalError(
-        "We couldn't automatically extract the text from your House Rules PDF. Please paste or type below the rules you want the guest assistant to use.",
-      );
+      setAiModalError("extract_failed");
     } finally {
       setAiModalLoading(false);
     }
@@ -533,12 +529,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   </button>
                 </div>
                 <div style={{ fontSize: 13, color: "var(--muted)" }}>
-                  This text will be used as input for the guest AI assistant
-                  (arrival details, amenities, etc.). If the area below is
-                  empty or does not look right, please paste or type the rules
-                  you want the assistant to use. Always remove any sensitive
-                  information (door codes, passwords, private links) before
-                  saving.
+                  {aiModalLoading
+                    ? "Reading your House Rules PDF…"
+                    : aiModalError === "extract_failed"
+                    ? "We couldn't automatically extract the text from your House Rules PDF. Please paste or type below the rules you want the guest assistant to use."
+                    : "This text will be used as input for the guest AI assistant (arrival details, amenities, etc.). Review it, remove any sensitive information (door codes, passwords, private links), then confirm."}
                 </div>
                 <textarea
                   value={aiModalText}
@@ -569,11 +564,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   }}
                 >
                   <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                    {aiModalLoading
-                      ? "Reading PDF…"
-                      : aiModalError
-                      ? aiModalError
-                      : ""}
+                    {aiModalLoading ? "Reading PDF…" : ""}
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button
@@ -592,6 +583,16 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     >
                       {aiModalLoading ? "Saving…" : "Use for AI"}
                     </button>
+                    {aiModalError === "extract_failed" && (
+                      <button
+                        type="button"
+                        className="sb-btn"
+                        onClick={() => setAiModalError(null)}
+                        disabled={aiModalLoading}
+                      >
+                        Fill manually
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
