@@ -745,7 +745,9 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
               {!activeTopic && (
                 <>
                   <div style={{ fontSize: 11, color: "var(--muted)" }}>
-                    Choose a topic you need help with. In the final version, answers will be tailored to this property and translated into your selected language.
+                    {chatLang === "ro"
+                      ? "Alege un subiect pentru care ai nevoie de ajutor. În versiunea finală, răspunsurile vor fi adaptate acestei proprietăți și traduse în limba selectată."
+                      : "Choose a topic you need help with. In the final version, answers will be tailored to this property and translated into your selected language."}
                   </div>
                   <div style={{ display: "grid", gap: 6 }}>
                     {QUESTION_GROUPS.map((id) => (
