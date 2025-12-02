@@ -125,6 +125,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [aiModalLoading, setAiModalLoading] = useState(false);
   const [aiModalText, setAiModalText] = useState<string>("");
   const [aiModalError, setAiModalError] = useState<string | null>(null);
+  const [aiStatusPopupOpen, setAiStatusPopupOpen] = useState(false);
+  const [aiStatusPhase, setAiStatusPhase] = useState<"idle" | "reading" | "success" | "failed">("idle");
 
   // Responsive helper: treat phones/narrow screens differently for layout
   const [isNarrow, setIsNarrow] = useState<boolean>(() => {
@@ -358,6 +360,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     setAiModalLoading(true);
     setAiModalError(null);
     setAiModalText(prop?.ai_house_rules_text || "");
+    setAiStatusPhase("reading");
+    setAiStatusPopupOpen(true);
     try {
       const res = await fetch(
         `/api/property/regulation/read-text?propertyId=${encodeURIComponent(
@@ -366,13 +370,18 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         { cache: "no-store" },
       );
       const data = await res.json().catch(() => ({}));
-      if (res.ok && data?.text && !prop?.ai_house_rules_text) {
-        setAiModalText(String(data.text || ""));
-      } else if (!res.ok || !data?.text) {
+      if (res.ok && data?.text) {
+        if (!prop?.ai_house_rules_text) {
+          setAiModalText(String(data.text || ""));
+        }
+        setAiStatusPhase("success");
+      } else {
         setAiModalError("extract_failed");
+        setAiStatusPhase("failed");
       }
     } catch {
       setAiModalError("extract_failed");
+      setAiStatusPhase("failed");
     } finally {
       setAiModalLoading(false);
     }
@@ -530,9 +539,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   </button>
                 </div>
                 <div style={{ fontSize: 13, color: "var(--muted)" }}>
-                  {aiModalError === "extract_failed"
-                    ? "We couldn't automatically extract the text from your House Rules PDF. Please paste or type below the rules you want the guest AI assistant to use."
-                    : "This text will be used as input for the guest AI assistant (arrival details, amenities, etc.). Review it, remove any sensitive information (door codes, passwords, private links), then confirm."}
+                  This text will be used as input for the guest AI assistant
+                  (arrival details, amenities, etc.). Review it, remove any
+                  sensitive information (door codes, passwords, private links),
+                  then confirm.
                 </div>
                 <textarea
                   value={aiModalText}
@@ -582,53 +592,103 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     >
                       {aiModalLoading ? "Saving…" : "Use for AI"}
                     </button>
-                    {aiModalError === "extract_failed" && (
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {aiStatusPopupOpen && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 260,
+                background: "rgba(0,0,0,0.45)",
+                display: "grid",
+                placeItems: "center",
+                padding: 12,
+                paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+                paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
+              }}
+            >
+              <div
+                className="sb-card"
+                style={{
+                  width: "min(420px, 100%)",
+                  borderRadius: 12,
+                  border: "1px solid var(--border)",
+                  background:
+                    aiStatusPhase === "reading"
+                      ? "linear-gradient(135deg, rgba(0,209,255,0.16), rgba(124,58,237,0.28))"
+                      : "var(--panel)",
+                  padding: 16,
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
+                  color: "var(--text)",
+                  textAlign: "left",
+                  display: "grid",
+                  gap: 12,
+                }}
+              >
+                <div style={{ fontWeight: 600 }}>
+                  {aiStatusPhase === "reading"
+                    ? "Reading the file…"
+                    : aiStatusPhase === "success"
+                    ? "Text ready for your guest AI assistant"
+                    : "We couldn't automatically extract the text"}
+                </div>
+                <div style={{ fontSize: 13, color: "var(--muted)" }}>
+                  {aiStatusPhase === "reading"
+                    ? "Please wait while we prepare the text that the guest AI assistant will use."
+                    : aiStatusPhase === "success"
+                    ? "We prepared the text for your guest AI assistant. You can now review and edit it below, then save."
+                    : "We couldn't automatically extract the text from your House Rules PDF. Please paste or type below the rules you want the guest AI assistant to use."}
+                </div>
+                {aiStatusPhase !== "reading" && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      gap: 8,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="sb-btn"
+                      onClick={() => {
+                        setAiStatusPopupOpen(false);
+                        setAiStatusPhase("idle");
+                      }}
+                    >
+                      Close
+                    </button>
+                    {aiStatusPhase === "success" && (
                       <button
                         type="button"
-                        className="sb-btn"
-                        onClick={() => setAiModalError(null)}
-                        disabled={aiModalLoading}
+                        className="sb-btn sb-btn--primary"
+                        onClick={() => {
+                          setAiStatusPopupOpen(false);
+                          setAiStatusPhase("idle");
+                        }}
+                      >
+                        Check &amp; edit
+                      </button>
+                    )}
+                    {aiStatusPhase === "failed" && (
+                      <button
+                        type="button"
+                        className="sb-btn sb-btn--primary"
+                        onClick={() => {
+                          setAiStatusPopupOpen(false);
+                          setAiStatusPhase("idle");
+                        }}
                       >
                         Fill manually
                       </button>
                     )}
-                  </div>
-                </div>
-
-                {aiModalLoading && (
-                  <div
-                    aria-hidden
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      borderRadius: 12,
-                      background: "rgba(15,23,42,0.82)",
-                      display: "grid",
-                      placeItems: "center",
-                    }}
-                  >
-                    <div
-                      className="sb-card"
-                      style={{
-                        padding: 12,
-                        borderRadius: 10,
-                        border: "1px solid var(--border)",
-                        background:
-                          "linear-gradient(135deg, rgba(0,209,255,0.16), rgba(124,58,237,0.28))",
-                        color: "#f9fafb",
-                        minWidth: 260,
-                        textAlign: "center",
-                        boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
-                      }}
-                    >
-                      <div style={{ marginBottom: 4, fontWeight: 600 }}>
-                        Reading your House Rules PDF…
-                      </div>
-                      <div style={{ fontSize: 12, opacity: 0.9 }}>
-                        Please wait while we prepare the text for your guest AI
-                        assistant.
-                      </div>
-                    </div>
                   </div>
                 )}
               </div>
