@@ -353,9 +353,7 @@ function ChatFab({ lang }: ChatFabProps) {
       id: 1,
       from: "assistant",
       text:
-        lang === "ro"
-          ? "Bună! Pentru început, te rog să selectezi limba în care vrei să continuăm. Folosește zona „Selectează limba / Select language” de mai sus."
-          : "Hi! To get started, please choose the language you prefer. Use the “Select language / Selectează limba” area above.",
+        "Hi! To get started, please choose the language you prefer for answers. Use the “Select language” area above.",
     },
   ]);
 
@@ -373,10 +371,10 @@ function ChatFab({ lang }: ChatFabProps) {
     setMessages((prev) => {
       const nextId = (prev[prev.length - 1]?.id ?? 0) + 1;
       const withGuest: ChatMessage[] = [...prev, { id: nextId, from: "guest", text: trimmed }];
+      const opt = CHAT_LANG_OPTIONS.find((o) => o.code === chatLang);
+      const targetName = opt?.nameEn || "the selected language";
       const replyText =
-        lang === "ro"
-          ? "Mulțumim pentru mesaj! În versiunea finală, aici vei primi răspunsuri automate, traduse în limba aleasă, pe baza regulilor casei și a informațiilor rezervării."
-          : "Thanks for your message! In the final version, this area will show automatic answers, translated into your chosen language, based on house rules and your reservation details.";
+        `Thanks for your message! In the final version, this area will show automatic answers, translated into ${targetName}, based on house rules and your reservation details.`;
       return [
         ...withGuest,
         { id: nextId + 1, from: "assistant", text: replyText },
@@ -527,11 +525,7 @@ function ChatFab({ lang }: ChatFabProps) {
 
   const sendDisabled = !chatLang || !input.trim();
   const inputPlaceholder = !chatLang
-    ? lang === "ro"
-      ? "Selectează mai întâi limba de mai sus…"
-      : "Please choose a language above first…"
-    : lang === "ro"
-    ? "Scrie o întrebare..."
+    ? "Please choose a language above first…"
     : "Type a question...";
 
   function handleSelectLanguage(option: ChatLangOption) {
@@ -540,9 +534,7 @@ function ChatFab({ lang }: ChatFabProps) {
     setMessages((prev) => {
       const nextId = (prev[prev.length - 1]?.id ?? 0) + 1;
       const text =
-        lang === "ro"
-          ? `Perfect! Vom folosi ${option.nameRo} (${option.nameEn}) pentru conversație. În versiunea finală, răspunsurile vor fi traduse automat în această limbă.`
-          : `Great! We will use ${option.nameEn} (${option.nameRo}) for this chat. In the final version, answers will be automatically translated into this language.`;
+        `Great! We will automatically translate answers into ${option.nameEn}.`;
       return [...prev, { id: nextId, from: "assistant", text }];
     });
   }
@@ -550,7 +542,7 @@ function ChatFab({ lang }: ChatFabProps) {
   return (
     <>
       {open && (
-        <div style={panelStyle} aria-label={lang === "ro" ? "Asistent pentru oaspeți" : "Guest assistant"}>
+        <div style={panelStyle} aria-label="Guest assistant">
           <div style={headerStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div
@@ -566,27 +558,21 @@ function ChatFab({ lang }: ChatFabProps) {
                   color: "#0c111b",
                 }}
               >
-                {/* Simple valet / concierge style SVG icon */}
+                {/* Simple person avatar icon */}
                 <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
                   <circle cx="12" cy="7" r="3.2" fill="currentColor" />
                   <path
-                    d="M7 19.5c0-2.5 2.2-4.5 5-4.5s5 2 5 4.5v0.5H7v-0.5z"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M8.5 11.5h7l-0.6-3.2c-0.1-0.5-0.6-0.8-1.1-0.8H10.2c-0.5 0-1 .3-1.1.8L8.5 11.5z"
+                    d="M6 19c0-3 2.7-5.5 6-5.5s6 2.5 6 5.5v0.5H6V19z"
                     fill="currentColor"
                   />
                 </svg>
               </div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700 }}>
-                  {lang === "ro" ? "Asistent pentru oaspeți" : "Guest assistant"}
+                  Guest assistant
                 </div>
                 <div style={{ fontSize: 11, color: "var(--muted)" }}>
-                  {lang === "ro"
-                    ? "Demo — răspunsurile nu sunt încă reale."
-                    : "Demo – answers are not live yet."}
+                  Demo – answers are not live yet.
                 </div>
               </div>
             </div>
@@ -601,7 +587,7 @@ function ChatFab({ lang }: ChatFabProps) {
                 fontSize: 16,
                 lineHeight: 1,
               }}
-              aria-label={lang === "ro" ? "Închide asistent" : "Close assistant"}
+              aria-label="Close assistant"
             >
               ×
             </button>
@@ -610,14 +596,10 @@ function ChatFab({ lang }: ChatFabProps) {
           <div style={{ ...languageBarStyle, position: "relative" }}>
             <div style={{ display: "grid", gap: 2 }}>
               <span style={{ opacity: 0.9 }}>
-                {lang === "ro"
-                  ? "Selectează limba · Select language"
-                  : "Select language · Selectează limba"}
+                Select language
               </span>
               <span style={{ opacity: 0.7 }}>
-                {lang === "ro"
-                  ? "Răspunsurile vor fi afișate în limba aleasă."
-                  : "Answers will be shown in your selected language."}
+                Answers will be automatically translated into your selected language.
               </span>
             </div>
             <button
@@ -632,9 +614,7 @@ function ChatFab({ lang }: ChatFabProps) {
               </span>
               <span>
                 {selectedLang
-                  ? `${selectedLang.nameEn} · ${selectedLang.nameRo}`
-                  : lang === "ro"
-                  ? "Alege limba"
+                  ? selectedLang.nameEn
                   : "Choose language"}
               </span>
               <span aria-hidden style={{ fontSize: 10, opacity: 0.8 }}>
@@ -726,7 +706,7 @@ function ChatFab({ lang }: ChatFabProps) {
               }}
               disabled={sendDisabled}
             >
-              {lang === "ro" ? "Trimite" : "Send"}
+              Send
             </button>
           </form>
         </div>
@@ -736,16 +716,12 @@ function ChatFab({ lang }: ChatFabProps) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         style={fabStyle}
-        aria-label={lang === "ro" ? "Deschide asistentul pentru oaspeți" : "Open guest assistant"}
+        aria-label="Open guest assistant"
       >
         <svg viewBox="0 0 24 24" width={24} height={24} aria-hidden="true">
           <circle cx="12" cy="7" r="3.2" fill="#0c111b" />
           <path
-            d="M7 19.5c0-2.5 2.2-4.5 5-4.5s5 2 5 4.5v0.5H7v-0.5z"
-            fill="#0c111b"
-          />
-          <path
-            d="M5 10.5h14v1.5H5z"
+            d="M6 19c0-3 2.7-5.5 6-5.5s6 2.5 6 5.5v0.5H6V19z"
             fill="#0c111b"
           />
         </svg>
