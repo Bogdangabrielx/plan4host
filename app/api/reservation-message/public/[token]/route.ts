@@ -229,6 +229,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
           end_date: booking.end_date,
           room_name: roomLabel,
           check_in_time: ciTimeRaw,
+          check_out_time: coTimeRaw,
         },
         property: {
           name: (prop as any)?.name || null,

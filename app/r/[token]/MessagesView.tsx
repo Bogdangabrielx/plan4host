@@ -11,6 +11,7 @@ type Details = {
   end_date?: string;
   room_name?: string;
   check_in_time?: string;
+  check_out_time?: string;
 };
 
 type Item = { id: string; title: string; html_ro: string; html_en: string; visible: boolean };
@@ -397,7 +398,7 @@ const CHAT_LANG_OPTIONS: ChatLangOption[] = [
   { code: "sk", flag: "🇸🇰", nameEn: "Slovak", nameRo: "Slovacă" },
 ];
 
-type ChatTopicId = "arrival" | "amenities" | "extras" | "contact_host";
+type ChatTopicId = "arrival" | "amenities" | "extras" | "checkout" | "contact_host";
 
 type ChatLabelKey =
   | ChatTopicId
@@ -422,6 +423,7 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   amenities: "Amenities",
   extras: "Extras",
   contact_host: "Contact the host",
+  checkout: "Check-out",
   back: "Back",
   arrival_parking: "Parking information",
   arrival_access_codes: "Access codes",
@@ -443,6 +445,7 @@ const QUESTION_GROUPS: ChatTopicId[] = [
   "arrival",
   "amenities",
   "extras",
+  "checkout",
   "contact_host",
 ];
 
@@ -462,6 +465,8 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
   const [arrivalStatus, setArrivalStatus] = useState<"found" | "missing" | null>(
     null,
   );
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutAnswer, setCheckoutAnswer] = useState<string | null>(null);
   type AmenitiesSubtopic =
     | "wifi"
     | "iron"
@@ -664,6 +669,54 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
       );
     } finally {
       setArrivalLoading(false);
+    }
+  }
+
+  async function handleCheckout() {
+    if (!chatLang) return;
+    setCheckoutLoading(true);
+    setCheckoutAnswer(null);
+
+    try {
+      const res = await fetch("/api/guest-assistant/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          language: selectedLang?.nameEn || (chatLang === "ro" ? "Romanian" : "English"),
+          details,
+          property: {
+            name: prop?.name || null,
+            regulation_pdf_url: prop?.regulation_pdf_url || null,
+            ai_house_rules_text: prop?.ai_house_rules_text || null,
+            check_out_time: (details as any).check_out_time || null,
+          },
+          messages: items.map((it) => ({
+            title: it.title,
+            html_ro: it.html_ro,
+            html_en: it.html_en,
+          })),
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { status?: "found" | "missing"; answer?: string }
+        | null;
+      if (!data || !data.answer) {
+        setCheckoutAnswer(
+          chatLang === "ro"
+            ? "Nu este clar din informațiile disponibile. Te rugăm să contactezi gazda pentru detalii exacte."
+            : "It is not clear from the available information. Please contact the host for precise details.",
+        );
+      } else {
+        setCheckoutAnswer(data.answer);
+      }
+    } catch {
+      setCheckoutAnswer(
+        chatLang === "ro"
+          ? "Nu este clar din informațiile disponibile. Te rugăm să contactezi gazda pentru detalii exacte."
+          : "It is not clear from the available information. Please contact the host for precise details.",
+      );
+    } finally {
+      setCheckoutLoading(false);
     }
   }
 
@@ -900,7 +953,12 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                         key={id}
                         type="button"
                         style={questionBtnStyle}
-                        onClick={() => setActiveTopic(id)}
+                        onClick={() => {
+                          setActiveTopic(id);
+                          if (id === "checkout") {
+                            handleCheckout();
+                          }
+                        }}
                       >
                         <span
                           aria-hidden
@@ -940,7 +998,7 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                                 fill="#e5e7eb"
                               />
                             </svg>
-                          )}
+                      )}
                           {id === "extras" && (
                             <svg
                               viewBox="0 0 24 24"
@@ -950,6 +1008,19 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                             >
                               <path
                                 d="M12 3l7 7-1.1 1.1L13 6.2V21h-2V6.2L6.1 11.1 5 10l7-7z"
+                                fill="#e5e7eb"
+                              />
+                            </svg>
+                          )}
+                          {id === "checkout" && (
+                            <svg
+                              viewBox="0 0 24 24"
+                              width={16}
+                              height={16}
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="M9 4h8a1 1 0 011 1v14h-2V7H9V4zm-4.7 8.3l3-3 1.4 1.4L7.42 12H15v2H7.4l1.3 1.3-1.4 1.4-3-3a1 1 0 010-1.4z"
                                 fill="#e5e7eb"
                               />
                             </svg>
@@ -1089,6 +1160,60 @@ function ChatFab({ lang, prop, details, items }: ChatFabProps) {
                       setArrivalSubtopic(null);
                       setArrivalAnswer(null);
                       setArrivalStatus(null);
+                    }}
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                      background: "transparent",
+                      color: "var(--muted)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {backLabel}
+                  </button>
+                </div>
+              )}
+
+              {activeTopic === "checkout" && (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      borderRadius: 12,
+                      border: "1px solid var(--border)",
+                      background: "var(--panel)",
+                      padding: 10,
+                      fontSize: 13,
+                    }}
+                  >
+                    {checkoutLoading && (
+                      <span style={{ color: "var(--muted)" }}>
+                        {chatLang === "ro" ? "Se încarcă..." : "Loading..."}
+                      </span>
+                    )}
+                    {!checkoutLoading && checkoutAnswer && (
+                      <span>{checkoutAnswer}</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    style={{
+                      ...questionBtnStyle,
+                      justifyContent: "center",
+                    }}
+                    onClick={() => setActiveTopic("contact_host")}
+                  >
+                    {contactCtaLabel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTopic(null);
+                      setCheckoutAnswer(null);
                     }}
                     style={{
                       ...questionBtnStyle,

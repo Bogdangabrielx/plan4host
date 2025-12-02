@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
 
-type ChatTopicId = "arrival" | "amenities" | "extras" | "contact_host";
+type ChatTopicId = "arrival" | "amenities" | "extras" | "checkout" | "contact_host";
 
 type ChatLabelKey =
   | ChatTopicId
@@ -25,6 +25,7 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   arrival: "Arrival details",
   amenities: "Amenities",
   extras: "Extras",
+  checkout: "Check-out",
   contact_host: "Contact the host",
   back: "Back",
   arrival_parking: "Parking information",
@@ -66,7 +67,7 @@ Target language: ${language}
 
 Return ONLY a minified JSON object with exactly these keys:
 
-{"arrival":"...","amenities":"...","extras":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","amenities_wifi":"...","amenities_iron":"...","amenities_minibar":"...","amenities_coffee":"...","amenities_ac":"...","amenities_washer":"...","amenities_dishwasher":"...","amenities_house_rules":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
+{"arrival":"...","amenities":"...","extras":"...","checkout":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","amenities_wifi":"...","amenities_iron":"...","amenities_minibar":"...","amenities_coffee":"...","amenities_ac":"...","amenities_washer":"...","amenities_dishwasher":"...","amenities_house_rules":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
 
 Use natural, concise wording and keep the meaning of each label.
 
@@ -74,6 +75,7 @@ Source labels:
 arrival: "${BASE_LABELS.arrival}"
 amenities: "${BASE_LABELS.amenities}"
 extras: "${BASE_LABELS.extras}"
+checkout: "${BASE_LABELS.checkout}"
 contact_host: "${BASE_LABELS.contact_host}"
 back: "${BASE_LABELS.back}"
 arrival_parking: "${BASE_LABELS.arrival_parking}"
@@ -128,6 +130,7 @@ tap_email: "${BASE_LABELS.tap_email}"
         "arrival",
         "amenities",
         "extras",
+        "checkout",
         "contact_host",
         "back",
         "arrival_parking",
