@@ -1115,21 +1115,19 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                     marginTop: 0,
                     padding: 10,
                     borderRadius: 12,
-                    border: "1px solid rgba(148,163,184,0.7)",
-                    background:
-                      "linear-gradient(135deg, rgba(0,209,255,0.18), rgba(124,58,237,0.42))",
+                    border: "1px solid var(--border)",
+                    background: "var(--panel)",
                     fontSize: 11,
-                    color: "#e5e7eb",
                     display: "grid",
                     gap: 8,
                   }}
                 >
-                  <div style={{ fontWeight: 600 }}>
+                  <div style={{ fontWeight: 600, color: "#0c111b" }}>
                     {lang === "ro"
                       ? "Ai atins limita maximă de întrebări pentru acest asistent."
                       : "You’ve reached the maximum number of questions for this assistant."}
                   </div>
-                  <div style={{ opacity: 0.95 }}>
+                  <div style={{ opacity: 0.95, color: "#0c111b" }}>
                     {lang === "ro"
                       ? "Pentru alte detalii poți consulta Regulamentul casei sau poți contacta oricând gazda."
                       : "For anything else, please check the House Rules or contact the host directly."}
@@ -1177,8 +1175,8 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                         padding: "6px 10px",
                         fontSize: 11,
                         background: "transparent",
-                        borderColor: "rgba(148,163,184,0.8)",
-                        color: "#e5e7eb",
+                        borderColor: "var(--border)",
+                        color: "var(--muted)",
                         justifyContent: "center",
                       }}
                     >
