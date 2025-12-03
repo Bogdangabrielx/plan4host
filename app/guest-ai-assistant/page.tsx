@@ -103,6 +103,36 @@ export default function GuestAiAssistantPage() {
         </section>
 
         <section>
+          <h2 style={{ marginTop: 28 }}>See it in action</h2>
+          <div style={{ display: "grid", gap: 16 }}>
+            <div className={s.card}>
+              <h3 style={{ marginTop: 0, marginBottom: 4 }}>Amenities menu</h3>
+              <p style={{ margin: "0 0 8px", color: "var(--muted)", fontSize: 13 }}>
+                This is how the Guest AI assistant shows the amenities menu — guests tap Wi‑Fi, coffee machine, AC and
+                other options instead of typing long questions.
+              </p>
+              <img
+                src="/AI_chatbot_amenities.png"
+                alt="Guest AI assistant amenities menu"
+                style={{ display: "block", width: "100%", height: "auto", borderRadius: 12 }}
+              />
+            </div>
+            <div className={s.card}>
+              <h3 style={{ marginTop: 0, marginBottom: 4 }}>Wi‑Fi answer example</h3>
+              <p style={{ margin: "0 0 8px", color: "var(--muted)", fontSize: 13 }}>
+                Here the assistant combines the Wi‑Fi network name (SSID) and password that you wrote in your messages
+                and House Rules, and returns one clear answer — without ever inventing credentials.
+              </p>
+              <img
+                src="/AI_chatbot_example.png"
+                alt="Guest AI assistant Wi‑Fi answer example"
+                style={{ display: "block", width: "100%", height: "auto", borderRadius: 12 }}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section>
           <h2 style={{ marginTop: 28 }}>Where does the assistant get its information?</h2>
           <p>
             Guest AI assistant never guesses. It can only use the information you have already provided in Plan4Host:

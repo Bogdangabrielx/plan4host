@@ -102,6 +102,36 @@ export default function RoGuestAiAssistantPage() {
         </section>
 
         <section>
+          <h2 style={{ marginTop: 28 }}>Cum arată pentru oaspeți</h2>
+          <div style={{ display: "grid", gap: 16 }}>
+            <div className={s.card}>
+              <h3 style={{ marginTop: 0, marginBottom: 4 }}>Meniul de facilități</h3>
+              <p style={{ margin: "0 0 8px", color: "var(--muted)", fontSize: 13 }}>
+                Așa arată meniul cu facilități din Guest AI assistant – oaspetele apasă Wi‑Fi, aparat de cafea, AC și
+                alte opțiuni, fără să mai scrie mesaje lungi.
+              </p>
+              <img
+                src="/AI_chatbot_amenities.png"
+                alt="Meniu de facilități în interfața Guest AI assistant"
+                style={{ display: "block", width: "100%", height: "auto", borderRadius: 12 }}
+              />
+            </div>
+            <div className={s.card}>
+              <h3 style={{ marginTop: 0, marginBottom: 4 }}>Exemplu de răspuns pentru Wi‑Fi</h3>
+              <p style={{ margin: "0 0 8px", color: "var(--muted)", fontSize: 13 }}>
+                În acest exemplu, asistentul combină numele rețelei (SSID) și parola pe care le‑ai trecut în mesaje și
+                în regulament, într‑un singur răspuns clar – fără să inventeze date.
+              </p>
+              <img
+                src="/AI_chatbot_example.png"
+                alt="Exemplu de răspuns Wi‑Fi oferit de Guest AI assistant"
+                style={{ display: "block", width: "100%", height: "auto", borderRadius: 12 }}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section>
           <h2 style={{ marginTop: 28 }}>De unde știe AI-ul ce să răspundă?</h2>
           <p>
             Guest AI assistant nu „ghicește” informații. Poate folosi doar ceea ce ai introdus tu în Plan4Host:
