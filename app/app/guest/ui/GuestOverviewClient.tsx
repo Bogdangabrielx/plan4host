@@ -253,7 +253,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [openActions, setOpenActions] = useState<Set<string>>(() => new Set());
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
-  const [accessPopup, setAccessPopup] = useState<{ bookingId: string } | null>(null);
+  const [accessPopup, setAccessPopup] = useState<{ bookingId: string; propertyId: string } | null>(null);
+  const [accessBusy, setAccessBusy] = useState(false);
 
   // Load presentation image for selected property (once per id)
   useEffect(() => {
@@ -1050,7 +1051,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         cursor: "pointer",
                         width: isSmall ? "100%" : undefined,
                       }}
-                      onClick={() => setAccessPopup({ bookingId: String(it.id) })}
+                      onClick={() => setAccessPopup({ bookingId: String(it.id), propertyId })}
                     >
                       Permite accesul
                     </button>
@@ -1172,7 +1173,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               <button
                 type="button"
                 className="sb-btn"
-                onClick={() => setAccessPopup(null)}
+                onClick={() => {
+                  if (accessBusy) return;
+                  setAccessPopup(null);
+                }}
               >
                 Nu acum
               </button>
@@ -1180,11 +1184,49 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 type="button"
                 className="sb-btn sb-btn--primary"
                 onClick={() => {
-                  // Logica efectivă de „permite accesul” va fi adăugată ulterior.
-                  setAccessPopup(null);
+                  if (!accessPopup || accessBusy) return;
+                  (async () => {
+                    try {
+                      setAccessBusy(true);
+                      const res = await fetch("/api/bookings/start-now", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          booking_id: accessPopup.bookingId,
+                          property_id: accessPopup.propertyId,
+                        }),
+                      });
+                      const data = await res.json().catch(() => ({}));
+                      if (!res.ok || !data?.ok) {
+                        // Nu blocăm utilizatorul cu mesaje complexe, dar oferim un fallback simplu
+                        alert(
+                          data?.error ||
+                            (lang === "ro"
+                              ? "Nu am putut seta ora de început pentru această rezervare."
+                              : "Could not set the start time for this booking."),
+                        );
+                      }
+                    } catch {
+                      alert(
+                        lang === "ro"
+                          ? "A apărut o eroare la setarea orei de început."
+                          : "An error occurred while setting the start time.",
+                      );
+                    } finally {
+                      setAccessBusy(false);
+                      setAccessPopup(null);
+                    }
+                  })();
                 }}
+                disabled={accessBusy}
               >
-                Permite accesul acum
+                {accessBusy
+                  ? lang === "ro"
+                    ? "Se aplică…"
+                    : "Applying…"
+                  : lang === "ro"
+                  ? "Permite accesul acum"
+                  : "Allow access now"}
               </button>
             </div>
           </div>
