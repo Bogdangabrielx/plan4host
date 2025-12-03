@@ -1053,7 +1053,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       }}
                       onClick={() => setAccessPopup({ bookingId: String(it.id), propertyId })}
                     >
-                      Permite accesul
+                      Allow access
                     </button>
                   )}
                 </div>
@@ -1145,9 +1145,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             paddingTop: "calc(var(--safe-top) + 12px)",
             paddingBottom: "calc(var(--safe-bottom) + 12px)",
           }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
             className="sb-cardglow"
             style={{
               width: "min(420px, 100%)",
@@ -1160,14 +1160,14 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             }}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <strong>Permite accesul oaspetelui</strong>
+              <strong>Allow guest access</strong>
               <button type="button" onClick={() => setAccessPopup(null)} className="sb-btn sb-cardglow">
                 Close
               </button>
             </div>
             <div style={{ fontSize: 13, color: "var(--muted)" }}>
-              Dacă permiți accesul acum, această rezervare va fi considerată ca fiind începută, iar oaspetele va putea
-              vedea codurile de acces și instrucțiunile asociate (dacă ai mesaje programate cu aceste detalii).
+              If you allow access now, this booking will be treated as started and the guest will be able to see any
+              access codes and instructions that you have scheduled in automatic messages.
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
               <button
@@ -1178,7 +1178,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   setAccessPopup(null);
                 }}
               >
-                Nu acum
+                Not now
               </button>
               <button
                 type="button"
@@ -1198,20 +1198,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       });
                       const data = await res.json().catch(() => ({}));
                       if (!res.ok || !data?.ok) {
-                        // Nu blocăm utilizatorul cu mesaje complexe, dar oferim un fallback simplu
-                        alert(
-                          data?.error ||
-                            (lang === "ro"
-                              ? "Nu am putut seta ora de început pentru această rezervare."
-                              : "Could not set the start time for this booking."),
-                        );
+                        alert(data?.error || "Could not set the start time for this booking.");
                       }
                     } catch {
-                      alert(
-                        lang === "ro"
-                          ? "A apărut o eroare la setarea orei de început."
-                          : "An error occurred while setting the start time.",
-                      );
+                      alert("An error occurred while setting the start time.");
                     } finally {
                       setAccessBusy(false);
                       setAccessPopup(null);
@@ -1220,13 +1210,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 }}
                 disabled={accessBusy}
               >
-                {accessBusy
-                  ? lang === "ro"
-                    ? "Se aplică…"
-                    : "Applying…"
-                  : lang === "ro"
-                  ? "Permite accesul acum"
-                  : "Allow access now"}
+                {accessBusy ? "Applying…" : "Allow access now"}
               </button>
             </div>
           </div>
