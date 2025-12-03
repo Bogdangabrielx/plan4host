@@ -40,7 +40,7 @@ function getLocalHHMM(tz: string | null | undefined): string {
 
 /**
  * POST /api/bookings/start-now
- * body: { booking_id: string, property_id: string }
+ * body: { booking_id: string }
  *
  * Sets bookings.start_time to the current local time for the property's timezone.
  * The date (start_date) is not changed.
@@ -49,33 +49,29 @@ export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
     const booking_id: string = String(body?.booking_id || "").trim();
-    const property_id: string = String(body?.property_id || "").trim();
 
-    if (!booking_id || !property_id) {
-      return bad(400, { error: "booking_id and property_id are required" });
+    if (!booking_id) {
+      return bad(400, { error: "booking_id is required" });
     }
 
-    const [rBooking, rProp] = await Promise.all([
-      admin
-        .from("bookings")
-        .select("id, property_id")
-        .eq("id", booking_id)
-        .maybeSingle(),
-      admin
-        .from("properties")
-        .select("id, timezone")
-        .eq("id", property_id)
-        .maybeSingle(),
-    ]);
+    const rBooking = await admin
+      .from("bookings")
+      .select("id, property_id")
+      .eq("id", booking_id)
+      .maybeSingle();
 
     if (rBooking.error || !rBooking.data) {
       return bad(404, { error: "Booking not found" });
     }
+
+    const property_id = (rBooking.data as any).property_id as string;
+    const rProp = await admin
+      .from("properties")
+      .select("id, timezone")
+      .eq("id", property_id)
+      .maybeSingle();
     if (rProp.error || !rProp.data) {
       return bad(404, { error: "Property not found" });
-    }
-    if ((rBooking.data as any).property_id !== property_id) {
-      return bad(400, { error: "Booking does not belong to this property" });
     }
 
     const tz = (rProp.data as any).timezone as string | null | undefined;
@@ -97,4 +93,3 @@ export async function POST(req: Request) {
     return bad(500, { error: e?.message || "Unexpected error" });
   }
 }
-
