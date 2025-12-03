@@ -617,10 +617,7 @@ export default function HomePageRO() {
             ajutând pensiunile și apartamentele în regim hotelier să evite overbooking, să automatizeze mesajele către oaspeți
             și să își eficientizeze administrarea zilnică.
             <br />
-            <span
-              className={styles.aiGrad}
-              style={{ textTransform: "uppercase", fontWeight: 800, fontSize: 15 }}
-            >
+            <span className={styles.aiGrad} style={{ textTransform: "uppercase", fontWeight: 800 }}>
               Guest AI assistant
             </span>{" "}
             îi ajută pe oaspeți să găsească rapid detalii despre sosire, facilități, recomandări și check‑out.
