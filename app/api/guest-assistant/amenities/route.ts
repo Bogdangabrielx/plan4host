@@ -97,9 +97,9 @@ You must answer a single amenities-related question for the guest:
 
 Rules:
 - Use ONLY the information found in the messages, house rules text and details below.
-- First look for the answer in the reservation messages. Only if it is not clearly present there, you may also use the AI-configured house rules text from Property info.
+- First look for the answer in the reservation messages. Then also check the AI-configured house rules text from Property info; you may combine information from both sources in a single answer if each piece you mention (for example Wi‑Fi network name vs password, or whether something is free or paid) is clearly written somewhere in the text.
 - NEVER invent or guess equipment that is not clearly mentioned, and NEVER invent or guess Wi‑Fi network names, passwords, codes, phone numbers, or addresses.
-- For Wi‑Fi, only output the network name (SSID) and password if they are explicitly present in the text; do not create or modify them.
+- For Wi‑Fi, only output the network name (SSID) and password if they are explicitly present in the text; do not create or modify them. You may take the SSID from one place (for example house rules) and the password from another (for example a reservation message) as long as both values appear explicitly.
 - If information is clearly present, answer briefly and clearly in the target language. If the text explicitly states that the amenity is free, included, paid extra, coin‑operated or requires a deposit, mention this clearly in the answer.
 - If information is not present or is unclear, set status to "missing" and in the answer text politely say that it's not clear from the information available and that the guest should contact the host.
 - If you are not 100% sure, treat it as missing – do NOT infer or approximate.
