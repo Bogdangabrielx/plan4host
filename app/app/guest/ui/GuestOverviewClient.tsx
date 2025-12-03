@@ -253,6 +253,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [openActions, setOpenActions] = useState<Set<string>>(() => new Set());
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
+  const [accessPopup, setAccessPopup] = useState<{ bookingId: string } | null>(null);
 
   // Load presentation image for selected property (once per id)
   useEffect(() => {
@@ -1012,7 +1013,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   {/* See QR code (available for both statuses) */}
                   <button
                     type="button"
-                    {...useTap(() => setQrModal({ bookingId: String(it.id), url: `${window.location.origin}/r/ci/${encodeURIComponent(String(it.id||''))}` }))}
+                    {...useTap(() =>
+                      setQrModal({
+                        bookingId: String(it.id),
+                        url: `${window.location.origin}/r/ci/${encodeURIComponent(String(it.id || ""))}`,
+                      }),
+                    )}
                     className="sb-cardglow"
                     style={{
                       ...BTN_TOUCH_STYLE,
@@ -1028,6 +1034,27 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   >
                     See QR code
                   </button>
+
+                  {/* Allow access (info popup only, for now) */}
+                  {kind === "green" && (
+                    <button
+                      type="button"
+                      className="sb-cardglow"
+                      style={{
+                        ...BTN_TOUCH_STYLE,
+                        borderRadius: 21,
+                        border: "1px solid var(--border)",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        width: isSmall ? "100%" : undefined,
+                      }}
+                      onClick={() => setAccessPopup({ bookingId: String(it.id) })}
+                    >
+                      Permite accesul
+                    </button>
+                  )}
                 </div>
               </section>
             );
@@ -1096,6 +1123,69 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                   {qrModal.url}
                 </a>
               </small>
+            </div>
+          </div>
+        </div>
+      )}
+      {accessPopup && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setAccessPopup(null)}
+          className="sb-cardglow"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 230,
+            background: "rgba(0,0,0,0.55)",
+            display: "grid",
+            placeItems: "center",
+            padding: 12,
+            paddingTop: "calc(var(--safe-top) + 12px)",
+            paddingBottom: "calc(var(--safe-bottom) + 12px)",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sb-cardglow"
+            style={{
+              width: "min(420px, 100%)",
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 16,
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <strong>Permite accesul oaspetelui</strong>
+              <button type="button" onClick={() => setAccessPopup(null)} className="sb-btn sb-cardglow">
+                Close
+              </button>
+            </div>
+            <div style={{ fontSize: 13, color: "var(--muted)" }}>
+              Dacă permiți accesul acum, această rezervare va fi considerată ca fiind începută, iar oaspetele va putea
+              vedea codurile de acces și instrucțiunile asociate (dacă ai mesaje programate cu aceste detalii).
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button
+                type="button"
+                className="sb-btn"
+                onClick={() => setAccessPopup(null)}
+              >
+                Nu acum
+              </button>
+              <button
+                type="button"
+                className="sb-btn sb-btn--primary"
+                onClick={() => {
+                  // Logica efectivă de „permite accesul” va fi adăugată ulterior.
+                  setAccessPopup(null);
+                }}
+              >
+                Permite accesul acum
+              </button>
             </div>
           </div>
         </div>
