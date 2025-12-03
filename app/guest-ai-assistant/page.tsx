@@ -104,7 +104,14 @@ export default function GuestAiAssistantPage() {
 
         <section>
           <h2 style={{ marginTop: 28 }}>See it in action</h2>
-          <div style={{ display: "grid", gap: 16 }}>
+          <div
+            style={{
+              display: "grid",
+              gap: 16,
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              alignItems: "stretch",
+            }}
+          >
             <div className={s.card}>
               <h3 style={{ marginTop: 0, marginBottom: 4 }}>Amenities menu</h3>
               <p style={{ margin: "0 0 8px", color: "var(--muted)", fontSize: 13 }}>
@@ -114,7 +121,14 @@ export default function GuestAiAssistantPage() {
               <img
                 src="/AI_chatbot_amenities.png"
                 alt="Guest AI assistant amenities menu"
-                style={{ display: "block", width: "100%", maxWidth: 420, height: "auto", borderRadius: 12, margin: "0 auto" }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  maxWidth: 360,
+                  height: "auto",
+                  borderRadius: 12,
+                  margin: "0 auto",
+                }}
               />
             </div>
             <div className={s.card}>
@@ -126,7 +140,14 @@ export default function GuestAiAssistantPage() {
               <img
                 src="/AI_chatbot_example.png"
                 alt="Guest AI assistant Wi‑Fi answer example"
-                style={{ display: "block", width: "100%", maxWidth: 420, height: "auto", borderRadius: 12, margin: "0 auto" }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  maxWidth: 360,
+                  height: "auto",
+                  borderRadius: 12,
+                  margin: "0 auto",
+                }}
               />
             </div>
           </div>
