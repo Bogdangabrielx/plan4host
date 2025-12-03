@@ -40,30 +40,34 @@ function getLocalHHMM(tz: string | null | undefined): string {
 
 /**
  * POST /api/bookings/start-now
- * body: { booking_id: string }
+ * body: { booking_id?: string, form_id?: string }
  *
- * Sets bookings.start_time to the current local time for the property's timezone.
+ * Identifies the concrete booking row either by its id (booking_id)
+ * or by form_id (linked form_bookings.id), then sets bookings.start_time
+ * to the current local time for the property's timezone.
  * The date (start_date) is not changed.
  */
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const booking_id: string = String(body?.booking_id || "").trim();
+    const bookingIdRaw: string = String(body?.booking_id || "").trim();
+    const formIdRaw: string = String(body?.form_id || "").trim();
 
-    if (!booking_id) {
-      return bad(400, { error: "booking_id is required" });
+    if (!bookingIdRaw && !formIdRaw) {
+      return bad(400, { error: "booking_id or form_id is required" });
     }
 
     const rBooking = await admin
       .from("bookings")
-      .select("id, property_id")
-      .eq("id", booking_id)
+      .select("id, property_id, form_id")
+      .eq(bookingIdRaw ? "id" : "form_id", bookingIdRaw || formIdRaw)
       .maybeSingle();
 
     if (rBooking.error || !rBooking.data) {
       return bad(404, { error: "Booking not found" });
     }
 
+    const booking_id = (rBooking.data as any).id as string;
     const property_id = (rBooking.data as any).property_id as string;
     const rProp = await admin
       .from("properties")

@@ -253,7 +253,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [openActions, setOpenActions] = useState<Set<string>>(() => new Set());
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
-  const [accessPopup, setAccessPopup] = useState<{ bookingId: string } | null>(null);
+  const [accessPopup, setAccessPopup] = useState<{ formId: string } | null>(null);
   const [accessBusy, setAccessBusy] = useState(false);
 
   // Load presentation image for selected property (once per id)
@@ -1051,7 +1051,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         cursor: "pointer",
                         width: isSmall ? "100%" : undefined,
                       }}
-                      onClick={() => setAccessPopup({ bookingId: String(it.id) })}
+                      onClick={() => setAccessPopup({ formId: String(it.id) })}
                     >
                       Allow access
                     </button>
@@ -1192,7 +1192,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                          booking_id: accessPopup.bookingId,
+                          form_id: accessPopup.formId,
                         }),
                       });
                       const data = await res.json().catch(() => ({}));
