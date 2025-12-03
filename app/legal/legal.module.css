@@ -51,9 +51,8 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow:
-    0 0 2px rgba(255, 255, 255, 0.85),
-    0 0 8px rgba(15, 23, 42, 0.85);
+  -webkit-text-stroke: 0.6px rgba(255, 255, 255, 0.9);
+  text-stroke: 0.6px rgba(255, 255, 255, 0.9);
 }
 
 /* Hero split (text + image) for AI assistant pages */
