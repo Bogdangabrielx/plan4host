@@ -1228,34 +1228,46 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
       )}
       {accessFeedback && (
         <div
-          aria-live="polite"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setAccessFeedback(null)}
           className="sb-cardglow"
           style={{
             position: "fixed",
-            left: "50%",
-            bottom: 24,
-            transform: "translateX(-50%)",
+            inset: 0,
             zIndex: 240,
-            maxWidth: "min(420px, calc(100vw - 32px))",
-            padding: "10px 14px",
-            borderRadius: 999,
-            border: "1px solid var(--border)",
-            background: "var(--panel)",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
+            background: "rgba(0,0,0,0.55)",
+            display: "grid",
+            placeItems: "center",
+            padding: 12,
+            paddingTop: "calc(var(--safe-top) + 12px)",
+            paddingBottom: "calc(var(--safe-bottom) + 12px)",
           }}
         >
-          <span style={{ fontSize: 13 }}>{accessFeedback}</span>
-          <button
-            type="button"
-            className="sb-btn sb-btn--small"
-            style={{ fontSize: 12 }}
-            onClick={() => setAccessFeedback(null)}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sb-cardglow"
+            style={{
+              width: "min(420px, 100%)",
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 16,
+              display: "grid",
+              gap: 10,
+            }}
           >
-            Close
-          </button>
+            <div style={{ fontWeight: 700 }}>{accessFeedback}</div>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                className="sb-btn sb-cardglow"
+                onClick={() => setAccessFeedback(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
