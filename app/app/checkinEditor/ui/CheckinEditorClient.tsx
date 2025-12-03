@@ -565,9 +565,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 <textarea
                   value={aiModalText}
                   onChange={(e) => setAiModalText(e.currentTarget.value)}
+                  rows={16}
                   style={{
                     width: "100%",
-                    height: "100%",
+                    height: "auto",
+                    minHeight: 260,
                     borderRadius: 8,
                     border: "1px solid var(--border)",
                     background: "var(--card)",
