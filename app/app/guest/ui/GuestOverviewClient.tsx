@@ -29,6 +29,7 @@ type OverviewRow = {
   start_date: string;
   end_date: string;
   status: "green" | "yellow" | "red";
+  has_started?: boolean;
   _room_label?: string | null;
   _room_type_id?: string | null;
   _room_type_name?: string | null;
@@ -253,8 +254,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   const [openActions, setOpenActions] = useState<Set<string>>(() => new Set());
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
-  const [accessPopup, setAccessPopup] = useState<{ formId: string } | null>(null);
+  const [accessPopup, setAccessPopup] = useState<{ formId: string; guestName: string } | null>(null);
   const [accessBusy, setAccessBusy] = useState(false);
+  const [accessFeedback, setAccessFeedback] = useState<string | null>(null);
 
   // Load presentation image for selected property (once per id)
   useEffect(() => {
@@ -1046,12 +1048,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         borderRadius: 21,
                         border: "1px solid var(--border)",
                         background: "var(--card)",
-                        color: "var(--text)",
+                        color: it.has_started ? "var(--muted)" : "var(--text)",
                         fontWeight: 700,
-                        cursor: "pointer",
+                        cursor: it.has_started ? "not-allowed" : "pointer",
+                        opacity: it.has_started ? 0.6 : 1,
                         width: isSmall ? "100%" : undefined,
                       }}
-                      onClick={() => setAccessPopup({ formId: String(it.id) })}
+                      disabled={!!it.has_started}
+                      onClick={() => {
+                        if (it.has_started) return;
+                        setAccessPopup({ formId: String(it.id), guestName: rawName });
+                      }}
                     >
                       Allow access
                     </button>
@@ -1185,6 +1192,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 className="sb-btn sb-btn--primary"
                 onClick={() => {
                   if (!accessPopup || accessBusy) return;
+                  const { formId, guestName } = accessPopup;
                   (async () => {
                     try {
                       setAccessBusy(true);
@@ -1192,12 +1200,15 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                          form_id: accessPopup.formId,
+                          form_id: formId,
                         }),
                       });
                       const data = await res.json().catch(() => ({}));
                       if (!res.ok || !data?.ok) {
                         alert(data?.error || "Could not set the start time for this booking.");
+                      } else {
+                        setAccessFeedback(`The reservation for ${guestName} is now active.`);
+                        await refresh();
                       }
                     } catch {
                       alert("An error occurred while setting the start time.");
@@ -1213,6 +1224,38 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {accessFeedback && (
+        <div
+          aria-live="polite"
+          className="sb-cardglow"
+          style={{
+            position: "fixed",
+            left: "50%",
+            bottom: 24,
+            transform: "translateX(-50%)",
+            zIndex: 240,
+            maxWidth: "min(420px, calc(100vw - 32px))",
+            padding: "10px 14px",
+            borderRadius: 999,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <span style={{ fontSize: 13 }}>{accessFeedback}</span>
+          <button
+            type="button"
+            className="sb-btn sb-btn--small"
+            style={{ fontSize: 12 }}
+            onClick={() => setAccessFeedback(null)}
+          >
+            Close
+          </button>
         </div>
       )}
     </div>

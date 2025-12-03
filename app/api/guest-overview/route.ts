@@ -16,7 +16,7 @@ type FRow = {
   room_id: string | null;
   room_type_id: string | null;
   start_date: string; // yyyy-mm-dd
-  end_date: string;   // yyyy-mm-dd
+  end_date: string; // yyyy-mm-dd
   state: string | null;
   guest_first_name: string | null;
   guest_last_name: string | null;
@@ -27,9 +27,48 @@ type FRow = {
 type Room = { id: string; room_type_id: string | null; name: string | null };
 type RoomType = { id: string; name: string | null };
 
-const ymdToDate = (ymd: string) => new Date(`${ymd}T00:00:00Z`);
-const addDays = (d: Date, days: number) => { const x = new Date(d.getTime()); x.setUTCDate(x.getUTCDate() + days); return x; };
-const nowUtc = () => new Date();
+function getLocalNowYMDHHMM(timeZone: string | null | undefined): { date: string; time: string } {
+  const tz = (timeZone && timeZone.trim()) || "Europe/Bucharest";
+  try {
+    const now = new Date();
+    const fmt = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    const parts = fmt.formatToParts(now).reduce((acc: any, p) => {
+      if (p.type !== "literal") acc[p.type] = p.value;
+      return acc;
+    }, {});
+    const date = `${parts.year}-${parts.month}-${parts.day}`;
+    const time = `${parts.hour}:${parts.minute}`;
+    return { date, time };
+  } catch {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    return { date, time };
+  }
+}
+
+function hasStartedLocal(
+  start_date: string | null | undefined,
+  start_time: string | null | undefined,
+  now: { date: string; time: string },
+): boolean {
+  const sd = (start_date || "").toString();
+  if (!sd || !/^\d{4}-\d{2}-\d{2}$/.test(sd)) return false;
+  let st = (start_time || "").toString();
+  if (!/^\d{2}:\d{2}$/.test(st)) st = "00:00";
+  if (sd < now.date) return true;
+  if (sd > now.date) return false;
+  return st <= now.time;
+}
 
 export async function GET(req: Request) {
   try {
@@ -42,7 +81,7 @@ export async function GET(req: Request) {
     // Guard: cont suspendat?
     const rProp = await admin
       .from("properties")
-      .select("id,account_id")
+      .select("id,account_id,timezone")
       .eq("id", property_id)
       .maybeSingle();
     if (rProp.error) return NextResponse.json({ error: rProp.error.message }, { status: 500 });
@@ -65,11 +104,36 @@ export async function GET(req: Request) {
     // Load forms from dedicated table (open or linked)
     const rForms = await admin
       .from("form_bookings")
-      .select("id,property_id,room_id,room_type_id,start_date,end_date,state,guest_first_name,guest_last_name,created_at,submitted_at,ota_provider_hint")
+      .select(
+        "id,property_id,room_id,room_type_id,start_date,end_date,state,guest_first_name,guest_last_name,created_at,submitted_at,ota_provider_hint",
+      )
       .eq("property_id", property_id)
       .order("start_date", { ascending: true });
     if (rForms.error) return NextResponse.json({ error: rForms.error.message }, { status: 500 });
     const forms = (rForms.data ?? []) as FRow[];
+
+    // Determine which bookings have already started (start_date/start_time in the past,
+    // based on the property's timezone) so the "Allow access" button can be disabled.
+    const startedFormIds = new Set<string>();
+    if (forms.length > 0) {
+      const formIds = forms.map((f) => f.id);
+      const rBookings = await admin
+        .from("bookings")
+        .select("id,form_id,start_date,start_time")
+        .eq("property_id", property_id)
+        .in("form_id", formIds as any);
+      if (!rBookings.error && Array.isArray(rBookings.data) && rBookings.data.length > 0) {
+        const tz = (rProp.data as any)?.timezone as string | null | undefined;
+        const nowLocal = getLocalNowYMDHHMM(tz);
+        for (const b of rBookings.data as any[]) {
+          const fid = b.form_id ? String(b.form_id) : "";
+          if (!fid) continue;
+          if (hasStartedLocal(b.start_date as string | null | undefined, b.start_time as string | null | undefined, nowLocal)) {
+            startedFormIds.add(fid);
+          }
+        }
+      }
+    }
 
     // Provider meta (color + logo) from ical_type_integrations
     const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "").trim();
@@ -121,10 +185,11 @@ export async function GET(req: Request) {
         start_date: f.start_date,
         end_date: f.end_date,
         status,
+        has_started: startedFormIds.has(String(f.id)),
         _room_label: roomLabel,
         _room_type_id: f.room_type_id ?? null,
         _room_type_name: null,
-        _reason: status === 'yellow' ? 'waiting_room' : null,
+        _reason: status === "yellow" ? "waiting_room" : null,
         _cutoff_ts: null,
         _ota_provider: hint || null,
         _ota_color: meta ? (meta.color || null) : null,
