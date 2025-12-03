@@ -609,6 +609,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       className="sb-btn sb-btn--primary"
                       onClick={saveAiHouseRules}
                       disabled={aiModalLoading}
+                      style={{
+                        background: "linear-gradient(135deg, #00d1ff, #7c3aed)",
+                        borderColor: "transparent",
+                        color: "#0c111b",
+                        fontWeight: 600,
+                      }}
                     >
                       {aiModalLoading ? "Saving…" : "Use for AI"}
                     </button>
