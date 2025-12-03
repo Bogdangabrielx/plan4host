@@ -28,7 +28,7 @@ export default function GuestAiAssistantPage() {
             }}
           />
           <h1 style={{ fontSize: 30, marginBottom: 4 }}>
-            <span className={s.aiGradTitle}>Guest AI assistant</span> – smarter answers for your guests
+            <span className={s.aiGradTitle}>GUEST AI ASSISTANT</span> – smarter answers for your guests
           </h1>
           <p style={{ color: "var(--muted)", margin: 0, fontSize: 14 }}>
             Help guests find arrival, amenities and check‑out details instantly, in their own language.

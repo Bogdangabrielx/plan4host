@@ -28,7 +28,7 @@ export default function RoGuestAiAssistantPage() {
             }}
           />
           <h1 style={{ fontSize: 30, marginBottom: 4 }}>
-            <span className={s.aiGradTitle}>Guest AI assistant</span> – asistentul tău pentru oaspeți
+            <span className={s.aiGradTitle}>GUEST AI ASSISTANT</span> – asistentul tău pentru oaspeți
           </h1>
           <p style={{ color: "var(--muted)", margin: 0, fontSize: 14 }}>
             Oferă răspunsuri clare despre sosire, facilități și plecare – direct în limba oaspetelui.
