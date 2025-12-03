@@ -1518,7 +1518,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                           </span>
                         )}
                         {!arrivalLoading && arrivalAnswer && (
-                          <span>{arrivalAnswer}</span>
+                          <div style={{ whiteSpace: "pre-line" }}>{arrivalAnswer}</div>
                         )}
                       </div>
                       <button
@@ -1600,7 +1600,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       </span>
                     )}
                     {!checkoutLoading && checkoutAnswer && (
-                      <span>{checkoutAnswer}</span>
+                      <div style={{ whiteSpace: "pre-line" }}>{checkoutAnswer}</div>
                     )}
                   </div>
                   <button
@@ -1654,7 +1654,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       </span>
                     )}
                     {!forbiddenLoading && forbiddenAnswer && (
-                      <span>{forbiddenAnswer}</span>
+                      <div style={{ whiteSpace: "pre-line" }}>{forbiddenAnswer}</div>
                     )}
                   </div>
                   <button
@@ -1805,7 +1805,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       </span>
                     )}
                     {!amenitiesLoading && amenitiesAnswer && (
-                      <span>{amenitiesAnswer}</span>
+                      <div style={{ whiteSpace: "pre-line" }}>{amenitiesAnswer}</div>
                     )}
                   </div>
                   <button
@@ -1900,7 +1900,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       </span>
                     )}
                     {!extrasLoading && extrasAnswer && (
-                      <span>{extrasAnswer}</span>
+                      <div style={{ whiteSpace: "pre-line" }}>{extrasAnswer}</div>
                     )}
                   </div>
                   <button

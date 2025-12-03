@@ -78,7 +78,8 @@ Rules:
 - If you have at least a clear date or time, you may treat the information as found and give a short answer.
 - If almost nothing is clear (no date and no time and no clear instructions), set status to "missing" and in the answer text politely say that it's not clear from the information available and that the guest should contact the host.
 - If you are not 100% sure, treat it as missing – do NOT infer or approximate.
-- Keep the answer short (1–3 sentences).
+- Format the answer as one or more lines, each line starting with a bullet like "• " and a short UPPERCASE label (for example "DATE:", "TIME:", "CHECK-OUT RULES:") so it is easy to scan. Use line breaks between bullets.
+- Keep the answer short (1–3 bullet-style lines).
 
 Return ONLY a minified JSON object with this shape:
 {"status":"found"|"missing","answer":"..."}

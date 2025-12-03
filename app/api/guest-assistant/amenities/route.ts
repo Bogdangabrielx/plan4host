@@ -101,9 +101,10 @@ Rules:
 - NEVER invent or guess equipment that is not clearly mentioned, and NEVER invent or guess Wi‑Fi network names, passwords, codes, phone numbers, or addresses.
 - For Wi‑Fi, only output the network name (SSID) and password if they are explicitly present in the text; do not create or modify them. You may take the SSID from one place (for example house rules) and the password from another (for example a reservation message) as long as both values appear explicitly.
 - If information is clearly present, answer briefly and clearly in the target language. If the text explicitly states that the amenity is free, included, paid extra, coin‑operated or requires a deposit, mention this clearly in the answer.
+- Format the answer as one or more lines, each line starting with a bullet like "• " and, when useful, a short UPPERCASE label (for example "WIFI:", "COFFEE MACHINE:", "AC:") so it is easy to scan. Use line breaks between bullets.
 - If information is not present or is unclear, set status to "missing" and in the answer text politely say that it's not clear from the information available and that the guest should contact the host.
 - If you are not 100% sure, treat it as missing – do NOT infer or approximate.
-- Keep the answer short (1–3 sentences).
+- Keep the answer short (1–3 bullet-style lines).
 
 Return ONLY a minified JSON object with this shape:
 {"status":"found"|"missing","answer":"..."}
