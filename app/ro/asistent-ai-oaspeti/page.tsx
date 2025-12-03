@@ -113,7 +113,7 @@ export default function RoGuestAiAssistantPage() {
               <img
                 src="/AI_chatbot_amenities.png"
                 alt="Meniu de facilități în interfața Guest AI assistant"
-                style={{ display: "block", width: "100%", height: "auto", borderRadius: 12 }}
+                style={{ display: "block", width: "100%", maxWidth: 420, height: "auto", borderRadius: 12, margin: "0 auto" }}
               />
             </div>
             <div className={s.card}>
@@ -125,7 +125,7 @@ export default function RoGuestAiAssistantPage() {
               <img
                 src="/AI_chatbot_example.png"
                 alt="Exemplu de răspuns Wi‑Fi oferit de Guest AI assistant"
-                style={{ display: "block", width: "100%", height: "auto", borderRadius: 12 }}
+                style={{ display: "block", width: "100%", maxWidth: 420, height: "auto", borderRadius: 12, margin: "0 auto" }}
               />
             </div>
           </div>

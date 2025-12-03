@@ -114,7 +114,7 @@ export default function GuestAiAssistantPage() {
               <img
                 src="/AI_chatbot_amenities.png"
                 alt="Guest AI assistant amenities menu"
-                style={{ display: "block", width: "100%", height: "auto", borderRadius: 12 }}
+                style={{ display: "block", width: "100%", maxWidth: 420, height: "auto", borderRadius: 12, margin: "0 auto" }}
               />
             </div>
             <div className={s.card}>
@@ -126,7 +126,7 @@ export default function GuestAiAssistantPage() {
               <img
                 src="/AI_chatbot_example.png"
                 alt="Guest AI assistant Wi‑Fi answer example"
-                style={{ display: "block", width: "100%", height: "auto", borderRadius: 12 }}
+                style={{ display: "block", width: "100%", maxWidth: 420, height: "auto", borderRadius: 12, margin: "0 auto" }}
               />
             </div>
           </div>
