@@ -70,6 +70,7 @@ Your task:
 
 Rules:
 - Use ONLY the information found in the messages, house rules text and details below.
+- You may combine forbidden items from different sources (for example, one rule in a reservation message and another in the AI-configured house rules text) into a single list, as long as each forbidden action you include is clearly written somewhere in the text.
 - Do NOT invent or guess new rules.
 - If there are clear forbidden actions, summarise them briefly in the target language as a short list (1–5 bullet-style sentences).
 - If there is no clear information about forbidden actions, set status to "missing" and in the answer text politely say that the rules are not clearly listed and that the guest should check the House Rules or contact the host.
@@ -169,4 +170,3 @@ ${messagesPlain || "(none)"}
     );
   }
 }
-

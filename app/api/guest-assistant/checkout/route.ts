@@ -70,7 +70,7 @@ What to include:
 - State clearly the check-out DATE using the reservation end_date if present.
 - State clearly the check-out TIME using check_out_time if present (from details or property). Do NOT invent or change this time.
 - If no check-out time is available, say that the check-out time is not configured and that the guest should contact the host to confirm it.
-- Look in the reservation messages first, and then in the AI-configured house rules text, for any instructions that apply at check-out (for example: turn off lights, close windows, lock the door, return keys, take trash, wash dishes, leave access cards, etc.). If such instructions exist, summarize them briefly.
+- Look in the reservation messages first, and then in the AI-configured house rules text, for any instructions that apply at check-out (for example: turn off lights, close windows, lock the door, return keys, take trash, wash dishes, leave access cards, etc.). If such instructions exist, summarize them briefly and feel free to combine information from both sources (for example, date/time from reservation details plus rules from the AI house rules text) as long as each item you mention is clearly present in the text.
 
 Rules:
 - Use ONLY the information found in the reservation details, messages, and house rules text below.
@@ -175,4 +175,3 @@ ${messagesPlain || "(none)"}
     );
   }
 }
-
