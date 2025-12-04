@@ -569,6 +569,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
       return false;
     }
   });
+  const [contactFromLimit, setContactFromLimit] = useState(false);
   const selectedLang = useMemo(
     () => (chatLang ? CHAT_LANG_OPTIONS.find((o) => o.code === chatLang) ?? null : null),
     [chatLang]
@@ -1265,7 +1266,10 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                     )}
                     <button
                       type="button"
-                      onClick={() => setActiveTopic("contact_host")}
+                      onClick={() => {
+                        setContactFromLimit(true);
+                        setActiveTopic("contact_host");
+                      }}
                       style={{
                         ...questionBtnStyle,
                         padding: "6px 10px",
@@ -1548,7 +1552,10 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                           ...questionBtnStyle,
                           justifyContent: "center",
                         }}
-                        onClick={() => setActiveTopic("contact_host")}
+                        onClick={() => {
+                          setContactFromLimit(false);
+                          setActiveTopic("contact_host");
+                        }}
                       >
                         {contactCtaLabel}
                       </button>
@@ -1630,7 +1637,10 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       ...questionBtnStyle,
                       justifyContent: "center",
                     }}
-                    onClick={() => setActiveTopic("contact_host")}
+                    onClick={() => {
+                      setContactFromLimit(false);
+                      setActiveTopic("contact_host");
+                    }}
                   >
                     {menuLabels.checkout_cta}
                   </button>
@@ -1684,7 +1694,10 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       ...questionBtnStyle,
                       justifyContent: "center",
                     }}
-                    onClick={() => setActiveTopic("contact_host")}
+                    onClick={() => {
+                      setContactFromLimit(false);
+                      setActiveTopic("contact_host");
+                    }}
                   >
                     {contactCtaLabel}
                   </button>
@@ -1835,7 +1848,10 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       ...questionBtnStyle,
                       justifyContent: "center",
                     }}
-                    onClick={() => setActiveTopic("contact_host")}
+                    onClick={() => {
+                      setContactFromLimit(false);
+                      setActiveTopic("contact_host");
+                    }}
                   >
                     {contactCtaLabel}
                   </button>
@@ -1930,7 +1946,10 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       ...questionBtnStyle,
                       justifyContent: "center",
                     }}
-                    onClick={() => setActiveTopic("contact_host")}
+                    onClick={() => {
+                      setContactFromLimit(false);
+                      setActiveTopic("contact_host");
+                    }}
                   >
                     {contactCtaLabel}
                   </button>
@@ -1976,15 +1995,17 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       }}
                       style={{
                         ...questionBtnStyle,
-                        justifyContent: "space-between",
+                        justifyContent: contactFromLimit ? "flex-start" : "space-between",
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <span aria-hidden>📞</span>
                         <span>{prop.contact_phone}</span>
                       </span>
-                      <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                        {menuLabels.tap_call}
+                      {!contactFromLimit && (
+                        <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                          {menuLabels.tap_call}
+                        </span>
                       </span>
                     </button>
                   )}
@@ -2002,15 +2023,17 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       }}
                       style={{
                         ...questionBtnStyle,
-                        justifyContent: "space-between",
+                        justifyContent: contactFromLimit ? "flex-start" : "space-between",
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <span aria-hidden>✉</span>
                         <span>{prop.contact_email}</span>
                       </span>
-                      <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                        {menuLabels.tap_email}
+                      {!contactFromLimit && (
+                        <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                          {menuLabels.tap_email}
+                        </span>
                       </span>
                     </button>
                   )}
