@@ -1268,7 +1268,6 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       type="button"
                       onClick={() => {
                         setContactFromLimit(true);
-                        setActiveTopic("contact_host");
                       }}
                       style={{
                         ...questionBtnStyle,
@@ -1284,6 +1283,80 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                         : "Contact the host"}
                     </button>
                   </div>
+                  {contactFromLimit && (prop?.contact_phone || prop?.contact_email) && (
+                    <div
+                      style={{
+                        marginTop: 8,
+                        display: "grid",
+                        gap: 6,
+                      }}
+                    >
+                      {prop.contact_phone && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            try {
+                              const tel = String(prop.contact_phone || "").replace(
+                                /\s+/g,
+                                "",
+                              );
+                              if (tel) window.location.href = `tel:${tel}`;
+                            } catch {
+                              // ignore
+                            }
+                          }}
+                          style={{
+                            ...questionBtnStyle,
+                            justifyContent: "flex-start",
+                            padding: "6px 10px",
+                            fontSize: 11,
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <span aria-hidden>📞</span>
+                            <span>{prop.contact_phone}</span>
+                          </span>
+                        </button>
+                      )}
+                      {prop.contact_email && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            try {
+                              if (prop.contact_email) {
+                                window.location.href = `mailto:${prop.contact_email}`;
+                              }
+                            } catch {
+                              // ignore
+                            }
+                          }}
+                          style={{
+                            ...questionBtnStyle,
+                            justifyContent: "flex-start",
+                            padding: "6px 10px",
+                            fontSize: 11,
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <span aria-hidden>✉</span>
+                            <span>{prop.contact_email}</span>
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
@@ -1995,18 +2068,16 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       }}
                       style={{
                         ...questionBtnStyle,
-                        justifyContent: contactFromLimit ? "flex-start" : "space-between",
+                        justifyContent: "space-between",
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <span aria-hidden>📞</span>
                         <span>{prop.contact_phone}</span>
                       </span>
-                      {!contactFromLimit && (
-                        <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                          {menuLabels.tap_call}
-                        </span>
-                      )}
+                      <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                        {menuLabels.tap_call}
+                      </span>
                     </button>
                   )}
                   {prop.contact_email && (
@@ -2023,18 +2094,16 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       }}
                       style={{
                         ...questionBtnStyle,
-                        justifyContent: contactFromLimit ? "flex-start" : "space-between",
+                        justifyContent: "space-between",
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <span aria-hidden>✉</span>
                         <span>{prop.contact_email}</span>
                       </span>
-                      {!contactFromLimit && (
-                        <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                          {menuLabels.tap_email}
-                        </span>
-                      )}
+                      <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                        {menuLabels.tap_email}
+                      </span>
                     </button>
                   )}
                   <button
