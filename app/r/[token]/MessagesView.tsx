@@ -574,6 +574,27 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
     [chatLang]
   );
 
+  function renderAiAnswer(text: string) {
+    // Render answer with support for simple Markdown bold (**text**),
+    // preserving line breaks for the bullet-style lines returned by AI.
+    const lines = text.split(/\r?\n/);
+    return lines.map((line, lineIdx) => (
+      <div key={lineIdx}>
+        {line.split(/(\*\*[^*]+\*\*)/).map((part, idx) => {
+          const m = part.match(/^\*\*(.*)\*\*$/);
+          if (m) {
+            return (
+              <strong key={idx}>
+                {m[1]}
+              </strong>
+            );
+          }
+          return <span key={idx}>{part}</span>;
+        })}
+      </div>
+    ));
+  }
+
   const fabStyle: React.CSSProperties = {
     position: "fixed",
     right: 16,
@@ -1517,9 +1538,9 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                             {chatLang === "ro" ? "Se încarcă..." : "Loading..."}
                           </span>
                         )}
-                        {!arrivalLoading && arrivalAnswer && (
-                          <div style={{ whiteSpace: "pre-line" }}>{arrivalAnswer}</div>
-                        )}
+                    {!arrivalLoading && arrivalAnswer && (
+                      <div>{renderAiAnswer(arrivalAnswer)}</div>
+                    )}
                       </div>
                       <button
                         type="button"
@@ -1654,7 +1675,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       </span>
                     )}
                     {!forbiddenLoading && forbiddenAnswer && (
-                      <div style={{ whiteSpace: "pre-line" }}>{forbiddenAnswer}</div>
+                      <div>{renderAiAnswer(forbiddenAnswer)}</div>
                     )}
                   </div>
                   <button
@@ -1805,7 +1826,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       </span>
                     )}
                     {!amenitiesLoading && amenitiesAnswer && (
-                      <div style={{ whiteSpace: "pre-line" }}>{amenitiesAnswer}</div>
+                      <div>{renderAiAnswer(amenitiesAnswer)}</div>
                     )}
                   </div>
                   <button
@@ -1900,7 +1921,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                       </span>
                     )}
                     {!extrasLoading && extrasAnswer && (
-                      <div style={{ whiteSpace: "pre-line" }}>{extrasAnswer}</div>
+                      <div>{renderAiAnswer(extrasAnswer)}</div>
                     )}
                   </div>
                   <button
