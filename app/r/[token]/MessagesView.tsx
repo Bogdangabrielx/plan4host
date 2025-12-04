@@ -2006,7 +2006,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                         <span style={{ fontSize: 11, color: "var(--muted)" }}>
                           {menuLabels.tap_call}
                         </span>
-                      </span>
+                      )}
                     </button>
                   )}
                   {prop.contact_email && (
@@ -2034,12 +2034,15 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                         <span style={{ fontSize: 11, color: "var(--muted)" }}>
                           {menuLabels.tap_email}
                         </span>
-                      </span>
+                      )}
                     </button>
                   )}
                   <button
                     type="button"
-                    onClick={() => setActiveTopic(null)}
+                    onClick={() => {
+                      setContactFromLimit(false);
+                      setActiveTopic(null);
+                    }}
                     style={{
                       ...questionBtnStyle,
                       justifyContent: "center",
