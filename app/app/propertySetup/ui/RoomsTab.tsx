@@ -70,7 +70,14 @@ export default function RoomsTab({
         </div>
 
         {roomTypes.length === 0 ? (
-          <p style={{ color: "var(--muted)" }}>No room types yet.</p>
+          <div style={{ color: "var(--muted)", fontSize: 13 }}>
+            <div style={{ fontWeight: 700 }}>
+              You don’t have any room types yet.
+            </div>
+            <div>
+              Use this section only if your property has multiple room types (e.g. Double Room, Studio, Deluxe Suite).
+            </div>
+          </div>
         ) : (
           <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {roomTypes.map((t) => (
