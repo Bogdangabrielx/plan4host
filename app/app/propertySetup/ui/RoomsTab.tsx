@@ -167,22 +167,25 @@ export default function RoomsTab({
                   <RoomNameField room={r} onRenameRoom={onRenameRoom} />
                 </div>
 
-                {/* Row 2 (left): TYPE */}
-                <div style={typeArea}>
-                  <label style={smallLabel}>Room type</label>
-                  <select
-                    value={r.room_type_id ?? ""}
-                    onChange={(e) => onAssignType(r.id, e.currentTarget.value || null)}
-                    className="sb-select"
-                    style={{ fontFamily: 'inherit', fontSize: 13 }}
-                  >
-                    <option value="">— None —</option>
-                    {roomTypes.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
+                {/* Row 2 (left): TYPE (only if there are room types defined) */}
+                {roomTypes.length > 0 && (
+                  <div style={typeArea}>
+                    <label style={smallLabel}>Room type</label>
+                    <select
+                      value={r.room_type_id ?? ""}
+                      onChange={(e) => onAssignType(r.id, e.currentTarget.value || null)}
+                      className="sb-select"
+                      style={{ fontFamily: 'inherit', fontSize: 13 }}
+                    >
+                      <option value="">— None —</option>
+                      {roomTypes.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                
 
                 {/* Row 2 (right): ACTIONS */}
