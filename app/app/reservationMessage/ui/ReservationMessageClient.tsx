@@ -106,6 +106,13 @@ export default function ReservationMessageClient({
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
   const isSmall = useIsSmall();
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const attr = document.documentElement.getAttribute("data-theme");
+    if (attr === "dark") return true;
+    if (attr === "light") return false;
+    return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false;
+  });
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
   const [lang, setLang] = useState<'ro'|'en'>('ro');
   const [scheduler, setScheduler] = useState<TemplateState['schedule_kind']>('');
@@ -590,6 +597,25 @@ export default function ReservationMessageClient({
   const btnPri: React.CSSProperties = { ...btn, background: "var(--primary)", color: "var(--text)", border: "1px solid var(--border)" };
 
   useEffect(() => { setPill(saving); }, [saving, setPill]);
+
+  // Track theme for room icon (light/dark)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const root = document.documentElement;
+    const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
+    const onMq = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    const ob = new MutationObserver(() => {
+      const t = root.getAttribute("data-theme");
+      if (t === "dark") setIsDark(true);
+      if (t === "light") setIsDark(false);
+    });
+    try { mq?.addEventListener("change", onMq); } catch { mq?.addListener?.(onMq); }
+    ob.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => {
+      try { mq?.removeEventListener("change", onMq); } catch { mq?.removeListener?.(onMq); }
+      ob.disconnect();
+    };
+  }, []);
 
   // Load presentation image for selected property (once per id)
   useEffect(() => {
@@ -1087,18 +1113,18 @@ export default function ReservationMessageClient({
                     width: 32,
                     height: 32,
                     borderRadius: "50%",
-                    background: "linear-gradient(135deg, rgba(0,209,255,0.4), rgba(124,58,237,0.9))",
+                    border: "1px solid var(--border)",
+                    background: "var(--card)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#0b1120",
+                    color: "var(--text)",
                   }}
                 >
-                  {/* calendar/message icon */}
-                  <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
-                    <rect x="4" y="5" width="16" height="13" rx="2" ry="2" fill="#0b1120" />
-                    <rect x="6" y="7" width="12" height="9" rx="1" ry="1" fill="#e5e7eb" />
-                    <path d="M9 4v3M15 4v3" stroke="#e5e7eb" strokeWidth="1.6" strokeLinecap="round" />
+                  {/* simple envelope/message icon */}
+                  <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true" fill="none">
+                    <rect x="4" y="7" width="16" height="10" rx="2" ry="2" stroke="currentColor" strokeWidth="1.6" />
+                    <path d="M5.5 8.5L12 13l6.5-4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
                 <div style={{ fontSize: 13, color: "var(--text)" }}>
@@ -1112,18 +1138,18 @@ export default function ReservationMessageClient({
                     width: 32,
                     height: 32,
                     borderRadius: "50%",
-                    background: "linear-gradient(135deg, rgba(0,209,255,0.4), rgba(124,58,237,0.9))",
+                    border: "1px solid var(--border)",
+                    background: "var(--card)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#0b1120",
+                    color: "var(--text)",
                   }}
                 >
-                  {/* clock icon */}
-                  <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
-                    <circle cx="12" cy="12" r="7" fill="#0b1120" />
-                    <circle cx="12" cy="12" r="6" fill="#e5e7eb" />
-                    <path d="M12 8v4l2 2" stroke="#0b1120" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  {/* clock icon similar to Guest Overview */}
+                  <svg aria-hidden width={18} height={18} viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+                    <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
                 <div style={{ fontSize: 13, color: "var(--muted)" }}>
@@ -1193,31 +1219,34 @@ export default function ReservationMessageClient({
                 ×
               </button>
             </div>
-            <div style={{ display: "grid", gap: 10 }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                <div
-                  aria-hidden
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg, rgba(0,209,255,0.4), rgba(124,58,237,0.9))",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#0b1120",
-                  }}
-                >
-                  {/* room icon */}
-                  <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
-                    <rect x="5" y="7" width="14" height="10" rx="2" ry="2" fill="#0b1120" />
-                    <rect x="7" y="9" width="10" height="6" rx="1" ry="1" fill="#e5e7eb" />
-                  </svg>
+              <div style={{ display: "grid", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                  <div
+                    aria-hidden
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      overflow: "hidden",
+                      border: "1px solid var(--border)",
+                      background: "var(--card)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <img
+                      src={isDark ? "/room_fordark.png" : "/room_forlight.png"}
+                      alt=""
+                      width={24}
+                      height={24}
+                      style={{ display: "block", objectFit: "contain" }}
+                    />
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--text)" }}>
+                    <span style={{ fontWeight: 600 }}>Use Room variables</span> when you need different details per room (for example access code, door key, Wi‑Fi for a specific unit).
+                  </div>
                 </div>
-                <div style={{ fontSize: 13, color: "var(--text)" }}>
-                  <span style={{ fontWeight: 600 }}>Use Room variables</span> when you need different details per room (for example access code, door key, Wi‑Fi for a specific unit).
-                </div>
-              </div>
               <div style={{ fontSize: 13, color: "var(--muted)" }}>
                 You can create custom variables and then set different values per room;{" "}
                 <span style={{ fontWeight: 600 }}>automatic messages will pull the right value for each guest</span>.
