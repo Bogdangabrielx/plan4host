@@ -1080,10 +1080,10 @@ export default function ReservationMessageClient({
               </button>
             </div>
             <div style={{ fontSize: 13, color: "var(--text)" }}>
-              Aici configurezi mesajele care vor fi trimise automat către oaspeți pentru fiecare rezervare.
+              Here you configure the messages that will be sent automatically to guests for each reservation.
             </div>
             <div style={{ fontSize: 13, color: "var(--muted)" }}>
-              Pentru o comunicare mai bună, recomandăm să potrivești mesajul cu momentul în care este trimis, folosind opțiunea de programare (scheduler).
+              For clearer communication, we recommend matching each message with the moment it is sent by using the scheduler.
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
               <button
@@ -1144,10 +1144,10 @@ export default function ReservationMessageClient({
               </button>
             </div>
             <div style={{ fontSize: 13, color: "var(--text)" }}>
-              Dacă vrei să definești informații diferite pe fiecare cameră (de exemplu cod de acces sau cheie), îți recomandăm să folosești variabilele de cameră de mai sus.
+              If you want to define different details for each room (for example access code or key), we recommend using the room variables above.
             </div>
             <div style={{ fontSize: 13, color: "var(--muted)" }}>
-              Poți crea variabile personalizate și apoi completa valori diferite pentru fiecare cameră, iar mesajele automate vor folosi aceste valori.
+              You can create custom variables and then set different values per room; your automatic messages will use these values.
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
               <button
