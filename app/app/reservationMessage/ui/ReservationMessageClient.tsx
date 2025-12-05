@@ -132,6 +132,8 @@ export default function ReservationMessageClient({
   const [creatingVar, setCreatingVar] = useState<boolean>(false);
   const [newVarName, setNewVarName] = useState<string>("");
   const [rvError, setRvError] = useState<string | null>(null);
+  const [showNoTemplatePopup, setShowNoTemplatePopup] = useState<boolean>(false);
+  const [showRoomVarsHint, setShowRoomVarsHint] = useState<boolean>(false);
 
   const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
 
@@ -147,6 +149,9 @@ export default function ReservationMessageClient({
         if (!alive) return;
         const items = Array.isArray(j?.items) ? j.items : [];
         setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
+        if (items.length === 0) {
+          setShowNoTemplatePopup(true);
+        }
       } finally { if (alive) setLoadingList(false); }
     })();
     return () => { alive = false; };
@@ -1024,6 +1029,140 @@ export default function ReservationMessageClient({
             </button>
           </div>
         </section>
+      )}
+
+      {/* Popup: no automatic message template yet */}
+      {showNoTemplatePopup && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => {
+            setShowNoTemplatePopup(false);
+            setShowRoomVarsHint(true);
+          }}
+          className="sb-cardglow"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 260,
+            background: "rgba(0,0,0,0.55)",
+            display: "grid",
+            placeItems: "center",
+            padding: 12,
+            paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+            paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sb-cardglow"
+            style={{
+              width: "min(520px, 100%)",
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 16,
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <strong>Automatic messages</strong>
+              <button
+                type="button"
+                className="sb-btn sb-btn--small"
+                onClick={() => {
+                  setShowNoTemplatePopup(false);
+                  setShowRoomVarsHint(true);
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ fontSize: 13, color: "var(--text)" }}>
+              Aici configurezi mesajele care vor fi trimise automat către oaspeți pentru fiecare rezervare.
+            </div>
+            <div style={{ fontSize: 13, color: "var(--muted)" }}>
+              Pentru o comunicare mai bună, recomandăm să potrivești mesajul cu momentul în care este trimis, folosind opțiunea de programare (scheduler).
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+              <button
+                type="button"
+                className="sb-btn sb-btn--primary"
+                onClick={() => {
+                  setShowNoTemplatePopup(false);
+                  setShowRoomVarsHint(true);
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Popup: room variables hint */}
+      {showRoomVarsHint && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowRoomVarsHint(false)}
+          className="sb-cardglow"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 261,
+            background: "rgba(0,0,0,0.55)",
+            display: "grid",
+            placeItems: "center",
+            padding: 12,
+            paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+            paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sb-cardglow"
+            style={{
+              width: "min(520px, 100%)",
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 16,
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <strong>Room-specific details</strong>
+              <button
+                type="button"
+                className="sb-btn sb-btn--small"
+                onClick={() => setShowRoomVarsHint(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ fontSize: 13, color: "var(--text)" }}>
+              Dacă vrei să definești informații diferite pe fiecare cameră (de exemplu cod de acces sau cheie), îți recomandăm să folosești variabilele de cameră de mai sus.
+            </div>
+            <div style={{ fontSize: 13, color: "var(--muted)" }}>
+              Poți crea variabile personalizate și apoi completa valori diferite pentru fiecare cameră, iar mesajele automate vor folosi aceste valori.
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+              <button
+                type="button"
+                className="sb-btn sb-btn--primary"
+                onClick={() => {
+                  setShowRoomVarsHint(false);
+                  setRvOpen(true);
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
