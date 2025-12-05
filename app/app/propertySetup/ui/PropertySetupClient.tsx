@@ -47,6 +47,8 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   // First-time guidance modal (after first property creation)
   const [showRoomsGuide, setShowRoomsGuide] = useState<boolean>(false);
   const [showEntirePrompt, setShowEntirePrompt] = useState<boolean>(false);
+  const [showRoomTypesPrompt, setShowRoomTypesPrompt] = useState<boolean>(false);
+  const [roomTypesGuideTick, setRoomTypesGuideTick] = useState<number>(0);
   // Cache property presentation images for avatar in the pill
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
 
@@ -381,8 +383,81 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                 If yes, we will crate a room named as: “<strong>{selected.name}</strong>” in order to activate iCal.
               </div>
               <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-                <button className="sb-btn" onClick={()=> setShowEntirePrompt(false)}>No</button>
+                <button
+                  className="sb-btn"
+                  onClick={() => {
+                    setShowEntirePrompt(false);
+                    setShowRoomTypesPrompt(true);
+                  }}
+                >
+                  No
+                </button>
                 <button className="sb-btn sb-btn--primary" onClick={async ()=>{ await addRoomNamed(selected.name); setShowEntirePrompt(false); }}>Yes</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showRoomTypesPrompt && selected && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={(e)=>{ e.stopPropagation(); }}
+            style={{ position:'fixed', inset:0, zIndex: 242, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
+                     paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
+            <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:12 }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                <strong style={{ fontSize: 16 }}>Room types</strong>
+                <button
+                  type="button"
+                  className="sb-btn sb-btn--small"
+                  onClick={() => setShowRoomTypesPrompt(false)}
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "999px",
+                    padding: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
+                <div style={{ display:'grid', gridTemplateColumns:'24px 1fr', alignItems:'start', gap:8 }}>
+                  <img
+                    src={isDark ? '/room_fordark.png' : '/room_forlight.png'}
+                    alt=""
+                    width={22}
+                    height={22}
+                    style={{ display:'block', opacity:.95 }}
+                  />
+                  <div>
+                    <span style={{ fontWeight: 700 }}>Do you use room types</span> (e.g. Double Room, Studio, Deluxe Suite)?
+                  </div>
+                </div>
+                <div style={{ fontSize: 13, color:'var(--muted)' }}>
+                  If yes, we recommend defining them now so you can assign each reservation to the correct type in Calendar and automatic messages.
+                </div>
+              </div>
+              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+                <button
+                  className="sb-btn"
+                  onClick={() => setShowRoomTypesPrompt(false)}
+                >
+                  No
+                </button>
+                <button
+                  className="sb-btn sb-btn--primary"
+                  onClick={() => {
+                    setShowRoomTypesPrompt(false);
+                    setRoomTypesGuideTick((x) => x + 1);
+                  }}
+                >
+                  Yes
+                </button>
               </div>
             </div>
           </div>
@@ -467,6 +542,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                   onDeleteType={deleteRoomType}
                   onAssignType={setRoomType}
                   plan={plan}
+                  roomTypesGuideTick={roomTypesGuideTick}
                 />
               }
               roomDetails={

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Room = { id: string; name: string; sort_index: number; room_type_id: string | null };
 type RoomType = { id: string; name: string };
@@ -17,6 +17,7 @@ export default function RoomsTab({
   onDeleteType,
   onAssignType,
   plan,
+  roomTypesGuideTick,
 }: {
   rooms: Room[];
   roomTypes: RoomType[];
@@ -29,16 +30,27 @@ export default function RoomsTab({
   onDeleteType: (typeId: string) => void | Promise<void>;
   onAssignType: (roomId: string, typeId: string | null) => void | Promise<void>;
   plan?: 'basic' | 'standard' | 'premium' | null;
+  roomTypesGuideTick?: number;
 }) {
   const [newType, setNewType] = useState("");
   const [confirmRoomDel, setConfirmRoomDel] = useState<null | { id: string; name: string }>(null);
   const [roomTypesOpen, setRoomTypesOpen] = useState<boolean>(false);
+  const [highlightRoomTypes, setHighlightRoomTypes] = useState<boolean>(false);
 
   const roomsSorted = useMemo(() => {
     return [...rooms].sort((a, b) => a.sort_index - b.sort_index);
   }, [rooms]);
 
   const roomLimitReached = false; // Unlimited rooms per property on all plans
+
+  // When guided from Quick setup, open Room types and highlight the add field
+  useEffect(() => {
+    if (!roomTypesGuideTick) return;
+    setRoomTypesOpen(true);
+    setHighlightRoomTypes(true);
+    const t = setTimeout(() => setHighlightRoomTypes(false), 1200);
+    return () => clearTimeout(t);
+  }, [roomTypesGuideTick]);
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
@@ -86,7 +98,16 @@ export default function RoomsTab({
                 placeholder="Add a room type (e.g., Double)"
                 value={newType}
                 onChange={(e) => setNewType((e.target as HTMLInputElement).value)}
-                style={input}
+                style={{
+                  ...input,
+                  ...(highlightRoomTypes
+                    ? {
+                        borderColor: "var(--primary)",
+                        boxShadow:
+                          "0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent)",
+                      }
+                    : null),
+                }}
               />
               {newType.trim() && (
                 <button
