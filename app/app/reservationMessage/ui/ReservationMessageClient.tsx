@@ -1063,7 +1063,7 @@ export default function ReservationMessageClient({
               borderRadius: 12,
               padding: 16,
               display: "grid",
-              gap: 10,
+              gap: 12,
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1079,11 +1079,61 @@ export default function ReservationMessageClient({
                 ×
               </button>
             </div>
-            <div style={{ fontSize: 13, color: "var(--text)" }}>
-              Here you configure the messages that will be sent automatically to guests for each reservation.
-            </div>
-            <div style={{ fontSize: 13, color: "var(--muted)" }}>
-              For clearer communication, we recommend matching each message with the moment it is sent by using the scheduler.
+            <div style={{ display: "grid", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <div
+                  aria-hidden
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, rgba(0,209,255,0.4), rgba(124,58,237,0.9))",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#0b1120",
+                  }}
+                >
+                  {/* calendar/message icon */}
+                  <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
+                    <rect x="4" y="5" width="16" height="13" rx="2" ry="2" fill="#0b1120" />
+                    <rect x="6" y="7" width="12" height="9" rx="1" ry="1" fill="#e5e7eb" />
+                    <path d="M9 4v3M15 4v3" stroke="#e5e7eb" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <div style={{ fontSize: 13, color: "var(--text)" }}>
+                  <span style={{ fontWeight: 600 }}>This is where you define the automatic messages</span> that guests receive for their reservation.
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <div
+                  aria-hidden
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, rgba(0,209,255,0.4), rgba(124,58,237,0.9))",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#0b1120",
+                  }}
+                >
+                  {/* clock icon */}
+                  <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
+                    <circle cx="12" cy="12" r="7" fill="#0b1120" />
+                    <circle cx="12" cy="12" r="6" fill="#e5e7eb" />
+                    <path d="M12 8v4l2 2" stroke="#0b1120" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <div style={{ fontSize: 13, color: "var(--muted)" }}>
+                  For better communication,{" "}
+                  <span style={{ fontWeight: 600 }}>
+                    match each message with the moment it should be sent
+                  </span>{" "}
+                  by using the <span style={{ fontWeight: 600 }}>Scheduler</span> (before arrival, on arrival, before check‑out).
+                </div>
+              </div>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
               <button
@@ -1130,7 +1180,7 @@ export default function ReservationMessageClient({
               borderRadius: 12,
               padding: 16,
               display: "grid",
-              gap: 10,
+              gap: 12,
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1143,11 +1193,35 @@ export default function ReservationMessageClient({
                 ×
               </button>
             </div>
-            <div style={{ fontSize: 13, color: "var(--text)" }}>
-              If you want to define different details for each room (for example access code or key), we recommend using the room variables above.
-            </div>
-            <div style={{ fontSize: 13, color: "var(--muted)" }}>
-              You can create custom variables and then set different values per room; your automatic messages will use these values.
+            <div style={{ display: "grid", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <div
+                  aria-hidden
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, rgba(0,209,255,0.4), rgba(124,58,237,0.9))",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#0b1120",
+                  }}
+                >
+                  {/* room icon */}
+                  <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
+                    <rect x="5" y="7" width="14" height="10" rx="2" ry="2" fill="#0b1120" />
+                    <rect x="7" y="9" width="10" height="6" rx="1" ry="1" fill="#e5e7eb" />
+                  </svg>
+                </div>
+                <div style={{ fontSize: 13, color: "var(--text)" }}>
+                  <span style={{ fontWeight: 600 }}>Use Room variables</span> when you need different details per room (for example access code, door key, Wi‑Fi for a specific unit).
+                </div>
+              </div>
+              <div style={{ fontSize: 13, color: "var(--muted)" }}>
+                You can create custom variables and then set different values per room;{" "}
+                <span style={{ fontWeight: 600 }}>automatic messages will pull the right value for each guest</span>.
+              </div>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
               <button
