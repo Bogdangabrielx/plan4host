@@ -189,11 +189,28 @@ export default function RoomsTab({
                
 
                 {/* Row 2 (right): ACTIONS */}
-                
-                  <button onClick={() => onMoveRoom(r.id, "up")} disabled={idx === 0} className="sb-btn">↑</button>
-                  <button onClick={() => onMoveRoom(r.id, "down")} disabled={idx === roomsSorted.length - 1} className="sb-btn">↓</button>
-                  <button onClick={() => setConfirmRoomDel({ id: r.id, name: r.name })} className="sb-btn">Delete</button>
-                 </div>
+                <div style={actionsArea}>
+                  <button
+                    onClick={() => onMoveRoom(r.id, "up")}
+                    disabled={idx === 0}
+                    className="sb-btn"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={() => onMoveRoom(r.id, "down")}
+                    disabled={idx === roomsSorted.length - 1}
+                    className="sb-btn"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    onClick={() => setConfirmRoomDel({ id: r.id, name: r.name })}
+                    className="sb-btn"
+                  >
+                    Delete
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
