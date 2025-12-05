@@ -146,7 +146,22 @@ export default function RoomsTab({
         </div>
 
         {roomsSorted.length === 0 ? (
-          <p style={{ color: "var(--muted)" }}>No rooms yet. Click “Add room”.</p>
+          <div style={{ color: "var(--muted)", fontSize: 13 }}>
+            <div style={{ color: "var(--danger)" }}>
+              You don’t have any rooms defined yet.
+            </div>
+            <div style={{ marginTop: 4 }}>
+              To use Plan4Host properly you need at least one room. Rooms are required in order to:
+            </div>
+            <ul style={{ marginTop: 4, paddingLeft: 18 }}>
+              <li>record and manage bookings</li>
+              <li>sync calendars (iCal) with OTAs</li>
+              <li>send automatic messages to guests</li>
+            </ul>
+            <div style={{ marginTop: 6 }}>
+              Click “Add room” to create your first room.
+            </div>
+          </div>
         ) : (
           <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
             {roomsSorted.map((r, idx) => (
