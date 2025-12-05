@@ -1618,10 +1618,54 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                             {chatLang === "ro" ? "Se încarcă..." : "Loading..."}
                           </span>
                         )}
-                    {!arrivalLoading && arrivalAnswer && (
-                      <div>{renderAiAnswer(arrivalAnswer)}</div>
-                    )}
+                        {!arrivalLoading && arrivalAnswer && (
+                          <div>{renderAiAnswer(arrivalAnswer)}</div>
+                        )}
                       </div>
+                      {arrivalSubtopic === "access_instructions" &&
+                        prop?.social_location && (
+                          <button
+                            type="button"
+                            style={{
+                              ...questionBtnStyle,
+                              justifyContent: "flex-start",
+                            }}
+                            onClick={() => {
+                              try {
+                                window.open(
+                                  prop.social_location as string,
+                                  "_blank",
+                                  "noopener,noreferrer",
+                                );
+                              } catch {
+                                // ignore
+                              }
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                              }}
+                            >
+                              <img
+                                src="/social_location_fordark.png"
+                                alt={
+                                  lang === "ro"
+                                    ? "Deschide locația proprietății"
+                                    : "Open property location"
+                                }
+                                style={{ width: 18, height: 18 }}
+                              />
+                              <span>
+                                {lang === "ro"
+                                  ? "Vezi locația proprietății"
+                                  : "Open property location"}
+                              </span>
+                            </span>
+                          </button>
+                        )}
                       <button
                         type="button"
                         style={{
