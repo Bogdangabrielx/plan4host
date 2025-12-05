@@ -176,12 +176,18 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         setStatus("Error");
         setRooms([]); setChecks([]); setTexts([]); setTasks([]); setRoomTypes([]);
       } else {
-        setRooms((r1.data ?? []) as Room[]);
+        const loadedRooms = (r1.data ?? []) as Room[];
+        setRooms(loadedRooms);
         setChecks((r2.data ?? []) as CheckDef[]);
         setTexts((r3.data ?? []) as TextDef[]);
         setTasks((r4.data ?? []) as TaskDef[]);
         setRoomTypes((r5.data ?? []) as RoomType[]);
         setStatus("Idle");
+        // If this property has no rooms yet, show the rooms guide so the user
+        // can choose whether it is a single unit or has multiple rooms.
+        if (loadedRooms.length === 0) {
+          setShowRoomsGuide(true);
+        }
       }
     })();
   }, [selectedId, supabase]);
