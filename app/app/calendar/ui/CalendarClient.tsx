@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import RoomViewModal from "./RoomViewModal";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
@@ -45,6 +46,7 @@ export default function CalendarClient({
   initialProperties: Property[];
   initialDate?: string;
 }) {
+  const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
   const [properties] = useState<Property[]>(initialProperties);
@@ -192,6 +194,22 @@ export default function CalendarClient({
       }
     })();
   }, [propertyId, view, year, month, supabase]);
+
+  // If the selected property has no rooms yet, guide the user to Property Setup (Rooms)
+  useEffect(() => {
+    if (!propertyId) return;
+    if (loading !== "Idle") return;
+    if (rooms.length === 0) {
+      try {
+        alert(
+          "This property does not have any rooms set up yet. We’ll open Property Setup so you can add rooms before using the calendar.",
+        );
+      } catch {
+        // ignore alert failures (some environments may block)
+      }
+      router.push("/app/propertySetup?guide=rooms");
+    }
+  }, [propertyId, rooms.length, loading, router]);
 
   // Header pill (show Read-only when idle)
   useEffect(() => {
