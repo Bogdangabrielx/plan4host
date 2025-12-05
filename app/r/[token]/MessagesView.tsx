@@ -797,6 +797,7 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
             name: prop?.name || null,
             regulation_pdf_url: prop?.regulation_pdf_url || null,
             ai_house_rules_text: prop?.ai_house_rules_text || null,
+            social_location: prop?.social_location || null,
           },
           messages: items.map((it) => ({
             title: it.title,

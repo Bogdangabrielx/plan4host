@@ -17,6 +17,7 @@ type ArrivalRequest = {
     name?: string | null;
     regulation_pdf_url?: string | null;
     ai_house_rules_text?: string | null;
+    social_location?: string | null;
   };
   messages?: Array<{
     title?: string;
@@ -86,6 +87,7 @@ Rules:
 - Use ONLY the information found in the messages, house rules text and details below.
 - First look for the answer in the reservation messages. Then also check the AI-configured house rules text from Property info; you may combine information from both sources in a single answer (for example, parking location mentioned in one place and fee/conditions mentioned in another) as long as each detail you mention is clearly written somewhere in the text.
 - NEVER invent or guess codes, phone numbers, addresses, parking locations, or times.
+- If the topic is "access_instructions" and a 'social_location' URL is provided in Property info, you may add one bullet that points the guest to this link for directions (for example: "• LOCATION: You can find directions here: https://..."). Do NOT invent or modify the URL.
 - Format the answer as one or more lines, each line starting with a bullet like "• " and, when useful, a short UPPERCASE label (for example "PARKING:", "ACCESS CODES:") so it is easy to scan. Use line breaks between bullets.
 - If information is clearly present, answer briefly and clearly in the target language.
 - If information is not present or is unclear, set status to "missing" and in the answer text politely say that it's not clear from the information available and that the guest should contact the host.
@@ -116,6 +118,7 @@ ${JSON.stringify(
     name: property.name || null,
     regulation_pdf_url: property.regulation_pdf_url || null,
     ai_house_rules_text: property.ai_house_rules_text || null,
+    social_location: property.social_location || null,
   },
   null,
   2,
