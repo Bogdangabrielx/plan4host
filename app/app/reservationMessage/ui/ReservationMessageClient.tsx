@@ -1101,26 +1101,22 @@ export default function ReservationMessageClient({
                   setShowNoTemplatePopup(false);
                   setShowRoomVarsHint(true);
                 }}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "999px",
+                  padding: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
                 ×
               </button>
             </div>
             <div style={{ display: "grid", gap: 10 }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                <div
-                  aria-hidden
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "50%",
-                    border: "1px solid var(--border)",
-                    background: "var(--card)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "var(--text)",
-                  }}
-                >
+                <div aria-hidden style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2 }}>
                   {/* simple envelope/message icon */}
                   <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true" fill="none">
                     <rect x="4" y="7" width="16" height="10" rx="2" ry="2" stroke="currentColor" strokeWidth="1.6" />
@@ -1132,20 +1128,7 @@ export default function ReservationMessageClient({
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                <div
-                  aria-hidden
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "50%",
-                    border: "1px solid var(--border)",
-                    background: "var(--card)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "var(--text)",
-                  }}
-                >
+                <div aria-hidden style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2 }}>
                   {/* clock icon similar to Guest Overview */}
                   <svg aria-hidden width={18} height={18} viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
@@ -1215,31 +1198,27 @@ export default function ReservationMessageClient({
                 type="button"
                 className="sb-btn sb-btn--small"
                 onClick={() => setShowRoomVarsHint(false)}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "999px",
+                  padding: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
                 ×
               </button>
             </div>
               <div style={{ display: "grid", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                  <div
-                    aria-hidden
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 8,
-                      overflow: "hidden",
-                      border: "1px solid var(--border)",
-                      background: "var(--card)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
+                  <div aria-hidden style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2 }}>
                     <img
                       src={isDark ? "/room_fordark.png" : "/room_forlight.png"}
                       alt=""
-                      width={24}
-                      height={24}
+                      width={20}
+                      height={20}
                       style={{ display: "block", objectFit: "contain" }}
                     />
                   </div>
