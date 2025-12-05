@@ -30,6 +30,7 @@ type PropInfo = {
   social_instagram?: string | null;
   social_tiktok?: string | null;
   social_website?: string | null;
+  social_location?: string | null;
   guest_ai_enabled?: boolean | null;
 };
 
@@ -129,6 +130,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
       { key: 'instagram', url: prop.social_instagram || null, icon: '/instagram_forlight.png', label: 'Instagram' },
       { key: 'tiktok', url: prop.social_tiktok || null, icon: '/tiktok_forlight.png', label: 'TikTok' },
       { key: 'site', url: prop.social_website || null, icon: '/website_forlight.png', label: 'Website' },
+      { key: 'location', url: prop.social_location || null, icon: '/social_location_forlight.png', label: 'Location' },
     ].filter(x => !!x.url);
     if (links.length === 0) return null;
     return (
