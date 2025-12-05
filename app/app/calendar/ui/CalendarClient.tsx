@@ -113,6 +113,7 @@ export default function CalendarClient({
   const [showRoomView, setShowRoomView] = useState<boolean>(false);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const dateOverlayInputRef = useRef<HTMLInputElement | null>(null);
+  const [showNoRoomsPopup, setShowNoRoomsPopup] = useState<boolean>(false);
 
   // Detect small screens
   useEffect(() => {
@@ -194,22 +195,14 @@ export default function CalendarClient({
       }
     })();
   }, [propertyId, view, year, month, supabase]);
-
-  // If the selected property has no rooms yet, guide the user to Property Setup (Rooms)
+  // If the selected property has no rooms yet, guide the user with a custom popup
   useEffect(() => {
     if (!propertyId) return;
     if (loading !== "Idle") return;
     if (rooms.length === 0) {
-      try {
-        alert(
-          "This property does not have any rooms set up yet. We’ll open Property Setup so you can add rooms before using the calendar.",
-        );
-      } catch {
-        // ignore alert failures (some environments may block)
-      }
-      router.push("/app/propertySetup?guide=rooms");
+      setShowNoRoomsPopup(true);
     }
-  }, [propertyId, rooms.length, loading, router]);
+  }, [propertyId, rooms.length, loading]);
 
   // Header pill (show Read-only when idle)
   useEffect(() => {
@@ -485,6 +478,58 @@ export default function CalendarClient({
               className="sb-select"
               style={{ padding: 10 }}
             />
+          </div>
+        </div>
+      )}
+      {showNoRoomsPopup && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowNoRoomsPopup(false)}
+          className="sb-cardglow"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 260,
+            background: "rgba(0,0,0,0.55)",
+            display: "grid",
+            placeItems: "center",
+            padding: 12,
+            paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+            paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sb-cardglow"
+            style={{
+              width: "min(420px, 100%)",
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              padding: 16,
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <div style={{ fontWeight: 700, fontSize: 15 }}>
+              This property has no rooms yet
+            </div>
+            <div style={{ fontSize: 13, color: "var(--muted)" }}>
+              To use the calendar, please add at least one room for this property. We’ll open Property Setup on the Rooms tab.
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                className="sb-btn sb-btn--primary"
+                onClick={() => {
+                  setShowNoRoomsPopup(false);
+                  router.push("/app/propertySetup?tab=rooms");
+                }}
+              >
+                OK
+              </button>
+            </div>
           </div>
         </div>
       )}
