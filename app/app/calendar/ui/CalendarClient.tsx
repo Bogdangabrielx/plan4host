@@ -524,7 +524,15 @@ export default function CalendarClient({
                 className="sb-btn sb-btn--primary"
                 onClick={() => {
                   setShowNoRoomsPopup(false);
-                  router.push("/app/propertySetup?tab=rooms");
+                  try {
+                    if (typeof window !== "undefined") {
+                      window.location.href = "/app/propertySetup?tab=rooms";
+                    } else {
+                      router.push("/app/propertySetup?tab=rooms");
+                    }
+                  } catch {
+                    router.push("/app/propertySetup?tab=rooms");
+                  }
                 }}
               >
                 OK
