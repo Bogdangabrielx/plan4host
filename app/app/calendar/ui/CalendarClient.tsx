@@ -103,6 +103,7 @@ export default function CalendarClient({
   const [rooms, setRooms]       = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading]   = useState<"Idle"|"Loading"|"Error">("Idle");
+  const [hasLoadedRooms, setHasLoadedRooms] = useState<boolean>(false);
 
   // Day modal (only Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
@@ -187,22 +188,23 @@ export default function CalendarClient({
           .order("start_date", { ascending: true }),
       ]);
       if (r1.error || r2.error) {
-        setRooms([]); setBookings([]); setLoading("Error");
+        setRooms([]); setBookings([]); setLoading("Error"); setHasLoadedRooms(true);
       } else {
         setRooms((r1.data ?? []) as Room[]);
         setBookings((r2.data ?? []) as Booking[]);
         setLoading("Idle");
+        setHasLoadedRooms(true);
       }
     })();
   }, [propertyId, view, year, month, supabase]);
   // If the selected property has no rooms yet, guide the user with a custom popup
   useEffect(() => {
     if (!propertyId) return;
-    if (loading !== "Idle") return;
+    if (!hasLoadedRooms || loading !== "Idle") return;
     if (rooms.length === 0) {
       setShowNoRoomsPopup(true);
     }
-  }, [propertyId, rooms.length, loading]);
+  }, [propertyId, rooms.length, loading, hasLoadedRooms]);
 
   // Header pill (show Read-only when idle)
   useEffect(() => {
