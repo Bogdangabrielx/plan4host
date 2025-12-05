@@ -54,6 +54,14 @@ export async function POST(req: Request) {
     if (!email) return bad(400, { error: 'missing_email' });
 
     const bk: any = rBk.data;
+    // Detect if this property has only a single room defined
+    const rRoomsCount: any = await admin
+      .from('rooms')
+      .select('id', { count: 'exact', head: true })
+      .eq('property_id', property_id);
+    const totalRooms = (rRoomsCount?.count ?? 0) as number;
+    const isSingleUnitProperty = totalRooms === 1;
+
     // If token is missing, create it now using service role
     if (!token) {
       // compute expiry: day after checkout
@@ -122,6 +130,8 @@ export async function POST(req: Request) {
       ? `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Reservation — ${propName}`)}&dates=${gStart}/${gEnd}&details=${encodeURIComponent(`Guest: ${guestFull}\nLink: ${link}`)}&location=${encodeURIComponent(propName)}`
       : '';
     const thankYou = 'Thank you for your patience — your reservation has been confirmed.';
+    const roomLabel = isSingleUnitProperty ? 'Unit' : 'Room';
+    const roomAlt = isSingleUnitProperty ? 'unit' : 'room';
     const inner = `
       <h2 style=\"margin:0 0 12px;\">Reservation confirmation — <span style=\"color:#3ECF8E\">${escapeHtml(propName)}</span></h2>
       <p style=\"margin:6px 0; font-size:14px; color:#475569;\">${escapeHtml(thankYou)}</p>
@@ -132,8 +142,8 @@ export async function POST(req: Request) {
           <div aria-hidden style=\"width:16px\"><img src=\"${iconNight}\" alt=\"stay\" width=\"16\" height=\"16\"/></div>
           <div><strong>Stay:</strong> <span>${escapeHtml(sd)} → ${escapeHtml(ed)}</span></div>
           ${roomName ? `
-            <div aria-hidden style=\"width:16px\"><img src=\"${iconRoom}\" alt=\"room\" width=\"16\" height=\"16\"/></div>
-            <div><strong>Room:</strong> <span>${escapeHtml(roomName)}</span></div>
+            <div aria-hidden style=\"width:16px\"><img src=\"${iconRoom}\" alt=\"${roomAlt}\" width=\"16\" height=\"16\"/></div>
+            <div><strong>${roomLabel}:</strong> <span>${escapeHtml(roomName)}</span></div>
           ` : ''}
         </div>
       </div>
