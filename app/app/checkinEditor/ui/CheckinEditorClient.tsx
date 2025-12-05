@@ -22,6 +22,7 @@ type Property = {
   social_instagram?: string | null;
   social_tiktok?: string | null;
   social_website?: string | null;
+  social_location?: string | null;
 };
 
 type ProviderItem = { slug: string; label: string; logo?: string | null };
@@ -173,7 +174,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     if (!propertyId) { setProp(null); return; }
     const { data, error } = await supabase
       .from("properties")
-      .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,ai_house_rules_text,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position,social_facebook,social_instagram,social_tiktok,social_website")
+      .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,ai_house_rules_text,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position,social_facebook,social_instagram,social_tiktok,social_website,social_location")
       .eq("id", propertyId)
       .maybeSingle();
     if (error) { setProp(null); lastSavedContact.current = { email: "", phone: "", address: "" }; }
@@ -1094,7 +1095,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
   setStatus: React.Dispatch<React.SetStateAction<"Idle" | "Saving…" | "Synced" | "Error">>;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  type Key = 'facebook'|'instagram'|'tiktok'|'website';
+  type Key = 'facebook'|'instagram'|'tiktok'|'website'|'location';
   const [active, setActive] = useState<Key | null>(null);
   const [draft, setDraft] = useState<string>("");
 
@@ -1119,6 +1120,9 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
 
   function icon(name: Key) {
     const suffix = isDark ? 'fordark' : 'forlight';
+    if (name === 'location') {
+      return `/social_location_${suffix}.png`;
+    }
     return `/${name}_${suffix}.png`;
   }
 
@@ -1127,6 +1131,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
     if (k === 'facebook') return prop.social_facebook || '';
     if (k === 'instagram') return prop.social_instagram || '';
     if (k === 'tiktok') return prop.social_tiktok || '';
+    if (k === 'location') return prop.social_location || '';
     return prop.social_website || '';
   }
   function patchLocal(k: Key, v: string | null) {
@@ -1136,6 +1141,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
       social_instagram: k === 'instagram' ? (v || null) : prev.social_instagram ?? null,
       social_tiktok: k === 'tiktok' ? (v || null) : prev.social_tiktok ?? null,
       social_website: k === 'website' ? (v || null) : prev.social_website ?? null,
+      social_location: k === 'location' ? (v || null) : prev.social_location ?? null,
     } : prev);
   }
   async function save(k: Key, val: string) {
@@ -1147,6 +1153,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
       k === 'facebook' ? 'social_facebook'
       : k === 'instagram' ? 'social_instagram'
       : k === 'tiktok' ? 'social_tiktok'
+      : k === 'location' ? 'social_location'
       : 'social_website'
     ] = normalized;
     const { error } = await supabase.from('properties').update(update).eq('id', prop.id);
@@ -1184,7 +1191,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
     <div ref={containerRef}>
       <label style={{ display:'block', marginBottom:6 }}>Social Links</label>
       <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-        {(['facebook','instagram','tiktok','website'] as Key[]).map(k => (
+        {(['facebook','instagram','tiktok','website','location'] as Key[]).map(k => (
           <button
             key={k}
             type="button"
