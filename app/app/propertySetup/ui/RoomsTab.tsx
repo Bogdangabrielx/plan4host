@@ -32,6 +32,7 @@ export default function RoomsTab({
 }) {
   const [newType, setNewType] = useState("");
   const [confirmRoomDel, setConfirmRoomDel] = useState<null | { id: string; name: string }>(null);
+  const [roomTypesOpen, setRoomTypesOpen] = useState<boolean>(false);
 
   const roomsSorted = useMemo(() => {
     return [...rooms].sort((a, b) => a.sort_index - b.sort_index);
@@ -43,47 +44,76 @@ export default function RoomsTab({
     <div style={{ display: "grid", gap: 16 }}>
       {/* Section 1: Room Types */}
       <section className="sb-card" style={{ padding: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
+        <button
+          type="button"
+          onClick={() => setRoomTypesOpen((v) => !v)}
+          className="sb-btn sb-btn--ghost"
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            padding: 0,
+            border: "none",
+            background: "transparent",
+            boxShadow: "none",
+            marginBottom: roomTypesOpen ? 8 : 0,
+            cursor: "pointer",
+          }}
+        >
           <strong>Room types</strong>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input
-              placeholder="Add a room type (e.g., Double)"
-              value={newType}
-              onChange={(e) => setNewType((e.target as HTMLInputElement).value)}
-              style={input}
-            />
-            {newType.trim() && (
-              <button
-                onClick={() => {
-                  const v = newType.trim();
-                  if (v) {
-                    onAddType(v);
-                    setNewType("");
-                  }
-                }}
-                className="sb-btn sb-btn--primary"
-              >
-                Add
-              </button>
-            )}
-          </div>
-        </div>
+          <span style={{ fontSize: 12, color: "var(--muted)" }}>
+            {roomTypesOpen ? "▲" : "▼"}
+          </span>
+        </button>
 
-        {roomTypes.length === 0 ? (
-          <div style={{ color: "var(--muted)", fontSize: 13 }}>
-            <div style={{ fontWeight: 700 }}>
-              You don’t have any room types yet.
+        {roomTypesOpen && (
+          <>
+            <div style={{ color: "var(--muted)", fontSize: 13, marginBottom: 8 }}>
+              {roomTypes.length === 0 && (
+                <div style={{ fontWeight: 700, marginBottom: 2 }}>
+                  You don’t have any room types yet.
+                </div>
+              )}
+              <div>
+                Use this section only if your property has multiple room types (e.g. Double Room, Studio, Deluxe Suite).
+              </div>
             </div>
-            <div>
-              Use this section only if your property has multiple room types (e.g. Double Room, Studio, Deluxe Suite).
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+              <input
+                placeholder="Add a room type (e.g., Double)"
+                value={newType}
+                onChange={(e) => setNewType((e.target as HTMLInputElement).value)}
+                style={input}
+              />
+              {newType.trim() && (
+                <button
+                  onClick={() => {
+                    const v = newType.trim();
+                    if (v) {
+                      onAddType(v);
+                      setNewType("");
+                    }
+                  }}
+                  className="sb-btn sb-btn--primary"
+                >
+                  Add
+                </button>
+              )}
             </div>
-          </div>
-        ) : (
-          <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
-          {roomTypes.map((t) => (
-            <TypeRow key={t.id} type={t} onRename={onRenameType} onDelete={onDeleteType} />
-          ))}
-          </ul>
+
+            {roomTypes.length === 0 ? (
+              null
+            ) : (
+              <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
+                {roomTypes.map((t) => (
+                  <TypeRow key={t.id} type={t} onRename={onRenameType} onDelete={onDeleteType} />
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </section>
 
