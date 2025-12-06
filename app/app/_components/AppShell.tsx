@@ -213,14 +213,15 @@ function OnboardingChecklistFab() {
             <div
               aria-hidden
               style={{
-                position: "absolute",
+                position: "fixed",
                 inset: 0,
                 overflow: "hidden",
                 pointerEvents: "none",
+                zIndex: 261,
               }}
             >
               {Array.from({ length: 80 }).map((_, i) => {
-                const colors = ["#22c55e", "#3b82f6", "#a855f7", "#f97316", "#eab308"];
+                const colors = ["#22c55e", "#0ea5e9", "#6366f1", "#ec4899", "#eab308"];
                 const color = colors[i % colors.length];
                 const left = (i * 13) % 100; // pseudo-random
                 const delay = (i % 10) * 0.12;
