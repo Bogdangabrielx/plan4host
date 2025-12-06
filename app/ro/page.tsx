@@ -250,6 +250,87 @@ function FeatureCarousel() {
   );
 }
 
+function AndroidInstallBannerRo() {
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const ua = navigator.userAgent || "";
+    const isAndroid = /Android/i.test(ua);
+    if (!isAndroid) return;
+
+    function onBeforeInstallPrompt(e: any) {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShow(true);
+    }
+
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    };
+  }, []);
+
+  if (!show || !installPrompt) return null;
+
+  const handleInstall = async () => {
+    try {
+      await installPrompt.prompt();
+      await installPrompt.userChoice;
+    } catch {
+      // ignore
+    } finally {
+      setShow(false);
+      setInstallPrompt(null);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 16,
+        right: 16,
+        left: 16,
+        zIndex: 120,
+        maxWidth: 420,
+        margin: "0 auto",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+        padding: "10px 12px",
+        borderRadius: 999,
+        border: "1px solid rgba(148,163,184,0.65)",
+        background: "color-mix(in srgb, var(--card) 80%, #020617 20%)",
+        boxShadow: "0 14px 40px rgba(15,23,42,0.6)",
+      }}
+    >
+      <span style={{ fontSize: 12 }}>
+        Instalează <strong>Plan4Host</strong> pe telefon
+      </span>
+      <button
+        type="button"
+        onClick={handleInstall}
+        style={{
+          borderRadius: 999,
+          border: "1px solid rgba(15,23,42,0.7)",
+          background:
+            "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
+          color: "#f9fafb",
+          padding: "6px 12px",
+          fontSize: 11,
+          fontWeight: 700,
+          cursor: "pointer",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Instalează aplicația
+      </button>
+    </div>
+  );
+
 function CookieConsentLanding() {
   type ConsentShape = { necessary: true; preferences: boolean };
   const LS_KEY = "p4h:consent:v2";
@@ -514,6 +595,9 @@ export default function HomePageRO() {
       )}
       <div aria-hidden style={{ position:'fixed', top:0, bottom:0, left:0, width:'var(--safe-left)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
       <div aria-hidden style={{ position:'fixed', top:0, bottom:0, right:0, width:'var(--safe-right)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
+
+      {/* Android install banner */}
+      <AndroidInstallBannerRo />
 
       {/* Skip link */}
       <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>Sari la conținut</a>
