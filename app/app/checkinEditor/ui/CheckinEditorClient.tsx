@@ -229,6 +229,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         const j = await res.json().catch(() => ({}));
         if (!res.ok) { alert(j?.error || 'Upload failed'); setStatus('Error'); return; }
         await refresh();
+        try {
+          window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+        } catch {
+          // ignore
+        }
         setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
         // After successful upload, offer to extract text for the guest AI assistant
         try {
@@ -259,6 +264,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       })
       .eq('id', prop.id);
     if (error) { setStatus('Error'); return; }
+    try {
+      window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+    } catch {
+      // ignore
+    }
     setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
   }
   async function autoSaveContactField(key: 'email' | 'phone' | 'address', value: string) {
@@ -275,6 +285,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     if (error) { setStatus('Error'); return; }
     lastSavedContact.current = { ...lastSavedContact.current, [key]: clean };
     await refresh();
+    try {
+      window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+    } catch {
+      // ignore
+    }
     setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
   }
 
@@ -384,6 +399,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         const j = await res.json().catch(() => ({}));
         if (!res.ok) { alert(j?.error || 'Upload failed'); setStatus('Error'); return; }
         await refresh();
+        try {
+          window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+        } catch {
+          // ignore
+        }
         setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
       } catch { setStatus('Error'); }
       finally { input.remove(); }
