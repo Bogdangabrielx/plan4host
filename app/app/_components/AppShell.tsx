@@ -83,11 +83,6 @@ function OnboardingChecklistFab() {
     };
   }, []);
 
-  // If onboarding is already completed and celebration was dismissed, hide widget.
-  if (!loading && completedAt && !showCelebration) {
-    return null;
-  }
-
   const handleDismissStep = async (stepId: string) => {
     try {
       // optimistic update
@@ -171,6 +166,11 @@ function OnboardingChecklistFab() {
     display: "grid",
     gap: 6,
   };
+
+  // If onboarding is already completed and celebration was dismissed, hide widget.
+  if (!loading && completedAt && !showCelebration) {
+    return null;
+  }
 
   return (
     <>
