@@ -45,13 +45,15 @@ export async function GET() {
     : null;
 
   if (completedAt) {
-    return NextResponse.json({
-      completed: STEPS,
-      dismissed: dismissed.filter((s): s is OnboardingStepId =>
-        (STEPS as readonly string[]).includes(s),
-      ),
+    const dismissedFiltered = dismissed.filter((s): s is OnboardingStepId =>
+      (STEPS as readonly string[]).includes(s),
+    );
+    const resp: OnboardingStateResponse = {
+      completed: [...STEPS],
+      dismissed: dismissedFiltered,
       completedAt,
-    } as OnboardingStateResponse);
+    };
+    return NextResponse.json(resp);
   }
 
   // Determine progress for the first property only.
@@ -170,13 +172,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing action" }, { status: 400 });
   }
 
-  // Ensure row exists
-  await supabase
-    .from("account_onboarding_state")
-    .insert({ account_id: user.id })
-    .onConflict("account_id")
-    .ignore();
-
   if (action === "dismiss_step") {
     const step = body.step_id;
     if (!step || !(STEPS as readonly string[]).includes(step)) {
@@ -193,8 +188,10 @@ export async function POST(req: Request) {
     if (!existing.includes(step)) existing.push(step);
     await supabase
       .from("account_onboarding_state")
-      .update({ dismissed_steps: existing })
-      .eq("account_id", user.id);
+      .upsert(
+        { account_id: user.id, dismissed_steps: existing },
+        { onConflict: "account_id" },
+      );
     return NextResponse.json({ ok: true });
   }
 
@@ -202,11 +199,12 @@ export async function POST(req: Request) {
     const now = new Date().toISOString();
     await supabase
       .from("account_onboarding_state")
-      .update({ completed_at: now })
-      .eq("account_id", user.id);
+      .upsert(
+        { account_id: user.id, completed_at: now },
+        { onConflict: "account_id" },
+      );
     return NextResponse.json({ ok: true, completed_at: now });
   }
 
   return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
 }
-
