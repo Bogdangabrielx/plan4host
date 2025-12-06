@@ -29,14 +29,87 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 
 function OnboardingChecklistFab() {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [dismissedSteps, setDismissedSteps] = useState<string[]>([]);
+  const [completedAt, setCompletedAt] = useState<string | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
 
-  // Pentru început, progresul este doar UI (0/7).
   const total = ONBOARDING_STEPS.length;
-  const completed = 0;
+  const completed = completedSteps.length + dismissedSteps.length;
 
-  if (completed >= total) {
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/api/onboarding", { method: "GET" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setCompletedSteps(Array.isArray(data.completed) ? data.completed : []);
+        setDismissedSteps(Array.isArray(data.dismissed) ? data.dismissed : []);
+        setCompletedAt(data.completedAt || null);
+        if (data.completedAt) {
+          // If onboarding was already completed before, we skip celebration.
+          return;
+        }
+        const totalSteps = ONBOARDING_STEPS.length;
+        const doneCount =
+          (Array.isArray(data.completed) ? data.completed.length : 0) +
+          (Array.isArray(data.dismissed) ? data.dismissed.length : 0);
+        if (doneCount >= totalSteps) {
+          setShowCelebration(true);
+          // Mark as completed server-side so we never show again.
+          fetch("/api/onboarding", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "complete_all" }),
+          }).catch(() => {});
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // If onboarding is already completed and celebration was dismissed, hide widget.
+  if (!loading && completedAt && !showCelebration) {
     return null;
   }
+
+  const handleDismissStep = async (stepId: string) => {
+    try {
+      // optimistic update
+      setDismissedSteps((prev) =>
+        prev.includes(stepId) ? prev : [...prev, stepId],
+      );
+      await fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "dismiss_step", step_id: stepId }),
+      });
+    } catch {
+      // ignore; next reload will sync
+    }
+  };
+
+  useEffect(() => {
+    if (loading) return;
+    if (completedAt) return;
+    const done = completedSteps.length + dismissedSteps.length;
+    if (done >= total && !showCelebration) {
+      setShowCelebration(true);
+      fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "complete_all" }),
+      }).catch(() => {});
+    }
+  }, [completedSteps, dismissedSteps, completedAt, loading, total, showCelebration]);
 
   const fabStyle: React.CSSProperties = {
     position: "fixed",
@@ -92,6 +165,87 @@ function OnboardingChecklistFab() {
 
   return (
     <>
+      {showCelebration && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 260,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(15,23,42,0.55)",
+            backdropFilter: "blur(4px)",
+          }}
+        >
+          <div
+            style={{
+              width: "min(360px, 90vw)",
+              borderRadius: 16,
+              border: "1px solid rgba(148,163,184,0.8)",
+              background:
+                "radial-gradient(circle at top, rgba(0,209,255,0.12), transparent 55%), var(--panel)",
+              boxShadow: "0 20px 45px rgba(15,23,42,0.7)",
+              padding: 16,
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <div
+                aria-hidden
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  background:
+                    "conic-gradient(from 140deg, #22c55e, #3b82f6, #8b5cf6, #22c55e)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  fontSize: 20,
+                }}
+              >
+                🎉
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700 }}>
+                  Onboarding completed
+                </div>
+                <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                  Your first property is fully configured. You’re ready to use Plan4Host.
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowCelebration(false);
+              }}
+              style={{
+                marginTop: 4,
+                alignSelf: "flex-end",
+                borderRadius: 999,
+                border: "1px solid var(--border)",
+                padding: "6px 14px",
+                background: "var(--panel)",
+                fontSize: 12,
+                cursor: "pointer",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {open && (
         <div style={panelStyle}>
           <div style={headerStyle}>
@@ -148,11 +302,12 @@ function OnboardingChecklistFab() {
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 11,
-                    color: "rgba(148,163,184,0.9)",
+                    color: completedSteps.includes(step.id)
+                      ? "#22c55e"
+                      : "rgba(148,163,184,0.9)",
                   }}
                 >
-                  {/* placeholder pentru bifa; logica reală vine ulterior */}
-                  ○
+                  {completedSteps.includes(step.id) ? "✓" : "○"}
                 </span>
                 <span style={{ fontSize: 12 }}>{step.label}</span>
                 <button
@@ -161,11 +316,14 @@ function OnboardingChecklistFab() {
                     marginLeft: "auto",
                     border: "none",
                     background: "transparent",
-                    color: "var(--muted)",
+                    color: dismissedSteps.includes(step.id)
+                      ? "#ef4444"
+                      : "var(--muted)",
                     fontSize: 14,
                     cursor: "pointer",
                   }}
                   title="Mark as not needed"
+                  onClick={() => handleDismissStep(step.id)}
                 >
                   ×
                 </button>
