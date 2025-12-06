@@ -122,13 +122,16 @@ function OnboardingChecklistFab() {
     width: 56,
     height: 56,
     borderRadius: "50%",
-    border: "1px solid rgba(15,23,42,0.45)",
-    background: "linear-gradient(135deg, #00d1ff, #4f46e5)",
-    color: "#f9fafb",
+    border: "1px solid rgba(148,163,184,0.45)",
+    background:
+      "radial-gradient(circle at 20% 0, rgba(148,163,184,0.12), transparent 60%), rgba(15,23,42,0.60)",
+    backdropFilter: "blur(14px) saturate(140%)",
+    WebkitBackdropFilter: "blur(14px) saturate(140%)",
+    color: "#e5e7eb",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: "0 10px 30px rgba(15,23,42,0.5)",
+    boxShadow: "0 14px 40px rgba(15,23,42,0.6)",
     cursor: "pointer",
     zIndex: 240,
   };
@@ -421,8 +424,30 @@ function OnboardingChecklistFab() {
             lineHeight: 1.2,
           }}
         >
-          <span style={{ fontSize: 10, opacity: 0.85 }}>Setup</span>
-          <span style={{ fontWeight: 700 }}>
+          <span
+            style={{
+              fontSize: 10,
+              opacity: 0.95,
+              backgroundImage:
+                "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+            }}
+          >
+            Setup
+          </span>
+          <span
+            style={{
+              fontWeight: 700,
+              letterSpacing: 0.3,
+              backgroundImage:
+                "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+            }}
+          >
             {completed}/{total}
           </span>
         </div>
