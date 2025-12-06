@@ -14,6 +14,12 @@ type Plan = {
   allowSyncNow: boolean;
 };
 
+type Country = {
+  iso2: string;
+  name: string;
+  nationality_en?: string | null;
+};
+
 const PLANS: Plan[] = [
   {
     slug: "basic",
@@ -132,6 +138,7 @@ export default function SubscriptionClient({
   const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState<boolean>(false);
 
   // Form state (local only, just for preview)
+  const [countries, setCountries] = useState<Country[]>([]);
   const [formB2C, setFormB2C] = useState({
     fullName: "",
     street: "",
@@ -167,6 +174,27 @@ export default function SubscriptionClient({
     standard: false,
     premium: false,
   });
+
+  // Load countries list (same source as check-in form)
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/public/countries", { cache: "no-store" });
+        if (!res.ok) return;
+        const j = await res.json();
+        if (!alive) return;
+        const arr: Country[] = Array.isArray(j?.countries) ? j.countries : [];
+        arr.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" }));
+        setCountries(arr);
+      } catch {
+        // keep empty list on failure; Country field will stay as default "RO"
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -1010,7 +1038,21 @@ export default function SubscriptionClient({
           onClick={() => setBillingFormOpen(false)}
           style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
         >
-          <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(720px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
+          <div
+            className="modalCard"
+            onClick={(e)=>e.stopPropagation()}
+            style={{
+              width:'min(720px, 100%)',
+              border:'1px solid var(--border)',
+              borderRadius:16,
+              padding:16,
+              display:'grid',
+              gap:12,
+              background:'var(--panel)',
+              maxHeight:'85vh',
+              overflowY:'auto',
+            }}
+          >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="billing-title" style={{ margin:0 }}>{buyerType==='b2b' ? 'Billing Details (Business)' : 'Billing Details (Individual)'}</h3>
               <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>{ setBillingFormOpen(false); setBillingEditMode(false); }}>
@@ -1047,7 +1089,20 @@ export default function SubscriptionClient({
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
                     <label style={{ color:'var(--muted)' }}>Country</label>
-                    <input className={styles.input} value={formB2C.country} readOnly />
+                    <select
+                      className={styles.input}
+                      value={formB2C.country}
+                      onChange={e=>setFormB2C(s=>({...s, country:e.target.value}))}
+                    >
+                      {countries.length === 0 && (
+                        <option value={formB2C.country}>{formB2C.country}</option>
+                      )}
+                      {countries.map((c) => (
+                        <option key={c.iso2} value={c.iso2}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div style={{ display:'grid', gap:6 }}>
@@ -1119,7 +1174,20 @@ export default function SubscriptionClient({
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
                     <label style={{ color:'var(--muted)' }}>Country</label>
-                    <input className={styles.input} value={formB2B.country} readOnly />
+                    <select
+                      className={styles.input}
+                      value={formB2B.country}
+                      onChange={e=>setFormB2B(s=>({...s, country:e.target.value}))}
+                    >
+                      {countries.length === 0 && (
+                        <option value={formB2B.country}>{formB2B.country}</option>
+                      )}
+                      {countries.map((c) => (
+                        <option key={c.iso2} value={c.iso2}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div style={{ display:'grid', gap:6 }}>
