@@ -123,8 +123,7 @@ function OnboardingChecklistFab() {
     height: 56,
     borderRadius: "50%",
     border: "1px solid rgba(148,163,184,0.45)",
-    background:
-      "radial-gradient(circle at 20% 0, rgba(148,163,184,0.12), transparent 60%), rgba(15,23,42,0.60)",
+    background: "var(--card)",
     backdropFilter: "blur(14px) saturate(140%)",
     WebkitBackdropFilter: "blur(14px) saturate(140%)",
     color: "#e5e7eb",
