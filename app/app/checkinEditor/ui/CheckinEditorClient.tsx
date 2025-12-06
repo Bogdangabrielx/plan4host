@@ -236,10 +236,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         }
         setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
         // After successful upload, offer to extract text for the guest AI assistant
-        try {
-          await openAiHouseRulesModalFromPdf();
-        } catch {
-          // Non-fatal; ignore errors here
+        if (currentPlan === "premium") {
+          try {
+            await openAiHouseRulesModalFromPdf();
+          } catch {
+            // Non-fatal; ignore errors here
+          }
         }
       } catch { setStatus('Error'); }
       finally { input.remove(); }
