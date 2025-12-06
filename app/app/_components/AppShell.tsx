@@ -49,23 +49,6 @@ function OnboardingChecklistFab() {
         setCompletedSteps(Array.isArray(data.completed) ? data.completed : []);
         setDismissedSteps(Array.isArray(data.dismissed) ? data.dismissed : []);
         setCompletedAt(data.completedAt || null);
-        if (data.completedAt) {
-          // If onboarding was already completed before, we skip celebration.
-          return;
-        }
-        const totalSteps = ONBOARDING_STEPS.length;
-        const doneCount =
-          (Array.isArray(data.completed) ? data.completed.length : 0) +
-          (Array.isArray(data.dismissed) ? data.dismissed.length : 0);
-        if (doneCount >= totalSteps) {
-          setShowCelebration(true);
-          // Mark as completed server-side so we never show again.
-          fetch("/api/onboarding", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "complete_all" }),
-          }).catch(() => {});
-        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -102,7 +85,9 @@ function OnboardingChecklistFab() {
     if (completedAt) return;
     const done = completedSteps.length + dismissedSteps.length;
     if (done >= total && !showCelebration) {
+      const nowIso = new Date().toISOString();
       setShowCelebration(true);
+      setCompletedAt(nowIso);
       fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
