@@ -218,7 +218,14 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
       .insert({ name: `Room ${nextIndex + 1}`, property_id: selected.id, sort_index: nextIndex })
       .select("id,name,capacity,property_id,sort_index,room_type_id")
       .single();
-    if (!error && data) setRooms(prev => [...prev, data as Room]);
+    if (!error && data) {
+      setRooms(prev => [...prev, data as Room]);
+      try {
+        window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+      } catch {
+        // ignore
+      }
+    }
     finishSaving(!error);
   }
   async function addRoomNamed(customName: string) {
@@ -233,7 +240,14 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
       .insert({ name: safe, property_id: selected.id, sort_index: nextIndex })
       .select("id,name,capacity,property_id,sort_index,room_type_id")
       .single();
-    if (!error && data) setRooms(prev => [...prev, data as Room]);
+    if (!error && data) {
+      setRooms(prev => [...prev, data as Room]);
+      try {
+        window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+      } catch {
+        // ignore
+      }
+    }
     finishSaving(!error);
   }
   async function renameRoom(roomId: string, name: string) {

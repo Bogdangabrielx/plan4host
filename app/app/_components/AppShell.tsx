@@ -59,6 +59,30 @@ function OnboardingChecklistFab() {
     };
   }, []);
 
+  // Reîncarcă progresul când alte componente anunță schimbări relevante (ex: adăugare cameră).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let cancelled = false;
+    const handler = async () => {
+      try {
+        const res = await fetch("/api/onboarding", { method: "GET" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setCompletedSteps(Array.isArray(data.completed) ? data.completed : []);
+        setDismissedSteps(Array.isArray(data.dismissed) ? data.dismissed : []);
+        setCompletedAt(data.completedAt || null);
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener("p4h:onboardingDirty", handler as any);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("p4h:onboardingDirty", handler as any);
+    };
+  }, []);
+
   // If onboarding is already completed and celebration was dismissed, hide widget.
   if (!loading && completedAt && !showCelebration) {
     return null;
