@@ -1,6 +1,6 @@
 // app/app/_components/AppShell.tsx
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AppHeader from "../ui/AppHeader";
 import BottomNav from "../ui/BottomNav";
 import PullToRefresh from "./PullToRefresh";
@@ -11,6 +11,194 @@ type Props = {
   currentPath?: string;
   children: React.ReactNode;
 };
+
+type OnboardingStep = {
+  id: string;
+  label: string;
+};
+
+const ONBOARDING_STEPS: OnboardingStep[] = [
+  { id: "property", label: "Add one property" },
+  { id: "room", label: "Add one room" },
+  { id: "links_contact", label: "Add property links and contact" },
+  { id: "picture", label: "Add property picture" },
+  { id: "message_template", label: "Add a message template" },
+  { id: "house_rules", label: "Add House Rules" },
+  { id: "calendars", label: "Sync calendars" },
+];
+
+function OnboardingChecklistFab() {
+  const [open, setOpen] = useState(false);
+
+  // Pentru început, progresul este doar UI (0/7).
+  const total = ONBOARDING_STEPS.length;
+  const completed = 0;
+
+  if (completed >= total) {
+    return null;
+  }
+
+  const fabStyle: React.CSSProperties = {
+    position: "fixed",
+    left: 16,
+    bottom: "calc(var(--nav-h) + var(--safe-bottom, 0px) + 16px)",
+    width: 56,
+    height: 56,
+    borderRadius: "50%",
+    border: "1px solid rgba(15,23,42,0.45)",
+    background: "linear-gradient(135deg, #00d1ff, #4f46e5)",
+    color: "#f9fafb",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 10px 30px rgba(15,23,42,0.5)",
+    cursor: "pointer",
+    zIndex: 240,
+  };
+
+  const panelStyle: React.CSSProperties = {
+    position: "fixed",
+    left: 16,
+    bottom: `calc(var(--nav-h) + var(--safe-bottom, 0px) + 80px)`,
+    width: "min(320px, calc(100vw - 32px))",
+    maxHeight: "min(420px, calc(100vh - 140px))",
+    background: "var(--panel)",
+    borderRadius: 16,
+    border: "1px solid var(--border)",
+    boxShadow: "0 18px 40px rgba(15,23,42,0.55)",
+    display: "grid",
+    gridTemplateRows: "auto 1fr",
+    overflow: "hidden",
+    zIndex: 241,
+  };
+
+  const headerStyle: React.CSSProperties = {
+    padding: "10px 12px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    background: "linear-gradient(135deg, #00d1ff, #4f46e5)",
+    color: "#f9fafb",
+  };
+
+  const bodyStyle: React.CSSProperties = {
+    padding: 10,
+    background: "var(--panel)",
+    overflowY: "auto",
+    display: "grid",
+    gap: 6,
+  };
+
+  return (
+    <>
+      {open && (
+        <div style={panelStyle}>
+          <div style={headerStyle}>
+            <div style={{ display: "grid", gap: 2 }}>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>
+                Setup checklist
+              </span>
+              <span style={{ fontSize: 11, opacity: 0.9 }}>
+                {completed}/{total} steps completed
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              style={{
+                borderRadius: "999px",
+                width: 26,
+                height: 26,
+                border: "1px solid rgba(15,23,42,0.3)",
+                background: "rgba(15,23,42,0.6)",
+                color: "#f9fafb",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+              }}
+              aria-label="Close checklist"
+            >
+              ×
+            </button>
+          </div>
+          <div style={bodyStyle}>
+            {ONBOARDING_STEPS.map((step) => (
+              <div
+                key={step.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "6px 8px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  background: "rgba(15,23,42,0.02)",
+                }}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(148,163,184,0.9)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 11,
+                    color: "rgba(148,163,184,0.9)",
+                  }}
+                >
+                  {/* placeholder pentru bifa; logica reală vine ulterior */}
+                  ○
+                </span>
+                <span style={{ fontSize: 12 }}>{step.label}</span>
+                <button
+                  type="button"
+                  style={{
+                    marginLeft: "auto",
+                    border: "none",
+                    background: "transparent",
+                    color: "var(--muted)",
+                    fontSize: 14,
+                    cursor: "pointer",
+                  }}
+                  title="Mark as not needed"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        style={fabStyle}
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Open setup checklist"
+      >
+        <div
+          style={{
+            display: "grid",
+            placeItems: "center",
+            textAlign: "center",
+            fontSize: 11,
+            lineHeight: 1.2,
+          }}
+        >
+          <span style={{ fontSize: 10, opacity: 0.85 }}>Setup</span>
+          <span style={{ fontWeight: 700 }}>
+            {completed}/{total}
+          </span>
+        </div>
+      </button>
+    </>
+  );
+}
 
 export default function AppShell({ title, currentPath, children }: Props) {
   // Global one-time push prompt on first user gesture across /app
@@ -157,6 +345,9 @@ export default function AppShell({ title, currentPath, children }: Props) {
 
         {/* Stă fix în body (portal), deci nu afectează grid-ul */}
         <BottomNav />
+
+        {/* Onboarding checklist – vizibil în toate paginile din /app */}
+        <OnboardingChecklistFab />
       </div>
     </HeaderProvider>
   );

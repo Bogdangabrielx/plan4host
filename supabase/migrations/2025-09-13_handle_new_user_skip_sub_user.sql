@@ -22,7 +22,10 @@ begin
 
   -- Owner/admin bootstrap (self-serve signup or OAuth)
   begin
-    insert into public.accounts(id) values (new.id) on conflict do nothing;
+    insert into public.accounts(id, email)
+      values (new.id, new.email)
+    on conflict (id) do update
+      set email = excluded.email;
   exception when others then null; end;
 
   begin
@@ -45,4 +48,3 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function public.handle_new_user();
-
