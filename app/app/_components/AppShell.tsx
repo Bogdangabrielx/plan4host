@@ -507,6 +507,41 @@ function OnboardingChecklistFab() {
 }
 
 export default function AppShell({ title, currentPath, children }: Props) {
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [showInstall, setShowInstall] = useState(false);
+
+  // Capture Android PWA install prompt so we can show a custom "Install app" button
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const ua = navigator.userAgent || "";
+    const isAndroid = /Android/i.test(ua);
+    if (!isAndroid) return;
+
+    function onBeforeInstallPrompt(e: any) {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShowInstall(true);
+    }
+
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    };
+  }, []);
+
+  async function handleInstallClick() {
+    try {
+      if (!installPrompt) return;
+      installPrompt.prompt();
+      await installPrompt.userChoice;
+    } catch {
+      // ignore
+    } finally {
+      setInstallPrompt(null);
+      setShowInstall(false);
+    }
+  }
+
   // Global one-time push prompt on first user gesture across /app
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -654,6 +689,32 @@ export default function AppShell({ title, currentPath, children }: Props) {
 
         {/* Onboarding checklist – vizibil în toate paginile din /app */}
         <OnboardingChecklistFab />
+
+        {/* Android-only PWA install button (appears when browser fires beforeinstallprompt) */}
+        {showInstall && (
+          <button
+            type="button"
+            onClick={handleInstallClick}
+            style={{
+              position: "fixed",
+              right: 16,
+              bottom: "calc(var(--nav-h) + var(--safe-bottom, 0px) + 16px)",
+              borderRadius: 999,
+              border: "1px solid rgba(148,163,184,0.6)",
+              background:
+                "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
+              color: "#f9fafb",
+              padding: "8px 14px",
+              fontSize: 12,
+              fontWeight: 700,
+              boxShadow: "0 14px 40px rgba(15,23,42,0.6)",
+              cursor: "pointer",
+              zIndex: 245,
+            }}
+          >
+            Install Plan4Host app
+          </button>
+        )}
       </div>
     </HeaderProvider>
   );
