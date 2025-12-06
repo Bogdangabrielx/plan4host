@@ -120,6 +120,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [imagePromptDismissed, setImagePromptDismissed] = useState(false);
   const imageUploadBtnRef = useRef<HTMLButtonElement | null>(null);
   const lastSavedContact = useRef<{ email: string; phone: string; address: string }>({ email: "", phone: "", address: "" });
+  // Onboarding highlight target (contacts / picture / house_rules)
+  const [highlightTarget, setHighlightTarget] = useState<"contacts" | "picture" | "house_rules" | null>(null);
 
   // AI assistant – house rules text source
   const [aiModalOpen, setAiModalOpen] = useState(false);
@@ -189,6 +191,23 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   }
 
   useEffect(() => { refresh(); }, [propertyId, supabase]);
+
+  // Read onboarding highlight hint from URL (e.g., ?highlight=contacts|picture|house_rules)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const u = new URL(window.location.href);
+      const h = (u.searchParams.get("highlight") || "").toLowerCase();
+      if (h === "contacts" || h === "picture" || h === "house_rules") {
+        setHighlightTarget(h);
+        // Optionally clean param so it doesn't persist forever
+        u.searchParams.delete("highlight");
+        window.history.replaceState({}, "", u.toString());
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   function onPropChange(e: React.ChangeEvent<HTMLSelectElement>) { setPropertyId(e.currentTarget.value); }
 
@@ -795,7 +814,19 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           )}
 
           {/* House Rules PDF */}
-          <section  className="sb-cardglow"  style={card}>
+          <section
+            className="sb-cardglow"
+            style={{
+              ...card,
+              ...(highlightTarget === "house_rules"
+                ? {
+                    boxShadow:
+                      "0 0 0 2px color-mix(in srgb, #0ea5e9 70%, transparent)",
+                    borderColor: "color-mix(in srgb, #0ea5e9 70%, var(--border))",
+                  }
+                : null),
+            }}
+          >
             <h3 style={{ marginTop: 0 }}>House Rules PDF</h3>
             {prop.regulation_pdf_url ? (
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
@@ -898,7 +929,19 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           )}
 
           {/* Contact details */}
-          <section className="sb-cardglow"  style={card}>
+          <section
+            className="sb-cardglow"
+            style={{
+              ...card,
+              ...(highlightTarget === "contacts"
+                ? {
+                    boxShadow:
+                      "0 0 0 2px color-mix(in srgb, #0ea5e9 70%, transparent)",
+                    borderColor: "color-mix(in srgb, #0ea5e9 70%, var(--border))",
+                  }
+                : null),
+            }}
+          >
             <h3 style={{ marginTop: 0 }}>Property Contact</h3>
             <form onSubmit={saveContacts} style={{ display:'grid', gap:12, maxWidth:560 }}>
               <div>
@@ -984,7 +1027,19 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </section>
 
           {/* Presentation Image */}
-          <section className="sb-cardglow"  style={card}>
+          <section
+            className="sb-cardglow"
+            style={{
+              ...card,
+              ...(highlightTarget === "picture"
+                ? {
+                    boxShadow:
+                      "0 0 0 2px color-mix(in srgb, #0ea5e9 70%, transparent)",
+                    borderColor: "color-mix(in srgb, #0ea5e9 70%, var(--border))",
+                  }
+                : null),
+            }}
+          >
             <h3 style={{ marginTop: 0 }}>Presentation Image</h3>
             <div style={{ display:'grid', gap:10 }}>
               {prop.presentation_image_url ? (

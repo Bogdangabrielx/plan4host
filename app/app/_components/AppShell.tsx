@@ -99,6 +99,51 @@ function OnboardingChecklistFab() {
     }
   };
 
+  const handleStepClick = (stepId: string) => {
+    if (typeof window === "undefined") return;
+    let target = "/app";
+    let highlight: string | null = null;
+    switch (stepId) {
+      case "property":
+        target = "/app"; // Dashboard → New Property card
+        break;
+      case "room":
+        target = "/app/propertySetup?tab=rooms";
+        break;
+      case "links_contact":
+        target = "/app/checkinEditor";
+        highlight = "contacts";
+        break;
+      case "picture":
+        target = "/app/checkinEditor";
+        highlight = "picture";
+        break;
+      case "house_rules":
+        target = "/app/checkinEditor";
+        highlight = "house_rules";
+        break;
+      case "message_template":
+        target = "/app/reservationMessage";
+        break;
+      case "calendars":
+        target = "/app/channels";
+        break;
+      default:
+        target = "/app";
+    }
+    try {
+      if (highlight) {
+        const url = new URL(target, window.location.origin);
+        url.searchParams.set("highlight", highlight);
+        window.location.href = url.toString();
+      } else {
+        window.location.href = target;
+      }
+    } catch {
+      // ignore navigation errors
+    }
+  };
+
   useEffect(() => {
     if (loading) return;
     if (completedAt) return;
@@ -364,6 +409,12 @@ function OnboardingChecklistFab() {
                   borderRadius: 10,
                   border: "1px solid var(--border)",
                   background: "rgba(15,23,42,0.02)",
+                  cursor: "pointer",
+                }}
+                onClick={(e) => {
+                  const targetEl = e.target as HTMLElement | null;
+                  if (targetEl && targetEl.closest("button")) return;
+                  handleStepClick(step.id);
                 }}
               >
                 <span
