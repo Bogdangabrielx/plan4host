@@ -167,8 +167,13 @@ function OnboardingChecklistFab() {
     gap: 6,
   };
 
-  // If onboarding is already completed and celebration was dismissed, hide widget.
-  if (!loading && completedAt && !showCelebration) {
+  // Nu afișăm nimic cât timp încă încărcăm starea, ca să evităm flicker.
+  if (loading) {
+    return null;
+  }
+
+  // Dacă onboarding-ul este deja completat și pop-up-ul de celebrare nu e afișat, ascundem complet widget-ul.
+  if (completedAt && !showCelebration) {
     return null;
   }
 
