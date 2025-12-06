@@ -1085,7 +1085,12 @@ export default function SubscriptionClient({
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
                   <div style={{ display:'grid', gap:6 }}>
                     <label style={{ color:'var(--muted)' }}>Postal code</label>
-                    <input className={styles.input} inputMode="numeric" pattern="^[0-9]{6}$" placeholder="010101" value={formB2C.postalCode} onChange={e=>setFormB2C(s=>({...s, postalCode:e.target.value.replace(/[^0-9]/g,'').slice(0,6)}))} />
+                    <input
+                      className={styles.input}
+                      placeholder="010101 / NR5 8HZ"
+                      value={formB2C.postalCode}
+                      onChange={e=>setFormB2C(s=>({...s, postalCode:e.target.value}))}
+                    />
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
                     <label style={{ color:'var(--muted)' }}>Country</label>
@@ -1170,7 +1175,12 @@ export default function SubscriptionClient({
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
                   <div style={{ display:'grid', gap:6 }}>
                     <label style={{ color:'var(--muted)' }}>Postal code</label>
-                    <input className={styles.input} inputMode="numeric" pattern="^[0-9]{6}$" placeholder="010101" value={formB2B.postalCode} onChange={e=>setFormB2B(s=>({...s, postalCode:e.target.value.replace(/[^0-9]/g,'').slice(0,6)}))} />
+                    <input
+                      className={styles.input}
+                      placeholder="010101 / NR5 8HZ"
+                      value={formB2B.postalCode}
+                      onChange={e=>setFormB2B(s=>({...s, postalCode:e.target.value}))}
+                    />
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
                     <label style={{ color:'var(--muted)' }}>Country</label>
@@ -1244,7 +1254,8 @@ export default function SubscriptionClient({
               const confirmEmail = buyerType==='b2c' ? formB2C.confirmEmail : formB2B.confirmEmail;
               const emailOk = /.+@.+\..+/.test(email.trim());
               const confirmOk = billingEditMode ? true : (email.trim() !== '' && email.trim() === confirmEmail.trim());
-              const postalOk = (buyerType==='b2c' ? formB2C.postalCode : formB2B.postalCode).trim().length === 6;
+              const postalLen = (buyerType==='b2c' ? formB2C.postalCode : formB2B.postalCode).trim().length;
+              const postalOk = postalLen >= 3;
               const addressOk = (buyerType==='b2c' ? formB2C.street : formB2B.street).trim() !== '' &&
                                 (buyerType==='b2c' ? formB2C.city : formB2B.city).trim() !== '' &&
                                 (buyerType==='b2c' ? formB2C.county : formB2B.county).trim() !== '';
