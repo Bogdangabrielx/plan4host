@@ -192,71 +192,129 @@ function OnboardingChecklistFab() {
             backdropFilter: "blur(4px)",
           }}
         >
-          <div
-            style={{
-              width: "min(360px, 90vw)",
-              borderRadius: 16,
-              border: "1px solid rgba(148,163,184,0.8)",
-              background:
-                "radial-gradient(circle at top, rgba(0,209,255,0.12), transparent 55%), var(--panel)",
-              boxShadow: "0 20px 45px rgba(15,23,42,0.7)",
-              padding: 16,
-              display: "grid",
-              gap: 10,
-            }}
-          >
+          <>
+            {/* Confetti falling from the top */}
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `
+                  @keyframes p4h-confetti-fall {
+                    0% {
+                      transform: translate3d(0, -110vh, 0) rotateZ(0deg);
+                      opacity: 1;
+                    }
+                    100% {
+                      transform: translate3d(0, 110vh, 0) rotateZ(360deg);
+                      opacity: 0;
+                    }
+                  }
+                `,
+              }}
+            />
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                inset: 0,
+                overflow: "hidden",
+                pointerEvents: "none",
+              }}
+            >
+              {Array.from({ length: 80 }).map((_, i) => {
+                const colors = ["#22c55e", "#3b82f6", "#a855f7", "#f97316", "#eab308"];
+                const color = colors[i % colors.length];
+                const left = (i * 13) % 100; // pseudo-random
+                const delay = (i % 10) * 0.12;
+                const duration = 3 + (i % 4) * 0.4;
+                const size = 6 + (i % 3) * 2;
+                return (
+                  <span
+                    key={i}
+                    style={{
+                      position: "absolute",
+                      top: "-10vh",
+                      left: `${left}%`,
+                      width: size,
+                      height: size * 1.8,
+                      borderRadius: 2,
+                      backgroundColor: color,
+                      opacity: 0.95,
+                      transform: "translate3d(0, -100vh, 0)",
+                      animation: `p4h-confetti-fall ${duration}s ease-out ${delay}s forwards`,
+                    }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Celebration card */}
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
+                width: "min(360px, 90vw)",
+                borderRadius: 16,
+                border: "1px solid rgba(148,163,184,0.8)",
+                background:
+                  "radial-gradient(circle at top, rgba(0,209,255,0.12), transparent 55%), var(--panel)",
+                boxShadow: "0 20px 45px rgba(15,23,42,0.7)",
+                padding: 16,
+                display: "grid",
                 gap: 10,
+                position: "relative",
+                zIndex: 1,
               }}
             >
               <div
-                aria-hidden
                 style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: "50%",
-                  background:
-                    "conic-gradient(from 140deg, #22c55e, #3b82f6, #8b5cf6, #22c55e)",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  color: "#fff",
-                  fontSize: 20,
+                  gap: 10,
                 }}
               >
-                🎉
-              </div>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 700 }}>
-                  Onboarding completed
+                <div
+                  aria-hidden
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    background:
+                      "conic-gradient(from 140deg, #22c55e, #3b82f6, #8b5cf6, #22c55e)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#fff",
+                    fontSize: 20,
+                  }}
+                >
+                  🎉
                 </div>
-                <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                  Your first property is fully configured. You’re ready to use Plan4Host.
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>
+                    Onboarding completed
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                    Your first property is fully configured. You’re ready to use Plan4Host.
+                  </div>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCelebration(false);
+                }}
+                style={{
+                  marginTop: 4,
+                  alignSelf: "flex-end",
+                  borderRadius: 999,
+                  border: "1px solid var(--border)",
+                  padding: "6px 14px",
+                  background: "var(--panel)",
+                  fontSize: 12,
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setShowCelebration(false);
-              }}
-              style={{
-                marginTop: 4,
-                alignSelf: "flex-end",
-                borderRadius: 999,
-                border: "1px solid var(--border)",
-                padding: "6px 14px",
-                background: "var(--panel)",
-                fontSize: 12,
-                cursor: "pointer",
-              }}
-            >
-              Close
-            </button>
-          </div>
+          </>
         </div>
       )}
 
