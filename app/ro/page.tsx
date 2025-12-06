@@ -330,6 +330,7 @@ function AndroidInstallBannerRo() {
       </button>
     </div>
   );
+}
 
 function CookieConsentLanding() {
   type ConsentShape = { necessary: true; preferences: boolean };
