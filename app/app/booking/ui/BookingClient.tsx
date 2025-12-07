@@ -171,7 +171,7 @@ export default function BookingClient() {
               style={{ borderRadius: 12, objectFit: "cover" }}
             />
             <div style={{ display: "grid", gap: 2 }}>
-              <span style={{ fontSize: 13, color: "var(--muted)" }}>Preview</span>
+              <span style={{ fontSize: 13, color: "var(--text)" }}>Preview</span>
               <span style={{ fontSize: 14, fontWeight: 700 }}>Public booking page</span>
             </div>
           </div>
@@ -226,7 +226,7 @@ export default function BookingClient() {
             }}
           >
             <Image
-              src="/hotel_room_1456x816.jpg"
+              src="/IMG_7362.jpg"
               alt="Property hero"
               width={900}
               height={520}
@@ -298,7 +298,7 @@ export default function BookingClient() {
             }}
           >
             <div style={{ fontSize: 16, fontWeight: 600 }}>What guests see</div>
-            <p style={{ margin: 0, fontSize: 13, color: "var(--muted)" }}>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--text)" }}>
               In the real version, this page would sit on a subdomain like{" "}
               <code style={{ fontSize: 12 }}>boaa-frame.plan4host.com</code> and show live availability,
               prices and your booking rules. For now, this is only a design preview.
@@ -310,7 +310,7 @@ export default function BookingClient() {
                 gap: 8,
                 marginTop: 6,
                 fontSize: 11,
-                color: "var(--muted)",
+                color: "var(--text)",
               }}
             >
               <div
@@ -485,31 +485,37 @@ export default function BookingClient() {
                   {grid.map((cell) => {
                     const isStart = startDate && isSameDay(cell.date, startDate);
                     const isEnd = endDate && isSameDay(cell.date, endDate);
-                    const selected = !!(isStart || isEnd);
-                    const inRange = isBetweenInclusive(cell.date, startDate, endDate) && !selected;
+                    const inRange = isBetweenInclusive(cell.date, startDate, endDate);
                     const isPast = cell.date < today;
 
-                    const bg = selected
-                      ? "var(--text)"
-                      : inRange
-                        ? "color-mix(in srgb, var(--text) 15%, var(--card))"
-                        : "transparent";
-                    const color = selected ? "var(--bg)" : isPast ? "var(--muted)" : "var(--text)";
-                    const border =
-                      selected || inRange
-                        ? "1px solid color-mix(in srgb, var(--text) 28%, var(--border))"
-                        : "1px solid transparent";
+                    const isInSelection = !!(isStart || isEnd || inRange);
+
+                    // One unified color for the whole pill (start, middle, end)
+                    const bg = isInSelection
+                      ? "linear-gradient(135deg, #fbbf24, #f97316)"
+                      : "transparent";
+                    const color = isInSelection
+                      ? "#0b1120"
+                      : isPast
+                        ? "var(--muted)"
+                        : "var(--text)";
+                    const border = isInSelection
+                      ? "1px solid rgba(251,191,36,0.9)"
+                      : "1px solid transparent";
 
                     let borderRadius: string | number = 8;
-                    if (inRange && !selected) {
-                      borderRadius = 0;
-                    }
-                    if (isStart && !isEnd && endDate) {
-                      borderRadius = "999px 0 0 999px";
-                    } else if (isEnd && !isStart && startDate) {
-                      borderRadius = "0 999px 999px 0";
-                    } else if (selected && (!startDate || !endDate || isSameDay(startDate, endDate))) {
-                      borderRadius = 999;
+                    if (isInSelection) {
+                      // Full pill if only start or only end selected
+                      if (!startDate || !endDate || isSameDay(startDate, endDate)) {
+                        borderRadius = 999;
+                      } else if (isStart && !isEnd) {
+                        borderRadius = "999px 0 0 999px";
+                      } else if (isEnd && !isStart) {
+                        borderRadius = "0 999px 999px 0";
+                      } else {
+                        // Middle cells: straight edges
+                        borderRadius = 0;
+                      }
                     }
 
                     return (
