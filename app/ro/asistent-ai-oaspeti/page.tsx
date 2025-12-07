@@ -17,8 +17,8 @@ export default function RoGuestAiAssistantPage() {
           }}
         >
           <img
-            src="/p4h_logo_rotund.png"
-            alt="Plan4Host"
+            src="/Logo_Rotund_AI.png"
+            alt="Guest AI assistant"
             width={80}
             height={80}
             style={{
