@@ -175,18 +175,39 @@ export default function BookingClient() {
               <span style={{ fontSize: 14, fontWeight: 700 }}>Public booking page</span>
             </div>
           </div>
-          <span
+          <div
             style={{
-              fontSize: 11,
               padding: "4px 10px",
               borderRadius: 999,
-              border: "1px solid var(--border)",
-              color: "var(--muted)",
-              background: "var(--panel)",
+              background:
+                "linear-gradient(135deg, #f59e0b, #f97316, #eab308)",
+              border: "1px solid rgba(248,250,252,0.08)",
+              boxShadow: "0 10px 25px rgba(15,23,42,0.8)",
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#0b1120",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
             }}
           >
-            Only visible for your test account
-          </span>
+            <span
+              aria-hidden
+              style={{
+                width: 16,
+                height: 16,
+                borderRadius: "50%",
+                background: "rgba(15,23,42,0.9)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 11,
+              }}
+            >
+              ✦
+            </span>
+            Demo booking experience
+          </div>
         </div>
 
         <div
@@ -199,7 +220,7 @@ export default function BookingClient() {
         >
           <div
             style={{
-              borderRadius: 18,
+              borderRadius: 22,
               overflow: "hidden",
               position: "relative",
             }}
@@ -217,7 +238,7 @@ export default function BookingClient() {
                 position: "absolute",
                 inset: 0,
                 background:
-                  "linear-gradient(to top, rgba(15,23,42,0.78), transparent 55%)",
+                  "linear-gradient(to top, rgba(15,23,42,0.85), transparent 55%)",
               }}
             />
             <div
@@ -244,6 +265,24 @@ export default function BookingClient() {
                   <span>Hosted with Plan4Host</span>
                 </div>
               </div>
+              <div
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 999,
+                  background:
+                    "linear-gradient(135deg, rgba(250,204,21,0.9), rgba(249,115,22,0.95))",
+                  color: "#0b1120",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  boxShadow: "0 10px 26px rgba(15,23,42,0.85)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <span aria-hidden>★</span>
+                Guests book directly with you
+              </div>
             </div>
           </div>
 
@@ -252,9 +291,10 @@ export default function BookingClient() {
               display: "grid",
               gap: 10,
               padding: 10,
-              borderRadius: 14,
-              border: "1px solid var(--border)",
-              background: "var(--panel)",
+              borderRadius: 18,
+              border: "1px solid rgba(148,163,184,0.6)",
+              background:
+                "radial-gradient(circle at top left, rgba(250,204,21,0.09), transparent 60%), radial-gradient(circle at bottom right, rgba(249,115,22,0.12), transparent 55%), var(--panel)",
             }}
           >
             <div style={{ fontSize: 16, fontWeight: 600 }}>What guests see</div>
@@ -263,6 +303,77 @@ export default function BookingClient() {
               <code style={{ fontSize: 12 }}>boaa-frame.plan4host.com</code> and show live availability,
               prices and your booking rules. For now, this is only a design preview.
             </p>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+                marginTop: 6,
+                fontSize: 11,
+                color: "var(--muted)",
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "4px 8px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(148,163,184,0.6)",
+                  background: "rgba(15,23,42,0.45)",
+                }}
+              >
+                <Image
+                  src="/room_forlight.png"
+                  alt=""
+                  width={18}
+                  height={18}
+                  style={{ borderRadius: 6, objectFit: "cover" }}
+                />
+                <span>Entire A‑frame, 1 bedroom</span>
+              </div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "4px 8px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(148,163,184,0.6)",
+                  background: "rgba(15,23,42,0.45)",
+                }}
+              >
+                <Image
+                  src="/gps.png"
+                  alt=""
+                  width={18}
+                  height={18}
+                  style={{ borderRadius: 6, objectFit: "cover" }}
+                />
+                <span>5 min from Brașov city center</span>
+              </div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "4px 8px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(148,163,184,0.6)",
+                  background: "rgba(15,23,42,0.45)",
+                }}
+              >
+                <Image
+                  src="/guest_forlight.png"
+                  alt=""
+                  width={18}
+                  height={18}
+                  style={{ borderRadius: 6, objectFit: "cover" }}
+                />
+                <span>Fast Wi‑Fi, perfect for work</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
