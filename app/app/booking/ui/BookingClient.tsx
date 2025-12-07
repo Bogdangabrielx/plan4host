@@ -226,7 +226,7 @@ export default function BookingClient() {
             }}
           >
             <Image
-              src="/IMG_7362.jpg"
+              src="/IMG_7362.JPG"
               alt="Property hero"
               width={900}
               height={520}
