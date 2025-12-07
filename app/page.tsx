@@ -876,7 +876,7 @@ export default function HomePage() {
       >
         <div className={styles.brandWrap}>
           <Link href="/" className={`${styles.brand} ${styles.focusable}`}>
-            <img src="/Logo_Landing.png" alt="Plan4host" className={styles.logoDark} />
+            <img src="/Logo_Landing_AI.png" alt="Plan4host" className={styles.logoDark} />
           </Link>
           {/* Language near logo (mobile-friendly, no border) */}
           <Link href="/ro" className={`${styles.btnLang} ${styles.focusable}`} aria-label="Schimbă limba în română">
@@ -1695,7 +1695,7 @@ export default function HomePage() {
             "@type": "Organization",
             name: "Plan4Host",
             url: "https://www.plan4host.com",
-            logo: "https://www.plan4host.com/Logo_Landing.png",
+            logo: "https://www.plan4host.com/Logo_Landing_AI.png",
             sameAs: [
               "https://www.plan4host.com"
             ],
