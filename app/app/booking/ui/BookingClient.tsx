@@ -367,25 +367,39 @@ export default function BookingClient() {
                   style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(7, 1fr)",
-                    gap: 2,
+                    gap: 1,
                     textAlign: "center",
                   }}
                 >
                   {grid.map((cell) => {
-                    const selected =
-                      (startDate && isSameDay(cell.date, startDate)) ||
-                      (endDate && isSameDay(cell.date, endDate));
+                    const isStart = startDate && isSameDay(cell.date, startDate);
+                    const isEnd = endDate && isSameDay(cell.date, endDate);
+                    const selected = !!(isStart || isEnd);
                     const inRange = isBetweenInclusive(cell.date, startDate, endDate) && !selected;
                     const isPast = cell.date < today;
 
                     const bg = selected
-                      ? "var(--primary)"
+                      ? "var(--text)"
                       : inRange
-                        ? "color-mix(in srgb, var(--primary) 35%, var(--card))"
+                        ? "color-mix(in srgb, var(--text) 15%, var(--card))"
                         : "transparent";
-                    const color = selected ? "#0b1120" : isPast ? "var(--muted)" : "var(--text)";
+                    const color = selected ? "var(--bg)" : isPast ? "var(--muted)" : "var(--text)";
                     const border =
-                      selected || inRange ? "1px solid var(--primary)" : "1px solid transparent";
+                      selected || inRange
+                        ? "1px solid color-mix(in srgb, var(--text) 28%, var(--border))"
+                        : "1px solid transparent";
+
+                    let borderRadius: string | number = 8;
+                    if (inRange && !selected) {
+                      borderRadius = 0;
+                    }
+                    if (isStart && !isEnd && endDate) {
+                      borderRadius = "999px 0 0 999px";
+                    } else if (isEnd && !isStart && startDate) {
+                      borderRadius = "0 999px 999px 0";
+                    } else if (selected && (!startDate || !endDate || isSameDay(startDate, endDate))) {
+                      borderRadius = 999;
+                    }
 
                     return (
                       <button
@@ -395,7 +409,7 @@ export default function BookingClient() {
                         disabled={isPast}
                         style={{
                           height: 30,
-                          borderRadius: 8,
+                          borderRadius,
                           border,
                           fontSize: 12,
                           background: bg,
@@ -480,8 +494,8 @@ export default function BookingClient() {
               fontSize: 14,
               fontWeight: 700,
               cursor: disabledRequest ? "not-allowed" : "pointer",
-              background: disabledRequest ? "var(--panel)" : "var(--primary)",
-              color: disabledRequest ? "var(--muted)" : "#0b1120",
+              background: disabledRequest ? "var(--panel)" : "var(--text)",
+              color: disabledRequest ? "var(--muted)" : "var(--bg)",
               boxShadow: disabledRequest ? "none" : "0 12px 30px rgba(15,23,42,0.65)",
               transition: "transform 0.08s ease-out, box-shadow 0.08s ease-out",
             }}
@@ -517,4 +531,3 @@ export default function BookingClient() {
     </div>
   );
 }
-
