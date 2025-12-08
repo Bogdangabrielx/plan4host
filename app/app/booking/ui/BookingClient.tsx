@@ -483,12 +483,13 @@ export default function BookingClient() {
                   }}
                 >
                   {grid.map((cell) => {
+                    const inThisMonth = cell.inMonth;
                     const isStart = startDate && isSameDay(cell.date, startDate);
                     const isEnd = endDate && isSameDay(cell.date, endDate);
                     const inRange = isBetweenInclusive(cell.date, startDate, endDate);
                     const isPast = cell.date < today;
 
-                    const isInSelection = !!(isStart || isEnd || inRange);
+                    const isInSelection = inThisMonth && !!(isStart || isEnd || inRange);
 
                     // One unified color for the whole pill (start, middle, end)
                     const bg = isInSelection
@@ -496,9 +497,11 @@ export default function BookingClient() {
                       : "transparent";
                     const color = isInSelection
                       ? "#0b1120"
-                      : isPast
-                        ? "var(--muted)"
-                        : "var(--text)";
+                      : !inThisMonth
+                        ? "transparent"
+                        : isPast
+                          ? "var(--muted)"
+                          : "var(--text)";
                     const border = isInSelection
                       ? "1px solid rgba(251,191,36,0.9)"
                       : "1px solid transparent";
@@ -522,8 +525,11 @@ export default function BookingClient() {
                       <button
                         key={cell.ymd}
                         type="button"
-                        onClick={() => handleDayClick(cell.date)}
-                        disabled={isPast}
+                        onClick={() => {
+                          if (!inThisMonth) return;
+                          handleDayClick(cell.date);
+                        }}
+                        disabled={isPast || !inThisMonth}
                         style={{
                           height: 30,
                           borderRadius,
@@ -535,7 +541,7 @@ export default function BookingClient() {
                           cursor: isPast ? "not-allowed" : "pointer",
                         }}
                       >
-                        {cell.date.getDate()}
+                        {inThisMonth ? cell.date.getDate() : ""}
                       </button>
                     );
                   })}
