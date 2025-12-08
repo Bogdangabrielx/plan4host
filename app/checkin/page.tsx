@@ -41,7 +41,11 @@ export default async function CheckinPage({ searchParams }: { searchParams: Sear
         placeItems: "start center",
       }}
     >
-      <main style={{ width: "min(860px, calc(100vw - 32px))", padding: 16 }}>
+      <main
+        style={{ width: "min(860px, calc(100vw - 32px))", padding: 16 }}
+        translate="no"
+        className="notranslate"
+      >
         <CheckinClient />
       </main>
     </div>

@@ -1335,7 +1335,13 @@ export default function CheckinClient() {
             <p style={{ color: "var(--muted)" }}>{T('thanksMsg')}</p>
           </div>
         ) : (
-          <form onSubmit={onSubmit} onPointerDownCapture={onFirstInteract} style={{ display: "grid", gap: 14 }}>
+          <form
+            onSubmit={onSubmit}
+            onPointerDownCapture={onFirstInteract}
+            style={{ display: "grid", gap: 14 }}
+            translate="no"
+            className="notranslate"
+          >
             {/* Dates */}
             <div style={{
               display: "grid",
