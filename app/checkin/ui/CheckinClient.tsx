@@ -293,6 +293,7 @@ export default function CheckinClient() {
       thanksTitle: 'Thank you! ✅',
       thanksMsg: 'Your check-in details were submitted successfully.',
       checkinDate: 'Check-in date*',
+      checkoutDate: 'Check-out date*',
       firstName: 'First name*',
       lastName: 'Last name*',
       email: 'Email*',
@@ -308,6 +309,8 @@ export default function CheckinClient() {
       docTypeLabel: 'Document type*',
       docOptionId: 'Identity card',
       docOptionPassport: 'Passport',
+      docSeriesLabel: 'Series*',
+      docNumberLabel: 'Number*',
       selected: 'Selected:',
       consentPrefix: 'I have read and agree to the ',
       houseRules: 'House Rules',
@@ -351,6 +354,7 @@ export default function CheckinClient() {
       thanksTitle: 'Mulțumim! ✅',
       thanksMsg: 'Detaliile tale de check‑in au fost trimise cu succes.',
       checkinDate: 'Data check‑in*',
+      checkoutDate: 'Data check‑out*',
       firstName: 'Prenume*',
       lastName: 'Nume*',
       email: 'Email*',
@@ -366,6 +370,8 @@ export default function CheckinClient() {
       docTypeLabel: 'Tip document*',
       docOptionId: 'Buletin',
       docOptionPassport: 'Pașaport',
+      docSeriesLabel: 'Serie*',
+      docNumberLabel: 'Număr*',
       selected: 'Selectat:',
       consentPrefix: 'Am citit și sunt de acord cu ',
       houseRules: 'Regulamentul de ordine interioară',
@@ -1364,7 +1370,7 @@ export default function CheckinClient() {
                 />
               </div>
               <div>
-                <label style={LABEL}>Check-out date*</label>
+                <label style={LABEL}>{T('checkoutDate')}</label>
                 <input
                   style={INPUT_DATE}
                   type="date"
@@ -1577,7 +1583,7 @@ export default function CheckinClient() {
               {docType === "id_card" && (
                 <div style={ROW_2}>
                   <div>
-                    <label style={LABEL}>Series*</label>
+                    <label style={LABEL}>{(TXT as any)[lang].docSeriesLabel}</label>
                     <input
                       style={{ ...INPUT, textTransform: "uppercase" }}
                       value={docSeries}
@@ -1587,7 +1593,7 @@ export default function CheckinClient() {
                     />
                   </div>
                   <div>
-                    <label style={LABEL}>Number*</label>
+                    <label style={LABEL}>{(TXT as any)[lang].docNumberLabel}</label>
                     <input
                       style={INPUT}
                       value={docNumber}
@@ -1616,7 +1622,7 @@ export default function CheckinClient() {
                     />
                   </div>
                   <div>
-                    <label style={LABEL}>Number*</label>
+                    <label style={LABEL}>{(TXT as any)[lang].docNumberLabel}</label>
                     <input
                       style={INPUT}
                       value={docNumber}
@@ -1930,10 +1936,27 @@ export default function CheckinClient() {
                     <strong>
                       {(TXT as any)[lang].companionTitle(currentNumber, total)}
                     </strong>
-                    <button className="sb-btn" onClick={() => setCompanionsOpen(false)}>Close</button>
+                    <button
+                      type="button"
+                      onClick={() => setCompanionsOpen(false)}
+                      aria-label="Close"
+                      style={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: "50%",
+                        border: "1px solid var(--border)",
+                        background: "var(--card)",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <span aria-hidden style={{ fontSize: 14, lineHeight: 1 }}>×</span>
+                    </button>
                   </div>
                   <div style={{ display: "grid", gap: 10 }}>
-                    <div style={ROW_2}>
+                    <div style={isSmall ? ROW_1 : ROW_2}>
                       <div>
                         <label style={LABEL_ROW}>
                           <Image src={formIcon("firstname")} alt="" width={16} height={16} />
