@@ -1986,7 +1986,13 @@ export default function CheckinClient() {
                         />
                       </div>
                     </div>
-                    <div style={ROW_2}>
+                    <div
+                      style={{
+                        display: "grid",
+                        gap: 12,
+                        gridTemplateColumns: isSmall ? "1fr" : "repeat(2, minmax(0, 1fr))",
+                      }}
+                    >
                       <div>
                         <label style={{ ...LABEL, display: "flex", alignItems: "center", gap: 6 }}>
                           <span>{(TXT as any)[lang].birthDate}</span>
