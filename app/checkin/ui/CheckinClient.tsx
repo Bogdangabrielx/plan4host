@@ -2087,7 +2087,11 @@ export default function CheckinClient() {
                         </label>
                         <input
                           type="date"
-                          style={INPUT}
+                          style={{
+                            ...INPUT,
+                            WebkitAppearance: "none",
+                            appearance: "none",
+                          }}
                           value={existing.birthDate}
                           onChange={e => update("birthDate", e.currentTarget.value)}
                         />
