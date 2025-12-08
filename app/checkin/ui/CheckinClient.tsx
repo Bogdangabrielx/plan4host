@@ -1956,7 +1956,13 @@ export default function CheckinClient() {
                     </button>
                   </div>
                   <div style={{ display: "grid", gap: 10 }}>
-                    <div style={isSmall ? ROW_1 : ROW_2}>
+                    <div
+                      style={{
+                        display: "grid",
+                        gap: 12,
+                        gridTemplateColumns: isSmall ? "1fr" : "repeat(2, minmax(0, 1fr))",
+                      }}
+                    >
                       <div>
                         <label style={LABEL_ROW}>
                           <Image src={formIcon("firstname")} alt="" width={16} height={16} />
