@@ -469,7 +469,7 @@ function TimeSavingsStrip() {
               ) : null}
               <div
                 style={{
-                  fontSize: 42,
+                  fontSize: isMobile ? 38 : 48,
                   fontWeight: 800,
                   backgroundImage:
                     "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
@@ -504,7 +504,7 @@ function TimeSavingsStrip() {
             >
               <div
                 style={{
-                  fontSize: 19,
+                  fontSize: isMobile ? 18 : 22,
                   fontWeight: 800,
                   marginBottom: 2,
                   backgroundImage:
