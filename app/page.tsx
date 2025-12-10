@@ -335,7 +335,7 @@ function TimeSavingsStrip() {
         id: "setup",
         // Gear outline
         icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={22} height={22}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={26} height={26}>
             <defs>
               <linearGradient id="ts-setup" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#0ea5e9" />
@@ -353,7 +353,7 @@ function TimeSavingsStrip() {
             <circle cx="12" cy="12" r="2.6" fill="none" stroke="url(#ts-setup)" strokeWidth="1.5" />
           </svg>
         ),
-        label: "Setup time",
+        label: "SETUP TIME",
         suffix: "min",
         target: 30,
         detail: "From first login to a ready‑to‑use check‑in flow.",
@@ -362,7 +362,7 @@ function TimeSavingsStrip() {
         id: "perWeek",
         // Clock outline
         icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={22} height={22}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={26} height={26}>
             <defs>
               <linearGradient id="ts-time" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#0ea5e9" />
@@ -398,7 +398,7 @@ function TimeSavingsStrip() {
             />
           </svg>
         ),
-        label: "Time saved",
+        label: "TIME SAVED",
         suffix: "h / week",
         target: 12,
         detail: "By automating repetitive guest messaging.",
@@ -407,7 +407,7 @@ function TimeSavingsStrip() {
         id: "total",
         // Leaf outline
         icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={22} height={22}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={26} height={26}>
             <defs>
               <linearGradient id="ts-total" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#0ea5e9" />
@@ -416,7 +416,7 @@ function TimeSavingsStrip() {
               </linearGradient>
             </defs>
             <path
-              d="M7 19c3.2-.4 5.7-1.9 7.4-3.6C16.6 13.1 17.7 11 18 8.5c-2.5-.3-4.6.4-6.1 1.4C10.1 11.1 8.6 12.8 7 15c-.8-1.6-1.1-3.1-1-4.7.1-1.5.7-3.1 1.7-4.6"
+              d="M7 18.5c3.3-.4 5.9-1.9 7.6-3.7C16.9 12.8 18 10.7 18 8.4 15.7 8 13.7 8.7 12.2 9.7 10.5 10.9 9 12.6 7.6 14.7 7 13.6 6.7 12.5 6.6 11.4 6.5 10 6.8 8.6 7.6 7.1"
               fill="none"
               stroke="url(#ts-total)"
               strokeWidth="1.6"
@@ -486,79 +486,48 @@ function TimeSavingsStrip() {
               </div>
             </div>
 
-            {/* Middle: big number in AI gradient circle */}
+            {/* Middle: big number in AI gradient text */}
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
+                alignItems: "baseline",
                 justifyContent: "center",
+                gap: 4,
                 width: "100%",
               }}
             >
               <div
                 style={{
-                  width: 78,
-                  height: 78,
-                  borderRadius: "999px",
-                  display: "grid",
-                  placeItems: "center",
-                  background:
+                  fontSize: 34,
+                  fontWeight: 800,
+                  backgroundImage:
                     "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
-                  boxShadow: "0 10px 26px rgba(15,23,42,0.8)",
+                  WebkitBackgroundClip: "text",
+                  color: "transparent",
+                  lineHeight: 1,
                 }}
               >
-                <div
+                {s.prefix && value > 0 ? s.prefix : ""}
+                {value}
+              </div>
+              {s.suffix ? (
+                <span
                   style={{
-                    width: "calc(100% - 6px)",
-                    height: "calc(100% - 6px)",
-                    borderRadius: "999px",
-                    background: "var(--card)",
-                    display: "grid",
-                    placeItems: "center",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--muted)",
                   }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "baseline",
-                      justifyContent: "center",
-                      gap: 4,
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 32,
-                        fontWeight: 800,
-                        backgroundImage:
-                          "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
-                        WebkitBackgroundClip: "text",
-                        color: "transparent",
-                      }}
-                    >
-                      {s.prefix && value > 0 ? s.prefix : ""}
-                      {value}
-                    </span>
-                    {s.suffix ? (
-                      <span
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          color: "var(--muted)",
-                        }}
-                      >
-                        {s.suffix}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
+                  {s.suffix}
+                </span>
+              ) : null}
             </div>
 
             {/* Bottom: label + detail text */}
             <div style={{ fontSize: 11, color: "var(--muted)", textAlign: "center" }}>
               <div
                 style={{
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: 800,
                   marginBottom: 2,
                   backgroundImage:
