@@ -341,7 +341,7 @@ function TimeSavingsStripRo() {
         prefix: "+",
         suffix: "h",
         target: 864,
-        detail: "Cumulate pentru clienții Plan4Host.",
+        detail: "Cumulate pentru gazdele care folosesc deja Plan4Host.",
       },
     ],
     []

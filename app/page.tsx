@@ -375,7 +375,7 @@ function TimeSavingsStrip() {
         prefix: "+",
         suffix: "h",
         target: 864,
-        detail: "Across clients already using Plan4Host.",
+        detail: "Cumulative for hosts already using Plan4Host.",
       },
     ],
     []
