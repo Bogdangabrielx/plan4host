@@ -288,6 +288,7 @@ function TimeSavingsStrip() {
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0); // 0..1
   const ref = useRef<HTMLDivElement | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -329,11 +330,30 @@ function TimeSavingsStrip() {
     return () => cancelAnimationFrame(frame);
   }, [visible]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 640px)");
+    const apply = () => setIsMobile(!!mq.matches);
+    apply();
+    try {
+      mq.addEventListener("change", apply);
+    } catch {
+      mq.addListener(apply as any);
+    }
+    return () => {
+      try {
+        mq.removeEventListener("change", apply);
+      } catch {
+        mq.removeListener(apply as any);
+      }
+    };
+  }, []);
+
   const stats = useMemo(
     () => [
       {
         id: "setup",
-        // Gear outline — more circular with visible teeth
+        // Gear outline — circular with distinct teeth
         icon: (
           <svg viewBox="0 0 24 24" aria-hidden="true" width={30} height={30}>
             <defs>
@@ -343,15 +363,32 @@ function TimeSavingsStrip() {
                 <stop offset="100%" stopColor="#a855f7" />
               </linearGradient>
             </defs>
-            <path
-              d="M12 4.2l1.1.63 1.27-.73 1.7 1.7-.73 1.27.63 1.1 1.27.22v2.4l-1.27.22-.63 1.1.73 1.27-1.7 1.7-1.27-.73-1.1.63-1.1-.63-1.27.73-1.7-1.7.73-1.27-.63-1.1L5 12.01v-2.4l1.27-.22.63-1.1-.73-1.27 1.7-1.7 1.27.73Z"
+            {/* Outer gear ring */}
+            <circle
+              cx="12"
+              cy="12"
+              r="6"
               fill="none"
               stroke="url(#ts-setup)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              strokeWidth="1.6"
             />
-            <circle cx="12" cy="12" r="2.7" fill="none" stroke="url(#ts-setup)" strokeWidth="1.5" />
+            {/* Teeth */}
+            <path
+              d="M12 3.3v2.1M16.2 4.4l-1 1.8M19 8.2l-2.1.4M19 15.8l-2.1-.4M16.2 19.6l-1-1.8M12 18.6v2.1M7.8 19.6l1-1.8M5 15.8l2.1-.4M5 8.2l2.1.4M7.8 4.4l1 1.8"
+              fill="none"
+              stroke="url(#ts-setup)"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            />
+            {/* Center hole */}
+            <circle
+              cx="12"
+              cy="12"
+              r="2.4"
+              fill="none"
+              stroke="url(#ts-setup)"
+              strokeWidth="1.4"
+            />
           </svg>
         ),
         label: "SETUP TIME",
@@ -454,7 +491,9 @@ function TimeSavingsStrip() {
         borderRadius: 12,
         background: "var(--panel)",
         display: "grid",
-        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+        gridTemplateColumns: isMobile
+          ? "minmax(0, 1fr)"
+          : "repeat(3, minmax(0, 1fr))",
         gap: 10,
       }}
     >
@@ -473,7 +512,7 @@ function TimeSavingsStrip() {
               justifyItems: "center",
               gap: 6,
               background: "color-mix(in srgb, var(--card) 82%, transparent)",
-              aspectRatio: "1 / 1",
+              aspectRatio: isMobile ? undefined : "1 / 1",
             }}
           >
             {/* Top: icon only (outline, gradient stroke) */}
