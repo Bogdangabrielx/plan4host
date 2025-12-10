@@ -323,7 +323,7 @@ function TimeSavingsStripRo() {
         label: "TIMP SETARE",
         suffix: "min",
         target: 30,
-        detail: "De la primul login până la un flux de check‑in gata de folosit.",
+        detail: "De la primul login la fluxul de check‑in.",
       },
       {
         id: "perWeek",
@@ -332,16 +332,16 @@ function TimeSavingsStripRo() {
         prefix: "+",
         suffix: "h / săptămână",
         target: 12,
-        detail: "Prin automatizarea mesajelor repetitive către oaspeți.",
+        detail: "Prin automatizarea interacțiunilor repetitive cu oaspeții.",
       },
       {
         id: "total",
         icon: "/CLIENT_HOURS_SAVED.png",
-        label: "ORE CLIENT ECONOMISITE",
+        label: "ORE CLIENȚI ECONOMISITE",
         prefix: "+",
         suffix: "h",
         target: 864,
-        detail: "Cumulate pentru gazdele care folosesc deja Plan4Host.",
+        detail: "Cumulate pentru clienții Plan4Host.",
       },
     ],
     []
@@ -857,7 +857,7 @@ export default function HomePageRO() {
             className={`${styles.menuLink} ${styles.focusable}`}
             onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
           >
-            Insights
+            Impact
           </a>
           <a
             href="#features-title"
@@ -908,7 +908,7 @@ export default function HomePageRO() {
           className={`${styles.mobileLink} ${styles.focusable}`}
           onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
         >
-          Insights
+          Impact
         </a>
         <a
           href="#features-title"
@@ -1029,14 +1029,14 @@ export default function HomePageRO() {
         </div>
       )}
 
-      {/* Insights (statistici timp/valoare înainte de Funcții) */}
+      {/* Impact (statistici timp/valoare înainte de Funcții) */}
       <section
         id="insights"
         aria-labelledby="insights-title"
         className={styles.features}
         style={{ paddingTop: 0, paddingBottom: 12 }}
       >
-        <h2 id="insights-title">Insights</h2>
+        <h2 id="insights-title">Impact</h2>
         <TimeSavingsStripRo />
       </section>
 

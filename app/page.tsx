@@ -357,7 +357,7 @@ function TimeSavingsStrip() {
         label: "SETUP TIME",
         suffix: "min",
         target: 30,
-        detail: "From first login to a ready‑to‑use check‑in flow.",
+        detail: "From first login to a ready‑to‑use check‑in.",
       },
       {
         id: "perWeek",
@@ -366,16 +366,16 @@ function TimeSavingsStrip() {
         prefix: "+",
         suffix: "h / week",
         target: 12,
-        detail: "By automating repetitive guest messaging.",
+        detail: "By automating repetitive guest interactions.",
       },
       {
         id: "total",
         icon: "/CLIENT_HOURS_SAVED.png",
-        label: "CLIENT HOURS SAVED",
+        label: "CLIENTS HOURS SAVED",
         prefix: "+",
         suffix: "h",
         target: 864,
-        detail: "Aggregated across hosts already using Plan4Host.",
+        detail: "Across clients already using Plan4Host.",
       },
     ],
     []
@@ -1131,7 +1131,7 @@ export default function HomePage() {
             className={`${styles.menuLink} ${styles.focusable}`}
             onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
           >
-            Insights
+            Impact
           </a>
           <a
             href="#features-title"
@@ -1201,7 +1201,7 @@ export default function HomePage() {
           className={`${styles.mobileLink} ${styles.focusable}`}
           onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
         >
-          Insights
+          Impact
         </a>
         <a
           href="#pricing"
@@ -1333,14 +1333,14 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Insights (time/value stats before Features) */}
+      {/* Impact (time/value stats before Features) */}
       <section
         id="insights"
         aria-labelledby="insights-title"
         className={styles.features}
         style={{ paddingTop: 0, paddingBottom: 12 }}
       >
-        <h2 id="insights-title">Insights</h2>
+        <h2 id="insights-title">Impact</h2>
         <TimeSavingsStrip />
       </section>
 
