@@ -462,6 +462,7 @@ will-change: transform;
 .features { max-width: 1100px; margin: 80px auto; padding: 0 20px; position: relative; }
 .features h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 20px; }
 /* Anchor offset for sticky header: ensure titles are visible on hash navigation */
+#insights-title,
 #features-title,
 #pricing-title,
 #about-title,
@@ -473,6 +474,7 @@ will-change: transform;
 
 /* On mobile (fixed header + tighter spacing), give even more room */
 @media (max-width: 900px) {
+  #insights-title,
   #features-title,
   #pricing-title,
   #about-title,

@@ -1115,6 +1115,13 @@ export default function HomePage() {
         {/* Desktop menu */}
         <div className={styles.menu} id="nav-menu">
           <a
+            href="#insights"
+            className={`${styles.menuLink} ${styles.focusable}`}
+            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
+          >
+            Insights
+          </a>
+          <a
             href="#features-title"
             className={`${styles.menuLink} ${styles.focusable}`}
             onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
@@ -1176,6 +1183,13 @@ export default function HomePage() {
           onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
         >
           Features
+        </a>
+        <a
+          href="#insights"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
+        >
+          Insights
         </a>
         <a
           href="#pricing"
@@ -1307,12 +1321,14 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Time/value stats before Features */}
+      {/* Insights (time/value stats before Features) */}
       <section
-        aria-label="Time savings and setup speed"
+        id="insights"
+        aria-labelledby="insights-title"
         className={styles.features}
         style={{ paddingTop: 0, paddingBottom: 12 }}
       >
+        <h2 id="insights-title">Insights</h2>
         <TimeSavingsStrip />
       </section>
 
