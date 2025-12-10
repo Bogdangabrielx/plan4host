@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -246,6 +246,243 @@ function FeatureCarousel() {
         </div>
       ); })()}
       <button type="button" aria-label="Next features" className={`${styles.carouselBtn} ${styles.carouselBtnRight} `} onClick={next}>›</button>
+    </div>
+  );
+}
+
+function TimeSavingsStripRo() {
+  const [visible, setVisible] = useState(false);
+  const [progress, setProgress] = useState(0); // 0..1
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setVisible(true);
+          } else {
+            setVisible(false);
+          }
+        }
+      },
+      { threshold: 0.3 }
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    let frame: number;
+    const duration = 800;
+    const start = performance.now();
+    const from = progress;
+    const to = visible ? 1 : 0;
+    const step = (ts: number) => {
+      const t = Math.min(1, (ts - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const value = from + (to - from) * eased;
+      setProgress(value);
+      if (t < 1) {
+        frame = requestAnimationFrame(step);
+      }
+    };
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [visible]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 640px)");
+    const apply = () => setIsMobile(!!mq.matches);
+    apply();
+    try {
+      mq.addEventListener("change", apply);
+    } catch {
+      mq.addListener(apply as any);
+    }
+    return () => {
+      try {
+        mq.removeEventListener("change", apply);
+      } catch {
+        mq.removeListener(apply as any);
+      }
+    };
+  }, []);
+
+  const stats = useMemo(
+    () => [
+      {
+        id: "setup",
+        icon: "/SETUP TIME.png",
+        label: "TIMP SETARE",
+        suffix: "min",
+        target: 30,
+        detail: "De la primul login până la un flux de check‑in gata de folosit.",
+      },
+      {
+        id: "perWeek",
+        icon: "/SAVE_TIME.png",
+        label: "ORE ECONOMISITE",
+        prefix: "+",
+        suffix: "h / săptămână",
+        target: 12,
+        detail: "Prin automatizarea mesajelor repetitive către oaspeți.",
+      },
+      {
+        id: "total",
+        icon: "/CLIENT_HOURS_SAVED.png",
+        label: "ORE CLIENT ECONOMISITE",
+        prefix: "+",
+        suffix: "h",
+        target: 864,
+        detail: "Cumulate pentru gazdele care folosesc deja Plan4Host.",
+      },
+    ],
+    []
+  );
+
+  return (
+    <div
+      ref={ref}
+      className="sb-cardglow"
+      style={{
+        maxWidth: 1120,
+        margin: "0 auto 12px",
+        padding: 12,
+        borderRadius: 12,
+        background: "var(--panel)",
+        display: "grid",
+        gridTemplateColumns: isMobile
+          ? "minmax(0, 1fr)"
+          : "repeat(3, minmax(0, 300px))",
+        justifyContent: isMobile ? "stretch" : "center",
+        gap: isMobile ? 12 : 18,
+      }}
+    >
+      {stats.map((s) => {
+        const value = Math.round(s.target * progress);
+        return (
+          <div
+            key={s.id}
+            style={{
+              borderRadius: 12,
+              border: isMobile
+                ? "1px solid rgba(148,163,184,0.6)"
+                : "1px solid transparent",
+              padding: "8px 10px",
+              display: "grid",
+              gridTemplateRows: "auto 1fr auto",
+              alignItems: isMobile ? "center" : "start",
+              justifyItems: "center",
+              gap: 6,
+              background: "color-mix(in srgb, var(--card) 82%, transparent)",
+            }}
+          >
+            <div style={{ display: "grid", justifyItems: "center" }}>
+              <div
+                aria-hidden
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: "999px",
+                  display: "grid",
+                  placeItems: "center",
+                  background: "transparent",
+                  color: "inherit",
+                }}
+              >
+                <img
+                  src={s.icon as string}
+                  alt=""
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                />
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                justifyContent: "center",
+                gap: 4,
+                width: "100%",
+              }}
+            >
+              {s.prefix && value > 0 ? (
+                <span
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 400,
+                    color: "var(--muted)",
+                    marginRight: 1,
+                  }}
+                >
+                  +
+                </span>
+              ) : null}
+              <div
+                style={{
+                  fontSize: isMobile ? 38 : 48,
+                  fontWeight: 800,
+                  backgroundImage:
+                    "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
+                  WebkitBackgroundClip: "text",
+                  color: "transparent",
+                  lineHeight: 1,
+                }}
+              >
+                {value}
+              </div>
+              {s.suffix ? (
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "var(--muted)",
+                  }}
+                >
+                  {s.suffix}
+                </span>
+              ) : null}
+            </div>
+
+            <div
+              style={{
+                fontSize: 11,
+                color: "var(--muted)",
+                textAlign: "center",
+                marginTop: -4,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: isMobile ? 18 : 22,
+                  fontWeight: 800,
+                  marginBottom: 2,
+                  backgroundImage:
+                    "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
+                  WebkitBackgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                {s.label}
+              </div>
+              {s.detail}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -616,6 +853,13 @@ export default function HomePageRO() {
         </div>
         <div className={styles.menu} id="nav-menu">
           <a
+            href="#insights"
+            className={`${styles.menuLink} ${styles.focusable}`}
+            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
+          >
+            Insights
+          </a>
+          <a
             href="#features-title"
             className={`${styles.menuLink} ${styles.focusable}`}
             onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
@@ -659,6 +903,13 @@ export default function HomePageRO() {
 
       {/* Meniu mobil */}
       <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
+        <a
+          href="#insights"
+          className={`${styles.mobileLink} ${styles.focusable}`}
+          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
+        >
+          Insights
+        </a>
         <a
           href="#features-title"
           className={`${styles.mobileLink} ${styles.focusable}`}
@@ -777,6 +1028,17 @@ export default function HomePageRO() {
           </div>
         </div>
       )}
+
+      {/* Insights (statistici timp/valoare înainte de Funcții) */}
+      <section
+        id="insights"
+        aria-labelledby="insights-title"
+        className={styles.features}
+        style={{ paddingTop: 0, paddingBottom: 12 }}
+      >
+        <h2 id="insights-title">Insights</h2>
+        <TimeSavingsStripRo />
+      </section>
 
       {/* Caracteristici */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
