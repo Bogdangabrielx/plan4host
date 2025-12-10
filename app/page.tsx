@@ -395,7 +395,7 @@ function TimeSavingsStrip() {
           ? "minmax(0, 1fr)"
           : "repeat(3, minmax(0, 260px))",
         justifyContent: isMobile ? "stretch" : "center",
-        gap: 10,
+        gap: isMobile ? 12 : 18,
       }}
     >
       {stats.map((s) => {
@@ -405,7 +405,9 @@ function TimeSavingsStrip() {
             key={s.id}
             style={{
               borderRadius: 12,
-              border: "1px solid rgba(148,163,184,0.6)",
+              border: isMobile
+                ? "1px solid rgba(148,163,184,0.6)"
+                : "1px solid transparent",
               padding: "8px 10px",
               display: "grid",
               gridTemplateRows: "auto 1fr auto",
@@ -429,7 +431,16 @@ function TimeSavingsStrip() {
                   color: "inherit",
                 }}
               >
-                {s.icon}
+                <img
+                  src={s.icon as string}
+                  alt=""
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                />
               </div>
             </div>
 
