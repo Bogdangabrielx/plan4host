@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -280,6 +280,196 @@ function FeatureCarousel() {
           </div>
         </div>
       ); })()}
+    </div>
+  );
+}
+
+function TimeSavingsStrip() {
+  const [visible, setVisible] = useState(false);
+  const [progress, setProgress] = useState(0); // 0..1
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let started = false;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && !started) {
+            started = true;
+            setVisible(true);
+          }
+        }
+      },
+      { threshold: 0.25 }
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+    let frame: number;
+    const duration = 1200;
+    const start = performance.now();
+    const step = (ts: number) => {
+      const t = Math.min(1, (ts - start) / duration);
+      // Ease-out
+      const eased = 1 - Math.pow(1 - t, 3);
+      setProgress(eased);
+      if (t < 1) {
+        frame = requestAnimationFrame(step);
+      }
+    };
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [visible]);
+
+  const stats = useMemo(
+    () => [
+      {
+        id: "setup",
+        icon: (
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={20} height={20}>
+            <path
+              d="M12 3v4m0 10v4m9-9h-4M7 12H3m14.95 6.95-2.83-2.83M9.88 9.88 7.05 7.05m0 9.9 2.83-2.83m5.19-5.19 2.83-2.83"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+            />
+          </svg>
+        ),
+        label: "Setup time",
+        suffix: "min",
+        target: 30,
+        detail: "From first login to a ready‑to‑use check‑in flow.",
+      },
+      {
+        id: "perWeek",
+        icon: (
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={20} height={20}>
+            <rect
+              x="3"
+              y="4"
+              width="18"
+              height="16"
+              rx="2.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            />
+            <path
+              d="M3 9h18M8 3v3M16 3v3M8.5 13.5h3.5L10 17h3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+            />
+          </svg>
+        ),
+        label: "Time saved",
+        suffix: "h / week",
+        target: 12,
+        detail: "By automating repetitive guest messaging.",
+      },
+      {
+        id: "total",
+        icon: (
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={20} height={20}>
+            <path
+              d="M4 7.5C5.3 5 7.9 3.5 11 3.5c3.9 0 7 2.5 7 6.3 0 5.1-6 8.7-7.6 9.6a1.2 1.2 0 0 1-1.2 0C7.6 18.5 4 15.9 4 10.8"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M10.2 9.5c.4-.7 1.1-1.1 1.9-1.1 1.1 0 2 .7 2 1.9 0 1.6-1.9 2.6-2.4 2.9a.4.4 0 0 1-.4 0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ),
+        label: "Client hours saved",
+        prefix: "+",
+        suffix: "h",
+        target: 864,
+        detail: "Aggregated across hosts already using Plan4Host.",
+      },
+    ],
+    []
+  );
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        maxWidth: 1120,
+        margin: "0 auto 8px",
+        padding: "12px 12px 8px",
+        borderRadius: 16,
+        border: "1px solid rgba(148,163,184,0.5)",
+        background:
+          "radial-gradient(circle at top left, rgba(250,204,21,0.09), transparent 60%), radial-gradient(circle at bottom right, rgba(56,189,248,0.12), transparent 55%), var(--panel)",
+        boxShadow: "0 18px 40px rgba(15,23,42,0.55)",
+        display: "grid",
+        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+        gap: 10,
+      }}
+    >
+      {stats.map((s) => {
+        const value = Math.round(s.target * progress);
+        return (
+          <div
+            key={s.id}
+            style={{
+              borderRadius: 12,
+              border: "1px solid rgba(148,163,184,0.6)",
+              padding: "10px 10px",
+              display: "grid",
+              gap: 4,
+              background: "color-mix(in srgb, var(--card) 82%, transparent)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div
+                aria-hidden
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: "999px",
+                  display: "grid",
+                  placeItems: "center",
+                  background:
+                    "linear-gradient(135deg, rgba(250,204,21,0.95), rgba(56,189,248,0.9))",
+                  color: "#0b1120",
+                  boxShadow: "0 8px 20px rgba(15,23,42,0.7)",
+                  flexShrink: 0,
+                }}
+              >
+                {s.icon}
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 600 }}>{s.label}</div>
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 800 }}>
+              {s.prefix && value > 0 ? s.prefix : ""}
+              {value}
+              {s.suffix ? (
+                <span style={{ fontSize: 11, fontWeight: 600, marginLeft: 4 }}>{s.suffix}</span>
+              ) : null}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--muted)" }}>{s.detail}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1078,6 +1268,15 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      {/* Time/value stats before Features */}
+      <section
+        aria-label="Time savings and setup speed"
+        className={styles.features}
+        style={{ paddingTop: 0, paddingBottom: 12 }}
+      >
+        <TimeSavingsStrip />
+      </section>
 
       {/* Features */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
