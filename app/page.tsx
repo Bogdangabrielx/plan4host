@@ -411,7 +411,7 @@ function TimeSavingsStrip() {
               padding: "8px 10px",
               display: "grid",
               gridTemplateRows: "auto 1fr auto",
-              alignItems: "center",
+              alignItems: isMobile ? "center" : "start",
               justifyItems: "center",
               gap: 6,
               background: "color-mix(in srgb, var(--card) 82%, transparent)",
