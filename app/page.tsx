@@ -363,6 +363,7 @@ function TimeSavingsStrip() {
         id: "perWeek",
         icon: "/SAVE_TIME.png",
         label: "TIME SAVED",
+        prefix: "+",
         suffix: "h / week",
         target: 12,
         detail: "By automating repetitive guest messaging.",
@@ -393,7 +394,7 @@ function TimeSavingsStrip() {
         display: "grid",
         gridTemplateColumns: isMobile
           ? "minmax(0, 1fr)"
-          : "repeat(3, minmax(0, 260px))",
+          : "repeat(3, minmax(0, 300px))",
         justifyContent: isMobile ? "stretch" : "center",
         gap: isMobile ? 12 : 18,
       }}
@@ -454,6 +455,18 @@ function TimeSavingsStrip() {
                 width: "100%",
               }}
             >
+              {s.prefix && value > 0 ? (
+                <span
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 400,
+                    color: "var(--muted)",
+                    marginRight: 1,
+                  }}
+                >
+                  +
+                </span>
+              ) : null}
               <div
                 style={{
                   fontSize: 42,
@@ -465,7 +478,6 @@ function TimeSavingsStrip() {
                   lineHeight: 1,
                 }}
               >
-                {s.prefix && value > 0 ? s.prefix : ""}
                 {value}
               </div>
               {s.suffix ? (
