@@ -292,17 +292,17 @@ function TimeSavingsStrip() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    let started = false;
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          if (e.isIntersecting && !started) {
-            started = true;
+          if (e.isIntersecting) {
             setVisible(true);
+          } else {
+            setVisible(false);
           }
         }
       },
-      { threshold: 0.25 }
+      { threshold: 0.3 }
     );
     io.observe(el);
     return () => {
@@ -311,15 +311,16 @@ function TimeSavingsStrip() {
   }, []);
 
   useEffect(() => {
-    if (!visible) return;
     let frame: number;
-    const duration = 1200;
+    const duration = 800;
     const start = performance.now();
+    const from = progress;
+    const to = visible ? 1 : 0;
     const step = (ts: number) => {
       const t = Math.min(1, (ts - start) / duration);
-      // Ease-out
       const eased = 1 - Math.pow(1 - t, 3);
-      setProgress(eased);
+      const value = from + (to - from) * eased;
+      setProgress(value);
       if (t < 1) {
         frame = requestAnimationFrame(step);
       }
@@ -335,12 +336,13 @@ function TimeSavingsStrip() {
         icon: (
           <svg viewBox="0 0 24 24" aria-hidden="true" width={20} height={20}>
             <path
-              d="M12 3v4m0 10v4m9-9h-4M7 12H3m14.95 6.95-2.83-2.83M9.88 9.88 7.05 7.05m0 9.9 2.83-2.83m5.19-5.19 2.83-2.83"
+              d="M12 5.5a1.5 1.5 0 0 1 1.42 1l.29.87a1.5 1.5 0 0 0 1.02.98l.9.27a1.5 1.5 0 0 1 .86 2.25l-.47.77c-.18.3-.18.68 0 .98l.47.77a1.5 1.5 0 0 1-.86 2.25l-.9.27a1.5 1.5 0 0 0-1.02.98l-.29.87a1.5 1.5 0 0 1-2.84 0l-.29-.87a1.5 1.5 0 0 0-1.02-.98l-.9-.27a1.5 1.5 0 0 1-.86-2.25l.47-.77c.18-.3.18-.68 0-.98l-.47-.77a1.5 1.5 0 0 1 .86-2.25l.9-.27a1.5 1.5 0 0 0 1.02-.98l.29-.87A1.5 1.5 0 0 1 12 5.5Z"
               fill="none"
               stroke="currentColor"
-              strokeWidth="1.6"
+              strokeWidth="1.5"
               strokeLinecap="round"
             />
+            <circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.5" />
           </svg>
         ),
         label: "Setup time",
@@ -352,19 +354,28 @@ function TimeSavingsStrip() {
         id: "perWeek",
         icon: (
           <svg viewBox="0 0 24 24" aria-hidden="true" width={20} height={20}>
-            <rect
-              x="3"
-              y="4"
-              width="18"
-              height="16"
-              rx="2.5"
+            <circle
+              cx="12"
+              cy="12"
+              r="7"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.6"
             />
-            <path
-              d="M3 9h18M8 3v3M16 3v3M8.5 13.5h3.5L10 17h3.5"
-              fill="none"
+            <line
+              x1="12"
+              y1="12"
+              x2="12"
+              y2="8.5"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+            />
+            <line
+              x1="12"
+              y1="12"
+              x2="15"
+              y2="13.5"
               stroke="currentColor"
               strokeWidth="1.6"
               strokeLinecap="round"
@@ -381,15 +392,7 @@ function TimeSavingsStrip() {
         icon: (
           <svg viewBox="0 0 24 24" aria-hidden="true" width={20} height={20}>
             <path
-              d="M4 7.5C5.3 5 7.9 3.5 11 3.5c3.9 0 7 2.5 7 6.3 0 5.1-6 8.7-7.6 9.6a1.2 1.2 0 0 1-1.2 0C7.6 18.5 4 15.9 4 10.8"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M10.2 9.5c.4-.7 1.1-1.1 1.9-1.1 1.1 0 2 .7 2 1.9 0 1.6-1.9 2.6-2.4 2.9a.4.4 0 0 1-.4 0"
+              d="M7 19c3.2-.4 5.7-1.9 7.4-3.6C16.6 13.1 17.7 11 18 8.5c-2.5-.3-4.6.4-6.1 1.4C10.1 11.1 8.6 12.8 7 15c-.8-1.6-1.1-3.1-1-4.7.1-1.5.7-3.1 1.7-4.6"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.6"
@@ -433,38 +436,108 @@ function TimeSavingsStrip() {
               border: "1px solid rgba(148,163,184,0.6)",
               padding: "10px 10px",
               display: "grid",
+              gridTemplateRows: "auto 1fr auto",
+              alignItems: "center",
+              justifyItems: "center",
               gap: 6,
               background: "color-mix(in srgb, var(--card) 82%, transparent)",
               aspectRatio: "1 / 1",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* Top: icon + label */}
+            <div style={{ display: "grid", gap: 4, justifyItems: "center" }}>
               <div
                 aria-hidden
                 style={{
-                  width: 30,
-                  height: 30,
+                  width: 34,
+                  height: 34,
                   borderRadius: "999px",
                   display: "grid",
                   placeItems: "center",
-                  background: "color-mix(in srgb, var(--card) 60%, transparent)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text)",
-                  flexShrink: 0,
+                  background:
+                    "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
+                  color: "#0b1120",
                 }}
               >
                 {s.icon}
               </div>
-              <div style={{ fontSize: 12, fontWeight: 600 }}>{s.label}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+                {s.label}
+              </div>
             </div>
-            <div style={{ fontSize: 26, fontWeight: 800 }}>
-              {s.prefix && value > 0 ? s.prefix : ""}
-              {value}
-              {s.suffix ? (
-                <span style={{ fontSize: 11, fontWeight: 600, marginLeft: 4 }}>{s.suffix}</span>
-              ) : null}
+
+            {/* Middle: big number in AI gradient circle */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+              }}
+            >
+              <div
+                style={{
+                  width: 78,
+                  height: 78,
+                  borderRadius: "999px",
+                  display: "grid",
+                  placeItems: "center",
+                  background:
+                    "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
+                  boxShadow: "0 10px 26px rgba(15,23,42,0.8)",
+                }}
+              >
+                <div
+                  style={{
+                    width: "calc(100% - 6px)",
+                    height: "calc(100% - 6px)",
+                    borderRadius: "999px",
+                    background: "var(--card)",
+                    display: "grid",
+                    placeItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "baseline",
+                      justifyContent: "center",
+                      gap: 4,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 32,
+                        fontWeight: 800,
+                        backgroundImage:
+                          "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
+                        WebkitBackgroundClip: "text",
+                        color: "transparent",
+                      }}
+                    >
+                      {s.prefix && value > 0 ? s.prefix : ""}
+                      {value}
+                    </span>
+                    {s.suffix ? (
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: "var(--muted)",
+                        }}
+                      >
+                        {s.suffix}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: 11, color: "var(--muted)" }}>{s.detail}</div>
+
+            {/* Bottom: detail text */}
+            <div style={{ fontSize: 11, color: "var(--muted)", textAlign: "center" }}>
+              {s.detail}
+            </div>
           </div>
         );
       })}
