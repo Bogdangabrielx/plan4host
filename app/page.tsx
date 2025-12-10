@@ -353,44 +353,7 @@ function TimeSavingsStrip() {
     () => [
       {
         id: "setup",
-        // Gear outline — circular with distinct teeth
-        icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={36} height={36}>
-            <defs>
-              <linearGradient id="ts-setup" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#0ea5e9" />
-                <stop offset="50%" stopColor="#6366f1" />
-                <stop offset="100%" stopColor="#a855f7" />
-              </linearGradient>
-            </defs>
-            {/* Outer gear ring */}
-            <circle
-              cx="12"
-              cy="12"
-              r="6"
-              fill="none"
-              stroke="url(#ts-setup)"
-              strokeWidth="1.6"
-            />
-            {/* Teeth */}
-            <path
-              d="M12 3.3v2.1M16.2 4.4l-1 1.8M19 8.2l-2.1.4M19 15.8l-2.1-.4M16.2 19.6l-1-1.8M12 18.6v2.1M7.8 19.6l1-1.8M5 15.8l2.1-.4M5 8.2l2.1.4M7.8 4.4l1 1.8"
-              fill="none"
-              stroke="url(#ts-setup)"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-            />
-            {/* Center hole */}
-            <circle
-              cx="12"
-              cy="12"
-              r="2.4"
-              fill="none"
-              stroke="url(#ts-setup)"
-              strokeWidth="1.4"
-            />
-          </svg>
-        ),
+        icon: "/SETUP TIME.png",
         label: "SETUP TIME",
         suffix: "min",
         target: 30,
@@ -398,44 +361,7 @@ function TimeSavingsStrip() {
       },
       {
         id: "perWeek",
-        // Clock outline — clearer two hands
-        icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={36} height={36}>
-            <defs>
-              <linearGradient id="ts-time" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#0ea5e9" />
-                <stop offset="50%" stopColor="#6366f1" />
-                <stop offset="100%" stopColor="#a855f7" />
-              </linearGradient>
-            </defs>
-            <circle
-              cx="12"
-              cy="12"
-              r="7"
-              fill="none"
-              stroke="url(#ts-time)"
-              strokeWidth="1.6"
-            />
-            <line
-              x1="12"
-              y1="12"
-              x2="12"
-              y2="8.2"
-              stroke="url(#ts-time)"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-            <line
-              x1="12"
-              y1="12"
-              x2="16"
-              y2="14.5"
-              stroke="url(#ts-time)"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          </svg>
-        ),
+        icon: "/SAVE_TIME.png",
         label: "TIME SAVED",
         suffix: "h / week",
         target: 12,
@@ -443,33 +369,7 @@ function TimeSavingsStrip() {
       },
       {
         id: "total",
-        // Leaf outline — smoother with central vein
-        icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={36} height={36}>
-            <defs>
-              <linearGradient id="ts-total" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#0ea5e9" />
-                <stop offset="50%" stopColor="#6366f1" />
-                <stop offset="100%" stopColor="#a855f7" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M6.2 17.5c4.1-.3 7.2-2.2 8.9-4.8 1.7-2.5 2.4-5.4 2.1-8.2-2.9.2-5.4 1.1-7.4 2.7-2 1.5-3.4 3.7-4.2 6.3-.4 1.3-.6 2.5-.7 4"
-              fill="none"
-              stroke="url(#ts-total)"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M8 16.6c1.4-2.4 3.3-4.3 5.7-5.7"
-              fill="none"
-              stroke="url(#ts-total)"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-            />
-          </svg>
-        ),
+        icon: "/CLIENT_HOURS_SAVED.png",
         label: "CLIENT HOURS SAVED",
         prefix: "+",
         suffix: "h",
