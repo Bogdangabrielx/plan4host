@@ -333,9 +333,9 @@ function TimeSavingsStrip() {
     () => [
       {
         id: "setup",
-        // Gear outline
+        // Gear outline — more circular with visible teeth
         icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={26} height={26}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={30} height={30}>
             <defs>
               <linearGradient id="ts-setup" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#0ea5e9" />
@@ -344,13 +344,14 @@ function TimeSavingsStrip() {
               </linearGradient>
             </defs>
             <path
-              d="M12 5.5a1.5 1.5 0 0 1 1.42 1l.29.87a1.5 1.5 0 0 0 1.02.98l.9.27a1.5 1.5 0 0 1 .86 2.25l-.47.77c-.18.3-.18.68 0 .98l.47.77a1.5 1.5 0 0 1-.86 2.25l-.9.27a1.5 1.5 0 0 0-1.02.98l-.29.87a1.5 1.5 0 0 1-2.84 0l-.29-.87a1.5 1.5 0 0 0-1.02-.98l-.9-.27a1.5 1.5 0 0 1-.86-2.25l.47-.77c.18-.3.18-.68 0-.98l-.47-.77a1.5 1.5 0 0 1 .86-2.25l.9-.27a1.5 1.5 0 0 0 1.02-.98l.29-.87A1.5 1.5 0 0 1 12 5.5Z"
+              d="M12 4.2l1.1.63 1.27-.73 1.7 1.7-.73 1.27.63 1.1 1.27.22v2.4l-1.27.22-.63 1.1.73 1.27-1.7 1.7-1.27-.73-1.1.63-1.1-.63-1.27.73-1.7-1.7.73-1.27-.63-1.1L5 12.01v-2.4l1.27-.22.63-1.1-.73-1.27 1.7-1.7 1.27.73Z"
               fill="none"
               stroke="url(#ts-setup)"
               strokeWidth="1.5"
               strokeLinecap="round"
+              strokeLinejoin="round"
             />
-            <circle cx="12" cy="12" r="2.6" fill="none" stroke="url(#ts-setup)" strokeWidth="1.5" />
+            <circle cx="12" cy="12" r="2.7" fill="none" stroke="url(#ts-setup)" strokeWidth="1.5" />
           </svg>
         ),
         label: "SETUP TIME",
@@ -360,9 +361,9 @@ function TimeSavingsStrip() {
       },
       {
         id: "perWeek",
-        // Clock outline
+        // Clock outline — clearer two hands
         icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={26} height={26}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={30} height={30}>
             <defs>
               <linearGradient id="ts-time" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#0ea5e9" />
@@ -382,7 +383,7 @@ function TimeSavingsStrip() {
               x1="12"
               y1="12"
               x2="12"
-              y2="8.5"
+              y2="8.2"
               stroke="url(#ts-time)"
               strokeWidth="1.6"
               strokeLinecap="round"
@@ -390,8 +391,8 @@ function TimeSavingsStrip() {
             <line
               x1="12"
               y1="12"
-              x2="15"
-              y2="13.5"
+              x2="16"
+              y2="14.5"
               stroke="url(#ts-time)"
               strokeWidth="1.6"
               strokeLinecap="round"
@@ -405,9 +406,9 @@ function TimeSavingsStrip() {
       },
       {
         id: "total",
-        // Leaf outline
+        // Leaf outline — smoother with central vein
         icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={26} height={26}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={30} height={30}>
             <defs>
               <linearGradient id="ts-total" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#0ea5e9" />
@@ -416,16 +417,23 @@ function TimeSavingsStrip() {
               </linearGradient>
             </defs>
             <path
-              d="M7 18.5c3.3-.4 5.9-1.9 7.6-3.7C16.9 12.8 18 10.7 18 8.4 15.7 8 13.7 8.7 12.2 9.7 10.5 10.9 9 12.6 7.6 14.7 7 13.6 6.7 12.5 6.6 11.4 6.5 10 6.8 8.6 7.6 7.1"
+              d="M6.2 17.5c4.1-.3 7.2-2.2 8.9-4.8 1.7-2.5 2.4-5.4 2.1-8.2-2.9.2-5.4 1.1-7.4 2.7-2 1.5-3.4 3.7-4.2 6.3-.4 1.3-.6 2.5-.7 4"
               fill="none"
               stroke="url(#ts-total)"
               strokeWidth="1.6"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
+            <path
+              d="M8 16.6c1.4-2.4 3.3-4.3 5.7-5.7"
+              fill="none"
+              stroke="url(#ts-total)"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            />
           </svg>
         ),
-        label: "Client hours saved",
+        label: "CLIENT HOURS SAVED",
         prefix: "+",
         suffix: "h",
         target: 864,
@@ -473,8 +481,8 @@ function TimeSavingsStrip() {
               <div
                 aria-hidden
                 style={{
-                  width: 34,
-                  height: 34,
+                  width: 42,
+                  height: 42,
                   borderRadius: "999px",
                   display: "grid",
                   placeItems: "center",
@@ -524,10 +532,17 @@ function TimeSavingsStrip() {
             </div>
 
             {/* Bottom: label + detail text */}
-            <div style={{ fontSize: 11, color: "var(--muted)", textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: 11,
+                color: "var(--muted)",
+                textAlign: "center",
+                marginTop: -4,
+              }}
+            >
               <div
                 style={{
-                  fontSize: 15,
+                  fontSize: 17,
                   fontWeight: 800,
                   marginBottom: 2,
                   backgroundImage:
