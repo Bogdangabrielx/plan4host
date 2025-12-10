@@ -355,7 +355,7 @@ function TimeSavingsStrip() {
         id: "setup",
         // Gear outline — circular with distinct teeth
         icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={30} height={30}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={36} height={36}>
             <defs>
               <linearGradient id="ts-setup" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#0ea5e9" />
@@ -400,7 +400,7 @@ function TimeSavingsStrip() {
         id: "perWeek",
         // Clock outline — clearer two hands
         icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={30} height={30}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={36} height={36}>
             <defs>
               <linearGradient id="ts-time" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#0ea5e9" />
@@ -445,7 +445,7 @@ function TimeSavingsStrip() {
         id: "total",
         // Leaf outline — smoother with central vein
         icon: (
-          <svg viewBox="0 0 24 24" aria-hidden="true" width={30} height={30}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" width={36} height={36}>
             <defs>
               <linearGradient id="ts-total" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#0ea5e9" />
@@ -493,7 +493,8 @@ function TimeSavingsStrip() {
         display: "grid",
         gridTemplateColumns: isMobile
           ? "minmax(0, 1fr)"
-          : "repeat(3, minmax(0, 1fr))",
+          : "repeat(3, minmax(0, 260px))",
+        justifyContent: isMobile ? "stretch" : "center",
         gap: 10,
       }}
     >
@@ -505,14 +506,13 @@ function TimeSavingsStrip() {
             style={{
               borderRadius: 12,
               border: "1px solid rgba(148,163,184,0.6)",
-              padding: "10px 10px",
+              padding: "8px 10px",
               display: "grid",
               gridTemplateRows: "auto 1fr auto",
               alignItems: "center",
               justifyItems: "center",
               gap: 6,
               background: "color-mix(in srgb, var(--card) 82%, transparent)",
-              aspectRatio: isMobile ? undefined : "1 / 1",
             }}
           >
             {/* Top: icon only (outline, gradient stroke) */}
@@ -520,8 +520,8 @@ function TimeSavingsStrip() {
               <div
                 aria-hidden
                 style={{
-                  width: 42,
-                  height: 42,
+                  width: 52,
+                  height: 52,
                   borderRadius: "999px",
                   display: "grid",
                   placeItems: "center",
@@ -545,7 +545,7 @@ function TimeSavingsStrip() {
             >
               <div
                 style={{
-                  fontSize: 34,
+                  fontSize: 42,
                   fontWeight: 800,
                   backgroundImage:
                     "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
@@ -560,7 +560,7 @@ function TimeSavingsStrip() {
               {s.suffix ? (
                 <span
                   style={{
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: 600,
                     color: "var(--muted)",
                   }}
@@ -581,7 +581,7 @@ function TimeSavingsStrip() {
             >
               <div
                 style={{
-                  fontSize: 17,
+                  fontSize: 19,
                   fontWeight: 800,
                   marginBottom: 2,
                   backgroundImage:
