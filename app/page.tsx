@@ -411,15 +411,13 @@ function TimeSavingsStrip() {
   return (
     <div
       ref={ref}
+      className="sb-cardglow"
       style={{
         maxWidth: 1120,
-        margin: "0 auto 8px",
-        padding: "12px 12px 8px",
-        borderRadius: 16,
-        border: "1px solid rgba(148,163,184,0.5)",
-        background:
-          "radial-gradient(circle at top left, rgba(250,204,21,0.09), transparent 60%), radial-gradient(circle at bottom right, rgba(56,189,248,0.12), transparent 55%), var(--panel)",
-        boxShadow: "0 18px 40px rgba(15,23,42,0.55)",
+        margin: "0 auto 12px",
+        padding: 12,
+        borderRadius: 12,
+        background: "var(--panel)",
         display: "grid",
         gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
         gap: 10,
@@ -435,8 +433,9 @@ function TimeSavingsStrip() {
               border: "1px solid rgba(148,163,184,0.6)",
               padding: "10px 10px",
               display: "grid",
-              gap: 4,
+              gap: 6,
               background: "color-mix(in srgb, var(--card) 82%, transparent)",
+              aspectRatio: "1 / 1",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -448,10 +447,9 @@ function TimeSavingsStrip() {
                   borderRadius: "999px",
                   display: "grid",
                   placeItems: "center",
-                  background:
-                    "linear-gradient(135deg, rgba(250,204,21,0.95), rgba(56,189,248,0.9))",
-                  color: "#0b1120",
-                  boxShadow: "0 8px 20px rgba(15,23,42,0.7)",
+                  background: "color-mix(in srgb, var(--card) 60%, transparent)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text)",
                   flexShrink: 0,
                 }}
               >
@@ -459,7 +457,7 @@ function TimeSavingsStrip() {
               </div>
               <div style={{ fontSize: 12, fontWeight: 600 }}>{s.label}</div>
             </div>
-            <div style={{ fontSize: 20, fontWeight: 800 }}>
+            <div style={{ fontSize: 26, fontWeight: 800 }}>
               {s.prefix && value > 0 ? s.prefix : ""}
               {value}
               {s.suffix ? (
