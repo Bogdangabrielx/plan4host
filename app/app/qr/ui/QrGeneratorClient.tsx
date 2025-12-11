@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import QrWithLogo from "@/QrWithLogo";
+import QrWithLogo from "../../../QrWithLogo";
 
 const QR_SIZE = 320;
 
@@ -190,4 +190,3 @@ export default function QrGeneratorClient() {
     </div>
   );
 }
-
