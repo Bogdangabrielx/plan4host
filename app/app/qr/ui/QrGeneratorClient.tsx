@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import QrWithLogo from "../../../QrWithLogo";
+import QrWithLogo from "@/components/QrWithLogo";
 
 const QR_SIZE = 320;
 
