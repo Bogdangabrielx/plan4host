@@ -19,11 +19,10 @@ export default function QrGeneratorClient() {
 
   const qrDownloadUrl = useMemo(() => {
     if (!data) return null;
-    const base = "https://api.qrserver.com/v1/create-qr-code/";
+    const base = "/api/qr";
     const params = new URLSearchParams({
-      ecc: "H",
-      size: `${QR_SIZE}x${QR_SIZE}`,
       data,
+      size: String(QR_SIZE),
     });
     return `${base}?${params.toString()}`;
   }, [data]);
