@@ -65,7 +65,6 @@ export default function SimulateGuestFlowCard() {
       id="simulateguestflow"
       className="sb-cardglow"
       style={{
-        scrollMarginTop: 24,
         width: "min(900px, 100%)",
         margin: "0 auto",
         borderRadius: 14,

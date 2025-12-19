@@ -9,7 +9,8 @@ function scrollToHash() {
     if (!id) return;
     const el = document.getElementById(id);
     if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    const y = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
   } catch {
     // ignore
   }
@@ -34,4 +35,3 @@ export default function HashScroll() {
 
   return null;
 }
-
