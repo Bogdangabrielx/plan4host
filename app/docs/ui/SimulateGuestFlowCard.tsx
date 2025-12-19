@@ -64,6 +64,8 @@ export default function SimulateGuestFlowCard() {
     <section
       className="sb-cardglow"
       style={{
+        width: "min(900px, 100%)",
+        margin: "0 auto",
         borderRadius: 14,
         border: "1px solid var(--border)",
         background: "var(--panel)",
@@ -79,6 +81,8 @@ export default function SimulateGuestFlowCard() {
       <div
         className="sb-cardglow"
         style={{
+          width: "min(820px, 100%)",
+          margin: "0 auto",
           borderRadius: 12,
           overflow: "hidden",
           position: "relative",
@@ -96,7 +100,13 @@ export default function SimulateGuestFlowCard() {
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
           onEnded={() => setPlaying(false)}
-          style={{ width: "100%", height: "auto", display: "block", objectFit: "contain" }}
+          style={{
+            width: "100%",
+            height: "auto",
+            maxHeight: 420,
+            display: "block",
+            objectFit: "contain",
+          }}
         />
 
         <button
@@ -120,8 +130,8 @@ export default function SimulateGuestFlowCard() {
             backdropFilter: "blur(3px)",
             WebkitBackdropFilter: "blur(3px)",
             color: "var(--text)",
-            width: 86,
-            height: 86,
+            width: 72,
+            height: 72,
             display: "grid",
             placeItems: "center",
             opacity: !playing || hover ? 1 : 0,
@@ -130,12 +140,12 @@ export default function SimulateGuestFlowCard() {
           }}
         >
           {playing ? (
-            <svg viewBox="0 0 24 24" width="54" height="54" aria-hidden>
+            <svg viewBox="0 0 24 24" width="44" height="44" aria-hidden>
               <rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor" />
               <rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor" />
             </svg>
           ) : (
-            <svg viewBox="0 0 24 24" width="54" height="54" aria-hidden>
+            <svg viewBox="0 0 24 24" width="44" height="44" aria-hidden>
               <path d="M8 5l12 7-12 7V5z" fill="currentColor" />
             </svg>
           )}
@@ -144,4 +154,3 @@ export default function SimulateGuestFlowCard() {
     </section>
   );
 }
-
