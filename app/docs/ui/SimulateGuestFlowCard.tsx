@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const VIDEO_SRC = "/Simulate%20guest%20flow.mp4";
+const VIDEO_SRC = "/Simulate%20guest%20flow.MP4";
 
 export default function SimulateGuestFlowCard() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
