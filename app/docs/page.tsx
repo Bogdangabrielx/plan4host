@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import s from "../legal/legal.module.css";
 import ForceDark from "@/components/theme/ForceDark";
 import SimulateGuestFlowCard from "./ui/SimulateGuestFlowCard";
+import HashScroll from "./ui/HashScroll";
 
 export const metadata: Metadata = {
   title: "Docs — Plan4Host",
@@ -13,6 +14,7 @@ export default function DocsPage() {
   return (
     <main className={s.page}>
       <ForceDark />
+      <HashScroll />
       <div className={s.container}>
         <header className={s.header}>
           <h1 className={s.h1}>Documentation</h1>
