@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import s from "../legal/legal.module.css";
 import ForceDark from "@/components/theme/ForceDark";
+import SimulateGuestFlowCard from "./ui/SimulateGuestFlowCard";
 
 export const metadata: Metadata = {
   title: "Docs — Plan4Host",
@@ -18,11 +19,7 @@ export default function DocsPage() {
           <p className={s.meta}>Last updated: {lastUpdated}</p>
         </header>
 
-        <section>
-          <p className={s.p}>
-            Documentation is currently being prepared. Please check back soon.
-          </p>
-        </section>
+        <SimulateGuestFlowCard />
       </div>
     </main>
   );
