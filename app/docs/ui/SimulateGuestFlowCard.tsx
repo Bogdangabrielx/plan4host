@@ -159,13 +159,27 @@ export default function SimulateGuestFlowCard() {
               }}
             >
               <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden>
-                <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" strokeWidth="1.6" opacity="0.95" />
-                <g transform="translate(0,-1)">
-                  <path d="M11.1 6.9l-3 3 3 3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M9 9.9h4.1c2.4 0 4.3 1.6 4.3 4.1" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                </g>
-                <text x="12" y="19.1" textAnchor="middle" fontSize="5.4" fontWeight="700" fill="currentColor">
-                  10s
+                <circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" strokeWidth="1.6" opacity="0.95" />
+                {/* counter-clockwise arrow head */}
+                <path
+                  d="M11.8 1.9L10.2 3L11.8 4.1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.95"
+                />
+                <text
+                  x="12"
+                  y="12"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="8"
+                  fontWeight="800"
+                  fill="currentColor"
+                >
+                  10
                 </text>
               </svg>
             </button>
@@ -225,13 +239,27 @@ export default function SimulateGuestFlowCard() {
               }}
             >
               <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden>
-                <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" strokeWidth="1.6" opacity="0.95" />
-                <g transform="translate(0,-1)">
-                  <path d="M12.9 6.9l3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M15 9.9h-4.1c-2.4 0-4.3 1.6-4.3 4.1" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                </g>
-                <text x="12" y="19.1" textAnchor="middle" fontSize="5.4" fontWeight="700" fill="currentColor">
-                  10s
+                <circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" strokeWidth="1.6" opacity="0.95" />
+                {/* clockwise arrow head */}
+                <path
+                  d="M12.2 1.9L13.8 3L12.2 4.1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.95"
+                />
+                <text
+                  x="12"
+                  y="12"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="8"
+                  fontWeight="800"
+                  fill="currentColor"
+                >
+                  10
                 </text>
               </svg>
             </button>
