@@ -162,7 +162,7 @@ export default function SimulateGuestFlowCard() {
                 <circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" strokeWidth="1.6" opacity="0.95" />
                 {/* counter-clockwise arrow head */}
                 <path
-                  d="M12 1.2L9.6 3L12 4.8"
+                  d="M12 3.4L9.6 5.2L12 7"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -242,7 +242,7 @@ export default function SimulateGuestFlowCard() {
                 <circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" strokeWidth="1.6" opacity="0.95" />
                 {/* clockwise arrow head */}
                 <path
-                  d="M12 1.2L14.4 3L12 4.8"
+                  d="M12 3.4L14.4 5.2L12 7"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
