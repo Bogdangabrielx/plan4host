@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       if (toEmail) {
         const propName = String((data as any)?.name || "").trim();
         const isRo = String(country_code || "").toUpperCase() === "RO";
-        const tutorialUrl = "https://plan4host.com/Simulate%20guest%20flow.mp4";
+        const tutorialUrl = "https://plan4host.com/Simulate%20guest%20flow.MP4";
         const subject = isRo ? "Bun venit în Plan4Host 🎉" : "Welcome to Plan4Host 🎉";
         const bodyHtml = isRo ? `
           <div class="p4h-content" style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
