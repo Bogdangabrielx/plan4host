@@ -159,13 +159,21 @@ export default function SimulateGuestFlowCard() {
               }}
             >
               <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden>
-                <circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" strokeWidth="1.6" opacity="0.95" />
-                {/* counter-clockwise arrow head */}
+                {/* counter-clockwise circular arrow (gap at top) */}
                 <path
-                  d="M12 1.2L9.6 3L12 4.8"
+                  d="M14.5 4.1 A 8.5 8.5 0 1 0 9.5 4.1"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  opacity="0.95"
+                />
+                {/* arrow head (left) */}
+                <path
+                  d="M9.5 4.1 L7.9 3.2 M9.5 4.1 L8.6 5.7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   opacity="0.95"
@@ -239,13 +247,21 @@ export default function SimulateGuestFlowCard() {
               }}
             >
               <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden>
-                <circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" strokeWidth="1.6" opacity="0.95" />
-                {/* clockwise arrow head */}
+                {/* clockwise circular arrow (gap at top) */}
                 <path
-                  d="M12 1.2L14.4 3L12 4.8"
+                  d="M9.5 4.1 A 8.5 8.5 0 1 1 14.5 4.1"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  opacity="0.95"
+                />
+                {/* arrow head (right) */}
+                <path
+                  d="M14.5 4.1 L16.1 3.2 M14.5 4.1 L15.4 5.7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   opacity="0.95"
