@@ -160,9 +160,11 @@ export default function SimulateGuestFlowCard() {
             >
               <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden>
                 <circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" strokeWidth="1.6" opacity="0.95" />
-                <path d="M11.1 6.9l-3 3 3 3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M9 9.9h4.1c2.4 0 4.3 1.6 4.3 4.1" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                <text x="12" y="15.9" textAnchor="middle" fontSize="6.2" fontWeight="700" fill="currentColor">
+                <g transform="translate(0,-1)">
+                  <path d="M11.1 6.9l-3 3 3 3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M9 9.9h4.1c2.4 0 4.3 1.6 4.3 4.1" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </g>
+                <text x="12" y="19.1" textAnchor="middle" fontSize="5.4" fontWeight="700" fill="currentColor">
                   10s
                 </text>
               </svg>
@@ -224,9 +226,11 @@ export default function SimulateGuestFlowCard() {
             >
               <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden>
                 <circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" strokeWidth="1.6" opacity="0.95" />
-                <path d="M12.9 6.9l3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M15 9.9h-4.1c-2.4 0-4.3 1.6-4.3 4.1" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                <text x="12" y="15.9" textAnchor="middle" fontSize="6.2" fontWeight="700" fill="currentColor">
+                <g transform="translate(0,-1)">
+                  <path d="M12.9 6.9l3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M15 9.9h-4.1c-2.4 0-4.3 1.6-4.3 4.1" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </g>
+                <text x="12" y="19.1" textAnchor="middle" fontSize="5.4" fontWeight="700" fill="currentColor">
                   10s
                 </text>
               </svg>
