@@ -53,6 +53,7 @@ export async function POST(req: Request) {
       if (toEmail) {
         const propName = String((data as any)?.name || "").trim();
         const isRo = String(country_code || "").toUpperCase() === "RO";
+        const tutorialUrl = "https://plan4host.com/Simulate%20guest%20flow.mp4";
         const subject = isRo ? "Bun venit în Plan4Host 🎉" : "Welcome to Plan4Host 🎉";
         const bodyHtml = isRo ? `
           <div class="p4h-content" style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
@@ -63,6 +64,17 @@ export async function POST(req: Request) {
             <div style="margin:10px 0; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
               <div><strong>WhatsApp:</strong> +40 721 759 329</div>
               <div><strong>Email:</strong> <a href="mailto:office@plan4host.com">office@plan4host.com</a></div>
+            </div>
+            <div style="margin:14px 0; padding:12px; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc;">
+              <p style="margin:0 0 10px;">
+                După ce finalizezi cei <strong>7 pași</strong> din onboarding, îți recomandăm să <strong>simulezi o rezervare</strong> ca să experimentezi exact ce primește oaspetele (de la check‑in până la check‑out).
+              </p>
+              <p style="margin:0;">
+                <a href="${tutorialUrl}" target="_blank" rel="noopener"
+                   style="display:inline-block; padding:10px 14px; border-radius:10px; background:#16b981; color:#0c111b; font-weight:800; text-decoration:none; border:1px solid #16b981;">
+                  Vezi tutorialul
+                </a>
+              </p>
             </div>
             <p style="margin:0 0 6px;">Suntem la un mesaj distanță, pe email sau WhatsApp.</p>
             <p style="margin:0;">Suntem aici să te ajutăm să pornești cât mai ușor.</p>
@@ -77,6 +89,17 @@ export async function POST(req: Request) {
             <div style="margin:10px 0; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
               <div><strong>WhatsApp:</strong> +40 721 759 329</div>
               <div><strong>Email:</strong> <a href="mailto:office@plan4host.com">office@plan4host.com</a></div>
+            </div>
+            <div style="margin:14px 0; padding:12px; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc;">
+              <p style="margin:0 0 10px;">
+                After completing the <strong>7 onboarding steps</strong>, we recommend <strong>simulating a booking</strong> to experience exactly what your guest receives (from check‑in to check‑out).
+              </p>
+              <p style="margin:0;">
+                <a href="${tutorialUrl}" target="_blank" rel="noopener"
+                   style="display:inline-block; padding:10px 14px; border-radius:10px; background:#16b981; color:#0c111b; font-weight:800; text-decoration:none; border:1px solid #16b981;">
+                  See tutorial
+                </a>
+              </p>
             </div>
             <p style="margin:0 0 6px;">We’re one message away — by email or WhatsApp.</p>
             <p style="margin:0;">We’re here to help you get started smoothly.</p>
