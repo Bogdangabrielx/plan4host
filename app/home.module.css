@@ -738,9 +738,10 @@ will-change: transform;
 /* About layout: image left, card right */
 .aboutGrid{
   display: grid;
-  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 315px) minmax(0, 390px);
   gap: 28px;
   align-items: stretch;
+  justify-content: center;
 }
 .aboutVisual{
   background: var(--card);
@@ -749,7 +750,7 @@ will-change: transform;
   overflow: hidden;
   display: grid;
   place-items: stretch;
-  min-height: 360px;
+  min-height: 270px;
 }
 .aboutVisual img{
   width: 100%;
