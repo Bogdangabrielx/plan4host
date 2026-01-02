@@ -1307,19 +1307,24 @@ export default function HomePage() {
       {/* About */}
       <section id="about" className={styles.about} aria-labelledby="about-title">
         <h2 id="about-title">About</h2>
-        <div className={styles.aboutCard}>
-          <div className={styles.aboutBrandTitle}>Plan4Host</div>
-          <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
-          <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
-          <p className={styles.aboutBody}>
-            Plan4Host brings clarity and control to hospitality management. All reservations, tasks, and guest interactions are centralized in one smart calendar on your phone, giving you a complete overview at a glance.
-          </p>
-          <p className={styles.aboutBody}>
-            Reception workflows become effortless — check‑ins, confirmations, and updates are handled in just a few clicks. Guests receive timely, well‑sequenced messages, ensuring they feel guided and supported throughout their stay.
-          </p>
-          <p className={styles.aboutBody}>
-            By simplifying operations and elevating communication, Plan4Host helps hosts deliver exceptional experiences that naturally lead to great reviews and warm recommendations.
-          </p>
+        <div className={styles.aboutGrid}>
+          <div className={styles.aboutVisual} aria-label="Calendar sync preview">
+            <img src="/Calendar_Sync.png" alt="Calendar sync preview" />
+          </div>
+          <div className={styles.aboutCard}>
+            <div className={styles.aboutBrandTitle}>Plan4Host</div>
+            <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
+            <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
+            <p className={styles.aboutBody}>
+              Plan4Host brings clarity and control to hospitality management. All reservations, tasks, and guest interactions are centralized in one smart calendar on your phone, giving you a complete overview at a glance.
+            </p>
+            <p className={styles.aboutBody}>
+              Reception workflows become effortless — check‑ins, confirmations, and updates are handled in just a few clicks. Guests receive timely, well‑sequenced messages, ensuring they feel guided and supported throughout their stay.
+            </p>
+            <p className={styles.aboutBody}>
+              By simplifying operations and elevating communication, Plan4Host helps hosts deliver exceptional experiences that naturally lead to great reviews and warm recommendations.
+            </p>
+          </div>
         </div>
       </section>
 

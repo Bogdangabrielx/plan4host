@@ -735,6 +735,33 @@ will-change: transform;
 .about h2 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 16px; }
 .about p { color: var(--muted); margin: 0 0 12px; }
 
+/* About layout: image left, card right */
+.aboutGrid{
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  gap: 28px;
+  align-items: stretch;
+}
+.aboutVisual{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  place-items: stretch;
+  min-height: 360px;
+}
+.aboutVisual img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  border-radius: inherit;
+  transform: scale(1.02);
+}
+.aboutGrid .aboutCard{ width: 100%; }
+
 /* About card */
 .aboutCard { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 22px; padding-top: 30px; display: grid; gap: 12px; width: min(520px, 100%); justify-items: center; text-align: center; }
 .aboutHead { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; }
@@ -747,6 +774,10 @@ will-change: transform;
 .aboutBody { color: var(--muted); line-height: 1.6; }
 @media (max-width: 640px){
   .aboutHead { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+}
+@media (max-width: 900px){
+  .aboutGrid{ grid-template-columns: 1fr; }
+  .aboutVisual{ min-height: 300px; }
 }
 
 /* Reviews */
