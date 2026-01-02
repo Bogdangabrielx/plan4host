@@ -426,34 +426,7 @@ will-change: transform;
 }
 
 /* Hero */
-.hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 32px; max-width: 1100px; margin: 48px auto; padding: 0 20px; align-items: center; position: relative; overflow: hidden; isolation: isolate; }
-.hero > * { position: relative; z-index: 1; }
-.hero::before,
-.hero::after{
-  content: "";
-  position: absolute;
-  inset: -22%;
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(56px);
-  transform: translateZ(0);
-}
-/* Pastel/glow blob — top-left (success green) */
-.hero::before{
-  background: radial-gradient(55% 60% at 12% 6%,
-    color-mix(in srgb, var(--success) 28%, transparent) 0%,
-    transparent 70%);
-  opacity: .14;
-}
-/* Pastel/glow blob — bottom-right (primary blue) */
-.hero::after{
-  /* Keep landing's own --primary intact; define blob-local primary */
-  --primary: hsl(220 92% 62%);
-  background: radial-gradient(55% 60% at 92% 96%,
-    color-mix(in srgb, var(--primary) 22%, transparent) 0%,
-    transparent 72%);
-  opacity: .08; /* target ~0.06–0.10 */
-}
+.hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 32px; max-width: 1100px; margin: 48px auto; padding: 0 20px; align-items: center; }
 .heroText h1 {
   font-size: clamp(36px, 6vw, 64px);
   line-height: 1.05;
@@ -877,11 +850,6 @@ will-change: transform;
 @media (max-width: 1100px) { .footerGrid { grid-template-columns: 1fr 1fr 1fr; } }
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }
-  /* Mobile: push the blue blob further out & reduce intensity */
-  .hero::after{
-    inset: -30%;
-    opacity: .055; /* target ~0.04–0.08 */
-  }
   .pricingGrid { grid-template-columns: 1fr; }
   .menu { display: none; }
   .footerGrid { grid-template-columns: 1fr 1fr; }
