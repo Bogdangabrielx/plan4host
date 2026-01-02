@@ -738,10 +738,10 @@ will-change: transform;
 /* About layout: image left, card right */
 .aboutGrid{
   display: grid;
-  grid-template-columns: minmax(0, 315px) minmax(0, 390px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 28px;
   align-items: start;
-  justify-content: center;
+  width: 100%;
 }
 .aboutVisual{
   background: var(--card);
@@ -751,6 +751,9 @@ will-change: transform;
   display: grid;
   place-items: stretch;
   aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 420px;
+  justify-self: start;
 }
 .aboutVisual img{
   width: 100%;
@@ -761,7 +764,7 @@ will-change: transform;
   border-radius: inherit;
   transform: scale(1.01);
 }
-.aboutGrid .aboutCard{ width: 100%; }
+.aboutGrid .aboutCard{ width: 100%; max-width: 520px; justify-self: end; }
 
 /* About card */
 .aboutCard { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 22px; padding-top: 30px; display: grid; gap: 12px; width: min(520px, 100%); justify-items: center; text-align: center; }
@@ -778,7 +781,9 @@ will-change: transform;
 }
 @media (max-width: 900px){
   .aboutGrid{ grid-template-columns: 1fr; }
-  .aboutVisual{ min-height: 300px; }
+  .aboutVisual{ max-width: min(420px, 100%); }
+  .aboutVisual{ justify-self: center; }
+  .aboutGrid .aboutCard{ justify-self: center; }
 }
 
 /* Reviews */
