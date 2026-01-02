@@ -740,7 +740,7 @@ will-change: transform;
   display: grid;
   grid-template-columns: minmax(0, 315px) minmax(0, 390px);
   gap: 28px;
-  align-items: stretch;
+  align-items: start;
   justify-content: center;
 }
 .aboutVisual{
@@ -750,7 +750,7 @@ will-change: transform;
   overflow: hidden;
   display: grid;
   place-items: stretch;
-  min-height: 270px;
+  aspect-ratio: 1 / 1;
 }
 .aboutVisual img{
   width: 100%;
