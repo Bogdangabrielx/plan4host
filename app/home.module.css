@@ -427,7 +427,13 @@ will-change: transform;
 
 /* Hero */
 .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 32px; max-width: 1100px; margin: 48px auto; padding: 0 20px; align-items: center; }
-.heroText h1 { font-size: clamp(36px, 6vw, 64px); line-height: 1.05; margin: 0 0 12px; }
+.heroText h1 {
+  font-size: clamp(36px, 6vw, 64px);
+  line-height: 1.05;
+  margin: 0 0 12px;
+  /* Slightly softer than --text (for "Stay Smart, Host") */
+  color: color-mix(in srgb, var(--text) 86%, var(--bground) 14%);
+}
 .heroText p { color: var(--muted); margin: 0 0 20px; max-width: 58ch; }
 .accent { color: var(--primary); }
 
