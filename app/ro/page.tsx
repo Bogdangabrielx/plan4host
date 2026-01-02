@@ -834,25 +834,25 @@ export default function HomePageRO() {
           </Link>
         </div>
 	        <div className={styles.menu} id="nav-menu">
-	          <a
-	            href="#insights"
-	            className={`${styles.menuLink} ${styles.focusable}`}
-	            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
-	          >
-	            Impact
-	          </a>
-	          <a
-	            href="#features-title"
-	            className={`${styles.menuLink} ${styles.focusable}`}
-	            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
-	          >
-	            Funcții
-	          </a>
-	          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>Despre</a>
-	          <a href="#recenzii" className={`${styles.menuLink} ${styles.focusable}`}>Recenzii</a>
-	          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Prețuri</a>
-	          <a
-	            href="#faq"
+		          <a
+		            href="#insights"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
+		          >
+		            Impact
+		          </a>
+		          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>Despre</a>
+		          <a
+		            href="#features-title"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+		          >
+		            Funcții
+		          </a>
+		          <a href="#recenzii" className={`${styles.menuLink} ${styles.focusable}`}>Recenzii</a>
+		          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Prețuri</a>
+		          <a
+		            href="#faq"
 	            className={`${styles.menuLink} ${styles.focusable}`}
 	            onClick={(e) => { e.preventDefault(); scrollToId('faq'); }}
 	          >
@@ -884,20 +884,21 @@ export default function HomePageRO() {
       </nav>
 
       {/* Meniu mobil */}
-	      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
-	        <a
-	          href="#insights"
-	          className={`${styles.mobileLink} ${styles.focusable}`}
-	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
-	        >
-	          Impact
-	        </a>
-	        <a
-	          href="#features-title"
-	          className={`${styles.mobileLink} ${styles.focusable}`}
-	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
-	        >
-	          {/* Zonă invizibilă pentru a captura tap-uri pe mobil */}
+		      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
+		        <a
+		          href="#insights"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
+		        >
+		          Impact
+		        </a>
+		        <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Despre</a>
+		        <a
+		          href="#features-title"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
+		        >
+		          {/* Zonă invizibilă pentru a captura tap-uri pe mobil */}
 	          <div
 	            aria-hidden
             onPointerDown={onFeaturesPointerDown}
@@ -905,13 +906,12 @@ export default function HomePageRO() {
             onPointerLeave={() => setFeaturesHover(false)}
             style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: featuresHover ? 'none' : 'auto' }}
           />
-	          Funcții
-	        </a>
-	        <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Despre</a>
-	        <a href="#recenzii" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Recenzii</a>
-	        <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
-	        <a
-	          href="#faq"
+		          Funcții
+		        </a>
+		        <a href="#recenzii" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Recenzii</a>
+		        <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
+		        <a
+		          href="#faq"
 	          className={`${styles.mobileLink} ${styles.focusable}`}
 	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq'); }}
 	        >
@@ -1005,7 +1005,26 @@ export default function HomePageRO() {
         <TimeSavingsStripRo />
       </section>
 
-      {/* Caracteristici */}
+      {/* Despre */}
+      <section id="about" className={styles.about} aria-labelledby="about-title">
+        <h2 id="about-title">Despre</h2>
+        <div className={styles.aboutCard}>
+          <div className={styles.aboutBrandTitle}>Plan4Host</div>
+          <div className={styles.aboutTitle}>Claritate. Precizie. Control fără efort.</div>
+          <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
+          <p className={styles.aboutBody}>
+            Plan4Host aduce claritate și control în managementul ospitalității. Toate rezervările, sarcinile și interacțiunile cu oaspeții sunt centralizate într‑un calendar inteligent, direct pe telefon, oferindu‑ți o privire de ansamblu completă dintr‑o clipă.
+          </p>
+          <p className={styles.aboutBody}>
+            Fluxurile din recepție devin fără efort — check‑in‑urile, confirmările și actualizările se rezolvă în doar câteva click‑uri. Oaspeții primesc mesaje la timp, într‑o succesiune bine gândită, astfel încât să se simtă ghidați și susținuți pe tot parcursul sejurului.
+          </p>
+          <p className={styles.aboutBody}>
+            Simplificând operațiunile și ridicând nivelul comunicării, Plan4Host îi ajută pe gazde să ofere experiențe excepționale, care duc natural la recenzii excelente și recomandări călduroase.
+          </p>
+        </div>
+      </section>
+
+      {/* Funcții */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title">Funcții</h2>
         <div
@@ -1066,25 +1085,6 @@ export default function HomePageRO() {
               </svg>
             )}
           </button>
-        </div>
-      </section>
-
-      {/* Despre */}
-      <section id="about" className={styles.about} aria-labelledby="about-title">
-        <h2 id="about-title">Despre</h2>
-        <div className={styles.aboutCard}>
-          <div className={styles.aboutBrandTitle}>Plan4Host</div>
-          <div className={styles.aboutTitle}>Claritate. Precizie. Control fără efort.</div>
-          <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
-          <p className={styles.aboutBody}>
-            Plan4Host aduce claritate și control în managementul ospitalității. Toate rezervările, sarcinile și interacțiunile cu oaspeții sunt centralizate într‑un calendar inteligent, direct pe telefon, oferindu‑ți o privire de ansamblu completă dintr‑o clipă.
-          </p>
-          <p className={styles.aboutBody}>
-            Fluxurile din recepție devin fără efort — check‑in‑urile, confirmările și actualizările se rezolvă în doar câteva click‑uri. Oaspeții primesc mesaje la timp, într‑o succesiune bine gândită, astfel încât să se simtă ghidați și susținuți pe tot parcursul sejurului.
-          </p>
-          <p className={styles.aboutBody}>
-            Simplificând operațiunile și ridicând nivelul comunicării, Plan4Host îi ajută pe gazde să ofere experiențe excepționale, care duc natural la recenzii excelente și recomandări călduroase.
-          </p>
         </div>
       </section>
 

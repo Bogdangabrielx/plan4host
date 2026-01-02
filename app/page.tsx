@@ -1103,25 +1103,25 @@ export default function HomePage() {
 
         {/* Desktop menu */}
 	        <div className={styles.menu} id="nav-menu">
-	          <a
-	            href="#insights"
-	            className={`${styles.menuLink} ${styles.focusable}`}
-	            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
-	          >
-	            Impact
-	          </a>
-	          <a
-	            href="#features-title"
-	            className={`${styles.menuLink} ${styles.focusable}`}
-	            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
-	          >
-	            Features
-	          </a>
-	          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
-	          <a href="#reviews" className={`${styles.menuLink} ${styles.focusable}`}>Reviews</a>
-	          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
-	          <a
-	            href="#faq"
+		          <a
+		            href="#insights"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
+		          >
+		            Impact
+		          </a>
+		          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
+		          <a
+		            href="#features-title"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+		          >
+		            Features
+		          </a>
+		          <a href="#reviews" className={`${styles.menuLink} ${styles.focusable}`}>Reviews</a>
+		          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
+		          <a
+		            href="#faq"
 	            className={`${styles.menuLink} ${styles.focusable}`}
 	            onClick={(e) => { e.preventDefault(); scrollToId('faq'); }}
 	          >
@@ -1165,33 +1165,33 @@ export default function HomePage() {
       </nav>
 
       {/* Mobile menu panel */}
-	      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
-	        <a
-	          href="#insights"
-	          className={`${styles.mobileLink} ${styles.focusable}`}
-	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
-	        >
-	          Impact
-	        </a>
-	        <a
-	          href="#features-title"
-	          className={`${styles.mobileLink} ${styles.focusable}`}
-	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
-	        >
-	          Features
-	        </a>
-	        <a
-	          href="#about"
-	          className={`${styles.mobileLink} ${styles.focusable}`}
-	          onClick={() => setNavOpen(false)}
-	        >
-	          About
-	        </a>
-	        <a
-	          href="#reviews"
-	          className={`${styles.mobileLink} ${styles.focusable}`}
-	          onClick={() => setNavOpen(false)}
-	        >
+		      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
+		        <a
+		          href="#insights"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
+		        >
+		          Impact
+		        </a>
+		        <a
+		          href="#about"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={() => setNavOpen(false)}
+		        >
+		          About
+		        </a>
+		        <a
+		          href="#features-title"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
+		        >
+		          Features
+		        </a>
+		        <a
+		          href="#reviews"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={() => setNavOpen(false)}
+		        >
 	          Reviews
 	        </a>
 	        <a
@@ -1304,6 +1304,25 @@ export default function HomePage() {
         <TimeSavingsStrip />
       </section>
 
+      {/* About */}
+      <section id="about" className={styles.about} aria-labelledby="about-title">
+        <h2 id="about-title">About</h2>
+        <div className={styles.aboutCard}>
+          <div className={styles.aboutBrandTitle}>Plan4Host</div>
+          <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
+          <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
+          <p className={styles.aboutBody}>
+            Plan4Host brings clarity and control to hospitality management. All reservations, tasks, and guest interactions are centralized in one smart calendar on your phone, giving you a complete overview at a glance.
+          </p>
+          <p className={styles.aboutBody}>
+            Reception workflows become effortless — check‑ins, confirmations, and updates are handled in just a few clicks. Guests receive timely, well‑sequenced messages, ensuring they feel guided and supported throughout their stay.
+          </p>
+          <p className={styles.aboutBody}>
+            By simplifying operations and elevating communication, Plan4Host helps hosts deliver exceptional experiences that naturally lead to great reviews and warm recommendations.
+          </p>
+        </div>
+      </section>
+
       {/* Features */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title">Features</h2>
@@ -1366,25 +1385,6 @@ export default function HomePage() {
               </svg>
             )}
           </button>
-        </div>
-      </section>
-
-      {/* About */}
-      <section id="about" className={styles.about} aria-labelledby="about-title">
-        <h2 id="about-title">About</h2>
-        <div className={styles.aboutCard}>
-          <div className={styles.aboutBrandTitle}>Plan4Host</div>
-          <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
-          <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
-          <p className={styles.aboutBody}>
-            Plan4Host brings clarity and control to hospitality management. All reservations, tasks, and guest interactions are centralized in one smart calendar on your phone, giving you a complete overview at a glance.
-          </p>
-          <p className={styles.aboutBody}>
-            Reception workflows become effortless — check‑ins, confirmations, and updates are handled in just a few clicks. Guests receive timely, well‑sequenced messages, ensuring they feel guided and supported throughout their stay.
-          </p>
-          <p className={styles.aboutBody}>
-            By simplifying operations and elevating communication, Plan4Host helps hosts deliver exceptional experiences that naturally lead to great reviews and warm recommendations.
-          </p>
         </div>
       </section>
 
