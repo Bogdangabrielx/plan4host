@@ -833,15 +833,21 @@ export default function HomePageRO() {
             <img src="/ro.png" alt="" width={22} height={22} style={{ display: 'block' }} />
           </Link>
         </div>
-	        <div className={styles.menu} id="nav-menu">
+		        <div className={styles.menu} id="nav-menu">
+			          <a
+			            href="#insights-title"
+			            className={`${styles.menuLink} ${styles.focusable}`}
+			            onClick={(e) => { e.preventDefault(); scrollToId('insights-title'); }}
+			          >
+			            Impact
+			          </a>
 		          <a
-		            href="#insights"
+		            href="#about-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
+		            onClick={(e) => { e.preventDefault(); scrollToId('about-title'); }}
 		          >
-		            Impact
+		            Despre
 		          </a>
-		          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>Despre</a>
 		          <a
 		            href="#features-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
@@ -849,17 +855,35 @@ export default function HomePageRO() {
 		          >
 		            Funcții
 		          </a>
-		          <a href="#recenzii" className={`${styles.menuLink} ${styles.focusable}`}>Recenzii</a>
-		          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Prețuri</a>
 		          <a
-		            href="#faq"
-	            className={`${styles.menuLink} ${styles.focusable}`}
-	            onClick={(e) => { e.preventDefault(); scrollToId('faq'); }}
-	          >
-	            FAQ
-	          </a>
-	          <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
-	        </div>
+		            href="#reviews-title"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('reviews-title'); }}
+		          >
+		            Recenzii
+		          </a>
+		          <a
+		            href="#pricing-title"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('pricing-title'); }}
+		          >
+		            Prețuri
+		          </a>
+		          <a
+		            href="#faq-title"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('faq-title'); }}
+		          >
+		            FAQ
+		          </a>
+		          <a
+		            href="#contact-title"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('contact-title'); }}
+		          >
+		            Contact
+		          </a>
+		        </div>
         <div className={styles.actions}>
           <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Logare</Link>
           <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
@@ -886,13 +910,19 @@ export default function HomePageRO() {
       {/* Meniu mobil */}
 		      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
 		        <a
-		          href="#insights"
+		          href="#insights-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights-title'); }}
 		        >
 		          Impact
 		        </a>
-		        <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Despre</a>
+		        <a
+		          href="#about-title"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('about-title'); }}
+		        >
+		          Despre
+		        </a>
 		        <a
 		          href="#features-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
@@ -908,17 +938,35 @@ export default function HomePageRO() {
           />
 		          Funcții
 		        </a>
-		        <a href="#recenzii" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Recenzii</a>
-		        <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
 		        <a
-		          href="#faq"
-	          className={`${styles.mobileLink} ${styles.focusable}`}
-	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq'); }}
-	        >
-	          FAQ
-	        </a>
-	        <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Contact</a>
-	      </div>
+		          href="#reviews-title"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('reviews-title'); }}
+		        >
+		          Recenzii
+		        </a>
+		        <a
+		          href="#pricing-title"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('pricing-title'); }}
+		        >
+		          Prețuri
+		        </a>
+		        <a
+		          href="#faq-title"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq-title'); }}
+		        >
+		          FAQ
+		        </a>
+		        <a
+		          href="#contact-title"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('contact-title'); }}
+		        >
+		          Contact
+		        </a>
+		      </div>
 
       {/* Hero */}
       <section id="content" className={styles.hero}>

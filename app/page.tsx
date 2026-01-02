@@ -1102,15 +1102,21 @@ export default function HomePage() {
         </div>
 
         {/* Desktop menu */}
-	        <div className={styles.menu} id="nav-menu">
+		        <div className={styles.menu} id="nav-menu">
+			          <a
+			            href="#insights-title"
+			            className={`${styles.menuLink} ${styles.focusable}`}
+			            onClick={(e) => { e.preventDefault(); scrollToId('insights-title'); }}
+			          >
+			            Impact
+			          </a>
 		          <a
-		            href="#insights"
+		            href="#about-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
+		            onClick={(e) => { e.preventDefault(); scrollToId('about-title'); }}
 		          >
-		            Impact
+		            About
 		          </a>
-		          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
 		          <a
 		            href="#features-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
@@ -1118,17 +1124,35 @@ export default function HomePage() {
 		          >
 		            Features
 		          </a>
-		          <a href="#reviews" className={`${styles.menuLink} ${styles.focusable}`}>Reviews</a>
-		          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
 		          <a
-		            href="#faq"
-	            className={`${styles.menuLink} ${styles.focusable}`}
-	            onClick={(e) => { e.preventDefault(); scrollToId('faq'); }}
-	          >
-	            FAQ
-	          </a>
-	          <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
-	        </div>
+		            href="#reviews-title"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('reviews-title'); }}
+		          >
+		            Reviews
+		          </a>
+		          <a
+		            href="#pricing-title"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('pricing-title'); }}
+		          >
+		            Pricing
+		          </a>
+		          <a
+		            href="#faq-title"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('faq-title'); }}
+		          >
+		            FAQ
+		          </a>
+		          <a
+		            href="#contact-title"
+		            className={`${styles.menuLink} ${styles.focusable}`}
+		            onClick={(e) => { e.preventDefault(); scrollToId('contact-title'); }}
+		          >
+		            Contact
+		          </a>
+		        </div>
 
         {/* Actions + Mobile toggle */}
         <div className={styles.actions}>
@@ -1167,16 +1191,16 @@ export default function HomePage() {
       {/* Mobile menu panel */}
 		      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
 		        <a
-		          href="#insights"
+		          href="#insights-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights-title'); }}
 		        >
 		          Impact
 		        </a>
 		        <a
-		          href="#about"
+		          href="#about-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={() => setNavOpen(false)}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('about-title'); }}
 		        >
 		          About
 		        </a>
@@ -1188,34 +1212,34 @@ export default function HomePage() {
 		          Features
 		        </a>
 		        <a
-		          href="#reviews"
+		          href="#reviews-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={() => setNavOpen(false)}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('reviews-title'); }}
 		        >
-	          Reviews
-	        </a>
-	        <a
-	          href="#pricing"
-	          className={`${styles.mobileLink} ${styles.focusable}`}
-	          onClick={() => setNavOpen(false)}
-	        >
-	          Pricing
-	        </a>
-	        <a
-	          href="#faq"
-	          className={`${styles.mobileLink} ${styles.focusable}`}
-	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq'); }}
-	        >
-	          FAQ
-	        </a>
-	        <a
-	          href="#contact"
-	          className={`${styles.mobileLink} ${styles.focusable}`}
-	          onClick={() => setNavOpen(false)}
-	        >
-	          Contact
-	        </a>
-	      </div>
+		          Reviews
+		        </a>
+		        <a
+		          href="#pricing-title"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('pricing-title'); }}
+		        >
+		          Pricing
+		        </a>
+		        <a
+		          href="#faq-title"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq-title'); }}
+		        >
+		          FAQ
+		        </a>
+		        <a
+		          href="#contact-title"
+		          className={`${styles.mobileLink} ${styles.focusable}`}
+		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('contact-title'); }}
+		        >
+		          Contact
+		        </a>
+		      </div>
 
       {/* Hero */}
       <section id="content" className={styles.hero}>
