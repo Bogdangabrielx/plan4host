@@ -1125,33 +1125,33 @@ export default function HomePage() {
         </div>
 
         {/* Desktop menu */}
-        <div className={styles.menu} id="nav-menu">
-          <a
-            href="#insights"
-            className={`${styles.menuLink} ${styles.focusable}`}
-            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
-          >
-            Impact
-          </a>
-          <a
-            href="#features-title"
-            className={`${styles.menuLink} ${styles.focusable}`}
-            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
-          >
-            Features
-          </a>
-          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
-          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
-          <a
-            href="#faq"
-            className={`${styles.menuLink} ${styles.focusable}`}
-            onClick={(e) => { e.preventDefault(); scrollToId('faq'); }}
-          >
-            FAQ
-          </a>
-          <a href="#reviews" className={`${styles.menuLink} ${styles.focusable}`}>Reviews</a>
-          <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
-        </div>
+	        <div className={styles.menu} id="nav-menu">
+	          <a
+	            href="#insights"
+	            className={`${styles.menuLink} ${styles.focusable}`}
+	            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
+	          >
+	            Impact
+	          </a>
+	          <a
+	            href="#features-title"
+	            className={`${styles.menuLink} ${styles.focusable}`}
+	            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+	          >
+	            Features
+	          </a>
+	          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>About</a>
+	          <a href="#reviews" className={`${styles.menuLink} ${styles.focusable}`}>Reviews</a>
+	          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Pricing</a>
+	          <a
+	            href="#faq"
+	            className={`${styles.menuLink} ${styles.focusable}`}
+	            onClick={(e) => { e.preventDefault(); scrollToId('faq'); }}
+	          >
+	            FAQ
+	          </a>
+	          <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
+	        </div>
 
         {/* Actions + Mobile toggle */}
         <div className={styles.actions}>
@@ -1188,57 +1188,57 @@ export default function HomePage() {
       </nav>
 
       {/* Mobile menu panel */}
-      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
-        <a
-          href="#features-title"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
-        >
-          Features
-        </a>
-        <a
-          href="#insights"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
-        >
-          Impact
-        </a>
-        <a
-          href="#pricing"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={() => setNavOpen(false)}
-        >
-          Pricing
-        </a>
-        <a
-          href="#about"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={() => setNavOpen(false)}
-        >
-          About
-        </a>
-        <a
-          href="#faq"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq'); }}
-        >
-          FAQ
-        </a>
-        <a
-          href="#reviews"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={() => setNavOpen(false)}
-        >
-          Reviews
-        </a>
-        <a
-          href="#contact"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={() => setNavOpen(false)}
-        >
-          Contact
-        </a>
-      </div>
+	      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
+	        <a
+	          href="#insights"
+	          className={`${styles.mobileLink} ${styles.focusable}`}
+	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
+	        >
+	          Impact
+	        </a>
+	        <a
+	          href="#features-title"
+	          className={`${styles.mobileLink} ${styles.focusable}`}
+	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
+	        >
+	          Features
+	        </a>
+	        <a
+	          href="#about"
+	          className={`${styles.mobileLink} ${styles.focusable}`}
+	          onClick={() => setNavOpen(false)}
+	        >
+	          About
+	        </a>
+	        <a
+	          href="#reviews"
+	          className={`${styles.mobileLink} ${styles.focusable}`}
+	          onClick={() => setNavOpen(false)}
+	        >
+	          Reviews
+	        </a>
+	        <a
+	          href="#pricing"
+	          className={`${styles.mobileLink} ${styles.focusable}`}
+	          onClick={() => setNavOpen(false)}
+	        >
+	          Pricing
+	        </a>
+	        <a
+	          href="#faq"
+	          className={`${styles.mobileLink} ${styles.focusable}`}
+	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq'); }}
+	        >
+	          FAQ
+	        </a>
+	        <a
+	          href="#contact"
+	          className={`${styles.mobileLink} ${styles.focusable}`}
+	          onClick={() => setNavOpen(false)}
+	        >
+	          Contact
+	        </a>
+	      </div>
 
       {/* Hero */}
       <section id="content" className={styles.hero}>
@@ -1409,6 +1409,76 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* About */}
+      <section id="about" className={styles.about} aria-labelledby="about-title">
+        <h2 id="about-title">About</h2>
+        <div className={styles.aboutCard}>
+          <div className={styles.aboutBrandTitle}>Plan4Host</div>
+          <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
+          <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
+          <p className={styles.aboutBody}>
+            Plan4Host brings clarity and control to hospitality management. All reservations, tasks, and guest interactions are centralized in one smart calendar on your phone, giving you a complete overview at a glance.
+          </p>
+          <p className={styles.aboutBody}>
+            Reception workflows become effortless — check‑ins, confirmations, and updates are handled in just a few clicks. Guests receive timely, well‑sequenced messages, ensuring they feel guided and supported throughout their stay.
+          </p>
+          <p className={styles.aboutBody}>
+            By simplifying operations and elevating communication, Plan4Host helps hosts deliver exceptional experiences that naturally lead to great reviews and warm recommendations.
+          </p>
+        </div>
+      </section>
+
+      {/* Reviews */}
+      <section id="reviews" className={styles.reviews} aria-labelledby="reviews-title">
+        <h2 id="reviews-title">What our users say</h2>
+        <div className={styles.reviewsBody}>
+          <div
+            className={styles.reviewsCard}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="User testimonials"
+            aria-live="polite"
+            tabIndex={0}
+            onKeyDown={onKey}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+          >
+            <button
+              type="button"
+              className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
+              aria-label="Previous review"
+              onClick={() => setRevIdx(i => (i - 1 + reviewsEn.length) % reviewsEn.length)}
+            >
+              C
+            </button>
+            {(() => {
+              const r = reviewsEn[revIdx];
+              const parts = String(r.author || '').split('•');
+              const left = (parts[0] || '').trim();
+              const right = (parts[1] || '').trim();
+              return (
+                <div style={{ display: 'grid', gap: 10 }}>
+                  <div className={styles.reviewTitle}>{r.title}</div>
+                  <div className={styles.reviewBody}>{r.body}</div>
+                  <div className={styles.reviewAuthor}>
+                    <span className={styles.authorMain}>{left}</span>
+                    {right && <span className={styles.authorDetail}> • {right}</span>}
+                  </div>
+                </div>
+              );
+            })()}
+            <button
+              type="button"
+              className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
+              aria-label="Next review"
+              onClick={() => setRevIdx(i => (i + 1) % reviewsEn.length)}
+            >
+              E
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
         <h2 id="pricing-title">Pricing</h2>
@@ -1509,76 +1579,6 @@ export default function HomePage() {
         <p style={{ marginTop: 16, color: "var(--muted)" }}>
           Prices: €9.99/month (Basic), €14.99/month (Standard), €17.99/month (Premium). VAT included.
         </p>
-      </section>
-
-      {/* About */}
-      <section id="about" className={styles.about} aria-labelledby="about-title">
-        <h2 id="about-title">About</h2>
-        <div className={styles.aboutCard}>
-          <div className={styles.aboutBrandTitle}>Plan4Host</div>
-          <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
-          <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
-          <p className={styles.aboutBody}>
-            Plan4Host brings clarity and control to hospitality management. All reservations, tasks, and guest interactions are centralized in one smart calendar on your phone, giving you a complete overview at a glance.
-          </p>
-          <p className={styles.aboutBody}>
-            Reception workflows become effortless — check‑ins, confirmations, and updates are handled in just a few clicks. Guests receive timely, well‑sequenced messages, ensuring they feel guided and supported throughout their stay.
-          </p>
-          <p className={styles.aboutBody}>
-            By simplifying operations and elevating communication, Plan4Host helps hosts deliver exceptional experiences that naturally lead to great reviews and warm recommendations.
-          </p>
-        </div>
-      </section>
-
-      {/* Reviews */}
-      <section id="reviews" className={styles.reviews} aria-labelledby="reviews-title">
-        <h2 id="reviews-title">What our users say</h2>
-        <div className={styles.reviewsBody}>
-          <div
-            className={styles.reviewsCard}
-            role="region"
-            aria-roledescription="carousel"
-            aria-label="User testimonials"
-            aria-live="polite"
-            tabIndex={0}
-            onKeyDown={onKey}
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
-          >
-            <button
-              type="button"
-              className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
-              aria-label="Previous review"
-              onClick={() => setRevIdx(i => (i - 1 + reviewsEn.length) % reviewsEn.length)}
-            >
-              C
-            </button>
-            {(() => {
-              const r = reviewsEn[revIdx];
-              const parts = String(r.author || '').split('•');
-              const left = (parts[0] || '').trim();
-              const right = (parts[1] || '').trim();
-              return (
-                <div style={{ display: 'grid', gap: 10 }}>
-                  <div className={styles.reviewTitle}>{r.title}</div>
-                  <div className={styles.reviewBody}>{r.body}</div>
-                  <div className={styles.reviewAuthor}>
-                    <span className={styles.authorMain}>{left}</span>
-                    {right && <span className={styles.authorDetail}> • {right}</span>}
-                  </div>
-                </div>
-              );
-            })()}
-            <button
-              type="button"
-              className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
-              aria-label="Next review"
-              onClick={() => setRevIdx(i => (i + 1) % reviewsEn.length)}
-            >
-              E
-            </button>
-          </div>
-        </div>
       </section>
 
       {/* FAQ */}

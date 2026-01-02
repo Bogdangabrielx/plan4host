@@ -851,33 +851,33 @@ export default function HomePageRO() {
             <img src="/ro.png" alt="" width={22} height={22} style={{ display: 'block' }} />
           </Link>
         </div>
-        <div className={styles.menu} id="nav-menu">
-          <a
-            href="#insights"
-            className={`${styles.menuLink} ${styles.focusable}`}
-            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
-          >
-            Impact
-          </a>
-          <a
-            href="#features-title"
-            className={`${styles.menuLink} ${styles.focusable}`}
-            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
-          >
-            Funcții
-          </a>
-          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Prețuri</a>
-          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>Despre</a>
-          <a
-            href="#faq"
-            className={`${styles.menuLink} ${styles.focusable}`}
-            onClick={(e) => { e.preventDefault(); scrollToId('faq'); }}
-          >
-            FAQ
-          </a>
-          <a href="#recenzii" className={`${styles.menuLink} ${styles.focusable}`}>Recenzii</a>
-          <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
-        </div>
+	        <div className={styles.menu} id="nav-menu">
+	          <a
+	            href="#insights"
+	            className={`${styles.menuLink} ${styles.focusable}`}
+	            onClick={(e) => { e.preventDefault(); scrollToId('insights'); }}
+	          >
+	            Impact
+	          </a>
+	          <a
+	            href="#features-title"
+	            className={`${styles.menuLink} ${styles.focusable}`}
+	            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+	          >
+	            Funcții
+	          </a>
+	          <a href="#about" className={`${styles.menuLink} ${styles.focusable}`}>Despre</a>
+	          <a href="#recenzii" className={`${styles.menuLink} ${styles.focusable}`}>Recenzii</a>
+	          <a href="#pricing" className={`${styles.menuLink} ${styles.focusable}`}>Prețuri</a>
+	          <a
+	            href="#faq"
+	            className={`${styles.menuLink} ${styles.focusable}`}
+	            onClick={(e) => { e.preventDefault(); scrollToId('faq'); }}
+	          >
+	            FAQ
+	          </a>
+	          <a href="#contact" className={`${styles.menuLink} ${styles.focusable}`}>Contact</a>
+	        </div>
         <div className={styles.actions}>
           <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Logare</Link>
           <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
@@ -902,41 +902,41 @@ export default function HomePageRO() {
       </nav>
 
       {/* Meniu mobil */}
-      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
-        <a
-          href="#insights"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
-        >
-          Impact
-        </a>
-        <a
-          href="#features-title"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
-        >
-          {/* Zonă invizibilă pentru a captura tap-uri pe mobil */}
-          <div
-            aria-hidden
+	      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
+	        <a
+	          href="#insights"
+	          className={`${styles.mobileLink} ${styles.focusable}`}
+	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights'); }}
+	        >
+	          Impact
+	        </a>
+	        <a
+	          href="#features-title"
+	          className={`${styles.mobileLink} ${styles.focusable}`}
+	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
+	        >
+	          {/* Zonă invizibilă pentru a captura tap-uri pe mobil */}
+	          <div
+	            aria-hidden
             onPointerDown={onFeaturesPointerDown}
             onPointerEnter={() => setFeaturesHover(true)}
             onPointerLeave={() => setFeaturesHover(false)}
             style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: featuresHover ? 'none' : 'auto' }}
           />
-          Funcții
-        </a>
-        <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
-        <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Despre</a>
-        <a
-          href="#faq"
-          className={`${styles.mobileLink} ${styles.focusable}`}
-          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq'); }}
-        >
-          FAQ
-        </a>
-        <a href="#recenzii" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Recenzii</a>
-        <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Contact</a>
-      </div>
+	          Funcții
+	        </a>
+	        <a href="#about" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Despre</a>
+	        <a href="#recenzii" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Recenzii</a>
+	        <a href="#pricing" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Prețuri</a>
+	        <a
+	          href="#faq"
+	          className={`${styles.mobileLink} ${styles.focusable}`}
+	          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq'); }}
+	        >
+	          FAQ
+	        </a>
+	        <a href="#contact" className={`${styles.mobileLink} ${styles.focusable}`} onClick={() => setNavOpen(false)}>Contact</a>
+	      </div>
 
       {/* Hero */}
       <section id="content" className={styles.hero}>
@@ -1104,6 +1104,72 @@ export default function HomePageRO() {
         </div>
       </section>
 
+      {/* Despre */}
+      <section id="about" className={styles.about} aria-labelledby="about-title">
+        <h2 id="about-title">Despre</h2>
+        <div className={styles.aboutCard}>
+          <div className={styles.aboutBrandTitle}>Plan4Host</div>
+          <div className={styles.aboutTitle}>Claritate. Precizie. Control fără efort.</div>
+          <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
+          <p className={styles.aboutBody}>
+            Plan4Host aduce claritate și control în managementul ospitalității. Toate rezervările, sarcinile și interacțiunile cu oaspeții sunt centralizate într‑un calendar inteligent, direct pe telefon, oferindu‑ți o privire de ansamblu completă dintr‑o clipă.
+          </p>
+          <p className={styles.aboutBody}>
+            Fluxurile din recepție devin fără efort — check‑in‑urile, confirmările și actualizările se rezolvă în doar câteva click‑uri. Oaspeții primesc mesaje la timp, într‑o succesiune bine gândită, astfel încât să se simtă ghidați și susținuți pe tot parcursul sejurului.
+          </p>
+          <p className={styles.aboutBody}>
+            Simplificând operațiunile și ridicând nivelul comunicării, Plan4Host îi ajută pe gazde să ofere experiențe excepționale, care duc natural la recenzii excelente și recomandări călduroase.
+          </p>
+        </div>
+      </section>
+
+      {/* Recenzii */}
+      <section id="recenzii" className={styles.reviews} aria-labelledby="reviews-title">
+        <h2 id="reviews-title">Ce spun utilizatorii noștri</h2>
+        <div className={styles.reviewsBody}>
+          <div
+            className={styles.reviewsCard}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Recenzii utilizatori"
+            aria-live="polite"
+            tabIndex={0}
+            onKeyDown={onKey}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+          >
+            <button
+              type="button"
+              className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
+              aria-label="Recenzia anterioară"
+              onClick={() => setRevIdx(i => (i - 1 + recenziiRo.length) % recenziiRo.length)}
+            />
+            {(() => {
+              const r = recenziiRo[revIdx];
+              const parts = String(r.author || '').split('•');
+              const left = (parts[0] || '').trim();
+              const right = (parts[1] || '').trim();
+              return (
+                <div style={{ display: 'grid', gap: 10 }}>
+                  <div className={styles.reviewTitle}>{r.title}</div>
+                  <div className={styles.reviewBody}>{r.body}</div>
+                  <div className={styles.reviewAuthor}>
+                    <span className={styles.authorMain}>{left}</span>
+                    {right && <span className={styles.authorDetail}> • {right}</span>}
+                  </div>
+                </div>
+              );
+            })()}
+            <button
+              type="button"
+              className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
+              aria-label="Recenzia următoare"
+              onClick={() => setRevIdx(i => (i + 1) % recenziiRo.length)}
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Prețuri */}
       <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
         <h2 id="pricing-title">Prețuri</h2>
@@ -1188,72 +1254,6 @@ export default function HomePageRO() {
         <p style={{ marginTop: 16, color: "var(--muted)" }}>
           Prețurile sunt: 50.00 RON/lună (Basic), 75.00 RON/lună (Standard), 90.00 RON/lună (Premium). TVA inclus.
         </p>
-      </section>
-
-      {/* Despre */}
-      <section id="about" className={styles.about} aria-labelledby="about-title">
-        <h2 id="about-title">Despre</h2>
-        <div className={styles.aboutCard}>
-          <div className={styles.aboutBrandTitle}>Plan4Host</div>
-          <div className={styles.aboutTitle}>Claritate. Precizie. Control fără efort.</div>
-          <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
-          <p className={styles.aboutBody}>
-            Plan4Host aduce claritate și control în managementul ospitalității. Toate rezervările, sarcinile și interacțiunile cu oaspeții sunt centralizate într‑un calendar inteligent, direct pe telefon, oferindu‑ți o privire de ansamblu completă dintr‑o clipă.
-          </p>
-          <p className={styles.aboutBody}>
-            Fluxurile din recepție devin fără efort — check‑in‑urile, confirmările și actualizările se rezolvă în doar câteva click‑uri. Oaspeții primesc mesaje la timp, într‑o succesiune bine gândită, astfel încât să se simtă ghidați și susținuți pe tot parcursul sejurului.
-          </p>
-          <p className={styles.aboutBody}>
-            Simplificând operațiunile și ridicând nivelul comunicării, Plan4Host îi ajută pe gazde să ofere experiențe excepționale, care duc natural la recenzii excelente și recomandări călduroase.
-          </p>
-        </div>
-      </section>
-
-      {/* Recenzii */}
-      <section id="recenzii" className={styles.reviews} aria-labelledby="reviews-title">
-        <h2 id="reviews-title">Ce spun utilizatorii noștri</h2>
-        <div className={styles.reviewsBody}>
-          <div
-            className={styles.reviewsCard}
-            role="region"
-            aria-roledescription="carousel"
-            aria-label="Recenzii utilizatori"
-            aria-live="polite"
-            tabIndex={0}
-            onKeyDown={onKey}
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
-          >
-            <button
-              type="button"
-              className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
-              aria-label="Recenzia anterioară"
-              onClick={() => setRevIdx(i => (i - 1 + recenziiRo.length) % recenziiRo.length)}
-            />
-            {(() => {
-              const r = recenziiRo[revIdx];
-              const parts = String(r.author || '').split('•');
-              const left = (parts[0] || '').trim();
-              const right = (parts[1] || '').trim();
-              return (
-                <div style={{ display: 'grid', gap: 10 }}>
-                  <div className={styles.reviewTitle}>{r.title}</div>
-                  <div className={styles.reviewBody}>{r.body}</div>
-                  <div className={styles.reviewAuthor}>
-                    <span className={styles.authorMain}>{left}</span>
-                    {right && <span className={styles.authorDetail}> • {right}</span>}
-                  </div>
-                </div>
-              );
-            })()}
-            <button
-              type="button"
-              className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
-              aria-label="Recenzia următoare"
-              onClick={() => setRevIdx(i => (i + 1) % recenziiRo.length)}
-            />
-          </div>
-        </div>
       </section>
 
       {/* FAQ */}
