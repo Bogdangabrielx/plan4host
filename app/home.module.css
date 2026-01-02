@@ -813,6 +813,7 @@ will-change: transform;
 @media (max-width: 1100px) { .footerGrid { grid-template-columns: 1fr 1fr 1fr; } }
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }
+  .heroVisual { width: min(520px, 100%); justify-self: center; }
   .pricingGrid { grid-template-columns: 1fr; }
   .menu { display: none; }
   .footerGrid { grid-template-columns: 1fr 1fr; }
