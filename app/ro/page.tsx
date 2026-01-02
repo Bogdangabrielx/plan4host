@@ -650,8 +650,6 @@ export default function HomePageRO() {
   const [isPwa, setIsPwa] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
-  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
-  const [showHeroVideo, setShowHeroVideo] = useState(false);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
   const [faqOpen, setFaqOpen] = useState<Record<string, boolean>>({});
@@ -722,22 +720,6 @@ export default function HomePageRO() {
       return () => { try { mq.removeEventListener('change', apply); } catch { mq.removeListener(apply as any); } };
     } catch { setIsDesktop(false); }
   }, []);
-  // Swap from static preview to video only after user scrolls (or if already scrolled)
-  useEffect(() => {
-    const reveal = () => {
-      setShowHeroVideo(true);
-      window.removeEventListener('scroll', onScroll, true);
-    };
-    const onScroll = () => { if (window.scrollY > 20) reveal(); };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    if (typeof window !== "undefined" && window.scrollY > 20) reveal();
-    return () => window.removeEventListener('scroll', onScroll, true);
-  }, []);
-  useEffect(() => {
-    if (showHeroVideo) {
-      try { heroVideoRef.current?.play(); } catch {}
-    }
-  }, [showHeroVideo]);
   const beneficii: string[] = [
     "Formular personalizat pentru check-in digital",
     "Semnătură electronică conformă GDPR și verificare foto ID (ștearsă automat la confirmarea rezervării)",
@@ -975,29 +957,12 @@ export default function HomePageRO() {
           </div>
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview">
-          {showHeroVideo ? (
-            <video
-              ref={heroVideoRef}
-              className={styles.focusable}
-              src="/Hero_video2.mp4"
-              poster="/Hero_video2.mp4"
-              muted
-              autoPlay
-              loop
-              playsInline
-              preload="metadata"
-              style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 12 }}
-            >
-              Video preview indisponibil.
-            </video>
-          ) : (
-            <img
-              src="/Preview%20Calendar.png"
-              alt="Previzualizare calendar Plan4Host"
-              style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 12, display: 'block' }}
-              className={styles.focusable}
-            />
-          )}
+          <img
+            src="/Landing_Mockups.png"
+            alt="Mockup-uri aplicația Plan4Host"
+            style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 12, display: 'block' }}
+            className={styles.focusable}
+          />
         </div>
       </section>
 
