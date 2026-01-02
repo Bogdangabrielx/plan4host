@@ -759,7 +759,7 @@ will-change: transform;
   object-position: center;
   display: block;
   border-radius: inherit;
-  transform: scale(1.02);
+  transform: scale(1.01);
 }
 .aboutGrid .aboutCard{ width: 100%; }
 
