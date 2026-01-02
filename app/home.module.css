@@ -463,8 +463,8 @@ will-change: transform;
     text-align: center;
   }
 }
-.heroVisual { background: linear-gradient(180deg, rgba(2,6,23,.02), transparent); border: 1px solid var(--border); border-radius: 18px; padding: 16px; min-height: 320px; display: grid; place-items: center; overflow: hidden; }
-.heroVisual img { width: 100%; height: auto; object-fit: contain; }
+.heroVisual { background: linear-gradient(180deg, rgba(2,6,23,.02), transparent); border: 1px solid var(--border); border-radius: 18px; padding: 0; min-height: 320px; display: grid; place-items: stretch; overflow: hidden; }
+.heroVisual img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* Features */
 .features { max-width: 1100px; margin: 80px auto; padding: 0 20px; position: relative; }

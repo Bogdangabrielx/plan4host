@@ -1259,7 +1259,7 @@ export default function HomePage() {
           <img
             src="/Landing_Mockups.png"
             alt="Plan4Host app mockups"
-            style={{ width: '100%', height: 'auto', objectFit: 'contain', borderRadius: 12, display: 'block' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             className={styles.focusable}
           />
         </div>
