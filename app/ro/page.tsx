@@ -687,6 +687,14 @@ export default function HomePageRO() {
       window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
     } catch {}
   };
+  const closeMenuAndScroll = (id: string) => {
+    setNavOpen(false);
+    try {
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() => scrollToId(id)));
+    } catch {
+      scrollToId(id);
+    }
+  };
   // Blochează overscroll (bounce) dincolo de capătul paginii pe landing
   useEffect(() => {
     const html = document.documentElement;
@@ -837,49 +845,49 @@ export default function HomePageRO() {
 			          <a
 			            href="#insights-title"
 			            className={`${styles.menuLink} ${styles.focusable}`}
-			            onClick={(e) => { e.preventDefault(); scrollToId('insights-title'); }}
+			            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('insights-title'); }}
 			          >
 			            Impact
 			          </a>
 		          <a
 		            href="#about-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('about-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('about-title'); }}
 		          >
 		            Despre
 		          </a>
 		          <a
 		            href="#features-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('features-title'); }}
 		          >
 		            Funcții
 		          </a>
 		          <a
 		            href="#reviews-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('reviews-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('reviews-title'); }}
 		          >
 		            Recenzii
 		          </a>
 		          <a
 		            href="#pricing-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('pricing-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('pricing-title'); }}
 		          >
 		            Prețuri
 		          </a>
 		          <a
 		            href="#faq-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('faq-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('faq-title'); }}
 		          >
 		            FAQ
 		          </a>
 		          <a
 		            href="#contact-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('contact-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('contact-title'); }}
 		          >
 		            Contact
 		          </a>
@@ -912,57 +920,49 @@ export default function HomePageRO() {
 		        <a
 		          href="#insights-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights-title'); }}
+		          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('insights-title'); }}
 		        >
 		          Impact
 		        </a>
 		        <a
 		          href="#about-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('about-title'); }}
+		          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('about-title'); }}
 		        >
 		          Despre
 		        </a>
 		        <a
 		          href="#features-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
+		          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('features-title'); }}
 		        >
-		          {/* Zonă invizibilă pentru a captura tap-uri pe mobil */}
-	          <div
-	            aria-hidden
-            onPointerDown={onFeaturesPointerDown}
-            onPointerEnter={() => setFeaturesHover(true)}
-            onPointerLeave={() => setFeaturesHover(false)}
-            style={{ position:'absolute', inset:0, zIndex:1, background:'transparent', pointerEvents: featuresHover ? 'none' : 'auto' }}
-          />
 		          Funcții
 		        </a>
 		        <a
 		          href="#reviews-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('reviews-title'); }}
+		          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('reviews-title'); }}
 		        >
 		          Recenzii
 		        </a>
 		        <a
 		          href="#pricing-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('pricing-title'); }}
+		          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('pricing-title'); }}
 		        >
 		          Prețuri
 		        </a>
 		        <a
 		          href="#faq-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq-title'); }}
+		          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('faq-title'); }}
 		        >
 		          FAQ
 		        </a>
 		        <a
 		          href="#contact-title"
 		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('contact-title'); }}
+		          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('contact-title'); }}
 		        >
 		          Contact
 		        </a>

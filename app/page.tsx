@@ -932,6 +932,14 @@ export default function HomePage() {
       window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
     } catch {}
   };
+  const closeMenuAndScroll = (id: string) => {
+    setNavOpen(false);
+    try {
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() => scrollToId(id)));
+    } catch {
+      scrollToId(id);
+    }
+  };
   // Prevent overscroll past page end while on landing
   useEffect(() => {
     const html = document.documentElement;
@@ -1106,49 +1114,49 @@ export default function HomePage() {
 			          <a
 			            href="#insights-title"
 			            className={`${styles.menuLink} ${styles.focusable}`}
-			            onClick={(e) => { e.preventDefault(); scrollToId('insights-title'); }}
+			            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('insights-title'); }}
 			          >
 			            Impact
 			          </a>
 		          <a
 		            href="#about-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('about-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('about-title'); }}
 		          >
 		            About
 		          </a>
 		          <a
 		            href="#features-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('features-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('features-title'); }}
 		          >
 		            Features
 		          </a>
 		          <a
 		            href="#reviews-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('reviews-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('reviews-title'); }}
 		          >
 		            Reviews
 		          </a>
 		          <a
 		            href="#pricing-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('pricing-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('pricing-title'); }}
 		          >
 		            Pricing
 		          </a>
 		          <a
 		            href="#faq-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('faq-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('faq-title'); }}
 		          >
 		            FAQ
 		          </a>
 		          <a
 		            href="#contact-title"
 		            className={`${styles.menuLink} ${styles.focusable}`}
-		            onClick={(e) => { e.preventDefault(); scrollToId('contact-title'); }}
+		            onClick={(e) => { e.preventDefault(); closeMenuAndScroll('contact-title'); }}
 		          >
 		            Contact
 		          </a>
@@ -1190,55 +1198,55 @@ export default function HomePage() {
 
       {/* Mobile menu panel */}
 		      <div id="mobile-menu" className={styles.mobileMenu} hidden={!navOpen}>
-		        <a
-		          href="#insights-title"
-		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('insights-title'); }}
-		        >
-		          Impact
-		        </a>
-		        <a
-		          href="#about-title"
-		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('about-title'); }}
-		        >
-		          About
-		        </a>
-		        <a
-		          href="#features-title"
-		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('features-title'); }}
-		        >
-		          Features
-		        </a>
-		        <a
-		          href="#reviews-title"
-		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('reviews-title'); }}
-		        >
-		          Reviews
-		        </a>
-		        <a
-		          href="#pricing-title"
-		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('pricing-title'); }}
-		        >
-		          Pricing
-		        </a>
-		        <a
-		          href="#faq-title"
-		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('faq-title'); }}
-		        >
-		          FAQ
-		        </a>
-		        <a
-		          href="#contact-title"
-		          className={`${styles.mobileLink} ${styles.focusable}`}
-		          onClick={(e) => { e.preventDefault(); setNavOpen(false); scrollToId('contact-title'); }}
-		        >
-		          Contact
-		        </a>
+			        <a
+			          href="#insights-title"
+			          className={`${styles.mobileLink} ${styles.focusable}`}
+			          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('insights-title'); }}
+			        >
+			          Impact
+			        </a>
+			        <a
+			          href="#about-title"
+			          className={`${styles.mobileLink} ${styles.focusable}`}
+			          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('about-title'); }}
+			        >
+			          About
+			        </a>
+			        <a
+			          href="#features-title"
+			          className={`${styles.mobileLink} ${styles.focusable}`}
+			          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('features-title'); }}
+			        >
+			          Features
+			        </a>
+			        <a
+			          href="#reviews-title"
+			          className={`${styles.mobileLink} ${styles.focusable}`}
+			          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('reviews-title'); }}
+			        >
+			          Reviews
+			        </a>
+			        <a
+			          href="#pricing-title"
+			          className={`${styles.mobileLink} ${styles.focusable}`}
+			          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('pricing-title'); }}
+			        >
+			          Pricing
+			        </a>
+			        <a
+			          href="#faq-title"
+			          className={`${styles.mobileLink} ${styles.focusable}`}
+			          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('faq-title'); }}
+			        >
+			          FAQ
+			        </a>
+			        <a
+			          href="#contact-title"
+			          className={`${styles.mobileLink} ${styles.focusable}`}
+			          onClick={(e) => { e.preventDefault(); closeMenuAndScroll('contact-title'); }}
+			        >
+			          Contact
+			        </a>
 		      </div>
 
       {/* Hero */}
