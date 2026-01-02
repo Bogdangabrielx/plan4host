@@ -449,7 +449,7 @@ will-change: transform;
 
 .heroCta { display: flex; gap: 12px; }
 @media (max-width: 640px) {
-  .heroText h1 { text-align: center; font-size: clamp(40px, 7vw, 64px); }
+  .heroText h1 { text-align: center; font-size: clamp(54px, 7vw, 64px); }
 }
 @media (max-width: 430px) {
   .heroCta {
