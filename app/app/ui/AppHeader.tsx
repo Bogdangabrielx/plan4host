@@ -236,6 +236,20 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     };
   }, []);
 
+  const renderedTitle = useMemo(() => {
+    if (isSmall && typeof title === "string") {
+      const t = title.trim();
+      if (/^automatic\s+welcome\s+message$/i.test(t)) {
+        return (
+          <>
+            <span>Automatic</span>Messages
+          </>
+        );
+      }
+    }
+    return title;
+  }, [title, isSmall]);
+
   // Build base origin
   const BASE =
     (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
@@ -530,33 +544,21 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             </div>
 
 	            {/* Center: title */}
-	            <div
-	              style={{
-	                gridColumn: 2,
-	                justifySelf: "center",
-	                minWidth: 0,
-	                width: "100%",
-	                display: "flex",
-	                alignItems: "center",
-	                justifyContent: "center",
+            <div
+              style={{
+                gridColumn: 2,
+                justifySelf: "center",
+                minWidth: 0,
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 gap: isSmall ? 6 : 10,
                 flexWrap: "wrap",
               }}
             >
               <h1 style={{ ...titleStyle(isSmall), whiteSpace: isSmall ? "normal" : "nowrap" }}>
-                {useMemo(() => {
-                  if (isSmall && typeof title === "string") {
-                    const t = title.trim();
-                    if (/^automatic\s+welcome\s+message$/i.test(t)) {
-                      return (
-                        <>
-                          <span>Automatic</span>Messages
-                        </>
-                      );
-                    }
-                  }
-                  return title;
-                }, [title, isSmall])}
+                {renderedTitle}
               </h1>
               {pillEl}
             </div>
