@@ -694,13 +694,16 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 onClick={() => setOpen(false)}
                 aria-label="Close"
                 style={{
-                  padding: "6px 10px",
-                  borderRadius: 8,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 999,
                   border: "1px solid var(--border)",
-                  background: "transparent",
+                  background: "var(--card)",
                   color: "var(--text)",
                   fontWeight: "var(--fw-medium)",
                   cursor: "pointer",
+                  display: "grid",
+                  placeItems: "center",
                 }}
               >
                 ✕
@@ -818,13 +821,16 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 onClick={() => setOpenRight(false)}
                 aria-label="Close"
 	                style={{
-	                  padding: "6px 10px",
-	                  borderRadius: 8,
+	                  width: 36,
+	                  height: 36,
+	                  borderRadius: 999,
 	                  border: "1px solid var(--border)",
-	                  background: "transparent",
+	                  background: "var(--card)",
 	                  color: "var(--text)",
 	                  fontWeight: "var(--fw-medium)",
 	                  cursor: "pointer",
+	                  display: "grid",
+	                  placeItems: "center",
 	                }}
 	              >
 	                ✕
