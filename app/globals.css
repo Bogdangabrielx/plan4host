@@ -28,9 +28,33 @@ body {
   font-family: 'Switzer', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, sans-serif;
   background: var(--bground);
   color: var(--text);
+  font-size: var(--fs-b, 16px);
+  font-weight: var(--fw-medium, 500);
+  line-height: var(--lh-b, 1.5);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Strict typography tokens (default). Landing overrides these in home.module.css. */
+:root {
+  --fs-h: 20px;
+  --fs-b: 16px;
+  --fs-s: 14px;
+  --fw-medium: 500;
+  --fw-bold: 700;
+  --lh-h: 1.25;
+  --lh-b: 1.5;
+  --lh-s: 1.35;
+}
+@media (max-width: 480px) {
+  :root { --fs-h: 18px; }
+}
+
+/* Typography defaults */
+h1, h2 { font-size: var(--fs-h); font-weight: var(--fw-bold); line-height: var(--lh-h); }
+h3, h4 { font-size: var(--fs-b); font-weight: var(--fw-bold); line-height: var(--lh-b); }
+small { font-size: var(--fs-s); line-height: var(--lh-s); }
+strong, b { font-weight: var(--fw-bold); }
 
 /* Prevent iOS Safari from auto-zooming focused inputs by ensuring >=16px font-size */
 html { -webkit-text-size-adjust: 100%; }
@@ -242,7 +266,8 @@ textarea:focus-visible {
   border: 0;
   background: color-mix(in srgb, var(--card) 88%, transparent);
   color: var(--text);
-  font-weight: 800;
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-s);
   cursor: pointer;
   transition: background-color .15s ease, border-color .15s ease, transform .05s ease;
 }
@@ -260,6 +285,7 @@ textarea:focus-visible {
   border: 0;
   background: var(--primary);
   color: #0c111b;
+  font-weight: var(--fw-bold);
 }
 .sb-btn--ghost { background: transparent; }
 .sb-btn--icon { width: 44px; height: 44px; padding: 0; border-radius: 999px; }
@@ -271,7 +297,8 @@ textarea:focus-visible {
   appearance: auto;
   color: var(--text);
   font-family: inherit;
-  font-weight: 800;
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-s);
   line-height: 1.2;
   padding: 10px 14px;
   border-radius: 999px; /* pill */

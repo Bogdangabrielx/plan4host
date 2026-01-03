@@ -136,13 +136,13 @@ export default function PullToRefresh() {
         display: 'grid', placeItems: 'center', pointerEvents:'none'
       }}
     >
-      <div
-        style={{
-          background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text)',
-          borderRadius: 999, padding: '6px 10px', fontSize: 12, display:'inline-flex', alignItems:'center', gap:8,
-          boxShadow: '0 6px 24px rgba(0,0,0,.20)'
-        }}
-      >
+	      <div
+	        style={{
+	          background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text)',
+	          borderRadius: 999, padding: '6px 10px', fontSize: 'var(--fs-s)', display:'inline-flex', alignItems:'center', gap:8,
+	          boxShadow: '0 6px 24px rgba(0,0,0,.20)'
+	        }}
+	      >
         <span style={{ width: 14, height: 14, borderRadius: 999, border: '2px solid var(--border)', borderTopColor: 'var(--primary)', display: 'inline-block', animation: progress >= 1 ? 'p4h-spin .9s linear infinite' : 'none' }} />
         <span>{progress < 1 ? 'Pull to refresh' : 'Release to refresh'}</span>
       </div>

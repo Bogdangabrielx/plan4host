@@ -7,12 +7,12 @@ import { useHeader } from "../_components/HeaderContext";
 const NAV_BASE = [
   { href: "/app", label: "Dashboard", emoji: "🏠", scope: "dashboard" },
   { href: "/app/calendar", label: "Calendar", emoji: "📅", scope: "calendar" },
-  { href: "/app/propertySetup", label: "Property Setup", emoji: "⚙️", scope: "property_setup" },
-  { href: "/app/checkinEditor", label: "Check-in Editor", emoji: "📝", scope: "checkin_editor" },
-  { href: "/app/cleaning", label: "Cleaning Board", emoji: "🧹", scope: "cleaning" },
-  { href: "/app/channels", label: "Sync Calendars", emoji: "🔗", scope: "channels" },
-  { href: "/app/reservationMessage", label: "Automatic Messages", emoji: "✉️", scope: "reservation_message" },
-  { href: "/app/guest", label: "Guest Overview", emoji: "📥", scope: "guest_overview" },
+  { href: "/app/propertySetup", label: "Setup", emoji: "⚙️", scope: "property_setup" },
+  { href: "/app/checkinEditor", label: "Check‑in", emoji: "📝", scope: "checkin_editor" },
+  { href: "/app/cleaning", label: "Cleaning", emoji: "🧹", scope: "cleaning" },
+  { href: "/app/channels", label: "Channels", emoji: "🔗", scope: "channels" },
+  { href: "/app/reservationMessage", label: "Messages", emoji: "✉️", scope: "reservation_message" },
+  { href: "/app/guest", label: "Guests", emoji: "📥", scope: "guest_overview" },
   { href: "/app/notifications", label: "Notifications", emoji: "🔔", scope: "notifications" },
   { href: "/app/team", label: "Team", emoji: "👥", scope: "team" },
   { href: "/auth/logout", label: "Logout", emoji: "🚪", scope: "logout" },
@@ -33,9 +33,9 @@ function titleStyle(isSmall: boolean): React.CSSProperties {
   return {
     margin: 0,
     fontFamily: TITLE_FAMILY,
-    fontSize: isSmall ? 18 : 20,
-    lineHeight: isSmall ? "26px" : "26px",
-    fontWeight: 600,
+    fontSize: "var(--fs-h)",
+    lineHeight: "var(--lh-h)",
+    fontWeight: "var(--fw-bold)",
     letterSpacing: "-0.01em",
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -47,8 +47,8 @@ function titleStyle(isSmall: boolean): React.CSSProperties {
 function drawerTitleStyle(): React.CSSProperties {
   return {
     fontFamily: TITLE_FAMILY,
-    fontSize: 18,
-    fontWeight: 600,
+    fontSize: "var(--fs-h)",
+    fontWeight: "var(--fw-bold)",
     margin: 0,
   };
 }
@@ -371,7 +371,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               border: "1px solid var(--border)",
               background: "var(--card)",
               color: "var(--text)",
-              fontWeight: 800,
+              fontWeight: "var(--fw-bold)",
               cursor: "pointer",
             }}
           >
@@ -440,7 +440,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               border: "1px solid var(--border)",
               background: "var(--card)",
               color: "var(--text)",
-              fontWeight: 800,
+              fontWeight: "var(--fw-bold)",
               cursor: "pointer",
             }}
           >
@@ -507,7 +507,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   border: "1px solid var(--border)",
                   background: "transparent",
                   color: "var(--text)",
-                  fontWeight: 800,
+                  fontWeight: "var(--fw-medium)",
                   cursor: "pointer",
                 }}
               >
@@ -516,7 +516,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             </div>
 
             <nav
-              style={{
+	                        style={{
                 padding: 12,
                 overflowY: "auto",
                 WebkitOverflowScrolling: 'touch',
@@ -559,15 +559,15 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                           padding: "10px 12px",
                           borderRadius: 10,
                           border: "1px solid var(--border)",
-                          background: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--primary)" : "var(--card)",
-                          color: active || hoverLeft === it.href || pressedLeft === it.href ? "#0c111b" : "var(--muted)",
-                          fontWeight: 800,
-                          position: "relative",
-                          cursor: "pointer",
-                          transform: pressedLeft === it.href ? "scale(0.98)" : (hoverLeft === it.href && !active ? "scale(1.02)" : undefined),
-                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
-                        }}
-                      >
+	                          background: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--primary)" : "var(--card)",
+	                          color: active || hoverLeft === it.href || pressedLeft === it.href ? "#0c111b" : "var(--muted)",
+	                          fontWeight: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--fw-bold)" : "var(--fw-medium)",
+	                          position: "relative",
+	                          cursor: "pointer",
+	                          transform: pressedLeft === it.href ? "scale(0.98)" : (hoverLeft === it.href && !active ? "scale(1.02)" : undefined),
+	                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
+	                        }}
+	                      >
                         <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
                         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           {it.label}
@@ -624,22 +624,22 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <button
                 onClick={() => setOpenRight(false)}
                 aria-label="Close"
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 8,
-                  border: "1px solid var(--border)",
-                  background: "transparent",
-                  color: "var(--text)",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
+	                style={{
+	                  padding: "6px 10px",
+	                  borderRadius: 8,
+	                  border: "1px solid var(--border)",
+	                  background: "transparent",
+	                  color: "var(--text)",
+	                  fontWeight: "var(--fw-medium)",
+	                  cursor: "pointer",
+	                }}
+	              >
+	                ✕
+	              </button>
             </div>
 
             <nav
-              style={{
+	                        style={{
                 padding: 12,
                 overflowY: "auto",
                 WebkitOverflowScrolling: 'touch',
@@ -685,15 +685,15 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                           padding: "10px 12px",
                           borderRadius: 10,
                           border: "1px solid var(--border)",
-                          background: active || hoverRight === it.href || pressedRight === it.href ? "var(--primary)" : "var(--card)",
-                          color: active || hoverRight === it.href || pressedRight === it.href ? "#0c111b" : "var(--muted)",
-                          fontWeight: 800,
-                          position: "relative",
-                          cursor: "pointer",
-                          transform: pressedRight === it.href ? "scale(0.98)" : (hoverRight === it.href && !active ? "scale(1.02)" : undefined),
-                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
-                        }}
-                      >
+	                          background: active || hoverRight === it.href || pressedRight === it.href ? "var(--primary)" : "var(--card)",
+	                          color: active || hoverRight === it.href || pressedRight === it.href ? "#0c111b" : "var(--muted)",
+	                          fontWeight: active || hoverRight === it.href || pressedRight === it.href ? "var(--fw-bold)" : "var(--fw-medium)",
+	                          position: "relative",
+	                          cursor: "pointer",
+	                          transform: pressedRight === it.href ? "scale(0.98)" : (hoverRight === it.href && !active ? "scale(1.02)" : undefined),
+	                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
+	                        }}
+	                      >
                         <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
                         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           {it.label}
@@ -726,13 +726,16 @@ function pillStyle(pill: React.ReactNode): React.CSSProperties {
   const col = isIdle ? "transparent" : (isError || isBusy ? "#0c111b" : "var(--muted)");
   const borderCol = isIdle ? "transparent" : "var(--border)";
   return {
-    padding: "4px 10px",
+    padding: "4px 8px",
     borderRadius: 999,
     background: bg,
     color: col,
     border: `1px solid ${borderCol}`,
-    fontWeight: 800,
-    fontSize: 12,
+    fontWeight: isError || isBusy ? "var(--fw-bold)" : "var(--fw-medium)",
+    fontSize: "var(--fs-s)",
+    lineHeight: "var(--lh-s)",
+    display: "inline-flex",
+    alignItems: "center",
   };
 }
 
@@ -740,12 +743,12 @@ const inboxDotStyle: React.CSSProperties = {
   minWidth: 18,
   height: 18,
   borderRadius: 999,
-  padding: "0 6px",
+  padding: "0 8px",
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  fontSize: 11,
-  fontWeight: 900,
+  fontSize: "var(--fs-s)",
+  fontWeight: "var(--fw-bold)",
   background: "var(--danger)",
   color: "#0c111b",
   border: "1px solid var(--danger)",

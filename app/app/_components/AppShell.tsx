@@ -19,13 +19,13 @@ type OnboardingStep = {
 };
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
-  { id: "property", label: "Add one property" },
-  { id: "room", label: "Add one room" },
-  { id: "links_contact", label: "Add property links and contact" },
-  { id: "picture", label: "Add property picture" },
-  { id: "message_template", label: "Add a message template" },
-  { id: "house_rules", label: "Add House Rules" },
-  { id: "calendars", label: "Sync calendars" },
+  { id: "property", label: "Add property" },
+  { id: "room", label: "Add room" },
+  { id: "links_contact", label: "Links & contact" },
+  { id: "picture", label: "Add photo" },
+  { id: "message_template", label: "Message template" },
+  { id: "house_rules", label: "House rules" },
+  { id: "calendars", label: "Calendar sync" },
 ];
 
 function OnboardingChecklistFab() {
@@ -328,22 +328,22 @@ function OnboardingChecklistFab() {
                       "conic-gradient(from 140deg, #22c55e, #3b82f6, #8b5cf6, #22c55e)",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    color: "#fff",
-                    fontSize: 20,
-                  }}
-                >
-                  🎉
-                </div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 700 }}>
-                    Onboarding completed
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                    Your first property is fully configured. You’re ready to use Plan4Host.
-                  </div>
-                </div>
-              </div>
+	                    justifyContent: "center",
+	                    color: "#fff",
+	                    fontSize: "var(--fs-h)",
+	                  }}
+	                >
+	                  🎉
+	                </div>
+	                <div>
+	                  <div style={{ fontSize: "var(--fs-b)", fontWeight: "var(--fw-bold)" }}>
+	                    You’re all set
+	                  </div>
+	                  <div style={{ fontSize: "var(--fs-s)", color: "var(--muted)" }}>
+	                    Your first property is ready. Start using Plan4Host.
+	                  </div>
+	                </div>
+	              </div>
               <button
                 type="button"
                 onClick={() => {
@@ -352,15 +352,16 @@ function OnboardingChecklistFab() {
                 style={{
                   marginTop: 4,
                   alignSelf: "flex-end",
-                  borderRadius: 999,
-                  border: "1px solid var(--border)",
-                  padding: "6px 14px",
-                  background: "var(--panel)",
-                  fontSize: 12,
-                  cursor: "pointer",
-                }}
-              >
-                Close
+	                  borderRadius: 999,
+	                  border: "1px solid var(--border)",
+	                  padding: "6px 14px",
+	                  background: "var(--panel)",
+	                  fontSize: "var(--fs-s)",
+	                  fontWeight: "var(--fw-medium)",
+	                  cursor: "pointer",
+	                }}
+	              >
+	                Close
               </button>
             </div>
           </>
@@ -369,15 +370,15 @@ function OnboardingChecklistFab() {
 
       {open && (
         <div style={panelStyle}>
-          <div style={headerStyle}>
-            <div style={{ display: "grid", gap: 2 }}>
-              <span style={{ fontSize: 13, fontWeight: 600 }}>
-                Setup checklist
-              </span>
-              <span style={{ fontSize: 11, opacity: 0.9 }}>
-                {completed}/{total} steps completed
-              </span>
-            </div>
+	          <div style={headerStyle}>
+	            <div style={{ display: "grid", gap: 2 }}>
+	              <span style={{ fontSize: "var(--fs-b)", fontWeight: "var(--fw-bold)" }}>
+	                Setup
+	              </span>
+	              <span style={{ fontSize: "var(--fs-s)", opacity: 0.9 }}>
+	                {completed}/{total} done
+	              </span>
+	            </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
@@ -418,40 +419,40 @@ function OnboardingChecklistFab() {
                   handleStepClick(step.id);
                 }}
               >
-                <span
-                  aria-hidden
-                  style={{
+	                <span
+	                  aria-hidden
+	                  style={{
                     width: 18,
                     height: 18,
                     borderRadius: "50%",
                     border: "1px solid rgba(148,163,184,0.9)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 11,
-                    color: completedSteps.includes(step.id)
-                      ? "#22c55e"
-                      : "rgba(148,163,184,0.9)",
-                  }}
-                >
-                  {completedSteps.includes(step.id) ? "✓" : "○"}
-                </span>
-                <span style={{ fontSize: 12 }}>{step.label}</span>
-                <button
-                  type="button"
-                  style={{
+	                    display: "flex",
+	                    alignItems: "center",
+	                    justifyContent: "center",
+	                    fontSize: "var(--fs-s)",
+	                    color: completedSteps.includes(step.id)
+	                      ? "#22c55e"
+	                      : "rgba(148,163,184,0.9)",
+	                  }}
+	                >
+	                  {completedSteps.includes(step.id) ? "✓" : "○"}
+	                </span>
+	                <span style={{ fontSize: "var(--fs-s)" }}>{step.label}</span>
+	                <button
+	                  type="button"
+	                  style={{
                     marginLeft: "auto",
                     border: "none",
                     background: "transparent",
                     color: dismissedSteps.includes(step.id)
-                      ? "#ef4444"
-                      : "var(--muted)",
-                    fontSize: 14,
-                    cursor: "pointer",
-                  }}
-                  title="Mark as not needed"
-                  onClick={() => handleDismissStep(step.id)}
-                >
+	                      ? "#ef4444"
+	                      : "var(--muted)",
+	                    fontSize: "var(--fs-b)",
+	                    cursor: "pointer",
+	                  }}
+	                  title="Mark as not needed"
+	                  onClick={() => handleDismissStep(step.id)}
+	                >
                   ×
                 </button>
               </div>
@@ -466,21 +467,21 @@ function OnboardingChecklistFab() {
         onClick={() => setOpen((v) => !v)}
         aria-label="Open setup checklist"
       >
-        <div
-          style={{
-            display: "grid",
-            placeItems: "center",
-            textAlign: "center",
-            fontSize: 11,
-            lineHeight: 1.2,
-          }}
-        >
-          <span
-            style={{
-              fontSize: 10,
-              opacity: 0.95,
-              backgroundImage:
-                "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
+	        <div
+	          style={{
+	            display: "grid",
+	            placeItems: "center",
+	            textAlign: "center",
+	            fontSize: "var(--fs-s)",
+	            lineHeight: 1.2,
+	          }}
+	        >
+	          <span
+	            style={{
+	              fontSize: "var(--fs-s)",
+	              opacity: 0.95,
+	              backgroundImage:
+	                "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               color: "transparent",
@@ -488,12 +489,12 @@ function OnboardingChecklistFab() {
           >
             Setup
           </span>
-          <span
-            style={{
-              fontWeight: 700,
-              letterSpacing: 0.3,
-              backgroundImage:
-                "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
+	          <span
+	            style={{
+	              fontWeight: "var(--fw-bold)",
+	              letterSpacing: 0.3,
+	              backgroundImage:
+	                "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               color: "transparent",
@@ -614,34 +615,34 @@ export default function AppShell({ title, currentPath, children }: Props) {
 
   return (
     <HeaderProvider initialTitle={title ?? ""}>
-      <div
-        // root: nu scroll-ează; doar definește rama dintre header și main
-        style={{
-          height: "100dvh",
-          minHeight: "100dvh",
-          display: "grid",
-          gridTemplateRows: "auto 1fr",
-          background: "var(--bground)",
-          color: "var(--text)",
-          overflow: "hidden",
-        }}
-      >
-        {/* anti-zoom iOS + padding top doar pe mobil (dacă header e fix) */}
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-              :root{
-                --nav-h: 88px;          /* fallback — e rescris dinamic de BottomNav */
-                --scroll-extra: 40px;   /* spațiu suplimentar la finalul zonei scrollabile */
-              }
-              input, textarea, select, button { font-size: 16px; }
-              html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-              @media (max-width: 640px) {
-                #app-main { padding-top: calc(64px + var(--safe-top, 0px)) !important; }
-              }
-            `,
-          }}
-        />
+	      <div
+	        // root: nu scroll-ează; doar definește rama dintre header și main
+	        style={{
+	          height: "100dvh",
+	          minHeight: "100dvh",
+	          display: "grid",
+	          gridTemplateRows: "auto 1fr",
+	          background: "var(--bground)",
+	          color: "var(--text)",
+	          overflow: "hidden",
+	        }}
+	      >
+	        {/* anti-zoom iOS + padding top doar pe mobil (dacă header e fix) */}
+	        <style
+	          dangerouslySetInnerHTML={{
+	            __html: `
+	              :root{
+	                --nav-h: 88px;          /* fallback — e rescris dinamic de BottomNav */
+	                --scroll-extra: 40px;   /* spațiu suplimentar la finalul zonei scrollabile */
+	              }
+	              input, textarea, select { font-size: 16px; }
+	              html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+	              @media (max-width: 640px) {
+	                #app-main { padding-top: calc(64px + var(--safe-top, 0px)) !important; }
+	              }
+	            `,
+	          }}
+	        />
 
         <AppHeader currentPath={currentPath} />
         <PullToRefresh />
@@ -705,14 +706,14 @@ export default function AppShell({ title, currentPath, children }: Props) {
               border: "1px solid rgba(148,163,184,0.6)",
               background:
                 "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
-              color: "#f9fafb",
-              padding: "8px 14px",
-              fontSize: 12,
-              fontWeight: 700,
-              boxShadow: "0 14px 40px rgba(15,23,42,0.6)",
-              cursor: "pointer",
-              zIndex: 245,
-            }}
+	              color: "#f9fafb",
+	              padding: "8px 14px",
+	              fontSize: "var(--fs-s)",
+	              fontWeight: "var(--fw-bold)",
+	              boxShadow: "0 14px 40px rgba(15,23,42,0.6)",
+	              cursor: "pointer",
+	              zIndex: 245,
+	            }}
           >
             Install Plan4Host app
           </button>

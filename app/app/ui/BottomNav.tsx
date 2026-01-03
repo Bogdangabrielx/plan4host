@@ -159,8 +159,8 @@ useEffect(() => {
 
   const items = useMemo(() => ([
     { href: "/app/calendar", label: "Calendar", icon: theme==="light" ? "/calendar_forlight.png" : "/calendar_fordark.png" },
-    { href: "/app/cleaning", label: "Cleaning Board", icon: theme==="light" ? "/cleaning_forlight.png" : "/cleaning_fordark.png" },
-    { href: "/app/guest", label: "Guest Overview", icon: theme==="light" ? "/guest_forlight.png" : "/guest_fordark.png" },
+    { href: "/app/cleaning", label: "Cleaning", icon: theme==="light" ? "/cleaning_forlight.png" : "/cleaning_fordark.png" },
+    { href: "/app/guest", label: "Guests", icon: theme==="light" ? "/guest_forlight.png" : "/guest_fordark.png" },
   ]), [theme]);
 
   if (!mounted || !isMobile) return null;
@@ -214,7 +214,7 @@ useEffect(() => {
               }}
             >
               <img src={it.icon} alt="" width={22} height={22} style={{ display: "block", opacity: active ? 1 : 0.95, minWidth: 22, minHeight: 22 }} />
-              <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>{it.label}</small>
+              <small style={{ fontSize: "var(--fs-s)", fontWeight: active ? "var(--fw-bold)" : "var(--fw-medium)", letterSpacing: 0.2 }}>{it.label}</small>
             </a>
           );
         })}
@@ -240,7 +240,7 @@ useEffect(() => {
           aria-label="Open management"
         >
           <img src={theme==="light" ? "/configurator_forlight.png" : "/configurator_fordark.png"} alt="" width={22} height={22} style={{ display: "block", minWidth: 22, minHeight: 22 }} />
-          <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
+          <small style={{ fontSize: "var(--fs-s)", fontWeight: "var(--fw-medium)", letterSpacing: 0.2 }}>More</small>
         </button>
       </div>
 

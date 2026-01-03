@@ -127,7 +127,7 @@ export default function CookieConsent() {
           <div style={{ marginTop: 16, display: "grid", gap: 10 }}>
             <label style={rowStyle()}>
               <input type="checkbox" checked readOnly aria-readonly />
-              <span style={{ fontWeight: 800 }}>Necessary</span>
+              <span style={{ fontWeight: "var(--fw-bold)" }}>Necessary</span>
               <small style={{ color: "var(--muted)" }}>Always on</small>
             </label>
             <label style={rowStyle()}>
@@ -136,7 +136,7 @@ export default function CookieConsent() {
                 checked={state.preferences}
                 onChange={(e) => setState(s => ({ ...s, preferences: e.currentTarget.checked }))}
               />
-              <span style={{ fontWeight: 800 }}>Preferences</span>
+              <span style={{ fontWeight: "var(--fw-bold)" }}>Preferences</span>
               <small style={{ color: "var(--muted)" }}>Theme (light/dark)</small>
             </label>
           </div>
@@ -177,7 +177,7 @@ export default function CookieConsent() {
         </div>
 
         {/* Legal links */}
-        <div style={{ marginTop: 10, display: "flex", gap: 12, flexWrap: "wrap", fontSize: 12, color: "var(--muted)" }}>
+        <div style={{ marginTop: 10, display: "flex", gap: 12, flexWrap: "wrap", fontSize: "var(--fs-s)", color: "var(--muted)" }}>
           <a href="/legal/cookies" style={{ color: "var(--primary)", textDecoration: "none" }}>Cookie Policy</a>
           <span>•</span>
           <a href="/legal/privacy" style={{ color: "var(--primary)", textDecoration: "none" }}>Privacy</a>

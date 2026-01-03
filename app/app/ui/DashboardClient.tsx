@@ -459,11 +459,12 @@ export default function DashboardClient({
                 border: "1px solid var(--border)",
                 background: "var(--primary)",
                 color: "#0c111b",
-                fontWeight: 800,
+                fontSize: "var(--fs-s)",
+                fontWeight: "var(--fw-bold)",
                 cursor: "pointer",
               }}
             >
-              Save property
+              Save
             </button>
           </div>
          
@@ -541,14 +542,14 @@ export default function DashboardClient({
                           ...FIELD_STYLE,
                           width: 'min(320px, 100%)',
                           padding: 8,
-                          fontWeight: 800,
+                          fontWeight: "var(--fw-medium)",
                         }}
                         placeholder="Property name"
                       />
                     ) : (
                       <strong>{p.name}</strong>
                     )}
-                    <div style={{ color: "var(--muted)", fontSize: 12 }}>
+                    <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)" }}>
                       {p.country_code
                         ? `${flagEmoji(p.country_code)} ${COUNTRY_NAMES[p.country_code] ?? p.country_code}`
                         : "—"}
@@ -568,7 +569,8 @@ export default function DashboardClient({
                           border: "1px solid var(--border)",
                           background: "var(--panel)",
                           color: "var(--text)",
-                          fontWeight: 800,
+                          fontSize: "var(--fs-s)",
+                          fontWeight: "var(--fw-medium)",
                           cursor: "pointer",
                         }}
                       >
@@ -583,11 +585,12 @@ export default function DashboardClient({
                         border: "1px solid var(--border)",
                         background: "var(--panel)",
                         color: "var(--text)",
-                        fontWeight: 800,
+                        fontSize: "var(--fs-s)",
+                        fontWeight: "var(--fw-medium)",
                         cursor: "pointer",
                       }}
                     >
-                      Property Setup
+                      Setup
                     </button>
 
                     <button
@@ -598,7 +601,8 @@ export default function DashboardClient({
                         border: "1px solid var(--danger)",
                         background: "transparent",
                         color: "var(--text)",
-                        fontWeight: 800,
+                        fontSize: "var(--fs-s)",
+                        fontWeight: "var(--fw-medium)",
                         cursor: "pointer",
                       }}
                     >
@@ -616,36 +620,36 @@ export default function DashboardClient({
       </div>
 
       {/* First-time guidance modal */}
-      {showFirstPropertyGuide && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          onClick={(e)=>{ e.stopPropagation(); /* require button to dismiss */ }}
-          style={{ position:'fixed', inset:0, zIndex: 240, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
-                   paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <strong>Getting started</strong>
-            </div>
-            <div style={{ color:'var(--text)' }}>
-              As a first step, please add the property name you want to register and select its country.
-            </div>
-            <div style={{ display:'flex', justifyContent:'flex-end' }}>
-              <button
-                className="sb-btn sb-btn--primary"
-                onClick={() => {
+	      {showFirstPropertyGuide && (
+	        <div
+	          role="dialog"
+	          aria-modal="true"
+	          onClick={(e)=>{ e.stopPropagation(); /* require button to dismiss */ }}
+	          style={{ position:'fixed', inset:0, zIndex: 240, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
+	                   paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
+	          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
+	            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+	              <strong>Add your first property</strong>
+	            </div>
+	            <div style={{ color:'var(--text)' }}>
+	              Enter the name and choose the country.
+	            </div>
+	            <div style={{ display:'flex', justifyContent:'flex-end' }}>
+	              <button
+	                className="sb-btn sb-btn--primary"
+	                onClick={() => {
                   setShowFirstPropertyGuide(false);
                   setHighlightName(true);
                   try {
                     nameInputRef.current?.focus();
                     nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  } catch {}
-                }}
-              >OK</button>
-            </div>
-          </div>
-        </div>
-      )}
+	                  } catch {}
+	                }}
+	              >Start</button>
+	            </div>
+	          </div>
+	        </div>
+	      )}
 
       {/* Confirm Delete Modal */}
       {toDelete && (
@@ -677,45 +681,45 @@ export default function DashboardClient({
                 boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
               }}
             >
-              <h3 style={{ marginTop: 0 }}>Delete property?</h3>
-              <p style={{ color: "var(--muted)" }}>
-                You are about to permanently delete <strong>{toDelete.name}</strong>. This action is{" "}
-                <strong>irreversible</strong>.
-              </p>
-              <p style={{ color: "var(--muted)" }}>
-                All related data may be removed as well (rooms, bookings, room details, cleaning tasks/progress,
-                iCal integrations, etc.).
-              </p>
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12 }}>
-                <button
-                  onClick={() => setToDelete(null)}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border)",
-                    background: "transparent",
-                    color: "var(--text)",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--danger)",
-                    background: "var(--danger)",
-                    color: "#0c111b",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
-                >
-                  Delete permanently
-                </button>
-              </div>
+	              <h3 style={{ marginTop: 0 }}>Delete property?</h3>
+	              <p style={{ color: "var(--muted)" }}>
+	                This will permanently delete <strong>{toDelete.name}</strong>.
+	              </p>
+	              <p style={{ color: "var(--muted)" }}>
+	                Related rooms, bookings, and integrations may be removed.
+	              </p>
+	              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12 }}>
+	                <button
+	                  onClick={() => setToDelete(null)}
+	                  style={{
+	                    padding: "8px 12px",
+	                    borderRadius: 10,
+	                    border: "1px solid var(--border)",
+	                    background: "transparent",
+	                    color: "var(--text)",
+	                    fontSize: "var(--fs-s)",
+	                    fontWeight: "var(--fw-medium)",
+	                    cursor: "pointer",
+	                  }}
+	                >
+	                  Cancel
+	                </button>
+	                <button
+	                  onClick={confirmDelete}
+	                  style={{
+	                    padding: "8px 12px",
+	                    borderRadius: 10,
+	                    border: "1px solid var(--danger)",
+	                    background: "var(--danger)",
+	                    color: "#0c111b",
+	                    fontSize: "var(--fs-s)",
+	                    fontWeight: "var(--fw-bold)",
+	                    cursor: "pointer",
+	                  }}
+	                >
+	                  Delete
+	                </button>
+	              </div>
             </div>
           </div>
         </>
