@@ -495,10 +495,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   }, [pillLabel, setPill]);
 
   return (
-    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',  }}>
+    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
       <PlanHeaderBadge title="Sync Calendars" slot="header-right" />
+      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
       {/* Toolbar minimalistă */}
-      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, marginBottom: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <div
           className="modalCard Sb-cardglow"
           style={{
@@ -566,7 +567,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       </div>
 
       {/* Card cu acțiuni */}
-      <section className="sb-cardglow" style={{ padding: 16, marginTop: 8, borderRadius: 16 }}>
+      <section className="sb-cardglow" style={{ padding: 16, marginTop: 0, borderRadius: 16 }}>
         <h3 style={{ marginTop: 0 }}>Calendar Integrations</h3>
         {!timezone && (
           <p style={{ fontSize:8, color: "var(--danger)", marginTop: 0 }}>
@@ -890,7 +891,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             )}
           </div>
 
-          {manageRoomId && (() => {
+      {manageRoomId && (() => {
             const r = rooms.find(x => x.id === manageRoomId)!;
             return (
               <ManageRoomModal
@@ -906,6 +907,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           })()}
         </Modal>
       )}
+      </div>
     </div>
   );
 }

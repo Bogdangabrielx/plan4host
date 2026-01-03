@@ -646,11 +646,12 @@ export default function ReservationMessageClient({
 
   /** --------- Render --------- */
   return (
-    <div style={{ display: "grid", gap: 12, fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" }}>
+    <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
       <PlanHeaderBadge title="Automatic Messages" slot="header-right" />
+      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 12 }}>
 
       {/* Property selector (pill with avatar) — align like Calendar (sb-toolbar) */}
-      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
         <div
           className="modalCard Sb-cardglow"
           style={{
@@ -1263,6 +1264,7 @@ export default function ReservationMessageClient({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

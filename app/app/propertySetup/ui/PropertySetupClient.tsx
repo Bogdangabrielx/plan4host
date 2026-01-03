@@ -330,8 +330,8 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   const hasStandardOrBetter = plan === "standard" || plan === "premium";
 
   return (
-    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
-      <div style={{ margin: '0 auto', width: 'min(1400px, calc(100vw - 32px))' }}>
+    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
+      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
         <PlanHeaderBadge title="Property Setup" slot="header-right" />
 
         {showRoomsGuide && (
@@ -484,7 +484,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         )}
 
         {/* Top property selector pill (desktop + mobile) */}
-        <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap', marginBottom: 10, width: '100%', maxWidth: 904, marginInline: 'auto' }}>
+        <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap', marginBottom: 12, width: '100%', maxWidth: 904, marginInline: 'auto' }}>
           <div
             className="modalCard Sb-cardglow"
             style={{

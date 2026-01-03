@@ -499,57 +499,62 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   }
 
   return (
-    <div style={{ display:'grid', gap:16 }}>
+    <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
       <PlanHeaderBadge title="Check-in Editor" slot="header-right" />
-      {/* Property selector (pill with avatar only) */}
-      <div
-        className="modalCard Sb-cardglow"
-        style={{
-          position: 'relative',
-          display: isNarrow ? 'grid' : 'inline-flex',
-          alignItems: 'center',
-          gap: 10,
-          padding: isNarrow ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
-          borderRadius: 999,
-          minHeight: 56,
-          background: 'var(--panel)',
-          border: '1px solid var(--border)',
-          width: isNarrow ? '100%' : undefined,
-          flexBasis: isNarrow ? '100%': 'auto',
-          flex: isNarrow ? '1 1 100%' :undefined
-        }}
-      >
-        {prop?.presentation_image_url ? (
-          <img
-            src={prop.presentation_image_url}
-            alt=""
-            width={40}
-            height={40}
-            style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
-          />
-        ) : null}
-        <select
-          className="sb-select"
-          value={propertyId || ''}
-          onChange={onPropChange}
-          style={{
-            background: 'transparent',
-            border: 0,
-            boxShadow: 'none',
-            padding: '10px 12px',
-            minHeight: 44,
-            minWidth: isNarrow ? '100%' : 220,
-            maxWidth: isNarrow ? '100%' : 380,
-            width: isNarrow ? '100%' : 'auto',
-            fontFamily: 'inherit',
-            fontWeight: 700,
-          }}
-        >
-          {(properties || []).map(p => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
-      </div>
+      <div style={{ padding: isNarrow ? "10px 12px 16px" : "16px", display: "grid", gap: 16 }}>
+        {/* Controls (same spacing pattern as Guest Overview) */}
+        <div className="sb-toolbar" style={{ gap: isNarrow ? 12 : 20, flexWrap: "wrap", marginBottom: 12 }}>
+          {/* Property selector (pill with avatar only) */}
+          <div
+            className="modalCard Sb-cardglow"
+            style={{
+              position: 'relative',
+              display: isNarrow ? 'grid' : 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: isNarrow ? '8px 10px 8px 56px' : '6px 10px 6px 56px',
+              borderRadius: 999,
+              minHeight: 56,
+              background: 'var(--panel)',
+              border: '1px solid var(--border)',
+              width: isNarrow ? '100%' : undefined,
+              flexBasis: isNarrow ? '100%': 'auto',
+              flex: isNarrow ? '1 1 100%' :undefined
+            }}
+          >
+            {prop?.presentation_image_url ? (
+              <img
+                src={prop.presentation_image_url}
+                alt=""
+                width={40}
+                height={40}
+                style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
+              />
+            ) : null}
+            <select
+              className="sb-select"
+              value={propertyId || ''}
+              onChange={onPropChange}
+              style={{
+                background: 'transparent',
+                border: 0,
+                boxShadow: 'none',
+                padding: '10px 12px',
+                minHeight: 44,
+                minWidth: isNarrow ? '100%' : 220,
+                maxWidth: isNarrow ? '100%' : 380,
+                width: isNarrow ? '100%' : 'auto',
+                fontFamily: 'inherit',
+                fontWeight: 700,
+              }}
+            >
+              {(properties || []).map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+          {isNarrow && <div style={{ flexBasis: "100%", height: 8 }} />}
+        </div>
 
       {prop && (
         <>
@@ -1184,6 +1189,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
