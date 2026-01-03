@@ -238,17 +238,11 @@ useEffect(() => {
             textAlign: 'center',
           }}
           aria-label="Open management"
-	        >
-	          <img
-	            src={theme==="light" ? "/configurator_forlight.png" : "/configurator_fordark.png"}
-	            alt=""
-	            width={44}
-	            height={44}
-	            style={{ display: "block", width: 44, height: 44, minWidth: 44, minHeight: 44, objectFit: "contain" }}
-	          />
-	          <small style={{ fontSize: "var(--fs-s)", fontWeight: "var(--fw-medium)", letterSpacing: 0.2 }}>More</small>
-	        </button>
-	      </div>
+        >
+	          <img src={theme==="light" ? "/more_forlight.png" : "/more_fordark.png"} alt="" width={44} height={44} style={{ display: "block", width: 44, height: 44, minWidth: 44, minHeight: 44, objectFit: "contain" }} />
+          <small style={{ fontSize: "var(--fs-s)", fontWeight: "var(--fw-medium)", letterSpacing: 0.2 }}>More</small>
+        </button>
+      </div>
 
       {/* desktop off */}
       <style>{`@media (min-width: 641px) { .p4h-bottom-nav { display: none; } }`}</style>
