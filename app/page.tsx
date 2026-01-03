@@ -1446,7 +1446,8 @@ export default function HomePage() {
                       </svg>
                     ) : (
                       <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="12" cy="12" r="10" fill="var(--success)" stroke="var(--primary)" strokeWidth="1.8" />
+                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--primary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
                     <span>{b.startsWith('Automatic sync of reservations between platforms') ? 'Automatic sync of reservations between platforms (every 60 min)' : b}</span>
@@ -1480,7 +1481,8 @@ export default function HomePage() {
                       </svg>
                     ) : (
                       <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="12" cy="12" r="10" fill="var(--success)" stroke="var(--primary)" strokeWidth="1.8" />
+                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--primary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
                     <span>{b.startsWith('Automatic sync of reservations between platforms') ? 'Automatic sync of reservations between platforms (every 30 min)' : b}</span>
@@ -1503,7 +1505,8 @@ export default function HomePage() {
               {benefits.map((b, i) => (
                 <li key={`premium-b-${i}`}>
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="12" cy="12" r="10" fill="var(--success)" stroke="var(--primary)" strokeWidth="1.8" />
+                    <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--primary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <span>{b.startsWith('Automatic sync of reservations between platforms') ? 'Automatic sync of reservations between platforms (every 10 min)' : b}</span>
                 </li>
