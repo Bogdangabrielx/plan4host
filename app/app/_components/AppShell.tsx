@@ -637,7 +637,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
 	              }
 	              input, textarea, select { font-size: 16px; }
 		              html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-		              @media (max-width: 640px) {
+		              @media (max-width: 480px) {
 		                #app-main { padding-top: calc(var(--app-header-h, 64px) + var(--safe-top, 0px)) !important; }
 		              }
 		            `,
