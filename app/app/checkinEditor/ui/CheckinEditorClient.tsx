@@ -501,7 +501,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   return (
     <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
       <PlanHeaderBadge title="Check-in Editor" slot="header-right" />
-      <div style={{ display: "grid", gap: 16 }}>
+      <div style={{ padding: isNarrow ? "10px 12px 16px" : "16px", display: "grid", gap: 16 }}>
         {/* Controls (same spacing pattern as Guest Overview) */}
         <div className="sb-toolbar" style={{ gap: isNarrow ? 12 : 20, flexWrap: "wrap", marginBottom: 12 }}>
           {/* Property selector (pill with avatar only) */}

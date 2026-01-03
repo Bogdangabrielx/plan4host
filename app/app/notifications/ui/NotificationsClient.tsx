@@ -210,7 +210,7 @@ export default function NotificationsClient() {
 
   return (
     <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
-      <div style={{ padding: 0 }}>
+      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
         <div className="sb-cardglow" style={{ padding: 16, display: 'grid', gap: 12, borderRadius: 13 }}>
           <div style={{ display: 'grid', gap: 6 }}>
             <strong>Notifications</strong>

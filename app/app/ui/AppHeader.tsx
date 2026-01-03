@@ -236,20 +236,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     };
   }, []);
 
-  const renderedTitle = useMemo(() => {
-    if (isSmall && typeof title === "string") {
-      const t = title.trim();
-      if (/^automatic\s+welcome\s+message$/i.test(t)) {
-        return (
-          <>
-            <span>Automatic</span>Messages
-          </>
-        );
-      }
-    }
-    return title;
-  }, [title, isSmall]);
-
   // Build base origin
   const BASE =
     (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
@@ -373,6 +359,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     return <span style={pillStyle(pill)}>{pill}</span>;
   })();
 
+  const disableMobileTitleWrap =
+    !!currentPath && /^\/app\/(notifications|subscription)(\/|$)/.test(currentPath);
+
   const transparentMobileHeader = isMobileNav;
   const mobileHeaderRadius = 23;
 
@@ -444,7 +433,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               {pillEl}
             </div>
 
-            {/* Center: (large title is rendered in AppShell on mobile) */}
+            {/* Center: title */}
             <div
               style={{
                 gridColumn: 2,
@@ -454,14 +443,60 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                flexWrap: "nowrap",
+                flexWrap: "wrap",
                 textAlign: "center",
               }}
             >
-              <span aria-hidden style={{ height: 1, width: 1, overflow: "hidden" }} />
+              <h1
+                style={{
+                  ...titleStyle(isSmall),
+                  textAlign: "center",
+                  maxWidth: "100%",
+	                  ...(disableMobileTitleWrap
+	                    ? {
+	                        // No plan badge on these pages: keep title on one line,
+	                        // and make it slightly smaller so it stays visually centered.
+	                        whiteSpace: "nowrap",
+	                        fontSize: "clamp(14px, 3.6vw, 18px)",
+	                        letterSpacing: "0.05em",
+	                        overflow: "visible",
+	                        textOverflow: "clip",
+	                        display: "block",
+	                      }
+	                    : {
+	                        whiteSpace: "normal",
+	                        // On very small screens: allow wrap at spaces, avoid breaking words.
+                        // Keep titles to max 2 lines by slightly shrinking and clamping.
+                        fontSize: "clamp(16px, 4.2vw, var(--fs-h))",
+                        letterSpacing: "0.06em",
+                        wordBreak: "keep-all",
+                        overflowWrap: "normal",
+                        hyphens: "none",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }),
+                }}
+              >
+                {useMemo(() => {
+                  if (isSmall && typeof title === "string") {
+                    const t = title.trim();
+                    if (/^automatic\s+welcome\s+message$/i.test(t)) {
+                      return (
+                        <>
+                          <span>Automatic</span>Messages
+                        </>
+                      );
+                    }
+                  }
+                  return title;
+                }, [title, isSmall])}
+              </h1>
             </div>
 
-            {/* Right: management (More) */}
+            {/* Right: actions */}
             <div
               style={{
                 gridColumn: 3,
@@ -476,36 +511,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 minWidth: 0,
               }}
             >
-              <button
-                type="button"
-                aria-label="Open management"
-                onClick={() => {
-                  setOpenRight(true);
-                  setOpen(false);
-                }}
-                style={{
-                  borderRadius: 999,
-                  border: "1px solid var(--border)",
-                  background: "var(--card)",
-                  color: "var(--text)",
-                  padding: isSmall ? 6 : 7,
-                  display: "grid",
-                  placeItems: "center",
-                  cursor: "pointer",
-                }}
-              >
-                {mounted ? (
-                  <img
-                    src={theme === "light" ? "/more_forlight.png" : "/more_fordark.png"}
-                    alt=""
-                    width={isSmall ? 22 : 24}
-                    height={isSmall ? 22 : 24}
-                    style={{ display: "block", objectFit: "contain" }}
-                  />
-                ) : (
-                  <>⋯</>
-                )}
-              </button>
+              {right}
             </div>
           </>
 	        ) : (
@@ -544,21 +550,33 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             </div>
 
 	            {/* Center: title */}
-            <div
-              style={{
-                gridColumn: 2,
-                justifySelf: "center",
-                minWidth: 0,
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+	            <div
+	              style={{
+	                gridColumn: 2,
+	                justifySelf: "center",
+	                minWidth: 0,
+	                width: "100%",
+	                display: "flex",
+	                alignItems: "center",
+	                justifyContent: "center",
                 gap: isSmall ? 6 : 10,
                 flexWrap: "wrap",
               }}
             >
               <h1 style={{ ...titleStyle(isSmall), whiteSpace: isSmall ? "normal" : "nowrap" }}>
-                {renderedTitle}
+                {useMemo(() => {
+                  if (isSmall && typeof title === "string") {
+                    const t = title.trim();
+                    if (/^automatic\s+welcome\s+message$/i.test(t)) {
+                      return (
+                        <>
+                          <span>Automatic</span>Messages
+                        </>
+                      );
+                    }
+                  }
+                  return title;
+                }, [title, isSmall])}
               </h1>
               {pillEl}
             </div>
