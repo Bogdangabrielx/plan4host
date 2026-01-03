@@ -429,7 +429,7 @@ export default function DashboardClient({
             <input
               value={name}
               onChange={(e) => setName(e.currentTarget.value)}
-              placeholder="e.g. BOA-Aframe"
+              placeholder="e.g. BOA aFrame"
               ref={nameInputRef}
               style={{
                 ...FIELD_STYLE,
