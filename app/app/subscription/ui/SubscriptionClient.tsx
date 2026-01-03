@@ -674,20 +674,22 @@ export default function SubscriptionClient({
                     : p.slug === 'standard'
                       ? standardX.some(s => b.includes(s))
                       : basicX.some(s => b.includes(s));
-                  return (
-                    <li key={i} className={styles.liItem}>
-                      {x ? (
-                        <svg viewBox="0 0 24 24" aria-hidden="true" style={{ color: 'var(--text)' }}>
-                          <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      ) : (
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                      <span>{text}</span>
-                    </li>
-                  );
+	                  return (
+	                    <li key={i} className={styles.liItem}>
+	                      {x ? (
+	                        <svg viewBox="0 0 24 24" aria-hidden="true">
+	                          <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--danger) 12%, white)" stroke="var(--danger)" strokeWidth="1.8" />
+	                          <path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="var(--danger)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+	                        </svg>
+	                      ) : (
+	                        <svg viewBox="0 0 24 24" aria-hidden="true">
+	                          <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
+	                          <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+	                        </svg>
+	                      )}
+	                      <span>{text}</span>
+	                    </li>
+	                  );
                 })}
               </ul>
 
