@@ -18,7 +18,9 @@ function getNodeText(node: ReactNode): string {
 }
 
 function isBusyPillText(text: string): boolean {
-  return /(sync|saving|loading)\b/i.test(text);
+  // Accept the common variants used across pages (Syncing…, Saving…, Loading…)
+  // and avoid relying on a word boundary for "sync" (it won't match "syncing").
+  return /(sync(?:ing)?|sav(?:ing)?|load(?:ing)?)/i.test(text);
 }
 
 export default function AppLoadingOverlay() {
