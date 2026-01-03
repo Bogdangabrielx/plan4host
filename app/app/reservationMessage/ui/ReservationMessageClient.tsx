@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
+import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 
@@ -102,7 +102,7 @@ export default function ReservationMessageClient({
   isAdmin: boolean;
 }) {
   const [properties] = useState<Property[]>(initialProperties);
-  const [propertyId, setPropertyId] = usePersistentProperty(properties);
+  const { propertyId, setPropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
   const isSmall = useIsSmall();
@@ -147,7 +147,7 @@ export default function ReservationMessageClient({
   /** --------- Load template list --------- */
   useEffect(() => {
     let alive = true;
-    if (!propertyId) { setTemplates([]); setActiveId(null); return; }
+    if (!propertyReady || !propertyId) { setTemplates([]); setActiveId(null); setLoadingList(false); return; }
     (async () => {
       try {
         setLoadingList(true);
@@ -162,11 +162,11 @@ export default function ReservationMessageClient({
       } finally { if (alive) setLoadingList(false); }
     })();
     return () => { alive = false; };
-  }, [propertyId]);
+  }, [propertyId, propertyReady]);
 
   /** --------- Load template content (LS + server) --------- */
   useEffect(() => {
-    if (!propertyId) return;
+    if (!propertyReady || !propertyId) return;
     const keySnapshot = storageKey;
     let cancelled = false;
 
@@ -219,26 +219,26 @@ export default function ReservationMessageClient({
       } catch {}
     })();
 
-  return () => { cancelled = true; };
-  }, [storageKey, propertyId, activeId]);
+    return () => { cancelled = true; };
+  }, [storageKey, propertyId, activeId, lang, propertyReady]);
 
   /** --------- Detect if property has room types (for room_type chip) --------- */
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        if (!propertyId) { if (alive) setHasRoomTypes(false); return; }
+        if (!propertyReady || !propertyId) { if (alive) setHasRoomTypes(false); return; }
         const r = await sb.from("room_types").select("id").eq("property_id", propertyId).limit(1);
         if (!alive) return;
         setHasRoomTypes((r.data ?? []).length > 0);
       } catch { if (alive) setHasRoomTypes(false); }
     })();
     return () => { alive = false; };
-  }, [sb, propertyId]);
+  }, [sb, propertyId, propertyReady]);
 
   /** --------- Load Rooms + Variable Definitions --------- */
   useEffect(() => {
-    if (!propertyId) { setRooms([]); setVarDefs([]); setSelectedRoomId(null); setValuesByKey({}); return; }
+    if (!propertyReady || !propertyId) { setRooms([]); setVarDefs([]); setSelectedRoomId(null); setValuesByKey({}); return; }
     let alive = true;
     (async () => {
       try {
@@ -260,11 +260,11 @@ export default function ReservationMessageClient({
       } catch { if (alive) setVarDefs([]); }
     })();
     return () => { alive = false; };
-  }, [sb, propertyId]);
+  }, [sb, propertyId, propertyReady]);
 
   /** --------- Load values for selected room --------- */
   useEffect(() => {
-    if (!propertyId || !selectedRoomId) { setValuesByKey({}); return; }
+    if (!propertyReady || !propertyId || !selectedRoomId) { setValuesByKey({}); return; }
     let alive = true;
     (async () => {
       try {
@@ -292,7 +292,7 @@ export default function ReservationMessageClient({
       }
     })();
     return () => { alive = false; };
-  }, [propertyId, selectedRoomId, varDefs]);
+  }, [propertyId, selectedRoomId, varDefs, propertyReady]);
 
   /** --------- Save/publish actions (per-language, no cross-overwrite) --------- */
   function saveDraft() {
@@ -600,10 +600,11 @@ export default function ReservationMessageClient({
     const pillLabel =
       saving === "Saving…" ? "Saving…" :
       saving === "Error"   ? "Error"   :
+      !propertyReady       ? "Loading…" :
       loadingList          ? "Loading…" :
       saving === "Synced"  ? "Synced"  : "Idle";
     setPill(pillLabel);
-  }, [saving, loadingList, setPill]);
+  }, [saving, loadingList, propertyReady, setPill]);
 
   // Track theme for room icon (light/dark)
   useEffect(() => {
@@ -627,7 +628,7 @@ export default function ReservationMessageClient({
   // Load presentation image for selected property (once per id)
   useEffect(() => {
     (async () => {
-      if (!propertyId) return;
+      if (!propertyReady || !propertyId) return;
       if (propertyPhotos[propertyId] !== undefined) return;
       try {
         const r = await sb
@@ -641,7 +642,7 @@ export default function ReservationMessageClient({
         setPropertyPhotos(prev => ({ ...prev, [propertyId]: null }));
       }
     })();
-  }, [propertyId, sb, propertyPhotos]);
+  }, [propertyId, sb, propertyPhotos, propertyReady]);
 
   /** --------- Render --------- */
   return (

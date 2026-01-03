@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // LocalStorage key for persisting the selected property across pages
 export const SELECTED_PROPERTY_KEY = "p4h:selectedPropertyId";
@@ -32,6 +32,15 @@ function readFromURL(): string | null {
   }
 }
 
+function writeToURL(id: string) {
+  try {
+    if (typeof window === "undefined") return;
+    const u = new URL(window.location.href);
+    u.searchParams.set("property", id);
+    window.history.replaceState({}, "", u.toString());
+  } catch {}
+}
+
 function ensureValid(id: string | null | undefined, ids: string[]): string | "" {
   if (!id) return ids[0] ?? "";
   return ids.includes(id) ? id : ids[0] ?? "";
@@ -49,42 +58,64 @@ export function usePersistentProperty(
   properties: { id: string }[],
   opts?: { storageKey?: string }
 ) {
-  const key = opts?.storageKey || SELECTED_PROPERTY_KEY;
-  const ids = useMemo(() => properties.map((p) => p.id), [properties]);
-
-  // Seed with first available to avoid hydration mismatch; update after mount
-  const [propertyId, _setPropertyId] = useState<string>(() => ids[0] ?? "");
-
-  // On mount or when the list changes, try to restore from URL or localStorage
-  useEffect(() => {
-    const fromUrl = readFromURL();
-    const fromLS = readFromLocalStorage(key);
-    const next = ensureValid(fromUrl ?? fromLS, ids);
-    if (next && next !== propertyId) {
-      _setPropertyId(next);
-      writeToLocalStorage(key, next);
-      emitSelectedChange(next);
-    }
-  }, [ids.join("|"), key]);
-
-  const setPropertyId = useCallback((id: string) => {
-    _setPropertyId(id);
-    writeToLocalStorage(key, id);
-    emitSelectedChange(id);
-  }, [key]);
-
-  // Optional: react to external changes in the same tab/session
-  useEffect(() => {
-    function onEvt(e: Event) {
-      const d = (e as CustomEvent).detail as { id?: string } | undefined;
-      if (d?.id && d.id !== propertyId && ids.includes(d.id)) {
-        _setPropertyId(d.id);
-      }
-    }
-    window.addEventListener("p4h:selectedProperty", onEvt as EventListener);
-    return () => window.removeEventListener("p4h:selectedProperty", onEvt as EventListener);
-  }, [propertyId, ids.join("|")]);
-
+  const { propertyId, setPropertyId } = usePersistentPropertyState(properties, opts);
   return [propertyId, setPropertyId] as const;
 }
 
+export function usePersistentPropertyState(
+  properties: { id: string }[],
+  opts?: { storageKey?: string }
+) {
+  const key = opts?.storageKey || SELECTED_PROPERTY_KEY;
+  const ids = useMemo(() => properties.map((p) => p.id), [properties]);
+
+  const [propertyId, _setPropertyId] = useState<string>(() => ids[0] ?? "");
+  const [ready, setReady] = useState(false);
+  const userSetRef = useRef(false);
+  const propertyIdRef = useRef(propertyId);
+  useEffect(() => { propertyIdRef.current = propertyId; }, [propertyId]);
+
+  const apply = useCallback((id: string, opts?: { emit?: boolean }) => {
+    const next = ensureValid(id, ids);
+    _setPropertyId(next);
+    writeToLocalStorage(key, next);
+    writeToURL(next);
+    if (opts?.emit !== false) emitSelectedChange(next);
+  }, [ids.join("|"), key]);
+
+  // On mount (and whenever the list changes), restore from URL/localStorage.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setReady(false);
+    const fromUrl = readFromURL();
+    const fromLS = readFromLocalStorage(key);
+    const base = userSetRef.current
+      ? propertyIdRef.current
+      : (fromUrl ?? fromLS ?? propertyIdRef.current);
+    apply(base, { emit: true });
+    setReady(true);
+  }, [apply, key]);
+
+  const setPropertyId = useCallback((id: string) => {
+    userSetRef.current = true;
+    apply(id, { emit: true });
+    setReady(true);
+  }, [apply]);
+
+  // React to external changes in the same tab/session.
+  useEffect(() => {
+    function onEvt(e: Event) {
+      const d = (e as CustomEvent).detail as { id?: string } | undefined;
+      const next = d?.id;
+      if (!next) return;
+      if (!ids.includes(next)) return;
+      if (next === propertyId) return;
+      apply(next, { emit: false });
+      setReady(true);
+    }
+    window.addEventListener("p4h:selectedProperty", onEvt as EventListener);
+    return () => window.removeEventListener("p4h:selectedProperty", onEvt as EventListener);
+  }, [apply, propertyId, ids.join("|")]);
+
+  return { propertyId, setPropertyId, ready } as const;
+}

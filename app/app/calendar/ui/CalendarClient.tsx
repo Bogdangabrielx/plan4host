@@ -7,7 +7,7 @@ import RoomViewModal from "./RoomViewModal";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
-import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
+import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
 
 // Robust dynamic import
 const DayModal: any = dynamic(
@@ -50,7 +50,7 @@ export default function CalendarClient({
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
   const [properties] = useState<Property[]>(initialProperties);
-  const [propertyId, setPropertyId] = usePersistentProperty(properties);
+  const { propertyId, setPropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
   const [isSmall, setIsSmall] = useState(false);
   // Cache property presentation images (avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
@@ -127,7 +127,7 @@ export default function CalendarClient({
   // Load presentation image for selected property (once per id)
   useEffect(() => {
     (async () => {
-      if (!propertyId) return;
+      if (!propertyReady || !propertyId) return;
       if (propertyPhotos[propertyId] !== undefined) return;
       try {
         const r = await supabase
@@ -141,7 +141,7 @@ export default function CalendarClient({
         setPropertyPhotos(prev => ({ ...prev, [propertyId]: null }));
       }
     })();
-  }, [propertyId, supabase, propertyPhotos]);
+  }, [propertyId, supabase, propertyPhotos, propertyReady]);
 
   useEffect(() => {
     if (isSmall && view !== "month") setView("month");
@@ -161,7 +161,7 @@ export default function CalendarClient({
   // Load rooms + bookings for current window
   const loadSeqRef = useRef(0);
   useEffect(() => {
-    if (!propertyId) return;
+    if (!propertyReady || !propertyId) return;
     const seq = (loadSeqRef.current += 1);
     let from: string, to: string;
     if (view === "year") {
@@ -212,12 +212,13 @@ export default function CalendarClient({
   // Header pill (show Read-only when idle)
   useEffect(() => {
     const label =
+      !propertyReady       ? "Loading…" :
       loading === "Loading" ? "Syncing…" :
       loading === "Error"   ? "Error"    :
       me === null           ? "Loading…" :
                               "Idle";
     setPill(label);
-  }, [loading, me, setPill]);
+  }, [loading, me, propertyReady, setPill]);
 
   // Occupancy map
   const occupancyMap = useMemo(() => {

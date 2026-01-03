@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
-import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
+import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
 
 /** DB types */
 type Property = { id: string; name: string; timezone: string | null };
@@ -89,7 +89,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   // Responsive: mobil (telefon)
 
   const [properties] = useState<Property[]>(initialProperties);
-  const [propertyId, setPropertyId] = usePersistentProperty(properties);
+  const { propertyId, setPropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
   // Small screen detection
@@ -104,33 +104,6 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     return () => { try { mq?.removeEventListener('change', on); } catch { mq?.removeListener?.(on); } };
   }, []);
   const [timezone, setTimezone] = useState<string>("");
-  const [prefReady, setPrefReady] = useState(false);
-
-  // Ensure the selected property matches URL/localStorage before first load
-  useEffect(() => {
-    try {
-      const ids = new Set((properties || []).map((p) => p.id));
-      let desired: string | null = null;
-      if (typeof window !== "undefined") {
-        try {
-          const u = new URL(window.location.href);
-          desired = u.searchParams.get("property");
-        } catch {}
-        if (!desired) {
-          try {
-            desired = localStorage.getItem("p4h:selectedPropertyId");
-          } catch {
-            desired = null;
-          }
-        }
-      }
-      if (desired && ids.has(desired) && desired !== propertyId) {
-        setPropertyId(desired);
-      }
-    } finally {
-      setPrefReady(true);
-    }
-  }, [properties.map((p) => p.id).join("|")]);
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [types, setTypes] = useState<RoomType[]>([]);
@@ -167,7 +140,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   // Load presentation image for selected property (once per id)
   useEffect(() => {
     (async () => {
-      if (!propertyId) return;
+      if (!propertyReady || !propertyId) return;
       if (propertyPhotos[propertyId] !== undefined) return;
       try {
         const r = await supabase
@@ -181,7 +154,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         setPropertyPhotos(prev => ({ ...prev, [propertyId]: null }));
       }
     })();
-  }, [propertyId, supabase, propertyPhotos]);
+  }, [propertyId, supabase, propertyPhotos, propertyReady]);
 
   // PLAN gate (pentru Sync now)
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
@@ -348,8 +321,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   }, [propertyId]);
 
   // Trigger refresh when ready and when property changes
-  useEffect(() => { if (prefReady) refresh(); }, [prefReady, refresh]);
-  useEffect(() => { if (prefReady) refresh(); }, [propertyId]);
+  useEffect(() => { if (propertyReady) refresh(); }, [propertyReady, refresh]);
 
   /* URLs & helpers */
   function roomIcsUrl(id: string) { return `${origin}/api/ical/rooms/${id}.ics`; }
@@ -512,6 +484,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   }
 
   const pillLabel =
+    !propertyReady ? "Loading…" :
     status === "Error" ? "Error" :
     status === "Loading" || status === "Saving…" ? "Syncing…" : "Idle";
 

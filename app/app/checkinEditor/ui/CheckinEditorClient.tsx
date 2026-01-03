@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
-import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
+import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
 
 type Property = {
   id: string;
@@ -101,7 +101,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const { setTitle, setPill } = useHeader();
 
   const [properties] = useState(initialProperties);
-  const [propertyId, setPropertyId] = usePersistentProperty(properties);
+  const { propertyId, setPropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
 
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
   const [loading, setLoading] = useState(false);
@@ -110,11 +110,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   useEffect(() => {
     setPill(
       status === "Saving…" ? "Saving…" :
+      !propertyReady       ? "Loading…" :
       loading              ? "Loading…" :
       status === "Synced"  ? "Synced"  :
       status === "Error"   ? "Error"   : "Idle"
     );
-  }, [status, loading, setPill]);
+  }, [status, loading, propertyReady, setPill]);
 
   const [prop, setProp] = useState<Property | null>(null);
   const [copied, setCopied] = useState(false);
@@ -206,7 +207,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     }
   }
 
-  useEffect(() => { refresh(); }, [propertyId, supabase]);
+  useEffect(() => { if (propertyReady) refresh(); }, [propertyId, supabase, propertyReady]);
 
   // Read onboarding highlight hint from URL (e.g., ?highlight=contacts|picture|house_rules)
   useEffect(() => {

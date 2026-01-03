@@ -9,7 +9,7 @@ import RoomDetailsTab from "./RoomDetailsTab";
 import CleaningTab from "./CleaningTab";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
-import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
+import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
 
 type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null; };
 type Room = { id: string; name: string; capacity: number | null; property_id: string; sort_index: number; room_type_id: string | null };
@@ -35,7 +35,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   });
 
   const [properties, setProperties] = useState<Property[]>(initialProperties);
-  const [selectedId, setSelectedId] = usePersistentProperty(properties);
+  const { propertyId: selectedId, setPropertyId: setSelectedId, ready: propertyReady } = usePersistentPropertyState(properties);
 
   const [rooms, setRooms]     = useState<Room[]>([]);
   const [checks, setChecks]   = useState<CheckDef[]>([]);
@@ -94,12 +94,13 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   // Header pill mirrors page status
   useEffect(() => {
     setPill(
+      !propertyReady       ? "Loading…" :
       status === "Loading" ? "Loading…" :
       status === "Saving…" ? "Saving…" :
       status === "Synced"  ? "Synced"  :
       status === "Error"   ? "Error"   : "Idle"
     );
-  }, [status, setPill]);
+  }, [status, propertyReady, setPill]);
 
   // Load effective plan for current membership (used for gating Cleaning tab)
   useEffect(() => {
@@ -131,7 +132,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 
   // Load data for selected property
   useEffect(() => {
-    if (!selectedId) return;
+    if (!propertyReady || !selectedId) return;
     const seq = (loadSeqRef.current += 1);
     // Load presentation image (once per property id)
     (async () => {
@@ -197,7 +198,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         }
       }
     })();
-  }, [selectedId, supabase]);
+  }, [selectedId, supabase, propertyReady]);
 
   function startSaving(){ setStatus("Saving…"); }
   function finishSaving(ok:boolean){ setStatus(ok ? "Synced" : "Error"); setTimeout(() => setStatus("Idle"), 800); }

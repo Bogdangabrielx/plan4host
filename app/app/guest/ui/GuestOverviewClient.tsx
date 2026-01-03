@@ -7,7 +7,7 @@ import Image from "next/image";
 import QrWithLogo from "@/components/QrWithLogo";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
-import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
+import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import RoomDetailModal from "@/app/app/calendar/ui/RoomDetailModal";
 
@@ -249,8 +249,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   // Properties & selection
   const [properties, setProperties] = useState<Property[]>(initialProperties || []);
-  const [activePropertyId, setActivePropertyId] = usePersistentProperty(properties);
-  const [prefReady, setPrefReady] = useState(false);
+  const { propertyId: activePropertyId, setPropertyId: setActivePropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
   const [openActions, setOpenActions] = useState<Set<string>>(() => new Set());
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
@@ -261,7 +260,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   // Load presentation image for selected property (once per id)
   useEffect(() => {
     (async () => {
-      if (!activePropertyId) return;
+      if (!propertyReady || !activePropertyId) return;
       if (propertyPhotos[activePropertyId] !== undefined) return;
       try {
         const r = await supabase
@@ -275,28 +274,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         setPropertyPhotos(prev => ({ ...prev, [activePropertyId]: null }));
       }
     })();
-  }, [activePropertyId, supabase, propertyPhotos]);
+  }, [activePropertyId, supabase, propertyPhotos, propertyReady]);
 
-  // Ensure the selected property matches URL/localStorage before first load
-  useEffect(() => {
-    try {
-      const ids = new Set((properties || []).map(p => p.id));
-      let desired: string | null = null;
-      if (typeof window === 'undefined') return;
-      try {
-        const u = new URL(window.location.href);
-        desired = u.searchParams.get('property');
-      } catch {}
-      if (!desired) {
-        try { desired = localStorage.getItem('p4h:selectedPropertyId'); } catch { desired = null; }
-      }
-      if (desired && ids.has(desired) && desired !== activePropertyId) {
-        setActivePropertyId(desired);
-      }
-    } finally {
-      setPrefReady(true);
-    }
-  }, [properties.map(p=>p.id).join('|')]);
+  // Selection is restored by usePersistentPropertyState (URL + localStorage sync).
 
   // Data
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -413,7 +393,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     setPill("Loading…");
   }, [activePropertyId, setPill]);
 
-  useEffect(() => { if (prefReady) refresh(); }, [prefReady, refresh]);
+  useEffect(() => { if (propertyReady) refresh(); }, [propertyReady, refresh]);
 
   // Maps & sorting
   const roomById = useMemo(() => {

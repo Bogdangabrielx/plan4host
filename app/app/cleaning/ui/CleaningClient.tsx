@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import CleanTaskModal from "./CleanTaskModal";
-import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
+import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
 
 /* ─── Types ─────────────────────────────────────────────────────────── */
 type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null };
@@ -105,7 +105,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   const loadSeqRef = useRef(0);
 
   const [properties] = useState<Property[]>(initialProperties);
-  const [propertyId, setPropertyId] = usePersistentProperty(properties);
+  const { propertyId, setPropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
 
   // plan & features
   const [plan, setPlan] = useState<Plan>(null);
@@ -194,7 +194,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   // Load presentation image for the selected property (once per id)
   useEffect(() => {
     (async () => {
-      if (!propertyId) return;
+      if (!propertyReady || !propertyId) return;
       if (propertyPhotos[propertyId] !== undefined) return;
       try {
         const r = await supabase
@@ -208,13 +208,16 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         setPropertyPhotos(prev => ({ ...prev, [propertyId]: null }));
       }
     })();
-  }, [propertyId, supabase, propertyPhotos]);
+  }, [propertyId, supabase, propertyPhotos, propertyReady]);
 
   /* Header title + pill */
   useEffect(() => { setTitle("Cleaning Board"); }, [setTitle]);
   useEffect(() => {
-    setPill(status === "Loading" ? "Syncing…" : status === "Error" ? "Error" : "Idle");
-  }, [status, setPill]);
+    setPill(
+      !propertyReady ? "Loading…" :
+      status === "Loading" ? "Syncing…" : status === "Error" ? "Error" : "Idle"
+    );
+  }, [status, propertyReady, setPill]);
 
   /* Load plan (effective, for current account membership) */
   useEffect(() => {
@@ -227,7 +230,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
 
   /* Load data */
   useEffect(() => {
-    if (!propertyId) return;
+    if (!propertyReady || !propertyId) return;
     if (!hasCleaningBoard) { setStatus("Idle"); return; }
     const seq = (loadSeqRef.current += 1);
     setStatus("Loading");
