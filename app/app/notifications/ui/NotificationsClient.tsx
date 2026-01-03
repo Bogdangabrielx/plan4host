@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useHeader } from "@/app/app/_components/HeaderContext";
 
 export default function NotificationsClient() {
+  const { setPill } = useHeader();
   const [loading, setLoading] = useState<boolean>(true);
   const [status, setStatus] = useState<string>(""); // "Loading..." | "Done"
   const [active, setActive] = useState<boolean>(false);
@@ -16,6 +18,12 @@ export default function NotificationsClient() {
     refreshActive();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Trigger the global loading overlay while this page is busy.
+  useEffect(() => {
+    setPill(loading ? "Loading…" : null);
+    return () => setPill(null);
+  }, [loading, setPill]);
 
   async function refreshActive() {
     setLoading(true);

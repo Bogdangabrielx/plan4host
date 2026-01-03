@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import styles from "../subscription.module.css";
 import { createClient } from "@/lib/supabase/client";
+import { useHeader } from "@/app/app/_components/HeaderContext";
 
 /** Plan definition sourced from landing (NOT from DB) */
 type Plan = {
@@ -95,6 +96,7 @@ export default function SubscriptionClient({
   initialPlans?: any[];
 }) {
   const supabase = useMemo(() => createClient(), []);
+  const { setPill } = useHeader();
 
   const [currentPlan, setCurrentPlan] = useState<"basic"|"standard"|"premium">("basic");
   const [validUntil, setValidUntil] = useState<string | null>(null);        // localized display
@@ -131,6 +133,7 @@ export default function SubscriptionClient({
   const [payNowConfirmOpen, setPayNowConfirmOpen] = useState<boolean>(false);
   const [upgradeBusy, setUpgradeBusy] = useState<boolean>(false);
   const [scheduleBusy, setScheduleBusy] = useState<boolean>(false);
+  const [initializing, setInitializing] = useState<boolean>(true);
 
   // Account billing/status snapshot (pending change, cancel flag)
   const [pendingPlan, setPendingPlan] = useState<Plan["slug"] | null>(null);
@@ -252,6 +255,7 @@ export default function SubscriptionClient({
   // load current plan + validity
   useEffect(() => {
     (async () => {
+      setInitializing(true);
       try {
         const { data: auth } = await supabase.auth.getUser();
         const uid = auth?.user?.id as string | undefined;
@@ -287,8 +291,17 @@ export default function SubscriptionClient({
           if (s === "basic" || s === "standard" || s === "premium") setBasePlan(s as any);
         }
       } catch {}
+      finally { setInitializing(false); }
     })();
   }, [supabase]);
+
+  // Trigger the global loading overlay while this page is busy.
+  useEffect(() => {
+    const busy = initializing || pmLoading || upgradeBusy || scheduleBusy || !!saving;
+    if (!busy) { setPill(null); return; }
+    setPill(!!saving || upgradeBusy || scheduleBusy || pmLoading ? "Saving…" : "Loading…");
+    return () => setPill(null);
+  }, [initializing, pmLoading, upgradeBusy, scheduleBusy, saving, setPill]);
 
   // Check if billing profile exists (DB) — used to decide Buyer Type flow
   useEffect(() => {
