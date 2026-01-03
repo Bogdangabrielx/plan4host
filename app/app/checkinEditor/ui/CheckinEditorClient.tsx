@@ -104,8 +104,17 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
 
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
+  const [loading, setLoading] = useState(false);
+  const loadSeqRef = useRef(0);
   useEffect(() => { setTitle("Check-in Editor"); }, [setTitle]);
-  useEffect(() => { setPill(status === 'Saving…' ? 'Saving…' : status === 'Synced' ? 'Synced' : status === 'Error' ? 'Error' : 'Idle'); }, [status, setPill]);
+  useEffect(() => {
+    setPill(
+      status === "Saving…" ? "Saving…" :
+      loading              ? "Loading…" :
+      status === "Synced"  ? "Synced"  :
+      status === "Error"   ? "Error"   : "Idle"
+    );
+  }, [status, loading, setPill]);
 
   const [prop, setProp] = useState<Property | null>(null);
   const [copied, setCopied] = useState(false);
@@ -174,19 +183,26 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 
   async function refresh() {
     if (!propertyId) { setProp(null); return; }
-    const { data, error } = await supabase
-      .from("properties")
-      .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,ai_house_rules_text,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position,social_facebook,social_instagram,social_tiktok,social_website,social_location")
-      .eq("id", propertyId)
-      .maybeSingle();
-    if (error) { setProp(null); lastSavedContact.current = { email: "", phone: "", address: "" }; }
-    else {
-      setProp((data ?? null) as Property | null);
-      lastSavedContact.current = {
-        email: (data?.contact_email ?? "") as string,
-        phone: (data?.contact_phone ?? "") as string,
-        address: (data?.contact_address ?? "") as string,
-      };
+    const seq = (loadSeqRef.current += 1);
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("id,name,regulation_pdf_url,regulation_pdf_uploaded_at,ai_house_rules_text,contact_email,contact_phone,contact_address,presentation_image_url,presentation_image_uploaded_at,contact_overlay_position,social_facebook,social_instagram,social_tiktok,social_website,social_location")
+        .eq("id", propertyId)
+        .maybeSingle();
+      if (seq !== loadSeqRef.current) return;
+      if (error) { setProp(null); lastSavedContact.current = { email: "", phone: "", address: "" }; }
+      else {
+        setProp((data ?? null) as Property | null);
+        lastSavedContact.current = {
+          email: (data?.contact_email ?? "") as string,
+          phone: (data?.contact_phone ?? "") as string,
+          address: (data?.contact_address ?? "") as string,
+        };
+      }
+    } finally {
+      if (seq === loadSeqRef.current) setLoading(false);
     }
   }
 
@@ -209,7 +225,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     }
   }, []);
 
-  function onPropChange(e: React.ChangeEvent<HTMLSelectElement>) { setPropertyId(e.currentTarget.value); }
+  function onPropChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const next = e.currentTarget.value;
+    if (!next || next === propertyId) return;
+    setProp(null);
+    setLoading(true);
+    setPropertyId(next);
+  }
 
   async function triggerPdfUpload() {
     if (!propertyId) return;

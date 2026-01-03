@@ -1,7 +1,7 @@
 // app/app/cleaning/ui/CleaningClient.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
@@ -102,6 +102,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   const { setTitle, setPill } = useHeader();
 
   const [status, setStatus] = useState<"Idle" | "Loading" | "Error">("Idle");
+  const loadSeqRef = useRef(0);
 
   const [properties] = useState<Property[]>(initialProperties);
   const [propertyId, setPropertyId] = usePersistentProperty(properties);
@@ -228,7 +229,14 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   useEffect(() => {
     if (!propertyId) return;
     if (!hasCleaningBoard) { setStatus("Idle"); return; }
+    const seq = (loadSeqRef.current += 1);
     setStatus("Loading");
+    setOpenItem(null);
+    setItems([]);
+    setRooms([]);
+    setTasks([]);
+    setCleaningMap({});
+    setCleanedByMap({});
 
     (async () => {
       const rRooms = await supabase
@@ -277,6 +285,8 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         .eq("property_id", propertyId)
         .gte("clean_date", fromStr)
         .lte("clean_date", dateStr);
+
+      if (seq !== loadSeqRef.current) return;
 
       // Allow board to render even if cleaning_progress SELECT is not permitted (viewer without 'cleaning' scope).
       if (rRooms.error || rTasks.error || rBookingsBefore.error || rBookingsAfter.error) {
@@ -546,7 +556,18 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             ) : null}
             <select
               value={propertyId}
-              onChange={(e) => setPropertyId(e.currentTarget.value)}
+              onChange={(e) => {
+                const next = e.currentTarget.value;
+                if (!next || next === propertyId) return;
+                setOpenItem(null);
+                setItems([]);
+                setRooms([]);
+                setTasks([]);
+                setCleaningMap({});
+                setCleanedByMap({});
+                setStatus("Loading");
+                setPropertyId(next);
+              }}
               className="sb-select"
               style={{
                 background: 'transparent',

@@ -552,14 +552,31 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               style={{ position: 'absolute', left: 8, width: 40, height: 40, borderRadius: 999, objectFit: 'cover', border: '2px solid var(--card)' }}
             />
           ) : null}
-          <select
-            className="sb-select"
-            value={propertyId}
-            onChange={(e) => setPropertyId(e.target.value)}
-            style={{
-              background: 'transparent',
-              border: 0,
-              boxShadow: 'none',
+	          <select
+	            className="sb-select"
+	            value={propertyId}
+	            onChange={(e) => {
+	              const next = e.currentTarget.value;
+	              if (!next || next === propertyId) return;
+	              setShowRoomsModal(false);
+	              setShowTypesModal(false);
+	              setShowImportModal(false);
+	              setShowRoomImportModal(false);
+	              setActiveRoomId(null);
+	              setActiveTypeId(null);
+	              setManageTypeId(null);
+	              setManageRoomId(null);
+	              setRooms([]);
+	              setTypes([]);
+	              setIntegrations([]);
+	              setTimezone("");
+	              setStatus("Loading");
+	              setPropertyId(next);
+	            }}
+	            style={{
+	              background: 'transparent',
+	              border: 0,
+	              boxShadow: 'none',
               padding: '10px 12px',
               minHeight: 44,
               minWidth: isSmall ? '100%' : 220,

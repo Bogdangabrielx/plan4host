@@ -159,8 +159,10 @@ export default function CalendarClient({
   }, [initialDate]);
 
   // Load rooms + bookings for current window
+  const loadSeqRef = useRef(0);
   useEffect(() => {
     if (!propertyId) return;
+    const seq = (loadSeqRef.current += 1);
     let from: string, to: string;
     if (view === "year") {
       from = `${year}-01-01`;
@@ -187,6 +189,7 @@ export default function CalendarClient({
           .lte("end_date", to)
           .order("start_date", { ascending: true }),
       ]);
+      if (seq !== loadSeqRef.current) return;
       if (r1.error || r2.error) {
         setRooms([]); setBookings([]); setLoading("Error"); setHasLoadedRooms(true);
       } else {
@@ -319,7 +322,20 @@ export default function CalendarClient({
           <select
             className="sb-select"
             value={propertyId ?? ""}
-            onChange={(e) => { setPropertyId(e.currentTarget.value); }}
+            onChange={(e) => {
+              const next = e.currentTarget.value;
+              if (!next || next === propertyId) return;
+              setOpenDate(null);
+              setShowRoomView(false);
+              setShowYear(false);
+              setShowDatePicker(false);
+              setShowNoRoomsPopup(false);
+              setRooms([]);
+              setBookings([]);
+              setHasLoadedRooms(false);
+              setLoading("Loading");
+              setPropertyId(next);
+            }}
             style={{
               background: 'transparent',
               border: '0',

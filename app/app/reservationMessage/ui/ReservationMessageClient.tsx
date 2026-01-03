@@ -596,7 +596,14 @@ export default function ReservationMessageClient({
   const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 700, cursor: "pointer" };
   const btnPri: React.CSSProperties = { ...btn, background: "var(--primary)", color: "var(--text)", border: "1px solid var(--border)" };
 
-  useEffect(() => { setPill(saving); }, [saving, setPill]);
+  useEffect(() => {
+    const pillLabel =
+      saving === "Saving…" ? "Saving…" :
+      saving === "Error"   ? "Error"   :
+      loadingList          ? "Loading…" :
+      saving === "Synced"  ? "Synced"  : "Idle";
+    setPill(pillLabel);
+  }, [saving, loadingList, setPill]);
 
   // Track theme for room icon (light/dark)
   useEffect(() => {
@@ -672,7 +679,16 @@ export default function ReservationMessageClient({
           <select
             className="sb-select"
             value={propertyId}
-            onChange={(e) => setPropertyId((e.target as HTMLSelectElement).value)}
+            onChange={(e) => {
+              const next = (e.target as HTMLSelectElement).value;
+              if (!next || next === propertyId) return;
+              setTemplates([]);
+              setActiveId(null);
+              setTpl(EMPTY);
+              setTitleText("");
+              setLoadingList(true);
+              setPropertyId(next);
+            }}
             style={{
               background: 'transparent',
               border: 0,

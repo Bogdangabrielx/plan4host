@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 // import PropertySidebar from "./PropertySidebar"; // replaced by top pill selector
 import SettingsTab from "./SettingsTab";
@@ -22,7 +22,8 @@ type Plan = "basic" | "standard" | "premium";
 
 export default function PropertySetupClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
-  const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
+  const [status, setStatus] = useState<"Idle" | "Loading" | "Saving…" | "Synced" | "Error">("Idle");
+  const loadSeqRef = useRef(0);
   const [isSmall, setIsSmall] = useState(false);
   // Theme-aware icons (light/dark)
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -93,6 +94,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   // Header pill mirrors page status
   useEffect(() => {
     setPill(
+      status === "Loading" ? "Loading…" :
       status === "Saving…" ? "Saving…" :
       status === "Synced"  ? "Synced"  :
       status === "Error"   ? "Error"   : "Idle"
@@ -130,6 +132,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   // Load data for selected property
   useEffect(() => {
     if (!selectedId) return;
+    const seq = (loadSeqRef.current += 1);
     // Load presentation image (once per property id)
     (async () => {
       if (propertyPhotos[selectedId] !== undefined) return;
@@ -146,7 +149,8 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
       }
     })();
     (async () => {
-      setStatus("Idle");
+      setStatus("Loading");
+      setRooms([]); setChecks([]); setTexts([]); setTasks([]); setRoomTypes([]);
       const [r1, r2, r3, r4, r5] = await Promise.all([
         supabase.from("rooms")
           .select("id,name,capacity,property_id,sort_index,room_type_id,created_at")
@@ -174,6 +178,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
           .order("created_at", { ascending: true })
       ]);
 
+      if (seq !== loadSeqRef.current) return;
       if (r1.error || r2.error || r3.error || r4.error || r5.error) {
         setStatus("Error");
         setRooms([]); setChecks([]); setTexts([]); setTasks([]); setRoomTypes([]);
@@ -508,7 +513,13 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
             <select
               className="sb-select"
               value={selectedId || ''}
-              onChange={(e) => setSelectedId((e.target as HTMLSelectElement).value)}
+              onChange={(e) => {
+                const next = (e.target as HTMLSelectElement).value;
+                if (!next || next === selectedId) return;
+                setRooms([]); setChecks([]); setTexts([]); setTasks([]); setRoomTypes([]);
+                setStatus("Loading");
+                setSelectedId(next);
+              }}
               style={{
                 background: 'transparent', border: 0, boxShadow: 'none',
                 padding: '10px 12px', minHeight: 44,
