@@ -128,6 +128,35 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     }
   }, []);
 
+  // Write the real header height to CSS so app-main padding matches (prevents overlap when titles wrap)
+  useEffect(() => {
+    const el = headerRef.current as HTMLElement | null;
+    if (!el || typeof document === "undefined") return;
+
+    const write = () => {
+      try {
+        const h = el.getBoundingClientRect?.().height ?? 0;
+        if (h > 0) document.documentElement.style.setProperty("--app-header-h", `${Math.ceil(h)}px`);
+      } catch {}
+    };
+
+    write();
+
+    const RO = (typeof window !== "undefined" ? (window as any).ResizeObserver : undefined) as
+      | typeof ResizeObserver
+      | undefined;
+    let ro: ResizeObserver | undefined;
+    if (RO) {
+      ro = new RO(() => write());
+      ro.observe(el);
+    }
+    window.addEventListener("resize", write);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", write);
+    };
+  }, [isMobileNav, isSmall, title, pill, right]);
+
   // Theme init + listen
   useEffect(() => {
     setMounted(true);
