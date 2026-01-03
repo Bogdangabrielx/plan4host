@@ -215,10 +215,10 @@ function FeatureCarousel() {
                 role={isMobile ? 'button' : undefined}
                 onClick={() => { if (isMobile) setModalIdx(idx); }}
               >
-                <div className={styles.featureHead}>
-                  <img src={f.icon} alt="" aria-hidden="true" className={styles.featureIcon} />
-                 <h3 style={{ fontSize: isMobile ? 9 : undefined }}>{f.title}</h3>
-                </div>
+	                <div className={styles.featureHead}>
+	                  <img src={f.icon} alt="" aria-hidden="true" className={styles.featureIcon} />
+	                  <h3>{f.title}</h3>
+	                </div>
                 {!isMobile && <p>{f.text}</p>}
               </article>
             );
@@ -233,17 +233,17 @@ function FeatureCarousel() {
         { icon: "/calendar_forlight.png", title: "Calendar adaptiv", text: "Personalizezi vederi și organizezi rezervări pe loc." },
         { icon: "/team_forlight.png", title: "Delegare sarcini", text: "Invită colegi și deleagă activitățile zilnice." },
       ]; const f = feats[(modalIdx!%feats.length+feats.length)%feats.length]; return (
-        <div role="dialog" aria-modal="true" onClick={() => setModalIdx(null)}
-          style={{ position:'fixed', inset:0, zIndex:120, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={{ width:'min(520px, 92vw)', background:'var(--card)', border:'0.5px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:10 }}>
-            <div style={{ alignItems:'center', gap:10 }}>
-              <img src={f.icon} alt="" aria-hidden className={styles.featureIcon} />
-              <h3 style={{ margin:0 }}>{f.title}</h3>
-            </div>
-            <p style={{ margin:0, color:'var(--muted)' }}>{f.text}</p>
-            <button className="sb-btn sb-cardglow" onClick={() => setModalIdx(null)} style={{ justifySelf:'end' }}>Închide</button>
-          </div>
-        </div>
+	        <div role="dialog" aria-modal="true" onClick={() => setModalIdx(null)}
+	          style={{ position:'fixed', inset:0, zIndex:120, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:16 }}>
+	          <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={{ width:'min(520px, 92vw)', background:'var(--card)', border:'0.5px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:16 }}>
+	            <div style={{ alignItems:'center', gap:8 }}>
+	              <img src={f.icon} alt="" aria-hidden className={styles.featureIcon} />
+	              <h3 style={{ margin:0 }}>{f.title}</h3>
+	            </div>
+	            <p style={{ margin:0, color:'var(--muted)' }}>{f.text}</p>
+	            <button className={`sb-btn sb-cardglow ${styles.sbBtn}`} onClick={() => setModalIdx(null)} style={{ justifySelf:'end' }}>Închide</button>
+	          </div>
+	        </div>
       ); })()}
       <button type="button" aria-label="Next features" className={`${styles.carouselBtn} ${styles.carouselBtnRight} `} onClick={next}>›</button>
     </div>
@@ -353,8 +353,8 @@ function TimeSavingsStripRo() {
       className="sb-cardglow"
       style={{
         maxWidth: 1120,
-        margin: "0 auto 12px",
-        padding: 12,
+        margin: "0 auto 16px",
+        padding: 16,
         borderRadius: 12,
         background: "var(--panel)",
         display: "grid",
@@ -362,7 +362,7 @@ function TimeSavingsStripRo() {
           ? "minmax(0, 1fr)"
           : "repeat(3, minmax(0, 300px))",
         justifyContent: isMobile ? "stretch" : "center",
-        gap: isMobile ? 12 : 18,
+        gap: isMobile ? 16 : 24,
       }}
     >
       {stats.map((s) => {
@@ -375,12 +375,12 @@ function TimeSavingsStripRo() {
               border: isMobile
                 ? "1px solid rgba(148,163,184,0.6)"
                 : "1px solid transparent",
-              padding: "8px 10px",
+              padding: "8px 16px",
               display: "grid",
               gridTemplateRows: "auto 1fr auto",
               alignItems: isMobile ? "center" : "start",
               justifyItems: "center",
-              gap: 6,
+              gap: 8,
               background: "color-mix(in srgb, var(--card) 82%, transparent)",
             }}
           >
@@ -422,10 +422,9 @@ function TimeSavingsStripRo() {
               {s.prefix && value > 0 ? (
                 <span
                   style={{
-                    fontSize: 18,
-                    fontWeight: 400,
+                    fontSize: "var(--fs-b)",
+                    fontWeight: "var(--fw-medium)",
                     color: "var(--muted)",
-                    marginRight: 1,
                   }}
                 >
                   +
@@ -433,8 +432,8 @@ function TimeSavingsStripRo() {
               ) : null}
               <div
                 style={{
-                  fontSize: isMobile ? 38 : 48,
-                  fontWeight: 800,
+                  fontSize: "var(--fs-h)",
+                  fontWeight: "var(--fw-bold)",
                   backgroundImage:
                     "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
                   WebkitBackgroundClip: "text",
@@ -447,8 +446,8 @@ function TimeSavingsStripRo() {
               {s.suffix ? (
                 <span
                   style={{
-                    fontSize: 13,
-                    fontWeight: 600,
+                    fontSize: "var(--fs-s)",
+                    fontWeight: "var(--fw-medium)",
                     color: "var(--muted)",
                   }}
                 >
@@ -459,17 +458,16 @@ function TimeSavingsStripRo() {
 
             <div
               style={{
-                fontSize: 11,
+                fontSize: "var(--fs-s)",
                 color: "var(--muted)",
                 textAlign: "center",
-                marginTop: -4,
               }}
             >
               <div
                 style={{
-                  fontSize: isMobile ? 18 : 22,
-                  fontWeight: 800,
-                  marginBottom: 2,
+                  fontSize: "var(--fs-b)",
+                  fontWeight: "var(--fw-bold)",
+                  marginBottom: 8,
                   backgroundImage:
                     "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
                   WebkitBackgroundClip: "text",
@@ -536,15 +534,15 @@ function AndroidInstallBannerRo() {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        gap: 12,
-        padding: "10px 12px",
+        gap: 16,
+        padding: "16px 16px",
         borderRadius: 999,
         border: "1px solid rgba(148,163,184,0.65)",
         background: "color-mix(in srgb, var(--card) 80%, #020617 20%)",
         boxShadow: "0 14px 40px rgba(15,23,42,0.6)",
       }}
     >
-      <span style={{ fontSize: 12 }}>
+      <span style={{ fontSize: "var(--fs-s)" }}>
         Instalează <strong>Plan4Host</strong> pe telefon
       </span>
       <button
@@ -556,9 +554,9 @@ function AndroidInstallBannerRo() {
           background:
             "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
           color: "#f9fafb",
-          padding: "6px 12px",
-          fontSize: 11,
-          fontWeight: 700,
+          padding: "8px 16px",
+          fontSize: "var(--fs-s)",
+          fontWeight: "var(--fw-bold)",
           cursor: "pointer",
           whiteSpace: "nowrap",
         }}
@@ -623,22 +621,90 @@ function CookieConsentLanding() {
   const savePrefs = () => { persist({ necessary: true, preferences }); setOpen(false); };
   if (!mounted || !open) return null;
   return createPortal(
-    <div role="dialog" aria-modal="true" aria-label="Cookie consent" style={{ position: "fixed", inset: 0, zIndex: 2147483646, display: "grid", alignItems: "start", justifyItems: "center", padding: "clamp(12px, 6vh, 40px) 12px", background: "color-mix(in srgb, var(--bg, #0b1117) 55%, transparent)", backdropFilter: "blur(2px)", WebkitBackdropFilter: "blur(2px)" }} onClick={() => setShowPrefs(false)}>
-      <div onClick={(e) => e.stopPropagation()} className="modalCard" data-animate="true" style={{ width: "min(560px, calc(100vw - 32px))", background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 22, padding: 20, boxShadow: "0 14px 40px rgba(0,0,0,.35)", display: "grid", gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div aria-hidden style={{ fontSize: 28, lineHeight: 1, width: 44, height: 44, display: "grid", placeItems: "center", borderRadius: 12, background: "radial-gradient(60% 60% at 30% 20%, rgba(255,255,255,.16), transparent), color-mix(in srgb, var(--primary) 18%, var(--card))", boxShadow: "0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent)" }}>🍪</div>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Cookie consent"
+      className={styles.cookieOverlay}
+      onClick={() => setShowPrefs(false)}
+    >
+      <div onClick={(e) => e.stopPropagation()} className={`modalCard ${styles.cookieModal}`} data-animate="true">
+        <div className={styles.cookieHeader}>
+          <div aria-hidden className={styles.cookieIcon}>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
+              <circle cx="9" cy="10" r="1.2" fill="currentColor" />
+              <circle cx="14.5" cy="13" r="1.2" fill="currentColor" />
+              <circle cx="11" cy="15.5" r="1.2" fill="currentColor" />
+            </svg>
+          </div>
           <div>
-            <h3 style={{ margin: 0 }}>Folosim cookies</h3>
-            <div style={{ color: "var(--muted)", fontSize: 13 }}>Cookie-urile esențiale țin site-ul funcțional. Opțional, putem reține <strong>tema</strong> (light/dark).</div>
+            <h3 className={styles.cookieTitle}>Folosim cookies</h3>
+            <div className={styles.cookieText}>
+              Cookie-urile esențiale țin site-ul funcțional. Opțional, putem reține <strong>tema</strong> (light/dark).
+            </div>
           </div>
         </div>
-        <div style={{ display: "grid", gap: 8 }}>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button onClick={acceptPreferences} className="sb-btn sb-btn--primary" style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}>Accept preferințe</button>
-            <button onClick={acceptOnlyNecessary} className="sb-btn sb-btn--ghost" style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}>Doar necesare</button>
-            <button onClick={(e) => { e.stopPropagation(); setShowPrefs((v) => !v); }} className="sb-btn sb-btn--ghost" style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}>Personalizează</button>
+
+        {!showPrefs ? (
+          <div className={styles.cookieActions}>
+            <div className={styles.cookieButtons}>
+              <button
+                onClick={acceptPreferences}
+                className={`sb-btn sb-btn--primary ${styles.cookieBtn} ${styles.cookieBtnPrimary}`}
+              >
+                Accept preferințe
+              </button>
+              <button onClick={acceptOnlyNecessary} className={`sb-btn ${styles.cookieBtn}`}>
+                Doar necesare
+              </button>
+              <button onClick={() => setShowPrefs(true)} className={`sb-btn sb-btn--ghost ${styles.cookieBtn}`}>
+                Personalizează
+              </button>
+            </div>
+            <p className={styles.cookieHint}>
+              Citește mai mult în{" "}
+              <Link href="/legal/cookies" className={styles.cookieLink}>
+                Politica Cookie
+              </Link>.
+            </p>
           </div>
-        </div>
+        ) : (
+          <div className={styles.cookieActions}>
+            <div className={styles.cookiePrefsBox}>
+              <label className={styles.cookieLabel}>
+                <div>
+                  <strong>Esențiale</strong>
+                  <div className={styles.cookieMeta}>Necesare pentru funcționarea site-ului</div>
+                </div>
+                <input type="checkbox" checked readOnly aria-label="Cookie esențiale necesare" />
+              </label>
+              <label className={styles.cookieLabel}>
+                <div>
+                  <strong>Preferințe</strong>
+                  <div className={styles.cookieMeta}>Reține tema (light/dark)</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={preferences}
+                  onChange={(e) => setPreferences(e.currentTarget.checked)}
+                  aria-label="Cookie preferințe"
+                />
+              </label>
+            </div>
+            <div className={styles.cookieFooterActions}>
+              <button onClick={() => setShowPrefs(false)} className={`sb-btn ${styles.cookieBtn}`}>
+                Înapoi
+              </button>
+              <button
+                onClick={savePrefs}
+                className={`sb-btn sb-btn--primary ${styles.cookieBtn} ${styles.cookieBtnPrimary}`}
+              >
+                Salvează preferințe
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>,
     document.body
@@ -974,20 +1040,13 @@ export default function HomePageRO() {
           <h1>
             Stay Smart, <br />Host <span className={styles.betterGrad}>Better</span>
           </h1>
-          <h2 style={{ margin: '6px 0 10px', fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>
-            PMS și Check‑in Online cu sincronizare iCal
-          </h2>
-          <p>
-            Plan4Host este soluția completă pentru gestionarea rezervărilor, calendar centralizat și check‑in online,
-            <br />
-            ajutând pensiunile și apartamentele în regim hotelier să evite overbooking, să automatizeze mesajele către oaspeți
-            și să își eficientizeze administrarea zilnică.
-            <br />
-            <span className={styles.aiGrad} style={{ textTransform: "uppercase", fontWeight: 800 }}>
-              Guest AI assistant
-            </span>{" "}
-            îi ajută pe oaspeți să găsească rapid detalii despre sosire, facilități, recomandări și check‑out.
-          </p>
+          <p className={styles.heroKicker}>PMS + check‑in online cu sincronizare iCal</p>
+          <p>Gestionezi rezervări, task‑uri și comunicarea cu oaspeții dintr‑un singur loc.</p>
+          <ul className={styles.heroBullets}>
+            <li>Calendar centralizat + iCal sync</li>
+            <li>Mesaje automate către oaspeți</li>
+            <li>Guest AI assistant: sosire, facilități, recomandări, check‑out</li>
+          </ul>
           <div className={styles.heroCta}>
             <button
               type="button"
@@ -1008,47 +1067,46 @@ export default function HomePageRO() {
           <img
             src="/Landing_Mockups.png"
             alt="Mockup-uri aplicația Plan4Host"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             className={styles.focusable}
           />
         </div>
       </section>
 
       {/* Try Check-in modal (RO) */}
-      {tryModalOpen && (
-        <div role="dialog" aria-modal="true" onClick={()=>setTryModalOpen(false)}
-             style={{ position:'fixed', inset:0, zIndex: 320, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', padding:16 }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-              <strong>Testează formularul de check‑in</strong>
-              <button
-                aria-label="Închide"
-                onClick={()=>setTryModalOpen(false)}
-                style={{ width:28, height:28, borderRadius:999, border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)', display:'grid', placeItems:'center', cursor:'pointer' }}
-              >
-                ×
-              </button>
-            </div>
-            <div style={{ display:'grid', gap:10 }}>
-              <p style={{ margin:0, color:'var(--muted)' }}>
-                Vei fi redirecționat către un formular de check‑in de test, ca să vezi exact experiența pe care o are un oaspete.
-                Pentru o experiență completă, folosește o adresă de email validă — vei primi confirmarea și pașii următori ca un client real.
-              </p>
-              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-                <button className="sb-btn sb-btn--primary" onClick={()=>{ router.push('/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual'); setTryModalOpen(false); }}>Continuă</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+	      {tryModalOpen && (
+	        <div role="dialog" aria-modal="true" onClick={()=>setTryModalOpen(false)}
+	             style={{ position:'fixed', inset:0, zIndex: 320, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:16 }}>
+	          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', padding:16 }}>
+	            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+	              <strong>Testează formularul de check‑in</strong>
+	              <button
+	                aria-label="Închide"
+	                onClick={()=>setTryModalOpen(false)}
+	                style={{ width:32, height:32, borderRadius:999, border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)', display:'grid', placeItems:'center', cursor:'pointer' }}
+	              >
+	                ×
+	              </button>
+	            </div>
+	            <div style={{ display:'grid', gap:16 }}>
+	              <p style={{ margin:0, color:'var(--muted)' }}>
+	                Vei fi redirecționat către un formular de check‑in de test, ca să vezi exact experiența pe care o are un oaspete.
+	                Pentru o experiență completă, folosește o adresă de email validă — vei primi confirmarea și pașii următori ca un client real.
+	              </p>
+	              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+	                <button className={`sb-btn sb-btn--primary ${styles.sbBtn} ${styles.sbBtnPrimary}`} onClick={()=>{ router.push('/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual'); setTryModalOpen(false); }}>Continuă</button>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	      )}
 
       {/* Impact (statistici timp/valoare înainte de Funcții) */}
-      <section
-        id="insights"
-        aria-labelledby="insights-title"
-        className={styles.features}
-        style={{ paddingTop: 0, paddingBottom: 12 }}
-      >
+	      <section
+	        id="insights"
+	        aria-labelledby="insights-title"
+	        className={styles.features}
+	        style={{ paddingTop: 0, paddingBottom: 0 }}
+	      >
         <h2 id="insights-title">Impact</h2>
         <TimeSavingsStripRo />
       </section>
@@ -1060,22 +1118,21 @@ export default function HomePageRO() {
           <div className={styles.aboutVisual} aria-label="Previzualizare sincronizare calendare">
             <img src="/Calendar_Sync.png" alt="Previzualizare sincronizare calendare" />
           </div>
-          <div className={styles.aboutCard}>
-            <div className={styles.aboutBrandTitle}>Plan4Host</div>
-            <div className={styles.aboutTitle}>Claritate. Precizie. Control fără efort.</div>
-            <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
-            <p className={styles.aboutBody}>
-              Plan4Host aduce claritate și control în managementul ospitalității. Toate rezervările, sarcinile și interacțiunile cu oaspeții sunt centralizate într‑un calendar inteligent, direct pe telefon, oferindu‑ți o privire de ansamblu completă dintr‑o clipă.
-            </p>
-            <p className={styles.aboutBody}>
-              Fluxurile din recepție devin fără efort — check‑in‑urile, confirmările și actualizările se rezolvă în doar câteva click‑uri. Oaspeții primesc mesaje la timp, într‑o succesiune bine gândită, astfel încât să se simtă ghidați și susținuți pe tot parcursul sejurului.
-            </p>
-            <p className={styles.aboutBody}>
-              Simplificând operațiunile și ridicând nivelul comunicării, Plan4Host îi ajută pe gazde să ofere experiențe excepționale, care duc natural la recenzii excelente și recomandări călduroase.
-            </p>
-          </div>
-        </div>
-      </section>
+	          <div className={styles.aboutCard}>
+	            <div className={styles.aboutBrandTitle}>Plan4Host</div>
+	            <div className={styles.aboutTitle}>Claritate. Precizie. Control fără efort.</div>
+	            <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
+	            <p className={styles.aboutBody}>
+	              Un flux calm pentru rezervări și comunicarea cu oaspeții.
+	            </p>
+	            <ul className={styles.aboutList}>
+	              <li>Toate rezervările într‑un singur calendar (cu iCal sync)</li>
+	              <li>Linkuri de check‑in și confirmări</li>
+	              <li>Mesaje automate, trimise la timp</li>
+	            </ul>
+	          </div>
+	        </div>
+	      </section>
 
       {/* Funcții */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
@@ -1167,17 +1224,17 @@ export default function HomePageRO() {
               const parts = String(r.author || '').split('•');
               const left = (parts[0] || '').trim();
               const right = (parts[1] || '').trim();
-              return (
-                <div style={{ display: 'grid', gap: 10 }}>
-                  <div className={styles.reviewTitle}>{r.title}</div>
-                  <div className={styles.reviewBody}>{r.body}</div>
-                  <div className={styles.reviewAuthor}>
-                    <span className={styles.authorMain}>{left}</span>
-                    {right && <span className={styles.authorDetail}> • {right}</span>}
-                  </div>
-                </div>
-              );
-            })()}
+	              return (
+	                <div style={{ display: 'grid', gap: 16 }}>
+	                  <div className={styles.reviewTitle}>{r.title}</div>
+	                  <div className={styles.reviewBody}>{r.body}</div>
+	                  <div className={styles.reviewAuthor}>
+	                    <span className={styles.authorMain}>{left}</span>
+	                    {right && <span className={styles.authorDetail}> • {right}</span>}
+	                  </div>
+	                </div>
+	              );
+	            })()}
             <button
               type="button"
               className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
@@ -1283,10 +1340,10 @@ export default function HomePageRO() {
             question: 'Pot să folosesc aplicația atât pentru apartamente/studiouri (unități singulare), cât și pentru cabane/pensiuni (unități multiple)?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
-                  Pe scurt: da — funcționează și pentru o singură unitate, și pentru proprietăți cu mai multe unități.
+                <p className={styles.faqLead}>
+                  <strong>Pe scurt:</strong> da — funcționează și pentru o singură unitate, și pentru proprietăți cu mai multe unități.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>Unitate singulară: setezi o cameră ca întreaga proprietate și gestionezi totul dintr-un singur calendar.</li>
                   <li>Unități multiple: adaugi fiecare cameră sau tip de cameră și ai calendare, task-uri și mesaje per unitate.</li>
                   <li>Listată pe platforme atât pe cameră, cât și cu opțiunea „Întreaga proprietate”? Păstrează camerele separate și adaugă o „cameră” în Plan4Host pentru întreaga cabană; leagi iCal astfel încât rezervările pe camere și pe întreaga proprietate să se blocheze reciproc.</li>
@@ -1299,10 +1356,10 @@ export default function HomePageRO() {
             question: 'Cum colectez datele oaspeților?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                <p className={styles.faqLead}>
                   Configurezi proprietatea, apoi generezi linkuri de formular de check-in.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>Pui linkurile ca răspuns automat pe platformele unde ai listată proprietatea.</li>
                   <li>Oaspeții sunt ghidați să parcurgă toți pașii, ca sosirea să fie simplă.</li>
                   <li><strong>Vrei o evidență mai bună?</strong> Generează linkuri specifice pentru fiecare platformă și vezi sursa fiecărui formular completat.</li>
@@ -1315,10 +1372,10 @@ export default function HomePageRO() {
             question: 'Aplicația îmi permite să trimit automat codurile de acces cu puțin timp înainte de a ajunge oaspetele?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                <p className={styles.faqLead}>
                   Da. Configurezi un template și îl programezi să plece automat cu o oră înainte de fiecare rezervare.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>Mesajul este trimis automat și personalizat pentru fiecare rezervare.</li>
                   <li>Nu mai trebuie să faci nimic — aplicația te ajută să acorzi mai multă atenție oaspeților tăi.</li>
                 </ul>
@@ -1330,10 +1387,10 @@ export default function HomePageRO() {
             question: 'Pot să am o rubrică unde să pun notițe pentru fiecare rezervare?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                <p className={styles.faqLead}>
                   Da. În meniul „Property Setup”, la „Reservation details”, poți crea câte casete de note vrei.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>Fiecare câmp de notă este unic pentru fiecare rezervare — util pentru staff sau pentru tine.</li>
                   <li>Poți folosi și bife pentru opțiuni precum „mic dejun inclus” sau „schimbare prosoape zilnic”.</li>
                 </ul>
@@ -1345,10 +1402,10 @@ export default function HomePageRO() {
             question: 'Cum sincronizez calendarele?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                <p className={styles.faqLead}>
                   Aliniază mai întâi structura proprietății, apoi importă și exportă linkurile iCal.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>Asigură-te că în Plan4Host ai aceeași structură (camere/tipuri) ca pe platformele pe care le sincronizezi.</li>
                   <li>Intră la „Sync Calendars” și importă linkurile iCal din Airbnb, Booking, Travelminit etc.</li>
                   <li>Tot din „Sync Calendars”, copiază linkurile de export Plan4Host și inserează-le în platformele de booking.</li>
@@ -1361,10 +1418,10 @@ export default function HomePageRO() {
             question: 'Cum știe oaspetele că am primit formularul de check-in?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                <p className={styles.faqLead}>
                   Primește imediat un email cu formularul trimis, iar tu primești un email separat.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>După ce apasă „Submit”, oaspetele primește un email cu datele colectate și perioada de retenție (GDPR).</li>
                   <li>Tu primești un email separat ca să poți confirma rezervarea.</li>
                   <li>În baza datelor din formular, se vor trimite automat și mesajele programate, conform fiecărei rezervări.</li>
@@ -1384,55 +1441,29 @@ export default function HomePageRO() {
           return (
             <div
               key={item.id}
-              className={styles.contactCard}
-              style={{
-                gap: open ? 12 : 0,
-                padding: open ? 16 : '10px 16px',
-                minHeight: 'auto',
-                width: 'min(820px, 100%)',
-              }}
+              className={`${styles.contactCard} ${styles.faqItem}`}
+              data-open={open ? "true" : "false"}
             >
               <button
                 type="button"
                 aria-expanded={open}
                 aria-controls={`faq-answer-${item.id}`}
                 onClick={() => setFaqOpen((prev) => ({ ...prev, [item.id]: !open }))}
-                className={`${styles.focusable}`}
-                style={{
-                  display: 'flex',
-                  width: '100%',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '8px 0',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontWeight: 800,
-                  fontSize: 16,
-                }}
+                className={`${styles.focusable} ${styles.faqQuestion}`}
               >
                 <span>
                   <strong>Q:</strong> {item.question}
                 </span>
-                <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>
+                <span aria-hidden className={styles.faqToggle}>
                   {open ? '–' : '+'}
                 </span>
               </button>
               <div
                 id={`faq-answer-${item.id}`}
                 hidden={!open}
-                style={{
-                  display: open ? 'grid' : 'none',
-                  gap: 8,
-                  color: 'var(--muted)',
-                  fontSize: 14,
-                  lineHeight: 1.55,
-                }}
+                className={styles.faqAnswer}
               >
-                <div style={{ fontWeight: 700, color: 'var(--text)' }}>A:</div>
+                <div className={styles.faqAnswerLabel}>A:</div>
                 {item.content}
               </div>
             </div>
@@ -1442,28 +1473,28 @@ export default function HomePageRO() {
 
       {/* Contact */}
       <section id="contact" className={`${styles.contact}`} aria-labelledby="contact-title">
-          <h2 id="contact-title">Contact</h2>
-        <div className={styles.contactCard}>
-          <div style={{ display: 'grid', gap: 12 }}>
-            <p style={{ margin: 0, color: 'var(--muted)' }}>
-              <span>Uneori ai nevoie doar de un răspuns rapid.</span><br />
-              <span>Scrie-ne — suntem la un mesaj distanță, pe email sau WhatsApp.</span>
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ opacity: .9 }}>
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.81.33 1.6.63 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.74a2 2 0 0 1 2.11-.45c.74.3 1.53.51 2.34.63A2 2 0 0 1 22 16.92z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <a className={styles.focusable} href="https://wa.me/40721759329" target="_blank" rel="noopener noreferrer" title="Scrie-ne pe WhatsApp">+40 721 759 329</a>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ opacity: .9 }}>
-                <rect x="3" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" />
-                <path d="M3 7l9 6 9-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-              </svg>
-              <a className={styles.focusable} href="mailto:office@plan4host.com" title="Trimite-ne un e-mail">office@plan4host.com</a>
-            </div>
-          </div>
-        </div>
+	          <h2 id="contact-title">Contact</h2>
+	        <div className={styles.contactCard}>
+	          <div style={{ display: 'grid', gap: 16 }}>
+	            <p style={{ margin: 0, color: 'var(--muted)' }}>
+	              <span>Uneori ai nevoie doar de un răspuns rapid.</span><br />
+	              <span>Scrie-ne — suntem la un mesaj distanță, pe email sau WhatsApp.</span>
+	            </p>
+	            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+	              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ opacity: .9 }}>
+	                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.81.33 1.6.63 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.74a2 2 0 0 1 2.11-.45c.74.3 1.53.51 2.34.63A2 2 0 0 1 22 16.92z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+	              </svg>
+	              <a className={styles.focusable} href="https://wa.me/40721759329" target="_blank" rel="noopener noreferrer" title="Scrie-ne pe WhatsApp">+40 721 759 329</a>
+	            </div>
+	            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+	              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ opacity: .9 }}>
+	                <rect x="3" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" />
+	                <path d="M3 7l9 6 9-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+	              </svg>
+	              <a className={styles.focusable} href="mailto:office@plan4host.com" title="Trimite-ne un e-mail">office@plan4host.com</a>
+	            </div>
+	          </div>
+	        </div>
       </section>
 
       {/* Footer (extins) — etichete în RO, linkuri către paginile EN */}
@@ -1578,49 +1609,49 @@ export default function HomePageRO() {
         </div>
 
         {/* Social (mobile‑only) — sub meniuri, deasupra insigne ANPC/Stripe */}
-        <div className="p4h-social-row" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
-          <a className={styles.footerLink} href="https://www.facebook.com/share/1D5V7mG79g/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-            <img src="/facebook_forlight.png" alt="Facebook" width={18} height={18} style={{ display:'inline-block', verticalAlign:'middle', marginRight:8 }} />
-            Facebook
-          </a>
-          <a className={styles.footerLink} href="https://www.instagram.com/plan4host?igh=MXB3cnlzZjZxZGVvMQ%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-            <img src="/instagram_forlight.png" alt="Instagram" width={18} height={18} style={{ display:'inline-block', verticalAlign:'middle', marginRight:8 }} />
-            Instagram
-          </a>
-        </div>
+	        <div className="p4h-social-row" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '8px 0', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+	          <a className={styles.footerLink} href="https://www.facebook.com/share/1D5V7mG79g/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+	            <img src="/facebook_forlight.png" alt="Facebook" width={18} height={18} style={{ display:'inline-block', verticalAlign:'middle', marginRight:8 }} />
+	            Facebook
+	          </a>
+	          <a className={styles.footerLink} href="https://www.instagram.com/plan4host?igh=MXB3cnlzZjZxZGVvMQ%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+	            <img src="/instagram_forlight.png" alt="Instagram" width={18} height={18} style={{ display:'inline-block', verticalAlign:'middle', marginRight:8 }} />
+	            Instagram
+	          </a>
+	        </div>
         <style jsx>{`@media (min-width: 561px){ .p4h-social-row{ display: none !important; } }`}</style>
 
         {/* Insigne conformitate/plăți (aliniate la stânga; loc și pentru Stripe) */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            padding: '8px 0',
-            justifyContent: 'flex-start',
-            flexWrap: 'wrap',
-          }}
-        >
+	        <div
+	          style={{
+	            display: 'flex',
+	            alignItems: 'center',
+	            gap: 16,
+	            padding: '8px 0',
+	            justifyContent: 'flex-start',
+	            flexWrap: 'wrap',
+	          }}
+	        >
           <a
             href="https://eservicii.anpc.ro/"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="ANPC e-Servicii"
-            title="ANPC e-Servicii"
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 6, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)' }}
-          >
-            <img src="/ANPC.png" alt="ANPC" style={{ width: 120, height: 'auto' }} />
-          </a>
+	            aria-label="ANPC e-Servicii"
+	            title="ANPC e-Servicii"
+	            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 8, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)' }}
+	          >
+	            <img src="/ANPC.png" alt="ANPC" style={{ width: 120, height: 'auto' }} />
+	          </a>
           <a
             href="https://stripe.com/en-ro/payments"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Stripe Payments"
-            title="Stripe Payments"
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 6, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)' }}
-          >
-            <img src="/STRIPE.png" alt="Stripe" style={{ width: 120, height: 'auto' }} />
-          </a>
+	            aria-label="Stripe Payments"
+	            title="Stripe Payments"
+	            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 8, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)' }}
+	          >
+	            <img src="/STRIPE.png" alt="Stripe" style={{ width: 120, height: 'auto' }} />
+	          </a>
         </div>
 
         <div className={styles.legalBar}>

@@ -258,7 +258,7 @@ function FeatureCarousel() {
               >
                 <div className={styles.featureHead} >
                   <img src={f.icon} alt="" aria-hidden="true" className={styles.featureIcon} />
-                 <h3 style={{ fontSize: isMobile ? 9 : undefined }}>{f.title}</h3>
+                  <h3>{f.title}</h3>
                 </div>
                 {!isMobile && <p>{f.text}</p>}
               </article>
@@ -267,19 +267,19 @@ function FeatureCarousel() {
         })()}
       </div>
       <button type="button" aria-label="Next features" className={`${styles.carouselBtn} ${styles.carouselBtnRight}`} onClick={next}>›</button>
-      {isMobile && modalIdx !== null && (() => { const f = feats[(modalIdx!%feats.length+feats.length)%feats.length]; return (
-        <div role="dialog" aria-modal="true" onClick={() => setModalIdx(null)}
-          style={{ position:'fixed', inset:0, zIndex:120, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={{ width:'min(520px, 92vw)', background:'var(--card)', border:'0.5px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:10 }}>
-            <div style={{ alignItems:'center', gap:10 }}>
-              <img src={f.icon} alt="" aria-hidden className={styles.featureIcon} />
-              <h3 style={{ margin:0 }}>{f.title}</h3>
-            </div>
-            <p style={{ margin:0, color:'var(--muted)' }}>{f.text}</p>
-            <button className="sb-btn sb-cardglow" onClick={() => setModalIdx(null)} style={{ justifySelf:'end' }}>Close</button>
-          </div>
-        </div>
-      ); })()}
+	      {isMobile && modalIdx !== null && (() => { const f = feats[(modalIdx!%feats.length+feats.length)%feats.length]; return (
+	        <div role="dialog" aria-modal="true" onClick={() => setModalIdx(null)}
+	          style={{ position:'fixed', inset:0, zIndex:120, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:16 }}>
+	          <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={{ width:'min(520px, 92vw)', background:'var(--card)', border:'0.5px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:16 }}>
+	            <div style={{ alignItems:'center', gap:8 }}>
+	              <img src={f.icon} alt="" aria-hidden className={styles.featureIcon} />
+	              <h3 style={{ margin:0 }}>{f.title}</h3>
+	            </div>
+	            <p style={{ margin:0, color:'var(--muted)' }}>{f.text}</p>
+	            <button className={`sb-btn sb-cardglow ${styles.sbBtn}`} onClick={() => setModalIdx(null)} style={{ justifySelf:'end' }}>Close</button>
+	          </div>
+	        </div>
+	      ); })()}
     </div>
   );
 }
@@ -387,8 +387,8 @@ function TimeSavingsStrip() {
       className="sb-cardglow"
       style={{
         maxWidth: 1120,
-        margin: "0 auto 12px",
-        padding: 12,
+        margin: "0 auto 16px",
+        padding: 16,
         borderRadius: 12,
         background: "var(--panel)",
         display: "grid",
@@ -396,7 +396,7 @@ function TimeSavingsStrip() {
           ? "minmax(0, 1fr)"
           : "repeat(3, minmax(0, 300px))",
         justifyContent: isMobile ? "stretch" : "center",
-        gap: isMobile ? 12 : 18,
+        gap: isMobile ? 16 : 24,
       }}
     >
       {stats.map((s) => {
@@ -409,12 +409,12 @@ function TimeSavingsStrip() {
               border: isMobile
                 ? "1px solid rgba(148,163,184,0.6)"
                 : "1px solid transparent",
-              padding: "8px 10px",
+              padding: "8px 16px",
               display: "grid",
               gridTemplateRows: "auto 1fr auto",
               alignItems: isMobile ? "center" : "start",
               justifyItems: "center",
-              gap: 6,
+              gap: 8,
               background: "color-mix(in srgb, var(--card) 82%, transparent)",
             }}
           >
@@ -458,10 +458,9 @@ function TimeSavingsStrip() {
               {s.prefix && value > 0 ? (
                 <span
                   style={{
-                    fontSize: 18,
-                    fontWeight: 400,
+                    fontSize: "var(--fs-b)",
+                    fontWeight: "var(--fw-medium)",
                     color: "var(--muted)",
-                    marginRight: 1,
                   }}
                 >
                   +
@@ -469,8 +468,8 @@ function TimeSavingsStrip() {
               ) : null}
               <div
                 style={{
-                  fontSize: isMobile ? 38 : 48,
-                  fontWeight: 800,
+                  fontSize: "var(--fs-h)",
+                  fontWeight: "var(--fw-bold)",
                   backgroundImage:
                     "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
                   WebkitBackgroundClip: "text",
@@ -483,8 +482,8 @@ function TimeSavingsStrip() {
               {s.suffix ? (
                 <span
                   style={{
-                    fontSize: 13,
-                    fontWeight: 600,
+                    fontSize: "var(--fs-s)",
+                    fontWeight: "var(--fw-medium)",
                     color: "var(--muted)",
                   }}
                 >
@@ -496,17 +495,16 @@ function TimeSavingsStrip() {
             {/* Bottom: label + detail text */}
             <div
               style={{
-                fontSize: 11,
+                fontSize: "var(--fs-s)",
                 color: "var(--muted)",
                 textAlign: "center",
-                marginTop: -4,
               }}
             >
               <div
                 style={{
-                  fontSize: isMobile ? 18 : 22,
-                  fontWeight: 800,
-                  marginBottom: 2,
+                  fontSize: "var(--fs-b)",
+                  fontWeight: "var(--fw-bold)",
+                  marginBottom: 8,
                   backgroundImage:
                     "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
                   WebkitBackgroundClip: "text",
@@ -573,15 +571,15 @@ function AndroidInstallBanner() {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        gap: 12,
-        padding: "10px 12px",
+        gap: 16,
+        padding: "16px 16px",
         borderRadius: 999,
         border: "1px solid rgba(148,163,184,0.65)",
         background: "color-mix(in srgb, var(--card) 80%, #020617 20%)",
         boxShadow: "0 14px 40px rgba(15,23,42,0.6)",
       }}
     >
-      <span style={{ fontSize: 12 }}>
+      <span style={{ fontSize: "var(--fs-s)" }}>
         Install <strong>Plan4Host</strong> on your phone
       </span>
       <button
@@ -593,9 +591,9 @@ function AndroidInstallBanner() {
           background:
             "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
           color: "#f9fafb",
-          padding: "6px 12px",
-          fontSize: 11,
-          fontWeight: 700,
+          padding: "8px 16px",
+          fontSize: "var(--fs-s)",
+          fontWeight: "var(--fw-bold)",
           cursor: "pointer",
           whiteSpace: "nowrap",
         }}
@@ -711,58 +709,30 @@ function CookieConsentLanding() {
       role="dialog"
       aria-modal="true"
       aria-label="Cookie consent"
-      // TOP of viewport: schimbi alignItems în "center" dacă vrei centrat
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 2147483646,
-        display: "grid",
-        alignItems: "start",
-        justifyItems: "center",
-        padding: "clamp(12px, 6vh, 40px) 12px",
-        background: "color-mix(in srgb, var(--bg, #0b1117) 55%, transparent)",
-        backdropFilter: "blur(2px)",
-        WebkitBackdropFilter: "blur(2px)",
-      }}
+      className={styles.cookieOverlay}
       onClick={() => setShowPrefs(false)}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="modalCard"
+        className={`modalCard ${styles.cookieModal}`}
         data-animate="true"
-        style={{
-          width: "min(560px, calc(100vw - 32px))",
-          background: "var(--panel)",
-          border: "1px solid var(--border)",
-          borderRadius: 22,
-          padding: 20,
-          boxShadow: "0 14px 40px rgba(0,0,0,.35)",
-          display: "grid",
-          gap: 12,
-        }}
       >
         {/* header */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className={styles.cookieHeader}>
           <div
             aria-hidden
-            style={{
-              fontSize: 28,
-              lineHeight: 1,
-              width: 44,
-              height: 44,
-              display: "grid",
-              placeItems: "center",
-              borderRadius: 12,
-              background:
-                "radial-gradient(60% 60% at 30% 20%, rgba(255,255,255,.16), transparent), color-mix(in srgb, var(--primary) 18%, var(--card))",
-              boxShadow: "0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent)",
-            }}
+            className={styles.cookieIcon}
           >
-            🍪
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
+              <circle cx="9" cy="10" r="1.2" fill="currentColor" />
+              <circle cx="14.5" cy="13" r="1.2" fill="currentColor" />
+              <circle cx="11" cy="15.5" r="1.2" fill="currentColor" />
+            </svg>
           </div>
           <div>
-            <h3 style={{ margin: 0 }}>We use cookies</h3>
-            <div style={{ color: "var(--muted)", fontSize: 13 }}>
+            <h3 className={styles.cookieTitle}>We use cookies</h3>
+            <div className={styles.cookieText}>
               Essential cookies keep the site working. Optionally, we can remember your <strong>theme</strong> (light/dark).
             </div>
           </div>
@@ -770,61 +740,51 @@ function CookieConsentLanding() {
 
         {/* actions */}
         {!showPrefs ? (
-          <div style={{ display: "grid", gap: 8 }}>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className={styles.cookieActions}>
+            <div className={styles.cookieButtons}>
               <button
                 onClick={acceptPreferences}
-                className="sb-btn sb-btn--primary"
-                style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}
+                className={`sb-btn sb-btn--primary ${styles.cookieBtn} ${styles.cookieBtnPrimary}`}
               >
                 Accept preferences
               </button>
               <button
                 onClick={acceptOnlyNecessary}
-                className="sb-btn"
-                style={{ padding: "10px 14px", borderRadius: 12, background: "var(--card)", fontWeight: 900 }}
+                className={`sb-btn ${styles.cookieBtn}`}
               >
                 Only necessary
               </button>
               <button
                 onClick={() => setShowPrefs(true)}
-                className="sb-btn"
-                style={{ padding: "10px 14px", borderRadius: 12, background: "transparent", border: "1px solid var(--border)", fontWeight: 900 }}
+                className={`sb-btn sb-btn--ghost ${styles.cookieBtn}`}
               >
                 Customize
               </button>
             </div>
-            <small style={{ color: "var(--muted)" }}>
+            <p className={styles.cookieHint}>
               Read more in our{" "}
-              <Link href="/legal/cookies" style={{ color: "var(--primary)", textDecoration: "none" }}>
+              <Link href="/legal/cookies" className={styles.cookieLink}>
                 Cookie Policy
               </Link>.
-            </small>
+            </p>
           </div>
         ) : (
-          <div style={{ display: "grid", gap: 12 }}>
+          <div className={styles.cookieActions}>
             <div
-              style={{
-                border: "1px solid var(--border)",
-                background: "var(--panel)",
-                borderRadius: 12,
-                padding: 12,
-                display: "grid",
-                gap: 10,
-              }}
+              className={styles.cookiePrefsBox}
             >
-              <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <label className={styles.cookieLabel}>
                 <div>
                   <strong>Essential</strong>
-                  <div style={{ color: "var(--muted)", fontSize: 12 }}>Required for the site to function</div>
+                  <div className={styles.cookieMeta}>Required for the site to function</div>
                 </div>
                 <input type="checkbox" checked readOnly aria-label="Essential cookies required" />
               </label>
 
-              <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <label className={styles.cookieLabel}>
                 <div>
                   <strong>Preferences</strong>
-                  <div style={{ color: "var(--muted)", fontSize: 12 }}>Remembers your theme (light/dark)</div>
+                  <div className={styles.cookieMeta}>Remembers your theme (light/dark)</div>
                 </div>
                 <input
                   type="checkbox"
@@ -835,18 +795,16 @@ function CookieConsentLanding() {
               </label>
             </div>
 
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
+            <div className={styles.cookieFooterActions}>
               <button
                 onClick={() => setShowPrefs(false)}
-                className="sb-btn"
-                style={{ padding: "10px 14px", borderRadius: 12 }}
+                className={`sb-btn ${styles.cookieBtn}`}
               >
                 Back
               </button>
               <button
                 onClick={savePrefs}
-                className="sb-btn sb-btn--primary"
-                style={{ padding: "10px 14px", borderRadius: 12, fontWeight: 900 }}
+                className={`sb-btn sb-btn--primary ${styles.cookieBtn} ${styles.cookieBtnPrimary}`}
               >
                 Save preferences
               </button>
@@ -1255,19 +1213,13 @@ export default function HomePage() {
           <h1>
             Stay Smart, <br />Host <span className={styles.betterGrad}>Better</span>
           </h1>
-          <h2 style={{ margin: '6px 0 10px', fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>
-            PMS & Online Check‑in with iCal Sync
-          </h2>
-          <p>
-            Plan4Host is the complete solution for reservation management, a centralized calendar and online check‑in —
-            <br />
-            helping guesthouses and serviced apartments avoid overbooking, automate guest messaging, and streamline daily operations.
-            <br />
-            <span className={styles.aiGrad} style={{ textTransform: "uppercase", fontWeight: 800 }}>
-              Guest AI assistant
-            </span>{" "}
-            helps your guests quickly find answers about arrival, amenities, recommendations and check‑out.
-          </p>
+          <p className={styles.heroKicker}>PMS + online check‑in with iCal sync</p>
+          <p>Run reservations, tasks, and guest communication from one place.</p>
+          <ul className={styles.heroBullets}>
+            <li>Centralized calendar + iCal sync</li>
+            <li>Automated guest messaging</li>
+            <li>Guest AI assistant for arrival, amenities, recommendations, check‑out</li>
+          </ul>
           <div className={styles.heroCta}>
             {/* Start free -> login in signup mode (animated) */}
             <button
@@ -1291,47 +1243,46 @@ export default function HomePage() {
           <img
             src="/Landing_Mockups.png"
             alt="Plan4Host app mockups"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             className={styles.focusable}
           />
         </div>
       </section>
 
       {/* Try Check-in modal (EN) */}
-      {tryModalOpen && (
-        <div role="dialog" aria-modal="true" onClick={()=>setTryModalOpen(false)}
-             style={{ position:'fixed', inset:0, zIndex: 320, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', padding:16 }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-              <strong>Try the guest check‑in form</strong>
-              <button
-                aria-label="Close"
-                onClick={()=>setTryModalOpen(false)}
-                style={{ width:28, height:28, borderRadius:999, border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)', display:'grid', placeItems:'center', cursor:'pointer' }}
-              >
-                ×
-              </button>
-            </div>
-            <div style={{ display:'grid', gap:10 }}>
-              <p style={{ margin:0, color:'var(--muted)' }}>
-                You will be redirected to a demo check‑in form to experience what your guests will see.
-                For a complete experience, please use a valid email address — you’ll receive the confirmation and follow‑up just like a real guest.
-              </p>
-              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-                <button className="sb-btn sb-btn--primary" onClick={()=>{ router.push('/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual'); setTryModalOpen(false); }}>Continue</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+	      {tryModalOpen && (
+	        <div role="dialog" aria-modal="true" onClick={()=>setTryModalOpen(false)}
+	             style={{ position:'fixed', inset:0, zIndex: 320, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:16 }}>
+	          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', padding:16 }}>
+	            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+	              <strong>Try the guest check‑in form</strong>
+	              <button
+	                aria-label="Close"
+	                onClick={()=>setTryModalOpen(false)}
+	                style={{ width:32, height:32, borderRadius:999, border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)', display:'grid', placeItems:'center', cursor:'pointer' }}
+	              >
+	                ×
+	              </button>
+	            </div>
+	            <div style={{ display:'grid', gap:16 }}>
+	              <p style={{ margin:0, color:'var(--muted)' }}>
+	                You will be redirected to a demo check‑in form to experience what your guests will see.
+	                For a complete experience, please use a valid email address — you’ll receive the confirmation and follow‑up just like a real guest.
+	              </p>
+	              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+	                <button className={`sb-btn sb-btn--primary ${styles.sbBtn} ${styles.sbBtnPrimary}`} onClick={()=>{ router.push('/checkin?property=b1588b40-954d-4489-b36e-45659853489a&source=manual'); setTryModalOpen(false); }}>Continue</button>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	      )}
 
       {/* Impact (time/value stats before Features) */}
-      <section
-        id="insights"
-        aria-labelledby="insights-title"
-        className={styles.features}
-        style={{ paddingTop: 0, paddingBottom: 12 }}
-      >
+	      <section
+	        id="insights"
+	        aria-labelledby="insights-title"
+	        className={styles.features}
+	        style={{ paddingTop: 0, paddingBottom: 0 }}
+	      >
         <h2 id="insights-title">Impact</h2>
         <TimeSavingsStrip />
       </section>
@@ -1343,22 +1294,21 @@ export default function HomePage() {
           <div className={styles.aboutVisual} aria-label="Calendar sync preview">
             <img src="/Calendar_Sync.png" alt="Calendar sync preview" />
           </div>
-          <div className={styles.aboutCard}>
-            <div className={styles.aboutBrandTitle}>Plan4Host</div>
-            <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
-            <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
-            <p className={styles.aboutBody}>
-              Plan4Host brings clarity and control to hospitality management. All reservations, tasks, and guest interactions are centralized in one smart calendar on your phone, giving you a complete overview at a glance.
-            </p>
-            <p className={styles.aboutBody}>
-              Reception workflows become effortless — check‑ins, confirmations, and updates are handled in just a few clicks. Guests receive timely, well‑sequenced messages, ensuring they feel guided and supported throughout their stay.
-            </p>
-            <p className={styles.aboutBody}>
-              By simplifying operations and elevating communication, Plan4Host helps hosts deliver exceptional experiences that naturally lead to great reviews and warm recommendations.
-            </p>
-          </div>
-        </div>
-      </section>
+	          <div className={styles.aboutCard}>
+	            <div className={styles.aboutBrandTitle}>Plan4Host</div>
+	            <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
+	            <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
+	            <p className={styles.aboutBody}>
+	              A calm workflow for reservations and guest communication.
+	            </p>
+	            <ul className={styles.aboutList}>
+	              <li>All bookings in one calendar (with iCal sync)</li>
+	              <li>Digital check‑in links and confirmations</li>
+	              <li>Automated, well‑timed guest messages</li>
+	            </ul>
+	          </div>
+	        </div>
+	      </section>
 
       {/* Features */}
       <section id="features" className={styles.features} aria-labelledby="features-title">
@@ -1440,38 +1390,34 @@ export default function HomePage() {
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
-            <button
-              type="button"
-              className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
-              aria-label="Previous review"
-              onClick={() => setRevIdx(i => (i - 1 + reviewsEn.length) % reviewsEn.length)}
-            >
-              C
-            </button>
+	            <button
+	              type="button"
+	              className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
+	              aria-label="Previous review"
+	              onClick={() => setRevIdx(i => (i - 1 + reviewsEn.length) % reviewsEn.length)}
+	            />
             {(() => {
               const r = reviewsEn[revIdx];
               const parts = String(r.author || '').split('•');
               const left = (parts[0] || '').trim();
               const right = (parts[1] || '').trim();
-              return (
-                <div style={{ display: 'grid', gap: 10 }}>
-                  <div className={styles.reviewTitle}>{r.title}</div>
-                  <div className={styles.reviewBody}>{r.body}</div>
-                  <div className={styles.reviewAuthor}>
-                    <span className={styles.authorMain}>{left}</span>
-                    {right && <span className={styles.authorDetail}> • {right}</span>}
-                  </div>
-                </div>
-              );
-            })()}
-            <button
-              type="button"
-              className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
-              aria-label="Next review"
-              onClick={() => setRevIdx(i => (i + 1) % reviewsEn.length)}
-            >
-              E
-            </button>
+	              return (
+	                <div style={{ display: 'grid', gap: 16 }}>
+	                  <div className={styles.reviewTitle}>{r.title}</div>
+	                  <div className={styles.reviewBody}>{r.body}</div>
+	                  <div className={styles.reviewAuthor}>
+	                    <span className={styles.authorMain}>{left}</span>
+	                    {right && <span className={styles.authorDetail}> • {right}</span>}
+	                  </div>
+	                </div>
+	              );
+	            })()}
+	            <button
+	              type="button"
+	              className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
+	              aria-label="Next review"
+	              onClick={() => setRevIdx(i => (i + 1) % reviewsEn.length)}
+	            />
           </div>
         </div>
       </section>
@@ -1587,10 +1533,10 @@ export default function HomePage() {
             question: 'Can I use the app for apartments/studios (single units) as well as cabins/guesthouses (multiple units)?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
-                  Short answer: yes — it works for single units and multi-unit properties.
+                <p className={styles.faqLead}>
+                  <strong>Short answer:</strong> yes — it works for single units and multi-unit properties.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>Single unit: set one room as the entire property and manage everything from one calendar.</li>
                   <li>Multiple units: add each room or room type and keep calendars, tasks, and messaging per unit.</li>
                   <li>Listed on OTAs with both per-room and “Entire property” options? Keep the individual rooms and add one extra Plan4Host “room” for the entire place; map iCal so room bookings and whole-property bookings block each other.</li>
@@ -1603,10 +1549,10 @@ export default function HomePage() {
             question: 'How do I collect guest details?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                <p className={styles.faqLead}>
                   Set up your property, then generate check-in form links.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>Drop the links into auto-replies on each platform where you list the property.</li>
                   <li>Guests are guided through all steps so their stay starts smoothly.</li>
                   <li><strong>Need better tracking?</strong> Generate platform-specific links to see which channel each form came from.</li>
@@ -1619,10 +1565,10 @@ export default function HomePage() {
             question: 'Can the app send access codes automatically shortly before guests arrive?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                <p className={styles.faqLead}>
                   Yes. Create a template and schedule it to send 1 hour before every reservation.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>The message is sent automatically, personalized for each booking.</li>
                   <li>You don’t need to lift a finger — the app lets you focus more on your guests.</li>
                 </ul>
@@ -1634,10 +1580,10 @@ export default function HomePage() {
             question: 'Can I add notes for each reservation?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                <p className={styles.faqLead}>
                   Yes. In “Property Setup” under “Reservation details”, you can create as many note fields as you need.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>Each note field is unique per reservation—perfect for staff reminders or personal cues.</li>
                   <li>You can even use checkboxes for options like “breakfast included” or “daily towel change”.</li>
                 </ul>
@@ -1649,10 +1595,10 @@ export default function HomePage() {
             question: 'How do I sync calendars?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                <p className={styles.faqLead}>
                   Align your property structure first, then import and export iCal links.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>Match your setup in Plan4Host to the same rooms/types you have on each platform.</li>
                   <li>Open “Sync Calendars” and import the iCal links from Airbnb, Booking, Travelminit, etc.</li>
                   <li>From “Sync Calendars”, copy the Plan4Host export links and paste them back into each booking platform.</li>
@@ -1665,10 +1611,10 @@ export default function HomePage() {
             question: 'How does the guest know we received the check-in form?',
             content: (
               <>
-                <p style={{ margin: 0, color: 'var(--text)', fontWeight: 600 }}>
+                <p className={styles.faqLead}>
                   They get an immediate email copy of their submission, and you get a separate notification.
                 </p>
-                <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6 }}>
+                <ul className={styles.faqList}>
                   <li>After tapping “Submit”, the guest receives an email showing the data collected and the retention period (GDPR notice).</li>
                   <li>You receive a separate email so you can confirm the reservation.</li>
                   <li>Based on the form data, scheduled messages are sent automatically for each reservation.</li>
@@ -1688,55 +1634,29 @@ export default function HomePage() {
           return (
             <div
               key={item.id}
-              className={styles.contactCard}
-              style={{
-                gap: open ? 12 : 0,
-                padding: open ? 16 : '10px 16px',
-                minHeight: 'auto',
-                width: 'min(820px, 100%)',
-              }}
+              className={`${styles.contactCard} ${styles.faqItem}`}
+              data-open={open ? "true" : "false"}
             >
               <button
                 type="button"
                 aria-expanded={open}
                 aria-controls={`faq-answer-${item.id}`}
                 onClick={() => setFaqOpen((prev) => ({ ...prev, [item.id]: !open }))}
-                className={`${styles.focusable}`}
-                style={{
-                  display: 'flex',
-                  width: '100%',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '8px 0',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontWeight: 800,
-                  fontSize: 16,
-                }}
+                className={`${styles.focusable} ${styles.faqQuestion}`}
               >
                 <span>
                   <strong>Q:</strong> {item.question}
                 </span>
-                <span aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>
+                <span aria-hidden className={styles.faqToggle}>
                   {open ? '–' : '+'}
                 </span>
               </button>
               <div
                 id={`faq-answer-${item.id}`}
                 hidden={!open}
-                style={{
-                  display: open ? 'grid' : 'none',
-                  gap: 8,
-                  color: 'var(--muted)',
-                  fontSize: 14,
-                  lineHeight: 1.55,
-                }}
+                className={styles.faqAnswer}
               >
-                <div style={{ fontWeight: 700, color: 'var(--text)' }}>A:</div>
+                <div className={styles.faqAnswerLabel}>A:</div>
                 {item.content}
               </div>
             </div>
@@ -1748,18 +1668,18 @@ export default function HomePage() {
       <section id="contact" className={`${styles.contact}`} aria-labelledby="contact-title">
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
-          <div style={{ display: 'grid', gap: 12 }}>
+          <div style={{ display: 'grid', gap: 16 }}>
             <p style={{ margin: 0, color: 'var(--muted)' }}>
               <span>Sometimes you just need a quick answer.</span><br />
               <span>Reach out — we’re one message away on email or WhatsApp.</span>
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ opacity: .9 }}>
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.81.33 1.6.63 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.74a2 2 0 0 1 2.11-.45c.74.3 1.53.51 2.34.63A2 2 0 0 1 22 16.92z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <a className={styles.focusable} href="https://wa.me/40721759329" target="_blank" rel="noopener noreferrer" title="Chat on WhatsApp">+40 721 759 329</a>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={{ opacity: .9 }}>
                 <rect x="3" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" />
                 <path d="M3 7l9 6 9-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
@@ -1887,7 +1807,7 @@ export default function HomePage() {
         </div>
 
         {/* Social (mobile‑only row): below menus, above badges */}
-        <div className="p4h-social-row" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+        <div className="p4h-social-row" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '8px 0', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
           <a className={styles.footerLink} href="https://www.facebook.com/share/1D5V7mG79g/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
             <img src="/facebook_forlight.png" alt="Facebook" width={18} height={18} style={{ display:'inline-block', verticalAlign:'middle', marginRight:8 }} />
             Facebook
@@ -1906,7 +1826,7 @@ export default function HomePage() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 12,
+            gap: 16,
             padding: '8px 0',
             justifyContent: 'flex-start',
             flexWrap: 'wrap',
@@ -1918,7 +1838,7 @@ export default function HomePage() {
             rel="noopener noreferrer"
             aria-label="ANPC e-Servicii"
             title="ANPC e-Servicii"
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 6, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)' }}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 8, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)' }}
           >
             <img src="/ANPC.png" alt="ANPC" style={{ width: 120, height: 'auto' }} />
           </a>
@@ -1928,7 +1848,7 @@ export default function HomePage() {
             rel="noopener noreferrer"
             aria-label="Stripe Payments"
             title="Stripe Payments"
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 6, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)' }}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 8, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)' }}
           >
             <img src="/STRIPE.png" alt="Stripe" style={{ width: 120, height: 'auto' }} />
           </a>
