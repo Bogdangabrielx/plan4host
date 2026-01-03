@@ -553,9 +553,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                        style={{
 	                          width: "100%",
 	                          textAlign: "left",
-	                          display: "flex",
+	                          display: "grid",
+	                          gridTemplateColumns: "40px 1fr",
 	                          alignItems: "center",
-	                          gap: 12,
+	                          columnGap: 12,
 	                          padding: "8px 0",
 	                          borderRadius: 0,
 	                          border: "none",
@@ -568,7 +569,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                          transition: "transform .12s ease, color .15s ease",
 	                        }}
 	                      >
-	                        <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
+	                        <span aria-hidden style={{ width: 40, height: 40, display: "grid", placeItems: "center" }}>
+	                          <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
+	                        </span>
 	                        <span style={{ display: "flex", alignItems: "center", gap: 8, color: "currentColor" }}>
 	                          {it.label}
 	                          {isInbox && inboxCount > 0 && (
@@ -679,9 +682,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                        style={{
 	                          width: "100%",
 	                          textAlign: "left",
-	                          display: "flex",
+	                          display: "grid",
+	                          gridTemplateColumns: "40px 1fr",
 	                          alignItems: "center",
-	                          gap: 12,
+	                          columnGap: 12,
 	                          padding: "8px 0",
 	                          borderRadius: 0,
 	                          border: "none",
@@ -694,7 +698,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                          transition: "transform .12s ease, color .15s ease",
 	                        }}
 	                      >
-	                        <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
+	                        <span aria-hidden style={{ width: 40, height: 40, display: "grid", placeItems: "center" }}>
+	                          <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
+	                        </span>
 	                        <span style={{ display: "flex", alignItems: "center", gap: 8, color: "currentColor" }}>
 	                          {it.label}
 	                          {isInbox && inboxCount > 0 && (
