@@ -515,60 +515,58 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               </button>
             </div>
 
-            <nav
-	                        style={{
-                padding: 12,
-                overflowY: "auto",
-                WebkitOverflowScrolling: 'touch',
-                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
-              }}
-            >
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
-                {navLeft.map((it) => {
-                  const active = currentPath
-                    ? it.href === "/app"
-                      ? currentPath === "/app"
-                      : currentPath === it.href || currentPath.startsWith(it.href + "/")
-                    : false;
+	            <nav
+	              style={{
+	                padding: 8,
+	                overflowY: "auto",
+	                WebkitOverflowScrolling: 'touch',
+	                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
+	              }}
+	            >
+	              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 4 }}>
+	                {navLeft.map((it) => {
+	                  const active = currentPath
+	                    ? it.href === "/app"
+	                      ? currentPath === "/app"
+	                      : currentPath === it.href || currentPath.startsWith(it.href + "/")
+	                    : false;
 
-                  const isInbox = it.href === "/app/guest";
+	                  const isInbox = it.href === "/app/guest";
 
-                  const ICON_SIZE_DEFAULT = 36;
-                  const ICON_SIZE_PER_ROUTE: Record<string, number> = {
-                    "/app/calendar": 32,
-                    "/app/team": 32,
-                    "/app/notifications": 32,
-                  };
-                  const ICON_SIZE = ICON_SIZE_PER_ROUTE[it.href] ?? ICON_SIZE_DEFAULT;
+	                  const ICON_SIZE = 32;
 
-	                  return (
-	                    <li key={it.href}>
-	                      <button 
+		                  return (
+		                    <li key={it.href}>
+		                      <button 
 	                        onClick={() => hardNavigate(it.href)}
 	                        onPointerDown={() => setPressedLeft(it.href)}
 	                        onPointerUp={() => setPressedLeft((p) => (p === it.href ? null : p))}
 	                        onPointerLeave={() => setPressedLeft((p) => (p === it.href ? null : p))}
 	                        onMouseEnter={() => setHoverLeft(it.href)}
 	                        onMouseLeave={() => setHoverLeft((h) => (h === it.href ? null : h))}
-	                        style={{
-	                          width: "100%",
-	                          textAlign: "left",
-	                          display: "grid",
-	                          gridTemplateColumns: "40px 1fr",
-	                          alignItems: "center",
-	                          columnGap: 12,
-	                          padding: "8px 0",
-	                          borderRadius: 0,
-	                          border: "none",
-	                          background: "transparent",
-	                          color: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--primary)" : "var(--muted)",
-	                          fontWeight: "var(--fw-medium)",
-	                          position: "relative",
-	                          cursor: "pointer",
-	                          transform: pressedLeft === it.href ? "scale(0.98)" : (hoverLeft === it.href && !active ? "scale(1.02)" : undefined),
-	                          transition: "transform .12s ease, color .15s ease",
-	                        }}
-	                      >
+		                        style={{
+		                          width: "100%",
+		                          textAlign: "left",
+		                          display: "grid",
+		                          gridTemplateColumns: "40px 1fr",
+		                          alignItems: "center",
+		                          columnGap: 8,
+		                          padding: "8px 0",
+		                          borderRadius: 0,
+		                          border: "none",
+		                          background: "transparent",
+		                          color: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--primary)" : "var(--muted)",
+		                          fontFamily: "inherit",
+		                          fontSize: "var(--fs-b)",
+		                          fontWeight: active ? "var(--fw-bold)" : "var(--fw-medium)",
+		                          lineHeight: "var(--lh-b)",
+		                          letterSpacing: "-0.01em",
+		                          position: "relative",
+		                          cursor: "pointer",
+		                          transform: pressedLeft === it.href ? "scale(0.98)" : (hoverLeft === it.href && !active ? "scale(1.02)" : undefined),
+		                          transition: "transform .12s ease, color .15s ease",
+		                        }}
+		                      >
 	                        <span aria-hidden style={{ width: 40, height: 40, display: "grid", placeItems: "center" }}>
 	                          <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
 	                        </span>
@@ -641,31 +639,25 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	              </button>
             </div>
 
-            <nav
-	                        style={{
-                padding: 12,
-                overflowY: "auto",
-                WebkitOverflowScrolling: 'touch',
-                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
-              }}
-            >
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
-                {navRight.map((it) => {
-                  const active = currentPath
-                    ? it.href === "/app"
-                      ? currentPath === "/app"
-                      : currentPath === it.href || currentPath.startsWith(it.href + "/")
-                    : false;
+	            <nav
+	              style={{
+	                padding: 8,
+	                overflowY: "auto",
+	                WebkitOverflowScrolling: 'touch',
+	                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
+	              }}
+	            >
+	              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 4 }}>
+	                {navRight.map((it) => {
+	                  const active = currentPath
+	                    ? it.href === "/app"
+	                      ? currentPath === "/app"
+	                      : currentPath === it.href || currentPath.startsWith(it.href + "/")
+	                    : false;
 
-                  const isInbox = it.href === "/app/guest";
+	                  const isInbox = it.href === "/app/guest";
 
-                  const ICON_SIZE_DEFAULT = 36;
-                  const ICON_SIZE_PER_ROUTE: Record<string, number> = {
-                    "/app/calendar": 32,
-                    "/app/team": 32,
-                    "/app/notifications": 32,
-                  };
-                  const ICON_SIZE = ICON_SIZE_PER_ROUTE[it.href] ?? ICON_SIZE_DEFAULT;
+	                  const ICON_SIZE = 32;
 
 	                  return (
 	                    <li key={it.href}>
@@ -685,13 +677,17 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                          display: "grid",
 	                          gridTemplateColumns: "40px 1fr",
 	                          alignItems: "center",
-	                          columnGap: 12,
+	                          columnGap: 8,
 	                          padding: "8px 0",
 	                          borderRadius: 0,
 	                          border: "none",
 	                          background: "transparent",
 	                          color: active || hoverRight === it.href || pressedRight === it.href ? "var(--primary)" : "var(--muted)",
-	                          fontWeight: "var(--fw-medium)",
+	                          fontFamily: "inherit",
+	                          fontSize: "var(--fs-b)",
+	                          fontWeight: active ? "var(--fw-bold)" : "var(--fw-medium)",
+	                          lineHeight: "var(--lh-b)",
+	                          letterSpacing: "-0.01em",
 	                          position: "relative",
 	                          cursor: "pointer",
 	                          transform: pressedRight === it.href ? "scale(0.98)" : (hoverRight === it.href && !active ? "scale(1.02)" : undefined),
