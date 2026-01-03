@@ -359,10 +359,11 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           left: isSmall ? 0 : undefined,
           right: isSmall ? 0 : undefined,
           zIndex: 100,
-          display: isMobileNav ? "grid" : "flex",
-          gridTemplateColumns: isMobileNav ? "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)" : undefined,
+          display: "grid",
+          gridTemplateColumns: isMobileNav
+            ? "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+            : "auto minmax(0,1fr) auto",
           alignItems: "center",
-          justifyContent: isMobileNav ? undefined : "space-between",
           gap: 6,
           paddingRight: isSmall ? 10 : 14,
           paddingTop: isSmall ? 12 : 10,
@@ -409,9 +410,14 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   maxWidth: "100%",
                   ...(disableMobileTitleWrap
                     ? {
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
+                        // No plan badge on these pages: allow full title (no ellipsis),
+                        // and don't apply the 2-line clamp.
+                        whiteSpace: "normal",
+                        wordBreak: "keep-all",
+                        overflowWrap: "normal",
+                        hyphens: "none",
+                        overflow: "visible",
+                        textOverflow: "clip",
                         display: "block",
                       }
                     : {
@@ -467,8 +473,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           </>
         ) : (
           <>
-            {/* Left: menu + title */}
-            <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
+            {/* Left: navigation */}
+            <div style={{ gridColumn: 1, display: "flex", alignItems: "center", gap: isSmall ? 8 : 12 }}>
               <button
                 onClick={() => {
                   setOpen(true);
@@ -498,30 +504,43 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   <>≡</>
                 )}
               </button>
-
-              <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
-                <h1 style={{ ...titleStyle(isSmall), whiteSpace: isSmall ? "normal" : "nowrap" }}>
-                  {useMemo(() => {
-                    if (isSmall && typeof title === "string") {
-                      const t = title.trim();
-                      if (/^automatic\s+welcome\s+message$/i.test(t)) {
-                        return (
-                          <>
-                            <span>Automatic</span>Messages
-                          </>
-                        );
-                      }
-                    }
-                    return title;
-                  }, [title, isSmall])}
-                </h1>
-                {pillEl}
-              </div>
             </div>
 
-            {/* Right: actions + profile */}
+            {/* Center: title */}
             <div
               style={{
+                gridColumn: 2,
+                minWidth: 0,
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: isSmall ? 6 : 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <h1 style={{ ...titleStyle(isSmall), whiteSpace: isSmall ? "normal" : "nowrap" }}>
+                {useMemo(() => {
+                  if (isSmall && typeof title === "string") {
+                    const t = title.trim();
+                    if (/^automatic\s+welcome\s+message$/i.test(t)) {
+                      return (
+                        <>
+                          <span>Automatic</span>Messages
+                        </>
+                      );
+                    }
+                  }
+                  return title;
+                }, [title, isSmall])}
+              </h1>
+              {pillEl}
+            </div>
+
+            {/* Right: actions + management */}
+            <div
+              style={{
+                gridColumn: 3,
                 display: "flex",
                 alignItems: "center",
                 gap: isSmall ? 8 : 12,
@@ -529,6 +548,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 width: "auto",
                 justifyContent: "flex-end",
                 marginTop: 0,
+                minWidth: 0,
               }}
             >
               {right}
