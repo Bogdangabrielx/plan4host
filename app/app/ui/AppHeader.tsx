@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useHeader } from "../_components/HeaderContext";
+import styles from "./AppHeader.module.css";
+import type { ReactNode } from "react";
 
 /* ---------------- Navigation model ---------------- */
 const NAV_BASE = [
@@ -400,7 +402,20 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 return title;
               }, [title, isSmall])}
             </h1>
-            {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
+            {(() => {
+              if (!pill) return null;
+              const pillText = getNodeText(pill);
+              const showSyncLoader = /\bsync/i.test(pillText);
+              return (
+                <span
+                  style={pillStyle(pillText)}
+                  aria-label={pillText || undefined}
+                  role={pillText ? "status" : undefined}
+                >
+                  {showSyncLoader ? <PillLoader /> : pill}
+                </span>
+              );
+            })()}
           </div>
         </div>
 
@@ -723,7 +738,32 @@ function pillStyle(pill: React.ReactNode): React.CSSProperties {
     border: `1px solid ${borderCol}`,
     fontWeight: "var(--fw-medium)",
     fontSize: "var(--fs-s)",
+    display: "inline-flex",
+    alignItems: "center",
   };
+}
+
+function getNodeText(node: ReactNode): string {
+  if (node == null || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(getNodeText).join("");
+  if (typeof node === "object" && "props" in (node as any)) {
+    const props = (node as any).props as { children?: ReactNode } | undefined;
+    return props?.children ? getNodeText(props.children) : "";
+  }
+  return "";
+}
+
+function PillLoader() {
+  return (
+    <span className={styles.pillLoader} aria-hidden="true">
+      <span className={styles.pillDots}>
+        <span className={styles.pillDot} />
+        <span className={styles.pillDot} />
+        <span className={styles.pillDot} />
+      </span>
+    </span>
+  );
 }
 
 const inboxDotStyle: React.CSSProperties = {
