@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import AppHeader from "../ui/AppHeader";
 import BottomNav from "../ui/BottomNav";
 import PullToRefresh from "./PullToRefresh";
-import { HeaderProvider } from "./HeaderContext";
+import { HeaderProvider, useHeader } from "./HeaderContext";
 import AppLoadingOverlay from "./AppLoadingOverlay";
 
 type Props = {
@@ -27,6 +27,21 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   { id: "house_rules", label: "House rules" },
   { id: "calendars", label: "Calendar sync" },
 ];
+
+function MobileLargeTitle() {
+  const { title, right } = useHeader();
+
+  if (!title && !right) return null;
+
+  return (
+    <div className="p4h-mobile-largeTitle">
+      <div className="p4h-mobile-largeTitleInner">
+        <div className="p4h-mobile-largeTitleText">{title}</div>
+        {right ? <div className="p4h-mobile-largeTitleBadge">{right}</div> : null}
+      </div>
+    </div>
+  );
+}
 
 function OnboardingChecklistFab() {
   const [open, setOpen] = useState(false);
@@ -637,6 +652,47 @@ export default function AppShell({ title, currentPath, children }: Props) {
 	              }
 	              input, textarea, select { font-size: 16px; }
 		              html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+		              .p4h-mobile-largeTitle{ display:none; }
+		              @media (max-width: 640px) {
+		                .p4h-mobile-largeTitle{
+		                  display:block;
+		                  position: sticky;
+		                  top: 0;
+		                  z-index: 2;
+		                  margin: 0 -16px 16px;
+		                  padding: 16px;
+		                  background: color-mix(in srgb, var(--panel) 82%, transparent);
+		                  border-bottom: 1px solid var(--border);
+		                  backdrop-filter: blur(10px) saturate(140%);
+		                  -webkit-backdrop-filter: blur(10px) saturate(140%);
+		                }
+		                .p4h-mobile-largeTitleInner{
+		                  display:grid;
+		                  justify-items:center;
+		                  gap: 8px;
+		                }
+		                .p4h-mobile-largeTitleText{
+		                  font-family: ${"'Switzer', ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Roboto, Helvetica, Arial, sans-serif"};
+		                  font-weight: var(--fw-bold);
+		                  text-transform: uppercase;
+		                  letter-spacing: 0.08em;
+		                  text-align: center;
+		                  font-size: clamp(18px, 4.8vw, 26px);
+		                  line-height: 1.1;
+		                  text-shadow: 0 0 18px color-mix(in srgb, var(--primary) 14%, transparent);
+		                  word-break: keep-all;
+		                  overflow-wrap: normal;
+		                  hyphens: none;
+		                  display: -webkit-box;
+		                  -webkit-line-clamp: 2;
+		                  -webkit-box-orient: vertical;
+		                  overflow: hidden;
+		                }
+		                .p4h-mobile-largeTitleBadge{
+		                  display:flex;
+		                  justify-content:center;
+		                }
+		              }
 		              @media (max-width: 480px) {
 		                #app-main { padding-top: calc(var(--app-header-h, 64px) + var(--safe-top, 0px)) !important; }
 		              }
@@ -675,6 +731,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
             background: "transparent",
           }}
         >
+          <MobileLargeTitle />
           {children}
 
           {/* Spacer suplimentar (fallback la padding). Poți elimina dacă preferi doar padding. */}

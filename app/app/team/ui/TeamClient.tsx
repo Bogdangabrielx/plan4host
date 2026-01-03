@@ -167,7 +167,7 @@ export default function TeamClient() {
   return (
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
       <PlanHeaderBadge title="Team" slot="header-right" />
-      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 16 }}>
+      <div style={{ display: "grid", gap: 16 }}>
       <section className="sb-cardglow" style={card}>
         <h3 style={{ margin: 0 }}>Add user</h3>
         <div style={{ display: "grid", gap: 8 }}>

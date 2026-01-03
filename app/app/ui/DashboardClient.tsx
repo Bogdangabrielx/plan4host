@@ -408,7 +408,7 @@ export default function DashboardClient({
   return (
     <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
       <PlanHeaderBadge title="Dashboard" slot="header-right" />
-      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 16 }}>
+      <div style={{ display: "grid", gap: 16 }}>
 
       {/* 2-column desktop row: New Property + Your Properties */}
       <div 

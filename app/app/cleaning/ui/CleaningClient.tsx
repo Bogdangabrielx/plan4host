@@ -510,7 +510,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   return (
     <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
       <PlanHeaderBadge title="Cleaning Board" slot="header-right" />
-      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
+      <div>
         <div
           data-scroll
           style={{

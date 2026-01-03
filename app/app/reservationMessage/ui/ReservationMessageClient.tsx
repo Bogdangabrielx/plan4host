@@ -648,7 +648,7 @@ export default function ReservationMessageClient({
   return (
     <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
       <PlanHeaderBadge title="Automatic Messages" slot="header-right" />
-      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 12 }}>
+      <div style={{ display: "grid", gap: 12 }}>
 
       {/* Property selector (pill with avatar) — align like Calendar (sb-toolbar) */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
