@@ -523,7 +523,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
 	              }}
 	            >
-	              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 4 }}>
+	              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0 }}>
 	                {navLeft.map((it) => {
 	                  const active = currentPath
 	                    ? it.href === "/app"
@@ -551,7 +551,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 		                          gridTemplateColumns: "40px 1fr",
 		                          alignItems: "center",
 		                          columnGap: 8,
-		                          padding: "8px 0",
+		                          padding: "4px 0",
 		                          borderRadius: 0,
 		                          border: "none",
 		                          background: "transparent",
@@ -567,7 +567,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 		                          transition: "transform .12s ease, color .15s ease",
 		                        }}
 		                      >
-	                        <span aria-hidden style={{ width: 40, height: 40, display: "grid", placeItems: "center" }}>
+	                        <span aria-hidden style={{ width: 40, height: 32, display: "grid", placeItems: "center" }}>
 	                          <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
 	                        </span>
 	                        <span style={{ display: "flex", alignItems: "center", gap: 8, color: "currentColor" }}>
@@ -647,7 +647,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
 	              }}
 	            >
-	              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 4 }}>
+	              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0 }}>
 	                {navRight.map((it) => {
 	                  const active = currentPath
 	                    ? it.href === "/app"
@@ -678,7 +678,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                          gridTemplateColumns: "40px 1fr",
 	                          alignItems: "center",
 	                          columnGap: 8,
-	                          padding: "8px 0",
+	                          padding: "4px 0",
 	                          borderRadius: 0,
 	                          border: "none",
 	                          background: "transparent",
@@ -694,7 +694,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                          transition: "transform .12s ease, color .15s ease",
 	                        }}
 	                      >
-	                        <span aria-hidden style={{ width: 40, height: 40, display: "grid", placeItems: "center" }}>
+	                        <span aria-hidden style={{ width: 40, height: 32, display: "grid", placeItems: "center" }}>
 	                          <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
 	                        </span>
 	                        <span style={{ display: "flex", alignItems: "center", gap: 8, color: "currentColor" }}>
