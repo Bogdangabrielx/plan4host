@@ -1930,9 +1930,6 @@ export default function CheckinClient() {
 
             {/* Actions */}
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
-              <button type="button" onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = "/")} style={BTN_GHOST}>
-                Cancel
-              </button>
               <button
                 type="submit"
                 disabled={!canSubmit}
