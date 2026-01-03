@@ -50,7 +50,12 @@ function drawerTitleStyle(): React.CSSProperties {
   return {
     fontFamily: TITLE_FAMILY,
     fontSize: "var(--fs-h)",
+    lineHeight: "var(--lh-h)",
     fontWeight: "var(--fw-bold)",
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    textShadow: "0 0 16px color-mix(in srgb, var(--primary) 14%, transparent)",
+    color: "var(--text)",
     margin: 0,
   };
 }
