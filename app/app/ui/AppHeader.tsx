@@ -357,7 +357,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           right: isSmall ? 0 : undefined,
           zIndex: 100,
           display: isMobileNav ? "grid" : "flex",
-          gridTemplateColumns: isMobileNav ? "minmax(0,1fr) auto minmax(0,1fr)" : undefined,
+          gridTemplateColumns: isMobileNav ? "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)" : undefined,
           alignItems: "center",
           justifyContent: isMobileNav ? undefined : "space-between",
           gap: 6,
@@ -390,6 +390,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               style={{
                 gridColumn: 2,
                 justifySelf: "center",
+                width: "100%",
+                minWidth: 0,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -402,7 +404,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   ...titleStyle(isSmall),
                   whiteSpace: "normal",
                   textAlign: "center",
-                  maxWidth: "min(78vw, 520px)",
+                  maxWidth: "100%",
+                  overflow: "visible",
+                  textOverflow: "clip",
+                  overflowWrap: "anywhere",
                 }}
               >
                 {useMemo(() => {
