@@ -330,6 +330,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     return <span style={pillStyle(pill)}>{pill}</span>;
   })();
 
+  const disableMobileTitleWrap =
+    !!currentPath && /^\/app\/(notifications|subscription)(\/|$)/.test(currentPath);
+
   return (
     <>
       {/* Paint safe-area notch so it never looks transparent */}
@@ -402,21 +405,30 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               <h1
                 style={{
                   ...titleStyle(isSmall),
-                  whiteSpace: "normal",
                   textAlign: "center",
                   maxWidth: "100%",
-                  // On very small screens: allow wrap at spaces, avoid breaking words.
-                  // Keep titles to max 2 lines by slightly shrinking and clamping.
-                  fontSize: "clamp(16px, 4.2vw, var(--fs-h))",
-                  letterSpacing: "0.06em",
-                  wordBreak: "keep-all",
-                  overflowWrap: "normal",
-                  hyphens: "none",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  ...(disableMobileTitleWrap
+                    ? {
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "block",
+                      }
+                    : {
+                        whiteSpace: "normal",
+                        // On very small screens: allow wrap at spaces, avoid breaking words.
+                        // Keep titles to max 2 lines by slightly shrinking and clamping.
+                        fontSize: "clamp(16px, 4.2vw, var(--fs-h))",
+                        letterSpacing: "0.06em",
+                        wordBreak: "keep-all",
+                        overflowWrap: "normal",
+                        hyphens: "none",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }),
                 }}
               >
                 {useMemo(() => {
