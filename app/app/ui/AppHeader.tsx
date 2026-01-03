@@ -405,9 +405,18 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   whiteSpace: "normal",
                   textAlign: "center",
                   maxWidth: "100%",
-                  overflow: "visible",
-                  textOverflow: "clip",
-                  overflowWrap: "anywhere",
+                  // On very small screens: allow wrap at spaces, avoid breaking words.
+                  // Keep titles to max 2 lines by slightly shrinking and clamping.
+                  fontSize: "clamp(16px, 4.2vw, var(--fs-h))",
+                  letterSpacing: "0.06em",
+                  wordBreak: "keep-all",
+                  overflowWrap: "normal",
+                  hyphens: "none",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                 }}
               >
                 {useMemo(() => {
