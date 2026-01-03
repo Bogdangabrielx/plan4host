@@ -345,9 +345,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           left: isSmall ? 0 : undefined,
           right: isSmall ? 0 : undefined,
           zIndex: 100,
-          display: "flex",
+          display: isMobileNav ? "grid" : "flex",
+          gridTemplateColumns: isMobileNav ? "1fr auto 1fr" : undefined,
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: isMobileNav ? undefined : "space-between",
           gap: 6,
           paddingRight: isSmall ? 10 : 14,
           paddingBottom: isSmall ? 12 : 10,
@@ -356,109 +357,179 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           borderBottom: "1px solid var(--border)",
         }}
       >
-        {/* Left: menu + title */}
-	        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
-          {!isMobileNav && (
-          <button
-            onClick={() => {
-              setOpen(true);
-              setOpenRight(false);
-            }}
-            aria-label="Open menu"
-            style={{
-              padding: isSmall ? 4 : 4,
-              borderRadius: 10,
-              border: "1px solid var(--border)",
-              background: "var(--card)",
-              color: "var(--text)",
-              fontWeight: "var(--fw-bold)",
-              cursor: "pointer",
-            }}
-          >
-            {mounted && !aboutFailed ? (
-              <img
-                src={theme === "light" ? "/navigation_forlight.png" : "/navigation_fordark.png"}
-                alt=""
-                width={isSmall ? 28 : 32}
-                height={isSmall ? 28 : 32}
-                style={{ display: "block" }}
-                onError={() => setAboutFailed(true)}
-              />
-            ) : (
-              <>≡</>
-            )}
-          </button>
-          )}
+        {isMobileNav ? (
+          <>
+            {/* Left spacer (balances right column so title stays centered) */}
+            <div aria-hidden style={{ gridColumn: 1 }} />
 
-	          <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
-	            <h1 style={{ ...titleStyle(isSmall), whiteSpace: isSmall ? 'normal' : 'nowrap' }}>
-              {useMemo(() => {
-                if (isSmall && typeof title === 'string') {
-                  const t = title.trim();
-                  if (/^automatic\s+welcome\s+message$/i.test(t)) {
-                    return (<><span>Automatic</span>Messages</>);
+            {/* Center: title */}
+            <div
+              style={{
+                gridColumn: 2,
+                justifySelf: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: isSmall ? 6 : 10,
+                flexWrap: "wrap",
+                textAlign: "center",
+              }}
+            >
+              <h1
+                style={{
+                  ...titleStyle(isSmall),
+                  whiteSpace: "normal",
+                  textAlign: "center",
+                  maxWidth: "min(78vw, 520px)",
+                }}
+              >
+                {useMemo(() => {
+                  if (isSmall && typeof title === "string") {
+                    const t = title.trim();
+                    if (/^automatic\s+welcome\s+message$/i.test(t)) {
+                      return (
+                        <>
+                          <span>Automatic</span>Messages
+                        </>
+                      );
+                    }
                   }
-                }
-                return title;
-	              }, [title, isSmall])}
-	            </h1>
-	            {(() => {
-	              if (!pill) return null;
-	              const txt = typeof pill === "string" ? pill.trim() : "";
-	              const hide =
-	                typeof pill === "string" &&
-	                /^(idle|syncing|saving|loading|synced)\b/i.test(txt);
-	              if (hide) return null;
-	              return <span style={pillStyle(pill)}>{pill}</span>;
-	            })()}
-	          </div>
-	        </div>
+                  return title;
+                }, [title, isSmall])}
+              </h1>
+              {(() => {
+                if (!pill) return null;
+                const txt = typeof pill === "string" ? pill.trim() : "";
+                const hide =
+                  typeof pill === "string" && /^(idle|syncing|saving|loading|synced)\b/i.test(txt);
+                if (hide) return null;
+                return <span style={pillStyle(pill)}>{pill}</span>;
+              })()}
+            </div>
 
-        {/* Right: actions + profile */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: isSmall ? 8 : 12,
-            flexWrap: "nowrap",
-            width: "auto",
-            justifyContent: "flex-end",
-            marginTop: 0,
-          }}
-        >
-          {right}
-          {!isMobileNav && (
-          <button
-            onClick={() => {
-              setOpenRight(true);
-              setOpen(false);
-            }}
-            aria-label="Open management menu"
-            style={{
-              padding: isSmall ? 4 : 4,
-              borderRadius: 10,
-              border: "1px solid var(--border)",
-              background: "var(--card)",
-              color: "var(--text)",
-              fontWeight: "var(--fw-bold)",
-              cursor: "pointer",
-            }}
-          >
-            {mounted && !aboutFailed ? (
-              <img
-                src={theme === "light" ? "/aboutme_forlight.png" : "/aboutme_fordark.png"}
-                alt=""
-                width={isSmall ? 28 : 32}
-                height={isSmall ? 28 : 32}
-                style={{ display: "block" }}
-                onError={() => setAboutFailed(true)}
-              />
-            ) : (
-              <>≡</>
-            )}
-          </button>
-          )}
-        </div>
+            {/* Right: actions */}
+            <div
+              style={{
+                gridColumn: 3,
+                justifySelf: "end",
+                display: "flex",
+                alignItems: "center",
+                gap: isSmall ? 8 : 12,
+                flexWrap: "nowrap",
+                width: "auto",
+                justifyContent: "flex-end",
+                marginTop: 0,
+              }}
+            >
+              {right}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Left: menu + title */}
+            <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
+              <button
+                onClick={() => {
+                  setOpen(true);
+                  setOpenRight(false);
+                }}
+                aria-label="Open menu"
+                style={{
+                  padding: isSmall ? 4 : 4,
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  background: "var(--card)",
+                  color: "var(--text)",
+                  fontWeight: "var(--fw-bold)",
+                  cursor: "pointer",
+                }}
+              >
+                {mounted && !aboutFailed ? (
+                  <img
+                    src={theme === "light" ? "/navigation_forlight.png" : "/navigation_fordark.png"}
+                    alt=""
+                    width={isSmall ? 28 : 32}
+                    height={isSmall ? 28 : 32}
+                    style={{ display: "block" }}
+                    onError={() => setAboutFailed(true)}
+                  />
+                ) : (
+                  <>≡</>
+                )}
+              </button>
+
+              <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
+                <h1 style={{ ...titleStyle(isSmall), whiteSpace: isSmall ? "normal" : "nowrap" }}>
+                  {useMemo(() => {
+                    if (isSmall && typeof title === "string") {
+                      const t = title.trim();
+                      if (/^automatic\s+welcome\s+message$/i.test(t)) {
+                        return (
+                          <>
+                            <span>Automatic</span>Messages
+                          </>
+                        );
+                      }
+                    }
+                    return title;
+                  }, [title, isSmall])}
+                </h1>
+                {(() => {
+                  if (!pill) return null;
+                  const txt = typeof pill === "string" ? pill.trim() : "";
+                  const hide =
+                    typeof pill === "string" && /^(idle|syncing|saving|loading|synced)\b/i.test(txt);
+                  if (hide) return null;
+                  return <span style={pillStyle(pill)}>{pill}</span>;
+                })()}
+              </div>
+            </div>
+
+            {/* Right: actions + profile */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: isSmall ? 8 : 12,
+                flexWrap: "nowrap",
+                width: "auto",
+                justifyContent: "flex-end",
+                marginTop: 0,
+              }}
+            >
+              {right}
+              <button
+                onClick={() => {
+                  setOpenRight(true);
+                  setOpen(false);
+                }}
+                aria-label="Open management menu"
+                style={{
+                  padding: isSmall ? 4 : 4,
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  background: "var(--card)",
+                  color: "var(--text)",
+                  fontWeight: "var(--fw-bold)",
+                  cursor: "pointer",
+                }}
+              >
+                {mounted && !aboutFailed ? (
+                  <img
+                    src={theme === "light" ? "/aboutme_forlight.png" : "/aboutme_fordark.png"}
+                    alt=""
+                    width={isSmall ? 28 : 32}
+                    height={isSmall ? 28 : 32}
+                    style={{ display: "block" }}
+                    onError={() => setAboutFailed(true)}
+                  />
+                ) : (
+                  <>≡</>
+                )}
+              </button>
+            </div>
+          </>
+        )}
       </header>
       {/* Notifications modal removed; now a dedicated page under /app/notifications */}
 
