@@ -333,6 +333,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const disableMobileTitleWrap =
     !!currentPath && /^\/app\/(notifications|subscription)(\/|$)/.test(currentPath);
 
+  const transparentMobileHeader = isMobileNav;
+
   return (
     <>
       {/* Paint safe-area notch so it never looks transparent */}
@@ -344,7 +346,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           left: 0,
           right: 0,
           height: "var(--safe-top)",
-          background: "var(--panel)",
+          background: transparentMobileHeader ? "transparent" : "var(--panel)",
+          ...(transparentMobileHeader
+            ? { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }
+            : null),
           zIndex: 99,             // sub header, peste conținut
           pointerEvents: "none",
         }}
@@ -369,8 +374,14 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           paddingTop: isSmall ? 12 : 10,
           paddingBottom: isSmall ? 12 : 10,
           paddingLeft: isSmall ? 10 : 14,
-          background: "var(--panel)",
-          borderBottom: "1px solid var(--border)",
+          background: transparentMobileHeader ? "transparent" : "var(--panel)",
+          ...(transparentMobileHeader
+            ? {
+                borderBottom: "none",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+              }
+            : { borderBottom: "1px solid var(--border)" }),
         }}
       >
         {isMobileNav ? (

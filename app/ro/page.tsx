@@ -715,6 +715,8 @@ export default function HomePageRO() {
   const [navOpen, setNavOpen] = useState(false);
   const [isPwa, setIsPwa] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
+  const [navHeight, setNavHeight] = useState<number>(72);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
   const [featuresPlaying, setFeaturesPlaying] = useState(true);
   const [featuresHover, setFeaturesHover] = useState(false);
@@ -793,6 +795,32 @@ export default function HomePageRO() {
       try { mq.addEventListener('change', apply); } catch { mq.addListener(apply as any); }
       return () => { try { mq.removeEventListener('change', apply); } catch { mq.removeListener(apply as any); } };
     } catch { setIsDesktop(false); }
+  }, []);
+
+  // Meniul mobil trebuie să se deschidă peste pagină; blocăm scroll-ul din fundal cât timp e deschis
+  useEffect(() => {
+    if (!navOpen) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+    };
+  }, [navOpen]);
+
+  // Măsurăm înălțimea header-ului pentru a poziționa corect meniul fix pe mobil
+  useEffect(() => {
+    const measure = () => {
+      const h = navRef.current?.getBoundingClientRect?.().height ?? 0;
+      if (h > 0) setNavHeight(Math.ceil(h));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
   }, []);
   const beneficii: string[] = [
     "Formular personalizat pentru check-in digital",
@@ -879,7 +907,15 @@ export default function HomePageRO() {
   };
 
   return (
-    <main className={styles.landing} style={{ paddingBottom: isPwa ? 'var(--safe-bottom, 0px)' : 0, minHeight: '100dvh', overflowX: 'hidden' }}>
+    <main
+      className={styles.landing}
+      style={{
+        paddingBottom: isPwa ? 'var(--safe-bottom, 0px)' : 0,
+        minHeight: '100dvh',
+        overflowX: 'hidden',
+        ['--landing-nav-h' as any]: `${navHeight}px`,
+      }}
+    >
       <AutoOpenOnLanding delay={150} />
 
       {/* Bară safe-area iOS */}
@@ -897,7 +933,7 @@ export default function HomePageRO() {
       <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>Sari la conținut</a>
 
       {/* Navigație */}
-      <nav className={styles.nav} data-open={navOpen ? "true" : "false"} aria-label="Primary">
+      <nav ref={navRef as any} className={styles.nav} data-open={navOpen ? "true" : "false"} aria-label="Primary">
         <div className={styles.brandWrap}>
           <Link href="/ro" className={`${styles.brand} ${styles.focusable}`}>
             <img src="/Logo_Landing_AI.png" alt="Plan4host" className={styles.logoDark} />
