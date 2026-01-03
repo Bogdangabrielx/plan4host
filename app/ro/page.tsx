@@ -1269,8 +1269,8 @@ export default function HomePageRO() {
                       </svg>
                     ) : (
                       <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10" fill="var(--success)" stroke="var(--primary)" strokeWidth="1.8" />
-                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--primary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
+                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
                     <span>{b.startsWith('Sincronizarea automată a rezervărilor între platforme') ? 'Sincronizarea automată a rezervărilor între platforme (la 60 min)' : b}</span>
@@ -1299,8 +1299,8 @@ export default function HomePageRO() {
                       </svg>
                     ) : (
                       <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10" fill="var(--success)" stroke="var(--primary)" strokeWidth="1.8" />
-                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--primary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
+                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
                     <span>{b.startsWith('Sincronizarea automată a rezervărilor între platforme') ? 'Sincronizarea automată a rezervărilor între platforme (la 30 min)' : b}</span>
@@ -1318,8 +1318,8 @@ export default function HomePageRO() {
               {beneficii.map((b, i) => (
                 <li key={`premium-b-${i}`}>
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10" fill="var(--success)" stroke="var(--primary)" strokeWidth="1.8" />
-                    <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--primary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
+                    <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <span>{b.startsWith('Sincronizarea automată a rezervărilor între platforme') ? 'Sincronizarea automată a rezervărilor între platforme (la 10 min)' : b}</span>
                 </li>
