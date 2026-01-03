@@ -165,22 +165,22 @@ useEffect(() => {
 
   if (!mounted || !isMobile) return null;
 
-	  const nav = (
-	    <nav
-	      ref={(n) => { navRef.current = n; }}
-	      aria-label="Bottom navigation"
-	      className="sb-cardglow"
-	      style={{
+  const nav = (
+    <nav
+      ref={(n) => { navRef.current = n; }}
+      aria-label="Bottom navigation"
+      className="sb-cardglow"
+      style={{
         position: "fixed",
         left: 0,
         right: 0,
         bottom: 0,                 // ancorat de muchia fizică
         background: "var(--panel)",
         borderTop: "1px solid var(--border)",
-	        borderTopLeftRadius: 23,
-	        borderTopRightRadius: 23,
-	        padding: "8px 8px",
-	        overflow: "hidden",
+        borderTopLeftRadius: 23,
+        borderTopRightRadius: 23,
+        padding: "8px 8px",
+        overflow: "hidden",
 
         // când tastatura e deschisă, NU mai urcă: îl scot în jos din viewport
         transform: (kbOpen || forceHide) ? "translateY(100%)" : "translateY(0)",
@@ -190,60 +190,59 @@ useEffect(() => {
         overflowAnchor: "none",
         isolation: "isolate",
         contain: "layout paint",
-	      }}
-	    >
-	      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-	        {items.map((it) => {
-	          const active = path === it.href || path.startsWith(it.href + "/");
-	          return (
-	            <a
-	              key={it.href}
-	              href={it.href}
-	              style={{
-	                textDecoration: "none",
-	                color: "var(--text)",
-	                borderRadius: 12,
-	                display: "grid",
-	                justifyItems: "center",
-	                alignItems: "start",
-	                alignContent: "start",
-	                gap: 4,
-	                padding: "8px 8px",
-	                touchAction: "manipulation",
-	                textAlign: 'center',
-	                background: active ? "color-mix(in srgb, var(--primary) 16%, transparent)" : "transparent",
-	              }}
-	            >
-	              <img src={it.icon} alt="" width={22} height={22} style={{ display: "block", opacity: active ? 1 : 0.95, minWidth: 22, minHeight: 22 }} />
-	              <small style={{ fontSize: "var(--fs-s)", fontWeight: active ? "var(--fw-bold)" : "var(--fw-medium)", letterSpacing: 0.2 }}>{it.label}</small>
-	            </a>
-	          );
-	        })}
+      }}
+    >
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+        {items.map((it) => {
+          const active = path === it.href || path.startsWith(it.href + "/");
+          return (
+            <a
+              key={it.href}
+              href={it.href}
+              style={{
+                textDecoration: "none",
+                color: "var(--text)",
+                borderRadius: 10,
+                display: "grid",
+                justifyItems: "center",
+                alignItems: "start",
+                alignContent: "start",
+                gap: 4,
+                padding: "6px 4px",
+                touchAction: "manipulation",
+                textAlign: 'center',
+              }}
+            >
+              <img src={it.icon} alt="" width={22} height={22} style={{ display: "block", opacity: active ? 1 : 0.95, minWidth: 22, minHeight: 22 }} />
+              <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>{it.label}</small>
+            </a>
+          );
+        })}
 
-	        <button
-	          type="button"
-	          onClick={() => { try { window.dispatchEvent(new CustomEvent("p4h:openManagement")); } catch {} }}
-	          style={{
-	            textDecoration: "none",
-	            color: "var(--text)",
-	            borderRadius: 12,
-	            display: "grid",
-	            justifyItems: "center",
-	            alignItems: "start",
-	            alignContent: "start",
-	            background: "var(--panel)",
-	            border: "1px solid var(--border)",
-	            gap: 4,
-	            padding: "8px 8px",
-	            touchAction: "manipulation",
-	            textAlign: 'center',
-	          }}
-	          aria-label="Open management"
-	        >
-	          <img src={theme==="light" ? "/configurator_forlight.png" : "/configurator_fordark.png"} alt="" width={22} height={22} style={{ display: "block", minWidth: 22, minHeight: 22 }} />
-	          <small style={{ fontSize: "var(--fs-s)", fontWeight: "var(--fw-medium)", letterSpacing: 0.2 }}>Management</small>
-	        </button>
-	      </div>
+        <button
+          type="button"
+          onClick={() => { try { window.dispatchEvent(new CustomEvent("p4h:openManagement")); } catch {} }}
+          style={{
+            textDecoration: "none",
+            color: "var(--text)",
+            borderRadius: 10,
+            display: "grid",
+            justifyItems: "center",
+            alignItems: "start",
+            alignContent: "start",
+            background: "var(--panel)",
+            border: "var(--border)",
+            gap: 4,
+            padding: "6px 4px",
+            touchAction: "manipulation",
+            textAlign: 'center',
+          }}
+          aria-label="Open management"
+        >
+          <img src={theme==="light" ? "/configurator_forlight.png" : "/configurator_fordark.png"} alt="" width={22} height={22} style={{ display: "block", minWidth: 22, minHeight: 22 }} />
+          <small style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2 }}>Management</small>
+        </button>
+      </div>
 
       {/* desktop off */}
       <style>{`@media (min-width: 641px) { .p4h-bottom-nav { display: none; } }`}</style>

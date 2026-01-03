@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useHeader } from "../_components/HeaderContext";
-import styles from "./AppHeader.module.css";
-import type { ReactNode } from "react";
 
 /* ---------------- Navigation model ---------------- */
 const NAV_BASE = [
@@ -35,9 +33,9 @@ function titleStyle(isSmall: boolean): React.CSSProperties {
   return {
     margin: 0,
     fontFamily: TITLE_FAMILY,
-    fontSize: "var(--fs-h)",
-    lineHeight: "var(--lh-h)",
-    fontWeight: "var(--fw-bold)",
+    fontSize: isSmall ? 18 : 20,
+    lineHeight: isSmall ? "26px" : "26px",
+    fontWeight: 600,
     letterSpacing: "-0.01em",
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -49,8 +47,8 @@ function titleStyle(isSmall: boolean): React.CSSProperties {
 function drawerTitleStyle(): React.CSSProperties {
   return {
     fontFamily: TITLE_FAMILY,
-    fontSize: "var(--fs-h)",
-    fontWeight: "var(--fw-bold)",
+    fontSize: 18,
+    fontWeight: 600,
     margin: 0,
   };
 }
@@ -350,8 +348,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 8,
-          padding: "8px 16px",
+          gap: 6,
+          paddingRight: isSmall ? 10 : 14,
+          paddingBottom: isSmall ? 12 : 10,
+          paddingLeft: isSmall ? 10 : 14,
           background: "var(--panel)",
           borderBottom: "1px solid var(--border)",
         }}
@@ -367,11 +367,11 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             aria-label="Open menu"
             style={{
               padding: isSmall ? 4 : 4,
-              borderRadius: 12,
+              borderRadius: 10,
               border: "1px solid var(--border)",
               background: "var(--card)",
               color: "var(--text)",
-              fontWeight: "var(--fw-bold)",
+              fontWeight: 800,
               cursor: "pointer",
             }}
           >
@@ -402,20 +402,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 return title;
               }, [title, isSmall])}
             </h1>
-            {(() => {
-              if (!pill) return null;
-              const pillText = getNodeText(pill);
-              const showSyncLoader = /\bsync/i.test(pillText);
-              return (
-                <span
-                  style={pillStyle(pillText)}
-                  aria-label={pillText || undefined}
-                  role={pillText ? "status" : undefined}
-                >
-                  {showSyncLoader ? <PillLoader /> : pill}
-                </span>
-              );
-            })()}
+            {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
           </div>
         </div>
 
@@ -441,11 +428,11 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             aria-label="Open management menu"
             style={{
               padding: isSmall ? 4 : 4,
-              borderRadius: 12,
+              borderRadius: 10,
               border: "1px solid var(--border)",
               background: "var(--card)",
               color: "var(--text)",
-              fontWeight: "var(--fw-bold)",
+              fontWeight: 800,
               cursor: "pointer",
             }}
           >
@@ -507,12 +494,12 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 onClick={() => setOpen(false)}
                 aria-label="Close"
                 style={{
-                  padding: "8px 8px",
-                  borderRadius: 12,
+                  padding: "6px 10px",
+                  borderRadius: 8,
                   border: "1px solid var(--border)",
                   background: "transparent",
                   color: "var(--text)",
-                  fontWeight: "var(--fw-medium)",
+                  fontWeight: 800,
                   cursor: "pointer",
                 }}
               >
@@ -522,13 +509,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
             <nav
               style={{
-                padding: 16,
+                padding: 12,
                 overflowY: "auto",
                 WebkitOverflowScrolling: 'touch',
-                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 16px)'
+                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
               }}
             >
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
                 {navLeft.map((it) => {
                   const active = currentPath
                     ? it.href === "/app"
@@ -548,31 +535,31 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
                   return (
                     <li key={it.href}>
-	                      <button 
+                      <button 
                         onClick={() => hardNavigate(it.href)}
                         onPointerDown={() => setPressedLeft(it.href)}
                         onPointerUp={() => setPressedLeft((p) => (p === it.href ? null : p))}
                         onPointerLeave={() => setPressedLeft((p) => (p === it.href ? null : p))}
                         onMouseEnter={() => setHoverLeft(it.href)}
                         onMouseLeave={() => setHoverLeft((h) => (h === it.href ? null : h))}
-	                        style={{
-	                          width: "100%",
-	                          textAlign: "left",
-	                          display: "flex",
-	                          alignItems: "center",
-	                          gap: 16,
-	                          padding: "8px 16px",
-	                          borderRadius: 12,
-	                          border: "1px solid var(--border)",
-	                          background: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--primary)" : "var(--card)",
-	                          color: active || hoverLeft === it.href || pressedLeft === it.href ? "#0c111b" : "var(--muted)",
-	                          fontWeight: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--fw-bold)" : "var(--fw-medium)",
-	                          position: "relative",
-	                          cursor: "pointer",
-	                          transform: pressedLeft === it.href ? "scale(0.98)" : (hoverLeft === it.href && !active ? "scale(1.02)" : undefined),
-	                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
-	                        }}
-	                      >
+                        style={{
+                          width: "100%",
+                          textAlign: "left",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border)",
+                          background: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--primary)" : "var(--card)",
+                          color: active || hoverLeft === it.href || pressedLeft === it.href ? "#0c111b" : "var(--muted)",
+                          fontWeight: 800,
+                          position: "relative",
+                          cursor: "pointer",
+                          transform: pressedLeft === it.href ? "scale(0.98)" : (hoverLeft === it.href && !active ? "scale(1.02)" : undefined),
+                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
+                        }}
+                      >
                         <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
                         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           {it.label}
@@ -616,43 +603,43 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               paddingTop: isSmall ? "var(--safe-top)" : "calc(var(--safe-top) + 8px)",
             }}
           >
-	            <div
-	              style={{
-	                padding: 16,
-	                borderBottom: "1px solid var(--border)",
-	                display: "flex",
-	                justifyContent: "space-between",
-	                alignItems: "center",
-	              }}
-	            >
-	              <h2 style={drawerTitleStyle()}>Management</h2>
-	              <button
-	                onClick={() => setOpenRight(false)}
-	                aria-label="Close"
-	                style={{
-	                  padding: "8px 8px",
-	                  borderRadius: 12,
-	                  border: "1px solid var(--border)",
-	                  background: "transparent",
-	                  color: "var(--text)",
-	                  fontWeight: "var(--fw-medium)",
-	                  cursor: "pointer",
-	                }}
-	              >
-	                ✕
-	              </button>
-	            </div>
+            <div
+              style={{
+                padding: 16,
+                borderBottom: "1px solid var(--border)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <h2 style={drawerTitleStyle()}>Management</h2>
+              <button
+                onClick={() => setOpenRight(false)}
+                aria-label="Close"
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 8,
+                  border: "1px solid var(--border)",
+                  background: "transparent",
+                  color: "var(--text)",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                ✕
+              </button>
+            </div>
 
-	            <nav
-	              style={{
-	                padding: 16,
-	                overflowY: "auto",
-	                WebkitOverflowScrolling: 'touch',
-	                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 16px)'
-	              }}
-	            >
-	              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
-	                {navRight.map((it) => {
+            <nav
+              style={{
+                padding: 12,
+                overflowY: "auto",
+                WebkitOverflowScrolling: 'touch',
+                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
+              }}
+            >
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
+                {navRight.map((it) => {
                   const active = currentPath
                     ? it.href === "/app"
                       ? currentPath === "/app"
@@ -671,7 +658,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
                   return (
                     <li key={it.href}>
-	                      <button 
+                      <button 
                         onClick={() => {
                           setOpenRight(false);
                           hardNavigate(it.href);
@@ -681,24 +668,24 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                         onPointerLeave={() => setPressedRight((p) => (p === it.href ? null : p))}
                         onMouseEnter={() => setHoverRight(it.href)}
                         onMouseLeave={() => setHoverRight((h) => (h === it.href ? null : h))}
-	                        style={{
-	                          width: "100%",
-	                          textAlign: "left",
-	                          display: "flex",
-	                          alignItems: "center",
-	                          gap: 16,
-	                          padding: "8px 16px",
-	                          borderRadius: 12,
-	                          border: "1px solid var(--border)",
-	                          background: active || hoverRight === it.href || pressedRight === it.href ? "var(--primary)" : "var(--card)",
-	                          color: active || hoverRight === it.href || pressedRight === it.href ? "#0c111b" : "var(--muted)",
-	                          fontWeight: active || hoverRight === it.href || pressedRight === it.href ? "var(--fw-bold)" : "var(--fw-medium)",
-	                          position: "relative",
-	                          cursor: "pointer",
-	                          transform: pressedRight === it.href ? "scale(0.98)" : (hoverRight === it.href && !active ? "scale(1.02)" : undefined),
-	                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
-	                        }}
-	                      >
+                        style={{
+                          width: "100%",
+                          textAlign: "left",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border)",
+                          background: active || hoverRight === it.href || pressedRight === it.href ? "var(--primary)" : "var(--card)",
+                          color: active || hoverRight === it.href || pressedRight === it.href ? "#0c111b" : "var(--muted)",
+                          fontWeight: 800,
+                          position: "relative",
+                          cursor: "pointer",
+                          transform: pressedRight === it.href ? "scale(0.98)" : (hoverRight === it.href && !active ? "scale(1.02)" : undefined),
+                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
+                        }}
+                      >
                         <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
                         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           {it.label}
@@ -731,51 +718,26 @@ function pillStyle(pill: React.ReactNode): React.CSSProperties {
   const col = isIdle ? "transparent" : (isError || isBusy ? "#0c111b" : "var(--muted)");
   const borderCol = isIdle ? "transparent" : "var(--border)";
   return {
-    padding: "4px 8px",
+    padding: "4px 10px",
     borderRadius: 999,
     background: bg,
     color: col,
     border: `1px solid ${borderCol}`,
-    fontWeight: "var(--fw-medium)",
-    fontSize: "var(--fs-s)",
-    display: "inline-flex",
-    alignItems: "center",
+    fontWeight: 800,
+    fontSize: 12,
   };
-}
-
-function getNodeText(node: ReactNode): string {
-  if (node == null || typeof node === "boolean") return "";
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(getNodeText).join("");
-  if (typeof node === "object" && "props" in (node as any)) {
-    const props = (node as any).props as { children?: ReactNode } | undefined;
-    return props?.children ? getNodeText(props.children) : "";
-  }
-  return "";
-}
-
-function PillLoader() {
-  return (
-    <span className={styles.pillLoader} aria-hidden="true">
-      <span className={styles.pillDots}>
-        <span className={styles.pillDot} />
-        <span className={styles.pillDot} />
-        <span className={styles.pillDot} />
-      </span>
-    </span>
-  );
 }
 
 const inboxDotStyle: React.CSSProperties = {
   minWidth: 18,
   height: 18,
   borderRadius: 999,
-  padding: "0 8px",
+  padding: "0 6px",
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  fontSize: "var(--fs-s)",
-  fontWeight: "var(--fw-bold)",
+  fontSize: 11,
+  fontWeight: 900,
   background: "var(--danger)",
   color: "#0c111b",
   border: "1px solid var(--danger)",

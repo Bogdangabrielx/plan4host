@@ -45,19 +45,7 @@ html { -webkit-text-size-adjust: 100%; }
 /* Ambient background is now managed in app/layout.tsx with OKLCH + HSL fallback */
 
 /* Focus ring derived from primary */
-:root {
-  --focus-ring: var(--primary);
-
-  /* Strict typography defaults (app-wide); landing overrides these in `app/home.module.css` */
-  --fs-h: 20px;
-  --fs-b: 16px;
-  --fs-s: 12px;
-  --fw-medium: 500;
-  --fw-bold: 700;
-  --lh-h: 1.25;
-  --lh-b: 1.5;
-  --lh-s: 1.35;
-}
+:root { --focus-ring: var(--primary); }
 @supports (color: oklch(0 0 0)){
   :root { --focus-ring: oklch(from var(--primary) calc(min(1, var(--primary-L) + 0.10)) var(--primary-C) var(--primary-h-ok)); }
 }
