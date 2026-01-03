@@ -206,10 +206,12 @@ will-change: transform;
   .nav { gap: 16px; padding: 16px 0 16px 16px; }
   .actions { gap: 4px; }
   .nav .actions .btn {
-    padding: 8px 16px;
+    padding: 8px 12px;
     min-height: 32px;
     min-width: 0;
-    white-space: normal;
+    font-size: 14px;
+    line-height: 1;
+    white-space: nowrap;
   }
   .menuToggle { padding: 8px 16px; min-height: 32px; margin-right: calc(-1 * (var(--safe-right, 0px) + 8px)); }
   .menuIcon { width: 18px; height: 12px; }
