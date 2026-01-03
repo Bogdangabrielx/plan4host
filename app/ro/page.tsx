@@ -960,7 +960,7 @@ export default function HomePageRO() {
 		        </div>
         <div className={styles.actions}>
           <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Logare</Link>
-          <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Încearcă gratuit</CtaLink>
+          <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Încearcă</CtaLink>
           <button
             type="button"
             className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
