@@ -1429,25 +1429,26 @@ export default function HomePage() {
           <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
-              {benefits.map((b, i) => {
-                const basicX = [
-                  'Prioritize room cleaning',
-                  'Personalized cleaning task',
-                  'Real-time cleaning status',
-                  'Share daily tasks',
-                  'Instant sync of reservations in the app calendar',
-                  'Guest AI assistant',
-                ].some((s) => b.includes(s));
-                return (
-                  <li key={`basic-b-${i}`}>
-                    {basicX ? (
-                      <svg viewBox="0 0 24 24" aria-hidden="true" style={{ color: 'var(--text)' }}>
-                        <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    ) : (
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
-                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+	              {benefits.map((b, i) => {
+	                const basicX = [
+	                  'Prioritize room cleaning',
+	                  'Personalized cleaning task',
+	                  'Real-time cleaning status',
+	                  'Share daily tasks',
+	                  'Instant sync of reservations in the app calendar',
+	                  'Guest AI assistant',
+	                ].some((s) => b.includes(s));
+	                return (
+	                  <li key={`basic-b-${i}`}>
+	                    {basicX ? (
+	                      <svg viewBox="0 0 24 24" aria-hidden="true">
+	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--danger) 12%, white)" stroke="var(--danger)" strokeWidth="1.8" />
+	                        <path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="var(--danger)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+	                      </svg>
+	                    ) : (
+	                      <svg viewBox="0 0 24 24" aria-hidden="true">
+	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
+	                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
                     <span>{b.startsWith('Automatic sync of reservations between platforms') ? 'Automatic sync of reservations between platforms (every 60 min)' : b}</span>
@@ -1467,22 +1468,23 @@ export default function HomePage() {
           <div className={`sb-cardglow ${styles.priceCard}`}>
             <div className={styles.priceTier}>STANDARD</div>
             <ul className={styles.priceList}>
-              {benefits.map((b, i) => {
-                const standardX = [
-                  'Share daily tasks',
-                  'Instant sync of reservations in the app calendar',
-                  'Guest AI assistant',
-                ].some((s) => b.includes(s));
-                return (
-                  <li key={`standard-b-${i}`}>
-                    {standardX ? (
-                      <svg viewBox="0 0 24 24" aria-hidden="true" style={{ color: 'var(--text)' }}>
-                        <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    ) : (
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
-                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+	              {benefits.map((b, i) => {
+	                const standardX = [
+	                  'Share daily tasks',
+	                  'Instant sync of reservations in the app calendar',
+	                  'Guest AI assistant',
+	                ].some((s) => b.includes(s));
+	                return (
+	                  <li key={`standard-b-${i}`}>
+	                    {standardX ? (
+	                      <svg viewBox="0 0 24 24" aria-hidden="true">
+	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--danger) 12%, white)" stroke="var(--danger)" strokeWidth="1.8" />
+	                        <path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="var(--danger)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+	                      </svg>
+	                    ) : (
+	                      <svg viewBox="0 0 24 24" aria-hidden="true">
+	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
+	                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
                     <span>{b.startsWith('Automatic sync of reservations between platforms') ? 'Automatic sync of reservations between platforms (every 30 min)' : b}</span>
