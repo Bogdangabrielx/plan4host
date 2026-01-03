@@ -8,11 +8,24 @@ export default function NotificationsClient() {
   const [status, setStatus] = useState<string>(""); // "Loading..." | "Done"
   const [active, setActive] = useState<boolean>(false);
   const [endpoint, setEndpoint] = useState<string | null>(null);
+  const [isSmall, setIsSmall] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia?.("(max-width: 480px)")?.matches ?? false;
+  });
   const [pushCapable, setPushCapable] = useState<boolean>(
     typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window
   );
   const [fallbackActive, setFallbackActive] = useState<boolean>(false);
   const [fallbackFeed, setFallbackFeed] = useState<Array<{ ts: string; text: string }>>([]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia?.("(max-width: 480px)");
+    const on = (e: MediaQueryListEvent) => setIsSmall(e.matches);
+    try { mq?.addEventListener("change", on); } catch { mq?.addListener?.(on as any); }
+    setIsSmall(mq?.matches ?? false);
+    return () => { try { mq?.removeEventListener("change", on); } catch { mq?.removeListener?.(on as any); } };
+  }, []);
 
   useEffect(() => {
     refreshActive();
@@ -196,59 +209,63 @@ export default function NotificationsClient() {
   const offClass = `sb-btn sb-cardglow ${!active ? 'sb-btn--primary' : ''}`.trim();
 
   return (
-    <div className="sb-cardglow" style={{ padding: 16, display: 'grid', gap: 12, borderRadius: 13 }}>
-      <div style={{ display: 'grid', gap: 6 }}>
-        <strong>Notifications</strong>
-        {!pushCapable && (
-          <small style={{ color:'var(--muted)' }}>
-            Push API not supported in this browser. You can enable an in-app fallback that only works while this tab is open.
-          </small>
-        )}
-      </div>
-      <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-        <button
-          className={onClass}
-          onClick={turnOn}
-          disabled={loading}
-          style={{ color: 'var(--muted)', border: active ? '1px solid var(--primary)' as const : undefined }}
-        >
-          Turn On
-        </button>
-        <button
-          className={offClass}
-          onClick={turnOff}
-          disabled={loading}
-          style={{ color: 'var(--muted)', border: !active ? '1px solid var(--danger)' as const : undefined }}
-        >
-          Turn Off
-        </button>
-        {(active || fallbackActive) && (
-          <button
-            className="sb-btn"
-            onClick={sendTest}
-            disabled={loading}
-            style={{ color: 'var(--muted)', background: "var(--panel)", border: 'var(--muted)' }}
-          >
-            Get instant one
-          </button>
-        )}
-      </div>
-      <div style={{ display: 'grid', gap: 4 }}>
-        <small style={{ color:'var(--muted)' }}>
-          {status === 'Loading...' ? 'Loading...' : fallbackActive ? 'Fallback active: in-app only while this tab is open.' : `Your notifications are currently ${active ? 'ON' : 'OFF'}.`}
-        </small>
-        {fallbackActive && fallbackFeed.length > 0 && (
-          <div style={{ display:'grid', gap:6, padding:10, border:'1px dashed var(--border)', borderRadius:10, background:'color-mix(in srgb, var(--panel) 70%, transparent)' }}>
-            <small style={{ color:'var(--muted)' }}>In-app notifications (only while this tab is open):</small>
-            <ul style={{ margin:0, paddingLeft:16, display:'grid', gap:4 }}>
-              {fallbackFeed.map((m, i) => (
-                <li key={`${m.ts}-${i}`} style={{ color:'var(--text)', fontSize:13 }}>
-                  {new Date(m.ts).toLocaleString()} — {m.text}
-                </li>
-              ))}
-            </ul>
+    <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
+      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
+        <div className="sb-cardglow" style={{ padding: 16, display: 'grid', gap: 12, borderRadius: 13 }}>
+          <div style={{ display: 'grid', gap: 6 }}>
+            <strong>Notifications</strong>
+            {!pushCapable && (
+              <small style={{ color:'var(--muted)' }}>
+                Push API not supported in this browser. You can enable an in-app fallback that only works while this tab is open.
+              </small>
+            )}
           </div>
-        )}
+          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+            <button
+              className={onClass}
+              onClick={turnOn}
+              disabled={loading}
+              style={{ color: 'var(--muted)', border: active ? '1px solid var(--primary)' as const : undefined }}
+            >
+              Turn On
+            </button>
+            <button
+              className={offClass}
+              onClick={turnOff}
+              disabled={loading}
+              style={{ color: 'var(--muted)', border: !active ? '1px solid var(--danger)' as const : undefined }}
+            >
+              Turn Off
+            </button>
+            {(active || fallbackActive) && (
+              <button
+                className="sb-btn"
+                onClick={sendTest}
+                disabled={loading}
+                style={{ color: 'var(--muted)', background: "var(--panel)", border: 'var(--muted)' }}
+              >
+                Get instant one
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'grid', gap: 4 }}>
+            <small style={{ color:'var(--muted)' }}>
+              {status === 'Loading...' ? 'Loading...' : fallbackActive ? 'Fallback active: in-app only while this tab is open.' : `Your notifications are currently ${active ? 'ON' : 'OFF'}.`}
+            </small>
+            {fallbackActive && fallbackFeed.length > 0 && (
+              <div style={{ display:'grid', gap:6, padding:10, border:'1px dashed var(--border)', borderRadius:10, background:'color-mix(in srgb, var(--panel) 70%, transparent)' }}>
+                <small style={{ color:'var(--muted)' }}>In-app notifications (only while this tab is open):</small>
+                <ul style={{ margin:0, paddingLeft:16, display:'grid', gap:4 }}>
+                  {fallbackFeed.map((m, i) => (
+                    <li key={`${m.ts}-${i}`} style={{ color:'var(--text)', fontSize:13 }}>
+                      {new Date(m.ts).toLocaleString()} — {m.text}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

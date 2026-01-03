@@ -20,6 +20,10 @@ export default function TeamClient() {
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const [isSmall, setIsSmall] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia?.("(max-width: 480px)")?.matches ?? false;
+  });
   // Nou: default role = "editor" (nu mai folosim "member")
   const [role, setRole] = useState<Role | "">("");
   const [roleError, setRoleError] = useState<boolean>(false);
@@ -51,6 +55,15 @@ export default function TeamClient() {
     const onMq = () => detect();
     try { mq?.addEventListener('change', onMq); } catch { mq?.addListener?.(onMq as any); }
     return () => { try { mq?.removeEventListener('change', onMq); } catch { mq?.removeListener?.(onMq as any); } mo.disconnect(); };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia?.("(max-width: 480px)");
+    const on = (e: MediaQueryListEvent) => setIsSmall(e.matches);
+    try { mq?.addEventListener("change", on); } catch { mq?.addListener?.(on as any); }
+    setIsSmall(mq?.matches ?? false);
+    return () => { try { mq?.removeEventListener("change", on); } catch { mq?.removeListener?.(on as any); } };
   }, []);
 
   function toggleScope(key: string) {
@@ -152,8 +165,9 @@ export default function TeamClient() {
   }
 
   return (
-    <div style={{ display: "grid", gap: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
       <PlanHeaderBadge title="Team" slot="header-right" />
+      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 16 }}>
       <section className="sb-cardglow" style={card}>
         <h3 style={{ margin: 0 }}>Add user</h3>
         <div style={{ display: "grid", gap: 8 }}>
@@ -320,6 +334,7 @@ export default function TeamClient() {
           .scopeItem { display: flex; gap: 6px;  align-items: center; border: 1px solid var(--border); padding: 6px 8px; border-radius: 8px; }
         }
       `}</style>
+      </div>
     </div>
   );
 }

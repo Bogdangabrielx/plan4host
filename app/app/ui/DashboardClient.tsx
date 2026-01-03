@@ -54,6 +54,10 @@ export default function DashboardClient({
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
   const [name, setName] = useState("");
   const [country, setCountry] = useState<string>("");
+  const [isSmall, setIsSmall] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia?.("(max-width: 480px)")?.matches ?? false;
+  });
 
   // seed din SSR (evită flicker/hydration mismatch)
   const [list, setList] = useState<Property[]>(initialProperties);
@@ -372,6 +376,15 @@ export default function DashboardClient({
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia?.("(max-width: 480px)");
+    const on = (e: MediaQueryListEvent) => setIsSmall(e.matches);
+    try { mq?.addEventListener("change", on); } catch { mq?.addListener?.(on as any); }
+    setIsSmall(mq?.matches ?? false);
+    return () => { try { mq?.removeEventListener("change", on); } catch { mq?.removeListener?.(on as any); } };
+  }, []);
+
   // Keep list card matched to the New Property card height on desktop.
   useEffect(() => {
     if (!isDesktop) { setAddCardHeight(null); return; }
@@ -393,14 +406,9 @@ export default function DashboardClient({
   }, [isDesktop]);
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gap: 16,
-        fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
-      }}
-    >
+    <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
       <PlanHeaderBadge title="Dashboard" slot="header-right" />
+      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 16 }}>
 
       {/* 2-column desktop row: New Property + Your Properties */}
       <div 
@@ -736,6 +744,7 @@ export default function DashboardClient({
           .propActions > button { width: 100%; border-radius: 29px !important; min-height: 44px; }
         }
       `}</style>
+      </div>
     </div>
   );
 }
