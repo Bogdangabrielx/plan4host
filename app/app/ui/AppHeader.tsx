@@ -317,7 +317,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
   /* ----- Themed icons ----- */
   const THEME_ICONS: Record<string, { light: string; dark: string }> = {
-    "/app": { light: "/dashboard_forlight.png", dark: "/dashboard_fordark.png" },
+    "/app": { light: "/property_forlight.png", dark: "/property_fordark.png" },
     "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
     "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
     "/app/propertySetup": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
