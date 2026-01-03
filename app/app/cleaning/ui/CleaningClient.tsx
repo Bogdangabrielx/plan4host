@@ -509,7 +509,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   /* ─── UI principal (scroll conținut, header/bottom fixe în AppShell) ─ */
   return (
     <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
-      <PlanHeaderBadge title="Cleaning Board" slot="header-right" />
+      <PlanHeaderBadge title="Cleaning Board" slot="under-title" />
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
         <div
           data-scroll

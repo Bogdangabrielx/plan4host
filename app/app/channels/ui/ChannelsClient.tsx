@@ -496,7 +496,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
   return (
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
-      <PlanHeaderBadge title="Sync Calendars" slot="header-right" />
+      <PlanHeaderBadge title="Sync Calendars" slot="under-title" />
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
       {/* Toolbar minimalistă */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' }}>

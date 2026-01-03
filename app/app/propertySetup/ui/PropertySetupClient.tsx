@@ -332,7 +332,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   return (
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
-        <PlanHeaderBadge title="Property Setup" slot="header-right" />
+        <PlanHeaderBadge title="Property Setup" slot="under-title" />
 
         {showRoomsGuide && (
           <div
