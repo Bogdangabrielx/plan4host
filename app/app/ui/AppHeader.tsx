@@ -373,6 +373,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     return title;
   }, [title, isSmall]);
 
+  const noEllipsisTitle =
+    !!currentPath && /^\/app\/(notifications|subscription)(\/|$)/.test(currentPath);
+
   const transparentMobileHeader = isMobileNav;
   const mobileHeaderRadius = 23;
 
@@ -468,7 +471,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                     ? {
                         whiteSpace: "nowrap",
                         overflow: "hidden",
-                        textOverflow: "ellipsis",
+                        textOverflow: noEllipsisTitle ? "clip" : "ellipsis",
+                        fontSize: noEllipsisTitle ? "clamp(14px, 3.6vw, var(--fs-h))" : undefined,
+                        letterSpacing: noEllipsisTitle ? "0.06em" : undefined,
                       }
                     : {
                         whiteSpace: "normal",
@@ -583,7 +588,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 style={{
                   ...titleStyle(isSmall),
                   ...(typeof renderedTitle === "string"
-                    ? { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }
+                    ? {
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: noEllipsisTitle ? "clip" : "ellipsis",
+                        fontSize: noEllipsisTitle ? "clamp(14px, 3.6vw, var(--fs-h))" : undefined,
+                        letterSpacing: noEllipsisTitle ? "0.06em" : undefined,
+                      }
                     : { whiteSpace: "normal", overflow: "visible", textOverflow: "clip" }),
                 }}
               >
