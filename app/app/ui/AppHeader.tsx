@@ -541,42 +541,42 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   };
                   const ICON_SIZE = ICON_SIZE_PER_ROUTE[it.href] ?? ICON_SIZE_DEFAULT;
 
-                  return (
-                    <li key={it.href}>
-                      <button 
-                        onClick={() => hardNavigate(it.href)}
-                        onPointerDown={() => setPressedLeft(it.href)}
-                        onPointerUp={() => setPressedLeft((p) => (p === it.href ? null : p))}
-                        onPointerLeave={() => setPressedLeft((p) => (p === it.href ? null : p))}
-                        onMouseEnter={() => setHoverLeft(it.href)}
-                        onMouseLeave={() => setHoverLeft((h) => (h === it.href ? null : h))}
-                        style={{
-                          width: "100%",
-                          textAlign: "left",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                          padding: "10px 12px",
-                          borderRadius: 10,
-                          border: "1px solid var(--border)",
-	                          background: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--primary)" : "var(--card)",
-	                          color: active || hoverLeft === it.href || pressedLeft === it.href ? "#0c111b" : "var(--muted)",
-	                          fontWeight: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--fw-bold)" : "var(--fw-medium)",
+	                  return (
+	                    <li key={it.href}>
+	                      <button 
+	                        onClick={() => hardNavigate(it.href)}
+	                        onPointerDown={() => setPressedLeft(it.href)}
+	                        onPointerUp={() => setPressedLeft((p) => (p === it.href ? null : p))}
+	                        onPointerLeave={() => setPressedLeft((p) => (p === it.href ? null : p))}
+	                        onMouseEnter={() => setHoverLeft(it.href)}
+	                        onMouseLeave={() => setHoverLeft((h) => (h === it.href ? null : h))}
+	                        style={{
+	                          width: "100%",
+	                          textAlign: "left",
+	                          display: "flex",
+	                          alignItems: "center",
+	                          gap: 12,
+	                          padding: "8px 0",
+	                          borderRadius: 0,
+	                          border: "none",
+	                          background: "transparent",
+	                          color: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--primary)" : "var(--muted)",
+	                          fontWeight: "var(--fw-medium)",
 	                          position: "relative",
 	                          cursor: "pointer",
 	                          transform: pressedLeft === it.href ? "scale(0.98)" : (hoverLeft === it.href && !active ? "scale(1.02)" : undefined),
-	                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
+	                          transition: "transform .12s ease, color .15s ease",
 	                        }}
 	                      >
-                        <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
-                        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          {it.label}
-                          {isInbox && inboxCount > 0 && (
-                            <span style={inboxDotStyle}>{inboxCount > 99 ? "99+" : inboxCount}</span>
-                          )}
-                        </span>
-                      </button>
-                    </li>
+	                        <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
+	                        <span style={{ display: "flex", alignItems: "center", gap: 8, color: "currentColor" }}>
+	                          {it.label}
+	                          {isInbox && inboxCount > 0 && (
+	                            <span style={inboxDotStyle}>{inboxCount > 99 ? "99+" : inboxCount}</span>
+	                          )}
+	                        </span>
+	                      </button>
+	                    </li>
                   );
                 })}
               </ul>
@@ -664,45 +664,45 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   };
                   const ICON_SIZE = ICON_SIZE_PER_ROUTE[it.href] ?? ICON_SIZE_DEFAULT;
 
-                  return (
-                    <li key={it.href}>
-                      <button 
-                        onClick={() => {
-                          setOpenRight(false);
-                          hardNavigate(it.href);
-                        }}
-                        onPointerDown={() => setPressedRight(it.href)}
-                        onPointerUp={() => setPressedRight((p) => (p === it.href ? null : p))}
-                        onPointerLeave={() => setPressedRight((p) => (p === it.href ? null : p))}
-                        onMouseEnter={() => setHoverRight(it.href)}
-                        onMouseLeave={() => setHoverRight((h) => (h === it.href ? null : h))}
-                        style={{
-                          width: "100%",
-                          textAlign: "left",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                          padding: "10px 12px",
-                          borderRadius: 10,
-                          border: "1px solid var(--border)",
-	                          background: active || hoverRight === it.href || pressedRight === it.href ? "var(--primary)" : "var(--card)",
-	                          color: active || hoverRight === it.href || pressedRight === it.href ? "#0c111b" : "var(--muted)",
-	                          fontWeight: active || hoverRight === it.href || pressedRight === it.href ? "var(--fw-bold)" : "var(--fw-medium)",
+	                  return (
+	                    <li key={it.href}>
+	                      <button 
+	                        onClick={() => {
+	                          setOpenRight(false);
+	                          hardNavigate(it.href);
+	                        }}
+	                        onPointerDown={() => setPressedRight(it.href)}
+	                        onPointerUp={() => setPressedRight((p) => (p === it.href ? null : p))}
+	                        onPointerLeave={() => setPressedRight((p) => (p === it.href ? null : p))}
+	                        onMouseEnter={() => setHoverRight(it.href)}
+	                        onMouseLeave={() => setHoverRight((h) => (h === it.href ? null : h))}
+	                        style={{
+	                          width: "100%",
+	                          textAlign: "left",
+	                          display: "flex",
+	                          alignItems: "center",
+	                          gap: 12,
+	                          padding: "8px 0",
+	                          borderRadius: 0,
+	                          border: "none",
+	                          background: "transparent",
+	                          color: active || hoverRight === it.href || pressedRight === it.href ? "var(--primary)" : "var(--muted)",
+	                          fontWeight: "var(--fw-medium)",
 	                          position: "relative",
 	                          cursor: "pointer",
 	                          transform: pressedRight === it.href ? "scale(0.98)" : (hoverRight === it.href && !active ? "scale(1.02)" : undefined),
-	                          transition: "transform .12s ease, background-color .15s ease, color .15s ease, border-color .15s ease",
+	                          transition: "transform .12s ease, color .15s ease",
 	                        }}
 	                      >
-                        <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
-                        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          {it.label}
-                          {isInbox && inboxCount > 0 && (
-                            <span style={inboxDotStyle}>{inboxCount > 99 ? "99+" : inboxCount}</span>
-                          )}
-                        </span>
-                      </button>
-                    </li>
+	                        <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
+	                        <span style={{ display: "flex", alignItems: "center", gap: 8, color: "currentColor" }}>
+	                          {it.label}
+	                          {isInbox && inboxCount > 0 && (
+	                            <span style={inboxDotStyle}>{inboxCount > 99 ? "99+" : inboxCount}</span>
+	                          )}
+	                        </span>
+	                      </button>
+	                    </li>
                   );
                 })}
               </ul>
