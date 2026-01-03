@@ -239,7 +239,7 @@ useEffect(() => {
           }}
           aria-label="Open management"
         >
-	          <img src={theme==="light" ? "/more_forlight.png" : "/more_fordark.png"} alt="" width={44} height={44} style={{ display: "block", width: 44, height: 44, minWidth: 44, minHeight: 44, objectFit: "contain" }} />
+	          <img src={theme==="light" ? "/more_forlight.png" : "/more_fordark.png"} alt="" width={22} height={22} style={{ display: "block", width: 22, height: 22, minWidth: 22, minHeight: 22, objectFit: "contain" }} />
           <small style={{ fontSize: "var(--fs-s)", fontWeight: "var(--fw-medium)", letterSpacing: 0.2 }}>More</small>
         </button>
       </div>
