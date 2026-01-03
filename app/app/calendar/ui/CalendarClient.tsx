@@ -291,10 +291,11 @@ export default function CalendarClient({
   }, []);
 
   return (
-    <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
+    <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
       <PlanHeaderBadge title="Calendar" slot="header-right" />
+      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 12 }}>
       {/* Toolbar */}
-      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap' }}>
+      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap', marginBottom: 12 }}>
         {/* Pill selector with avatar on the left (no text label) */}
         <div
           className="modalCard Sb-cardglow"
@@ -500,8 +501,8 @@ export default function CalendarClient({
           </div>
         </div>
       )}
-      {showNoRoomsPopup && (
-        <div
+	      {showNoRoomsPopup && (
+	        <div
           role="dialog"
           aria-modal="true"
           onClick={() => setShowNoRoomsPopup(false)}
@@ -559,7 +560,8 @@ export default function CalendarClient({
             </div>
           </div>
         </div>
-      )}
+	      )}
+      </div>
     </div>
   );
 }

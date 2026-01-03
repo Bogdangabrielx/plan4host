@@ -508,28 +508,18 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
 
   /* ─── UI principal (scroll conținut, header/bottom fixe în AppShell) ─ */
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateRows: "auto 1fr",
-        gap: 12,
-        fontFamily:
-          "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
-        height: "calc(100dvh - var(--safe-top,0px) - var(--safe-bottom,0px))",
-      }}
-    >
+    <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
       <PlanHeaderBadge title="Cleaning Board" slot="header-right" />
-      <div
-        data-scroll
-        style={{
-          /* Avoid nested scrolling; AppShell's #app-main is the only scroller */
-          overflow: "visible",
-          paddingBottom:
-            "calc(var(--bottom-nav-h,56px) + 12px + var(--safe-bottom,0px))",
-        }}
-      >
+      <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
+        <div
+          data-scroll
+          style={{
+            /* Avoid nested scrolling; AppShell's #app-main is the only scroller */
+            overflow: "visible",
+          }}
+        >
         {/* Toolbar */}
-        <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
           {/* Pill card with property avatar (left) + selector (no text label) */}
           <div
             className="modalCard Sb-cardglow"
@@ -732,6 +722,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             onCleanedBy={onCleanedBy}
           />
         )}
+        </div>
       </div>
     </div>
   );
