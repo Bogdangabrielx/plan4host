@@ -357,7 +357,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         }}
       >
         {/* Left: menu + title */}
-        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
+	        <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 8 : 12, flexWrap: "wrap" }}>
           {!isMobileNav && (
           <button
             onClick={() => {
@@ -390,8 +390,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           </button>
           )}
 
-          <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
-            <h1 style={{ ...titleStyle(isSmall), whiteSpace: isSmall ? 'normal' : 'nowrap' }}>
+	          <div style={{ display: "flex", alignItems: "center", gap: isSmall ? 6 : 10, flexWrap: "wrap" }}>
+	            <h1 style={{ ...titleStyle(isSmall), whiteSpace: isSmall ? 'normal' : 'nowrap' }}>
               {useMemo(() => {
                 if (isSmall && typeof title === 'string') {
                   const t = title.trim();
@@ -400,11 +400,19 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   }
                 }
                 return title;
-              }, [title, isSmall])}
-            </h1>
-            {pill ? <span style={pillStyle(pill)}>{pill}</span> : null}
-          </div>
-        </div>
+	              }, [title, isSmall])}
+	            </h1>
+	            {(() => {
+	              if (!pill) return null;
+	              const txt = typeof pill === "string" ? pill.trim() : "";
+	              const hide =
+	                typeof pill === "string" &&
+	                /^(idle|syncing|saving|loading|synced)\b/i.test(txt);
+	              if (hide) return null;
+	              return <span style={pillStyle(pill)}>{pill}</span>;
+	            })()}
+	          </div>
+	        </div>
 
         {/* Right: actions + profile */}
         <div

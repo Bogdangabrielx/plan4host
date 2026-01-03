@@ -5,6 +5,7 @@ import AppHeader from "../ui/AppHeader";
 import BottomNav from "../ui/BottomNav";
 import PullToRefresh from "./PullToRefresh";
 import { HeaderProvider } from "./HeaderContext";
+import AppLoadingOverlay from "./AppLoadingOverlay";
 
 type Props = {
   title?: React.ReactNode;
@@ -644,6 +645,7 @@ export default function AppShell({ title, currentPath, children }: Props) {
 
         <AppHeader currentPath={currentPath} />
         <PullToRefresh />
+        <AppLoadingOverlay />
 
         {/* singurul container scrollabil */}
         <main
