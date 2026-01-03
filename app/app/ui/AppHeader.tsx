@@ -319,6 +319,14 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     );
   }
 
+  const pillEl = (() => {
+    if (!pill) return null;
+    const txt = typeof pill === "string" ? pill.trim() : "";
+    const hide = typeof pill === "string" && /^(idle|syncing|saving|loading|synced)\b/i.test(txt);
+    if (hide) return null;
+    return <span style={pillStyle(pill)}>{pill}</span>;
+  })();
+
   return (
     <>
       {/* Paint safe-area notch so it never looks transparent */}
@@ -346,7 +354,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           right: isSmall ? 0 : undefined,
           zIndex: 100,
           display: isMobileNav ? "grid" : "flex",
-          gridTemplateColumns: isMobileNav ? "1fr auto 1fr" : undefined,
+          gridTemplateColumns: isMobileNav ? "minmax(0,1fr) auto minmax(0,1fr)" : undefined,
           alignItems: "center",
           justifyContent: isMobileNav ? undefined : "space-between",
           gap: 6,
@@ -359,8 +367,19 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       >
         {isMobileNav ? (
           <>
-            {/* Left spacer (balances right column so title stays centered) */}
-            <div aria-hidden style={{ gridColumn: 1 }} />
+            {/* Left: status pill (keeps title centered) */}
+            <div
+              style={{
+                gridColumn: 1,
+                justifySelf: "start",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                minWidth: 0,
+              }}
+            >
+              {pillEl}
+            </div>
 
             {/* Center: title */}
             <div
@@ -370,7 +389,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: isSmall ? 6 : 10,
                 flexWrap: "wrap",
                 textAlign: "center",
               }}
@@ -397,14 +415,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   return title;
                 }, [title, isSmall])}
               </h1>
-              {(() => {
-                if (!pill) return null;
-                const txt = typeof pill === "string" ? pill.trim() : "";
-                const hide =
-                  typeof pill === "string" && /^(idle|syncing|saving|loading|synced)\b/i.test(txt);
-                if (hide) return null;
-                return <span style={pillStyle(pill)}>{pill}</span>;
-              })()}
             </div>
 
             {/* Right: actions */}
@@ -419,6 +429,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 width: "auto",
                 justifyContent: "flex-end",
                 marginTop: 0,
+                minWidth: 0,
               }}
             >
               {right}
@@ -474,14 +485,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                     return title;
                   }, [title, isSmall])}
                 </h1>
-                {(() => {
-                  if (!pill) return null;
-                  const txt = typeof pill === "string" ? pill.trim() : "";
-                  const hide =
-                    typeof pill === "string" && /^(idle|syncing|saving|loading|synced)\b/i.test(txt);
-                  if (hide) return null;
-                  return <span style={pillStyle(pill)}>{pill}</span>;
-                })()}
+                {pillEl}
               </div>
             </div>
 

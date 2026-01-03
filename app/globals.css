@@ -37,7 +37,7 @@ body {
 
 /* Strict typography tokens (default). Landing overrides these in home.module.css. */
 :root {
-  --fs-h: 20px;
+  --fs-h: 22px;
   --fs-b: 16px;
   --fs-s: 14px;
   --fw-medium: 500;
@@ -47,7 +47,7 @@ body {
   --lh-s: 1.35;
 }
 @media (max-width: 480px) {
-  :root { --fs-h: 18px; }
+  :root { --fs-h: 20px; }
 }
 
 /* Typography defaults */
