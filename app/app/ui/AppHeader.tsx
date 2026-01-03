@@ -362,7 +362,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           display: "grid",
           gridTemplateColumns: isMobileNav
             ? "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
-            : "auto minmax(0,1fr) auto",
+            : "minmax(0,1fr) minmax(0,520px) minmax(0,1fr)",
           alignItems: "center",
           gap: 6,
           paddingRight: isSmall ? 10 : 14,
@@ -408,21 +408,20 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   ...titleStyle(isSmall),
                   textAlign: "center",
                   maxWidth: "100%",
-                  ...(disableMobileTitleWrap
-                    ? {
-                        // No plan badge on these pages: allow full title (no ellipsis),
-                        // and don't apply the 2-line clamp.
-                        whiteSpace: "normal",
-                        wordBreak: "keep-all",
-                        overflowWrap: "normal",
-                        hyphens: "none",
-                        overflow: "visible",
-                        textOverflow: "clip",
-                        display: "block",
-                      }
-                    : {
-                        whiteSpace: "normal",
-                        // On very small screens: allow wrap at spaces, avoid breaking words.
+	                  ...(disableMobileTitleWrap
+	                    ? {
+	                        // No plan badge on these pages: keep title on one line,
+	                        // and make it slightly smaller so it stays visually centered.
+	                        whiteSpace: "nowrap",
+	                        fontSize: "clamp(14px, 3.6vw, 18px)",
+	                        letterSpacing: "0.05em",
+	                        overflow: "visible",
+	                        textOverflow: "clip",
+	                        display: "block",
+	                      }
+	                    : {
+	                        whiteSpace: "normal",
+	                        // On very small screens: allow wrap at spaces, avoid breaking words.
                         // Keep titles to max 2 lines by slightly shrinking and clamping.
                         fontSize: "clamp(16px, 4.2vw, var(--fs-h))",
                         letterSpacing: "0.06em",
@@ -471,15 +470,15 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               {right}
             </div>
           </>
-        ) : (
-          <>
-            {/* Left: navigation */}
-            <div style={{ gridColumn: 1, display: "flex", alignItems: "center", gap: isSmall ? 8 : 12 }}>
-              <button
-                onClick={() => {
-                  setOpen(true);
-                  setOpenRight(false);
-                }}
+	        ) : (
+	          <>
+	            {/* Left: navigation */}
+	            <div style={{ gridColumn: 1, justifySelf: "start", minWidth: 0, display: "flex", alignItems: "center", gap: isSmall ? 8 : 12 }}>
+	              <button
+	                onClick={() => {
+	                  setOpen(true);
+	                  setOpenRight(false);
+	                }}
                 aria-label="Open menu"
                 style={{
                   padding: isSmall ? 4 : 4,
@@ -506,15 +505,16 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               </button>
             </div>
 
-            {/* Center: title */}
-            <div
-              style={{
-                gridColumn: 2,
-                minWidth: 0,
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+	            {/* Center: title */}
+	            <div
+	              style={{
+	                gridColumn: 2,
+	                justifySelf: "center",
+	                minWidth: 0,
+	                width: "100%",
+	                display: "flex",
+	                alignItems: "center",
+	                justifyContent: "center",
                 gap: isSmall ? 6 : 10,
                 flexWrap: "wrap",
               }}
@@ -538,13 +538,14 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             </div>
 
             {/* Right: actions + management */}
-            <div
-              style={{
-                gridColumn: 3,
-                display: "flex",
-                alignItems: "center",
-                gap: isSmall ? 8 : 12,
-                flexWrap: "nowrap",
+	            <div
+	              style={{
+	                gridColumn: 3,
+	                justifySelf: "end",
+	                display: "flex",
+	                alignItems: "center",
+	                gap: isSmall ? 8 : 12,
+	                flexWrap: "nowrap",
                 width: "auto",
                 justifyContent: "flex-end",
                 marginTop: 0,
