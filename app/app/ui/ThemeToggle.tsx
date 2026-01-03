@@ -28,9 +28,35 @@ export default function ThemeToggle({ theme, onChange, size = "md" }: Props) {
 
   useEffect(() => {
     if (controlled) return;
-    const fromHtml = (document.documentElement.getAttribute("data-theme") as Theme | null);
-    const fromLS   = (localStorage.getItem("theme_v1") as Theme | null);
-    apply(fromHtml ?? fromLS ?? "dark", false);
+    const readTheme = (): Theme => {
+      const fromHtml = document.documentElement.getAttribute("data-theme") as Theme | null;
+      const fromLS = localStorage.getItem("theme_v1") as Theme | null;
+      return (fromHtml ?? fromLS ?? "dark") as Theme;
+    };
+
+    // Initial sync (also ensures html+storage are aligned like before)
+    apply(readTheme(), false);
+
+    function onThemeChange(e: Event) {
+      const detail = (e as CustomEvent).detail as { theme?: Theme } | undefined;
+      const next = detail?.theme ?? readTheme();
+      setInner(next);
+    }
+
+    window.addEventListener("themechange" as any, onThemeChange);
+
+    // Fallback: if some code updates data-theme without dispatching the event
+    const mo = new MutationObserver(() => {
+      try {
+        setInner(readTheme());
+      } catch {}
+    });
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+    return () => {
+      window.removeEventListener("themechange" as any, onThemeChange);
+      mo.disconnect();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [controlled]);
 
