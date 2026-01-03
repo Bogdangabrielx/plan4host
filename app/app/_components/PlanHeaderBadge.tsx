@@ -68,7 +68,9 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
       // Mută badge-ul sub titlu, în zona titlului din header
       const composed = (
         <span style={{ display: 'grid', gap: 8, justifyItems: 'center' }}>
-          <span>{title}</span>
+          <span style={{ maxWidth: "min(66vw, 520px)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {title}
+          </span>
           {badge}
         </span>
       );

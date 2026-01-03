@@ -192,7 +192,7 @@ useEffect(() => {
         contain: "layout paint",
       }}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
         {items.map((it) => {
           const active = path === it.href || path.startsWith(it.href + "/");
           return (
@@ -218,30 +218,6 @@ useEffect(() => {
             </a>
           );
         })}
-
-        <button
-          type="button"
-          onClick={() => { try { window.dispatchEvent(new CustomEvent("p4h:openManagement")); } catch {} }}
-          style={{
-            textDecoration: "none",
-            color: "var(--text)",
-            borderRadius: 10,
-            display: "grid",
-            justifyItems: "center",
-            alignItems: "start",
-            alignContent: "start",
-            background: "var(--panel)",
-            border: "var(--border)",
-            gap: 4,
-            padding: "6px 4px",
-            touchAction: "manipulation",
-            textAlign: 'center',
-          }}
-          aria-label="Open management"
-        >
-	          <img src={theme==="light" ? "/more_forlight.png" : "/more_fordark.png"} alt="" width={22} height={22} style={{ display: "block", width: 22, height: 22, minWidth: 22, minHeight: 22, objectFit: "contain" }} />
-          <small style={{ fontSize: "var(--fs-s)", fontWeight: "var(--fw-medium)", letterSpacing: 0.2 }}>More</small>
-        </button>
       </div>
 
       {/* desktop off */}

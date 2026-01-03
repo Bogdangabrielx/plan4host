@@ -359,8 +359,19 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     return <span style={pillStyle(pill)}>{pill}</span>;
   })();
 
-  const disableMobileTitleWrap =
-    !!currentPath && /^\/app\/(notifications|subscription)(\/|$)/.test(currentPath);
+  const renderedTitle = useMemo(() => {
+    if (isSmall && typeof title === "string") {
+      const t = title.trim();
+      if (/^automatic\s+welcome\s+message$/i.test(t)) {
+        return (
+          <>
+            <span>Automatic</span>Messages
+          </>
+        );
+      }
+    }
+    return title;
+  }, [title, isSmall]);
 
   const transparentMobileHeader = isMobileNav;
   const mobileHeaderRadius = 23;
@@ -452,51 +463,25 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   ...titleStyle(isSmall),
                   textAlign: "center",
                   maxWidth: "100%",
-	                  ...(disableMobileTitleWrap
-	                    ? {
-	                        // No plan badge on these pages: keep title on one line,
-	                        // and make it slightly smaller so it stays visually centered.
-	                        whiteSpace: "nowrap",
-	                        fontSize: "clamp(14px, 3.6vw, 18px)",
-	                        letterSpacing: "0.05em",
-	                        overflow: "visible",
-	                        textOverflow: "clip",
-	                        display: "block",
-	                      }
-	                    : {
-	                        whiteSpace: "normal",
-	                        // On very small screens: allow wrap at spaces, avoid breaking words.
-                        // Keep titles to max 2 lines by slightly shrinking and clamping.
-                        fontSize: "clamp(16px, 4.2vw, var(--fs-h))",
-                        letterSpacing: "0.06em",
-                        wordBreak: "keep-all",
-                        overflowWrap: "normal",
-                        hyphens: "none",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
+                  // Don't clip composed titles (e.g. title + plan badge under it)
+                  ...(typeof renderedTitle === "string"
+                    ? {
+                        whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
+                      }
+                    : {
+                        whiteSpace: "normal",
+                        overflow: "visible",
+                        textOverflow: "clip",
                       }),
                 }}
               >
-                {useMemo(() => {
-                  if (isSmall && typeof title === "string") {
-                    const t = title.trim();
-                    if (/^automatic\s+welcome\s+message$/i.test(t)) {
-                      return (
-                        <>
-                          <span>Automatic</span>Messages
-                        </>
-                      );
-                    }
-                  }
-                  return title;
-                }, [title, isSmall])}
+                {renderedTitle}
               </h1>
             </div>
 
-            {/* Right: actions */}
+            {/* Right: actions + management */}
             <div
               style={{
                 gridColumn: 3,
@@ -512,6 +497,37 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               }}
             >
               {right}
+              <button
+                type="button"
+                aria-label="Open management"
+                onClick={() => {
+                  setOpenRight(true);
+                  setOpen(false);
+                }}
+                style={{
+                  width: isSmall ? 34 : 38,
+                  height: isSmall ? 34 : 38,
+                  borderRadius: 999,
+                  border: "1px solid var(--border)",
+                  background: "var(--card)",
+                  display: "grid",
+                  placeItems: "center",
+                  cursor: "pointer",
+                }}
+              >
+                {mounted && !aboutFailed ? (
+                  <img
+                    src={theme === "light" ? "/more_forlight.png" : "/more_fordark.png"}
+                    alt=""
+                    width={isSmall ? 18 : 20}
+                    height={isSmall ? 18 : 20}
+                    style={{ display: "block", objectFit: "contain" }}
+                    onError={() => setAboutFailed(true)}
+                  />
+                ) : (
+                  <>⋯</>
+                )}
+              </button>
             </div>
           </>
 	        ) : (
@@ -563,20 +579,15 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 flexWrap: "wrap",
               }}
             >
-              <h1 style={{ ...titleStyle(isSmall), whiteSpace: isSmall ? "normal" : "nowrap" }}>
-                {useMemo(() => {
-                  if (isSmall && typeof title === "string") {
-                    const t = title.trim();
-                    if (/^automatic\s+welcome\s+message$/i.test(t)) {
-                      return (
-                        <>
-                          <span>Automatic</span>Messages
-                        </>
-                      );
-                    }
-                  }
-                  return title;
-                }, [title, isSmall])}
+              <h1
+                style={{
+                  ...titleStyle(isSmall),
+                  ...(typeof renderedTitle === "string"
+                    ? { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }
+                    : { whiteSpace: "normal", overflow: "visible", textOverflow: "clip" }),
+                }}
+              >
+                {renderedTitle}
               </h1>
               {pillEl}
             </div>
