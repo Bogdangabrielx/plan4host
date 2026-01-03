@@ -334,6 +334,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     !!currentPath && /^\/app\/(notifications|subscription)(\/|$)/.test(currentPath);
 
   const transparentMobileHeader = isMobileNav;
+  const mobileHeaderRadius = 23;
 
   return (
     <>
@@ -377,7 +378,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           background: transparentMobileHeader ? "transparent" : "var(--panel)",
           ...(transparentMobileHeader
             ? {
-                borderBottom: "none",
+                borderBottom: "1px solid var(--border)",
+                borderBottomLeftRadius: mobileHeaderRadius,
+                borderBottomRightRadius: mobileHeaderRadius,
+                overflow: "hidden",
                 backdropFilter: "blur(10px)",
                 WebkitBackdropFilter: "blur(10px)",
               }
