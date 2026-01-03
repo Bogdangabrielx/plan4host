@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useHeader } from "./HeaderContext";
 import styles from "./AppLoadingOverlay.module.css";
+import LoadingPill from "./LoadingPill";
 
 function getNodeText(node: ReactNode): string {
   if (node == null || typeof node === "boolean") return "";
@@ -32,13 +33,7 @@ export default function AppLoadingOverlay() {
 
   return createPortal(
     <div className={styles.overlay} role="status" aria-live="polite" aria-label={pillText || "Loading"}>
-      <div className={styles.pill} aria-hidden="true">
-        <div className={styles.dots}>
-          <span className={styles.dot} />
-          <span className={styles.dot} />
-          <span className={styles.dot} />
-        </div>
-      </div>
+      <LoadingPill />
       <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>
         {pillText || "Loading"}
       </span>

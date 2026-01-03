@@ -321,8 +321,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
   const pillEl = (() => {
     if (!pill) return null;
-    const txt = typeof pill === "string" ? pill.trim() : "";
-    const hide = typeof pill === "string" && /^(idle|syncing|saving|loading|synced)\b/i.test(txt);
+    if (typeof pill !== "string") return pill;
+    const txt = pill.trim();
+    const hide = /^(idle|syncing|saving|loading|synced)\b/i.test(txt);
     if (hide) return null;
     return <span style={pillStyle(pill)}>{pill}</span>;
   })();
