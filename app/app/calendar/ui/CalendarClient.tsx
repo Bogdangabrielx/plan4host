@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import RoomViewModal from "./RoomViewModal";
@@ -8,7 +8,6 @@ import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { usePersistentProperty } from "@/app/app/_components/PropertySelection";
-import LoadingPill from "@/app/app/_components/LoadingPill";
 
 // Robust dynamic import
 const DayModal: any = dynamic(
@@ -209,10 +208,10 @@ export default function CalendarClient({
 
   // Header pill (show Read-only when idle)
   useEffect(() => {
-    const label: ReactNode =
+    const label =
       loading === "Loading" ? "Syncing…" :
       loading === "Error"   ? "Error"    :
-      readOnly              ? <LoadingPill variant="compact" title="Read-only" /> :
+      readOnly              ? "Read-only" :
                               "Idle";
     setPill(label);
   }, [loading, readOnly, setPill]);

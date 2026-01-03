@@ -18,7 +18,7 @@ function getNodeText(node: ReactNode): string {
 }
 
 function isBusyPillText(text: string): boolean {
-  return /(sync|saving|loading)\b/i.test(text);
+  return /(sync|saving|loading|read-only)\b/i.test(text);
 }
 
 export default function AppLoadingOverlay() {
@@ -28,11 +28,17 @@ export default function AppLoadingOverlay() {
 
   const pillText = useMemo(() => getNodeText(pill), [pill]);
   const open = useMemo(() => isBusyPillText(pillText), [pillText]);
+  const isReadOnly = useMemo(() => /\bread-only\b/i.test(pillText), [pillText]);
 
   if (!mounted || !open) return null;
 
   return createPortal(
-    <div className={styles.overlay} role="status" aria-live="polite" aria-label={pillText || "Loading"}>
+    <div
+      className={`${styles.overlay} ${isReadOnly ? styles.overlayReadonly : ""}`}
+      role="status"
+      aria-live="polite"
+      aria-label={pillText || "Loading"}
+    >
       <LoadingPill />
       <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>
         {pillText || "Loading"}

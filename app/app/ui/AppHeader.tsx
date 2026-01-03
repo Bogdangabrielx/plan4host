@@ -323,7 +323,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     if (!pill) return null;
     if (typeof pill !== "string") return pill;
     const txt = pill.trim();
-    const hide = /^(idle|syncing|saving|loading|synced)\b/i.test(txt);
+    const hide = /^(idle|syncing|saving|loading|synced|read-only)\b/i.test(txt);
     if (hide) return null;
     return <span style={pillStyle(pill)}>{pill}</span>;
   })();
