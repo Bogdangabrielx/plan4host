@@ -211,10 +211,10 @@ export default function CalendarClient({
     const label =
       loading === "Loading" ? "Syncing…" :
       loading === "Error"   ? "Error"    :
-      readOnly              ? "Read-only" :
+      me === null           ? "Loading…" :
                               "Idle";
     setPill(label);
-  }, [loading, readOnly, setPill]);
+  }, [loading, me, setPill]);
 
   // Occupancy map
   const occupancyMap = useMemo(() => {
