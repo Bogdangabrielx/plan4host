@@ -360,6 +360,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           justifyContent: isMobileNav ? undefined : "space-between",
           gap: 6,
           paddingRight: isSmall ? 10 : 14,
+          paddingTop: isSmall ? 12 : 10,
           paddingBottom: isSmall ? 12 : 10,
           paddingLeft: isSmall ? 10 : 14,
           background: "var(--panel)",
