@@ -33,10 +33,7 @@ export default function AppLoadingOverlay() {
   return createPortal(
     <div className={styles.overlay} role="status" aria-live="polite" aria-label={pillText || "Loading"}>
       <div className={styles.pill} aria-hidden="true">
-        <div className={styles.track}>
-          <span className={styles.dot} />
-          <span className={styles.dot} />
-          <span className={styles.dot} />
+        <div className={styles.dots}>
           <span className={styles.dot} />
           <span className={styles.dot} />
           <span className={styles.dot} />
@@ -49,4 +46,3 @@ export default function AppLoadingOverlay() {
     document.body
   );
 }
-
