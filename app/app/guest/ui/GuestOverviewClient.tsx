@@ -1173,7 +1173,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
               <button
                 type="button"
-                className="sb-btn sb-btn--primary"
+                className="sb-btn"
                 onClick={() => {
                   if (!accessPopup || accessBusy) return;
                   const { formId, guestName } = accessPopup;
