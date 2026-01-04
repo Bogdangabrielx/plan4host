@@ -19,7 +19,7 @@ export default function CleaningTab({
     <section className="sb-card ps-cleaning" style={{ display: "grid", gap: 12, padding: 12 }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h3 style={{ margin: 0 }}>Cleaning tasks</h3>
-        <button onClick={onAdd} className="sb-btn sb-btn--primary">+ Add task</button>
+        <button onClick={onAdd} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">+ Add task</button>
       </header>
 
       {tasks.length === 0 && (

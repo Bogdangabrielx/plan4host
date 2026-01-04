@@ -57,7 +57,7 @@ export default function RoomDetailsTab({
               i
             </button>
           </div>
-          <button onClick={onAddCheck} className="sb-btn sb-btn--primary">+ Add</button>
+          <button onClick={onAddCheck} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">+ Add</button>
         </header>
         {showChecksInfo && (
           <div id="checks-info" className="sb-card" style={infoBox}>
@@ -127,7 +127,7 @@ export default function RoomDetailsTab({
               i
             </button>
           </div>
-          <button onClick={onAddText} className="sb-btn sb-btn--primary">+ Add</button>
+          <button onClick={onAddText} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">+ Add</button>
         </header>
         {showNotesInfo && (
           <div id="notes-info" className="sb-card" style={infoBox}>

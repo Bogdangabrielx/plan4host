@@ -118,7 +118,7 @@ export default function RoomsTab({
                       setNewType("");
                     }
                   }}
-                  className="sb-btn sb-btn--primary"
+                  className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                 >
                   Add
                 </button>
@@ -142,7 +142,7 @@ export default function RoomsTab({
       <section className="sb-card" style={{ padding: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
           <strong>Rooms</strong>
-          <button onClick={onAddRoom} className="sb-btn sb-btn--primary">Add room</button>
+          <button onClick={onAddRoom} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">Add room</button>
         </div>
 
         {roomsSorted.length === 0 ? (
