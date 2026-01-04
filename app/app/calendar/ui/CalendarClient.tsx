@@ -457,7 +457,7 @@ export default function CalendarClient({
               style={{
                 position: "sticky",
                 top: 0,
-                zIndex: 2,
+                zIndex: 6,
                 background: "var(--panel)",
                 borderBottom: "1px solid var(--border)",
                 padding: 12,
@@ -494,7 +494,7 @@ export default function CalendarClient({
                 </button>
               </div>
             </div>
-            <div style={{ padding: 16 }}>
+            <div style={{ padding: 16, position: "relative", zIndex: 1 }}>
             <YearView
               year={year}
               roomsCount={rooms.length}
