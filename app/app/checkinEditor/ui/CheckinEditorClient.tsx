@@ -751,16 +751,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       flexWrap: "wrap",
                     }}
                   >
-                    <button
-                      type="button"
-                      className="sb-btn"
-                      onClick={() => {
-                        setAiStatusPopupOpen(false);
-                        setAiStatusPhase("idle");
-                      }}
-                    >
-                      Close
-                    </button>
                     {aiStatusPhase === "success" && (
                       <button
                         type="button"
@@ -776,13 +766,25 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     {aiStatusPhase === "failed" && (
                       <button
                         type="button"
-                        className="sb-btn sb-btn--primary"
+                        className="sb-btn"
                         onClick={() => {
                           setAiStatusPopupOpen(false);
                           setAiStatusPhase("idle");
                         }}
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 999,
+                          padding: 0,
+                          display: "grid",
+                          placeItems: "center",
+                          border: "1px solid var(--primary)",
+                          background: "transparent",
+                          color: "var(--primary)",
+                          fontWeight: 800,
+                        }}
                       >
-                        Fill manually
+                        OK
                       </button>
                     )}
                   </div>
