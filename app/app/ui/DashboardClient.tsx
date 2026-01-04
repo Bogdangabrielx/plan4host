@@ -458,7 +458,7 @@ export default function DashboardClient({
             </select>
           </div>
 
-          <div>
+          <div style={{ ...FIELD_WRAPPER, marginTop: 6 }}>
             <button
               onClick={addProperty}
               className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
