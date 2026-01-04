@@ -881,34 +881,71 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           >
             <h3 style={{ marginTop: 0 }}>House Rules PDF</h3>
             {prop.regulation_pdf_url ? (
-              <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-                <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" className="sb-btn sb-btn--primary">Open</a>
-                <button className="sb-btn" onClick={triggerPdfUpload}>Replace PDF</button>
-                <button
-                  className="sb-btn sb-cardglow"
-                  type="button"
-                  onClick={() => {
-                    if (currentPlan !== "premium") {
-                      setAiPremiumPopupOpen(true);
-                      return;
-                    }
-                    openAiHouseRulesModalFromPdf();
-                  }}
-                  title="Read PDF text and prepare it as source for the guest AI assistant"
+              <div style={{ display: "grid", gap: isNarrow ? 10 : 8 }}>
+                <div
                   style={{
-                    background:
-                      "linear-gradient(135deg, #00d1ff, #7c3aed)",
-                    borderColor: "transparent",
-                    color: "#0c111b",
-                    fontWeight: 600,
+                    display: isNarrow ? "grid" : "flex",
+                    gap: 10,
+                    flexWrap: "wrap",
+                    alignItems: "center",
                   }}
                 >
-                  Read &amp; prepare text for AI
-                </button>
-                <Info text={PDF_INFO} />
-                <small style={{ color:'var(--muted)' }}>
-                  Uploaded {prop.regulation_pdf_uploaded_at ? new Date(prop.regulation_pdf_uploaded_at).toLocaleString() : ''}
-                </small>
+                  <a
+                    href={prop.regulation_pdf_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="sb-btn sb-btn--primary"
+                    style={isNarrow ? { width: "100%", justifyContent: "center" } : undefined}
+                  >
+                    Open
+                  </a>
+                  <button
+                    className="sb-btn"
+                    onClick={triggerPdfUpload}
+                    style={isNarrow ? { width: "100%", justifyContent: "center" } : undefined}
+                  >
+                    Replace PDF
+                  </button>
+                  <button
+                    className="sb-btn sb-cardglow"
+                    type="button"
+                    onClick={() => {
+                      if (currentPlan !== "premium") {
+                        setAiPremiumPopupOpen(true);
+                        return;
+                      }
+                      openAiHouseRulesModalFromPdf();
+                    }}
+                    title="Read PDF text and prepare it as source for the guest AI assistant"
+                    style={{
+                      background: "linear-gradient(135deg, #00d1ff, #7c3aed)",
+                      borderColor: "transparent",
+                      color: "#0c111b",
+                      fontWeight: 600,
+                      ...(isNarrow ? { width: "100%" } : null),
+                    }}
+                  >
+                    Read &amp; prepare text for AI
+                  </button>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    flexWrap: "wrap",
+                    justifyContent: isNarrow ? "space-between" : undefined,
+                  }}
+                >
+                  <Info text={PDF_INFO} />
+                  <small style={{ color: "var(--muted)" }}>
+                    Uploaded{" "}
+                    {prop.regulation_pdf_uploaded_at
+                      ? new Date(prop.regulation_pdf_uploaded_at).toLocaleString()
+                      : ""}
+                  </small>
+                </div>
               </div>
             ) : (
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
