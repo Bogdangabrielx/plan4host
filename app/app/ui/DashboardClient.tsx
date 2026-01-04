@@ -461,16 +461,8 @@ export default function DashboardClient({
           <div>
             <button
               onClick={addProperty}
-              style={{
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "1px solid var(--border)",
-                background: "var(--primary)",
-                color: "#0c111b",
-                fontSize: "var(--fs-s)",
-                fontWeight: "var(--fw-bold)",
-                cursor: "pointer",
-              }}
+              className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
+              style={{ width: "100%", minHeight: 44 }}
             >
               Save
             </button>
