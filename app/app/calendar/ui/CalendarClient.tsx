@@ -471,7 +471,7 @@ export default function CalendarClient({
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   type="button"
-                  className="sb-btn sb-btn--icon"
+                  className="sb-btn sb-cardglow sb-btn--icon"
                   aria-label="Previous year"
                   onClick={() => setYear((y) => y - 1)}
                 >
@@ -479,7 +479,7 @@ export default function CalendarClient({
                 </button>
                 <button
                   type="button"
-                  className="sb-btn sb-btn--icon"
+                  className="sb-btn sb-cardglow sb-btn--icon"
                   aria-label="Next year"
                   onClick={() => setYear((y) => y + 1)}
                 >
@@ -487,10 +487,11 @@ export default function CalendarClient({
                 </button>
                 <button
                   type="button"
-                  className="sb-btn sb-btn--ghost sb-btn--small"
+                  className="sb-btn sb-cardglow sb-btn--icon"
+                  aria-label="Close year overview"
                   onClick={() => setShowYear(false)}
                 >
-                  Close
+                  ✕
                 </button>
               </div>
             </div>
