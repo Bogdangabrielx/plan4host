@@ -578,7 +578,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           {/* GLOBAL: Sync Now — ALL */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             <button
-              className="sb-btn sb-btn--primary"
+              className="sb-btn sb-btn--primary sb-cardglow"
               style={{ opacity: (isPremium === false ? 0.95 : 1) * (activeCount === 0 || status === "Saving…" ? 0.6 : 1) }}
               onClick={syncAllNow}
               disabled={activeCount === 0 || status === "Saving…"}
