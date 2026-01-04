@@ -399,11 +399,13 @@ export default function EditFormBookingModal({
           <div style={{ display: "flex", gap: 8 }}>
             <button
               type="button"
-              className="sb-btn"
+              className="sb-btn sb-cardglow sb-btn--icon"
+              aria-label="Close"
+              title="Close"
               onClick={onClose}
-              style={{ minHeight: 44 }}
+              style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
             >
-              Close
+              ✕
             </button>
             <button
               type="button"

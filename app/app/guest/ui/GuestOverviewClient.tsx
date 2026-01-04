@@ -1097,7 +1097,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={{ width:'min(420px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <strong>QR code</strong>
-              <button  onClick={()=>setQrModal(null)} className="sb-btn sb-cardglow">Close</button>
+              <button
+                className="sb-btn sb-cardglow sb-btn--icon"
+                type="button"
+                aria-label="Close"
+                title="Close"
+                onClick={()=>setQrModal(null)}
+                style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+              >
+                ✕
+              </button>
             </div>
             <div style={{ display:'grid', gap:8, justifyItems:'center' }}>
               <QrWithLogo data={qrModal.url} size={240} radius={16} logoSrc="/p4h_logo_round_QR.png" logoAlt="Plan4Host" />
@@ -1709,7 +1718,17 @@ function EditFormBookingModal({
               Do you want to continue?
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-              <button className="sb-btn" onClick={()=>setConfirmOpen(false)} disabled={confirmBusy}>Close</button>
+              <button
+                className="sb-btn sb-cardglow sb-btn--icon"
+                type="button"
+                aria-label="Close"
+                title="Close"
+                onClick={()=>setConfirmOpen(false)}
+                disabled={confirmBusy}
+                style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+              >
+                ✕
+              </button>
               <button className="sb-btn sb-btn--primary" onClick={async ()=>{ setConfirmBusy(true); try { await performSave(); setConfirmOpen(false);} finally { setConfirmBusy(false);} }} disabled={confirmBusy}>
                 {confirmBusy ? 'Saving…' : 'Yes'}
               </button>
@@ -1734,7 +1753,17 @@ function EditFormBookingModal({
               Do you want to continue?
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-              <button className="sb-btn" onClick={()=>setCancelOpen(false)} disabled={cancelBusy}>Close</button>
+              <button
+                className="sb-btn sb-cardglow sb-btn--icon"
+                type="button"
+                aria-label="Close"
+                title="Close"
+                onClick={()=>setCancelOpen(false)}
+                disabled={cancelBusy}
+                style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+              >
+                ✕
+              </button>
               <button
                 className="sb-btn"
                 onClick={performCancelBooking}
@@ -1856,7 +1885,17 @@ function EditFormBookingModal({
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:8 }}>
           <strong>{confirmOnSave ? 'Modify booking' : 'Confirm booking'}</strong>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <button className="sb-btn" type="button" onClick={onClose} disabled={saving || deleting}>Close</button>
+            <button
+              className="sb-btn sb-cardglow sb-btn--icon"
+              type="button"
+              aria-label="Close"
+              title="Close"
+              onClick={onClose}
+              disabled={saving || deleting}
+              style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+            >
+              ✕
+            </button>
           </div>
         </div>
 
