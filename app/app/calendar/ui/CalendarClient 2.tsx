@@ -490,6 +490,7 @@ export default function CalendarClient({
                   className="sb-btn sb-cardglow sb-btn--icon"
                   aria-label="Close year overview"
                   onClick={() => setShowYear(false)}
+                  style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
                 >
                   ✕
                 </button>

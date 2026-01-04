@@ -256,7 +256,14 @@ export default function RoomViewModal({
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <button className="sb-btn sb-cardglow sb-btn--icon" aria-label="Prev month" onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}>◀</button>
             <button className="sb-btn  sb-cardglow sb-btn--icon" aria-label="Next month" onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}>▶</button>
-            <button className="sb-btn sb-cardglow sb-btn--icon" aria-label="Close room view" onClick={onClose}>✕</button>
+            <button
+              className="sb-btn sb-cardglow sb-btn--icon"
+              aria-label="Close room view"
+              onClick={onClose}
+              style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+            >
+              ✕
+            </button>
           </div>
         </div>
 
