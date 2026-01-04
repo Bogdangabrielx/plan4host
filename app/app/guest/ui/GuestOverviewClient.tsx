@@ -953,15 +953,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         {...useTap(() => openReservation(it, propertyId))}
                         disabled={!it.room_id || !roomById.has(String(it.room_id))}
                         aria-disabled={!it.room_id || !roomById.has(String(it.room_id))}
+                        className={`sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink`}
                         style={{
                           ...BTN_TOUCH_STYLE,
-                          borderRadius: 21,
-                          border: "1px solid var(--border)",
-                          background: it.room_id && roomById.has(String(it.room_id)) ? "var(--primary)" : "var(--card)",
-                          color: it.room_id && roomById.has(String(it.room_id)) ? "#0c111b" : "var(--text)",
-                          fontWeight: 600,
-                          cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
                           width: isSmall ? "100%" : undefined,
+                          opacity: it.room_id && roomById.has(String(it.room_id)) ? 1 : 0.6,
+                          cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
                         }}
                         title={it.room_id ? "Open reservation" : "No room assigned yet"}
                       >
