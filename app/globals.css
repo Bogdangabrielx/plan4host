@@ -287,9 +287,10 @@ textarea:focus-visible {
   color: #0c111b;
   font-weight: var(--fw-bold);
 }
+/* Make a primary button look like "Copy check-in link" (glass + solid primary border) */
 .sb-btn--p4h-copylink{
+  --sb-glow-border: var(--primary);
   color: var(--text);
-  border-color: var(--primary);
 }
 .sb-btn--ghost { background: transparent; }
 .sb-btn--icon { width: 44px; height: 44px; padding: 0; border-radius: 999px; }
@@ -375,7 +376,7 @@ textarea:focus-visible {
   --glass-sat: 1.25;
 
   position: relative;
-  border: 1px solid transparent; /* drawn by 3rd background layer */
+  border: 1px solid var(--sb-glow-border, transparent); /* allow solid border override for specific buttons */
   /* layered background: hotspot, inner glass gradient, gradient border */
   background:
     radial-gradient(140% 260% at 18% 0%, color-mix(in srgb, var(--bg) 20%, transparent), transparent 64%),
