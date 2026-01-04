@@ -43,6 +43,12 @@ const FIELD: React.CSSProperties = {
   fontFamily: "inherit",
 };
 
+const PRIMARY_ACTION_CLASS = "sb-btn sb-btn--primary sb-cardglow";
+const PRIMARY_ACTION_STYLE: React.CSSProperties = {
+  color: "var(--text)",
+  borderColor: "var(--primary)",
+};
+
 function Info({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement | null>(null);
@@ -894,8 +900,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     href={prop.regulation_pdf_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="sb-btn sb-btn--primary"
-                    style={isNarrow ? { width: "100%", justifyContent: "center" } : undefined}
+                    className={PRIMARY_ACTION_CLASS}
+                    style={{
+                      ...PRIMARY_ACTION_STYLE,
+                      ...(isNarrow ? { width: "100%", justifyContent: "center" } : null),
+                    }}
                   >
                     Open
                   </a>
@@ -1085,7 +1094,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     </div>
                   </div>
                   <div>
-                    <button type="submit" className="sb-btn sb-btn--primary" style={{ width:'100%' }}>Save</button>
+                    <button
+                      type="submit"
+                      className={PRIMARY_ACTION_CLASS}
+                      style={{ ...PRIMARY_ACTION_STYLE, width: "100%" }}
+                    >
+                      Save
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -1105,7 +1120,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     <Info text={'These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom.'} />
                   </div>
                   <div>
-                    <button type="submit" className="sb-btn sb-btn--primary">Save</button>
+                    <button type="submit" className={PRIMARY_ACTION_CLASS} style={PRIMARY_ACTION_STYLE}>
+                      Save
+                    </button>
                   </div>
                 </div>
               )}
