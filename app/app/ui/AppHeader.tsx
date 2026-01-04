@@ -381,6 +381,12 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const noEllipsisTitle =
     !!currentPath && /^\/app\/(notifications|subscription)(\/|$)/.test(currentPath);
 
+  const shrinkInsteadOfEllipsisTitle =
+    !!currentPath &&
+    /^\/app\/reservationMessage(\/|$)/.test(currentPath) &&
+    typeof renderedTitle === "string" &&
+    /automatic\s+messages/i.test(renderedTitle);
+
   const transparentMobileHeader = isMobileNav;
   const mobileHeaderRadius = 23;
 
@@ -476,9 +482,14 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                     ? {
                         whiteSpace: "nowrap",
                         overflow: "hidden",
-                        textOverflow: noEllipsisTitle ? "clip" : "ellipsis",
-                        fontSize: noEllipsisTitle ? "clamp(14px, 3.6vw, var(--fs-h))" : undefined,
-                        letterSpacing: noEllipsisTitle ? "0.06em" : undefined,
+                        textOverflow:
+                          noEllipsisTitle || shrinkInsteadOfEllipsisTitle ? "clip" : "ellipsis",
+                        fontSize: noEllipsisTitle
+                          ? "clamp(14px, 3.6vw, var(--fs-h))"
+                          : shrinkInsteadOfEllipsisTitle
+                            ? "clamp(13px, 3.3vw, 18px)"
+                            : undefined,
+                        letterSpacing: noEllipsisTitle || shrinkInsteadOfEllipsisTitle ? "0.06em" : undefined,
                       }
                     : {
                         whiteSpace: "normal",
@@ -596,9 +607,14 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                     ? {
                         whiteSpace: "nowrap",
                         overflow: "hidden",
-                        textOverflow: noEllipsisTitle ? "clip" : "ellipsis",
-                        fontSize: noEllipsisTitle ? "clamp(14px, 3.6vw, var(--fs-h))" : undefined,
-                        letterSpacing: noEllipsisTitle ? "0.06em" : undefined,
+                        textOverflow:
+                          noEllipsisTitle || shrinkInsteadOfEllipsisTitle ? "clip" : "ellipsis",
+                        fontSize: noEllipsisTitle
+                          ? "clamp(14px, 3.6vw, var(--fs-h))"
+                          : shrinkInsteadOfEllipsisTitle
+                            ? "clamp(13px, 3.3vw, 18px)"
+                            : undefined,
+                        letterSpacing: noEllipsisTitle || shrinkInsteadOfEllipsisTitle ? "0.06em" : undefined,
                       }
                     : { whiteSpace: "normal", overflow: "visible", textOverflow: "clip" }),
                 }}
