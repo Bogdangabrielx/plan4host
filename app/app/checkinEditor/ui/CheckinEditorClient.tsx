@@ -909,7 +909,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     Open
                   </a>
                   <button
-                    className="sb-btn"
+                    className="sb-btn sb-cardglow"
                     onClick={triggerPdfUpload}
                     style={isNarrow ? { width: "100%", justifyContent: "center" } : undefined}
                   >
