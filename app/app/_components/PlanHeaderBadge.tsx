@@ -30,6 +30,27 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
   const supabase = useMemo(() => createClient(), []);
   const { setTitle, setRight } = useHeader();
   const [plan, setPlan] = useState<Plan>(null);
+  const [isTiny, setIsTiny] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia?.("(max-width: 360px)");
+    if (!mq) return;
+    const update = () => setIsTiny(!!mq.matches);
+    update();
+    try {
+      mq.addEventListener("change", update);
+      return () => mq.removeEventListener("change", update);
+    } catch {
+      // Safari fallback
+      // @ts-ignore
+      mq.addListener(update);
+      return () => {
+        // @ts-ignore
+        mq.removeListener(update);
+      };
+    }
+  }, []);
 
   // Setează titlul la mount și când se schimbă titlul
   useEffect(() => {
@@ -76,7 +97,9 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
               overflow: "hidden",
               textOverflow: isAutomaticMessages ? "clip" : "ellipsis",
               // For long titles like "Automatic Messages", shrink instead of ellipsis.
-              fontSize: isAutomaticMessages ? "clamp(11px, 3.2vw, 15px)" : undefined,
+              fontSize: isAutomaticMessages
+                ? (isTiny ? "clamp(11px, 3.2vw, 15px)" : "clamp(13px, 3.6vw, 18px)")
+                : undefined,
               letterSpacing: isAutomaticMessages ? "0.06em" : undefined,
             }}
           >
@@ -87,7 +110,7 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
       );
       setTitle(composed);
     }
-  }, [badge, setRight, setTitle, slot, title]);
+  }, [badge, isTiny, setRight, setTitle, slot, title]);
 
   if (slot === "header-right" || slot === 'under-title') return null;
   if (!plan) return null;
