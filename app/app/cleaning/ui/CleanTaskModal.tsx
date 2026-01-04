@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
+import { useHeader } from "@/app/app/_components/HeaderContext";
 
 
 
@@ -37,9 +38,14 @@ export default function CleanTaskModal({
   onCleanedBy: (roomId: string, cleanDate: string, email: string | null) => void;
 }) {
   const supabase = useMemo(() => createClient(), []);
+  const { pill, setPill } = useHeader();
   const [saving, setSaving] = useState(false);
   const [local, setLocal] = useState<Record<string, boolean>>({});
   const locked = useMemo(() => tasks.length > 0 && tasks.every(t => !!progress?.[t.id]), [tasks, progress]);
+  const prevPillRef = useRef(pill);
+
+  const overlayMessageNode = (text: string) => <span data-p4h-overlay="message">{text}</span>;
+  const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
   // Actor email (for "Cleaned by <email>")
   const [actorEmail, setActorEmail] = useState<string | null>(null);
@@ -64,7 +70,9 @@ export default function CleanTaskModal({
     onLocalProgress(item.room.id, item.cleanDate, taskId, value);
 
     setSaving(true);
-    await supabase.from("cleaning_progress").upsert({
+    prevPillRef.current = pill;
+    setPill("Saving…");
+    const { error } = await supabase.from("cleaning_progress").upsert({
       property_id: propertyId,
       room_id: item.room.id,
       clean_date: item.cleanDate,
@@ -72,13 +80,18 @@ export default function CleanTaskModal({
       done: value
     });
     setSaving(false);
+    if (!error) {
+      setPill(overlayMessageNode("Saved"));
+      await wait(2000);
+    }
+    setPill(prevPillRef.current);
 
     // dacă toate sunt bifate -> auto "mark as cleaned"
     const allDone = tasks.length > 0 && tasks.every(t => (taskId === t.id ? value : !!local[t.id]));
     if (allDone) {
+      // Close the modal only after the "Saved" overlay message
       onComplete(item.room.id, item.cleanDate);
       onCleanedBy(item.room.id, item.cleanDate, actorEmail);
-      // Persist attribution server-side
       try {
         await fetch('/api/cleaning/mark', {
           method: 'POST',
@@ -92,17 +105,26 @@ export default function CleanTaskModal({
   async function markAllDone() {
     if (locked) return;
     setSaving(true);
+    prevPillRef.current = pill;
+    setPill("Saving…");
     // upsert pentru toate taskurile
     for (const t of tasks) {
-      await supabase.from("cleaning_progress").upsert({
+      const { error } = await supabase.from("cleaning_progress").upsert({
         property_id: propertyId,
         room_id: item.room.id,
         clean_date: item.cleanDate,
         task_id: t.id,
         done: true
       });
+      if (error) {
+        // Best-effort: stop early if something failed
+        break;
+      }
     }
     setSaving(false);
+    setPill(overlayMessageNode("Saved"));
+    await wait(2000);
+    setPill(prevPillRef.current);
     // update local & parent, apoi complete
     const updated: Record<string, boolean> = {};
     for (const t of tasks) updated[t.id] = true;
@@ -153,10 +175,18 @@ export default function CleanTaskModal({
       </small>
     </div>
 
-    {/* dreapta: buton închidere */}
-    <button onClick={onClose} aria-label="Close" className="sb-btn sb-btn--ghost sb-btn--small" style={{ justifySelf: "end", width: 44, height: 44, padding: 0, borderRadius: 999 }}>✕</button>
-  </div>
-</div>
+	    {/* dreapta: buton închidere */}
+	    <button
+	      onClick={onClose}
+	      aria-label="Close"
+	      title="Close"
+	      className="sb-btn sb-cardglow sb-btn--icon"
+	      style={{ justifySelf: "end", fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+	    >
+	      ✕
+	    </button>
+	  </div>
+	</div>
 
 
         {/* Body (scrolls independently) */}
@@ -187,13 +217,13 @@ export default function CleanTaskModal({
           borderTop: "1px solid var(--border)",
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10
         }}>
-          <small style={{ color: "var(--muted)" }}>{saving ? "Saving…" : locked ? "Cleaned" : "Synced"}</small>
-          <div style={{ display: "flex", gap: 8 }}>
-            {!locked && (
-              <button onClick={markAllDone} className="sb-btn sb-btn--primary">Mark room as cleaned</button>
-            )}
-          </div>
-        </div>
+	          <small style={{ color: "var(--muted)" }}>{saving ? "Saving…" : locked ? "Cleaned" : ""}</small>
+	          <div style={{ display: "flex", gap: 8 }}>
+	            {!locked && (
+	              <button onClick={markAllDone} className="sb-btn sb-btn--primary">Mark room as cleaned</button>
+	            )}
+	          </div>
+	        </div>
       </div>
       <style jsx>{`
         @media (max-width: 720px) {

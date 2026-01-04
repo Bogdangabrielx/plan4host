@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useHeader } from "../_components/HeaderContext";
 
 /* ---------------- Navigation model ---------------- */
@@ -28,6 +28,29 @@ type MeInfo = {
 /* ---------------- Typography helpers ---------------- */
 const TITLE_FAMILY =
   "'Switzer', ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Roboto, Helvetica, Arial, sans-serif";
+
+function getNodeText(node: ReactNode): string {
+  if (node == null || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(getNodeText).join("");
+  if (typeof node === "object" && "props" in (node as any)) {
+    const props = (node as any).props as { children?: ReactNode } | undefined;
+    return props?.children ? getNodeText(props.children) : "";
+  }
+  return "";
+}
+
+function hasOverlayMessage(node: ReactNode): boolean {
+  if (node == null || typeof node === "boolean") return false;
+  if (typeof node === "string" || typeof node === "number") return false;
+  if (Array.isArray(node)) return node.some(hasOverlayMessage);
+  if (typeof node === "object" && "props" in (node as any)) {
+    const props = (node as any).props as Record<string, unknown> | undefined;
+    if (props?.["data-p4h-overlay"] === "message") return true;
+    return props?.children ? hasOverlayMessage(props.children as ReactNode) : false;
+  }
+  return false;
+}
 
 function titleStyle(isSmall: boolean): React.CSSProperties {
   return {
@@ -357,10 +380,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
   const pillEl = (() => {
     if (!pill) return null;
-    if (typeof pill !== "string") return pill;
-    const txt = pill.trim();
-    const hide = /^(idle|syncing|saving|loading|synced|read-only)\b/i.test(txt);
+    if (hasOverlayMessage(pill)) return null; // overlay-only messages (e.g. "Saved")
+
+    const txt = getNodeText(pill).trim();
+    const hide =
+      /^(idle|synced|read-only)\b/i.test(txt) || /(sync(?:ing)?|sav(?:ing)?|load(?:ing)?)/i.test(txt);
     if (hide) return null;
+    if (typeof pill !== "string") return pill;
     return <span style={pillStyle(pill)}>{pill}</span>;
   })();
 
