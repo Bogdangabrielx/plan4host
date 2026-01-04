@@ -82,7 +82,7 @@ export default function CleanTaskModal({
     setSaving(false);
     if (!error) {
       setPill(overlayMessageNode("Saved"));
-      await wait(2000);
+      await wait(1000);
     }
     setPill(prevPillRef.current);
 
@@ -123,7 +123,7 @@ export default function CleanTaskModal({
     }
     setSaving(false);
     setPill(overlayMessageNode("Saved"));
-    await wait(2000);
+    await wait(1000);
     setPill(prevPillRef.current);
     // update local & parent, apoi complete
     const updated: Record<string, boolean> = {};
