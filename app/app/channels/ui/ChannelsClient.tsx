@@ -580,7 +580,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             <button
               className="sb-btn sb-btn--primary sb-cardglow"
               style={{
-                color: "var(--text)",
+                color: "var(--primary)",
                 borderColor: "var(--primary)",
                 opacity: (isPremium === false ? 0.95 : 1) * (activeCount === 0 || status === "Saving…" ? 0.6 : 1),
               }}
