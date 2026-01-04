@@ -114,7 +114,12 @@ export default function DashboardClient({
     setTitle("Dashboard");
   }, [setTitle]);
 
+  const pillLockRef = useRef(false);
+  const overlayMessageNode = (text: string) => <span data-p4h-overlay="message">{text}</span>;
+  const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
   useEffect(() => {
+    if (pillLockRef.current) return;
     setPill(status === "Saving…" ? "Saving…" : status === "Error" ? "Error" : status === "Synced" ? "Synced" : "Idle");
   }, [status, setPill]);
 
@@ -207,8 +212,12 @@ export default function DashboardClient({
       setList((refreshed ?? []) as Property[]);
       setName("");
       setCountry("");
-      setStatus("Synced");
-      setTimeout(() => setStatus("Idle"), 800);
+      // Use the same overlay UX as the rest of the app: dots while saving, then "Saved" briefly.
+      pillLockRef.current = true;
+      setPill(overlayMessageNode("Saved"));
+      await wait(1000);
+      pillLockRef.current = false;
+      setStatus("Idle");
     } catch (e) {
       console.error(e);
       setStatus('Error');

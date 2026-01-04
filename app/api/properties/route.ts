@@ -116,7 +116,10 @@ export async function POST(req: Request) {
         });
         const fromEmail = process.env.FROM_EMAIL || 'office@plan4host.com';
         const fromName  = process.env.FROM_NAME  || 'Plan4Host';
-        await transporter.sendMail({ from: `${fromName} <${fromEmail}>`, to: toEmail, subject, html });
+        // Best-effort: don't block the property creation response on SMTP latency.
+        void transporter
+          .sendMail({ from: `${fromName} <${fromEmail}>`, to: toEmail, subject, html })
+          .catch(() => {});
       }
     }
   } catch {
