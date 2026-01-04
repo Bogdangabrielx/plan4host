@@ -846,11 +846,24 @@ export default function CheckinClient() {
   const CARD: React.CSSProperties = useMemo(() => ({
     background: "var(--panel)",
     border: "1px solid var(--border)",
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: isSmall ? 14 : 16,
+    padding: isSmall ? 14 : 16,
     boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
     overflow: "hidden",
-  }), []);
+  }), [isSmall]);
+
+  const OUTER_WRAP: React.CSSProperties = useMemo(
+    () => ({
+      maxWidth: 860,
+      margin: isSmall ? "12px auto" : "24px auto",
+      padding: isSmall ? 12 : 16,
+      display: "grid",
+      gap: isSmall ? 12 : 16,
+      fontFamily:
+        "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
+    }),
+    [isSmall],
+  );
   const INPUT: React.CSSProperties = useMemo(() => ({
     width: "100%",
     boxSizing: "border-box",
@@ -1325,7 +1338,7 @@ export default function CheckinClient() {
   // 5) render
   if (!propertyId) {
     return (
-      <div style={{ maxWidth: 720, margin: "24px auto", padding: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+      <div style={{ ...OUTER_WRAP, maxWidth: 720 }}>
         <div style={CARD}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10 }}>
             <h1 style={{ marginTop: 0, marginBottom: 8 }}>{T('checkinTitle')}</h1>
@@ -1347,7 +1360,7 @@ export default function CheckinClient() {
   }
 
   return (
-    <div style={{ maxWidth: 860, margin: "24px auto", padding: 16, display: "grid", gap: 16, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
+    <div style={OUTER_WRAP}>
       {/* Light CSS for pulse animation */}
       <style dangerouslySetInnerHTML={{ __html: `@keyframes p4h-pulse{0%{opacity:.6}50%{opacity:1}100%{opacity:.6}}` }} />
       {/* Header */}
