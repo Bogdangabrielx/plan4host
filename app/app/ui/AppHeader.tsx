@@ -529,7 +529,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   width: isSmall ? 34 : 38,
                   height: isSmall ? 34 : 38,
                   borderRadius: 999,
-                  border: "1px solid var(--border)",
+                  border: "1px solid var(--primary)",
                   background: "var(--card)",
                   display: "grid",
                   placeItems: "center",
