@@ -563,7 +563,6 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           </select>
         </div>
         {isSmall && <div style={{ flexBasis: '100%', height: 8 }} />}
-        <span className="sb-badge">Timezone: {timezone || "—"}</span>
       </div>
 
       {/* Card cu acțiuni */}
