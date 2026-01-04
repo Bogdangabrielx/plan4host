@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import RoomDetailModal from "./RoomDetailModal";
+import { useHeader } from "@/app/app/_components/HeaderContext";
 
 export type Booking = {
   id: string;
@@ -53,6 +54,8 @@ export default function DayModal({
   onClose: () => void;
 }) {
   const supabase = createClient();
+  const { pill, setPill } = useHeader();
+  const prevPillRef = useRef(pill);
 
   // Local day navigation state (prev/next day)
   const [day, setDay] = useState<string>(dateStr);
@@ -67,6 +70,19 @@ export default function DayModal({
 
   const [openRoom, setOpenRoom] = useState<Room | null>(null);
   const [createRoom, setCreateRoom] = useState<Room | null>(null);
+
+  // While DayModal is loading, trigger the global glass loading overlay.
+  useEffect(() => {
+    if (loading === "loading") setPill("Loading…");
+    else setPill(prevPillRef.current);
+  }, [loading, setPill]);
+
+  // Restore header pill on unmount.
+  useEffect(() => {
+    return () => {
+      setPill(prevPillRef.current);
+    };
+  }, [setPill]);
 
   const refresh = useCallback(async () => {
     setLoading("loading");
