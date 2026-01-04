@@ -1170,7 +1170,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               If you allow access now, this booking will be treated as started and the guest will be able to see any
               access codes and instructions that you have scheduled in automatic messages.
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
               <button
                 type="button"
                 className="sb-btn"
