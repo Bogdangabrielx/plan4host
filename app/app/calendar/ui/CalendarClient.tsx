@@ -425,13 +425,16 @@ export default function CalendarClient({
           onClick={() => setShowYear(false)}
           style={{
             position: "fixed",
-            inset: 0,
+            top: "calc(var(--safe-top, 0px) + var(--p4h-fixed-header-h, 0px))",
+            left: 0,
+            right: 0,
+            bottom: 0,
             zIndex: 225,
             background: "rgba(0,0,0,0.5)",
             display: "grid",
             placeItems: "center",
-            paddingTop: "calc(var(--safe-top) + 12px)",
-            paddingBottom: "calc(var(--safe-bottom) + 12px)",
+            paddingTop: 12,
+            paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
             paddingLeft: 12,
             paddingRight: 12,
           }}
@@ -442,7 +445,8 @@ export default function CalendarClient({
             className="modalCard"
             style={{
               width: "min(1024px, calc(100vw - 32px))",
-              maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 32px))",
+              maxHeight:
+                "calc(100dvh - (var(--safe-top, 0px) + var(--p4h-fixed-header-h, 0px) + var(--safe-bottom, 0px) + 32px))",
               overflow: "auto",
               WebkitOverflowScrolling: "touch",
               overscrollBehavior: "contain",
@@ -471,18 +475,13 @@ export default function CalendarClient({
 
       {/* Room View overlay */}
       {showRoomView && (
-        <div role="dialog" aria-modal="true" onClick={() => setShowRoomView(false)}
-          style={{ position: "fixed", inset: 0, zIndex: 225, background: "var(--bg)", display: "grid", placeItems: "center" }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "min(1100px, 100%)" }}>
-            <RoomViewModal
-              propertyId={propertyId}
-              initialYear={year}
-              initialMonth={month}
-              canEdit={canEdit}
-              onClose={() => setShowRoomView(false)}
-            />
-          </div>
-        </div>
+        <RoomViewModal
+          propertyId={propertyId}
+          initialYear={year}
+          initialMonth={month}
+          canEdit={canEdit}
+          onClose={() => setShowRoomView(false)}
+        />
       )}
 
       {/* Popover date picker */}

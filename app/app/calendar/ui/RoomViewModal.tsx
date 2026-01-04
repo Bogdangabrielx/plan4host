@@ -220,13 +220,16 @@ export default function RoomViewModal({
       onClick={onClose}
       style={{
         position: "fixed",
-        inset: 0,
+        top: "calc(var(--safe-top, 0px) + var(--p4h-fixed-header-h, 0px))",
+        left: 0,
+        right: 0,
+        bottom: 0,
         zIndex: 240,
         background: "rgba(0,0,0,0.5)",
         display: "grid",
         placeItems: "center",
-        paddingTop: "calc(var(--safe-top) + 12px)",
-        paddingBottom: "calc(var(--safe-bottom) + 12px)",
+        paddingTop: 12,
+        paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
         paddingLeft: 12,
         paddingRight: 12,
       }}
@@ -236,7 +239,8 @@ export default function RoomViewModal({
         className="cal-smoobu sb-cardglow"
         style={{
           width: "min(1100px, 100%)",
-          maxHeight: "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 48px))",
+          maxHeight:
+            "calc(100dvh - (var(--safe-top, 0px) + var(--p4h-fixed-header-h, 0px) + var(--safe-bottom, 0px) + 48px))",
           overflow: "auto",
           WebkitOverflowScrolling: "touch" as any,
           overscrollBehavior: "contain" as any,

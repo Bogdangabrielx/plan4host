@@ -634,10 +634,12 @@ export default function AppShell({ title, currentPath, children }: Props) {
 	              :root{
 	                --nav-h: 88px;          /* fallback — e rescris dinamic de BottomNav */
 	                --scroll-extra: 40px;   /* spațiu suplimentar la finalul zonei scrollabile */
+	                --p4h-fixed-header-h: 0px;
 	              }
 	              input, textarea, select { font-size: 16px; }
 		              html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 		              @media (max-width: 480px) {
+		                :root { --p4h-fixed-header-h: var(--app-header-h, 64px); }
 		                #app-main { padding-top: calc(var(--app-header-h, 64px) + var(--safe-top, 0px)) !important; }
 		              }
 		            `,
