@@ -52,7 +52,7 @@ export default function AppLoadingOverlay() {
       {isBusy ? (
         <LoadingPill />
       ) : (
-        <div className={styles.pill} aria-hidden="true" title={pillText || "Done"}>
+        <div className={styles.pillMessage} aria-hidden="true" title={pillText || "Done"}>
           <span className={styles.messageText}>{pillText || "Done"}</span>
         </div>
       )}
