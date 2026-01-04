@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Booking as BaseBooking } from "./DayModal";
+import { useHeader } from "@/app/app/_components/HeaderContext";
 
 type Room = { id: string; name: string; property_id: string };
 type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null };
@@ -84,7 +85,11 @@ export default function RoomDetailModal({
   onChanged: () => Promise<void> | void;
 }) {
   const supabase = createClient();
+  const { pill, setPill } = useHeader();
   const PID = room.property_id || propertyId;
+
+  const overlayMessageNode = (text: string) => <span data-p4h-overlay="message">{text}</span>;
+  const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
   // Responsive
   const [isMobile, setIsMobile] = useState<boolean>(() =>
@@ -397,6 +402,9 @@ export default function RoomDetailModal({
       }
     }
 
+    const prevPill = pill;
+    setPill("Saving…");
+
     const ins = await supabase.from("bookings").insert({
       property_id: PID,
       room_id: room.id,
@@ -419,7 +427,9 @@ export default function RoomDetailModal({
           ? `Overlaps an existing confirmed reservation on Room ${room.name}.`
           : (msg || "Failed to create.")
       );
-      setSaving(false); return;
+      setSaving(false);
+      setPill(prevPill);
+      return;
     }
     const newId = ins.data.id as string;
 
@@ -446,7 +456,11 @@ export default function RoomDetailModal({
         body: JSON.stringify({ property_id: PID, title: 'New reservation', body: `From ${startDate} to ${endDate}` })
       });
     } catch { /* ignore push errors */ }
-    await onChanged(); onClose();
+    setPill(overlayMessageNode("Reservation confirmed"));
+    await wait(2000);
+    setPill(prevPill);
+    await onChanged();
+    onClose();
   }
 
   async function saveDetails() {
@@ -575,17 +589,24 @@ export default function RoomDetailModal({
   async function releaseBooking() {
     if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
     setSaving("releasing"); setStatus("Saving..."); setStatusHint("Releasing…");
+    const prevPill = pill;
+    setPill("Saving…");
 
     try {
       const res = await fetch(`/api/bookings/${active.id}`, { method: "DELETE" });
       const j = await res.json().catch(() => ({}));
       if (!res.ok || j?.error) throw new Error(j?.error || `HTTP ${res.status}`);
       setSaving(false); setStatus("Saved"); setStatusHint("Released.");
-      await onChanged(); onClose();
+      setPill(overlayMessageNode("Reservation released"));
+      await wait(2000);
+      setPill(prevPill);
+      await onChanged();
+      onClose();
     } catch (e: any) {
       setStatus("Error");
       setStatusHint(e?.message || "Failed to release.");
       setSaving(false);
+      setPill(prevPill);
     }
   }
 

@@ -17,6 +17,18 @@ function getNodeText(node: ReactNode): string {
   return "";
 }
 
+function hasOverlayMessage(node: ReactNode): boolean {
+  if (node == null || typeof node === "boolean") return false;
+  if (typeof node === "string" || typeof node === "number") return false;
+  if (Array.isArray(node)) return node.some(hasOverlayMessage);
+  if (typeof node === "object" && "props" in (node as any)) {
+    const props = (node as any).props as Record<string, unknown> | undefined;
+    if (props?.["data-p4h-overlay"] === "message") return true;
+    return props?.children ? hasOverlayMessage(props.children as ReactNode) : false;
+  }
+  return false;
+}
+
 function isBusyPillText(text: string): boolean {
   // Accept the common variants used across pages (Syncing…, Saving…, Loading…)
   // and avoid relying on a word boundary for "sync" (it won't match "syncing").
@@ -29,13 +41,21 @@ export default function AppLoadingOverlay() {
   useEffect(() => setMounted(true), []);
 
   const pillText = useMemo(() => getNodeText(pill), [pill]);
-  const open = useMemo(() => isBusyPillText(pillText), [pillText]);
+  const isBusy = useMemo(() => isBusyPillText(pillText), [pillText]);
+  const showMessage = useMemo(() => hasOverlayMessage(pill), [pill]);
+  const open = useMemo(() => isBusy || showMessage, [isBusy, showMessage]);
 
   if (!mounted || !open) return null;
 
   return createPortal(
     <div className={styles.overlay} role="status" aria-live="polite" aria-label={pillText || "Loading"}>
-      <LoadingPill />
+      {isBusy ? (
+        <LoadingPill />
+      ) : (
+        <div className={styles.pill} aria-hidden="true" title={pillText || "Done"}>
+          <span className={styles.messageText}>{pillText || "Done"}</span>
+        </div>
+      )}
       <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>
         {pillText || "Loading"}
       </span>
