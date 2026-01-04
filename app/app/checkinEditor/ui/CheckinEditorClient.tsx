@@ -49,6 +49,15 @@ const PRIMARY_ACTION_STYLE: React.CSSProperties = {
   borderColor: "var(--primary)",
 };
 
+const AI_ACTION_STYLE: React.CSSProperties = {
+  border: "1px solid transparent",
+  background:
+    "linear-gradient(135deg, #00d1ff, #7c3aed) padding-box, linear-gradient(135deg, rgba(0,209,255,0.65), rgba(124,58,237,0.65)) border-box",
+  backgroundClip: "padding-box, border-box",
+  color: "#0c111b",
+  fontWeight: 700,
+};
+
 function Info({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement | null>(null);
@@ -685,12 +694,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       className="sb-btn sb-btn--primary"
                       onClick={saveAiHouseRules}
                       disabled={aiModalLoading}
-                      style={{
-                        background: "linear-gradient(135deg, #00d1ff, #7c3aed)",
-                        borderColor: "transparent",
-                        color: "#0c111b",
-                        fontWeight: 600,
-                      }}
+                      style={AI_ACTION_STYLE}
                     >
                       {aiModalLoading ? "Saving…" : "Use for AI"}
                     </button>
@@ -916,7 +920,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     Replace PDF
                   </button>
                   <button
-                    className="sb-btn sb-cardglow"
+                    className="sb-btn"
                     type="button"
                     onClick={() => {
                       if (currentPlan !== "premium") {
@@ -927,10 +931,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     }}
                     title="Read PDF text and prepare it as source for the guest AI assistant"
                     style={{
-                      background: "linear-gradient(135deg, #00d1ff, #7c3aed)",
-                      borderColor: "transparent",
-                      color: "#0c111b",
-                      fontWeight: 600,
+                      ...AI_ACTION_STYLE,
                       ...(isNarrow ? { width: "100%" } : null),
                     }}
                   >
