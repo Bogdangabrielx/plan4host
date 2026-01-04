@@ -931,7 +931,16 @@ function Modal({ title, children, onClose }:{
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
           <h3 style={{ margin: 0 }}>{title}</h3>
-          <button className="sb-btn" onClick={onClose}>Close</button>
+          <button
+            className="sb-btn sb-cardglow sb-btn--icon"
+            type="button"
+            aria-label="Close"
+            title="Close"
+            onClick={onClose}
+            style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+          >
+            ✕
+          </button>
         </div>
         {children}
       </div>
@@ -953,7 +962,16 @@ function InnerModal({ title, children, onClose }:{
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
           <h3 style={{ margin: 0 }}>{title}</h3>
-          <button className="sb-btn" onClick={onClose}>Close</button>
+          <button
+            className="sb-btn sb-cardglow sb-btn--icon"
+            type="button"
+            aria-label="Close"
+            title="Close"
+            onClick={onClose}
+            style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+          >
+            ✕
+          </button>
         </div>
         {children}
       </div>
