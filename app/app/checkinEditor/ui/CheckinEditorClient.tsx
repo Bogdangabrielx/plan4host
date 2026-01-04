@@ -1154,10 +1154,27 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <small style={{ color:'var(--muted)' }}>
                     Uploaded {prop.presentation_image_uploaded_at ? new Date(prop.presentation_image_uploaded_at).toLocaleString() : ''}
                   </small>
-                  <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-                    <a href={prop.presentation_image_url} target="_blank" rel="noreferrer" className="sb-btn sb-cardglow">Preview</a>
-                    <button className="sb-btn sb-cardglow" onClick={triggerImageUpload} ref={imageUploadBtnRef}>Replace image</button>
-                    <Info text={IMAGE_INFO} />
+                  <div style={{ display: isNarrow ? 'grid' : 'flex', gap: 8, flexWrap: 'wrap', gridTemplateColumns: isNarrow ? 'repeat(2, minmax(0, 1fr))' : undefined, alignItems: 'center' }}>
+                    <a
+                      href={prop.presentation_image_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="sb-btn sb-cardglow"
+                      style={isNarrow ? { width: '100%' } : undefined}
+                    >
+                      Preview
+                    </a>
+                    <button
+                      className="sb-btn sb-cardglow"
+                      onClick={triggerImageUpload}
+                      ref={imageUploadBtnRef}
+                      style={isNarrow ? { width: '100%' } : undefined}
+                    >
+                      Replace image
+                    </button>
+                    <div style={isNarrow ? { gridColumn: '1 / -1' } : undefined}>
+                      <Info text={IMAGE_INFO} />
+                    </div>
                   </div>
                 </div>
               ) : (
