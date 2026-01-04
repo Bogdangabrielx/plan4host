@@ -1722,16 +1722,8 @@ function EditFormBookingModal({
               Do you want to continue?
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-              <button
-                className="sb-btn sb-cardglow sb-btn--icon"
-                type="button"
-                aria-label="Close"
-                title="Close"
-                onClick={()=>setConfirmOpen(false)}
-                disabled={confirmBusy}
-                style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
-              >
-                ✕
+              <button className="sb-btn" onClick={()=>setConfirmOpen(false)} disabled={confirmBusy}>
+                Close
               </button>
               <button className="sb-btn sb-btn--primary" onClick={async ()=>{ setConfirmBusy(true); try { await performSave(); setConfirmOpen(false);} finally { setConfirmBusy(false);} }} disabled={confirmBusy}>
                 {confirmBusy ? 'Saving…' : 'Yes'}
@@ -2150,7 +2142,7 @@ function EditFormBookingModal({
                 {(hasChanges || justSaved || saving) && (
                   <button
                     type="button"
-                    className="sb-btn sb-btn--primary"
+                    className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                     disabled={!valid() || saving || deleting || (!hasChanges && justSaved)}
                     onClick={onSave}
                     style={{ minHeight:44 }}
