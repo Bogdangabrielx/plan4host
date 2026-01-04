@@ -487,7 +487,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               Upgrade plan
             </a>
             <a
-              href="/app"
+              href="/app/dashboard"
               style={{
                 padding: "10px 14px",
                 borderRadius: 10,

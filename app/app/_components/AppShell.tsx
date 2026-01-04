@@ -102,11 +102,11 @@ function OnboardingChecklistFab() {
 
   const handleStepClick = (stepId: string) => {
     if (typeof window === "undefined") return;
-    let target = "/app";
+    let target = "/app/dashboard";
     let highlight: string | null = null;
     switch (stepId) {
       case "property":
-        target = "/app"; // Dashboard → New Property card
+        target = "/app/dashboard"; // Dashboard → New Property card
         break;
       case "room":
         target = "/app/propertySetup?tab=rooms";
@@ -130,7 +130,7 @@ function OnboardingChecklistFab() {
         target = "/app/channels";
         break;
       default:
-        target = "/app";
+        target = "/app/dashboard";
     }
     try {
       if (highlight) {

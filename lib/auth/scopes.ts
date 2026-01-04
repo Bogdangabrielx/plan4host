@@ -61,5 +61,5 @@ export async function ensureScope(scope: string, supa?: any, actorId?: string) {
       : '/app/propertySetup';
     redirect(path);
   }
-  redirect("/app");
+  redirect("/app/dashboard");
 }

@@ -52,7 +52,7 @@ export default function PropertySidebar({
       </ul>
 
       <div style={{ marginTop: 12, fontSize: 12, color: "var(--muted)" }}>
-        You can add properties from <a href="/app" style={{ color: "var(--primary)" }}>Dashboard</a>.
+        You can add properties from <a href="/app/dashboard" style={{ color: "var(--primary)" }}>Dashboard</a>.
       </div>
     </aside>
   );

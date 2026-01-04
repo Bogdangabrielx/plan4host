@@ -52,7 +52,7 @@ export default async function RoomsPage({ params }: { params: { propertyId: stri
         <h1>{property.name} — Rooms</h1>
         <p>Error loading rooms: {error.message}</p>
         <p>
-          <Link href="/app">← Back to properties</Link>
+          <Link href="/app/dashboard">← Back to properties</Link>
         </p>
       </main>
     );
@@ -64,7 +64,7 @@ export default async function RoomsPage({ params }: { params: { propertyId: stri
     <main style={{ padding: 24, display: "grid", gap: 16 }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1>{property.name} — Rooms</h1>
-        <Link href="/app" style={{ textDecoration: "underline" }}>
+        <Link href="/app/dashboard" style={{ textDecoration: "underline" }}>
           ← Back to properties
         </Link>
       </header>

@@ -5,7 +5,7 @@ import { useHeader } from "../_components/HeaderContext";
 
 /* ---------------- Navigation model ---------------- */
 const NAV_BASE = [
-  { href: "/app", label: "Dashboard", emoji: "🏠", scope: "dashboard" },
+  { href: "/app/dashboard", label: "Dashboard", emoji: "🏠", scope: "dashboard" },
   { href: "/app/calendar", label: "Calendar", emoji: "📅", scope: "calendar" },
   { href: "/app/propertySetup", label: "Setup", emoji: "⚙️", scope: "property_setup" },
   { href: "/app/checkinEditor", label: "Check‑in", emoji: "📝", scope: "checkin_editor" },
@@ -331,7 +331,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
   /* ----- Themed icons ----- */
   const THEME_ICONS: Record<string, { light: string; dark: string }> = {
-    "/app": { light: "/property_forlight.png", dark: "/property_fordark.png" },
+    "/app/dashboard": { light: "/property_forlight.png", dark: "/property_fordark.png" },
     "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
     "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
     "/app/propertySetup": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
@@ -675,13 +675,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
 	              }}
 	            >
-	              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0 }}>
-	                {navLeft.map((it) => {
-	                  const active = currentPath
-	                    ? it.href === "/app"
-	                      ? currentPath === "/app"
-	                      : currentPath === it.href || currentPath.startsWith(it.href + "/")
-	                    : false;
+		              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0 }}>
+		                {navLeft.map((it) => {
+		                  const active = currentPath
+		                    ? it.href === "/app/dashboard"
+		                      ? currentPath === "/app/dashboard"
+		                      : currentPath === it.href || currentPath.startsWith(it.href + "/")
+		                    : false;
 
 	                  const isInbox = it.href === "/app/guest";
 
@@ -799,13 +799,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
 	              }}
 	            >
-	              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0 }}>
-	                {navRight.map((it) => {
-	                  const active = currentPath
-	                    ? it.href === "/app"
-	                      ? currentPath === "/app"
-	                      : currentPath === it.href || currentPath.startsWith(it.href + "/")
-	                    : false;
+		              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0 }}>
+		                {navRight.map((it) => {
+		                  const active = currentPath
+		                    ? it.href === "/app/dashboard"
+		                      ? currentPath === "/app/dashboard"
+		                      : currentPath === it.href || currentPath.startsWith(it.href + "/")
+		                    : false;
 
 	                  const isInbox = it.href === "/app/guest";
 
