@@ -383,7 +383,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     if (hasOverlayMessage(pill)) return null; // overlay-only messages (e.g. "Saved")
 
     const txt = getNodeText(pill).trim();
-    const hide = /^(idle|synced|read-only|syncing|saving|loading)\b/i.test(txt);
+    const hide = /^(idle|synced|read-only|syncing|saving|loading|sending)\b/i.test(txt);
     if (hide) return null;
     if (typeof pill !== "string") return pill;
     return <span style={pillStyle(pill)}>{pill}</span>;

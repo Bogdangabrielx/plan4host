@@ -1279,6 +1279,7 @@ function EditFormBookingModal({
   confirmOnSave?: boolean;
 }) {
   const supabase = useMemo(() => createClient(), []);
+  const { pill, setPill } = useHeader();
   // Mark modal-open for PWA/iOS to disable global pull-to-refresh and background scroll
   useEffect(() => {
     try {
@@ -1318,6 +1319,9 @@ function EditFormBookingModal({
   const [sendMailBusy, setSendMailBusy] = useState<boolean>(false);
   const [sendMailError, setSendMailError] = useState<string | null>(null);
   const [emailBookingId, setEmailBookingId] = useState<string | null>(null);
+  const prevPillRef = useRef<React.ReactNode>(pill);
+  const overlayMessageNode = (text: string) => <span data-p4h-overlay="message">{text}</span>;
+  const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
   // Baseline valori pentru detectarea modificărilor
   const baselineSetRef = useRef(false);
   const baselineRef = useRef<{ sd: string; ed: string; roomId: string; roomTypeId: string }>({ sd: '', ed: '', roomId: '', roomTypeId: '' });
@@ -1848,6 +1852,8 @@ function EditFormBookingModal({
               <button className="sb-btn sb-btn--primary" disabled={sendMailBusy} onClick={async ()=>{
                 setSendMailBusy(true);
                 setSendMailError(null);
+                prevPillRef.current = pill;
+                setPill("Sending…");
                 try {
                   // Ensure public link exists
                   try {
@@ -1864,6 +1870,9 @@ function EditFormBookingModal({
                   });
                   const jj = await r.json().catch(()=>({}));
                   if (r.ok && (jj?.ok || jj?.sent)) {
+                    setPill(overlayMessageNode("Sent"));
+                    await wait(1000);
+                    setPill(prevPillRef.current);
                     setSendMailOpen(false);
                     try { onSaved(); } catch {}
                     try { onClose(); } catch {}
@@ -1873,6 +1882,7 @@ function EditFormBookingModal({
                 } catch (er:any) {
                   setSendMailError(er?.message || 'Failed to send.');
                 } finally {
+                  try { setPill(prevPillRef.current); } catch {}
                   setSendMailBusy(false);
                 }
               }}>{sendMailBusy ? 'Sending…' : 'Send'}</button>

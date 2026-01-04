@@ -32,7 +32,7 @@ function hasOverlayMessage(node: ReactNode): boolean {
 function isBusyPillText(text: string): boolean {
   // Accept the common variants used across pages (Syncing…, Saving…, Loading…).
   // Keep it strict so "Saved" (message state) is not treated as busy.
-  return /^(syncing|saving|loading)\b/i.test(text.trim());
+  return /^(syncing|saving|loading|sending)\b/i.test(text.trim());
 }
 
 export default function AppLoadingOverlay() {
