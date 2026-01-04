@@ -1154,8 +1154,16 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <strong>Allow guest access</strong>
-              <button type="button" onClick={() => setAccessPopup(null)} className="sb-btn sb-cardglow">
-                Close
+              <button
+                className="sb-btn sb-cardglow sb-btn--icon"
+                type="button"
+                aria-label="Close"
+                title="Close"
+                onClick={() => setAccessPopup(null)}
+                disabled={accessBusy}
+                style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+              >
+                ✕
               </button>
             </div>
             <div style={{ fontSize: 13, color: "var(--muted)" }}>
@@ -1163,16 +1171,6 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               access codes and instructions that you have scheduled in automatic messages.
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <button
-                type="button"
-                className="sb-btn"
-                onClick={() => {
-                  if (accessBusy) return;
-                  setAccessPopup(null);
-                }}
-              >
-                Not now
-              </button>
               <button
                 type="button"
                 className="sb-btn sb-btn--primary"
