@@ -733,14 +733,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     ? "Reading the file…"
                     : aiStatusPhase === "success"
                     ? "Text ready for your guest AI assistant"
-                    : "We couldn't automatically extract the text"}
+                    : "Add info for your guest AI assistant"}
                 </div>
                 <div style={{ fontSize: 13, color: "var(--muted)" }}>
                   {aiStatusPhase === "reading"
                     ? "Please wait while we prepare the text that the guest AI assistant will use."
                     : aiStatusPhase === "success"
                     ? "We prepared the text for your guest AI assistant. You can now review and edit it below, then save."
-                    : "We couldn't automatically extract the text from your House Rules PDF. Please paste or type below the rules you want the guest AI assistant to use."}
+                    : "Please type or paste the details you want the guest AI assistant to know (house rules, arrival instructions, amenities, recommendations, check‑out, etc.), then save."}
                 </div>
                 {aiStatusPhase !== "reading" && (
                   <div
