@@ -450,17 +450,51 @@ export default function CalendarClient({
               overflow: "auto",
               WebkitOverflowScrolling: "touch",
               overscrollBehavior: "contain",
-              padding: 16,
+              padding: 0,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div
+              style={{
+                position: "sticky",
+                top: 0,
+                zIndex: 2,
+                background: "var(--panel)",
+                borderBottom: "1px solid var(--border)",
+                padding: 12,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 10,
+              }}
+            >
               <strong style={{ fontSize: 16 }}>Pick a month — {year}</strong>
               <div style={{ display: "flex", gap: 8 }}>
-                <button type="button" className="sb-btn sb-btn--icon" aria-label="Previous year" onClick={() => setYear(y => y - 1)}>◀</button>
-                <button type="button" className="sb-btn sb-btn--icon" aria-label="Next year" onClick={() => setYear(y => y + 1)}>▶</button>
-                <button type="button" className="sb-btn sb-btn--ghost sb-btn--small" onClick={() => setShowYear(false)}>Close</button>
+                <button
+                  type="button"
+                  className="sb-btn sb-btn--icon"
+                  aria-label="Previous year"
+                  onClick={() => setYear((y) => y - 1)}
+                >
+                  ◀
+                </button>
+                <button
+                  type="button"
+                  className="sb-btn sb-btn--icon"
+                  aria-label="Next year"
+                  onClick={() => setYear((y) => y + 1)}
+                >
+                  ▶
+                </button>
+                <button
+                  type="button"
+                  className="sb-btn sb-btn--ghost sb-btn--small"
+                  onClick={() => setShowYear(false)}
+                >
+                  Close
+                </button>
               </div>
             </div>
+            <div style={{ padding: 16 }}>
             <YearView
               year={year}
               roomsCount={rooms.length}
@@ -469,6 +503,7 @@ export default function CalendarClient({
               onMonthTitleClick={(m) => { setMonth(m); setView("month"); setHighlightDate(null); setShowYear(false); }}
               onDayClick={(dateStr) => { goToMonthFor(dateStr); setShowYear(false); }}
             />
+            </div>
           </div>
         </div>
       )}
