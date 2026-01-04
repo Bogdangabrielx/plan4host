@@ -855,6 +855,25 @@ function Tabs({ settings, rooms, roomDetails, cleaning, highlightRooms, onTabSel
             width: 100%;
             border-radius: 29px !important;
             min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
+        @media (min-width: 1025px) {
+          .psTabsBar{
+            display: grid !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            width: 100%;
+          }
+          .psTabsBar .psTabBtn{
+            width: 100%;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
           }
         }
       `}</style>
