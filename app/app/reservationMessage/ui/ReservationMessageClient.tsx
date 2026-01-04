@@ -650,7 +650,7 @@ export default function ReservationMessageClient({
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 12 }}>
 
       {/* Property selector (pill with avatar) — align like Calendar (sb-toolbar) */}
-      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+	      <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
         <div
           className="modalCard Sb-cardglow"
           style={{
@@ -705,15 +705,17 @@ export default function ReservationMessageClient({
             {properties.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
           </select>
         </div>
-        {isSmall && <div style={{ flexBasis: '100%', height: 8 }} />}
-      </div>
+	        {isSmall && <div style={{ flexBasis: '100%', height: 8 }} />}
+	      </div>
 
-      {/* COLLAPSIBLE: Room Variables */}
-      <section className="sb-card" style={{ ...card, padding: 0, borderRadius:12, border:"none" }}>
-        <button className="sb-cardglow" 
-          onClick={() => setRvOpen((v) => !v)}
-          style={{
-            width: "100%", textAlign: "left", padding: 14, border: "none",
+	      <div className="rm-desktop-grid" data-active={activeId ? "1" : "0"}>
+	        <div className="rm-left">
+	      {/* COLLAPSIBLE: Room Variables */}
+	      <section className="sb-card" style={{ ...card, padding: 0, borderRadius:12, border:"none" }}>
+	        <button className="sb-cardglow" 
+	          onClick={() => setRvOpen((v) => !v)}
+	          style={{
+	            width: "100%", textAlign: "left", padding: 14, border: "none",
             background: "transparent", color: "var(--text)", display: "flex",
             justifyContent: "space-between", alignItems: "center", borderRadius: 12, cursor: "pointer",
           }}
@@ -871,10 +873,10 @@ export default function ReservationMessageClient({
             )}
           </div>
         )}
-      </section>
+	      </section>
 
-      {/* Templates header + grid */}
-      <section className="sb-card sb-cardglow" style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
+	      {/* Templates header + grid */}
+	      <section className="sb-card sb-cardglow" style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
           <strong>Templates</strong>
           <button className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink" onClick={onAddNew}>
@@ -937,17 +939,19 @@ export default function ReservationMessageClient({
             </div>
             <style dangerouslySetInnerHTML={{ __html: `.rm-token{ display:inline-block; padding: 2px 6px; border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 8px; font-weight: 800; font-size: 12px; margin: 0 2px; }` }} />
           </>
-        )}
-      </section>
+	        )}
+	      </section>
 
-      {/* Variables now live inside the Message composer for easier access while writing */}
+	        </div>
+	        <div className="rm-right">
+	      {/* Variables now live inside the Message composer for easier access while writing */}
 
-      {/* Message composer — only when a template is active */}
-      {activeId && (
-        <section className="sb-cardglow" style={card}>
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-            <h2 style={{ margin: 0 }}>Message</h2>
-            <div style={{ display:'inline-flex', gap:8 }}>
+	      {/* Message composer — only when a template is active */}
+	      {activeId && (
+	        <section className="sb-cardglow" style={card}>
+	          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+	            <h2 style={{ margin: 0 }}>Message</h2>
+	            <div style={{ display:'inline-flex', gap:8 }}>
               <button onClick={() => {
                 const cur = composeBlocks();
                 const next = { ...tpl, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) } as TemplateState;
@@ -1078,13 +1082,31 @@ export default function ReservationMessageClient({
             >
               Make active
             </button>
-          </div>
-        </section>
-      )}
+	          </div>
+	        </section>
+	      )}
 
-      {/* Popup: no automatic message template yet */}
-      {showNoTemplatePopup && (
-        <div
+	        </div>
+	      </div>
+	      <style
+	        dangerouslySetInnerHTML={{
+	          __html: `
+	            .rm-desktop-grid{ display:grid; gap:12px; }
+	            .rm-left{ display:grid; gap:12px; align-content:start; }
+	            .rm-right{ display:grid; gap:12px; align-content:start; min-width:0; }
+	            @media (min-width: 1025px){
+	              .rm-desktop-grid[data-active="1"]{
+	                grid-template-columns: 420px minmax(0, 1fr);
+	                align-items:start;
+	              }
+	            }
+	          `,
+	        }}
+	      />
+
+	      {/* Popup: no automatic message template yet */}
+	      {showNoTemplatePopup && (
+	        <div
           role="dialog"
           aria-modal="true"
           onClick={() => {
