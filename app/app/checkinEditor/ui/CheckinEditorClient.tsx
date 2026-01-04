@@ -581,8 +581,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 <button
                   className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                   style={{
-                    minWidth: isNarrow ? "100%" : 280,
-                    width: isNarrow ? "100%" : undefined,
+                    width: isNarrow ? "100%" : 220,
+                    maxWidth: isNarrow ? "100%" : 220,
                     justifyContent: "center",
                   }}
                   onClick={() => {
