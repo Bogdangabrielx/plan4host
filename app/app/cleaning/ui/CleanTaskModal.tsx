@@ -199,8 +199,8 @@ export default function CleanTaskModal({
                 const checked = !!local[t.id];
                 return (
                   <li key={t.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--panel)", borderRadius: 10, padding: 10 }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: locked ? "default" : "pointer", opacity: locked ? .7 : 1 }}>
-                      <input type="checkbox" checked={checked} disabled={locked} onChange={(e) => toggle(t.id, (e.target as HTMLInputElement).checked)} />
+                    <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: locked || saving ? "default" : "pointer", opacity: locked ? .7 : 1 }}>
+                      <input type="checkbox" checked={checked} disabled={locked || saving} onChange={(e) => toggle(t.id, (e.target as HTMLInputElement).checked)} />
                       <span>{t.label}</span>
                     </label>
                   </li>
@@ -217,10 +217,10 @@ export default function CleanTaskModal({
           borderTop: "1px solid var(--border)",
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10
         }}>
-	          <small style={{ color: "var(--muted)" }}>{saving ? "Saving…" : locked ? "Cleaned" : ""}</small>
+	          <span aria-hidden />
 	          <div style={{ display: "flex", gap: 8 }}>
 	            {!locked && (
-	              <button onClick={markAllDone} className="sb-btn sb-btn--primary">Mark room as cleaned</button>
+	              <button onClick={markAllDone} disabled={saving} className="sb-btn sb-btn--primary">Mark room as cleaned</button>
 	            )}
 	          </div>
 	        </div>
