@@ -576,23 +576,25 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           {/* Check-in Link */}
           <section className="sb-cardglow" style={card}>
             <h3 style={{ marginTop: 0 }}>Check-in Link</h3>
-            <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-              <button
-                className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
-                style={{
-                  minWidth: isNarrow ? "100%" : 280,
-                  width: isNarrow ? "100%" : undefined,
-                  justifyContent: "center",
-                }}
-                onClick={() => {
-                  if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
-                  openSourcePicker();
-                }}
-                title={prop?.regulation_pdf_url ? 'Copy check-in link' : 'Upload House Rules PDF first'}
-              >
-                {copied ? 'Copied!' : 'Copy check-in link'}
-              </button>
-              <small style={{ color:'var(--muted)' }}>You can choose a source before copying.</small>
+            <div style={{ display: "grid", gap: 8, alignItems: "start" }}>
+              <div>
+                <button
+                  className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
+                  style={{
+                    minWidth: isNarrow ? "100%" : 280,
+                    width: isNarrow ? "100%" : undefined,
+                    justifyContent: "center",
+                  }}
+                  onClick={() => {
+                    if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
+                    openSourcePicker();
+                  }}
+                  title={prop?.regulation_pdf_url ? 'Copy check-in link' : 'Upload House Rules PDF first'}
+                >
+                  {copied ? 'Copied!' : 'Copy check-in link'}
+                </button>
+              </div>
+              <small style={{ color: "var(--muted)" }}>You can choose a source before copying.</small>
             </div>
           </section>
 
@@ -639,10 +641,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <strong>Use House Rules for guest assistant</strong>
                   <button
                     type="button"
-                    className="sb-btn"
+                    className="sb-btn sb-cardglow sb-btn--icon"
                     onClick={() => setAiModalOpen(false)}
+                    aria-label="Close"
+                    title="Close"
+                    style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
                   >
-                    Close
+                    ✕
                   </button>
                 </div>
                 <div style={{ fontSize: 13, color: "var(--muted)" }}>
@@ -685,14 +690,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     {aiModalLoading ? "" : ""}
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button
-                      type="button"
-                      className="sb-btn"
-                      onClick={() => setAiModalOpen(false)}
-                      disabled={aiModalLoading}
-                    >
-                      Cancel
-                    </button>
                     <button
                       type="button"
                       className="sb-btn sb-btn--primary"
@@ -1210,7 +1207,16 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', padding:16 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <strong>Select Check‑in Source</strong>
-              <button className="sb-btn" onClick={()=>setShowSrc(false)}>Close</button>
+              <button
+                className="sb-btn sb-cardglow sb-btn--icon"
+                type="button"
+                aria-label="Close"
+                title="Close"
+                onClick={()=>setShowSrc(false)}
+                style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+              >
+                ✕
+              </button>
             </div>
             <div style={{ display:'grid', gap:8 }}>
               {providers.map(p => (
