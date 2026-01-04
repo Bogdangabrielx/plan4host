@@ -65,10 +65,21 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
     if (slot === 'under-title') {
       // Ensure header-right is cleared on pages that render badge under title
       setRight(null);
+      const isAutomaticMessages = /automatic\s+messages/i.test(title);
       // Mută badge-ul sub titlu, în zona titlului din header
       const composed = (
         <span style={{ display: 'grid', gap: 8, justifyItems: 'center' }}>
-          <span style={{ maxWidth: "min(66vw, 520px)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <span
+            style={{
+              maxWidth: "min(66vw, 520px)",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: isAutomaticMessages ? "clip" : "ellipsis",
+              // For long titles like "Automatic Messages", shrink instead of ellipsis.
+              fontSize: isAutomaticMessages ? "clamp(11px, 3.2vw, 15px)" : undefined,
+              letterSpacing: isAutomaticMessages ? "0.06em" : undefined,
+            }}
+          >
             {title}
           </span>
           {badge}
