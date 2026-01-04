@@ -91,6 +91,11 @@ export default function RoomDetailModal({
   const overlayMessageNode = (text: string) => <span data-p4h-overlay="message">{text}</span>;
   const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
+  // Bootstrapping state (prevents visible flip from available → reserved while data loads)
+  const [initializing, setInitializing] = useState<boolean>(true);
+  const initPillActiveRef = useRef(false);
+  const prevPillRef = useRef(pill);
+
   // Responsive
   const [isMobile, setIsMobile] = useState<boolean>(() =>
     typeof window !== "undefined" ? window.innerWidth < 720 : false
@@ -212,7 +217,9 @@ export default function RoomDetailModal({
 
   // Load everything
   useEffect(() => {
+    let cancelled = false;
     (async () => {
+      setInitializing(true);
       const [p1, p2, pText, pChecks] = await Promise.all([
         supabase
           .from("properties")
@@ -341,9 +348,41 @@ export default function RoomDetailModal({
       setShowGuest(false);
       setDetailsDirty(false);
       setStatus("Idle"); setStatusHint("");
+      if (!cancelled) setInitializing(false);
     })();
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [PID, room.id, dateStr, forceNew]);
+
+  // While bootstrapping, show the global glass loading overlay (via header pill).
+  useEffect(() => {
+    if (!initializing) return;
+    if (!initPillActiveRef.current) {
+      prevPillRef.current = pill;
+      initPillActiveRef.current = true;
+    }
+    setPill("Loading…");
+  }, [initializing, pill, setPill]);
+
+  // When bootstrapping completes, restore previous pill (and also on unmount if needed).
+  useEffect(() => {
+    if (initializing) return;
+    if (initPillActiveRef.current) {
+      setPill(prevPillRef.current);
+      initPillActiveRef.current = false;
+    }
+  }, [initializing, setPill]);
+
+  useEffect(() => {
+    return () => {
+      if (initPillActiveRef.current) {
+        setPill(prevPillRef.current);
+        initPillActiveRef.current = false;
+      }
+    };
+  }, [setPill]);
 
   // Others in same room
   const others = useMemo(() => bookings.filter((b) => b.room_id === room.id), [bookings, room.id]);
@@ -1322,7 +1361,7 @@ export default function RoomDetailModal({
           {/* Actions */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 6 }}>
             {!active && on && (
-              <button onClick={saveCreated} style={primaryBtn} disabled={saving !== false}>
+              <button onClick={saveCreated} style={primaryBtn} disabled={initializing || saving !== false}>
                 Confirm reservation
               </button>
             )}
@@ -1330,13 +1369,13 @@ export default function RoomDetailModal({
             {active && (
               <>
                 {anyDetailsDirty && (
-                  <button onClick={saveDetails} style={baseBtn} disabled={saving !== false && saving !== "updating"}>
+                  <button onClick={saveDetails} style={baseBtn} disabled={initializing || (saving !== false && saving !== "updating")}>
                     Save details
                   </button>
                 )}
 
                 {on && timesDirty && (
-                  <button onClick={saveTimes} style={baseBtn} disabled={saving !== false && saving !== "times"} title="Save updated dates & times">
+                  <button onClick={saveTimes} style={baseBtn} disabled={initializing || (saving !== false && saving !== "times")} title="Save updated dates & times">
                     Save dates & times
                   </button>
                 )}
@@ -1344,7 +1383,7 @@ export default function RoomDetailModal({
                 {/* Extend until — removed from UI by request */}
 
                 {!on && active && (
-                  <button onClick={() => setReleaseConfirmOpen(true)} style={dangerBtn} disabled={saving !== false && saving !== "releasing"}>
+                  <button onClick={() => setReleaseConfirmOpen(true)} style={dangerBtn} disabled={initializing || (saving !== false && saving !== "releasing")}>
                     Confirm release
                   </button>
                 )}
