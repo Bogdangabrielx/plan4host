@@ -30,9 +30,9 @@ function hasOverlayMessage(node: ReactNode): boolean {
 }
 
 function isBusyPillText(text: string): boolean {
-  // Accept the common variants used across pages (Syncing…, Saving…, Loading…)
-  // and avoid relying on a word boundary for "sync" (it won't match "syncing").
-  return /(sync(?:ing)?|sav(?:ing)?|load(?:ing)?)/i.test(text);
+  // Accept the common variants used across pages (Syncing…, Saving…, Loading…).
+  // Keep it strict so "Saved" (message state) is not treated as busy.
+  return /^(syncing|saving|loading)\b/i.test(text.trim());
 }
 
 export default function AppLoadingOverlay() {
