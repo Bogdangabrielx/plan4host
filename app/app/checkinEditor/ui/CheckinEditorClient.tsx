@@ -579,7 +579,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
               <button
                 className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
-                style={{ minWidth: 340 }}
+                style={{
+                  minWidth: isNarrow ? "100%" : 280,
+                  width: isNarrow ? "100%" : undefined,
+                  justifyContent: "center",
+                }}
                 onClick={() => {
                   if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
                   openSourcePicker();
@@ -894,10 +898,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               <div style={{ display: "grid", gap: isNarrow ? 10 : 8 }}>
                 <div
                   style={{
-                    display: isNarrow ? "grid" : "flex",
+                    display: "grid",
                     gap: 10,
-                    flexWrap: "wrap",
                     alignItems: "center",
+                    gridTemplateColumns: isNarrow ? "1fr" : "repeat(auto-fit, minmax(180px, 220px))",
+                    justifyContent: "start",
                   }}
                 >
                   <a
@@ -907,7 +912,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     className={PRIMARY_ACTION_CLASS}
                     style={{
                       ...PRIMARY_ACTION_STYLE,
-                      ...(isNarrow ? { width: "100%", justifyContent: "center" } : null),
+                      width: "100%",
+                      justifyContent: "center",
                     }}
                   >
                     Open
@@ -915,7 +921,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <button
                     className="sb-btn sb-cardglow"
                     onClick={triggerPdfUpload}
-                    style={isNarrow ? { width: "100%", justifyContent: "center" } : undefined}
+                    style={{ width: "100%", justifyContent: "center" }}
                   >
                     Replace PDF
                   </button>
@@ -932,7 +938,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     title="Read PDF text and prepare it as source for the guest AI assistant"
                     style={{
                       ...AI_ACTION_STYLE,
-                      ...(isNarrow ? { width: "100%" } : null),
+                      width: "100%",
                     }}
                   >
                     Read &amp; prepare text for AI
@@ -1155,13 +1161,21 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <small style={{ color:'var(--muted)' }}>
                     Uploaded {prop.presentation_image_uploaded_at ? new Date(prop.presentation_image_uploaded_at).toLocaleString() : ''}
                   </small>
-                  <div style={{ display: isNarrow ? 'grid' : 'flex', gap: 8, flexWrap: 'wrap', gridTemplateColumns: isNarrow ? 'repeat(2, minmax(0, 1fr))' : undefined, alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: 10,
+                      alignItems: "center",
+                      gridTemplateColumns: isNarrow ? "repeat(2, minmax(0, 1fr))" : "repeat(2, minmax(180px, 220px))",
+                      justifyContent: "start",
+                    }}
+                  >
                     <a
                       href={prop.presentation_image_url}
                       target="_blank"
                       rel="noreferrer"
                       className="sb-btn sb-cardglow"
-                      style={isNarrow ? { width: '100%' } : undefined}
+                      style={{ width: "100%", justifyContent: "center" }}
                     >
                       Preview
                     </a>
@@ -1169,13 +1183,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       className="sb-btn sb-cardglow"
                       onClick={triggerImageUpload}
                       ref={imageUploadBtnRef}
-                      style={isNarrow ? { width: '100%' } : undefined}
+                      style={{ width: "100%", justifyContent: "center" }}
                     >
                       Replace image
                     </button>
-                    <div style={isNarrow ? { gridColumn: '1 / -1' } : undefined}>
-                      <Info text={IMAGE_INFO} />
-                    </div>
+                  </div>
+                  <div>
+                    <Info text={IMAGE_INFO} />
                   </div>
                 </div>
               ) : (
