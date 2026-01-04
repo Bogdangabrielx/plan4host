@@ -1849,7 +1849,10 @@ function EditFormBookingModal({
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
               <button className="sb-btn" onClick={()=>{ if (sendMailBusy) return; setSendMailOpen(false); try { onSaved(); } catch {} try { onClose(); } catch {} }} disabled={sendMailBusy}>Skip this time</button>
-              <button className="sb-btn sb-btn--primary" disabled={sendMailBusy} onClick={async ()=>{
+              <button
+                className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
+                disabled={sendMailBusy}
+                onClick={async ()=>{
                 setSendMailBusy(true);
                 setSendMailError(null);
                 prevPillRef.current = pill;
@@ -1885,7 +1888,10 @@ function EditFormBookingModal({
                   try { setPill(prevPillRef.current); } catch {}
                   setSendMailBusy(false);
                 }
-              }}>{sendMailBusy ? 'Sending…' : 'Send'}</button>
+              }}
+              >
+                {sendMailBusy ? 'Sending…' : 'Send'}
+              </button>
             </div>
           </div>
         </div>
