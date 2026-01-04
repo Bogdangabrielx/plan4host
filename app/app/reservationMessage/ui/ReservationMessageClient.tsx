@@ -594,7 +594,6 @@ export default function ReservationMessageClient({
   const card: React.CSSProperties = { background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 };
   const input: React.CSSProperties = { padding: 10, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, width: "100%", boxSizing: "border-box", fontFamily: "inherit" };
   const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 700, cursor: "pointer" };
-  const btnPri: React.CSSProperties = { ...btn, background: "var(--primary)", color: "var(--text)", border: "1px solid var(--border)" };
 
   useEffect(() => {
     const pillLabel =
@@ -789,7 +788,7 @@ export default function ReservationMessageClient({
                     ))}
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                       <button
-                        style={btnPri}
+                        className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                         onClick={saveValuesForRoom}
                         disabled={!isAdmin || !propertyId || !selectedRoomId || varDefs.length === 0}
                       >
@@ -818,7 +817,11 @@ export default function ReservationMessageClient({
                       disabled={!isAdmin}
                       onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createDefinition(); } }}
                     />
-                    <button style={btnPri} onClick={createDefinition} disabled={!isAdmin || creatingVar || !newVarName.trim()}>
+                    <button
+                      className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
+                      onClick={createDefinition}
+                      disabled={!isAdmin || creatingVar || !newVarName.trim()}
+                    >
                       {creatingVar ? "Adding…" : "Add"}
                     </button>
                   </div>
@@ -874,7 +877,9 @@ export default function ReservationMessageClient({
       <section className="sb-card sb-cardglow" style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
           <strong>Templates</strong>
-          <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Add template</button>
+          <button className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink" onClick={onAddNew}>
+            Add template
+          </button>
         </div>
         {loadingList ? (
           <div style={{ color: "var(--muted)" }}>Loading…</div>
@@ -882,7 +887,9 @@ export default function ReservationMessageClient({
           <div className="sb-card" style={{ padding: 16, textAlign: "center" }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>No templates yet</div>
             <div style={{ color: "var(--muted)", marginBottom: 10 }}>Create your first template for this property.</div>
-            <button className="sb-btn sb-btn--primary" onClick={onAddNew}>Create your first template</button>
+            <button className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink" onClick={onAddNew}>
+              Create your first template
+            </button>
           </div>
         ) : (
           <>
@@ -1165,7 +1172,7 @@ export default function ReservationMessageClient({
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
               <button
                 type="button"
-                className="sb-btn sb-btn--primary"
+                className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                 onClick={() => {
                   setShowNoTemplatePopup(false);
                   setShowRoomVarsHint(true);
@@ -1252,7 +1259,7 @@ export default function ReservationMessageClient({
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
               <button
                 type="button"
-                className="sb-btn sb-btn--primary"
+                className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                 onClick={() => {
                   setShowRoomVarsHint(false);
                   setRvOpen(true);
@@ -1307,7 +1314,13 @@ function AddVarInline({ onAdd, disabled }: { onAdd: (name: string) => void; disa
         style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)" }}
         disabled={!!disabled}
       />
-      <button onClick={submit} disabled={!!disabled} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--primary)", color: "#0c111b", fontWeight: 700 }}>Add</button>
+      <button
+        onClick={submit}
+        disabled={!!disabled}
+        className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
+      >
+        Add
+      </button>
     </span>
   );
 }
