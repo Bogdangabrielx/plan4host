@@ -624,25 +624,25 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               gap: 10,
             }}
           >
-            <div style={{ display: "grid", gap: 6 }}>
-              <p style={{ margin: 0, fontSize: 13, color: "var(--text)" }}>
-                Sync iCal calendars from OTAs to avoid overbooking.
-              </p>
-              <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
-                You can import calendars from:
-              </p>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
-              {[
-                { label: "Airbnb", src: "/airbnb.png" },
+	            <div style={{ display: "grid", gap: 6 }}>
+	              <p style={{ margin: 0, fontSize: 13, color: "var(--text)" }}>
+	                Sync iCal calendars from other platforms to avoid overbooking.
+	              </p>
+	              <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
+	                You can import calendars from Airbnb, Booking, Trivago… and many more (any platform that provides an iCal/ICS link).
+	              </p>
+	            </div>
+	            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+	              {[
+	                { label: "Airbnb", src: "/airbnb.png" },
                 { label: "Booking.com", src: "/booking.png" },
                 { label: "Trivago", src: "/trivago.png" },
                 { label: "Expedia", src: "/expedia.png" },
-                { label: "lastminute.com", src: "/lastminute.png" },
-                { label: "Travelminit", src: "/travelminit.png" },
-              ].map((l) => (
-                <span
-                  key={l.src}
+	                { label: "lastminute.com", src: "/lastminute.png" },
+	                { label: "Travelminit", src: "/travelminit.png" },
+	              ].map((l) => (
+	                <span
+	                  key={l.src}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -660,13 +660,28 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     height={18}
                     style={{ width: 18, height: 18, objectFit: "contain" }}
                   />
-                  <span style={{ fontSize: 12, color: "var(--text)", fontWeight: 700 }}>{l.label}</span>
-                </span>
-              ))}
-            </div>
-            <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
-              Add an iCal link for each room (or room type), then enable “Sync now”.
-            </p>
+	                  <span style={{ fontSize: 12, color: "var(--text)", fontWeight: 700 }}>{l.label}</span>
+	                </span>
+	              ))}
+	              <span
+	                style={{
+	                  display: "inline-flex",
+	                  alignItems: "center",
+	                  padding: "6px 10px",
+	                  borderRadius: 999,
+	                  border: "1px dashed var(--border)",
+	                  background: "transparent",
+	                  color: "var(--muted)",
+	                  fontSize: 12,
+	                  fontWeight: 700,
+	                }}
+	              >
+	                …many more
+	              </span>
+	            </div>
+	            <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
+	              Add an iCal link for each room (or room type), then enable “Sync now”.
+	            </p>
           </div>
         )}
 
