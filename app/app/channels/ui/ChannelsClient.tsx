@@ -124,6 +124,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [manageTypeId, setManageTypeId] = useState<string | null>(null);
   const [manageRoomId, setManageRoomId] = useState<string | null>(null);
   const [roomImportInfo, setRoomImportInfo] = useState<boolean>(false);
+  const [calendarInfoOpen, setCalendarInfoOpen] = useState<boolean>(false);
+  const calendarInfoTouchedRef = useRef<boolean>(false);
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
       let el = e.target as HTMLElement | null;
@@ -313,6 +315,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     setManageTypeId(null);
     setManageRoomId(null);
     setShowRoomImportModal(false);
+    calendarInfoTouchedRef.current = false;
+    setCalendarInfoOpen(false);
     // clear lists to avoid showing stale items while loading
     setRooms([]);
     setTypes([]);
@@ -494,6 +498,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     setPill(pillLabel);
   }, [pillLabel, setPill]);
 
+  useEffect(() => {
+    if (!propertyReady) return;
+    if (status !== "Idle") return;
+    if (calendarInfoTouchedRef.current) return;
+    if (activeCount !== 0) return;
+    setCalendarInfoOpen(true);
+  }, [activeCount, propertyReady, status]);
+
   return (
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
       <PlanHeaderBadge title="Sync Calendars" slot="under-title" />
@@ -567,11 +579,95 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
       {/* Card cu acțiuni */}
       <section className="sb-cardglow" style={{ padding: 16, marginTop: 0, borderRadius: 16 }}>
-        <h3 style={{ marginTop: 0 }}>Calendar Integrations</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <h3 style={{ margin: 0 }}>Calendar Integrations</h3>
+          <button
+            className="sb-btn sb-cardglow sb-btn--icon"
+            type="button"
+            aria-label={calendarInfoOpen ? "Hide info" : "Show info"}
+            aria-expanded={calendarInfoOpen}
+            title={calendarInfoOpen ? "Hide info" : "Show info"}
+            onClick={() => {
+              calendarInfoTouchedRef.current = true;
+              setCalendarInfoOpen(v => !v);
+            }}
+            style={{
+              width: 30,
+              height: 30,
+              padding: 0,
+              borderRadius: 999,
+              fontSize: 14,
+              fontWeight: 900,
+              lineHeight: 1,
+              borderColor: calendarInfoOpen ? "var(--primary)" : undefined,
+            }}
+          >
+            i
+          </button>
+        </div>
         {!timezone && (
           <p style={{ fontSize:8, color: "var(--danger)", marginTop: 0 }}>
             Set Country (timezone) in Dashboard to produce valid .ics files.
           </p>
+        )}
+
+        {calendarInfoOpen && (
+          <div
+            className="sb-card"
+            style={{
+              marginTop: 12,
+              padding: 12,
+              borderRadius: 14,
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <div style={{ display: "grid", gap: 6 }}>
+              <p style={{ margin: 0, fontSize: 13, color: "var(--text)" }}>
+                Sync iCal calendars from OTAs to avoid overbooking.
+              </p>
+              <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
+                You can import calendars from:
+              </p>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+              {[
+                { label: "Airbnb", src: "/airbnb.png" },
+                { label: "Booking.com", src: "/booking.png" },
+                { label: "Trivago", src: "/trivago.png" },
+                { label: "Expedia", src: "/expedia.png" },
+                { label: "lastminute.com", src: "/lastminute.png" },
+                { label: "Travelminit", src: "/travelminit.png" },
+              ].map((l) => (
+                <span
+                  key={l.src}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    border: "1px solid var(--border)",
+                    background: "var(--card)",
+                  }}
+                >
+                  <img
+                    src={l.src}
+                    alt={l.label}
+                    width={18}
+                    height={18}
+                    style={{ width: 18, height: 18, objectFit: "contain" }}
+                  />
+                  <span style={{ fontSize: 12, color: "var(--text)", fontWeight: 700 }}>{l.label}</span>
+                </span>
+              ))}
+            </div>
+            <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
+              Add an iCal link for each room (or room type), then enable “Sync now”.
+            </p>
+          </div>
         )}
 
         <div style={{ display: "grid", gap: 12 }}>
