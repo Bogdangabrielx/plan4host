@@ -1278,11 +1278,11 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className={styles.heroVisual} aria-label="Calendar preview">
-          <img
-            src="/Landing_Mockups2.png"
-            alt="Plan4Host app mockups"
-            className={styles.focusable}
+	        <div className={styles.heroVisual} aria-label="Calendar preview" data-p4h-reveal>
+	          <img
+	            src="/Landing_Mockups2.png"
+	            alt="Plan4Host app mockups"
+	            className={styles.focusable}
           />
         </div>
       </section>

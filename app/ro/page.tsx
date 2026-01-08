@@ -1101,7 +1101,7 @@ export default function HomePageRO() {
             </CtaLink>
           </div>
         </div>
-        <div className={styles.heroVisual} aria-label="Calendar preview">
+        <div className={styles.heroVisual} aria-label="Calendar preview" data-p4h-reveal>
           <img
             src="/Landing_Mockups2.png"
             alt="Mockup-uri aplicația Plan4Host"
