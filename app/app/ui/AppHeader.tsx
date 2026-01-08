@@ -348,7 +348,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	    "/app/dashboard": { light: "/svg_dashboard.svg", dark: "/svg_dashboard.svg" },
 	    "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
 	    "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
-	    "/app/propertySetup": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
+	    "/app/propertySetup": { light: "/svg_setup.svg", dark: "/svg_setup.svg" },
 	    "/app/checkinEditor": { light: "/checkin_editor_forlight.png", dark: "/checkin_editor_fordark.png" },
 	    "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
 	    "/app/notifications": { light: "/svg_notifications.svg", dark: "/svg_notifications.svg" },
