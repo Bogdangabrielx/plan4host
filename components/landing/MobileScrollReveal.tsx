@@ -24,36 +24,50 @@ export default function MobileScrollReveal() {
     for (let i = 0; i < targets.length; i++) {
       const el = targets[i]!;
       el.style.setProperty("--reveal-delay", `${Math.min(i * 60, 240)}ms`);
-      const rect = el.getBoundingClientRect();
-      const inView =
-        rect.top < window.innerHeight * 0.92 && rect.bottom > window.innerHeight * 0.08;
-      if (inView) el.dataset.revealIn = "1";
     }
 
     root.dataset.p4hLandingReveal = "1";
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          const el = entry.target as HTMLElement;
-          if (entry.isIntersecting) {
-            el.dataset.revealIn = "1";
-          } else {
-            delete el.dataset.revealIn;
-          }
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const vh = window.innerHeight || 1;
+      const triggerY = Math.round(vh * 0.85); // fixed point in viewport (85%)
+      for (const el of targets) {
+        const rect = el.getBoundingClientRect();
+        const out = rect.bottom < -16 || rect.top > vh + 16;
+        if (out) {
+          delete el.dataset.revealIn;
+          continue;
         }
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -12% 0px" }
-    );
+        if (rect.top <= triggerY) el.dataset.revealIn = "1";
+        else delete el.dataset.revealIn;
+      }
+    };
 
-    for (const el of targets) io.observe(el);
+    const schedule = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(update);
+    };
+
+    // Initial paint
+    update();
+
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    window.addEventListener("orientationchange", schedule);
 
     return () => {
-      try {
-        io.disconnect();
-      } catch {
-        // ignore
+      if (raf) {
+        try {
+          window.cancelAnimationFrame(raf);
+        } catch {
+          // ignore
+        }
       }
+      window.removeEventListener("scroll", schedule as any);
+      window.removeEventListener("resize", schedule as any);
+      window.removeEventListener("orientationchange", schedule as any);
       delete root.dataset.p4hLandingReveal;
     };
   }, []);
