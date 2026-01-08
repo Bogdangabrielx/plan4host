@@ -349,7 +349,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	    "/app/channels": { light: "/svg_channels.svg", dark: "/svg_channels.svg" },
 	    "/app/cleaning": { light: "/svg_cleaning.svg", dark: "/svg_cleaning.svg" },
 	    "/app/propertySetup": { light: "/svg_setup.svg", dark: "/svg_setup.svg" },
-	    "/app/checkinEditor": { light: "/checkin_editor_forlight.png", dark: "/checkin_editor_fordark.png" },
+	    "/app/checkinEditor": { light: "/svg_checkin.svg", dark: "/svg_checkin.svg" },
 	    "/app/calendar": { light: "/svg_calendar.svg", dark: "/svg_calendar.svg" },
 	    "/app/notifications": { light: "/svg_notifications.svg", dark: "/svg_notifications.svg" },
 	    "/app/team": { light: "/svg_team.svg", dark: "/svg_team.svg" },
