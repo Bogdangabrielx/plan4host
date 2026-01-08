@@ -35,19 +35,18 @@ export default function MobileScrollReveal() {
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
           const el = entry.target as HTMLElement;
-          el.dataset.revealIn = "1";
-          io.unobserve(el);
+          if (entry.isIntersecting) {
+            el.dataset.revealIn = "1";
+          } else {
+            delete el.dataset.revealIn;
+          }
         }
       },
       { threshold: 0.12, rootMargin: "0px 0px -12% 0px" }
     );
 
-    for (const el of targets) {
-      if (el.dataset.revealIn === "1") continue;
-      io.observe(el);
-    }
+    for (const el of targets) io.observe(el);
 
     return () => {
       try {
@@ -61,4 +60,3 @@ export default function MobileScrollReveal() {
 
   return null;
 }
-
