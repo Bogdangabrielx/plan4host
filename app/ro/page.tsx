@@ -7,6 +7,7 @@ import Image from "next/image";
 import styles from "../home.module.css";
 import { createPortal } from "react-dom";
 import AutoOpenOnLanding from "@/components/consent/AutoOpenOnLanding";
+import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 
 // Copiem componentele ușoare din landing (CTA + Cookie consent + Carousel)
 
@@ -916,7 +917,8 @@ export default function HomePageRO() {
         ['--landing-nav-h' as any]: `${navHeight}px`,
       }}
     >
-      <AutoOpenOnLanding delay={150} />
+	      <AutoOpenOnLanding delay={150} />
+	      <MobileScrollReveal />
 
       {/* Bară safe-area iOS */}
       <div aria-hidden style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 'var(--safe-top)', background: 'var(--bg)', zIndex: 3, pointerEvents: 'none' }} />
@@ -1136,19 +1138,20 @@ export default function HomePageRO() {
 	        </div>
 	      )}
 
-      {/* Impact (statistici timp/valoare înainte de Funcții) */}
-	      <section
-	        id="insights"
-	        aria-labelledby="insights-title"
-	        className={styles.features}
-	        style={{ paddingTop: 0, paddingBottom: 0 }}
-	      >
+	      {/* Impact (statistici timp/valoare înainte de Funcții) */}
+		      <section
+		        id="insights"
+		        aria-labelledby="insights-title"
+		        className={styles.features}
+		        data-p4h-reveal
+		        style={{ paddingTop: 0, paddingBottom: 0 }}
+		      >
         <h2 id="insights-title">Impact</h2>
         <TimeSavingsStripRo />
       </section>
 
-      {/* Despre */}
-      <section id="about" className={styles.about} aria-labelledby="about-title">
+	      {/* Despre */}
+	      <section id="about" className={styles.about} aria-labelledby="about-title" data-p4h-reveal>
         <h2 id="about-title">Despre</h2>
         <div className={styles.aboutGrid}>
           <div className={styles.aboutVisual} aria-label="Previzualizare sincronizare calendare">
@@ -1170,8 +1173,8 @@ export default function HomePageRO() {
 	        </div>
 	      </section>
 
-      {/* Funcții */}
-      <section id="features" className={styles.features} aria-labelledby="features-title">
+	      {/* Funcții */}
+	      <section id="features" className={styles.features} aria-labelledby="features-title" data-p4h-reveal>
         <h2 id="features-title">Funcții</h2>
         <div
           className="sb-cardglow"
@@ -1235,7 +1238,7 @@ export default function HomePageRO() {
       </section>
 
       {/* Recenzii */}
-      <section id="recenzii" className={styles.reviews} aria-labelledby="reviews-title">
+      <section id="recenzii" className={styles.reviews} aria-labelledby="reviews-title" data-p4h-reveal>
         <h2 id="reviews-title">Ce spun utilizatorii noștri</h2>
         <div className={styles.reviewsBody}>
           <div
@@ -1282,7 +1285,7 @@ export default function HomePageRO() {
       </section>
 
       {/* Prețuri */}
-      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
+      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title" data-p4h-reveal>
         <h2 id="pricing-title">Prețuri</h2>
         <div className={styles.pricingGrid}>
           <div className={`sb-cardglow ${styles.priceCard}`}>
@@ -1373,7 +1376,7 @@ export default function HomePageRO() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
+      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title" data-p4h-reveal>
         <h2 id="faq-title">FAQ</h2>
         {[
           {
@@ -1513,7 +1516,7 @@ export default function HomePageRO() {
       </section>
 
       {/* Contact */}
-      <section id="contact" className={`${styles.contact}`} aria-labelledby="contact-title">
+      <section id="contact" className={`${styles.contact}`} aria-labelledby="contact-title" data-p4h-reveal>
 	          <h2 id="contact-title">Contact</h2>
 	        <div className={styles.contactCard}>
 	          <div style={{ display: 'grid', gap: 16 }}>

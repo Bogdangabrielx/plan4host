@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import styles from "./home.module.css";
 import { createPortal } from "react-dom";
 import AutoOpenOnLanding from "@/components/consent/AutoOpenOnLanding";
+import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 // ...
 
 <AutoOpenOnLanding delay={150} />
@@ -1079,8 +1080,9 @@ export default function HomePage() {
       <div aria-hidden style={{ position:'fixed', top:0, bottom:0, left:0, width:'var(--safe-left)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
       <div aria-hidden style={{ position:'fixed', top:0, bottom:0, right:0, width:'var(--safe-right)', background:'var(--bg)', zIndex:3, pointerEvents:'none' }} />
 
-      {/* Android install banner */}
-      <AndroidInstallBanner />
+	      {/* Android install banner */}
+	      <AndroidInstallBanner />
+	      <MobileScrollReveal />
 
       {/* Accessible skip link */}
       <a href="#content" className={`${styles.skipLink} ${styles.focusable}`}>
@@ -1313,19 +1315,20 @@ export default function HomePage() {
 	        </div>
 	      )}
 
-      {/* Impact (time/value stats before Features) */}
-	      <section
-	        id="insights"
-	        aria-labelledby="insights-title"
-	        className={styles.features}
-	        style={{ paddingTop: 0, paddingBottom: 0 }}
-	      >
+	      {/* Impact (time/value stats before Features) */}
+		      <section
+		        id="insights"
+		        aria-labelledby="insights-title"
+		        className={styles.features}
+		        data-p4h-reveal
+		        style={{ paddingTop: 0, paddingBottom: 0 }}
+		      >
         <h2 id="insights-title">Impact</h2>
         <TimeSavingsStrip />
       </section>
 
-      {/* About */}
-      <section id="about" className={styles.about} aria-labelledby="about-title">
+	      {/* About */}
+	      <section id="about" className={styles.about} aria-labelledby="about-title" data-p4h-reveal>
         <h2 id="about-title">About</h2>
         <div className={styles.aboutGrid}>
           <div className={styles.aboutVisual} aria-label="Calendar sync preview">
@@ -1347,8 +1350,8 @@ export default function HomePage() {
 	        </div>
 	      </section>
 
-      {/* Features */}
-      <section id="features" className={styles.features} aria-labelledby="features-title">
+	      {/* Features */}
+	      <section id="features" className={styles.features} aria-labelledby="features-title" data-p4h-reveal>
         <h2 id="features-title">Features</h2>
         <div
           className="sb-cardglow"
@@ -1412,8 +1415,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Reviews */}
-      <section id="reviews" className={styles.reviews} aria-labelledby="reviews-title">
+	      {/* Reviews */}
+	      <section id="reviews" className={styles.reviews} aria-labelledby="reviews-title" data-p4h-reveal>
         <h2 id="reviews-title">What our users say</h2>
         <div className={styles.reviewsBody}>
           <div
@@ -1459,8 +1462,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
+	      {/* Pricing */}
+	      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title" data-p4h-reveal>
         <h2 id="pricing-title">Pricing</h2>
         <div className={styles.pricingGrid}>
           <div className={`sb-cardglow ${styles.priceCard}`}>
@@ -1566,8 +1569,8 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* FAQ */}
-      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
+	      {/* FAQ */}
+	      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title" data-p4h-reveal>
         <h2 id="faq-title">FAQ</h2>
         {[
           {
@@ -1706,8 +1709,8 @@ export default function HomePage() {
         })}
       </section>
 
-      {/* Contact */}
-      <section id="contact" className={`${styles.contact}`} aria-labelledby="contact-title">
+	      {/* Contact */}
+	      <section id="contact" className={`${styles.contact}`} aria-labelledby="contact-title" data-p4h-reveal>
         <h2 id="contact-title">Contact</h2>
         <div className={styles.contactCard}>
           <div style={{ display: 'grid', gap: 16 }}>
