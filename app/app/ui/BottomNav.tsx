@@ -3,6 +3,48 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+function BottomNavIcon({ src, active }: { src: string; active: boolean }) {
+  const size = 22;
+  if (src.endsWith(".svg")) {
+    return (
+      <span
+        aria-hidden
+        style={{
+          width: size,
+          height: size,
+          display: "block",
+          backgroundColor: active ? "var(--primary)" : "var(--text)",
+          opacity: active ? 1 : 0.9,
+          WebkitMaskImage: `url(${src})`,
+          maskImage: `url(${src})`,
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+          WebkitMaskPosition: "center",
+          maskPosition: "center",
+          WebkitMaskSize: "contain",
+          maskSize: "contain",
+          minWidth: size,
+          minHeight: size,
+        }}
+      />
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt=""
+      width={size}
+      height={size}
+      style={{
+        display: "block",
+        opacity: active ? 1 : 0.95,
+        minWidth: size,
+        minHeight: size,
+      }}
+    />
+  );
+}
+
 export default function BottomNav() {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -67,8 +109,8 @@ export default function BottomNav() {
   useEffect(() => {
     if (typeof document === "undefined") return;
     const list = theme === "light"
-      ? ["/calendar_forlight.png", "/cleaning_forlight.png", "/guest_forlight.png"]
-      : ["/calendar_fordark.png", "/cleaning_fordark.png", "/guest_fordark.png"];
+      ? ["/calendar_forlight.png", "/cleaning_forlight.png", "/svg_guests.svg"]
+      : ["/calendar_fordark.png", "/cleaning_fordark.png", "/svg_guests.svg"];
     list.forEach((href) => {
       if (preloadedRef.current.has(href)) return;
       const link = document.createElement("link");
@@ -160,7 +202,7 @@ useEffect(() => {
   const items = useMemo(() => ([
     { href: "/app/calendar", label: "Calendar", icon: theme==="light" ? "/calendar_forlight.png" : "/calendar_fordark.png" },
     { href: "/app/cleaning", label: "Cleaning", icon: theme==="light" ? "/cleaning_forlight.png" : "/cleaning_fordark.png" },
-    { href: "/app/guest", label: "Guests", icon: theme==="light" ? "/guest_forlight.png" : "/guest_fordark.png" },
+    { href: "/app/guest", label: "Guests", icon: "/svg_guests.svg" },
   ]), [theme]);
 
   if (!mounted || !isMobile) return null;
@@ -213,7 +255,7 @@ useEffect(() => {
                 textAlign: 'center',
               }}
             >
-              <img src={it.icon} alt="" width={22} height={22} style={{ display: "block", opacity: active ? 1 : 0.95, minWidth: 22, minHeight: 22 }} />
+              <BottomNavIcon src={it.icon} active={active} />
               <small style={{ fontSize: "var(--fs-s)", fontWeight: active ? "var(--fw-bold)" : "var(--fw-medium)", letterSpacing: 0.2 }}>{it.label}</small>
             </a>
           );
