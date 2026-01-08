@@ -719,17 +719,27 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   cursor: "pointer",
                 }}
               >
-                {mounted && !aboutFailed ? (
-                  <img
-                    src={theme === "light" ? "/aboutme_forlight.png" : "/aboutme_fordark.png"}
-                    alt=""
-                    width={isSmall ? 28 : 32}
-                    height={isSmall ? 28 : 32}
-                    style={{ display: "block" }}
-                    onError={() => setAboutFailed(true)}
+                {mounted ? (
+                  <span
+                    aria-hidden
+                    style={{
+                      width: isSmall ? 28 : 32,
+                      height: isSmall ? 28 : 32,
+                      display: "block",
+                      backgroundColor: "currentColor",
+                      WebkitMaskImage: "url(/svg_more.svg)",
+                      maskImage: "url(/svg_more.svg)",
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                      WebkitMaskSize: `${isSmall ? 22 : 24}px ${isSmall ? 22 : 24}px`,
+                      maskSize: `${isSmall ? 22 : 24}px ${isSmall ? 22 : 24}px`,
+                      pointerEvents: "none",
+                    }}
                   />
                 ) : (
-                  <>≡</>
+                  <>⋯</>
                 )}
               </button>
             </div>
