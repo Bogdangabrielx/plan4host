@@ -355,7 +355,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	    "/app/team": { light: "/svg_team.svg", dark: "/svg_team.svg" },
 	    "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
 	    "/app/subscription": { light: "/svg_subscription.svg", dark: "/svg_subscription.svg" },
-	    "/app/guest": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
+	    "/app/guest": { light: "/svg_guests.svg", dark: "/svg_guests.svg" },
 	    "/app/inbox": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
 	    "/app/reservationMessage": { light: "/svg_messages.svg", dark: "/svg_messages.svg" },
 	  };
