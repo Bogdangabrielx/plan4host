@@ -364,13 +364,31 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	    const themed = THEME_ICONS[href as keyof typeof THEME_ICONS];
 	    const src = themed ? (theme === "light" ? themed.light : themed.dark) : null;
 	    const [failed, setFailed] = useState(false);
-	    const invertOnDark =
-	      theme === "dark" &&
-	      (src === "/svg_dashboard.svg" ||
-	        src === "/svg_subscription.svg" ||
-	        src === "/svg_notifications.svg" ||
-	        src === "/svg_messages.svg");
 	    if (!mounted || !src || failed) return <span aria-hidden>{emoji}</span>;
+
+	    if (src.endsWith(".svg")) {
+	      // Use CSS masking so the icon automatically follows the parent's `color`
+	      // (e.g. hover/active => var(--primary)).
+	      return (
+	        <span
+	          aria-hidden
+	          style={{
+	            width: size,
+	            height: size,
+	            display: "block",
+	            backgroundColor: "currentColor",
+	            WebkitMaskImage: `url(${src})`,
+	            maskImage: `url(${src})`,
+	            WebkitMaskRepeat: "no-repeat",
+	            maskRepeat: "no-repeat",
+	            WebkitMaskPosition: "center",
+	            maskPosition: "center",
+	            WebkitMaskSize: "contain",
+	            maskSize: "contain",
+	          }}
+	        />
+	      );
+	    }
 	    return (
 	      <img
 	        aria-hidden
@@ -378,7 +396,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	        alt=""
 	        width={size}
 	        height={size}
-	        style={{ display: "block", filter: invertOnDark ? "invert(1)" : undefined }}
+	        style={{ display: "block" }}
 	        onError={() => setFailed(true)}
 	      />
 	    );
