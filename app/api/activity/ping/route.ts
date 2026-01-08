@@ -16,12 +16,30 @@ export async function POST() {
     );
   }
 
+  const cutoffIso = new Date(Date.now() - 15_000).toISOString();
+  const nowIso = new Date().toISOString();
+
   const { error } = await supa.rpc("touch_account_activity");
   if (error) {
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } }
-    );
+    // Best-effort fallback if migrations/RPC aren't applied yet.
+    let targetAccountId = user.id;
+    try {
+      const { data: au } = await supa
+        .from("account_users")
+        .select("account_id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(1);
+      const accountId = (au as any)?.[0]?.account_id as string | undefined;
+      if (accountId) targetAccountId = accountId;
+    } catch {
+      // ignore
+    }
+    await supa
+      .from("accounts")
+      .update({ last_activity_at: nowIso })
+      .eq("id", targetAccountId as any)
+      .or(`last_activity_at.is.null,last_activity_at.lt.${cutoffIso}`);
   }
 
   return new NextResponse(null, {
@@ -29,4 +47,3 @@ export async function POST() {
     headers: { "Cache-Control": "no-store, max-age=0" },
   });
 }
-

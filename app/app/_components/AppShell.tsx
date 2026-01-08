@@ -32,6 +32,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 function ActivityTracker() {
   const pathname = usePathname();
   const lastSentAtMsRef = useRef<number>(0);
+  const inFlightRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -41,22 +42,32 @@ function ActivityTracker() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (inFlightRef.current) return;
     const now = Date.now();
-    const minIntervalMs = 60_000;
+    const minIntervalMs = 15_000;
     if (now - lastSentAtMsRef.current < minIntervalMs) return;
-    lastSentAtMsRef.current = now;
-    try {
-      window.sessionStorage.setItem("p4h:lastActivityPingAtMs", String(now));
-    } catch {
-      // ignore storage failures
-    }
-
+    inFlightRef.current = true;
     void fetch("/api/activity/ping", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: "{}",
       keepalive: true,
-    }).catch(() => {});
+      cache: "no-store",
+    })
+      .then((res) => {
+        if (!res.ok) return;
+        lastSentAtMsRef.current = now;
+        try {
+          window.sessionStorage.setItem("p4h:lastActivityPingAtMs", String(now));
+        } catch {
+          // ignore storage failures
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        inFlightRef.current = false;
+      });
   }, [pathname]);
 
   return null;
