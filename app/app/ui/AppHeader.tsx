@@ -350,21 +350,26 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	    "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
 	    "/app/propertySetup": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
 	    "/app/checkinEditor": { light: "/checkin_editor_forlight.png", dark: "/checkin_editor_fordark.png" },
-    "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
-    "/app/notifications": { light: "/notification_forlight.png", dark: "/notification_fordark.png" },
-    "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
-    "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
-    "/app/subscription": { light: "/subscription_forlight.png", dark: "/subscription_fordark.png" },
-    "/app/guest": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
-    "/app/inbox": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
-    "/app/reservationMessage": { light: "/inbox_forlight.png", dark: "/inbox_fordark.png" },
-  };
+	    "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
+	    "/app/notifications": { light: "/svg_notifications.svg", dark: "/svg_notifications.svg" },
+	    "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
+	    "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
+	    "/app/subscription": { light: "/svg_subscription.svg", dark: "/svg_subscription.svg" },
+	    "/app/guest": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
+	    "/app/inbox": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
+	    "/app/reservationMessage": { light: "/svg_messages.svg", dark: "/svg_messages.svg" },
+	  };
 
 	  function NavIcon({ href, emoji, size }: { href: string; emoji: string; size: number }) {
 	    const themed = THEME_ICONS[href as keyof typeof THEME_ICONS];
 	    const src = themed ? (theme === "light" ? themed.light : themed.dark) : null;
 	    const [failed, setFailed] = useState(false);
-	    const invertOnDark = theme === "dark" && src === "/svg_dashboard.svg";
+	    const invertOnDark =
+	      theme === "dark" &&
+	      (src === "/svg_dashboard.svg" ||
+	        src === "/svg_subscription.svg" ||
+	        src === "/svg_notifications.svg" ||
+	        src === "/svg_messages.svg");
 	    if (!mounted || !src || failed) return <span aria-hidden>{emoji}</span>;
 	    return (
 	      <img
