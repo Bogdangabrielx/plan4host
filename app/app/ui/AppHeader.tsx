@@ -593,8 +593,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                  <span
 	                    aria-hidden
 	                    style={{
-	                      width: isSmall ? 18 : 20,
-	                      height: isSmall ? 18 : 20,
+	                      width: isSmall ? 20 : 22,
+	                      height: isSmall ? 20 : 22,
 	                      display: "block",
 	                      backgroundColor: "currentColor",
 	                      WebkitMaskImage: "url(/svg_more.svg)",
@@ -603,8 +603,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                      maskRepeat: "no-repeat",
 	                      WebkitMaskPosition: "center",
 	                      maskPosition: "center",
-	                      WebkitMaskSize: "contain",
-	                      maskSize: "contain",
+	                      WebkitMaskSize: `${isSmall ? 18 : 20}px ${isSmall ? 18 : 20}px`,
+	                      maskSize: `${isSmall ? 18 : 20}px ${isSmall ? 18 : 20}px`,
+	                      pointerEvents: "none",
 	                    }}
 	                  />
 	                ) : (

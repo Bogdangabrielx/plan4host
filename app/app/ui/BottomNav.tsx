@@ -4,8 +4,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 function BottomNavIcon({ src, active }: { src: string; active: boolean }) {
-  const size = 22;
-  const maskSizePx = 18; // visual normalization across different SVG viewBoxes
+  const size = 26;
+  const maskSizePx = 22; // visual normalization across different SVG viewBoxes
   if (src.endsWith(".svg")) {
     return (
       <span
