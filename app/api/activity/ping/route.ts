@@ -16,7 +16,7 @@ export async function POST() {
     );
   }
 
-  const cutoffIso = new Date(Date.now() - 15_000).toISOString();
+  const cutoffIso = new Date(Date.now() - 60_000).toISOString();
   const nowIso = new Date().toISOString();
 
   const { error } = await supa.rpc("touch_account_activity");

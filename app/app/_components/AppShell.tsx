@@ -44,7 +44,7 @@ function ActivityTracker() {
     if (typeof window === "undefined") return;
     if (inFlightRef.current) return;
     const now = Date.now();
-    const minIntervalMs = 15_000;
+    const minIntervalMs = 60_000;
     if (now - lastSentAtMsRef.current < minIntervalMs) return;
     inFlightRef.current = true;
     void fetch("/api/activity/ping", {
