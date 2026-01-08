@@ -25,6 +25,7 @@ function BottomNavIcon({ src, active }: { src: string; active: boolean }) {
           maskSize: "contain",
           minWidth: size,
           minHeight: size,
+          pointerEvents: "none",
         }}
       />
     );
@@ -40,6 +41,7 @@ function BottomNavIcon({ src, active }: { src: string; active: boolean }) {
         opacity: active ? 1 : 0.95,
         minWidth: size,
         minHeight: size,
+        pointerEvents: "none",
       }}
     />
   );
@@ -109,8 +111,8 @@ export default function BottomNav() {
   useEffect(() => {
     if (typeof document === "undefined") return;
     const list = theme === "light"
-      ? ["/calendar_forlight.png", "/cleaning_forlight.png", "/svg_guests.svg"]
-      : ["/calendar_fordark.png", "/cleaning_fordark.png", "/svg_guests.svg"];
+      ? ["/calendar_forlight.png", "/svg_cleaning.svg", "/svg_guests.svg"]
+      : ["/calendar_fordark.png", "/svg_cleaning.svg", "/svg_guests.svg"];
     list.forEach((href) => {
       if (preloadedRef.current.has(href)) return;
       const link = document.createElement("link");
@@ -201,7 +203,7 @@ useEffect(() => {
 
   const items = useMemo(() => ([
     { href: "/app/calendar", label: "Calendar", icon: theme==="light" ? "/calendar_forlight.png" : "/calendar_fordark.png" },
-    { href: "/app/cleaning", label: "Cleaning", icon: theme==="light" ? "/cleaning_forlight.png" : "/cleaning_fordark.png" },
+    { href: "/app/cleaning", label: "Cleaning", icon: "/svg_cleaning.svg" },
     { href: "/app/guest", label: "Guests", icon: "/svg_guests.svg" },
   ]), [theme]);
 

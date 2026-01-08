@@ -347,7 +347,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	  const THEME_ICONS: Record<string, { light: string; dark: string }> = {
 	    "/app/dashboard": { light: "/svg_dashboard.svg", dark: "/svg_dashboard.svg" },
 	    "/app/channels": { light: "/svg_ical.svg", dark: "/svg_ical.svg" },
-	    "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
+	    "/app/cleaning": { light: "/svg_cleaning.svg", dark: "/svg_cleaning.svg" },
 	    "/app/propertySetup": { light: "/svg_setup.svg", dark: "/svg_setup.svg" },
 	    "/app/checkinEditor": { light: "/checkin_editor_forlight.png", dark: "/checkin_editor_fordark.png" },
 	    "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
