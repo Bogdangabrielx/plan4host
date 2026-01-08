@@ -343,13 +343,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     })();
   }, []);
 
-  /* ----- Themed icons ----- */
-  const THEME_ICONS: Record<string, { light: string; dark: string }> = {
-    "/app/dashboard": { light: "/property_forlight.png", dark: "/property_fordark.png" },
-    "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
-    "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
-    "/app/propertySetup": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
-    "/app/checkinEditor": { light: "/checkin_editor_forlight.png", dark: "/checkin_editor_fordark.png" },
+	  /* ----- Themed icons ----- */
+	  const THEME_ICONS: Record<string, { light: string; dark: string }> = {
+	    "/app/dashboard": { light: "/svg_dashboard.svg", dark: "/svg_dashboard.svg" },
+	    "/app/channels": { light: "/ical_forlight.png", dark: "/ical_fordark.png" },
+	    "/app/cleaning": { light: "/cleaning_forlight.png", dark: "/cleaning_fordark.png" },
+	    "/app/propertySetup": { light: "/configurator_forlight.png", dark: "/configurator_fordark.png" },
+	    "/app/checkinEditor": { light: "/checkin_editor_forlight.png", dark: "/checkin_editor_fordark.png" },
     "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
     "/app/notifications": { light: "/notification_forlight.png", dark: "/notification_fordark.png" },
     "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
@@ -360,23 +360,24 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     "/app/reservationMessage": { light: "/inbox_forlight.png", dark: "/inbox_fordark.png" },
   };
 
-  function NavIcon({ href, emoji, size }: { href: string; emoji: string; size: number }) {
-    const themed = THEME_ICONS[href as keyof typeof THEME_ICONS];
-    const src = themed ? (theme === "light" ? themed.light : themed.dark) : null;
-    const [failed, setFailed] = useState(false);
-    if (!mounted || !src || failed) return <span aria-hidden>{emoji}</span>;
-    return (
-      <img
-        aria-hidden
-        src={src}
-        alt=""
-        width={size}
-        height={size}
-        style={{ display: "block" }}
-        onError={() => setFailed(true)}
-      />
-    );
-  }
+	  function NavIcon({ href, emoji, size }: { href: string; emoji: string; size: number }) {
+	    const themed = THEME_ICONS[href as keyof typeof THEME_ICONS];
+	    const src = themed ? (theme === "light" ? themed.light : themed.dark) : null;
+	    const [failed, setFailed] = useState(false);
+	    const invertOnDark = theme === "dark" && src === "/svg_dashboard.svg";
+	    if (!mounted || !src || failed) return <span aria-hidden>{emoji}</span>;
+	    return (
+	      <img
+	        aria-hidden
+	        src={src}
+	        alt=""
+	        width={size}
+	        height={size}
+	        style={{ display: "block", filter: invertOnDark ? "invert(1)" : undefined }}
+	        onError={() => setFailed(true)}
+	      />
+	    );
+	  }
 
   const pillEl = (() => {
     if (!pill) return null;
