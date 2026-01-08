@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 
 function BottomNavIcon({ src, active }: { src: string; active: boolean }) {
   const size = 22;
+  const maskSizePx = 18; // visual normalization across different SVG viewBoxes
   if (src.endsWith(".svg")) {
     return (
       <span
@@ -21,8 +22,8 @@ function BottomNavIcon({ src, active }: { src: string; active: boolean }) {
           maskRepeat: "no-repeat",
           WebkitMaskPosition: "center",
           maskPosition: "center",
-          WebkitMaskSize: "contain",
-          maskSize: "contain",
+          WebkitMaskSize: `${maskSizePx}px ${maskSizePx}px`,
+          maskSize: `${maskSizePx}px ${maskSizePx}px`,
           minWidth: size,
           minHeight: size,
           pointerEvents: "none",

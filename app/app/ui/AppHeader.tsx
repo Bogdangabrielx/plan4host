@@ -367,6 +367,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	    if (!mounted || !src || failed) return <span aria-hidden>{emoji}</span>;
 
 	    if (src.endsWith(".svg")) {
+	      const maskSizePx = Math.max(12, Math.round(size * 0.82)); // normalize viewBox differences
 	      // Use CSS masking so the icon automatically follows the parent's `color`
 	      // (e.g. hover/active => var(--primary)).
 	      return (
@@ -383,8 +384,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	            maskRepeat: "no-repeat",
 	            WebkitMaskPosition: "center",
 	            maskPosition: "center",
-	            WebkitMaskSize: "contain",
-	            maskSize: "contain",
+	            WebkitMaskSize: `${maskSizePx}px ${maskSizePx}px`,
+	            maskSize: `${maskSizePx}px ${maskSizePx}px`,
+	            pointerEvents: "none",
 	          }}
 	        />
 	      );
@@ -810,7 +812,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
 	                  const isInbox = it.href === "/app/guest";
 
-	                  const ICON_SIZE = 32;
+	                  const ICON_SIZE = isMobileNav ? 22 : 32;
+	                  const ICON_COL = isMobileNav ? 32 : 40;
+	                  const ICON_ROW = isMobileNav ? 28 : 32;
 
 		                  return (
 		                    <li key={it.href}>
@@ -825,7 +829,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 		                          width: "100%",
 		                          textAlign: "left",
 		                          display: "grid",
-		                          gridTemplateColumns: "40px 1fr",
+		                          gridTemplateColumns: `${ICON_COL}px 1fr`,
 		                          alignItems: "center",
 		                          columnGap: 8,
 		                          padding: "4px 0",
@@ -844,7 +848,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 		                          transition: "transform .12s ease, color .15s ease",
 		                        }}
 		                      >
-	                        <span aria-hidden style={{ width: 40, height: 32, display: "grid", placeItems: "center" }}>
+	                        <span
+	                          aria-hidden
+	                          style={{ width: ICON_COL, height: ICON_ROW, display: "grid", placeItems: "center" }}
+	                        >
 	                          <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
 	                        </span>
 	                        <span style={{ display: "flex", alignItems: "center", gap: 8, color: "currentColor" }}>
@@ -938,7 +945,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
 	                  const isInbox = it.href === "/app/guest";
 
-	                  const ICON_SIZE = 32;
+	                  const ICON_SIZE = isMobileNav ? 22 : 32;
+	                  const ICON_COL = isMobileNav ? 32 : 40;
+	                  const ICON_ROW = isMobileNav ? 28 : 32;
 
 	                  return (
 	                    <li key={it.href}>
@@ -956,7 +965,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                          width: "100%",
 	                          textAlign: "left",
 	                          display: "grid",
-	                          gridTemplateColumns: "40px 1fr",
+	                          gridTemplateColumns: `${ICON_COL}px 1fr`,
 	                          alignItems: "center",
 	                          columnGap: 8,
 	                          padding: "4px 0",
@@ -975,7 +984,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                          transition: "transform .12s ease, color .15s ease",
 	                        }}
 	                      >
-	                        <span aria-hidden style={{ width: 40, height: 32, display: "grid", placeItems: "center" }}>
+	                        <span
+	                          aria-hidden
+	                          style={{ width: ICON_COL, height: ICON_ROW, display: "grid", placeItems: "center" }}
+	                        >
 	                          <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
 	                        </span>
 	                        <span style={{ display: "flex", alignItems: "center", gap: 8, color: "currentColor" }}>
