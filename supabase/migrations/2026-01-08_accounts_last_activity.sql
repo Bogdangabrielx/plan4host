@@ -26,7 +26,7 @@ create index if not exists accounts_last_activity_at_idx
   on public.accounts (last_activity_at desc nulls last);
 
 /* =============================================================
-   2) RPC — touch last activity (throttled)
+   2) RPC — touch last activity (throttled, resilient)
    ============================================================= */
 
 create or replace function public.touch_account_activity()
@@ -39,12 +39,14 @@ declare
   target_account_id uuid;
 begin
   -- If the caller is a member user, update the parent account; otherwise update own account.
-  select au.account_id
-    into target_account_id
-  from public.account_users au
-  where au.user_id = auth.uid()
-  order by au.created_at asc
-  limit 1;
+  if to_regclass('public.account_users') is not null then
+    select au.account_id
+      into target_account_id
+    from public.account_users au
+    where au.user_id = auth.uid()
+    order by au.created_at asc
+    limit 1;
+  end if;
 
   if target_account_id is null then
     target_account_id := auth.uid();
@@ -60,4 +62,3 @@ $fn$;
 
 revoke all on function public.touch_account_activity() from public;
 grant execute on function public.touch_account_activity() to authenticated;
-
