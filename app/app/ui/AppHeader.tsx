@@ -567,40 +567,51 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               }}
             >
               {right}
-              <button
-                type="button"
-                aria-label="Open management"
-                onClick={() => {
-                  setOpenRight(true);
-                  setOpen(false);
-                }}
-                style={{
-                  width: isSmall ? 34 : 38,
-                  height: isSmall ? 34 : 38,
-                  borderRadius: 999,
-                  border: "1px solid var(--border)",
-                  background: "var(--card)",
-                  display: "grid",
-                  placeItems: "center",
-                  cursor: "pointer",
-                }}
-              >
-                {mounted && !aboutFailed ? (
-                  <img
-                    src={theme === "light" ? "/more_forlight.png" : "/more_fordark.png"}
-                    alt=""
-                    width={isSmall ? 18 : 20}
-                    height={isSmall ? 18 : 20}
-                    style={{ display: "block", objectFit: "contain" }}
-                    onError={() => setAboutFailed(true)}
-                  />
-                ) : (
-                  <>⋯</>
-                )}
-              </button>
-            </div>
-          </>
-	        ) : (
+	              <button
+	                type="button"
+	                aria-label="Open management"
+	                onClick={() => {
+	                  setOpenRight(true);
+	                  setOpen(false);
+	                }}
+	                style={{
+	                  width: isSmall ? 34 : 38,
+	                  height: isSmall ? 34 : 38,
+	                  borderRadius: 999,
+	                  border: "1px solid var(--border)",
+	                  background: "var(--card)",
+	                  color: openRight ? "var(--primary)" : "var(--text)",
+	                  display: "grid",
+	                  placeItems: "center",
+	                  cursor: "pointer",
+	                  transition: "color .15s ease, transform .12s ease",
+	                }}
+	              >
+	                {mounted ? (
+	                  <span
+	                    aria-hidden
+	                    style={{
+	                      width: isSmall ? 18 : 20,
+	                      height: isSmall ? 18 : 20,
+	                      display: "block",
+	                      backgroundColor: "currentColor",
+	                      WebkitMaskImage: "url(/svg_more.svg)",
+	                      maskImage: "url(/svg_more.svg)",
+	                      WebkitMaskRepeat: "no-repeat",
+	                      maskRepeat: "no-repeat",
+	                      WebkitMaskPosition: "center",
+	                      maskPosition: "center",
+	                      WebkitMaskSize: "contain",
+	                      maskSize: "contain",
+	                    }}
+	                  />
+	                ) : (
+	                  <>⋯</>
+	                )}
+	              </button>
+	            </div>
+	          </>
+		        ) : (
 	          <>
 	            {/* Left: navigation */}
 	            <div style={{ gridColumn: 1, justifySelf: "start", minWidth: 0, display: "flex", alignItems: "center", gap: isSmall ? 8 : 12 }}>
