@@ -352,7 +352,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	    "/app/checkinEditor": { light: "/checkin_editor_forlight.png", dark: "/checkin_editor_fordark.png" },
 	    "/app/calendar": { light: "/calendar_forlight.png", dark: "/calendar_fordark.png" },
 	    "/app/notifications": { light: "/svg_notifications.svg", dark: "/svg_notifications.svg" },
-	    "/app/team": { light: "/team_forlight.png", dark: "/team_fordark.png" },
+	    "/app/team": { light: "/svg_team.svg", dark: "/svg_team.svg" },
 	    "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
 	    "/app/subscription": { light: "/svg_subscription.svg", dark: "/svg_subscription.svg" },
 	    "/app/guest": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
