@@ -1,6 +1,7 @@
 // app/app/_components/AppShell.tsx
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import AppHeader from "../ui/AppHeader";
 import BottomNav from "../ui/BottomNav";
 import PullToRefresh from "./PullToRefresh";
@@ -27,6 +28,39 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   { id: "house_rules", label: "House rules" },
   { id: "calendars", label: "Calendar sync" },
 ];
+
+function ActivityTracker() {
+  const pathname = usePathname();
+  const lastSentAtMsRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = window.sessionStorage.getItem("p4h:lastActivityPingAtMs");
+    lastSentAtMsRef.current = saved ? Number(saved) || 0 : 0;
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const now = Date.now();
+    const minIntervalMs = 60_000;
+    if (now - lastSentAtMsRef.current < minIntervalMs) return;
+    lastSentAtMsRef.current = now;
+    try {
+      window.sessionStorage.setItem("p4h:lastActivityPingAtMs", String(now));
+    } catch {
+      // ignore storage failures
+    }
+
+    void fetch("/api/activity/ping", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+      keepalive: true,
+    }).catch(() => {});
+  }, [pathname]);
+
+  return null;
+}
 
 function OnboardingChecklistFab() {
   const [open, setOpen] = useState(false);
@@ -615,10 +649,11 @@ export default function AppShell({ title, currentPath, children }: Props) {
 
   return (
     <HeaderProvider initialTitle={title ?? ""}>
-	      <div
-	        // root: nu scroll-ează; doar definește rama dintre header și main
-	        style={{
-	          height: "100dvh",
+      <ActivityTracker />
+		      <div
+		        // root: nu scroll-ează; doar definește rama dintre header și main
+		        style={{
+		          height: "100dvh",
 	          minHeight: "100dvh",
 	          display: "grid",
 	          gridTemplateRows: "auto 1fr",
