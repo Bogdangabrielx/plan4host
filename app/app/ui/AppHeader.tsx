@@ -353,7 +353,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	    "/app/calendar": { light: "/svg_calendar.svg", dark: "/svg_calendar.svg" },
 	    "/app/notifications": { light: "/svg_notifications.svg", dark: "/svg_notifications.svg" },
 	    "/app/team": { light: "/svg_team.svg", dark: "/svg_team.svg" },
-	    "/auth/logout": { light: "/logout_forlight.png", dark: "/logout_fordark.png" },
+	    "/auth/logout": { light: "/svg_logout.svg", dark: "/svg_logout.svg" },
 	    "/app/subscription": { light: "/svg_subscription.svg", dark: "/svg_subscription.svg" },
 	    "/app/guest": { light: "/svg_guests.svg", dark: "/svg_guests.svg" },
 	    "/app/inbox": { light: "/guest_forlight.png", dark: "/guest_fordark.png" },
