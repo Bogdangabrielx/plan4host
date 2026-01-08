@@ -111,8 +111,8 @@ export default function BottomNav() {
   useEffect(() => {
     if (typeof document === "undefined") return;
     const list = theme === "light"
-      ? ["/calendar_forlight.png", "/svg_cleaning.svg", "/svg_guests.svg"]
-      : ["/calendar_fordark.png", "/svg_cleaning.svg", "/svg_guests.svg"];
+      ? ["/svg_calendar.svg", "/svg_cleaning.svg", "/svg_guests.svg"]
+      : ["/svg_calendar.svg", "/svg_cleaning.svg", "/svg_guests.svg"];
     list.forEach((href) => {
       if (preloadedRef.current.has(href)) return;
       const link = document.createElement("link");
@@ -202,7 +202,7 @@ useEffect(() => {
   }, [mounted, kbOpen]);
 
   const items = useMemo(() => ([
-    { href: "/app/calendar", label: "Calendar", icon: theme==="light" ? "/calendar_forlight.png" : "/calendar_fordark.png" },
+    { href: "/app/calendar", label: "Calendar", icon: "/svg_calendar.svg" },
     { href: "/app/cleaning", label: "Cleaning", icon: "/svg_cleaning.svg" },
     { href: "/app/guest", label: "Guests", icon: "/svg_guests.svg" },
   ]), [theme]);
