@@ -49,13 +49,13 @@
   100% { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0px); }
 }
 @media (max-width: 900px) {
-  :global(html[data-p4h-landing-reveal="1"]) [data-p4h-reveal]{
+  :global(html[data-p4h-landing-reveal="1"]) [data-p4h-reveal] > *{
     opacity: 0;
     transform: translate3d(0, 28px, 0);
     filter: blur(10px);
     will-change: opacity, transform, filter;
   }
-  :global(html[data-p4h-landing-reveal="1"]) [data-p4h-reveal][data-reveal-in="1"]{
+  :global(html[data-p4h-landing-reveal="1"]) [data-p4h-reveal][data-reveal-in="1"] > *{
     opacity: 1;
     transform: translate3d(0, 0, 0);
     filter: blur(0px);
@@ -64,10 +64,12 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  :global(html[data-p4h-landing-reveal="1"]) [data-p4h-reveal]{
+  :global(html[data-p4h-landing-reveal="1"]) [data-p4h-reveal] > *{
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+    animation: none !important;
+    filter: none !important;
   }
 }
 
