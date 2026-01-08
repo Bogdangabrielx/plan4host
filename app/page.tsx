@@ -1278,7 +1278,7 @@ export default function HomePage() {
 
         <div className={styles.heroVisual} aria-label="Calendar preview">
           <img
-            src="/Landing_Mockups.png"
+            src="/Landing_Mockups2.png"
             alt="Plan4Host app mockups"
             className={styles.focusable}
           />

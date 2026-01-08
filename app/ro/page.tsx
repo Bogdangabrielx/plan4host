@@ -1101,7 +1101,7 @@ export default function HomePageRO() {
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview">
           <img
-            src="/Landing_Mockups.png"
+            src="/Landing_Mockups2.png"
             alt="Mockup-uri aplicația Plan4Host"
             className={styles.focusable}
           />
