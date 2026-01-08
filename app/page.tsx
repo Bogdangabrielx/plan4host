@@ -1328,18 +1328,18 @@ export default function HomePage() {
       </section>
 
 	      {/* About */}
-	      <section id="about" className={styles.about} aria-labelledby="about-title" data-p4h-reveal>
-        <h2 id="about-title">About</h2>
-        <div className={styles.aboutGrid}>
-          <div className={styles.aboutVisual} aria-label="Calendar sync preview">
-            <img src="/Calendar_Sync.png" alt="Calendar sync preview" />
-          </div>
-	          <div className={styles.aboutCard}>
-	            <div className={styles.aboutBrandTitle}>Plan4Host</div>
-	            <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
-	            <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
-	            <p className={styles.aboutBody}>
-	              A calm workflow for reservations and guest communication.
+	      <section id="about" className={styles.about} aria-labelledby="about-title">
+	        <h2 id="about-title">About</h2>
+	        <div className={styles.aboutGrid}>
+	          <div className={styles.aboutVisual} aria-label="Calendar sync preview" data-p4h-reveal>
+	            <img src="/Calendar_Sync.png" alt="Calendar sync preview" />
+	          </div>
+		          <div className={styles.aboutCard} data-p4h-reveal>
+		            <div className={styles.aboutBrandTitle}>Plan4Host</div>
+		            <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
+		            <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
+		            <p className={styles.aboutBody}>
+		              A calm workflow for reservations and guest communication.
 	            </p>
 	            <ul className={styles.aboutList}>
 	              <li>All bookings in one calendar (with iCal sync)</li>
@@ -1463,13 +1463,13 @@ export default function HomePage() {
       </section>
 
 	      {/* Pricing */}
-	      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title" data-p4h-reveal>
-        <h2 id="pricing-title">Pricing</h2>
-        <div className={styles.pricingGrid}>
-          <div className={`sb-cardglow ${styles.priceCard}`}>
-            <div className={styles.priceTier}>BASIC</div>
-            <ul className={styles.priceList}>
-	              {benefits.map((b, i) => {
+	      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
+	        <h2 id="pricing-title">Pricing</h2>
+	        <div className={styles.pricingGrid}>
+	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
+	            <div className={styles.priceTier}>BASIC</div>
+	            <ul className={styles.priceList}>
+		              {benefits.map((b, i) => {
 	                const basicX = [
 	                  'Prioritize room cleaning',
 	                  'Personalized cleaning task',
@@ -1505,10 +1505,10 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className={`sb-cardglow ${styles.priceCard}`}>
-            <div className={styles.priceTier}>STANDARD</div>
-            <ul className={styles.priceList}>
-	              {benefits.map((b, i) => {
+	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
+	            <div className={styles.priceTier}>STANDARD</div>
+	            <ul className={styles.priceList}>
+		              {benefits.map((b, i) => {
 	                const standardX = [
 	                  'Share daily tasks',
 	                  'Instant sync of reservations in the app calendar',
@@ -1541,10 +1541,10 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className={`sb-cardglow ${styles.priceCard}`}>
-            <div className={styles.priceTier}>PREMIUM</div>
-            <ul className={styles.priceList}>
-              {benefits.map((b, i) => (
+	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
+	            <div className={styles.priceTier}>PREMIUM</div>
+	            <ul className={styles.priceList}>
+	              {benefits.map((b, i) => (
                 <li key={`premium-b-${i}`}>
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
@@ -1570,10 +1570,10 @@ export default function HomePage() {
       </section>
 
 	      {/* FAQ */}
-	      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title" data-p4h-reveal>
-        <h2 id="faq-title">FAQ</h2>
-        {[
-          {
+	      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
+	        <h2 id="faq-title">FAQ</h2>
+	        {[
+	          {
             id: 'units',
             question: 'Can I use the app for apartments/studios (single units) as well as cabins/guesthouses (multiple units)?',
             content: (
@@ -1677,11 +1677,12 @@ export default function HomePage() {
         ].map((item) => {
           const open = !!faqOpen[item.id];
           return (
-            <div
-              key={item.id}
-              className={`${styles.contactCard} ${styles.faqItem}`}
-              data-open={open ? "true" : "false"}
-            >
+	            <div
+	              key={item.id}
+	              className={`${styles.contactCard} ${styles.faqItem}`}
+	              data-p4h-reveal
+	              data-open={open ? "true" : "false"}
+	            >
               <button
                 type="button"
                 aria-expanded={open}

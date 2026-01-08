@@ -1151,13 +1151,13 @@ export default function HomePageRO() {
       </section>
 
 	      {/* Despre */}
-	      <section id="about" className={styles.about} aria-labelledby="about-title" data-p4h-reveal>
-        <h2 id="about-title">Despre</h2>
-        <div className={styles.aboutGrid}>
-          <div className={styles.aboutVisual} aria-label="Previzualizare sincronizare calendare">
-            <img src="/Calendar_Sync.png" alt="Previzualizare sincronizare calendare" />
-          </div>
-	          <div className={styles.aboutCard}>
+		      <section id="about" className={styles.about} aria-labelledby="about-title">
+	        <h2 id="about-title">Despre</h2>
+	        <div className={styles.aboutGrid}>
+	          <div className={styles.aboutVisual} aria-label="Previzualizare sincronizare calendare" data-p4h-reveal>
+	            <img src="/Calendar_Sync.png" alt="Previzualizare sincronizare calendare" />
+	          </div>
+		          <div className={styles.aboutCard} data-p4h-reveal>
 	            <div className={styles.aboutBrandTitle}>Plan4Host</div>
 	            <div className={styles.aboutTitle}>Claritate. Precizie. Control fără efort.</div>
 	            <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
@@ -1285,10 +1285,10 @@ export default function HomePageRO() {
       </section>
 
       {/* Prețuri */}
-      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title" data-p4h-reveal>
-        <h2 id="pricing-title">Prețuri</h2>
-        <div className={styles.pricingGrid}>
-          <div className={`sb-cardglow ${styles.priceCard}`}>
+	      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
+	        <h2 id="pricing-title">Prețuri</h2>
+	        <div className={styles.pricingGrid}>
+	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
             <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
 	              {beneficii.map((b, i) => {
@@ -1322,7 +1322,7 @@ export default function HomePageRO() {
             <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Basic</Link>
           </div>
 
-          <div className={`sb-cardglow ${styles.priceCard}`}>
+	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
             <div className={styles.priceTier}>STANDARD</div>
             <ul className={styles.priceList}>
 	              {beneficii.map((b, i) => {
@@ -1353,7 +1353,7 @@ export default function HomePageRO() {
             <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Standard</Link>
           </div>
 
-          <div className={`sb-cardglow ${styles.priceCard}`}>
+	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
             <div className={styles.priceTier}>PREMIUM</div>
             <ul className={styles.priceList}>
               {beneficii.map((b, i) => (
@@ -1376,8 +1376,8 @@ export default function HomePageRO() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title" data-p4h-reveal>
-        <h2 id="faq-title">FAQ</h2>
+	      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
+	        <h2 id="faq-title">FAQ</h2>
         {[
           {
             id: 'units',
@@ -1486,6 +1486,7 @@ export default function HomePageRO() {
             <div
               key={item.id}
               className={`${styles.contactCard} ${styles.faqItem}`}
+              data-p4h-reveal
               data-open={open ? "true" : "false"}
             >
               <button
