@@ -1637,6 +1637,24 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                     style={questionBtnStyle}
                     onClick={() => handleArrivalSubtopic("arrival_time")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: "url(/svg_arrival_time.svg)",
+                        maskImage: "url(/svg_arrival_time.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.arrival_time}</span>
                   </button>
                   <button
