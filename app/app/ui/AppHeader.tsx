@@ -83,6 +83,20 @@ function drawerTitleStyle(): React.CSSProperties {
   };
 }
 
+function drawerSectionTitleStyle(): React.CSSProperties {
+  return {
+    fontFamily: TITLE_FAMILY,
+    fontSize: "var(--fs-s)",
+    lineHeight: "var(--lh-s)",
+    fontWeight: "var(--fw-bold)",
+    textTransform: "uppercase",
+    letterSpacing: "0.14em",
+    color: "var(--muted)",
+    margin: 0,
+    padding: "12px 8px 8px",
+  };
+}
+
 /* ---------------- Component ---------------- */
 export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const { title, pill, right } = useHeader();
@@ -440,6 +454,34 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const transparentMobileHeader = isMobileNav;
   const mobileHeaderRadius = 23;
 
+  const logoutItem =
+    navRight.find((it) => it.href === "/auth/logout") ??
+    navLeft.find((it) => it.href === "/auth/logout") ??
+    NAV_BASE.find((it) => it.href === "/auth/logout") ??
+    null;
+
+  const navSectionsRight = useMemo(() => {
+    if (!isMobileNav) return [];
+    const items = navRight.filter((it) => it.href !== "/auth/logout");
+
+    const take = (hrefs: string[]) => items.filter((it) => hrefs.includes(it.href));
+    const main = take(["/app/dashboard"]);
+    const operations = take(["/app/reservationMessage", "/app/channels"]);
+    const setup = take(["/app/propertySetup", "/app/checkinEditor"]);
+    const account = take(["/app/notifications", "/app/subscription", "/app/team"]);
+
+    const used = new Set([...main, ...operations, ...setup, ...account].map((x) => x.href));
+    const other = items.filter((it) => !used.has(it.href));
+
+    return [
+      { title: "Main", items: main },
+      { title: "Operations", items: operations },
+      { title: "Setup", items: setup },
+      { title: "Account", items: account },
+      { title: "Other", items: other },
+    ].filter((s) => s.items.length > 0);
+  }, [isMobileNav, navRight]);
+
   return (
     <>
       {/* Paint safe-area notch so it never looks transparent */}
@@ -780,7 +822,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
               zIndex: 121, // peste header
               display: "grid",
-              gridTemplateRows: "auto 1fr",
+              gridTemplateRows: isMobileNav ? "auto 1fr auto" : "auto 1fr",
               paddingTop: isSmall ? "var(--safe-top)" : "calc(var(--safe-top) + 8px)",
             }}
           >
@@ -816,14 +858,15 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
 	            <nav
 	              style={{
-	                padding: 8,
+	                padding: isMobileNav ? 12 : 8,
 	                overflowY: "auto",
-	                WebkitOverflowScrolling: 'touch',
-	                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
+	                WebkitOverflowScrolling: "touch",
+	                paddingBottom: isMobileNav ? "calc(16px + var(--safe-bottom, 0px))" : "calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)",
 	              }}
 	            >
-		              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0 }}>
-		                {navLeft.map((it) => {
+                {isMobileNav ? <div style={drawerSectionTitleStyle()}>Navigation</div> : null}
+		              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: isMobileNav ? 4 : 0 }}>
+		                {navLeft.filter((it) => !isMobileNav || it.href !== "/auth/logout").map((it) => {
 		                  const active = currentPath
 		                    ? it.href === "/app/dashboard"
 		                      ? currentPath === "/app/dashboard"
@@ -835,6 +878,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                  const ICON_SIZE = isMobileNav ? 22 : 32;
 	                  const ICON_COL = isMobileNav ? 32 : 40;
 	                  const ICON_ROW = isMobileNav ? 28 : 32;
+                    const itemPadding = isMobileNav ? "10px 10px" : "4px 0";
+                    const itemRadius = isMobileNav ? 12 : 0;
 
 		                  return (
 		                    <li key={it.href}>
@@ -852,10 +897,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 		                          gridTemplateColumns: `${ICON_COL}px 1fr`,
 		                          alignItems: "center",
 		                          columnGap: 8,
-		                          padding: "4px 0",
-		                          borderRadius: 0,
+		                          padding: itemPadding,
+		                          borderRadius: itemRadius,
 		                          border: "none",
-		                          background: "transparent",
+		                          background:
+                                isMobileNav && (active || hoverLeft === it.href || pressedLeft === it.href)
+                                  ? "color-mix(in srgb, var(--primary) 10%, transparent)"
+                                  : "transparent",
 		                          color: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--primary)" : "var(--muted)",
 		                          fontFamily: "inherit",
 		                          fontSize: "var(--fs-b)",
@@ -886,6 +934,43 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 })}
               </ul>
             </nav>
+
+            {isMobileNav && logoutItem ? (
+              <div
+                style={{
+                  padding: "12px 12px calc(12px + var(--safe-bottom, 0px))",
+                  borderTop: "1px solid var(--border)",
+                  background: "color-mix(in srgb, var(--panel) 92%, transparent)",
+                }}
+              >
+                <button
+                  onClick={() => hardNavigate(logoutItem.href)}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    display: "grid",
+                    gridTemplateColumns: "32px 1fr",
+                    alignItems: "center",
+                    columnGap: 8,
+                    padding: "10px 10px",
+                    borderRadius: 12,
+                    border: "none",
+                    background: "transparent",
+                    color: "var(--muted)",
+                    fontFamily: "inherit",
+                    fontSize: "var(--fs-b)",
+                    fontWeight: "var(--fw-medium)",
+                    lineHeight: "var(--lh-b)",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span aria-hidden style={{ width: 32, height: 28, display: "grid", placeItems: "center" }}>
+                    <NavIcon href={logoutItem.href} emoji={logoutItem.emoji} size={22} />
+                  </span>
+                  <span style={{ color: "currentColor" }}>{logoutItem.label}</span>
+                </button>
+              </div>
+            ) : null}
           </aside>
         </>
       )}
@@ -908,12 +993,12 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               width: isMobileNav ? 240 : 280,
               maxWidth: "86vw",
               background: "var(--panel)",
-              color: "var(--text)",
+              color: "var(--muted)",
               borderLeft: "1px solid var(--border)",
               boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
               zIndex: 121, // peste header
               display: "grid",
-              gridTemplateRows: "auto 1fr",
+              gridTemplateRows: isMobileNav ? "auto 1fr auto" : "auto 1fr",
               paddingTop: isSmall ? "var(--safe-top)" : "calc(var(--safe-top) + 8px)",
             }}
           >
@@ -949,14 +1034,23 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
 	            <nav
 	              style={{
-	                padding: 8,
+	                padding: isMobileNav ? 12 : 8,
 	                overflowY: "auto",
-	                WebkitOverflowScrolling: 'touch',
-	                paddingBottom: 'calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)'
+	                WebkitOverflowScrolling: "touch",
+	                paddingBottom: isMobileNav ? "calc(16px + var(--safe-bottom, 0px))" : "calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)",
 	              }}
 	            >
-		              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0 }}>
-		                {navRight.map((it) => {
+                {(isMobileNav ? navSectionsRight : [{ title: null as any, items: navRight }]).map((section, idx) => (
+                  <div
+                    key={section.title || "all"}
+                    style={{
+                      marginBottom: isMobileNav ? 12 : 0,
+                      borderTop: isMobileNav && idx > 0 ? "1px solid var(--border)" : "none",
+                    }}
+                  >
+                    {isMobileNav ? <div style={drawerSectionTitleStyle()}>{section.title}</div> : null}
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: isMobileNav ? 4 : 0 }}>
+                      {section.items.filter((it) => !isMobileNav || it.href !== "/auth/logout").map((it) => {
 		                  const active = currentPath
 		                    ? it.href === "/app/dashboard"
 		                      ? currentPath === "/app/dashboard"
@@ -968,6 +1062,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                  const ICON_SIZE = isMobileNav ? 22 : 32;
 	                  const ICON_COL = isMobileNav ? 32 : 40;
 	                  const ICON_ROW = isMobileNav ? 28 : 32;
+                    const itemPadding = isMobileNav ? "10px 10px" : "4px 0";
+                    const itemRadius = isMobileNav ? 12 : 0;
 
 	                  return (
 	                    <li key={it.href}>
@@ -988,10 +1084,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                          gridTemplateColumns: `${ICON_COL}px 1fr`,
 	                          alignItems: "center",
 	                          columnGap: 8,
-	                          padding: "4px 0",
-	                          borderRadius: 0,
+	                          padding: itemPadding,
+	                          borderRadius: itemRadius,
 	                          border: "none",
-	                          background: "transparent",
+	                          background:
+                              isMobileNav && (active || hoverRight === it.href || pressedRight === it.href)
+                                ? "color-mix(in srgb, var(--primary) 10%, transparent)"
+                                : "transparent",
 	                          color: active || hoverRight === it.href || pressedRight === it.href ? "var(--primary)" : "var(--muted)",
 	                          fontFamily: "inherit",
 	                          fontSize: "var(--fs-b)",
@@ -1020,8 +1119,50 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                    </li>
                   );
                 })}
-              </ul>
+                    </ul>
+                  </div>
+                ))}
             </nav>
+
+            {isMobileNav && logoutItem ? (
+              <div
+                style={{
+                  padding: "12px 12px calc(12px + var(--safe-bottom, 0px))",
+                  borderTop: "1px solid var(--border)",
+                  background: "color-mix(in srgb, var(--panel) 92%, transparent)",
+                }}
+              >
+                <button
+                  onClick={() => {
+                    setOpenRight(false);
+                    hardNavigate(logoutItem.href);
+                  }}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    display: "grid",
+                    gridTemplateColumns: "32px 1fr",
+                    alignItems: "center",
+                    columnGap: 8,
+                    padding: "10px 10px",
+                    borderRadius: 12,
+                    border: "none",
+                    background: "transparent",
+                    color: "var(--muted)",
+                    fontFamily: "inherit",
+                    fontSize: "var(--fs-b)",
+                    fontWeight: "var(--fw-medium)",
+                    lineHeight: "var(--lh-b)",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span aria-hidden style={{ width: 32, height: 28, display: "grid", placeItems: "center" }}>
+                    <NavIcon href={logoutItem.href} emoji={logoutItem.emoji} size={22} />
+                  </span>
+                  <span style={{ color: "currentColor" }}>{logoutItem.label}</span>
+                </button>
+              </div>
+            ) : null}
           </aside>
         </>
       )}
