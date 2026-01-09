@@ -982,6 +982,7 @@ will-change: transform;
   color: color-mix(in srgb, var(--text) 86%, #ffffff);
 }
 .cookieIcon svg { width: 24px; height: 24px; }
+.cookieIcon span { font-size: 24px; line-height: 1; }
 .cookieTitle { margin: 0; font-size: var(--fs-b); font-weight: var(--fw-bold); line-height: var(--lh-b); }
 .cookieText { color: var(--muted); font-size: var(--fs-s); font-weight: var(--fw-medium); line-height: var(--lh-s); }
 .cookieActions { display: grid; gap: 16px; }

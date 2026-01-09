@@ -719,22 +719,17 @@ function CookieConsentLanding() {
         data-animate="true"
       >
         {/* header */}
-        <div className={styles.cookieHeader}>
-          <div
-            aria-hidden
-            className={styles.cookieIcon}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
-              <circle cx="9" cy="10" r="1.2" fill="currentColor" />
-              <circle cx="14.5" cy="13" r="1.2" fill="currentColor" />
-              <circle cx="11" cy="15.5" r="1.2" fill="currentColor" />
-            </svg>
-          </div>
-          <div>
-            <h3 className={styles.cookieTitle}>We use cookies</h3>
-            <div className={styles.cookieText}>
-              Essential cookies keep the site working. Optionally, we can remember your <strong>theme</strong> (light/dark).
+	        <div className={styles.cookieHeader}>
+	          <div
+	            aria-hidden
+	            className={styles.cookieIcon}
+	          >
+              <span aria-hidden>🍪</span>
+	          </div>
+	          <div>
+	            <h3 className={styles.cookieTitle}>We use cookies</h3>
+	            <div className={styles.cookieText}>
+	              Essential cookies keep the site working. Optionally, we can remember your <strong>theme</strong> (light/dark).
             </div>
           </div>
         </div>
