@@ -1018,10 +1018,11 @@ export default function DemoClient() {
               .rm-topbarMeta{ margin-top: 2px; font-size: var(--rm-font-s); font-weight: var(--rm-weight-m); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               .rm-heroMedia{ position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9; }
               .rm-heroMedia img{ width: 100%; height: 100%; object-fit: cover; display:block; }
-              .rm-detailLine{ display:flex; align-items: baseline; gap: 8px; min-width: 0; }
+              .rm-detailLine{ display:flex; align-items: center; gap: 8px; min-width: 0; }
               .rm-detailLabel{ font-size: var(--rm-font-s); font-weight: var(--rm-weight-m); letter-spacing: .10em; text-transform: uppercase; color: var(--muted); flex: 0 0 auto; }
               .rm-detailValue{ font-size: var(--rm-font-b); font-weight: var(--rm-weight-m); color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
               .rm-detailMeta{ font-size: var(--rm-font-s); font-weight: var(--rm-weight-m); color: var(--muted); }
+              .rm-iconCell{ width: 18px; display:flex; align-items:center; justify-content:center; }
               .rm-footer{ color: var(--muted); text-align: center; font-size: var(--rm-font-s); font-weight: var(--rm-weight-m); margin-top: 12px; }
               @media (max-width: 520px){
                 .rm-topbarMeta{ max-width: 160px; }
@@ -1110,17 +1111,17 @@ export default function DemoClient() {
           <article className="rm-card" style={{ marginBottom: 16 }}>
             <div className="rm-content">
               <h3>{labels.details}</h3>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "auto 1fr",
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "auto 1fr",
                   rowGap: 10,
-                  columnGap: 10,
-                  alignItems: "center",
-                }}
-              >
-                <div aria-hidden style={{ width: 18 }}>
-                  <img src="/dashboard_forlight.png" alt="" width={16} height={16} />
+                    columnGap: 10,
+                    alignItems: "center",
+                  }}
+                >
+                <div aria-hidden className="rm-iconCell">
+                  <img src="/dashboard_forlight.png" alt="" width={16} height={16} style={{ display: "block" }} />
                 </div>
                 <div>
                   <div className="rm-detailLine">
@@ -1129,8 +1130,8 @@ export default function DemoClient() {
                   </div>
                 </div>
 
-                <div aria-hidden style={{ width: 18 }}>
-                  <img src="/logoguest_forlight.png" alt="" width={16} height={16} />
+                <div aria-hidden className="rm-iconCell">
+                  <img src="/logoguest_forlight.png" alt="" width={16} height={16} style={{ display: "block" }} />
                 </div>
                 <div>
                   <div className="rm-detailLine">
@@ -1142,8 +1143,8 @@ export default function DemoClient() {
                   </div>
                 </div>
 
-                <div aria-hidden style={{ width: 18 }}>
-                  <img src="/night_forlight.png" alt="" width={16} height={16} />
+                <div aria-hidden className="rm-iconCell">
+                  <img src="/night_forlight.png" alt="" width={16} height={16} style={{ display: "block" }} />
                 </div>
                 <div>
                   <div className="rm-detailLine">
