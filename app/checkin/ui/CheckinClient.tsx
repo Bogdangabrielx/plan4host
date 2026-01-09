@@ -1447,12 +1447,53 @@ export default function CheckinClient() {
             .ci-heroNote{ margin-top: 6px; display:grid; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 70%, transparent); background: color-mix(in srgb, var(--panel) 55%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent); }
             .ci-heroNoteTitle{ font-size: var(--ci-font-s); font-weight: var(--ci-weight-b); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); }
             .ci-heroList{ list-style: none; padding: 0; margin: 0; display:grid; gap: 8px; text-align: left; }
-            .ci-heroList li{ display:flex; gap: 10px; align-items: flex-start; }
-            .ci-heroBullet{ width: 8px; height: 8px; border-radius: 999px; margin-top: 7px; background: color-mix(in srgb, var(--primary) 70%, white); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent); flex: 0 0 auto; }
+            .ci-heroList li{ display:block; }
             @media (max-width: 560px){ .ci-type{ --ci-font-h:24px; } }
           `,
         }}
       />
+
+      {/* Page loading overlay (initial fetch) */}
+      {loading && (
+        <div
+          aria-live="polite"
+          aria-label={lang === "ro" ? "Se încarcă" : "Loading"}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 999,
+            background: "rgba(0,0,0,.55)",
+            WebkitBackdropFilter: "blur(8px)",
+            backdropFilter: "blur(8px)",
+            display: "grid",
+            placeItems: "center",
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              padding: "12px 14px",
+              borderRadius: 999,
+              border: "1px solid var(--border)",
+              background: "rgba(255,255,255,0.68)",
+              WebkitBackdropFilter: "blur(10px) saturate(130%)",
+              backdropFilter: "blur(10px) saturate(130%)",
+              boxShadow: "0 14px 34px rgba(0,0,0,0.20)",
+            }}
+          >
+            <span className="p4h-dots" aria-hidden>
+              <span className="p4h-dot" />
+              <span className="p4h-dot" />
+              <span className="p4h-dot" />
+            </span>
+            <span style={{ fontWeight: 800, color: "#0c111b" }}>{T("loading")}</span>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <section style={CARD} className="ci-heroCard ci-type">
         <div className="ci-heroInner">
@@ -1461,23 +1502,20 @@ export default function CheckinClient() {
               Stay Smart, Experience <span className={homeStyles.betterGrad}>Better</span>
             </h1>
             <div className="ci-heroStack">
-              <p className="ci-heroLead">{T('intro2')}</p>
+              <p className="ci-heroSmall">{T('intro2')}</p>
 
               <div className="ci-heroNote">
                 <div className="ci-heroNoteTitle">{lang === "ro" ? "Informații" : "Info"}</div>
                 <ul className="ci-heroList">
                   <li>
-                    <span className="ci-heroBullet" aria-hidden />
                     <span className="ci-heroBody">{T('intro1')}</span>
                   </li>
                   <li>
-                    <span className="ci-heroBullet" aria-hidden />
                     <span className="ci-heroBody">
                       <Intro3 name={prop?.name ?? (lang === 'ro' ? 'proprietate' : 'the property')} />
                     </span>
                   </li>
                   <li>
-                    <span className="ci-heroBullet" aria-hidden />
                     <span className="ci-heroBody">
                       {T('intro4')}{" "}
                       <img
@@ -1490,7 +1528,6 @@ export default function CheckinClient() {
                     </span>
                   </li>
                   <li>
-                    <span className="ci-heroBullet" aria-hidden />
                     <span className="ci-heroBody">{T('intro5')}</span>
                   </li>
                 </ul>
@@ -1951,7 +1988,8 @@ export default function CheckinClient() {
               <label
                 className={`${homeStyles.btn} ${homeStyles.btnChoose} ${homeStyles.btnPrimary}`}
                 style={{
-                  width: isNarrow ? "100%" : "min(520px, 100%)",
+                  width: "100%",
+                  maxWidth: isNarrow ? undefined : 520,
                   margin: isNarrow ? undefined : "0 auto",
                   boxSizing: "border-box",
                   cursor: "pointer",
@@ -2150,7 +2188,9 @@ export default function CheckinClient() {
                 style={{
                   opacity: canSubmit ? 1 : 0.6,
                   cursor: canSubmit ? "pointer" : "not-allowed",
-                  width: isNarrow ? "100%" : "min(520px, 100%)",
+                  width: "100%",
+                  maxWidth: isNarrow ? undefined : 520,
+                  margin: isNarrow ? undefined : "0 auto",
                 }}
               >
                 {submitState === "submitting" ? T('submitSubmitting') : T('submit')}
