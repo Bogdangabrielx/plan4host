@@ -966,10 +966,19 @@ will-change: transform;
   display: grid;
   gap: 16px;
 }
-.cookieHeader { display: flex; align-items: center; gap: 16px; }
+.cookieHeader {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: center;
+  gap: 16px;
+}
+.cookieHeader > :last-child { min-width: 0; }
 .cookieIcon {
   width: 48px;
   height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  aspect-ratio: 1 / 1;
   display: grid;
   place-items: center;
   border-radius: 999px;
