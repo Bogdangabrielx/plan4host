@@ -92,6 +92,21 @@ export default function MessagesView({ token, data }: { token: string; data: any
   function ContactOverlay({ prop }: { prop: PropInfo }) {
     if (!prop.contact_email && !prop.contact_phone && !prop.contact_address) return null;
     const pos = (prop.contact_overlay_position || 'center') as 'top'|'center'|'down';
+    const overlayIcon = (src: string): React.CSSProperties => ({
+      width: 16,
+      height: 16,
+      display: "block",
+      flex: "0 0 auto",
+      backgroundColor: "rgba(255,255,255,0.92)",
+      WebkitMaskImage: `url(${src})`,
+      maskImage: `url(${src})`,
+      WebkitMaskRepeat: "no-repeat",
+      maskRepeat: "no-repeat",
+      WebkitMaskPosition: "center",
+      maskPosition: "center",
+      WebkitMaskSize: "contain",
+      maskSize: "contain",
+    });
     const base: React.CSSProperties = {
       position: 'absolute', left:'50%', transform:'translateX(-50%)', width:'calc(100% - 24px)', maxWidth: 380,
       background: 'rgba(23, 25, 36, 0.29)', color: '#fff', WebkitBackdropFilter: 'blur(5px) saturate(140%)', backdropFilter: 'blur(5px) saturate(140%)',
@@ -104,19 +119,19 @@ export default function MessagesView({ token, data }: { token: string; data: any
       <div style={base}>
         {prop.contact_email && (
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <span aria-hidden>✉</span>
+            <span aria-hidden style={overlayIcon("/svg_email_demo.svg")} />
             <a href={`mailto:${prop.contact_email}`} style={{ color:'#fff', textDecoration:'none' }}>{prop.contact_email}</a>
           </div>
         )}
         {prop.contact_phone && (
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <span aria-hidden>☏</span>
+            <span aria-hidden style={overlayIcon("/svg_phone_demo.svg")} />
             <a href={`tel:${String(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color:'#fff', textDecoration:'none' }}>{prop.contact_phone}</a>
           </div>
         )}
         {prop.contact_address && (
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <span aria-hidden>⚐</span>
+            <span aria-hidden style={overlayIcon("/svg_location_demo.svg")} />
             <span>{prop.contact_address}</span>
           </div>
         )}
@@ -255,19 +270,73 @@ export default function MessagesView({ token, data }: { token: string; data: any
             <div style={{ padding: 12 }}>
               {prop.contact_email && (
                 <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <span aria-hidden>✉</span>
+                  <span
+                    aria-hidden
+                    style={{
+                      width: 16,
+                      height: 16,
+                      display: "block",
+                      backgroundColor: "var(--primary)",
+                      WebkitMaskImage: "url(/svg_email_demo.svg)",
+                      maskImage: "url(/svg_email_demo.svg)",
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                      pointerEvents: "none",
+                      flex: "0 0 auto",
+                    }}
+                  />
                   <a href={`mailto:${prop.contact_email}`} style={{ color:'var(--primary)', textDecoration:'none' }}>{prop.contact_email}</a>
                 </div>
               )}
               {prop.contact_phone && (
                 <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <span aria-hidden>☏</span>
+                  <span
+                    aria-hidden
+                    style={{
+                      width: 16,
+                      height: 16,
+                      display: "block",
+                      backgroundColor: "var(--primary)",
+                      WebkitMaskImage: "url(/svg_phone_demo.svg)",
+                      maskImage: "url(/svg_phone_demo.svg)",
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                      pointerEvents: "none",
+                      flex: "0 0 auto",
+                    }}
+                  />
                   <a href={`tel:${String(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color:'var(--primary)', textDecoration:'none' }}>{prop.contact_phone}</a>
                 </div>
               )}
               {prop.contact_address && (
                 <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <span aria-hidden>⚐</span>
+                  <span
+                    aria-hidden
+                    style={{
+                      width: 16,
+                      height: 16,
+                      display: "block",
+                      backgroundColor: "var(--primary)",
+                      WebkitMaskImage: "url(/svg_location_demo.svg)",
+                      maskImage: "url(/svg_location_demo.svg)",
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                      pointerEvents: "none",
+                      flex: "0 0 auto",
+                    }}
+                  />
                   <span>{prop.contact_address}</span>
                 </div>
               )}
@@ -1452,7 +1521,25 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                               gap: 6,
                             }}
                           >
-                            <span aria-hidden>📞</span>
+                            <span
+                              aria-hidden
+                              style={{
+                                width: 16,
+                                height: 16,
+                                display: "block",
+                                backgroundColor: "#e5e7eb",
+                                WebkitMaskImage: "url(/svg_phone_demo.svg)",
+                                maskImage: "url(/svg_phone_demo.svg)",
+                                WebkitMaskRepeat: "no-repeat",
+                                maskRepeat: "no-repeat",
+                                WebkitMaskPosition: "center",
+                                maskPosition: "center",
+                                WebkitMaskSize: "contain",
+                                maskSize: "contain",
+                                pointerEvents: "none",
+                                flex: "0 0 auto",
+                              }}
+                            />
                             <span>{prop.contact_phone}</span>
                           </span>
                         </button>
@@ -1483,7 +1570,25 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                               gap: 6,
                             }}
                           >
-                            <span aria-hidden>✉</span>
+                            <span
+                              aria-hidden
+                              style={{
+                                width: 16,
+                                height: 16,
+                                display: "block",
+                                backgroundColor: "#e5e7eb",
+                                WebkitMaskImage: "url(/svg_email_demo.svg)",
+                                maskImage: "url(/svg_email_demo.svg)",
+                                WebkitMaskRepeat: "no-repeat",
+                                maskRepeat: "no-repeat",
+                                WebkitMaskPosition: "center",
+                                maskPosition: "center",
+                                WebkitMaskSize: "contain",
+                                maskSize: "contain",
+                                pointerEvents: "none",
+                                flex: "0 0 auto",
+                              }}
+                            />
                             <span>{prop.contact_email}</span>
                           </span>
                         </button>
@@ -2490,7 +2595,25 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span aria-hidden>📞</span>
+                        <span
+                          aria-hidden
+                          style={{
+                            width: 16,
+                            height: 16,
+                            display: "block",
+                            backgroundColor: "#e5e7eb",
+                            WebkitMaskImage: "url(/svg_phone_demo.svg)",
+                            maskImage: "url(/svg_phone_demo.svg)",
+                            WebkitMaskRepeat: "no-repeat",
+                            maskRepeat: "no-repeat",
+                            WebkitMaskPosition: "center",
+                            maskPosition: "center",
+                            WebkitMaskSize: "contain",
+                            maskSize: "contain",
+                            pointerEvents: "none",
+                            flex: "0 0 auto",
+                          }}
+                        />
                         <span>{prop.contact_phone}</span>
                       </span>
                       <span style={{ fontSize: 11, color: "var(--muted)" }}>
@@ -2516,7 +2639,25 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span aria-hidden>✉</span>
+                        <span
+                          aria-hidden
+                          style={{
+                            width: 16,
+                            height: 16,
+                            display: "block",
+                            backgroundColor: "#e5e7eb",
+                            WebkitMaskImage: "url(/svg_email_demo.svg)",
+                            maskImage: "url(/svg_email_demo.svg)",
+                            WebkitMaskRepeat: "no-repeat",
+                            maskRepeat: "no-repeat",
+                            WebkitMaskPosition: "center",
+                            maskPosition: "center",
+                            WebkitMaskSize: "contain",
+                            maskSize: "contain",
+                            pointerEvents: "none",
+                            flex: "0 0 auto",
+                          }}
+                        />
                         <span>{prop.contact_email}</span>
                       </span>
                       <span style={{ fontSize: 11, color: "var(--muted)" }}>
