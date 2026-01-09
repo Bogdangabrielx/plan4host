@@ -1449,6 +1449,21 @@ export default function CheckinClient() {
             .ci-heroList{ list-style: none; padding: 0; margin: 0; display:grid; gap: 8px; text-align: left; }
             .ci-heroList li{ display:block; }
             @media (max-width: 560px){ .ci-type{ --ci-font-h:24px; } }
+            @media (max-width: 900px){
+              .ci-langSwitch{
+                position: fixed;
+                top: 14px;
+                right: 14px;
+                z-index: 1200;
+                padding: 8px;
+                border-radius: 999px;
+                border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+                background: color-mix(in srgb, var(--panel) 60%, transparent);
+                -webkit-backdrop-filter: blur(12px) saturate(130%);
+                        backdrop-filter: blur(12px) saturate(130%);
+                box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+              }
+            }
           `,
         }}
       />
@@ -1462,7 +1477,8 @@ export default function CheckinClient() {
             position: "fixed",
             inset: 0,
             zIndex: 999,
-            background: "rgba(0,0,0,.55)",
+            background:
+              "radial-gradient(700px 500px at 10% 0%, rgba(16,185,129,0.14), transparent 58%), radial-gradient(700px 500px at 90% 100%, rgba(59,130,246,0.12), transparent 58%), rgba(2,6,23,.60)",
             WebkitBackdropFilter: "blur(8px)",
             backdropFilter: "blur(8px)",
             display: "grid",
@@ -1478,11 +1494,11 @@ export default function CheckinClient() {
               gap: 10,
               padding: "12px 14px",
               borderRadius: 999,
-              border: "1px solid var(--border)",
-              background: "rgba(255,255,255,0.68)",
+              border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+              background: "rgba(15,23,42,0.72)",
               WebkitBackdropFilter: "blur(10px) saturate(130%)",
               backdropFilter: "blur(10px) saturate(130%)",
-              boxShadow: "0 14px 34px rgba(0,0,0,0.20)",
+              boxShadow: "0 16px 40px rgba(0,0,0,0.28)",
             }}
           >
             <span className="p4h-dots" aria-hidden>
@@ -1490,7 +1506,7 @@ export default function CheckinClient() {
               <span className="p4h-dot" />
               <span className="p4h-dot" />
             </span>
-            <span style={{ fontWeight: 800, color: "#0c111b" }}>{T("loading")}</span>
+            <span style={{ fontWeight: 650, color: "#fff" }}>{T("loading")}</span>
           </div>
         </div>
       )}
