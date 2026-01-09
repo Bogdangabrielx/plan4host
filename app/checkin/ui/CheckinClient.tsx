@@ -1368,17 +1368,14 @@ export default function CheckinClient() {
                   height: 42,
                   padding: 0,
                   borderRadius: 999,
-                  border:
-                    lang === "ro"
-                      ? "1px solid color-mix(in srgb, var(--primary) 55%, transparent)"
-                      : "1px solid var(--border)",
+                  border: lang === "ro" ? "1px solid var(--primary)" : "1px solid var(--border)",
                   background: "var(--card)",
                   display: "grid",
                   placeItems: "center",
                   cursor: "pointer",
                   boxShadow:
                     lang === "ro"
-                      ? "0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent)"
+                      ? "0 0 0 3px color-mix(in srgb, var(--primary) 32%, transparent), 0 12px 26px color-mix(in srgb, var(--primary) 18%, transparent)"
                       : "none",
                 }}
               >
@@ -1394,17 +1391,14 @@ export default function CheckinClient() {
                   height: 42,
                   padding: 0,
                   borderRadius: 999,
-                  border:
-                    lang === "en"
-                      ? "1px solid color-mix(in srgb, var(--primary) 55%, transparent)"
-                      : "1px solid var(--border)",
+                  border: lang === "en" ? "1px solid var(--primary)" : "1px solid var(--border)",
                   background: "var(--card)",
                   display: "grid",
                   placeItems: "center",
                   cursor: "pointer",
                   boxShadow:
                     lang === "en"
-                      ? "0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent)"
+                      ? "0 0 0 3px color-mix(in srgb, var(--primary) 32%, transparent), 0 12px 26px color-mix(in srgb, var(--primary) 18%, transparent)"
                       : "none",
                 }}
               >
@@ -1489,17 +1483,14 @@ export default function CheckinClient() {
                 height: 42,
                 padding: 0,
                 borderRadius: 999,
-                border:
-                  lang === "ro"
-                    ? "1px solid color-mix(in srgb, var(--primary) 55%, transparent)"
-                    : "1px solid var(--border)",
+                border: lang === "ro" ? "1px solid var(--primary)" : "1px solid var(--border)",
                 background: "var(--card)",
                 display: "grid",
                 placeItems: "center",
                 cursor: "pointer",
                 boxShadow:
                   lang === "ro"
-                    ? "0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent)"
+                    ? "0 0 0 3px color-mix(in srgb, var(--primary) 32%, transparent), 0 12px 26px color-mix(in srgb, var(--primary) 18%, transparent)"
                     : "none",
               }}
             >
@@ -1515,17 +1506,14 @@ export default function CheckinClient() {
                 height: 42,
                 padding: 0,
                 borderRadius: 999,
-                border:
-                  lang === "en"
-                    ? "1px solid color-mix(in srgb, var(--primary) 55%, transparent)"
-                    : "1px solid var(--border)",
+                border: lang === "en" ? "1px solid var(--primary)" : "1px solid var(--border)",
                 background: "var(--card)",
                 display: "grid",
                 placeItems: "center",
                 cursor: "pointer",
                 boxShadow:
                   lang === "en"
-                    ? "0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent)"
+                    ? "0 0 0 3px color-mix(in srgb, var(--primary) 32%, transparent), 0 12px 26px color-mix(in srgb, var(--primary) 18%, transparent)"
                     : "none",
               }}
             >
@@ -1935,13 +1923,14 @@ export default function CheckinClient() {
             <div style={{ marginTop: 6 }}>
               <label style={LABEL}>{T('uploadId')}</label>
               <label
-                className={`${homeStyles.btn} ${homeStyles.btnChoose} ${homeStyles.btnPrimary} sb-cardglow`}
+                className={`${homeStyles.btn} ${homeStyles.btnChoose} ${homeStyles.btnPrimary}`}
                 style={{
                   width: "100%",
                   boxSizing: "border-box",
                   cursor: "pointer",
                   userSelect: "none",
                   gap: 10,
+                  minWidth: 0,
                 }}
                 htmlFor="p4h-id-upload"
                 onClick={(e) => { if (maybeShowIdUploadInfo(e)) return; }}
