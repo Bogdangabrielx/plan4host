@@ -1047,41 +1047,45 @@ export default function DemoClient() {
                   onClick={() => setLang("ro")}
                   className="sb-btn"
                   style={{
-                    padding: "6px 10px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border)",
-                    background: lang === "ro" ? "var(--primary)" : "rgba(255,255,255,0.65)",
-                    color: lang === "ro" ? "#0c111b" : "var(--text)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
+                    width: 42,
+                    height: 42,
+                    padding: 0,
+                    borderRadius: 999,
+                    border: lang === "ro" ? "1px solid rgba(59,130,246,0.55)" : "1px solid var(--border)",
+                    background: "rgba(255,255,255,0.65)",
+                    color: "var(--text)",
+                    display: "grid",
+                    placeItems: "center",
                     cursor: "pointer",
                     WebkitBackdropFilter: "blur(10px)",
                     backdropFilter: "blur(10px)",
+                    boxShadow: lang === "ro" ? "0 0 0 3px rgba(59,130,246,0.16)" : "none",
                   }}
+                  aria-label="Română"
                 >
-                  <img src="/ro.png" alt="RO" width={16} height={16} />
-                  <span>Română</span>
+                  <img src="/ro.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
                 </button>
                 <button
                   onClick={() => setLang("en")}
                   className="sb-btn"
                   style={{
-                    padding: "6px 10px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border)",
-                    background: lang === "en" ? "var(--primary)" : "rgba(255,255,255,0.65)",
-                    color: lang === "en" ? "#0c111b" : "var(--text)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
+                    width: 42,
+                    height: 42,
+                    padding: 0,
+                    borderRadius: 999,
+                    border: lang === "en" ? "1px solid rgba(59,130,246,0.55)" : "1px solid var(--border)",
+                    background: "rgba(255,255,255,0.65)",
+                    color: "var(--text)",
+                    display: "grid",
+                    placeItems: "center",
                     cursor: "pointer",
                     WebkitBackdropFilter: "blur(10px)",
                     backdropFilter: "blur(10px)",
+                    boxShadow: lang === "en" ? "0 0 0 3px rgba(59,130,246,0.16)" : "none",
                   }}
+                  aria-label="English"
                 >
-                  <img src="/eng.png" alt="EN" width={16} height={16} />
-                  <span>English</span>
+                  <img src="/eng.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
                 </button>
               </div>
             </div>
