@@ -1927,7 +1927,8 @@ export default function CheckinClient() {
               <label
                 className={`${homeStyles.btn} ${homeStyles.btnChoose} ${homeStyles.btnPrimary}`}
                 style={{
-                  width: "100%",
+                  width: isNarrow ? "100%" : "min(520px, 100%)",
+                  margin: isNarrow ? undefined : "0 auto",
                   boxSizing: "border-box",
                   cursor: "pointer",
                   userSelect: "none",
