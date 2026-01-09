@@ -1439,17 +1439,24 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                                 />
                               )}
                               {id === "extras" && (
-                                <svg
-                                  viewBox="0 0 24 24"
-                                  width={16}
-                                  height={16}
-                                  aria-hidden="true"
-                                >
-                                  <path
-                                    d="M12 3a5 5 0 00-5 5c0 3.3 4.2 8 5 9 0.8-1 5-5.7 5-9a5 5 0 00-5-5zm0 2a3 3 0 110 6 3 3 0 010-6z"
-                                    fill="#e5e7eb"
-                                  />
-                                </svg>
+                                <span
+                                  aria-hidden
+                                  style={{
+                                    width: 16,
+                                    height: 16,
+                                    display: "block",
+                                    backgroundColor: "#e5e7eb",
+                                    WebkitMaskImage: "url(/svg_recommendations.svg)",
+                                    maskImage: "url(/svg_recommendations.svg)",
+                                    WebkitMaskRepeat: "no-repeat",
+                                    maskRepeat: "no-repeat",
+                                    WebkitMaskPosition: "center",
+                                    maskPosition: "center",
+                                    WebkitMaskSize: "contain",
+                                    maskSize: "contain",
+                                    pointerEvents: "none",
+                                  }}
+                                />
                               )}
                               {id === "checkout" && (
                                 <svg
