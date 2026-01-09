@@ -1357,14 +1357,60 @@ export default function CheckinClient() {
         <div style={CARD}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10 }}>
             <h1 style={{ marginTop: 0, marginBottom: 8 }}>{T('checkinTitle')}</h1>
-            <button
-              className={homeStyles.btnLang}
-              onClick={() => setLang(l => (l === 'en' ? 'ro' : 'en'))}
-              aria-label={lang === 'en' ? 'Switch to Romanian' : 'Schimbă în Engleză'}
-              title={lang === 'en' ? 'Switch to Romanian' : 'Schimbă în Engleză'}
-            >
-              <img src={lang === 'ro' ? '/ro.png' : '/eng.png'} alt="" width={22} height={22} style={{ display:'block' }} />
-            </button>
+            <div style={{ display: "inline-flex", gap: 8, alignSelf: "flex-start" }}>
+              <button
+                type="button"
+                onClick={() => setLang("ro")}
+                aria-label="Română"
+                title="Română"
+                style={{
+                  width: 42,
+                  height: 42,
+                  padding: 0,
+                  borderRadius: 999,
+                  border:
+                    lang === "ro"
+                      ? "1px solid color-mix(in srgb, var(--primary) 55%, transparent)"
+                      : "1px solid var(--border)",
+                  background: "var(--card)",
+                  display: "grid",
+                  placeItems: "center",
+                  cursor: "pointer",
+                  boxShadow:
+                    lang === "ro"
+                      ? "0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent)"
+                      : "none",
+                }}
+              >
+                <img src="/ro.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang("en")}
+                aria-label="English"
+                title="English"
+                style={{
+                  width: 42,
+                  height: 42,
+                  padding: 0,
+                  borderRadius: 999,
+                  border:
+                    lang === "en"
+                      ? "1px solid color-mix(in srgb, var(--primary) 55%, transparent)"
+                      : "1px solid var(--border)",
+                  background: "var(--card)",
+                  display: "grid",
+                  placeItems: "center",
+                  cursor: "pointer",
+                  boxShadow:
+                    lang === "en"
+                      ? "0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent)"
+                      : "none",
+                }}
+              >
+                <img src="/eng.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
+              </button>
+            </div>
           </div>
           <p style={{ color: "var(--muted)" }}>
             Missing property. This link must include <code>?property=&lt;PROPERTY_ID&gt;</code>.
@@ -1432,15 +1478,60 @@ export default function CheckinClient() {
               <p className="ci-heroSmall">{T('intro6')}</p>
             </div>
           </div>
-          <button
-            className={homeStyles.btnLang}
-            onClick={() => setLang(l => (l === 'en' ? 'ro' : 'en'))}
-            aria-label={lang === 'en' ? 'Switch to Romanian' : 'Schimbă în Engleză'}
-            title={lang === 'en' ? 'Switch to Romanian' : 'Schimbă în Engleză'}
-            style={{ alignSelf:'flex-start' }}
-          >
-            <img src={lang === 'ro' ? '/ro.png' : '/eng.png'} alt="" width={22} height={22} style={{ display:'block' }} />
-          </button>
+          <div style={{ display: "inline-flex", gap: 8, alignSelf: "flex-start" }}>
+            <button
+              type="button"
+              onClick={() => setLang("ro")}
+              aria-label="Română"
+              title="Română"
+              style={{
+                width: 42,
+                height: 42,
+                padding: 0,
+                borderRadius: 999,
+                border:
+                  lang === "ro"
+                    ? "1px solid color-mix(in srgb, var(--primary) 55%, transparent)"
+                    : "1px solid var(--border)",
+                background: "var(--card)",
+                display: "grid",
+                placeItems: "center",
+                cursor: "pointer",
+                boxShadow:
+                  lang === "ro"
+                    ? "0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent)"
+                    : "none",
+              }}
+            >
+              <img src="/ro.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setLang("en")}
+              aria-label="English"
+              title="English"
+              style={{
+                width: 42,
+                height: 42,
+                padding: 0,
+                borderRadius: 999,
+                border:
+                  lang === "en"
+                    ? "1px solid color-mix(in srgb, var(--primary) 55%, transparent)"
+                    : "1px solid var(--border)",
+                background: "var(--card)",
+                display: "grid",
+                placeItems: "center",
+                cursor: "pointer",
+                boxShadow:
+                  lang === "en"
+                    ? "0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent)"
+                    : "none",
+              }}
+            >
+              <img src="/eng.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
+            </button>
+          </div>
         </div>
       </section>
 
@@ -1843,29 +1934,19 @@ export default function CheckinClient() {
             {/* Upload ID document (photo/PDF) — obligatoriu */}
             <div style={{ marginTop: 6 }}>
               <label style={LABEL}>{T('uploadId')}</label>
-              {/* Custom upload button styled as sb-cardglow */}
               <label
-                className="sb-cardglow"
+                className={`${homeStyles.btn} ${homeStyles.btnChoose} ${homeStyles.btnPrimary} sb-cardglow`}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  width: "100%",
+                  boxSizing: "border-box",
+                  cursor: "pointer",
+                  userSelect: "none",
                   gap: 10,
-                  padding: '10px 14px',
-                  borderRadius: 12,
-                  border: '1px solid var(--primary)',
-                  background: 'transparent',
-                  color: 'var(--text)',
-                  cursor: 'pointer',
-                  userSelect: 'none',
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  textAlign: 'center',
                 }}
                 htmlFor="p4h-id-upload"
                 onClick={(e) => { if (maybeShowIdUploadInfo(e)) return; }}
               >
-                Choose file…
+                {lang === "ro" ? "Alege fișier…" : "Choose file…"}
                 
                 <input
                   type="file"
