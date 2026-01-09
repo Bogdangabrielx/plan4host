@@ -1364,22 +1364,29 @@ export default function CheckinClient() {
                 aria-label="Română"
                 title="Română"
                 style={{
-                  width: 42,
-                  height: 42,
+                  width: 32,
+                  height: 32,
                   padding: 0,
                   borderRadius: 999,
-                  border: lang === "ro" ? "1px solid var(--primary)" : "1px solid var(--border)",
-                  background: "var(--card)",
+                  border: "none",
+                  background: "transparent",
                   display: "grid",
                   placeItems: "center",
                   cursor: "pointer",
-                  boxShadow:
-                    lang === "ro"
-                      ? "0 0 0 3px color-mix(in srgb, var(--primary) 32%, transparent), 0 12px 26px color-mix(in srgb, var(--primary) 18%, transparent)"
-                      : "none",
+                  boxShadow: "none",
                 }}
               >
-                <img src="/ro.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
+                <img
+                  src="/ro.png"
+                  alt=""
+                  width={26}
+                  height={26}
+                  style={{
+                    borderRadius: 999,
+                    display: "block",
+                    boxShadow: lang === "ro" ? "0 0 0 2px color-mix(in srgb, var(--primary) 26%, transparent)" : "none",
+                  }}
+                />
               </button>
               <button
                 type="button"
@@ -1387,22 +1394,29 @@ export default function CheckinClient() {
                 aria-label="English"
                 title="English"
                 style={{
-                  width: 42,
-                  height: 42,
+                  width: 32,
+                  height: 32,
                   padding: 0,
                   borderRadius: 999,
-                  border: lang === "en" ? "1px solid var(--primary)" : "1px solid var(--border)",
-                  background: "var(--card)",
+                  border: "none",
+                  background: "transparent",
                   display: "grid",
                   placeItems: "center",
                   cursor: "pointer",
-                  boxShadow:
-                    lang === "en"
-                      ? "0 0 0 3px color-mix(in srgb, var(--primary) 32%, transparent), 0 12px 26px color-mix(in srgb, var(--primary) 18%, transparent)"
-                      : "none",
+                  boxShadow: "none",
                 }}
               >
-                <img src="/eng.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
+                <img
+                  src="/eng.png"
+                  alt=""
+                  width={26}
+                  height={26}
+                  style={{
+                    borderRadius: 999,
+                    display: "block",
+                    boxShadow: lang === "en" ? "0 0 0 2px color-mix(in srgb, var(--primary) 26%, transparent)" : "none",
+                  }}
+                />
               </button>
             </div>
           </div>
@@ -1602,22 +1616,29 @@ export default function CheckinClient() {
               className="ci-flagBtn"
               data-active={lang === "ro" ? "1" : "0"}
               style={{
-                width: 42,
-                height: 42,
+                width: 32,
+                height: 32,
                 padding: 0,
                 borderRadius: 999,
-                border: lang === "ro" ? "1px solid color-mix(in srgb, var(--primary) 55%, var(--border))" : "1px solid var(--border)",
-                background: "var(--card)",
+                border: "none",
+                background: "transparent",
                 display: "grid",
                 placeItems: "center",
                 cursor: "pointer",
-                boxShadow:
-                  lang === "ro"
-                    ? "0 10px 22px color-mix(in srgb, var(--primary) 8%, transparent)"
-                    : "none",
+                boxShadow: "none",
               }}
             >
-              <img src="/ro.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
+              <img
+                src="/ro.png"
+                alt=""
+                width={26}
+                height={26}
+                style={{
+                  borderRadius: 999,
+                  display: "block",
+                  boxShadow: lang === "ro" ? "0 0 0 2px color-mix(in srgb, var(--primary) 26%, transparent)" : "none",
+                }}
+              />
             </button>
             <button
               type="button"
@@ -1627,22 +1648,29 @@ export default function CheckinClient() {
               className="ci-flagBtn"
               data-active={lang === "en" ? "1" : "0"}
               style={{
-                width: 42,
-                height: 42,
+                width: 32,
+                height: 32,
                 padding: 0,
                 borderRadius: 999,
-                border: lang === "en" ? "1px solid color-mix(in srgb, var(--primary) 55%, var(--border))" : "1px solid var(--border)",
-                background: "var(--card)",
+                border: "none",
+                background: "transparent",
                 display: "grid",
                 placeItems: "center",
                 cursor: "pointer",
-                boxShadow:
-                  lang === "en"
-                    ? "0 10px 22px color-mix(in srgb, var(--primary) 8%, transparent)"
-                    : "none",
+                boxShadow: "none",
               }}
             >
-              <img src="/eng.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
+              <img
+                src="/eng.png"
+                alt=""
+                width={26}
+                height={26}
+                style={{
+                  borderRadius: 999,
+                  display: "block",
+                  boxShadow: lang === "en" ? "0 0 0 2px color-mix(in srgb, var(--primary) 26%, transparent)" : "none",
+                }}
+              />
             </button>
           </div>
         </div>

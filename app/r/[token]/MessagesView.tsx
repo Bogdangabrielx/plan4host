@@ -212,11 +212,11 @@ export default function MessagesView({ token, data }: { token: string; data: any
             onClick={() => setLang('ro')}
             className="sb-btn"
             style={{
-              width: 42,
-              height: 42,
+              width: 30,
+              height: 30,
               padding: 0,
               borderRadius: 999,
-              border: lang === "ro" ? "1px solid rgba(59,130,246,0.55)" : "1px solid var(--border)",
+              border: lang === "ro" ? "1px solid rgba(59,130,246,0.45)" : "1px solid var(--border)",
               background: "rgba(255,255,255,0.65)",
               color: "var(--text)",
               display: "grid",
@@ -224,21 +224,27 @@ export default function MessagesView({ token, data }: { token: string; data: any
               cursor: "pointer",
               WebkitBackdropFilter: "blur(10px)",
               backdropFilter: "blur(10px)",
-              boxShadow: lang === "ro" ? "0 0 0 3px rgba(59,130,246,0.16)" : "none",
+              boxShadow: lang === "ro" ? "0 0 0 2px rgba(59,130,246,0.12)" : "none",
             }}
             aria-label="Română"
           >
-            <img src="/ro.png" alt="" width={40} height={40} style={{ borderRadius: 999, display: "block" }} />
+            <img
+              src="/ro.png"
+              alt=""
+              width={28}
+              height={28}
+              style={{ borderRadius: 999, display: "block", transform: "scale(1.08)" }}
+            />
           </button>
           <button
             onClick={() => setLang('en')}
             className="sb-btn"
             style={{
-              width: 42,
-              height: 42,
+              width: 30,
+              height: 30,
               padding: 0,
               borderRadius: 999,
-              border: lang === "en" ? "1px solid rgba(59,130,246,0.55)" : "1px solid var(--border)",
+              border: lang === "en" ? "1px solid rgba(59,130,246,0.45)" : "1px solid var(--border)",
               background: "rgba(255,255,255,0.65)",
               color: "var(--text)",
               display: "grid",
@@ -246,11 +252,17 @@ export default function MessagesView({ token, data }: { token: string; data: any
               cursor: "pointer",
               WebkitBackdropFilter: "blur(10px)",
               backdropFilter: "blur(10px)",
-              boxShadow: lang === "en" ? "0 0 0 3px rgba(59,130,246,0.16)" : "none",
+              boxShadow: lang === "en" ? "0 0 0 2px rgba(59,130,246,0.12)" : "none",
             }}
             aria-label="English"
           >
-            <img src="/eng.png" alt="" width={40} height={40} style={{ borderRadius: 999, display: "block" }} />
+            <img
+              src="/eng.png"
+              alt=""
+              width={28}
+              height={28}
+              style={{ borderRadius: 999, display: "block", transform: "scale(1.08)" }}
+            />
           </button>
           </div>
         </div>

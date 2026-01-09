@@ -1027,7 +1027,7 @@ export default function DemoClient() {
               .rm-topbar{ position: sticky; top: 12px; z-index: 50; padding: 12px 14px; }
               .rm-topbarInner{ display:flex; align-items:center; justify-content:space-between; gap: 12px; }
               .rm-topbarLeft{ display:flex; align-items:center; gap: 10px; min-width: 0; }
-              .rm-propAvatar{ width: 44px; height: 44px; border-radius: 999px; overflow: hidden; background: transparent; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent), 0 10px 18px rgba(0,0,0,0.10); flex: 0 0 auto; }
+              .rm-propAvatar{ width: 32px; height: 32px; border-radius: 999px; overflow: hidden; background: transparent; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent), 0 10px 18px rgba(0,0,0,0.10); flex: 0 0 auto; }
               .rm-propAvatar img{ width: 100%; height: 100%; border-radius: 999px; object-fit: cover; display: block; transform: scale(1.06); transform-origin: center; }
               .rm-topbarTitle{ font-weight: var(--rm-weight-b); color: var(--text); font-size: var(--rm-font-h); letter-spacing: .06em; text-transform: uppercase; line-height: 1.1; }
               .rm-topbarMeta{ margin-top: 2px; font-size: var(--rm-font-s); font-weight: var(--rm-weight-m); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1070,8 +1070,8 @@ export default function DemoClient() {
                   onClick={() => setLang("ro")}
                   className="sb-btn"
                   style={{
-                    width: 42,
-                    height: 42,
+                    width: 30,
+                    height: 30,
                     padding: 0,
                     borderRadius: 999,
                     border: lang === "ro" ? "1px solid rgba(59,130,246,0.55)" : "1px solid var(--border)",
@@ -1082,18 +1082,24 @@ export default function DemoClient() {
                     cursor: "pointer",
                     WebkitBackdropFilter: "blur(10px)",
                     backdropFilter: "blur(10px)",
-                    boxShadow: lang === "ro" ? "0 0 0 3px rgba(59,130,246,0.16)" : "none",
+                    boxShadow: lang === "ro" ? "0 0 0 2px rgba(59,130,246,0.14)" : "none",
                   }}
                   aria-label="Română"
                 >
-                  <img src="/ro.png" alt="" width={40} height={40} style={{ borderRadius: 999, display: "block" }} />
+                  <img
+                    src="/ro.png"
+                    alt=""
+                    width={28}
+                    height={28}
+                    style={{ borderRadius: 999, display: "block", transform: "scale(1.08)" }}
+                  />
                 </button>
                 <button
                   onClick={() => setLang("en")}
                   className="sb-btn"
                   style={{
-                    width: 42,
-                    height: 42,
+                    width: 30,
+                    height: 30,
                     padding: 0,
                     borderRadius: 999,
                     border: lang === "en" ? "1px solid rgba(59,130,246,0.55)" : "1px solid var(--border)",
@@ -1104,11 +1110,17 @@ export default function DemoClient() {
                     cursor: "pointer",
                     WebkitBackdropFilter: "blur(10px)",
                     backdropFilter: "blur(10px)",
-                    boxShadow: lang === "en" ? "0 0 0 3px rgba(59,130,246,0.16)" : "none",
+                    boxShadow: lang === "en" ? "0 0 0 2px rgba(59,130,246,0.14)" : "none",
                   }}
                   aria-label="English"
                 >
-                  <img src="/eng.png" alt="" width={40} height={40} style={{ borderRadius: 999, display: "block" }} />
+                  <img
+                    src="/eng.png"
+                    alt=""
+                    width={28}
+                    height={28}
+                    style={{ borderRadius: 999, display: "block", transform: "scale(1.08)" }}
+                  />
                 </button>
               </div>
             </div>
