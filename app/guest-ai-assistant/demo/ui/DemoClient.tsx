@@ -1012,7 +1012,7 @@ export default function DemoClient() {
               .rm-topbar{ position: sticky; top: 12px; z-index: 50; padding: 12px 14px; }
               .rm-topbarInner{ display:flex; align-items:center; justify-content:space-between; gap: 12px; }
               .rm-topbarLeft{ display:flex; align-items:center; gap: 10px; min-width: 0; }
-              .rm-propAvatar{ width: 38px; height: 38px; border-radius: 999px; padding: 3px; background: rgba(255,255,255,0.65); border: 1px solid rgba(0,0,0,0.10); box-shadow: 0 0 0 4px rgba(255,255,255,0.55), 0 10px 18px rgba(0,0,0,0.10); flex: 0 0 auto; }
+              .rm-propAvatar{ width: 44px; height: 44px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,0.35); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.14), 0 0 0 4px rgba(255,255,255,0.60), 0 10px 18px rgba(0,0,0,0.10); flex: 0 0 auto; }
               .rm-propAvatar img{ width: 100%; height: 100%; border-radius: 999px; object-fit: cover; display: block; }
               .rm-topbarTitle{ font-weight: var(--rm-weight-b); color: var(--text); font-size: var(--rm-font-h); letter-spacing: .06em; text-transform: uppercase; line-height: 1.1; }
               .rm-topbarMeta{ margin-top: 2px; font-size: var(--rm-font-s); font-weight: var(--rm-weight-m); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
