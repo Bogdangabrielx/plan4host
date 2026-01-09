@@ -134,12 +134,34 @@ export default function MessagesView({ token, data }: { token: string; data: any
     ].filter(x => !!x.url);
     if (links.length === 0) return null;
     return (
-      <div style={{ display:'flex', alignItems:'center', gap:10, padding:12, justifyContent:'center' }}>
-        {links.map(l => (
-          <a key={l.key} href={l.url!} target="_blank" rel="noreferrer" title={l.label} style={{ lineHeight:0 }}>
-            <img src={l.icon} alt={l.label} width={22} height={22} />
-          </a>
-        ))}
+      <div style={{ padding: 12, display: "flex", justifyContent: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "8px 12px",
+            borderRadius: 999,
+            border: "1px solid var(--border)",
+            background: "rgba(255,255,255,0.68)",
+            WebkitBackdropFilter: "blur(10px) saturate(130%)",
+            backdropFilter: "blur(10px) saturate(130%)",
+            boxShadow: "0 10px 20px rgba(0,0,0,0.08)",
+          }}
+        >
+          {links.map((l) => (
+            <a
+              key={l.key}
+              href={l.url!}
+              target="_blank"
+              rel="noreferrer"
+              title={l.label}
+              style={{ lineHeight: 0, padding: 4, borderRadius: 10 }}
+            >
+              <img src={l.icon} alt={l.label} width={22} height={22} />
+            </a>
+          ))}
+        </div>
       </div>
     );
   }
@@ -148,45 +170,74 @@ export default function MessagesView({ token, data }: { token: string; data: any
     <>
       
       <div
-        className="rm-card"
-        style={{ marginBottom: 12, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        className="rm-card rm-topbar"
+        style={{
+          marginBottom: 12,
+          background: "rgba(255,255,255,0.70)",
+          WebkitBackdropFilter: "blur(12px)",
+          backdropFilter: "blur(12px)",
+        }}
       >
-        <img src="/p4h_logo_rotund.png" alt="P4H" width={28} height={28} style={{ display:'block' }} />
-        <div style={{ display: 'inline-flex', gap: 8 }}>
+        <div className="rm-topbarInner">
+          <div className="rm-topbarLeft">
+            <span className="rm-propAvatar" aria-hidden>
+              <img src={prop.presentation_image_url || "/p4h_logo_rotund.png"} alt="" />
+            </span>
+            <div style={{ minWidth: 0 }}>
+              <div className="rm-topbarTitle">{prop.name || "Plan4Host"}</div>
+              <div className="rm-topbarMeta">
+                {(details.start_date || "—")} → {(details.end_date || "—")} · {(details.check_in_time || "—")} /{" "}
+                {(details.check_out_time || "—")}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "inline-flex", gap: 8, flex: "0 0 auto" }}>
           <button
             onClick={() => setLang('ro')}
             className="sb-btn"
             style={{
-              padding: '6px 10px',
-              borderRadius: 8,
-              border: '1px solid var(--border)',
-              background: lang === 'ro' ? 'var(--primary)' : 'var(--card)',
-              color: lang === 'ro' ? '#0c111b' : 'var(--text)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
+              width: 42,
+              height: 42,
+              padding: 0,
+              borderRadius: 999,
+              border: lang === "ro" ? "1px solid rgba(59,130,246,0.55)" : "1px solid var(--border)",
+              background: "rgba(255,255,255,0.65)",
+              color: "var(--text)",
+              display: "grid",
+              placeItems: "center",
+              cursor: "pointer",
+              WebkitBackdropFilter: "blur(10px)",
+              backdropFilter: "blur(10px)",
+              boxShadow: lang === "ro" ? "0 0 0 3px rgba(59,130,246,0.16)" : "none",
             }}
+            aria-label="Română"
           >
-            <img src="/ro.png" alt="RO" width={16} height={16} />
-            <span>Română</span>
+            <img src="/ro.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
           </button>
           <button
             onClick={() => setLang('en')}
             className="sb-btn"
             style={{
-              padding: '6px 10px',
-              borderRadius: 8,
-              border: '1px solid var(--border)',
-              background: lang === 'en' ? 'var(--primary)' : 'var(--card)',
-              color: lang === 'en' ? '#0c111b' : 'var(--text)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
+              width: 42,
+              height: 42,
+              padding: 0,
+              borderRadius: 999,
+              border: lang === "en" ? "1px solid rgba(59,130,246,0.55)" : "1px solid var(--border)",
+              background: "rgba(255,255,255,0.65)",
+              color: "var(--text)",
+              display: "grid",
+              placeItems: "center",
+              cursor: "pointer",
+              WebkitBackdropFilter: "blur(10px)",
+              backdropFilter: "blur(10px)",
+              boxShadow: lang === "en" ? "0 0 0 3px rgba(59,130,246,0.16)" : "none",
             }}
+            aria-label="English"
           >
-            <img src="/eng.png" alt="EN" width={16} height={16} />
-            <span>English</span>
+            <img src="/eng.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
           </button>
+          </div>
         </div>
       </div>
       {/* Property contact + image overlay card (glass) */}
@@ -194,8 +245,8 @@ export default function MessagesView({ token, data }: { token: string; data: any
         <section className="rm-card" style={{ padding: 0, marginBottom: 12 }}>
           {prop.presentation_image_url ? (
             <>
-              <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden' }}>
-                <img src={prop.presentation_image_url || ''} alt="Property" style={{ display:'block', width:'100%', height:260, objectFit:'cover' }} />
+              <div className="rm-heroMedia">
+                <img src={prop.presentation_image_url || ''} alt="Property" />
                 <ContactOverlay prop={prop} />
               </div>
               <SocialIcons prop={prop} />
@@ -230,27 +281,48 @@ export default function MessagesView({ token, data }: { token: string; data: any
         <div className="rm-content">
           <h3>{labels.details}</h3>
           <div style={{ display:'grid', gridTemplateColumns:'auto 1fr', rowGap:8, columnGap:10, alignItems:'center' }}>
-            <div aria-hidden style={{ width:18 }}><img src="/dashboard_forlight.png" alt="" width={16} height={16} /></div>
-            <div><strong>{labels.property}</strong>: {details.property_name || '—'}</div>
-            <div aria-hidden style={{ width:18 }}><img src="/logoguest_forlight.png" alt="" width={16} height={16} /></div>
+            <div aria-hidden className="rm-iconCell"><img src="/dashboard_forlight.png" alt="" width={16} height={16} style={{ display:'block' }} /></div>
             <div>
-              <strong>{details.guest_companions_count && details.guest_companions_count > 0 ? labels.guestWithCompanions : labels.guest}</strong>:{" "}
-              {(() => {
-                const fullName = [details.guest_first_name || '', details.guest_last_name || ''].filter(Boolean).join(' ') || '—';
-                const count = details.guest_companions_count || 0;
-                if (!count) return fullName;
-                return lang === 'ro'
-                  ? `${fullName} + ${count} însoțitor${count > 1 ? 'i' : ''}`
-                  : `${fullName} + ${count} companion${count > 1 ? 's' : ''}`;
-              })()}
+              <div className="rm-detailLine">
+                <span className="rm-detailLabel">{labels.property}</span>
+                <span className="rm-detailValue">{details.property_name || '—'}</span>
+              </div>
             </div>
-            <div aria-hidden style={{ width:18 }}><img src="/night_forlight.png" alt="" width={16} height={16} /></div>
-            <div><strong>{labels.stay}</strong>: {details.start_date || '—'} → {details.end_date || '—'}</div>
+            <div aria-hidden className="rm-iconCell"><img src="/logoguest_forlight.png" alt="" width={16} height={16} style={{ display:'block' }} /></div>
+            <div>
+              <div className="rm-detailLine">
+                <span className="rm-detailLabel">
+                  {details.guest_companions_count && details.guest_companions_count > 0
+                    ? labels.guestWithCompanions
+                    : labels.guest}
+                </span>
+                <span className="rm-detailValue">
+                  {(() => {
+                    const fullName = [details.guest_first_name || '', details.guest_last_name || ''].filter(Boolean).join(' ') || '—';
+                    const count = details.guest_companions_count || 0;
+                    if (!count) return fullName;
+                    return lang === 'ro'
+                      ? `${fullName} + ${count} însoțitor${count > 1 ? 'i' : ''}`
+                      : `${fullName} + ${count} companion${count > 1 ? 's' : ''}`;
+                  })()}
+                </span>
+              </div>
+            </div>
+            <div aria-hidden className="rm-iconCell"><img src="/night_forlight.png" alt="" width={16} height={16} style={{ display:'block' }} /></div>
+            <div>
+              <div className="rm-detailLine">
+                <span className="rm-detailLabel">{labels.stay}</span>
+                <span className="rm-detailValue">{details.start_date || '—'} → {details.end_date || '—'}</span>
+              </div>
+            </div>
             {details.room_name ? (
               <>
-                <div aria-hidden style={{ width:18 }}><img src="/room_forlight.png" alt="" width={16} height={16} /></div>
+                <div aria-hidden className="rm-iconCell"><img src="/room_forlight.png" alt="" width={16} height={16} style={{ display:'block' }} /></div>
                 <div>
-                  <strong>{labels.room}</strong>: {details.room_name}
+                  <div className="rm-detailLine">
+                    <span className="rm-detailLabel">{labels.room}</span>
+                    <span className="rm-detailValue">{details.room_name}</span>
+                  </div>
                 </div>
               </>
             ) : null}
@@ -258,7 +330,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
               <>
                 <div aria-hidden style={{ width:18 }} />
                 <div style={{ marginTop: 2 }}>
-                  <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" style={{ color:'var(--primary)', textDecoration:'none', fontWeight:800 }}>{labels.houseRules}</a>
+                  <a href={prop.regulation_pdf_url} target="_blank" rel="noreferrer" style={{ color:'var(--primary)', textDecoration:'none', fontWeight:800, fontSize:'var(--rm-font-s)', letterSpacing:'.10em', textTransform:'uppercase' }}>{labels.houseRules}</a>
                 </div>
               </>
             ) : null}
