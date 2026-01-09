@@ -1459,57 +1459,64 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                                 />
                               )}
                               {id === "checkout" && (
-                                <svg
-                                  viewBox="0 0 24 24"
-                                  width={16}
-                                  height={16}
-                                  aria-hidden="true"
-                                >
-                                  <path
-                                    d="M5 4h8a1 1 0 011 1v14H5a1 1 0 01-1-1V5a1 1 0 011-1zm2 2v10h6V6H7z"
-                                    fill="#e5e7eb"
-                                  />
-                                  <path
-                                    d="M16 10l3 2-3 2v-1.5h-3v-1h3V10z"
-                                    fill="#e5e7eb"
-                                  />
-                                </svg>
+                                <span
+                                  aria-hidden
+                                  style={{
+                                    width: 16,
+                                    height: 16,
+                                    display: "block",
+                                    backgroundColor: "#e5e7eb",
+                                    WebkitMaskImage: "url(/svg_logout.svg)",
+                                    maskImage: "url(/svg_logout.svg)",
+                                    WebkitMaskRepeat: "no-repeat",
+                                    maskRepeat: "no-repeat",
+                                    WebkitMaskPosition: "center",
+                                    maskPosition: "center",
+                                    WebkitMaskSize: "contain",
+                                    maskSize: "contain",
+                                    pointerEvents: "none",
+                                  }}
+                                />
                               )}
                               {id === "forbidden" && (
-                                <svg
-                                  viewBox="0 0 24 24"
-                                  width={16}
-                                  height={16}
-                                  aria-hidden="true"
-                                >
-                                  <circle
-                                    cx="12"
-                                    cy="12"
-                                    r="7"
-                                    fill="none"
-                                    stroke="#e5e7eb"
-                                    strokeWidth="1.6"
-                                  />
-                                  <path
-                                    d="M8.5 8.5l7 7"
-                                    stroke="#e5e7eb"
-                                    strokeWidth="1.6"
-                                    strokeLinecap="round"
-                                  />
-                                </svg>
+                                <span
+                                  aria-hidden
+                                  style={{
+                                    width: 16,
+                                    height: 16,
+                                    display: "block",
+                                    backgroundColor: "#e5e7eb",
+                                    WebkitMaskImage: "url(/svg_forbidden.svg)",
+                                    maskImage: "url(/svg_forbidden.svg)",
+                                    WebkitMaskRepeat: "no-repeat",
+                                    maskRepeat: "no-repeat",
+                                    WebkitMaskPosition: "center",
+                                    maskPosition: "center",
+                                    WebkitMaskSize: "contain",
+                                    maskSize: "contain",
+                                    pointerEvents: "none",
+                                  }}
+                                />
                               )}
                               {id === "contact_host" && (
-                                <svg
-                                  viewBox="0 0 24 24"
-                                  width={16}
-                                  height={16}
-                                  aria-hidden="true"
-                                >
-                                  <path
-                                    d="M7.3 5.3L9.6 7.6a1 1 0 01.2 1.1l-1 2.3a10.5 10.5 0 004.2 4.2l2.3-1a1 1 0 011.1.2l2.3 2.3a1 1 0 01.1 1.3l-1.4 2a2 2 0 01-2.1.8c-2.5-.6-4.9-2-7.1-4.2-2.2-2.2-3.6-4.6-4.2-7.1a2 2 0 01.8-2.1l2-1.4a1 1 0 011.3.1z"
-                                    fill="#e5e7eb"
-                                  />
-                                </svg>
+                                <span
+                                  aria-hidden
+                                  style={{
+                                    width: 16,
+                                    height: 16,
+                                    display: "block",
+                                    backgroundColor: "#e5e7eb",
+                                    WebkitMaskImage: "url(/svg_contact_the_host.svg)",
+                                    maskImage: "url(/svg_contact_the_host.svg)",
+                                    WebkitMaskRepeat: "no-repeat",
+                                    maskRepeat: "no-repeat",
+                                    WebkitMaskPosition: "center",
+                                    maskPosition: "center",
+                                    WebkitMaskSize: "contain",
+                                    maskSize: "contain",
+                                    pointerEvents: "none",
+                                  }}
+                                />
                               )}
                             </span>
                             <span>{menuLabels[id]}</span>
