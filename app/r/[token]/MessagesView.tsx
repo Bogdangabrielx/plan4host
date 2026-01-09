@@ -1562,6 +1562,24 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                     style={questionBtnStyle}
                     onClick={() => handleArrivalSubtopic("parking")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: "url(/svg_parking.svg)",
+                        maskImage: "url(/svg_parking.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.arrival_parking}</span>
                   </button>
                   <button
@@ -1569,6 +1587,24 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                     style={questionBtnStyle}
                     onClick={() => handleArrivalSubtopic("access_codes")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: "url(/svg_access_codes.svg)",
+                        maskImage: "url(/svg_access_codes.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.arrival_access_codes}</span>
                   </button>
                   <button
@@ -1576,6 +1612,24 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                     style={questionBtnStyle}
                     onClick={() => handleArrivalSubtopic("access_instructions")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: "url(/svg_access_instructions.svg)",
+                        maskImage: "url(/svg_access_instructions.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.arrival_access_instructions}</span>
                   </button>
                   <button
@@ -2163,6 +2217,24 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                     style={questionBtnStyle}
                     onClick={() => handleExtrasSubtopic("eat_drink")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: "url(/svg_where_to_eat.svg)",
+                        maskImage: "url(/svg_where_to_eat.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.extras_eat_drink}</span>
                   </button>
                   <button
@@ -2170,6 +2242,24 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                     style={questionBtnStyle}
                     onClick={() => handleExtrasSubtopic("visit")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: "url(/svg_what_to_visit.svg)",
+                        maskImage: "url(/svg_what_to_visit.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.extras_visit}</span>
                   </button>
                   <button
