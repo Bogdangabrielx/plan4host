@@ -1435,7 +1435,9 @@ export default function CheckinClient() {
                 radial-gradient(600px 280px at 90% 90%, rgba(59,130,246,0.12), transparent 60%);
               opacity: .9;
             }
-            .ci-heroInner{ position: relative; z-index: 1; display:flex; align-items:flex-start; justify-content:space-between; gap: 12px; flex-wrap: wrap; }
+            .ci-heroInner{ position: relative; z-index: 1; display:grid; justify-items:center; text-align:center; padding: 4px 6px 0; }
+            .ci-heroText{ max-width: 64ch; }
+            .ci-langSwitch{ position:absolute; top: 12px; right: 12px; display:flex; gap: 8px; }
             .ci-type{ --ci-font-h:28px; --ci-font-b:14px; --ci-font-s:12px; --ci-weight-m:600; --ci-weight-b:800; }
             .ci-heroTitle{ margin:0; font-size: var(--ci-font-h); font-weight: var(--ci-weight-b); letter-spacing: .02em; line-height: 1.15; }
             .ci-heroStack{ margin-top: 10px; display:grid; gap: 8px; }
@@ -1448,7 +1450,7 @@ export default function CheckinClient() {
       {/* Header */}
       <section style={CARD} className="ci-heroCard ci-type">
         <div className="ci-heroInner">
-          <div style={{ minWidth: 0 }}>
+          <div className="ci-heroText">
             <h1 className="ci-heroTitle">
               Stay Smart, Experience <span className={homeStyles.betterGrad}>Better</span>
             </h1>
@@ -1472,7 +1474,7 @@ export default function CheckinClient() {
               <p className="ci-heroSmall">{T('intro6')}</p>
             </div>
           </div>
-          <div style={{ display: "inline-flex", gap: 8, alignSelf: "flex-start" }}>
+          <div className="ci-langSwitch">
             <button
               type="button"
               onClick={() => setLang("ro")}
