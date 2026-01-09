@@ -1114,16 +1114,26 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                   justifyContent: "center",
                   color: "#0c111b",
                 }}
-              >
-                {/* Simple person avatar icon */}
-                <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
-                  <circle cx="12" cy="7" r="3.2" fill="#ffffff" />
-                  <path
-                    d="M6 19c0-3 2.7-5.5 6-5.5s6 2.5 6 5.5v0.5H6V19z"
-                    fill="#ffffff"
-                  />
-                </svg>
-              </div>
+	              >
+	                <span
+	                  aria-hidden
+	                  style={{
+	                    width: 18,
+	                    height: 18,
+	                    display: "block",
+	                    backgroundColor: "#ffffff",
+	                    WebkitMaskImage: "url(/svg_guest_assistant.svg)",
+	                    maskImage: "url(/svg_guest_assistant.svg)",
+	                    WebkitMaskRepeat: "no-repeat",
+	                    maskRepeat: "no-repeat",
+	                    WebkitMaskPosition: "center",
+	                    maskPosition: "center",
+	                    WebkitMaskSize: "contain",
+	                    maskSize: "contain",
+	                    pointerEvents: "none",
+	                  }}
+	                />
+	              </div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700 }}>
                   Guest AI assistant
@@ -2331,15 +2341,15 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
 	        style={fabStyle}
 	        aria-label="Open guest assistant"
 	      >
-	        <span
-	          aria-hidden
-	          style={{
-	            width: 24,
-	            height: 24,
-	            display: "block",
-	            backgroundColor: "#ffffff",
-	            WebkitMaskImage: "url(/svg_guest_assistant.svg)",
-	            maskImage: "url(/svg_guest_assistant.svg)",
+		        <span
+		          aria-hidden
+		          style={{
+		            width: 30,
+		            height: 30,
+		            display: "block",
+		            backgroundColor: "#ffffff",
+		            WebkitMaskImage: "url(/svg_guest_assistant.svg)",
+		            maskImage: "url(/svg_guest_assistant.svg)",
 	            WebkitMaskRepeat: "no-repeat",
 	            maskRepeat: "no-repeat",
 	            WebkitMaskPosition: "center",
