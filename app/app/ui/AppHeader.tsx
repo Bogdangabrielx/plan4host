@@ -740,7 +740,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 		                style={{
 		                  width: isSmall ? 36 : 40,
 		                  height: isSmall ? 36 : 40,
-		                  padding: 0,
+		                  padding: 3,
 		                  borderRadius: 999,
 		                  border: "1px solid",
 		                  borderColor: open
