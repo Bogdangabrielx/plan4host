@@ -840,13 +840,17 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 }}
                 aria-label="Open management menu"
                 style={{
-                  padding: isSmall ? 4 : 4,
-                  borderRadius: 10,
+                  width: isSmall ? 36 : 40,
+                  height: isSmall ? 36 : 40,
+                  padding: 0,
+                  borderRadius: 999,
                   border: "1px solid var(--border)",
                   background: "var(--card)",
                   color: "var(--text)",
                   fontWeight: "var(--fw-bold)",
                   cursor: "pointer",
+                  display: "grid",
+                  placeItems: "center",
                 }}
               >
                 {mounted ? (
