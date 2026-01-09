@@ -642,7 +642,7 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
     boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
     display: "grid",
     gridTemplateRows: "auto auto 1fr",
-    overflow: "hidden",
+    overflow: "visible",
     zIndex: 215,
   };
 
