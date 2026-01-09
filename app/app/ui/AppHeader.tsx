@@ -576,8 +576,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                  setOpen(false);
 	                }}
 	                style={{
-	                  width: isSmall ? 34 : 38,
-	                  height: isSmall ? 34 : 38,
+	                  width: isSmall ? 48 : 54,
+	                  height: isSmall ? 48 : 54,
 	                  borderRadius: 999,
 	                  border: "1px solid var(--border)",
 	                  background: "var(--card)",
@@ -592,8 +592,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                  <span
 	                    aria-hidden
 	                    style={{
-	                      width: isSmall ? 20 : 22,
-	                      height: isSmall ? 20 : 22,
+	                      width: isSmall ? 28 : 32,
+	                      height: isSmall ? 28 : 32,
 	                      display: "block",
 	                      backgroundColor: "currentColor",
 	                      WebkitMaskImage: "url(/svg_more.svg)",
@@ -602,8 +602,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                      maskRepeat: "no-repeat",
 	                      WebkitMaskPosition: "center",
 	                      maskPosition: "center",
-	                      WebkitMaskSize: `${isSmall ? 18 : 20}px ${isSmall ? 18 : 20}px`,
-	                      maskSize: `${isSmall ? 18 : 20}px ${isSmall ? 18 : 20}px`,
+	                      WebkitMaskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
+	                      maskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
 	                      pointerEvents: "none",
 	                    }}
 	                  />
