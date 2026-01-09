@@ -157,22 +157,52 @@ export default function BottomNav() {
       window.removeEventListener("orientationchange", apply);
     };
   }, []);
-useEffect(() => {
-  const el = navRef.current;
-  if (!el) return;
 
-  // blochează „pan/scroll” în interiorul barei (iOS + Android)
-  const stop = (e: Event) => e.preventDefault();
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
 
-  // pe touch + wheel (pasive:false ca să putem preveni)
-  el.addEventListener("touchmove", stop, { passive: false });
-  el.addEventListener("wheel", stop, { passive: false });
+    // Block pan/scroll inside the bar (iOS + Android), but don't cancel light finger jitter on taps
+    // (otherwise a "single tap" can get eaten if the finger moves a few pixels).
+    let startX = 0;
+    let startY = 0;
+    let tracking = false;
+    const THRESHOLD_PX = 8;
 
-  return () => {
-    el.removeEventListener("touchmove", stop as any);
-    el.removeEventListener("wheel", stop as any);
-  };
-}, []);
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      tracking = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!tracking || e.touches.length !== 1) return;
+      const dx = Math.abs(e.touches[0].clientX - startX);
+      const dy = Math.abs(e.touches[0].clientY - startY);
+      if (dx > THRESHOLD_PX || dy > THRESHOLD_PX) e.preventDefault();
+    };
+
+    const onTouchEnd = () => {
+      tracking = false;
+    };
+
+    const onWheel = (e: WheelEvent) => e.preventDefault();
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    el.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    el.addEventListener("wheel", onWheel, { passive: false });
+
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart as any);
+      el.removeEventListener("touchmove", onTouchMove as any);
+      el.removeEventListener("touchend", onTouchEnd as any);
+      el.removeEventListener("touchcancel", onTouchEnd as any);
+      el.removeEventListener("wheel", onWheel as any);
+    };
+  }, []);
   // scrie înălțimea reală a barei în :root ca --nav-h
   // IMPORTANT: nu o schimbăm când tastatura e deschisă, ca să nu „sară” layout-ul.
   useEffect(() => {
@@ -256,10 +286,21 @@ useEffect(() => {
                 padding: "6px 4px",
                 touchAction: "manipulation",
                 textAlign: 'center',
+                cursor: "pointer",
+                WebkitTapHighlightColor: "transparent",
               }}
             >
               <BottomNavIcon src={it.icon} active={active} />
-              <small style={{ fontSize: "var(--fs-s)", fontWeight: active ? "var(--fw-bold)" : "var(--fw-medium)", letterSpacing: 0.2 }}>{it.label}</small>
+              <small
+                style={{
+                  fontSize: "var(--fs-s)",
+                  fontWeight: active ? "var(--fw-bold)" : "var(--fw-medium)",
+                  letterSpacing: 0.2,
+                  pointerEvents: "none",
+                }}
+              >
+                {it.label}
+              </small>
             </a>
           );
         })}
