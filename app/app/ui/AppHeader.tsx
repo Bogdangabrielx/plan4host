@@ -78,7 +78,7 @@ function drawerTitleStyle(): React.CSSProperties {
     textTransform: "uppercase",
     letterSpacing: "0.08em",
     textShadow: "0 0 16px color-mix(in srgb, var(--primary) 14%, transparent)",
-    color: "var(--text)",
+    color: "var(--muted)",
     margin: 0,
   };
 }
