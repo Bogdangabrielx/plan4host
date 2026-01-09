@@ -1087,13 +1087,13 @@ export default function HomePageRO() {
               className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
             >
               Testează formularul de check‑in
-            </button>
-            <CtaLink
-              href="/ro/asistent-ai-oaspeti"
-              className={`sb-cardglow ${styles.btn} ${styles.btnAi} ${styles.focusable}`}
-            >
-              <span className={styles.btnAiLabel}>Vezi Guest AI assistant</span>
-            </CtaLink>
+	            </button>
+	            <CtaLink
+	              href="/guest-ai-assistant/demo?lang=ro"
+	              className={`sb-cardglow ${styles.btn} ${styles.btnAi} ${styles.focusable}`}
+	            >
+	              <span className={styles.btnAiLabel}>Vezi Guest AI assistant</span>
+	            </CtaLink>
           </div>
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview" data-p4h-reveal>

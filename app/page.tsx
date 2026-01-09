@@ -1262,14 +1262,14 @@ export default function HomePage() {
               className={`sb-cardglow ${styles.btn}  ${styles.btnChoose} ${styles.focusable}`}
             >
               Try the guest check-in form
-            </button>
-            <CtaLink
-              href="/guest-ai-assistant"
-              className={`sb-cardglow ${styles.btn} ${styles.btnAi} ${styles.focusable}`}
-              onNavigate={() => { /* no-op for now */ }}
-            >
-              <span className={styles.btnAiLabel}>See Guest AI assistant</span>
-            </CtaLink>
+	            </button>
+	            <CtaLink
+	              href="/guest-ai-assistant/demo"
+	              className={`sb-cardglow ${styles.btn} ${styles.btnAi} ${styles.focusable}`}
+	              onNavigate={() => { /* no-op for now */ }}
+	            >
+	              <span className={styles.btnAiLabel}>See Guest AI assistant</span>
+	            </CtaLink>
           </div>
         </div>
 
