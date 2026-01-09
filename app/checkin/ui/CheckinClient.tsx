@@ -1455,13 +1455,13 @@ export default function CheckinClient() {
                 top: 14px;
                 right: 14px;
                 z-index: 1200;
-                padding: 8px;
+                padding: 6px;
                 border-radius: 999px;
-                border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-                background: color-mix(in srgb, var(--panel) 60%, transparent);
+                border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+                background: rgba(15,23,42,0.45);
                 -webkit-backdrop-filter: blur(12px) saturate(130%);
                         backdrop-filter: blur(12px) saturate(130%);
-                box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+                box-shadow: 0 14px 34px rgba(0,0,0,0.20);
               }
             }
           `,
@@ -1569,7 +1569,7 @@ export default function CheckinClient() {
                 cursor: "pointer",
                 boxShadow:
                   lang === "ro"
-                    ? "0 0 0 3px color-mix(in srgb, var(--primary) 32%, transparent), 0 12px 26px color-mix(in srgb, var(--primary) 18%, transparent)"
+                    ? "0 10px 22px color-mix(in srgb, var(--primary) 12%, transparent)"
                     : "none",
               }}
             >
@@ -1592,7 +1592,7 @@ export default function CheckinClient() {
                 cursor: "pointer",
                 boxShadow:
                   lang === "en"
-                    ? "0 0 0 3px color-mix(in srgb, var(--primary) 32%, transparent), 0 12px 26px color-mix(in srgb, var(--primary) 18%, transparent)"
+                    ? "0 10px 22px color-mix(in srgb, var(--primary) 12%, transparent)"
                     : "none",
               }}
             >
