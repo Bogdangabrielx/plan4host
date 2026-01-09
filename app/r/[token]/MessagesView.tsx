@@ -442,11 +442,19 @@ export default function MessagesView({ token, data }: { token: string; data: any
             const btnHide = lang === 'ro' ? 'Ascunde' : 'Hide';
             return (
             <article key={it.id} className="rm-card" style={{ padding:0 }}>
-              <header style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:12, borderBottom:'1px solid var(--border)' }}>
-                <strong>{titleFromHtml}</strong>
+              <header
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: open[it.id] ? 'center' : 'space-between',
+                  padding: 12,
+                  borderBottom: open[it.id] ? '1px solid var(--border)' : 'none',
+                }}
+              >
+                {!open[it.id] && <strong>{titleFromHtml}</strong>}
                 <button className="sb-btn" onClick={()=>toggle(it.id)} style={{ position:'relative' }}>
                   {open[it.id] ? btnHide : btnOpen}
-                  {it.visible && !read[it.id] && (
+                  {!open[it.id] && it.visible && !read[it.id] && (
                     <span style={{ position:'absolute', top:-4, right:-4, width:10, height:10, borderRadius:999, background:'var(--primary)' }} />
                   )}
                 </button>
