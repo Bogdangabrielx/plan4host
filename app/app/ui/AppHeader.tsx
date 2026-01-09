@@ -576,8 +576,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                  setOpen(false);
 	                }}
 	                style={{
-	                  width: isSmall ? 44 : 50,
-	                  height: isSmall ? 44 : 50,
+	                  width: isSmall ? 40 : 46,
+	                  height: isSmall ? 40 : 46,
 	                  borderRadius: 999,
 	                  border: "1px solid var(--border)",
 	                  background: "var(--card)",
