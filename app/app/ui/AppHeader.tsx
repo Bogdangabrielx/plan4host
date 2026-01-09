@@ -811,7 +811,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             style={{
               position: "fixed",
               top: 0,
-              bottom: isMobileNav ? "var(--nav-h, 0px)" : 0,
+              bottom: 0,
               left: 0,
               width: isMobileNav ? 240 : 280,
               maxWidth: "86vw",
@@ -823,6 +823,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               display: "grid",
               gridTemplateRows: logoutItem ? "auto 1fr auto" : "auto 1fr",
               paddingTop: isSmall ? "var(--safe-top)" : "calc(var(--safe-top) + 8px)",
+              paddingBottom: isMobileNav ? "var(--nav-h, 0px)" : 0,
             }}
           >
             <div
@@ -987,7 +988,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             style={{
               position: "fixed",
               top: 0,
-              bottom: isMobileNav ? "var(--nav-h, 0px)" : 0,
+              bottom: 0,
               right: 0,
               width: isMobileNav ? 240 : 280,
               maxWidth: "86vw",
@@ -999,6 +1000,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               display: "grid",
               gridTemplateRows: logoutItem ? "auto 1fr auto" : "auto 1fr",
               paddingTop: isSmall ? "var(--safe-top)" : "calc(var(--safe-top) + 8px)",
+              paddingBottom: isMobileNav ? "var(--nav-h, 0px)" : 0,
             }}
           >
             <div
