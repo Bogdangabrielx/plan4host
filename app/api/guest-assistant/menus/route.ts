@@ -23,6 +23,7 @@ type ChatLabelKey =
   | "amenities_ac"
   | "amenities_washer"
   | "amenities_dishwasher"
+  | "amenities_spa"
   | "amenities_house_rules"
   | "extras_eat_drink"
   | "extras_visit"
@@ -50,6 +51,7 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   amenities_ac: "Air conditioning / climate control",
   amenities_washer: "Washing machine",
   amenities_dishwasher: "Dishwasher",
+  amenities_spa: "Spa / pool / sauna",
   amenities_house_rules: "House Rules (full document)",
   extras_eat_drink: "Where to eat or have a coffee",
   extras_visit: "What to visit nearby",
@@ -82,7 +84,7 @@ Target language: ${language}
 
 Return ONLY a minified JSON object with exactly these keys:
 
-{"arrival":"...","amenities":"...","extras":"...","checkout":"...","forbidden":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","arrival_access_instructions":"...","amenities_wifi":"...","amenities_iron":"...","amenities_minibar":"...","amenities_coffee":"...","amenities_ac":"...","amenities_washer":"...","amenities_dishwasher":"...","amenities_house_rules":"...","extras_eat_drink":"...","extras_visit":"...","checkout_cta":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
+{"arrival":"...","amenities":"...","extras":"...","checkout":"...","forbidden":"...","contact_host":"...","back":"...","arrival_parking":"...","arrival_access_codes":"...","arrival_time":"...","arrival_access_instructions":"...","amenities_wifi":"...","amenities_iron":"...","amenities_minibar":"...","amenities_coffee":"...","amenities_ac":"...","amenities_washer":"...","amenities_dishwasher":"...","amenities_spa":"...","amenities_house_rules":"...","extras_eat_drink":"...","extras_visit":"...","checkout_cta":"...","contact_cta":"...","tap_call":"...","tap_email":"..."}
 
 Use natural, concise wording and keep the meaning of each label.
 
@@ -105,6 +107,7 @@ amenities_coffee: "${BASE_LABELS.amenities_coffee}"
 amenities_ac: "${BASE_LABELS.amenities_ac}"
 amenities_washer: "${BASE_LABELS.amenities_washer}"
 amenities_dishwasher: "${BASE_LABELS.amenities_dishwasher}"
+amenities_spa: "${BASE_LABELS.amenities_spa}"
 amenities_house_rules: "${BASE_LABELS.amenities_house_rules}"
 extras_eat_drink: "${BASE_LABELS.extras_eat_drink}"
 extras_visit: "${BASE_LABELS.extras_visit}"
@@ -165,6 +168,7 @@ tap_email: "${BASE_LABELS.tap_email}"
         "amenities_ac",
         "amenities_washer",
         "amenities_dishwasher",
+        "amenities_spa",
         "amenities_house_rules",
         "extras_eat_drink",
         "extras_visit",

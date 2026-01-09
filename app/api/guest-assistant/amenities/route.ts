@@ -8,7 +8,8 @@ type AmenitiesTopic =
   | "coffee_machine"
   | "ac"
   | "washing_machine"
-  | "dishwasher";
+  | "dishwasher"
+  | "spa";
 
 type AmenitiesRequest = {
   language?: string;
@@ -81,6 +82,8 @@ export async function POST(req: Request) {
         ? "Air conditioning / climate control: whether there is AC or climate control, how to operate it, and whether using it is free or subject to extra charges if clearly mentioned."
         : topic === "washing_machine"
         ? "Washing machine: whether there is a washing machine, how to use it (programs, detergents, location), and whether using it is free or paid extra if clearly mentioned."
+        : topic === "spa"
+        ? "Spa / pool / sauna: whether the property offers spa, pool or sauna access, where it is, any access rules (reservation required, opening hours), and whether it is free or paid extra if clearly mentioned."
         : "Dishwasher: whether there is a dishwasher, how to use it (programs, detergents, location), and whether using it is free or paid extra if clearly mentioned.";
 
     const prompt = `

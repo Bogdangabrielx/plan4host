@@ -470,6 +470,7 @@ type ChatLabelKey =
   | "amenities_ac"
   | "amenities_washer"
   | "amenities_dishwasher"
+  | "amenities_spa"
   | "amenities_house_rules"
   | "extras_eat_drink"
   | "extras_visit"
@@ -497,6 +498,7 @@ const BASE_LABELS: Record<ChatLabelKey, string> = {
   amenities_ac: "Air conditioning / climate control",
   amenities_washer: "Washing machine",
   amenities_dishwasher: "Dishwasher",
+  amenities_spa: "Spa / pool / sauna",
   amenities_house_rules: "House Rules (full document)",
   extras_eat_drink: "Where to eat or have a coffee",
   extras_visit: "What to visit nearby",
@@ -540,7 +542,8 @@ type AmenitiesSubtopic =
   | "coffee_machine"
   | "ac"
   | "washing_machine"
-  | "dishwasher";
+  | "dishwasher"
+  | "spa";
 
 const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
   wifi: "/svg_wifi.svg",
@@ -550,6 +553,7 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
   ac: "/svg_air_conditioning.svg",
   washing_machine: "/svg_washing_machine.svg",
   dishwasher: "/svg_dishwasher.svg",
+  spa: "/svg_spa.svg",
 };
   const [amenitiesSubtopic, setAmenitiesSubtopic] = useState<AmenitiesSubtopic | null>(null);
   const [amenitiesLoading, setAmenitiesLoading] = useState(false);
@@ -2013,6 +2017,31 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                       }}
                     />
                     <span>{menuLabels.amenities_dishwasher}</span>
+                  </button>
+                  <button
+                    type="button"
+                    style={questionBtnStyle}
+                    onClick={() => handleAmenitiesSubtopic("spa")}
+                  >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.spa})`,
+                        maskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.spa})`,
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
+                    <span>{menuLabels.amenities_spa}</span>
                   </button>
                   <button
                     type="button"
