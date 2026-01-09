@@ -1002,21 +1002,27 @@ export default function DemoClient() {
         <style
           dangerouslySetInnerHTML={{
             __html: `
+              .rm-page{ --rm-font-h:16px; --rm-font-b:14px; --rm-font-s:12px; --rm-weight-m:600; --rm-weight-b:800; font-size: var(--rm-font-b); font-weight: var(--rm-weight-m); }
               .rm-card{ background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow: 0 10px 24px rgba(0,0,0,.12); }
-              .rm-content{ color: var(--text); font-family: Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; white-space: pre-wrap; }
-              .rm-content h1,.rm-content h2,.rm-content h3{ margin: 0 0 10px; line-height: 1.25; }
-              .rm-content h3:first-of-type{ font-size: 13px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
-              .rm-content p{ margin: 10px 0; line-height: 1.6; }
+              .rm-content{ color: var(--text); font-family: Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; white-space: pre-wrap; font-size: var(--rm-font-b); font-weight: var(--rm-weight-m); }
+              .rm-content h1,.rm-content h2,.rm-content h3{ margin: 0 0 10px; line-height: 1.25; font-weight: var(--rm-weight-b); }
+              .rm-content h3:first-of-type{ font-size: var(--rm-font-s); font-weight: var(--rm-weight-b); letter-spacing: .12em; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
+              .rm-content p{ margin: 10px 0; line-height: 1.6; font-size: var(--rm-font-b); font-weight: var(--rm-weight-m); }
               .rm-content hr{ border: 0; border-top: 1px solid var(--border); margin: 14px 0; opacity: .75; }
               .rm-topbar{ position: sticky; top: 12px; z-index: 50; padding: 12px 14px; }
               .rm-topbarInner{ display:flex; align-items:center; justify-content:space-between; gap: 12px; }
               .rm-topbarLeft{ display:flex; align-items:center; gap: 10px; min-width: 0; }
               .rm-propAvatar{ width: 38px; height: 38px; border-radius: 999px; padding: 3px; background: rgba(255,255,255,0.65); border: 1px solid rgba(0,0,0,0.10); box-shadow: 0 0 0 4px rgba(255,255,255,0.55), 0 10px 18px rgba(0,0,0,0.10); flex: 0 0 auto; }
               .rm-propAvatar img{ width: 100%; height: 100%; border-radius: 999px; object-fit: cover; display: block; }
-              .rm-topbarTitle{ font-weight: 900; color: var(--text); font-size: 14px; letter-spacing: .06em; text-transform: uppercase; line-height: 1.1; }
-              .rm-topbarMeta{ margin-top: 2px; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+              .rm-topbarTitle{ font-weight: var(--rm-weight-b); color: var(--text); font-size: var(--rm-font-h); letter-spacing: .06em; text-transform: uppercase; line-height: 1.1; }
+              .rm-topbarMeta{ margin-top: 2px; font-size: var(--rm-font-s); font-weight: var(--rm-weight-m); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
               .rm-heroMedia{ position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9; }
               .rm-heroMedia img{ width: 100%; height: 100%; object-fit: cover; display:block; }
+              .rm-detailLine{ display:flex; align-items: baseline; gap: 8px; min-width: 0; }
+              .rm-detailLabel{ font-size: var(--rm-font-s); font-weight: var(--rm-weight-m); letter-spacing: .10em; text-transform: uppercase; color: var(--muted); flex: 0 0 auto; }
+              .rm-detailValue{ font-size: var(--rm-font-b); font-weight: var(--rm-weight-m); color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+              .rm-detailMeta{ font-size: var(--rm-font-s); font-weight: var(--rm-weight-m); color: var(--muted); }
+              .rm-footer{ color: var(--muted); text-align: center; font-size: var(--rm-font-s); font-weight: var(--rm-weight-m); margin-top: 12px; }
               @media (max-width: 520px){
                 .rm-topbarMeta{ max-width: 160px; }
                 .rm-heroMedia{ aspect-ratio: 4 / 3; }
@@ -1117,27 +1123,40 @@ export default function DemoClient() {
                   <img src="/dashboard_forlight.png" alt="" width={16} height={16} />
                 </div>
                 <div>
-                  <strong>{labels.property}</strong>: {DETAILS.property_name || "—"}
+                  <div className="rm-detailLine">
+                    <span className="rm-detailLabel">{labels.property}</span>
+                    <span className="rm-detailValue">{DETAILS.property_name || "—"}</span>
+                  </div>
                 </div>
 
                 <div aria-hidden style={{ width: 18 }}>
                   <img src="/logoguest_forlight.png" alt="" width={16} height={16} />
                 </div>
                 <div>
-                  <strong>{labels.guest}</strong>:{" "}
-                  {[DETAILS.guest_first_name || "", DETAILS.guest_last_name || ""].filter(Boolean).join(" ") || "—"}
+                  <div className="rm-detailLine">
+                    <span className="rm-detailLabel">{labels.guest}</span>
+                    <span className="rm-detailValue">
+                      {[DETAILS.guest_first_name || "", DETAILS.guest_last_name || ""].filter(Boolean).join(" ") ||
+                        "—"}
+                    </span>
+                  </div>
                 </div>
 
                 <div aria-hidden style={{ width: 18 }}>
                   <img src="/night_forlight.png" alt="" width={16} height={16} />
                 </div>
                 <div>
-                  <strong>{labels.stay}</strong>: {DETAILS.start_date || "—"} → {DETAILS.end_date || "—"}
+                  <div className="rm-detailLine">
+                    <span className="rm-detailLabel">{labels.stay}</span>
+                    <span className="rm-detailValue">
+                      {DETAILS.start_date || "—"} → {DETAILS.end_date || "—"}
+                    </span>
+                  </div>
                 </div>
 
                 <div aria-hidden style={{ width: 18 }} />
                 <div style={{ marginTop: 2 }}>
-                  <span style={{ color: "var(--muted)" }}>
+                  <span className="rm-detailMeta">
                     {lang === "ro"
                       ? `Check-in ${DETAILS.check_in_time} · Check-out ${DETAILS.check_out_time}`
                       : `Check-in ${DETAILS.check_in_time} · Check-out ${DETAILS.check_out_time}`}
@@ -1147,9 +1166,7 @@ export default function DemoClient() {
             </div>
           </article>
 
-          <p style={{ color: "var(--muted)", textAlign: "center", fontSize: 12, marginTop: 12 }}>
-            Powered by Plan4Host.
-          </p>
+          <p className="rm-footer">Powered by Plan4Host.</p>
         </main>
       </div>
 
