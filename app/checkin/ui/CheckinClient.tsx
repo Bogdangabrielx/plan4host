@@ -1055,6 +1055,21 @@ export default function CheckinClient() {
   function ContactOverlay({ prop }: { prop: PropertyInfo }) {
     if (!prop.contact_email && !prop.contact_phone && !prop.contact_address) return null;
     const pos = (prop.contact_overlay_position || 'center') as 'top'|'center'|'down';
+    const overlayIcon = (src: string): React.CSSProperties => ({
+      width: 16,
+      height: 16,
+      display: "block",
+      flex: "0 0 auto",
+      backgroundColor: "rgba(255,255,255,0.92)",
+      WebkitMaskImage: `url(${src})`,
+      maskImage: `url(${src})`,
+      WebkitMaskRepeat: "no-repeat",
+      maskRepeat: "no-repeat",
+      WebkitMaskPosition: "center",
+      maskPosition: "center",
+      WebkitMaskSize: "contain",
+      maskSize: "contain",
+    });
     const base: React.CSSProperties = {
       position: 'absolute', left: '50%', transform: 'translateX(-50%)',
       width: 'calc(100% - 24px)', maxWidth: 380, background: 'rgba(23, 25, 37, 0.29)', color: '#fff',
@@ -1069,19 +1084,19 @@ export default function CheckinClient() {
       <div style={base}>
         {prop.contact_email && (
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <span aria-hidden>✉</span>
+            <span aria-hidden style={overlayIcon("/svg_email_demo.svg")} />
             <a href={`mailto:${prop.contact_email}`} style={{ color: '#fff', textDecoration: 'none' }}>{prop.contact_email}</a>
           </div>
         )}
         {prop.contact_phone && (
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <span aria-hidden>☏</span>
+            <span aria-hidden style={overlayIcon("/svg_phone_demo.svg")} />
             <a href={`tel:${(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color: '#fff', textDecoration: 'none' }}>{prop.contact_phone}</a>
           </div>
         )}
         {prop.contact_address && (
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <span aria-hidden>⚐</span>
+            <span aria-hidden style={overlayIcon("/svg_location_demo.svg")} />
             <span>{prop.contact_address}</span>
           </div>
         )}
@@ -1372,29 +1387,50 @@ export default function CheckinClient() {
             .p4h-dot:nth-child(1){background:color-mix(in srgb,var(--primary) 65%, white);animation-delay:0ms}
             .p4h-dot:nth-child(2){background:color-mix(in srgb,var(--primary) 80%, white);animation-delay:120ms}
             .p4h-dot:nth-child(3){background:color-mix(in srgb,var(--primary) 95%, white);animation-delay:240ms}
+            .ci-heroCard{ position: relative; overflow: hidden; }
+            .ci-heroCard::before{
+              content:""; position:absolute; inset:-2px; pointer-events:none;
+              background:
+                radial-gradient(600px 280px at 10% 0%, rgba(16,185,129,0.14), transparent 60%),
+                radial-gradient(600px 280px at 90% 90%, rgba(59,130,246,0.12), transparent 60%);
+              opacity: .9;
+            }
+            .ci-heroInner{ position: relative; z-index: 1; display:flex; align-items:flex-start; justify-content:space-between; gap: 12px; flex-wrap: wrap; }
+            .ci-type{ --ci-font-h:28px; --ci-font-b:14px; --ci-font-s:12px; --ci-weight-m:600; --ci-weight-b:800; }
+            .ci-heroTitle{ margin:0; font-size: var(--ci-font-h); font-weight: var(--ci-weight-b); letter-spacing: .02em; line-height: 1.15; }
+            .ci-heroStack{ margin-top: 10px; display:grid; gap: 8px; }
+            .ci-heroBody{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: var(--muted); line-height: 1.55; }
+            .ci-heroSmall{ margin:0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: var(--muted); line-height: 1.55; }
+            @media (max-width: 560px){ .ci-type{ --ci-font-h:24px; } }
           `,
         }}
       />
       {/* Header */}
-      <section style={CARD}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 30, letterSpacing: 0.3, alignContent:"center" }}>
-               Stay Smart, Experience <span className={homeStyles.betterGrad}>Better</span>
-               <br />
-               <br />
+      <section style={CARD} className="ci-heroCard ci-type">
+        <div className="ci-heroInner">
+          <div style={{ minWidth: 0 }}>
+            <h1 className="ci-heroTitle">
+              Stay Smart, Experience <span className={homeStyles.betterGrad}>Better</span>
             </h1>
-            <p style={{ margin: "6px 0 0 0", color: "var(--muted)" }}>
-              {T('intro1')}<br />
-              {T('intro2')}<br />
-              <Intro3 name={prop?.name ?? (lang === 'ro' ? 'proprietate' : 'the property')} />
-              <br />
-              {T('intro4')}
-              <img src="/QR_fordark.png" alt="QR" width={16} height={16} style={{ verticalAlign: 'text-bottom', marginLeft: 4, marginRight: 4 }} />
-              <br />
-              {T('intro5')}<br />
-              {T('intro6')}
-            </p>
+            <div className="ci-heroStack">
+              <p className="ci-heroBody">{T('intro1')}</p>
+              <p className="ci-heroBody">{T('intro2')}</p>
+              <p className="ci-heroBody">
+                <Intro3 name={prop?.name ?? (lang === 'ro' ? 'proprietate' : 'the property')} />
+              </p>
+              <p className="ci-heroSmall">
+                {T('intro4')}{" "}
+                <img
+                  src="/QR_fordark.png"
+                  alt="QR"
+                  width={16}
+                  height={16}
+                  style={{ verticalAlign: "text-bottom", marginLeft: 4, marginRight: 2, display: "inline-block" }}
+                />
+              </p>
+              <p className="ci-heroSmall">{T('intro5')}</p>
+              <p className="ci-heroSmall">{T('intro6')}</p>
+            </div>
           </div>
           <button
             className={homeStyles.btnLang}
@@ -1425,19 +1461,73 @@ export default function CheckinClient() {
               <div style={{ padding: 12, display:'grid', gap:6 }}>
                 {prop.contact_email && (
                   <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                    <span aria-hidden>✉</span>
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "var(--primary)",
+                        WebkitMaskImage: "url(/svg_email_demo.svg)",
+                        maskImage: "url(/svg_email_demo.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                        flex: "0 0 auto",
+                      }}
+                    />
                     <a href={`mailto:${prop.contact_email}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>{prop.contact_email}</a>
                   </div>
                 )}
                 {prop.contact_phone && (
                   <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                    <span aria-hidden>☏</span>
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "var(--primary)",
+                        WebkitMaskImage: "url(/svg_phone_demo.svg)",
+                        maskImage: "url(/svg_phone_demo.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                        flex: "0 0 auto",
+                      }}
+                    />
                     <a href={`tel:${(prop.contact_phone || '').replace(/\s+/g,'')}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>{prop.contact_phone}</a>
                   </div>
                 )}
                 {prop.contact_address && (
                   <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                    <span aria-hidden>⚐</span>
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "var(--primary)",
+                        WebkitMaskImage: "url(/svg_location_demo.svg)",
+                        maskImage: "url(/svg_location_demo.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                        flex: "0 0 auto",
+                      }}
+                    />
                     <span>{prop.contact_address}</span>
                   </div>
                 )}
