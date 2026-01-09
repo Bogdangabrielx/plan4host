@@ -113,6 +113,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   // const [showNotifMgr, setShowNotifMgr] = useState(false);
   const [activePropertyPhotoUrl, setActivePropertyPhotoUrl] = useState<string | null>(null);
   const [activePropertyId, setActivePropertyId] = useState<string | null>(null);
+  const [navBtnHover, setNavBtnHover] = useState(false);
+  const [navBtnPressed, setNavBtnPressed] = useState(false);
+  const [mgmtBtnHover, setMgmtBtnHover] = useState(false);
+  const [mgmtBtnPressed, setMgmtBtnPressed] = useState(false);
 
   // Theme
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -722,27 +726,48 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	          <>
 	            {/* Left: navigation */}
 	            <div style={{ gridColumn: 1, justifySelf: "start", minWidth: 0, display: "flex", alignItems: "center", gap: isSmall ? 8 : 12 }}>
-		              <button
-		                onClick={() => {
-		                  setOpen(true);
-		                  setOpenRight(false);
+			              <button
+			                onClick={() => {
+			                  setOpen(true);
+			                  setOpenRight(false);
+			                }}
+                  onPointerEnter={() => setNavBtnHover(true)}
+                  onPointerLeave={() => { setNavBtnHover(false); setNavBtnPressed(false); }}
+                  onPointerDown={() => setNavBtnPressed(true)}
+                  onPointerUp={() => setNavBtnPressed(false)}
+                  onPointerCancel={() => setNavBtnPressed(false)}
+		                aria-label="Open menu"
+		                style={{
+		                  width: isSmall ? 36 : 40,
+		                  height: isSmall ? 36 : 40,
+		                  padding: 0,
+		                  borderRadius: 999,
+		                  border: "1px solid",
+		                  borderColor: open
+                        ? "color-mix(in srgb, var(--primary) 45%, var(--border))"
+                        : navBtnHover
+                          ? "color-mix(in srgb, var(--primary) 24%, var(--border))"
+                          : "var(--border)",
+		                  background: "var(--card)",
+		                  color: "var(--text)",
+		                  fontWeight: "var(--fw-bold)",
+		                  cursor: "pointer",
+		                  display: "grid",
+		                  placeItems: "center",
+		                  overflow: "hidden",
+		                  boxShadow: navBtnPressed
+                        ? "0 6px 16px rgba(0,0,0,0.14)"
+                        : (navBtnHover || open)
+                          ? "0 10px 26px rgba(0,0,0,0.18), 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent)"
+                          : "0 8px 20px rgba(0,0,0,0.14)",
+		                  transform: navBtnPressed
+                        ? "scale(0.96)"
+                        : (navBtnHover || open)
+                          ? "translateY(-1px)"
+                          : "none",
+		                  transition: "transform .12s ease, box-shadow .15s ease, border-color .15s ease",
 		                }}
-	                aria-label="Open menu"
-	                style={{
-	                  width: isSmall ? 36 : 40,
-	                  height: isSmall ? 36 : 40,
-	                  padding: 0,
-	                  borderRadius: 999,
-	                  border: "1px solid var(--border)",
-	                  background: "var(--card)",
-	                  color: "var(--text)",
-	                  fontWeight: "var(--fw-bold)",
-	                  cursor: "pointer",
-	                  display: "grid",
-	                  placeItems: "center",
-	                  overflow: "hidden",
-	                }}
-	              >
+		              >
 	                {mounted ? (
 	                  activePropertyPhotoUrl ? (
 	                    <img
@@ -843,19 +868,40 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   setOpenRight(true);
                   setOpen(false);
                 }}
+                onPointerEnter={() => setMgmtBtnHover(true)}
+                onPointerLeave={() => { setMgmtBtnHover(false); setMgmtBtnPressed(false); }}
+                onPointerDown={() => setMgmtBtnPressed(true)}
+                onPointerUp={() => setMgmtBtnPressed(false)}
+                onPointerCancel={() => setMgmtBtnPressed(false)}
                 aria-label="Open management menu"
                 style={{
                   width: isSmall ? 36 : 40,
                   height: isSmall ? 36 : 40,
                   padding: 0,
                   borderRadius: 999,
-                  border: "1px solid var(--border)",
+                  border: "1px solid",
+                  borderColor: openRight
+                    ? "color-mix(in srgb, var(--primary) 45%, var(--border))"
+                    : mgmtBtnHover
+                      ? "color-mix(in srgb, var(--primary) 24%, var(--border))"
+                      : "var(--border)",
                   background: "var(--card)",
                   color: "var(--text)",
                   fontWeight: "var(--fw-bold)",
                   cursor: "pointer",
                   display: "grid",
                   placeItems: "center",
+                  boxShadow: mgmtBtnPressed
+                    ? "0 6px 16px rgba(0,0,0,0.14)"
+                    : (mgmtBtnHover || openRight)
+                      ? "0 10px 26px rgba(0,0,0,0.18), 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent)"
+                      : "0 8px 20px rgba(0,0,0,0.14)",
+                  transform: mgmtBtnPressed
+                    ? "scale(0.96)"
+                    : (mgmtBtnHover || openRight)
+                      ? "translateY(-1px)"
+                      : "none",
+                  transition: "transform .12s ease, box-shadow .15s ease, border-color .15s ease",
                 }}
               >
                 {mounted ? (
