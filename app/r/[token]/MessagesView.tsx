@@ -641,8 +641,8 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
     border: "1px solid var(--border)",
     boxShadow: "0 12px 32px rgba(0,0,0,0.35)",
     display: "grid",
-    gridTemplateRows: "auto auto auto",
-    overflow: "visible",
+    gridTemplateRows: "auto auto 1fr",
+    overflow: "hidden",
     zIndex: 215,
   };
 
@@ -665,6 +665,9 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
     display: "grid",
     gap: 8,
     background: "#ffffff",
+    overflowY: "auto",
+    minHeight: 0,
+    overscrollBehavior: "contain",
   };
 
   const questionBtnStyle: React.CSSProperties = {
