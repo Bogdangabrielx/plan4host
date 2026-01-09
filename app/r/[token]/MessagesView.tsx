@@ -533,14 +533,24 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
   );
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutAnswer, setCheckoutAnswer] = useState<string | null>(null);
-  type AmenitiesSubtopic =
-    | "wifi"
-    | "iron"
-    | "minibar"
-    | "coffee_machine"
-    | "ac"
-    | "washing_machine"
-    | "dishwasher";
+type AmenitiesSubtopic =
+  | "wifi"
+  | "iron"
+  | "minibar"
+  | "coffee_machine"
+  | "ac"
+  | "washing_machine"
+  | "dishwasher";
+
+const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
+  wifi: "/svg_wifi.svg",
+  iron: "/svg_iron.svg",
+  minibar: "/svg_minibar.svg",
+  coffee_machine: "/svg_coffee_machine.svg",
+  ac: "/svg_air_conditioning.svg",
+  washing_machine: "/svg_washing_machine.svg",
+  dishwasher: "/svg_dishwasher.svg",
+};
   const [amenitiesSubtopic, setAmenitiesSubtopic] = useState<AmenitiesSubtopic | null>(null);
   const [amenitiesLoading, setAmenitiesLoading] = useState(false);
   const [amenitiesAnswer, setAmenitiesAnswer] = useState<string | null>(null);
@@ -1834,6 +1844,24 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                     style={questionBtnStyle}
                     onClick={() => handleAmenitiesSubtopic("wifi")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.wifi})`,
+                        maskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.wifi})`,
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.amenities_wifi}</span>
                   </button>
                   <button
@@ -1841,6 +1869,24 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                     style={questionBtnStyle}
                     onClick={() => handleAmenitiesSubtopic("iron")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.iron})`,
+                        maskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.iron})`,
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.amenities_iron}</span>
                   </button>
                   <button
@@ -1848,6 +1894,24 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                     style={questionBtnStyle}
                     onClick={() => handleAmenitiesSubtopic("minibar")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.minibar})`,
+                        maskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.minibar})`,
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.amenities_minibar}</span>
                   </button>
                   <button
@@ -1855,6 +1919,24 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                     style={questionBtnStyle}
                     onClick={() => handleAmenitiesSubtopic("coffee_machine")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.coffee_machine})`,
+                        maskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.coffee_machine})`,
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.amenities_coffee}</span>
                   </button>
                   <button
@@ -1862,6 +1944,24 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                     style={questionBtnStyle}
                     onClick={() => handleAmenitiesSubtopic("ac")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.ac})`,
+                        maskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.ac})`,
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.amenities_ac}</span>
                   </button>
                   <button
@@ -1869,6 +1969,24 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                     style={questionBtnStyle}
                     onClick={() => handleAmenitiesSubtopic("washing_machine")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.washing_machine})`,
+                        maskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.washing_machine})`,
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.amenities_washer}</span>
                   </button>
                   <button
@@ -1876,6 +1994,24 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                     style={questionBtnStyle}
                     onClick={() => handleAmenitiesSubtopic("dishwasher")}
                   >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        display: "block",
+                        backgroundColor: "#e5e7eb",
+                        WebkitMaskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.dishwasher})`,
+                        maskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.dishwasher})`,
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                        pointerEvents: "none",
+                      }}
+                    />
                     <span>{menuLabels.amenities_dishwasher}</span>
                   </button>
                   <button
