@@ -1463,6 +1463,21 @@ export default function CheckinClient() {
                         backdrop-filter: blur(12px) saturate(130%);
                 box-shadow: 0 14px 34px rgba(0,0,0,0.20);
               }
+              .ci-langSwitch .ci-flagBtn{
+                width: 34px !important;
+                height: 34px !important;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+              }
+              .ci-langSwitch .ci-flagBtn img{
+                width: 30px !important;
+                height: 30px !important;
+                border-radius: 999px;
+              }
+              .ci-langSwitch .ci-flagBtn[data-active="1"] img{
+                box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 26%, transparent);
+              }
             }
           `,
         }}
@@ -1557,19 +1572,21 @@ export default function CheckinClient() {
               onClick={() => setLang("ro")}
               aria-label="Română"
               title="Română"
+              className="ci-flagBtn"
+              data-active={lang === "ro" ? "1" : "0"}
               style={{
                 width: 42,
                 height: 42,
                 padding: 0,
                 borderRadius: 999,
-                border: lang === "ro" ? "1px solid var(--primary)" : "1px solid var(--border)",
+                border: lang === "ro" ? "1px solid color-mix(in srgb, var(--primary) 55%, var(--border))" : "1px solid var(--border)",
                 background: "var(--card)",
                 display: "grid",
                 placeItems: "center",
                 cursor: "pointer",
                 boxShadow:
                   lang === "ro"
-                    ? "0 10px 22px color-mix(in srgb, var(--primary) 12%, transparent)"
+                    ? "0 10px 22px color-mix(in srgb, var(--primary) 8%, transparent)"
                     : "none",
               }}
             >
@@ -1580,19 +1597,21 @@ export default function CheckinClient() {
               onClick={() => setLang("en")}
               aria-label="English"
               title="English"
+              className="ci-flagBtn"
+              data-active={lang === "en" ? "1" : "0"}
               style={{
                 width: 42,
                 height: 42,
                 padding: 0,
                 borderRadius: 999,
-                border: lang === "en" ? "1px solid var(--primary)" : "1px solid var(--border)",
+                border: lang === "en" ? "1px solid color-mix(in srgb, var(--primary) 55%, var(--border))" : "1px solid var(--border)",
                 background: "var(--card)",
                 display: "grid",
                 placeItems: "center",
                 cursor: "pointer",
                 boxShadow:
                   lang === "en"
-                    ? "0 10px 22px color-mix(in srgb, var(--primary) 12%, transparent)"
+                    ? "0 10px 22px color-mix(in srgb, var(--primary) 8%, transparent)"
                     : "none",
               }}
             >
