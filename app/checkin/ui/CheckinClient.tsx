@@ -438,7 +438,7 @@ export default function CheckinClient() {
       intro1: 'Îți mulțumim că ne-ai ales!',
       intro2: 'Te rugăm să completezi câmpurile de mai jos cu informațiile solicitate.',
       intro3: (propName: string) => `După ce finalizezi check‑in‑ul online, vei primi automat un email de confirmare pentru ${propName}.`,
-      intro4: 'Emailul va include și un cod QR pe care îl poți prezenta la recepție sau ca dovadă că ai completat acest formular.',
+      intro4: 'Emailul va include și un cod QR pe care îl poți prezenta la recepție sau îl poți folosi drept dovadă că ai completat acest formular.',
       intro5: 'Toate informațiile furnizate sunt strict confidențiale.',
       intro6: 'Îți mulțumim pentru răbdare!',
       loading: 'Se încarcă…',
