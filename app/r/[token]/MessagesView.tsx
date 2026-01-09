@@ -1419,41 +1419,24 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
                                 />
                               )}
                               {id === "amenities" && (
-                                <svg
-                                  viewBox="0 0 24 24"
-                                  width={16}
-                                  height={16}
-                                  aria-hidden="true"
-                                >
-                                  <path
-                                    d="M12 3a5 5 0 00-3.8 8.2c.6.7.8 1.2.8 1.8V15h6v-2c0-.6.2-1.1.8-1.8A5 5 0 0012 3z"
-                                    fill="#e5e7eb"
-                                  />
-                                  <rect
-                                    x="10"
-                                    y="15"
-                                    width="4"
-                                    height="1.5"
-                                    rx="0.75"
-                                    fill="#e5e7eb"
-                                  />
-                                  <rect
-                                    x="9"
-                                    y="17"
-                                    width="6"
-                                    height="1.5"
-                                    rx="0.75"
-                                    fill="#e5e7eb"
-                                  />
-                                  <rect
-                                    x="11"
-                                    y="19"
-                                    width="2"
-                                    height="1.5"
-                                    rx="0.75"
-                                    fill="#e5e7eb"
-                                  />
-                                </svg>
+                                <span
+                                  aria-hidden
+                                  style={{
+                                    width: 16,
+                                    height: 16,
+                                    display: "block",
+                                    backgroundColor: "#e5e7eb",
+                                    WebkitMaskImage: "url(/svg_amenities.svg)",
+                                    maskImage: "url(/svg_amenities.svg)",
+                                    WebkitMaskRepeat: "no-repeat",
+                                    maskRepeat: "no-repeat",
+                                    WebkitMaskPosition: "center",
+                                    maskPosition: "center",
+                                    WebkitMaskSize: "contain",
+                                    maskSize: "contain",
+                                    pointerEvents: "none",
+                                  }}
+                                />
                               )}
                               {id === "extras" && (
                                 <svg
