@@ -722,34 +722,39 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	          <>
 	            {/* Left: navigation */}
 	            <div style={{ gridColumn: 1, justifySelf: "start", minWidth: 0, display: "flex", alignItems: "center", gap: isSmall ? 8 : 12 }}>
-	              <button
-	                onClick={() => {
-	                  setOpen(true);
-	                  setOpenRight(false);
+		              <button
+		                onClick={() => {
+		                  setOpen(true);
+		                  setOpenRight(false);
+		                }}
+	                aria-label="Open menu"
+	                style={{
+	                  width: isSmall ? 36 : 40,
+	                  height: isSmall ? 36 : 40,
+	                  padding: 0,
+	                  borderRadius: 999,
+	                  border: "1px solid var(--border)",
+	                  background: "var(--card)",
+	                  color: "var(--text)",
+	                  fontWeight: "var(--fw-bold)",
+	                  cursor: "pointer",
+	                  display: "grid",
+	                  placeItems: "center",
+	                  overflow: "hidden",
 	                }}
-                aria-label="Open menu"
-                style={{
-                  padding: isSmall ? 4 : 4,
-                  borderRadius: 10,
-                  border: "1px solid var(--border)",
-                  background: "var(--card)",
-                  color: "var(--text)",
-                  fontWeight: "var(--fw-bold)",
-                  cursor: "pointer",
-                }}
-              >
-                {mounted ? (
-                  activePropertyPhotoUrl ? (
-                    <img
-                      src={activePropertyPhotoUrl}
-                      alt=""
-                      width={isSmall ? 28 : 32}
-                      height={isSmall ? 28 : 32}
-                      style={{
-                        display: "block",
-                        borderRadius: 999,
-                        objectFit: "cover",
-                        pointerEvents: "none",
+	              >
+	                {mounted ? (
+	                  activePropertyPhotoUrl ? (
+	                    <img
+	                      src={activePropertyPhotoUrl}
+	                      alt=""
+	                      width={isSmall ? 34 : 38}
+	                      height={isSmall ? 34 : 38}
+	                      style={{
+	                        display: "block",
+	                        borderRadius: 999,
+	                        objectFit: "cover",
+	                        pointerEvents: "none",
                       }}
                       onError={() => setActivePropertyPhotoUrl(null)}
                     />
