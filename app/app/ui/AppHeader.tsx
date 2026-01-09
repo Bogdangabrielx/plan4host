@@ -812,8 +812,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             style={{
               position: "fixed",
               top: 0,
+              bottom: isMobileNav ? "var(--nav-h, 0px)" : 0,
               left: 0,
-              height: "100%",
               width: isMobileNav ? 240 : 280,
               maxWidth: "86vw",
               background: "var(--panel)",
@@ -988,8 +988,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             style={{
               position: "fixed",
               top: 0,
+              bottom: isMobileNav ? "var(--nav-h, 0px)" : 0,
               right: 0,
-              height: "100%",
               width: isMobileNav ? 240 : 280,
               maxWidth: "86vw",
               background: "var(--panel)",
