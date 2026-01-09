@@ -1448,6 +1448,33 @@ export default function CheckinClient() {
             .ci-heroNoteTitle{ font-size: var(--ci-font-s); font-weight: var(--ci-weight-b); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); }
             .ci-heroList{ list-style: none; padding: 0; margin: 0; display:grid; gap: 8px; text-align: left; }
             .ci-heroList li{ display:block; }
+            .ci-actionBtn{
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              padding: 16px 24px;
+              border-radius: 999px;
+              font-weight: 650;
+              line-height: 1.1;
+              color: var(--text);
+              background: var(--card);
+              border: 1px solid var(--border);
+              transition: transform .05s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease, color .2s ease;
+              text-decoration: none;
+            }
+            .ci-actionBtn:hover{
+              border-color: color-mix(in srgb, var(--muted) 70%, var(--border));
+              box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+            }
+            .ci-actionBtn:active{ transform: scale(0.99); }
+            .ci-actionBtn:focus-visible{
+              outline: none;
+              box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 16%, transparent), 0 10px 24px rgba(0,0,0,0.18);
+            }
+            .ci-actionBtn[aria-disabled="true"], .ci-actionBtn:disabled{
+              opacity: .55;
+              cursor: not-allowed !important;
+            }
             @media (max-width: 560px){ .ci-type{ --ci-font-h:24px; } }
             @media (max-width: 900px){
               .ci-langSwitch{
@@ -2021,7 +2048,7 @@ export default function CheckinClient() {
             <div style={{ marginTop: 6 }}>
               <label style={LABEL}>{T('uploadId')}</label>
               <label
-                className={`${homeStyles.btn} ${homeStyles.btnChoose} ${homeStyles.btnPrimary}`}
+                className="ci-actionBtn"
                 style={{
                   display: "flex",
                   width: "100%",
@@ -2220,10 +2247,8 @@ export default function CheckinClient() {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className={`${homeStyles.btn} ${homeStyles.btnChoose} ${homeStyles.btnPrimary}`}
+                className="ci-actionBtn"
                 style={{
-                  opacity: canSubmit ? 1 : 0.6,
-                  cursor: canSubmit ? "pointer" : "not-allowed",
                   width: "100%",
                   maxWidth: isNarrow ? undefined : 520,
                   margin: isNarrow ? undefined : "0 auto",
