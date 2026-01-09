@@ -864,7 +864,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                paddingBottom: isMobileNav ? "calc(16px + var(--safe-bottom, 0px))" : "16px",
 	              }}
 	            >
-                {isMobileNav ? <div style={drawerSectionTitleStyle()}>Navigation</div> : null}
+                <div style={drawerSectionTitleStyle(!isMobileNav)}>
+                  {isMobileNav ? "Navigation" : "Recurring"}
+                </div>
 		              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: isMobileNav ? 4 : 2 }}>
 		                {navLeft.filter((it) => !isMobileNav || it.href !== "/auth/logout").map((it) => {
 		                  const active = currentPath
