@@ -719,7 +719,7 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
   const dropdownStyle: React.CSSProperties = {
     position: "absolute",
     right: 12,
-    bottom: "calc(100% + 6px)",
+    top: "calc(100% + 6px)",
     width: "min(260px, calc(100vw - 48px))",
     maxHeight: 260,
     overflowY: "auto",
@@ -728,7 +728,7 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
     background: "var(--panel)",
     boxShadow: "0 14px 40px rgba(0,0,0,0.45)",
     padding: "6px 6px 14px",
-    zIndex: 220,
+    zIndex: 240,
   };
 
   const dropdownItemStyle: React.CSSProperties = {
@@ -1160,7 +1160,7 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
             </button>
           </div>
 
-          <div style={{ ...languageBarStyle, position: "relative" }}>
+	          <div style={{ ...languageBarStyle, position: "relative", zIndex: 2 }}>
             <div style={{ display: "grid", gap: 2 }}>
               <span style={{ opacity: 0.9 }}>
                 Select language
