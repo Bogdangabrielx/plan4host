@@ -131,12 +131,34 @@ function SocialIcons({ prop }: { prop: PropInfo }) {
   ].filter((x) => !!x.url);
   if (links.length === 0) return null;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: 12, justifyContent: "center" }}>
-      {links.map((l) => (
-        <a key={l.key} href={l.url!} target="_blank" rel="noreferrer" title={l.label} style={{ lineHeight: 0 }}>
-          <img src={l.icon} alt={l.label} width={22} height={22} />
-        </a>
-      ))}
+    <div style={{ padding: 12, display: "flex", justifyContent: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "8px 12px",
+          borderRadius: 999,
+          border: "1px solid var(--border)",
+          background: "rgba(255,255,255,0.68)",
+          WebkitBackdropFilter: "blur(10px) saturate(130%)",
+          backdropFilter: "blur(10px) saturate(130%)",
+          boxShadow: "0 10px 20px rgba(0,0,0,0.08)",
+        }}
+      >
+        {links.map((l) => (
+          <a
+            key={l.key}
+            href={l.url!}
+            target="_blank"
+            rel="noreferrer"
+            title={l.label}
+            style={{ lineHeight: 0, padding: 4, borderRadius: 10 }}
+          >
+            <img src={l.icon} alt={l.label} width={22} height={22} />
+          </a>
+        ))}
+      </div>
     </div>
   );
 }
@@ -965,93 +987,123 @@ export default function DemoClient() {
     <>
       <ForceLight />
 
-      <div style={{ minHeight: "100dvh", display: "grid", placeItems: "start center", padding: 16 }}>
+      <div
+        className="rm-page"
+        style={{
+          minHeight: "100dvh",
+          display: "grid",
+          placeItems: "start center",
+          padding: "16px 16px calc(16px + env(safe-area-inset-bottom))",
+          background:
+            "radial-gradient(700px 500px at 10% 0%, rgba(16,185,129,0.10), transparent 55%), radial-gradient(700px 500px at 90% 100%, rgba(59,130,246,0.08), transparent 55%), var(--bg, #f6f7fb)",
+        }}
+      >
         <style
           dangerouslySetInnerHTML={{
             __html: `
-              .rm-card{ background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow: 0 10px 30px rgba(0,0,0,.20); }
+              .rm-card{ background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow: 0 10px 24px rgba(0,0,0,.12); }
               .rm-content{ color: var(--text); font-family: Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; white-space: pre-wrap; }
               .rm-content h1,.rm-content h2,.rm-content h3{ margin: 0 0 10px; line-height: 1.25; }
-              .rm-content h3:first-of-type{ font-size: 20px; font-weight: 900; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; }
+              .rm-content h3:first-of-type{ font-size: 13px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
               .rm-content p{ margin: 10px 0; line-height: 1.6; }
               .rm-content hr{ border: 0; border-top: 1px solid var(--border); margin: 14px 0; opacity: .75; }
+              .rm-topbar{ position: sticky; top: 12px; z-index: 50; padding: 12px 14px; }
+              .rm-topbarInner{ display:flex; align-items:center; justify-content:space-between; gap: 12px; }
+              .rm-topbarLeft{ display:flex; align-items:center; gap: 10px; min-width: 0; }
+              .rm-propAvatar{ width: 38px; height: 38px; border-radius: 999px; padding: 3px; background: rgba(255,255,255,0.65); border: 1px solid rgba(0,0,0,0.10); box-shadow: 0 0 0 4px rgba(255,255,255,0.55), 0 10px 18px rgba(0,0,0,0.10); flex: 0 0 auto; }
+              .rm-propAvatar img{ width: 100%; height: 100%; border-radius: 999px; object-fit: cover; display: block; }
+              .rm-topbarTitle{ font-weight: 900; color: var(--text); font-size: 14px; letter-spacing: .06em; text-transform: uppercase; line-height: 1.1; }
+              .rm-topbarMeta{ margin-top: 2px; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+              .rm-heroMedia{ position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9; }
+              .rm-heroMedia img{ width: 100%; height: 100%; object-fit: cover; display:block; }
+              @media (max-width: 520px){
+                .rm-topbarMeta{ max-width: 160px; }
+                .rm-heroMedia{ aspect-ratio: 4 / 3; }
+              }
             `,
           }}
         />
 
         <main style={{ width: "min(860px, calc(100vw - 32px))" }}>
           <div
-            className="rm-card"
-            style={{
-              marginBottom: 12,
-              padding: 12,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
+            className="rm-card rm-topbar"
+            style={{ background: "rgba(255,255,255,0.70)", WebkitBackdropFilter: "blur(12px)", backdropFilter: "blur(12px)" }}
           >
-            <img src="/p4h_logo_rotund.png" alt="P4H" width={28} height={28} style={{ display: "block" }} />
-            <div style={{ display: "inline-flex", gap: 8 }}>
-              <button
-                onClick={() => setLang("ro")}
-                className="sb-btn"
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 8,
-                  border: "1px solid var(--border)",
-                  background: lang === "ro" ? "var(--primary)" : "var(--card)",
-                  color: lang === "ro" ? "#0c111b" : "var(--text)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  cursor: "pointer",
-                }}
-              >
-                <img src="/ro.png" alt="RO" width={16} height={16} />
-                <span>Română</span>
-              </button>
-              <button
-                onClick={() => setLang("en")}
-                className="sb-btn"
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 8,
-                  border: "1px solid var(--border)",
-                  background: lang === "en" ? "var(--primary)" : "var(--card)",
-                  color: lang === "en" ? "#0c111b" : "var(--text)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  cursor: "pointer",
-                }}
-              >
-                <img src="/eng.png" alt="EN" width={16} height={16} />
-                <span>English</span>
-              </button>
+            <div className="rm-topbarInner">
+              <div className="rm-topbarLeft">
+                <span className="rm-propAvatar" aria-hidden>
+                  <img src={PROP.presentation_image_url || "/p4h_logo_rotund.png"} alt="" />
+                </span>
+                <div style={{ minWidth: 0 }}>
+                  <div className="rm-topbarTitle">{PROP.name || "Plan4Host"}</div>
+                  <div className="rm-topbarMeta">
+                    {DETAILS.start_date} → {DETAILS.end_date} · {DETAILS.check_in_time} / {DETAILS.check_out_time}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "inline-flex", gap: 8, flex: "0 0 auto" }}>
+                <button
+                  onClick={() => setLang("ro")}
+                  className="sb-btn"
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border)",
+                    background: lang === "ro" ? "var(--primary)" : "rgba(255,255,255,0.65)",
+                    color: lang === "ro" ? "#0c111b" : "var(--text)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    cursor: "pointer",
+                    WebkitBackdropFilter: "blur(10px)",
+                    backdropFilter: "blur(10px)",
+                  }}
+                >
+                  <img src="/ro.png" alt="RO" width={16} height={16} />
+                  <span>Română</span>
+                </button>
+                <button
+                  onClick={() => setLang("en")}
+                  className="sb-btn"
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border)",
+                    background: lang === "en" ? "var(--primary)" : "rgba(255,255,255,0.65)",
+                    color: lang === "en" ? "#0c111b" : "var(--text)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    cursor: "pointer",
+                    WebkitBackdropFilter: "blur(10px)",
+                    backdropFilter: "blur(10px)",
+                  }}
+                >
+                  <img src="/eng.png" alt="EN" width={16} height={16} />
+                  <span>English</span>
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Property contact + image overlay card (glass) */}
-          <section className="rm-card" style={{ padding: 0, marginBottom: 12 }}>
-            <div style={{ position: "relative", borderRadius: 12, overflow: "hidden" }}>
-              <img
-                src={PROP.presentation_image_url || ""}
-                alt="Property"
-                style={{ display: "block", width: "100%", height: 260, objectFit: "cover" }}
-              />
+          <section className="rm-card" style={{ padding: 0, marginBottom: 16 }}>
+            <div className="rm-heroMedia">
+              <img src={PROP.presentation_image_url || ""} alt="Property" />
               <ContactOverlay prop={PROP} />
             </div>
             <SocialIcons prop={PROP} />
           </section>
 
-          <article className="rm-card" style={{ marginBottom: 12 }}>
+          <article className="rm-card" style={{ marginBottom: 16 }}>
             <div className="rm-content">
               <h3>{labels.details}</h3>
               <div
                 style={{
                   display: "grid",
                   gridTemplateColumns: "auto 1fr",
-                  rowGap: 8,
+                  rowGap: 10,
                   columnGap: 10,
                   alignItems: "center",
                 }}
