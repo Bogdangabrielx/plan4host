@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useHeader } from "../_components/HeaderContext";
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 
 /* ---------------- Navigation model ---------------- */
 const NAV_BASE = [
@@ -110,6 +111,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const [isMobileNav, setIsMobileNav] = useState(false);
   const [mounted, setMounted] = useState(false);
   // const [showNotifMgr, setShowNotifMgr] = useState(false);
+  const [activePropertyPhotoUrl, setActivePropertyPhotoUrl] = useState<string | null>(null);
+  const [activePropertyId, setActivePropertyId] = useState<string | null>(null);
 
   // Theme
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -213,6 +216,67 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     window.addEventListener("themechange" as any, onThemeChange);
     return () => window.removeEventListener("themechange" as any, onThemeChange);
   }, []);
+
+  // Active property photo (desktop nav button)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readSelectedId = () => {
+      try {
+        const u = new URL(window.location.href);
+        const fromUrl = u.searchParams.get("property");
+        if (fromUrl) return fromUrl;
+      } catch {}
+      try {
+        return localStorage.getItem("p4h:selectedPropertyId");
+      } catch {}
+      return null;
+    };
+
+    const apply = (id: string | null) => {
+      const clean = (id || "").trim();
+      setActivePropertyId(clean || null);
+    };
+
+    apply(readSelectedId());
+
+    function onEvt(e: Event) {
+      const d = (e as CustomEvent).detail as { id?: string } | undefined;
+      apply(d?.id ?? null);
+    }
+    const onPop = () => apply(readSelectedId());
+    window.addEventListener("p4h:selectedProperty", onEvt as EventListener);
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("p4h:selectedProperty", onEvt as EventListener);
+      window.removeEventListener("popstate", onPop);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (!activePropertyId) {
+      setActivePropertyPhotoUrl(null);
+      return;
+    }
+    let cancelled = false;
+    const sb = createSupabaseClient();
+    (async () => {
+      try {
+        const r = await sb
+          .from("properties")
+          .select("presentation_image_url")
+          .eq("id", activePropertyId)
+          .maybeSingle();
+        const url = (r.data as any)?.presentation_image_url || null;
+        if (!cancelled) setActivePropertyPhotoUrl(url);
+      } catch {
+        if (!cancelled) setActivePropertyPhotoUrl(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activePropertyId, mounted]);
   // Preload theme-specific nav icons to reduce flicker
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -675,24 +739,40 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 }}
               >
                 {mounted ? (
-                  <span
-                    aria-hidden
-                    style={{
-                      width: isSmall ? 28 : 32,
-                      height: isSmall ? 28 : 32,
-                      display: "block",
-                      backgroundColor: "currentColor",
-                      WebkitMaskImage: "url(/svg_navigation.svg)",
-                      maskImage: "url(/svg_navigation.svg)",
-                      WebkitMaskRepeat: "no-repeat",
-                      maskRepeat: "no-repeat",
-                      WebkitMaskPosition: "center",
-                      maskPosition: "center",
-                      WebkitMaskSize: `${isSmall ? 22 : 24}px ${isSmall ? 22 : 24}px`,
-                      maskSize: `${isSmall ? 22 : 24}px ${isSmall ? 22 : 24}px`,
-                      pointerEvents: "none",
-                    }}
-                  />
+                  activePropertyPhotoUrl ? (
+                    <img
+                      src={activePropertyPhotoUrl}
+                      alt=""
+                      width={isSmall ? 28 : 32}
+                      height={isSmall ? 28 : 32}
+                      style={{
+                        display: "block",
+                        borderRadius: 999,
+                        objectFit: "cover",
+                        pointerEvents: "none",
+                      }}
+                      onError={() => setActivePropertyPhotoUrl(null)}
+                    />
+                  ) : (
+                    <span
+                      aria-hidden
+                      style={{
+                        width: isSmall ? 28 : 32,
+                        height: isSmall ? 28 : 32,
+                        display: "block",
+                        backgroundColor: "currentColor",
+                        WebkitMaskImage: "url(/svg_navigation.svg)",
+                        maskImage: "url(/svg_navigation.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskSize: `${isSmall ? 22 : 24}px ${isSmall ? 22 : 24}px`,
+                        maskSize: `${isSmall ? 22 : 24}px ${isSmall ? 22 : 24}px`,
+                        pointerEvents: "none",
+                      }}
+                    />
+                  )
                 ) : (
                   <>≡</>
                 )}
