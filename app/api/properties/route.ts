@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         const subject = isRo ? "Bun venit în Plan4Host 🎉" : "Welcome to Plan4Host 🎉";
         const bodyHtml = isRo ? `
           <div class="p4h-content" style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
-            <h2 style="margin:0 0 10px;">Bună,</h2>
+            <h2 style="margin:0 0 10px;">Salutare,</h2>
             <p style="margin:0 0 10px;">Îți mulțumim că ți-ai creat cont în Plan4Host! 🙌</p>
             <p style="margin:0 0 12px;">
               Ai adăugat cu succes prima proprietate: <strong>${escapeHtml(propName)}</strong>.
