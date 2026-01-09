@@ -1988,6 +1988,7 @@ export default function CheckinClient() {
               <label
                 className={`${homeStyles.btn} ${homeStyles.btnChoose} ${homeStyles.btnPrimary}`}
                 style={{
+                  display: "flex",
                   width: "100%",
                   maxWidth: isNarrow ? undefined : 520,
                   margin: isNarrow ? undefined : "0 auto",
