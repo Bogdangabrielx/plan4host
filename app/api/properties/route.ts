@@ -54,55 +54,114 @@ export async function POST(req: Request) {
         const propName = String((data as any)?.name || "").trim();
         const isRo = String(country_code || "").toUpperCase() === "RO";
         const tutorialUrl = "https://plan4host.com/Simulate%20guest%20flow.MP4";
+        const appBase =
+          (process.env.NEXT_PUBLIC_APP_URL as string | undefined) ||
+          (process.env.NEXT_PUBLIC_SITE_URL as string | undefined) ||
+          "https://plan4host.com";
+        const continueSetupUrl = `${appBase.replace(/\/+$/, "")}/app/propertySetup`;
         const subject = isRo ? "Bun venit în Plan4Host 🎉" : "Welcome to Plan4Host 🎉";
         const bodyHtml = isRo ? `
           <div class="p4h-content" style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
             <h2 style="margin:0 0 10px;">Bună,</h2>
             <p style="margin:0 0 10px;">Îți mulțumim că ți-ai creat cont în Plan4Host! 🙌</p>
-            <p style="margin:0 0 10px;">Ai adăugat cu succes prima proprietate: <strong>${escapeHtml(propName)}</strong>.</p>
-            <p style="margin:0 0 10px;">Dacă ai orice întrebare legată de configurarea proprietății sau vrei să te ajutăm să setezi rapid totul, ne poți contacta oricând la:</p>
-            <div style="margin:10px 0; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
-              <div><strong>WhatsApp:</strong> +40 721 759 329</div>
-              <div><strong>Email:</strong> <a href="mailto:office@plan4host.com">office@plan4host.com</a></div>
-            </div>
-            <div style="margin:14px 0; padding:12px; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc;">
-              <p style="margin:0 0 10px;">
-                După ce finalizezi cei <strong>7 pași</strong> din onboarding, îți recomandăm să <strong>simulezi o rezervare</strong> ca să experimentezi exact ce primește oaspetele (de la check‑in până la check‑out).
+            <p style="margin:0 0 12px;">
+              Ai adăugat cu succes prima proprietate: <strong>${escapeHtml(propName)}</strong>.
+            </p>
+
+            <div style="margin:14px 0 10px; padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc;">
+              <div style="font-weight:800; letter-spacing:0.10em; text-transform:uppercase; font-size:12px; color:#334155; margin:0 0 10px;">
+                Următorii pași (recomandat)
+              </div>
+              <ol style="margin:0; padding-left:18px; color:#0f172a;">
+                <li style="margin:0 0 6px;">Adaugă camere + tipuri de camere</li>
+                <li style="margin:0 0 6px;">Completează detaliile rezervării (câmpuri + reguli)</li>
+                <li style="margin:0 0 6px;">Configurează check‑in / check‑out</li>
+                <li style="margin:0 0 6px;">Setează mesajele automate (confirmare, reminder, etc.)</li>
+                <li style="margin:0;">Activează sincronizarea calendarelor (iCal) ca să eviți overbooking</li>
+              </ol>
+              <p style="margin:12px 0 0; color:#0f172a;">
+                După ce finalizezi configurarea, poți trimite <strong>linkul de check-in</strong> către oaspeți sau îl poți seta ca <strong>răspuns automat</strong> pe platformele de booking, ca să beneficieze de experiența Plan4Host (check-in online + mesaje programate + check-out).
               </p>
-              <p style="margin:0;">
-                <a href="${tutorialUrl}" target="_blank" rel="noopener"
+              <div style="margin:12px 0 0;">
+                <a href="${continueSetupUrl}" target="_blank" rel="noopener"
                    style="display:inline-block; padding:10px 14px; border-radius:10px; background:#16b981; color:#0c111b; font-weight:800; text-decoration:none; border:1px solid #16b981;">
+                  Continuă configurarea
+                </a>
+              </div>
+            </div>
+
+            <div style="margin:0 0 12px; padding:12px; border:1px dashed #e2e8f0; border-radius:12px; background:#ffffff;">
+              <div style="font-weight:800; letter-spacing:0.10em; text-transform:uppercase; font-size:12px; color:#334155; margin:0 0 8px;">
+                Opțional: Simulare oaspete
+              </div>
+              <p style="margin:0; color:#0f172a;">
+                Vrei să vezi exact ce primește oaspetele? Urmărește un tutorial scurt (check-in → check-out).
+              </p>
+              <p style="margin:10px 0 0;">
+                <a href="${tutorialUrl}" target="_blank" rel="noopener"
+                   style="display:inline-block; padding:10px 14px; border-radius:10px; background:#ffffff; color:#16b981; font-weight:800; text-decoration:none; border:1px solid #16b981;">
                   Vezi tutorialul
                 </a>
               </p>
             </div>
-            <p style="margin:0 0 6px;">Suntem la un mesaj distanță, pe email sau WhatsApp.</p>
-            <p style="margin:0;">Suntem aici să te ajutăm să pornești cât mai ușor.</p>
+
+            <p style="margin:0 0 10px;">Dacă ai întrebări sau vrei ajutor la configurare, ne găsești aici:</p>
+            <div style="margin:10px 0 0; padding:10px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+              <div><strong>WhatsApp:</strong> +40 721 759 329</div>
+              <div><strong>Email:</strong> <a href="mailto:office@plan4host.com">office@plan4host.com</a></div>
+            </div>
             <p style="margin:12px 0 0;">Cu drag,<br/>Echipa Plan4Host</p>
           </div>
         ` : `
           <div class="p4h-content" style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
             <h2 style="margin:0 0 10px;">Hello,</h2>
             <p style="margin:0 0 10px;">Thank you for creating your Plan4Host account! 🙌</p>
-            <p style="margin:0 0 10px;">You’ve successfully added your first property: <strong>${escapeHtml(propName)}</strong>.</p>
-            <p style="margin:0 0 10px;">If you have any questions about setup or want us to help you get started quickly, you can reach us anytime at:</p>
-            <div style="margin:10px 0; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
-              <div><strong>WhatsApp:</strong> +40 721 759 329</div>
-              <div><strong>Email:</strong> <a href="mailto:office@plan4host.com">office@plan4host.com</a></div>
-            </div>
-            <div style="margin:14px 0; padding:12px; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc;">
-              <p style="margin:0 0 10px;">
-                After completing the <strong>7 onboarding steps</strong>, we recommend <strong>simulating a booking</strong> to experience exactly what your guest receives (from check‑in to check‑out).
+            <p style="margin:0 0 12px;">
+              You’ve successfully added your first property: <strong>${escapeHtml(propName)}</strong>.
+            </p>
+
+            <div style="margin:14px 0 10px; padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc;">
+              <div style="font-weight:800; letter-spacing:0.10em; text-transform:uppercase; font-size:12px; color:#334155; margin:0 0 10px;">
+                Next steps (recommended)
+              </div>
+              <ol style="margin:0; padding-left:18px; color:#0f172a;">
+                <li style="margin:0 0 6px;">Add rooms + room types</li>
+                <li style="margin:0 0 6px;">Review booking details (fields + rules)</li>
+                <li style="margin:0 0 6px;">Set check‑in / check‑out times</li>
+                <li style="margin:0 0 6px;">Set up automatic messages (confirmation, reminders, etc.)</li>
+                <li style="margin:0;">Enable calendar sync (iCal) to avoid overbooking</li>
+              </ol>
+              <p style="margin:12px 0 0; color:#0f172a;">
+                After setup is complete, you can share your <strong>check-in link</strong> with guests or set it as an <strong>automatic reply</strong> on booking platforms, so they get the experience Plan4Host provides (online check-in + scheduled messages + check-out).
               </p>
-              <p style="margin:0;">
-                <a href="${tutorialUrl}" target="_blank" rel="noopener"
+              <div style="margin:12px 0 0;">
+                <a href="${continueSetupUrl}" target="_blank" rel="noopener"
                    style="display:inline-block; padding:10px 14px; border-radius:10px; background:#16b981; color:#0c111b; font-weight:800; text-decoration:none; border:1px solid #16b981;">
+                  Continue setup
+                </a>
+              </div>
+            </div>
+
+            <div style="margin:0 0 12px; padding:12px; border:1px dashed #e2e8f0; border-radius:12px; background:#ffffff;">
+              <div style="font-weight:800; letter-spacing:0.10em; text-transform:uppercase; font-size:12px; color:#334155; margin:0 0 8px;">
+                Optional: Guest flow simulation
+              </div>
+              <p style="margin:0; color:#0f172a;">
+                Want to see what the guest receives? Watch a short tutorial (check-in → check-out).
+              </p>
+              <p style="margin:10px 0 0;">
+                <a href="${tutorialUrl}" target="_blank" rel="noopener"
+                   style="display:inline-block; padding:10px 14px; border-radius:10px; background:#ffffff; color:#16b981; font-weight:800; text-decoration:none; border:1px solid #16b981;">
                   See tutorial
                 </a>
               </p>
             </div>
-            <p style="margin:0 0 6px;">We’re one message away — by email or WhatsApp.</p>
-            <p style="margin:0;">We’re here to help you get started smoothly.</p>
+
+            <p style="margin:0 0 10px;">Questions or want help with setup? Reach us here:</p>
+            <div style="margin:10px 0 0; padding:10px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+              <div><strong>WhatsApp:</strong> +40 721 759 329</div>
+              <div><strong>Email:</strong> <a href="mailto:office@plan4host.com">office@plan4host.com</a></div>
+            </div>
             <p style="margin:12px 0 0;">Warmly,<br/>The Plan4Host Team</p>
           </div>
         `;
