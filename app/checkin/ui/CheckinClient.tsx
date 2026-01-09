@@ -1440,9 +1440,15 @@ export default function CheckinClient() {
             .ci-langSwitch{ position:absolute; top: 12px; right: 12px; display:flex; gap: 8px; }
             .ci-type{ --ci-font-h:28px; --ci-font-b:14px; --ci-font-s:12px; --ci-weight-m:600; --ci-weight-b:800; }
             .ci-heroTitle{ margin:0; font-size: var(--ci-font-h); font-weight: var(--ci-weight-b); letter-spacing: .02em; line-height: 1.15; }
-            .ci-heroStack{ margin-top: 10px; display:grid; gap: 8px; }
-            .ci-heroBody{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: var(--muted); line-height: 1.55; }
-            .ci-heroSmall{ margin:0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: var(--muted); line-height: 1.55; }
+            .ci-heroStack{ margin-top: 12px; display:grid; gap: 10px; }
+            .ci-heroLead{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-b); color: color-mix(in srgb, var(--text) 92%, transparent); line-height: 1.55; }
+            .ci-heroBody{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 1.55; }
+            .ci-heroSmall{ margin:0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.55; }
+            .ci-heroNote{ margin-top: 6px; display:grid; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 70%, transparent); background: color-mix(in srgb, var(--panel) 55%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent); }
+            .ci-heroNoteTitle{ font-size: var(--ci-font-s); font-weight: var(--ci-weight-b); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); }
+            .ci-heroList{ list-style: none; padding: 0; margin: 0; display:grid; gap: 8px; text-align: left; }
+            .ci-heroList li{ display:flex; gap: 10px; align-items: flex-start; }
+            .ci-heroBullet{ width: 8px; height: 8px; border-radius: 999px; margin-top: 7px; background: color-mix(in srgb, var(--primary) 70%, white); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent); flex: 0 0 auto; }
             @media (max-width: 560px){ .ci-type{ --ci-font-h:24px; } }
           `,
         }}
@@ -1455,23 +1461,41 @@ export default function CheckinClient() {
               Stay Smart, Experience <span className={homeStyles.betterGrad}>Better</span>
             </h1>
             <div className="ci-heroStack">
-              <p className="ci-heroBody">{T('intro1')}</p>
-              <p className="ci-heroBody">{T('intro2')}</p>
-              <p className="ci-heroBody">
-                <Intro3 name={prop?.name ?? (lang === 'ro' ? 'proprietate' : 'the property')} />
-              </p>
-              <p className="ci-heroSmall">
-                {T('intro4')}{" "}
-                <img
-                  src="/QR_fordark.png"
-                  alt="QR"
-                  width={16}
-                  height={16}
-                  style={{ verticalAlign: "text-bottom", marginLeft: 4, marginRight: 2, display: "inline-block" }}
-                />
-              </p>
-              <p className="ci-heroSmall">{T('intro5')}</p>
-              <p className="ci-heroSmall">{T('intro6')}</p>
+              <p className="ci-heroLead">{T('intro2')}</p>
+
+              <div className="ci-heroNote">
+                <div className="ci-heroNoteTitle">{lang === "ro" ? "Informații" : "Info"}</div>
+                <ul className="ci-heroList">
+                  <li>
+                    <span className="ci-heroBullet" aria-hidden />
+                    <span className="ci-heroBody">{T('intro1')}</span>
+                  </li>
+                  <li>
+                    <span className="ci-heroBullet" aria-hidden />
+                    <span className="ci-heroBody">
+                      <Intro3 name={prop?.name ?? (lang === 'ro' ? 'proprietate' : 'the property')} />
+                    </span>
+                  </li>
+                  <li>
+                    <span className="ci-heroBullet" aria-hidden />
+                    <span className="ci-heroBody">
+                      {T('intro4')}{" "}
+                      <img
+                        src="/QR_fordark.png"
+                        alt="QR"
+                        width={16}
+                        height={16}
+                        style={{ verticalAlign: "text-bottom", marginLeft: 4, marginRight: 2, display: "inline-block" }}
+                      />
+                    </span>
+                  </li>
+                  <li>
+                    <span className="ci-heroBullet" aria-hidden />
+                    <span className="ci-heroBody">{T('intro5')}</span>
+                  </li>
+                </ul>
+                <p className="ci-heroSmall">{T('intro6')}</p>
+              </div>
             </div>
           </div>
           <div className="ci-langSwitch">
