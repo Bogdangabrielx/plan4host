@@ -83,7 +83,7 @@ function drawerTitleStyle(): React.CSSProperties {
   };
 }
 
-function drawerSectionTitleStyle(): React.CSSProperties {
+function drawerSectionTitleStyle(compact = false): React.CSSProperties {
   return {
     fontFamily: TITLE_FAMILY,
     fontSize: "var(--fs-s)",
@@ -93,7 +93,7 @@ function drawerSectionTitleStyle(): React.CSSProperties {
     letterSpacing: "0.14em",
     color: "var(--muted)",
     margin: 0,
-    padding: "12px 8px 8px",
+    padding: compact ? "10px 8px 6px" : "12px 8px 8px",
   };
 }
 
@@ -461,7 +461,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     null;
 
   const navSectionsRight = useMemo(() => {
-    if (!isMobileNav) return [];
     const items = navRight.filter((it) => it.href !== "/auth/logout");
 
     const take = (hrefs: string[]) => items.filter((it) => hrefs.includes(it.href));
@@ -480,7 +479,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       { title: "Account", items: account },
       { title: "Other", items: other },
     ].filter((s) => s.items.length > 0);
-  }, [isMobileNav, navRight]);
+  }, [navRight]);
 
   return (
     <>
@@ -822,7 +821,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
               zIndex: 121, // peste header
               display: "grid",
-              gridTemplateRows: isMobileNav ? "auto 1fr auto" : "auto 1fr",
+              gridTemplateRows: logoutItem ? "auto 1fr auto" : "auto 1fr",
               paddingTop: isSmall ? "var(--safe-top)" : "calc(var(--safe-top) + 8px)",
             }}
           >
@@ -858,14 +857,14 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
 	            <nav
 	              style={{
-	                padding: isMobileNav ? 12 : 8,
+	                padding: isMobileNav ? 12 : 10,
 	                overflowY: "auto",
 	                WebkitOverflowScrolling: "touch",
-	                paddingBottom: isMobileNav ? "calc(16px + var(--safe-bottom, 0px))" : "calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)",
+	                paddingBottom: isMobileNav ? "calc(16px + var(--safe-bottom, 0px))" : "16px",
 	              }}
 	            >
                 {isMobileNav ? <div style={drawerSectionTitleStyle()}>Navigation</div> : null}
-		              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: isMobileNav ? 4 : 0 }}>
+		              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: isMobileNav ? 4 : 2 }}>
 		                {navLeft.filter((it) => !isMobileNav || it.href !== "/auth/logout").map((it) => {
 		                  const active = currentPath
 		                    ? it.href === "/app/dashboard"
@@ -878,8 +877,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                  const ICON_SIZE = isMobileNav ? 22 : 32;
 	                  const ICON_COL = isMobileNav ? 32 : 40;
 	                  const ICON_ROW = isMobileNav ? 28 : 32;
-                    const itemPadding = isMobileNav ? "10px 10px" : "4px 0";
-                    const itemRadius = isMobileNav ? 12 : 0;
+                    const itemPadding = isMobileNav ? "10px 10px" : "8px 8px";
+                    const itemRadius = isMobileNav ? 12 : 12;
 
 		                  return (
 		                    <li key={it.href}>
@@ -901,7 +900,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 		                          borderRadius: itemRadius,
 		                          border: "none",
 		                          background:
-                                isMobileNav && (active || hoverLeft === it.href || pressedLeft === it.href)
+                                (active || hoverLeft === it.href || pressedLeft === it.href)
                                   ? "color-mix(in srgb, var(--primary) 10%, transparent)"
                                   : "transparent",
 		                          color: active || hoverLeft === it.href || pressedLeft === it.href ? "var(--primary)" : "var(--muted)",
@@ -998,7 +997,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
               boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
               zIndex: 121, // peste header
               display: "grid",
-              gridTemplateRows: isMobileNav ? "auto 1fr auto" : "auto 1fr",
+              gridTemplateRows: logoutItem ? "auto 1fr auto" : "auto 1fr",
               paddingTop: isSmall ? "var(--safe-top)" : "calc(var(--safe-top) + 8px)",
             }}
           >
@@ -1034,23 +1033,23 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 
 	            <nav
 	              style={{
-	                padding: isMobileNav ? 12 : 8,
+	                padding: isMobileNav ? 12 : 10,
 	                overflowY: "auto",
 	                WebkitOverflowScrolling: "touch",
-	                paddingBottom: isMobileNav ? "calc(16px + var(--safe-bottom, 0px))" : "calc(50vh + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)",
+	                paddingBottom: "16px",
 	              }}
 	            >
-                {(isMobileNav ? navSectionsRight : [{ title: null as any, items: navRight }]).map((section, idx) => (
+                {navSectionsRight.map((section, idx) => (
                   <div
-                    key={section.title || "all"}
+                    key={section.title}
                     style={{
-                      marginBottom: isMobileNav ? 12 : 0,
-                      borderTop: isMobileNav && idx > 0 ? "1px solid var(--border)" : "none",
+                      marginBottom: isMobileNav ? 12 : 14,
+                      borderTop: idx > 0 ? "1px solid var(--border)" : "none",
                     }}
                   >
-                    {isMobileNav ? <div style={drawerSectionTitleStyle()}>{section.title}</div> : null}
-                    <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: isMobileNav ? 4 : 0 }}>
-                      {section.items.filter((it) => !isMobileNav || it.href !== "/auth/logout").map((it) => {
+                    <div style={drawerSectionTitleStyle(!isMobileNav)}>{section.title}</div>
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: isMobileNav ? 4 : 2 }}>
+                      {section.items.map((it) => {
 		                  const active = currentPath
 		                    ? it.href === "/app/dashboard"
 		                      ? currentPath === "/app/dashboard"
@@ -1062,8 +1061,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                  const ICON_SIZE = isMobileNav ? 22 : 32;
 	                  const ICON_COL = isMobileNav ? 32 : 40;
 	                  const ICON_ROW = isMobileNav ? 28 : 32;
-                    const itemPadding = isMobileNav ? "10px 10px" : "4px 0";
-                    const itemRadius = isMobileNav ? 12 : 0;
+                    const itemPadding = isMobileNav ? "10px 10px" : "8px 8px";
+                    const itemRadius = isMobileNav ? 12 : 12;
 
 	                  return (
 	                    <li key={it.href}>
@@ -1088,7 +1087,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                          borderRadius: itemRadius,
 	                          border: "none",
 	                          background:
-                              isMobileNav && (active || hoverRight === it.href || pressedRight === it.href)
+                              (active || hoverRight === it.href || pressedRight === it.href)
                                 ? "color-mix(in srgb, var(--primary) 10%, transparent)"
                                 : "transparent",
 	                          color: active || hoverRight === it.href || pressedRight === it.href ? "var(--primary)" : "var(--muted)",
@@ -1124,10 +1123,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 ))}
             </nav>
 
-            {isMobileNav && logoutItem ? (
+            {logoutItem ? (
               <div
                 style={{
-                  padding: "12px 12px calc(12px + var(--safe-bottom, 0px))",
+                  padding: isMobileNav ? "12px 12px calc(12px + var(--safe-bottom, 0px))" : "12px",
                   borderTop: "1px solid var(--border)",
                   background: "color-mix(in srgb, var(--panel) 92%, transparent)",
                 }}
