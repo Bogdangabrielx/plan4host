@@ -32,6 +32,7 @@ const DEMO = {
   endDate: "11.11.2025",
   checkinTime: "15:00",
   checkoutTime: "11:00",
+  bannerSrc: "/BOA.jpg",
   wifiSsid: "BOA_aFrame_2025",
   minibar: [
     { item: "Twix chocolate bar", price: "10 RON" },
@@ -86,6 +87,13 @@ function DemoMessages({ lang }: { lang: Lang }) {
     boxShadow: "0 10px 28px rgba(0,0,0,0.18)",
     overflow: "hidden",
   };
+  const bannerStyle: React.CSSProperties = {
+    width: "100%",
+    height: 160,
+    display: "block",
+    objectFit: "cover",
+    background: "var(--card)",
+  };
   const headerStyle: React.CSSProperties = {
     padding: 16,
     borderBottom: "1px solid var(--border)",
@@ -105,6 +113,7 @@ function DemoMessages({ lang }: { lang: Lang }) {
 
   return (
     <section style={cardStyle}>
+      <img src={DEMO.bannerSrc} alt={DEMO.propertyName} style={bannerStyle} />
       <header style={headerStyle}>
         <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
           <h2 style={titleStyle}>Reservation Messages (Demo)</h2>
