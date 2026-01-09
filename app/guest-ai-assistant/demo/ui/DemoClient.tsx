@@ -57,6 +57,7 @@ const DETAILS: Details = {
 };
 
 const WIFI_SSID = "BOA_aFrame_2025";
+const WIFI_PASS = "Pass2025";
 
 const MINIBAR_ITEMS = [
   { itemRo: "Baton de ciocolată Twix", itemEn: "Twix chocolate bar", price: "10 RON" },
@@ -210,8 +211,8 @@ function makeAnswer(lang: Lang, topic: TopicId, subtopic?: string): Answer {
     }
     if (subtopic === "parking") {
       return found(
-        "• Te rugăm să parchezi doar în zonele indicate de gazdă.\n• Nu bloca drumuri de acces, alei ale vecinilor sau ieșiri de urgență.\n• Te rugăm să închizi/încuie ușile și geamurile când pleci.\n• Detaliile exacte de parcare vor fi comunicate cu aproximativ 1 oră înainte de check-in (sau poți contacta gazda).",
-        "• Please park only in the areas indicated by the host.\n• Do not block access roads, neighbors’ driveways, or emergency exits.\n• Always lock doors and windows when leaving.\n• Exact parking details will be shared about 1 hour before check-in (or you can contact the host).",
+        "• Te rugăm să parchezi doar în zonele indicate de gazdă.\n• Nu bloca drumuri de acces, alei ale vecinilor sau ieșiri de urgență.\n• Te rugăm să închizi/încuie ușile și geamurile când pleci.",
+        "• Please park only in the areas indicated by the host.\n• Do not block access roads, neighbors’ driveways, or emergency exits.\n• Always lock doors and windows when leaving.",
       );
     }
     if (subtopic === "access_codes") {
@@ -231,8 +232,8 @@ function makeAnswer(lang: Lang, topic: TopicId, subtopic?: string): Answer {
   if (topic === "amenities") {
     if (subtopic === "wifi") {
       return found(
-        `• WIFI: Network **${WIFI_SSID}**\n• Parola nu este menționată. Te rugăm să contactezi gazda.`,
-        `• WIFI: Network **${WIFI_SSID}**\n• Password is not provided. Please contact the host.`,
+        `• WIFI: Network **${WIFI_SSID}**\n• Password **${WIFI_PASS}**`,
+        `• WIFI: Network **${WIFI_SSID}**\n• Password **${WIFI_PASS}**`,
       );
     }
     if (subtopic === "minibar") {
@@ -266,20 +267,20 @@ function makeAnswer(lang: Lang, topic: TopicId, subtopic?: string): Answer {
     }
     if (subtopic === "dishwasher") {
       return found(
-        "• DISHWASHER: proprietatea nu dispune de mașină de spălat vase.",
+        "• MAȘINĂ DE SPĂLAT VASE: proprietatea nu dispune de mașină de spălat vase.",
         "• DISHWASHER: the property does not have a dishwasher.",
       );
     }
     if (subtopic === "ac") {
-      return missing(
-        "• Nu este clar din informațiile disponibile dacă există aer condiționat și cum se folosește. Te rugăm să contactezi gazda.",
-        "• It’s not clear from the available information whether AC is available and how to use it. Please contact the host.",
+      return found(
+        "• AER CONDIȚIONAT: lângă noptieră există un termostat pe perete.\n• Din termostat poți seta temperatura ambientală.\n• Poți seta și intensitatea aerului (treapta ventilatorului).",
+        "• AIR CONDITIONING: there is a wall thermostat near the bedside table.\n• Use it to set the ambient temperature.\n• You can also adjust the air intensity (fan speed).",
       );
     }
     if (subtopic === "spa") {
       return found(
-        "• PISCINĂ (dacă este disponibilă): utilizare pe propria răspundere; fără salvamar.\n• Copiii trebuie supravegheați de un adult; nu alerga în zona piscinei; fără sticlă.",
-        "• POOL (if available): use at your own risk; no lifeguard on duty.\n• Children must be supervised; no running in the pool area; no glass allowed.",
+        "• PISCINĂ (dacă este disponibilă): utilizare pe propria răspundere; fără salvamar.\n• Copiii trebuie supravegheați de un adult; nu alerga în zona piscinei.\n• Te rugăm să eviți obiectele fragile care se pot sparge (sticle, pahare, recipiente din sticlă) — cioburile pot ajunge pe jos și pot provoca accidente.",
+        "• POOL (if available): use at your own risk; no lifeguard on duty.\n• Children must be supervised; no running in the pool area.\n• Please avoid breakable/fragile items (glass bottles, glasses, containers) — shards can spread and cause injuries.",
       );
     }
   }
@@ -308,8 +309,8 @@ function makeAnswer(lang: Lang, topic: TopicId, subtopic?: string): Answer {
 
   if (topic === "forbidden") {
     return found(
-      "• FĂRĂ petreceri/evenimente (decât dacă gazda a confirmat în scris).\n• FĂRĂ activități ilegale.\n• FĂRĂ fumat în interior (doar afară).\n• FĂRĂ droguri/substanțe ilegale.\n• Respectă liniștea și vecinii.\n• La piscină (dacă există): fără sticlă; nu alerga; copiii supravegheați.",
-      "• NO parties/events (unless approved in writing by the host).\n• NO illegal activities.\n• NO smoking indoors (only outdoors).\n• NO illegal drugs/substances.\n• Respect quiet hours and neighbors.\n• Pool area (if applicable): no glass; no running; children must be supervised.",
+      "• FĂRĂ petreceri/evenimente (decât dacă gazda a confirmat în scris).\n• FĂRĂ activități ilegale.\n• FĂRĂ fumat în interior (doar afară).\n• FĂRĂ droguri/substanțe ilegale.\n• Respectă liniștea și vecinii.\n• La piscină (dacă există): nu alerga; copiii supravegheați; evită obiectele fragile care se pot sparge (sticle/pahare/recipiente din sticlă) pentru a nu împrăștia cioburi.",
+      "• NO parties/events (unless approved in writing by the host).\n• NO illegal activities.\n• NO smoking indoors (only outdoors).\n• NO illegal drugs/substances.\n• Respect quiet hours and neighbors.\n• Pool area (if applicable): no running; children must be supervised; avoid breakable glass items (bottles/glasses/containers) to prevent shards spreading.",
     );
   }
 
