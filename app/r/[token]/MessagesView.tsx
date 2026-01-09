@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import LanguageViewer from "./LanguageViewer";
 
 type Details = {
@@ -521,6 +521,9 @@ function ChatFab({ lang, prop, details, items, token }: ChatFabProps) {
   const [open, setOpen] = useState(false);
   const [chatLang, setChatLang] = useState<ChatLangCode | null>(null);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [langMenuPlacement, setLangMenuPlacement] = useState<"up" | "down">("down");
+  const [langMenuMaxHeight, setLangMenuMaxHeight] = useState<number>(260);
+  const langTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [menuLabels, setMenuLabels] = useState<Record<ChatLabelKey, string>>(
     () => BASE_LABELS,
   );
@@ -719,9 +722,7 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
   const dropdownStyle: React.CSSProperties = {
     position: "absolute",
     right: 12,
-    top: "calc(100% + 6px)",
     width: "min(260px, calc(100vw - 48px))",
-    maxHeight: 260,
     overflowY: "auto",
     borderRadius: 12,
     border: "1px solid var(--border)",
@@ -1169,13 +1170,34 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                 Answers will be automatically translated into your selected language.
               </span>
             </div>
-            <button
-              type="button"
-              style={langTriggerStyle}
-              onClick={() => setShowLangMenu((v) => !v)}
-              aria-haspopup="listbox"
-              aria-expanded={showLangMenu}
-            >
+	            <button
+	              type="button"
+                ref={langTriggerRef}
+	              style={langTriggerStyle}
+	              onClick={() =>
+	                setShowLangMenu((v) => {
+	                  const next = !v;
+	                  if (next) {
+	                    try {
+	                      requestAnimationFrame(() => {
+	                        const el = langTriggerRef.current;
+	                        if (!el) return;
+	                        const rect = el.getBoundingClientRect();
+	                        const spaceBelow = window.innerHeight - rect.bottom;
+	                        const spaceAbove = rect.top;
+	                        const preferDown = spaceBelow >= 220 || spaceBelow >= spaceAbove;
+	                        const avail = (preferDown ? spaceBelow : spaceAbove) - 16;
+	                        setLangMenuPlacement(preferDown ? "down" : "up");
+	                        setLangMenuMaxHeight(Math.max(140, Math.min(260, Math.floor(avail))));
+	                      });
+	                    } catch {}
+	                  }
+	                  return next;
+	                })
+	              }
+	              aria-haspopup="listbox"
+	              aria-expanded={showLangMenu}
+	            >
               <span aria-hidden style={{ fontSize: 15 }}>
                 {selectedLang ? selectedLang.flag : "🌍"}
               </span>
@@ -1188,11 +1210,20 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                 ▾
               </span>
             </button>
-            {showLangMenu && (
-              <div style={dropdownStyle} role="listbox">
-                {CHAT_LANG_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.code}
+	            {showLangMenu && (
+	              <div
+	                style={{
+	                  ...dropdownStyle,
+	                  maxHeight: langMenuMaxHeight,
+	                  ...(langMenuPlacement === "up"
+	                    ? { bottom: "calc(100% + 6px)", top: "auto" }
+	                    : { top: "calc(100% + 6px)", bottom: "auto" }),
+	                }}
+	                role="listbox"
+	              >
+	                {CHAT_LANG_OPTIONS.map((opt) => (
+	                  <button
+	                    key={opt.code}
                     type="button"
                     style={{
                       ...dropdownItemStyle,
@@ -1529,8 +1560,8 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                                 <span
                                   aria-hidden
                                   style={{
-                                    width: 16,
-                                    height: 16,
+                                    width: 18,
+                                    height: 18,
                                     display: "block",
                                     backgroundColor: "#e5e7eb",
                                     WebkitMaskImage: "url(/svg_contact_the_host.svg)",
@@ -2111,8 +2142,8 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                     <span
                       aria-hidden
                       style={{
-                        width: 16,
-                        height: 16,
+                        width: 18,
+                        height: 18,
                         display: "block",
                         backgroundColor: "#e5e7eb",
                         WebkitMaskImage: `url(${AMENITIES_ICON_BY_SUBTOPIC.spa})`,
@@ -2241,8 +2272,8 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                     <span
                       aria-hidden
                       style={{
-                        width: 16,
-                        height: 16,
+                        width: 18,
+                        height: 18,
                         display: "block",
                         backgroundColor: "#e5e7eb",
                         WebkitMaskImage: "url(/svg_where_to_eat.svg)",
