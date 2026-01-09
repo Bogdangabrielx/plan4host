@@ -71,6 +71,21 @@ const MINIBAR_ITEMS = [
 function ContactOverlay({ prop }: { prop: PropInfo }) {
   if (!prop.contact_email && !prop.contact_phone && !prop.contact_address) return null;
   const pos = (prop.contact_overlay_position || "center") as "top" | "center" | "down";
+  const overlayIcon = (src: string): React.CSSProperties => ({
+    width: 16,
+    height: 16,
+    display: "block",
+    flex: "0 0 auto",
+    backgroundColor: "rgba(255,255,255,0.92)",
+    WebkitMaskImage: `url(${src})`,
+    maskImage: `url(${src})`,
+    WebkitMaskRepeat: "no-repeat",
+    maskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    maskPosition: "center",
+    WebkitMaskSize: "contain",
+    maskSize: "contain",
+  });
   const base: React.CSSProperties = {
     position: "absolute",
     left: "50%",
@@ -95,7 +110,7 @@ function ContactOverlay({ prop }: { prop: PropInfo }) {
     <div style={base}>
       {prop.contact_email && (
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span aria-hidden>✉</span>
+          <span aria-hidden style={overlayIcon("/svg_email_demo.svg")} />
           <a href={`mailto:${prop.contact_email}`} style={{ color: "#fff", textDecoration: "none" }}>
             {prop.contact_email}
           </a>
@@ -103,7 +118,7 @@ function ContactOverlay({ prop }: { prop: PropInfo }) {
       )}
       {prop.contact_phone && (
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span aria-hidden>☏</span>
+          <span aria-hidden style={overlayIcon("/svg_phone_demo.svg")} />
           <a
             href={`tel:${String(prop.contact_phone || "").replace(/\s+/g, "")}`}
             style={{ color: "#fff", textDecoration: "none" }}
@@ -114,7 +129,7 @@ function ContactOverlay({ prop }: { prop: PropInfo }) {
       )}
       {prop.contact_address && (
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span aria-hidden>⚐</span>
+          <span aria-hidden style={overlayIcon("/svg_location_demo.svg")} />
           <span>{prop.contact_address}</span>
         </div>
       )}
