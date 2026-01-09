@@ -228,7 +228,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
             }}
             aria-label="Română"
           >
-            <img src="/ro.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
+            <img src="/ro.png" alt="" width={40} height={40} style={{ borderRadius: 999, display: "block" }} />
           </button>
           <button
             onClick={() => setLang('en')}
@@ -250,7 +250,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
             }}
             aria-label="English"
           >
-            <img src="/eng.png" alt="" width={26} height={26} style={{ borderRadius: 999, display: "block" }} />
+            <img src="/eng.png" alt="" width={40} height={40} style={{ borderRadius: 999, display: "block" }} />
           </button>
           </div>
         </div>
