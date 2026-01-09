@@ -187,21 +187,21 @@ function makeAnswer(lang: Lang, topic: TopicId, subtopic?: string): Answer {
       );
     }
     if (subtopic === "parking") {
-      return missing(
-        "• Nu este clar din informațiile disponibile unde se poate parca. Te rugăm să contactezi gazda.",
-        "• It’s not clear from the available information where you should park. Please contact the host.",
+      return found(
+        "• Te rugăm să parchezi doar în zonele indicate de gazdă.\n• Nu bloca drumuri de acces, alei ale vecinilor sau ieșiri de urgență.\n• Te rugăm să închizi/încuie ușile și geamurile când pleci.\n• Detaliile exacte de parcare vor fi comunicate cu aproximativ 1 oră înainte de check-in (sau poți contacta gazda).",
+        "• Please park only in the areas indicated by the host.\n• Do not block access roads, neighbors’ driveways, or emergency exits.\n• Always lock doors and windows when leaving.\n• Exact parking details will be shared about 1 hour before check-in (or you can contact the host).",
       );
     }
     if (subtopic === "access_codes") {
-      return missing(
-        "• Nu există coduri de acces în informațiile disponibile. Te rugăm să contactezi gazda.",
-        "• Access codes are not provided in the available information. Please contact the host.",
+      return found(
+        "• Codurile de acces vor fi comunicate cu aproximativ 1 oră înainte de check-in.\n• Dacă ai nevoie mai devreme, te rugăm să contactezi gazda.",
+        "• Access codes will be shared about 1 hour before check-in.\n• If you need them earlier, please contact the host.",
       );
     }
     if (subtopic === "access_instructions") {
-      return missing(
-        "• Nu există instrucțiuni de acces în informațiile disponibile. Te rugăm să contactezi gazda.",
-        "• Access instructions are not provided in the available information. Please contact the host.",
+      return found(
+        "• Instrucțiunile de acces vor fi comunicate cu aproximativ 1 oră înainte de check-in.\n• Dacă ai nevoie mai devreme, te rugăm să contactezi gazda.",
+        "• Access instructions will be shared about 1 hour before check-in.\n• If you need them earlier, please contact the host.",
       );
     }
   }
@@ -264,9 +264,9 @@ function makeAnswer(lang: Lang, topic: TopicId, subtopic?: string): Answer {
 
   if (topic === "extras") {
     if (subtopic === "where_to_eat") {
-      return missing(
-        "• Nu sunt recomandări de restaurante/cafenele în informațiile disponibile. Te rugăm să contactezi gazda.",
-        "• There are no restaurant/cafe recommendations in the available information. Please contact the host.",
+      return found(
+        "• La ~10 minute distanță există o cafenea.\n• Vis‑a‑vis există un restaurant tradițional.\n• Dacă vrei recomandări în funcție de preferințe (mic dejun / prânz / cină), scrie‑i gazdei.",
+        "• There’s a cafe about ~10 minutes away.\n• There’s a traditional restaurant right across the street.\n• If you want suggestions based on your preferences (breakfast / lunch / dinner), message the host.",
       );
     }
     if (subtopic === "what_to_visit") {
@@ -1100,4 +1100,3 @@ export default function DemoClient() {
     </>
   );
 }
-
