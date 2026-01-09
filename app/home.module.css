@@ -9,17 +9,6 @@
   line-height: var(--lh-b);
 }
 .landing {
- /* Light, airy palette for landing */
-  --bg: #f8fafc; /* near-white */
-  --text: #0f172a; /* slate-900 */
-  --muted: #64748b; /* slate-500 */
-  --panel: rgba(255, 255, 255, 0.78); /* soft glass */
-  --card: #ffffff; /* white cards */
-  --border: #e2e8f0; /* light border */
-  --primary: #16b981; /* emerald */
-  --accent1: #22d3ee; /* cyan */
-  --accent2: #e6eef8; /* pale indigo/blue for light ring */
-
   /* Animation controls */
   --ring: 2px;
   --ring-speed: 2.6s;
@@ -37,6 +26,18 @@
   --lh-h: 1.08;
   --lh-b: 1.6;
   --lh-s: 1.4;
+}
+:global(html[data-theme="light"]) .landing {
+  /* Light, airy palette for landing */
+  --bg: #f8fafc; /* near-white */
+  --text: #0f172a; /* slate-900 */
+  --muted: #64748b; /* slate-500 */
+  --panel: rgba(255, 255, 255, 0.78); /* soft glass */
+  --card: #ffffff; /* white cards */
+  --border: #e2e8f0; /* light border */
+  --primary: #16b981; /* emerald */
+  --accent1: #22d3ee; /* cyan */
+  --accent2: #e6eef8; /* pale indigo/blue for light ring */
 }
 @media (max-width: 560px) {
   .landing { --fs-h: clamp(30px, 8vw, 40px); }
