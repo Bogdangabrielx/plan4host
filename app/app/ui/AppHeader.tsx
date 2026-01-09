@@ -756,10 +756,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 		                  placeItems: "center",
 		                  overflow: "hidden",
 		                  boxShadow: navBtnPressed
-                        ? "0 6px 16px rgba(0,0,0,0.14)"
-                        : (navBtnHover || open)
-                          ? "0 10px 26px rgba(0,0,0,0.18), 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent)"
-                          : "0 8px 20px rgba(0,0,0,0.14)",
+                        ? "0 6px 16px rgba(0,0,0,0.14), inset 0 0 0 2px rgba(0,0,0,0.28)"
+		                        : (navBtnHover || open)
+		                          ? "0 12px 28px rgba(0,0,0,0.18), inset 0 0 0 2px rgba(0,0,0,0.28)"
+		                          : "0 8px 20px rgba(0,0,0,0.14), inset 0 0 0 2px rgba(0,0,0,0.28)",
 		                  transform: navBtnPressed
                         ? "scale(0.96)"
                         : (navBtnHover || open)
@@ -770,17 +770,19 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 		              >
 	                {mounted ? (
 	                  activePropertyPhotoUrl ? (
-	                    <img
-	                      src={activePropertyPhotoUrl}
-	                      alt=""
-	                      width={isSmall ? 34 : 38}
-	                      height={isSmall ? 34 : 38}
-	                      style={{
-	                        display: "block",
-	                        borderRadius: 999,
-	                        objectFit: "cover",
-	                        pointerEvents: "none",
-                      }}
+		                    <img
+		                      src={activePropertyPhotoUrl}
+		                      alt=""
+		                      width={isSmall ? 36 : 40}
+		                      height={isSmall ? 36 : 40}
+		                      style={{
+		                        display: "block",
+		                        width: "100%",
+		                        height: "100%",
+		                        borderRadius: 999,
+		                        objectFit: "cover",
+		                        pointerEvents: "none",
+	                      }}
                       onError={() => setActivePropertyPhotoUrl(null)}
                     />
                   ) : (
@@ -892,10 +894,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   display: "grid",
                   placeItems: "center",
                   boxShadow: mgmtBtnPressed
-                    ? "0 6px 16px rgba(0,0,0,0.14)"
+                    ? "0 6px 16px rgba(0,0,0,0.14), inset 0 0 0 2px rgba(0,0,0,0.28)"
                     : (mgmtBtnHover || openRight)
-                      ? "0 10px 26px rgba(0,0,0,0.18), 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent)"
-                      : "0 8px 20px rgba(0,0,0,0.14)",
+                      ? "0 12px 28px rgba(0,0,0,0.18), inset 0 0 0 2px rgba(0,0,0,0.28)"
+                      : "0 8px 20px rgba(0,0,0,0.14), inset 0 0 0 2px rgba(0,0,0,0.28)",
                   transform: mgmtBtnPressed
                     ? "scale(0.96)"
                     : (mgmtBtnHover || openRight)
