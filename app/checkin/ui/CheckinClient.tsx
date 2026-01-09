@@ -1362,7 +1362,19 @@ export default function CheckinClient() {
   return (
     <div style={OUTER_WRAP}>
       {/* Light CSS for pulse animation */}
-      <style dangerouslySetInnerHTML={{ __html: `@keyframes p4h-pulse{0%{opacity:.6}50%{opacity:1}100%{opacity:.6}}` }} />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes p4h-pulse{0%{opacity:.6}50%{opacity:1}100%{opacity:.6}}
+            @keyframes p4h-dotwave{0%,100%{transform:translateY(0);opacity:.55}50%{transform:translateY(-4px);opacity:1}}
+            .p4h-dots{display:inline-flex;align-items:center;gap:6px}
+            .p4h-dot{width:8px;height:8px;border-radius:999px;animation:p4h-dotwave 1.1s ease-in-out infinite}
+            .p4h-dot:nth-child(1){background:color-mix(in srgb,var(--primary) 65%, white);animation-delay:0ms}
+            .p4h-dot:nth-child(2){background:color-mix(in srgb,var(--primary) 80%, white);animation-delay:120ms}
+            .p4h-dot:nth-child(3){background:color-mix(in srgb,var(--primary) 95%, white);animation-delay:240ms}
+          `,
+        }}
+      />
       {/* Header */}
       <section style={CARD}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
@@ -1451,6 +1463,7 @@ export default function CheckinClient() {
             style={{ display: "grid", gap: 14 }}
             translate="no"
             className="notranslate"
+            aria-busy={submitState === "submitting"}
           >
             {/* Dates */}
             <div style={{
@@ -1942,12 +1955,16 @@ export default function CheckinClient() {
             )}
 
             {/* Actions */}
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
+            <div style={{ display: "grid", gap: 10, justifyItems: isNarrow ? "stretch" : "center" }}>
               <button
                 type="submit"
                 disabled={!canSubmit}
                 className={`${homeStyles.btn} ${homeStyles.btnChoose} ${homeStyles.btnPrimary}`}
-                style={{ opacity: canSubmit ? 1 : 0.6, cursor: canSubmit ? "pointer" : "not-allowed" }}
+                style={{
+                  opacity: canSubmit ? 1 : 0.6,
+                  cursor: canSubmit ? "pointer" : "not-allowed",
+                  width: isNarrow ? "100%" : "min(520px, 100%)",
+                }}
               >
                 {submitState === "submitting" ? T('submitSubmitting') : T('submit')}
               </button>
@@ -2325,7 +2342,17 @@ export default function CheckinClient() {
       {/* Confirmation email modal */}
       {confirmOpen && (
         <div role="dialog" aria-modal="true" onClick={()=>{ if (confirmStatus !== 'sending') setConfirmOpen(false); }}
-          style={{ position:'fixed', inset:0, zIndex: 300, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
+          style={{
+            position:'fixed',
+            inset:0,
+            zIndex: 300,
+            background:'rgba(0,0,0,.55)',
+            WebkitBackdropFilter:'blur(6px)',
+            backdropFilter:'blur(6px)',
+            display:'grid',
+            placeItems:'center',
+            padding:12
+          }}>
           <div
             ref={confirmCardRef}
             tabIndex={-1}
@@ -2340,10 +2367,31 @@ export default function CheckinClient() {
               )}
             </div>
             {confirmStatus === 'sending' && (
-              <div aria-live="polite" style={{ display:'grid', gap:8 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                  <span style={{ width:10, height:10, borderRadius:999, background:'var(--primary)', animation:'p4h-pulse 1.2s infinite' }} />
-                  <span>Sending…</span>
+              <div aria-live="polite" style={{ display:'grid', gap:10 }}>
+                <div
+                  style={{
+                    display:'inline-flex',
+                    alignItems:'center',
+                    justifyContent:'center',
+                    gap:10,
+                    padding:'10px 12px',
+                    borderRadius: 999,
+                    border:'1px solid var(--border)',
+                    background:'rgba(255,255,255,0.68)',
+                    WebkitBackdropFilter:'blur(10px) saturate(130%)',
+                    backdropFilter:'blur(10px) saturate(130%)',
+                    boxShadow:'0 10px 20px rgba(0,0,0,0.10)',
+                    width:'fit-content',
+                  }}
+                >
+                  <span className="p4h-dots" aria-hidden>
+                    <span className="p4h-dot" />
+                    <span className="p4h-dot" />
+                    <span className="p4h-dot" />
+                  </span>
+                  <span style={{ fontWeight: 800 }}>
+                    {lang === 'ro' ? 'Se trimite…' : 'Sending…'}
+                  </span>
                 </div>
                 <small style={{ color:'var(--muted)' }}>{T('confirmEmailWait')}</small>
               </div>
@@ -2352,11 +2400,15 @@ export default function CheckinClient() {
               <div style={{ display:'grid', gap:10 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                   <span className="sb-badge" style={{ background:'var(--primary)', color:'#0c111b', borderColor:'var(--primary)' }}>Sent</span>
-                  <span>We sent a confirmation email to your address.</span>
+                  <span>
+                    {lang === 'ro'
+                      ? 'Am trimis un email de confirmare la adresa ta.'
+                      : 'We sent a confirmation email to your address.'}
+                  </span>
                 </div>
                 {qrUrl && (
                   <div style={{ display:'grid', gap:6, justifyItems:'center', border:'1px solid var(--border)', borderRadius:12, padding:12 }}>
-                    <div style={{ fontWeight:800 }}>Your QR code</div>
+                    <div style={{ fontWeight:800 }}>{lang === 'ro' ? 'Codul tău QR' : 'Your QR code'}</div>
                     <QrWithLogo data={qrUrl} size={240} radius={16} logoSrc="/p4h_logo_round_QR.png" logoAlt="Plan4Host" />
                     <small style={{ color:'var(--muted)', wordBreak:'break-all' }}>{qrUrl}</small>
                   </div>
@@ -2366,10 +2418,12 @@ export default function CheckinClient() {
             {confirmStatus === 'error' && (
               <div style={{ display:'grid', gap:8 }}>
                 <div style={{ padding: 10, borderRadius: 10, background:'var(--danger)', color:'#0c111b', fontWeight:800 }}>
-                  Error sending confirmation email.
+                  {lang === 'ro' ? 'Eroare la trimiterea emailului de confirmare.' : 'Error sending confirmation email.'}
                 </div>
                 <small style={{ color:'var(--muted)' }}>
-                  You can try again in 30 minutes or contact the property directly.
+                  {lang === 'ro'
+                    ? 'Poți încerca din nou mai târziu sau poți contacta proprietatea direct.'
+                    : 'You can try again later or contact the property directly.'}
                 </small>
               </div>
             )}
