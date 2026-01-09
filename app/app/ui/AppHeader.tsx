@@ -738,8 +738,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   onPointerCancel={() => setNavBtnPressed(false)}
 		                aria-label="Open menu"
 		                style={{
-		                  width: isSmall ? 36 : 40,
-		                  height: isSmall ? 36 : 40,
+		                  width: isSmall ? 40 : 46,
+		                  height: isSmall ? 40 : 46,
 		                  padding: 3,
 		                  borderRadius: 999,
 		                  border: "1px solid",
@@ -770,15 +770,15 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 		              >
 	                {mounted ? (
 	                  activePropertyPhotoUrl ? (
-		                    <img
-		                      src={activePropertyPhotoUrl}
-		                      alt=""
-		                      width={isSmall ? 36 : 40}
-		                      height={isSmall ? 36 : 40}
-		                      style={{
-		                        display: "block",
-		                        width: "100%",
-		                        height: "100%",
+	                    <img
+	                      src={activePropertyPhotoUrl}
+	                      alt=""
+	                      width={isSmall ? 34 : 40}
+	                      height={isSmall ? 34 : 40}
+	                      style={{
+	                        display: "block",
+	                        width: "100%",
+	                        height: "100%",
 		                        borderRadius: 999,
 		                        objectFit: "cover",
 		                        pointerEvents: "none",
@@ -786,24 +786,24 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                       onError={() => setActivePropertyPhotoUrl(null)}
                     />
                   ) : (
-                    <span
-                      aria-hidden
-                      style={{
-                        width: isSmall ? 28 : 32,
-                        height: isSmall ? 28 : 32,
-                        display: "block",
-                        backgroundColor: "currentColor",
-                        WebkitMaskImage: "url(/svg_navigation.svg)",
-                        maskImage: "url(/svg_navigation.svg)",
+	                    <span
+	                      aria-hidden
+	                      style={{
+	                        width: isSmall ? 32 : 38,
+	                        height: isSmall ? 32 : 38,
+	                        display: "block",
+	                        backgroundColor: "currentColor",
+	                        WebkitMaskImage: "url(/svg_navigation.svg)",
+	                        maskImage: "url(/svg_navigation.svg)",
                         WebkitMaskRepeat: "no-repeat",
                         maskRepeat: "no-repeat",
-                        WebkitMaskPosition: "center",
-                        maskPosition: "center",
-                        WebkitMaskSize: `${isSmall ? 22 : 24}px ${isSmall ? 22 : 24}px`,
-                        maskSize: `${isSmall ? 22 : 24}px ${isSmall ? 22 : 24}px`,
-                        pointerEvents: "none",
-                      }}
-                    />
+	                        WebkitMaskPosition: "center",
+	                        maskPosition: "center",
+	                        WebkitMaskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
+	                        maskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
+	                        pointerEvents: "none",
+	                      }}
+	                    />
                   )
                 ) : (
                   <>≡</>
@@ -877,8 +877,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 onPointerCancel={() => setMgmtBtnPressed(false)}
                 aria-label="Open management menu"
                 style={{
-                  width: isSmall ? 36 : 40,
-                  height: isSmall ? 36 : 40,
+                  width: isSmall ? 40 : 46,
+                  height: isSmall ? 40 : 46,
                   padding: 0,
                   borderRadius: 999,
                   border: "1px solid",
@@ -910,8 +910,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   <span
                     aria-hidden
                     style={{
-                      width: isSmall ? 28 : 32,
-                      height: isSmall ? 28 : 32,
+                      width: isSmall ? 32 : 38,
+                      height: isSmall ? 32 : 38,
                       display: "block",
                       backgroundColor: "currentColor",
                       WebkitMaskImage: "url(/svg_more.svg)",
@@ -920,8 +920,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                       maskRepeat: "no-repeat",
                       WebkitMaskPosition: "center",
                       maskPosition: "center",
-                      WebkitMaskSize: `${isSmall ? 22 : 24}px ${isSmall ? 22 : 24}px`,
-                      maskSize: `${isSmall ? 22 : 24}px ${isSmall ? 22 : 24}px`,
+                      WebkitMaskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
+                      maskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
                       pointerEvents: "none",
                     }}
                   />
