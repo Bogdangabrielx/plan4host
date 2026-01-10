@@ -389,8 +389,7 @@ export default function CheckinClient() {
       intro4: 'The email will also include a QR code you can present at reception, or use as proof that you have completed this form.',
       intro5: 'Please note that all information you provide is strictly confidential.',
       intro6: 'Thank you for your patience!',
-      preTitle: (name: string) => `Welcome to ${name}`,
-      preBody: 'In the next step, please complete the accommodation form so the host can prepare everything for your arrival.',
+      preBody: 'Next, please complete the accommodation form so we can prepare everything in advance and make your stay as smooth as possible.',
       preCta: 'Complete the form',
       preMapTitle: 'Location',
       preContactTitle: 'Contact',
@@ -455,8 +454,7 @@ export default function CheckinClient() {
       intro4: 'Emailul va include și un cod QR pe care îl poți prezenta la recepție sau îl poți folosi drept dovadă că ai completat acest formular.',
       intro5: 'Toate informațiile furnizate sunt strict confidențiale.',
       intro6: 'Îți mulțumim pentru răbdare!',
-      preTitle: (name: string) => `Bine ai venit la ${name}`,
-      preBody: 'În pasul următor, te rugăm să completezi fișa de cazare, ca gazda să poată pregăti totul din timp pentru sosirea ta.',
+      preBody: 'În cele ce urmează, te rugăm să completezi fișa de cazare, ca să pregătim din timp totul pentru ca șederea ta să fie cât mai plăcută.',
       preCta: 'Completează formularul',
       preMapTitle: 'Locație',
       preContactTitle: 'Contact',
@@ -1880,6 +1878,32 @@ export default function CheckinClient() {
                 <ContactOverlay prop={prop} />
               </div>
               <SocialPills prop={prop} />
+              {stage === "intro" && (
+                <div style={{ padding: 16, borderTop: "1px solid var(--border)", display: "grid", gap: 12, textAlign: "center", justifyItems: "center" }}>
+                  <p style={{ margin: 0, color: "var(--muted)", maxWidth: 62 * 12 }}>
+                    {T("preBody")}
+                  </p>
+                  <button
+                    type="button"
+                    className="ci-actionBtn"
+                    style={{
+                      width: "100%",
+                      maxWidth: isNarrow ? undefined : 520,
+                      margin: isNarrow ? undefined : "0 auto",
+                    }}
+                    onClick={() => {
+                      setStage("form");
+                      try {
+                        requestAnimationFrame(() => {
+                          formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        });
+                      } catch {}
+                    }}
+                  >
+                    {T("preCta")}
+                  </button>
+                </div>
+              )}
             </>
           ) : (
             (prop.contact_email || prop.contact_phone || prop.contact_address) ? (
@@ -1957,6 +1981,32 @@ export default function CheckinClient() {
                   </div>
                 )}
                 <SocialPills prop={prop} />
+                {stage === "intro" && (
+                  <div style={{ paddingTop: 10, borderTop: "1px solid var(--border)", display: "grid", gap: 12, textAlign: "center", justifyItems: "center" }}>
+                    <p style={{ margin: 0, color: "var(--muted)", maxWidth: 62 * 12 }}>
+                      {T("preBody")}
+                    </p>
+                    <button
+                      type="button"
+                      className="ci-actionBtn"
+                      style={{
+                        width: "100%",
+                        maxWidth: isNarrow ? undefined : 520,
+                        margin: isNarrow ? undefined : "0 auto",
+                      }}
+                      onClick={() => {
+                        setStage("form");
+                        try {
+                          requestAnimationFrame(() => {
+                            formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                          });
+                        } catch {}
+                      }}
+                    >
+                      {T("preCta")}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : null
           )}
@@ -1965,130 +2015,51 @@ export default function CheckinClient() {
 
       {stage === "intro" && prop && (
         <section style={CARD}>
-          <div style={{ display: "grid", gap: 14, justifyItems: "center", textAlign: "center" }}>
-            <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: ".02em" }}>
-              {((TXT as any)[lang].preTitle as (name: string) => string)(
-                prop?.name ?? (lang === "ro" ? "proprietate" : "the property"),
-              )}
+          <div
+            style={{
+              border: "1px solid var(--border)",
+              background: "var(--card)",
+              borderRadius: 12,
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)", fontWeight: 900, fontSize: 12, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)" }}>
+              {T("preMapTitle")}
             </div>
-            <p style={{ margin: 0, color: "var(--muted)", maxWidth: 62 * 12 }}>
-              {T("preBody")}
-            </p>
-
-            <div
-              style={{
-                width: "100%",
-                display: "grid",
-                gap: 12,
-                gridTemplateColumns: isNarrow ? "1fr" : "1.25fr 0.75fr",
-                alignItems: "start",
-              }}
-            >
-              <div
-                style={{
-                  border: "1px solid var(--border)",
-                  background: "var(--card)",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                  minHeight: 220,
-                }}
-              >
-                <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)", fontWeight: 900, fontSize: 12, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)" }}>
-                  {T("preMapTitle")}
-                </div>
-                {mapEmbedUrl ? (
-                  <iframe
-                    title="Google Maps"
-                    src={mapEmbedUrl}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    style={{ width: "100%", height: 260, border: 0, display: "block" }}
-                  />
-                ) : (
-                  <div style={{ padding: 12, color: "var(--muted)" }}>
-                    {mapBusy
-                      ? (lang === "ro" ? "Se încarcă harta…" : "Loading map…")
-                      : (lang === "ro"
-                          ? "Previzualizarea hărții nu este disponibilă. Deschide locația în Google Maps."
-                          : "Map preview is not available. Open the location in Google Maps.")}
-                  </div>
-                )}
-                {mapOpenUrl ? (
-                  <div style={{ padding: 10, borderTop: "1px solid var(--border)" }}>
-                    <a
-                      href={mapOpenUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ color: "var(--primary)", textDecoration: "none", fontWeight: 800, fontSize: 12 }}
-                    >
-                      {lang === "ro" ? "Deschide în Google Maps" : "Open in Google Maps"}
-                    </a>
-                  </div>
-                ) : null}
+            {mapEmbedUrl ? (
+              <iframe
+                title="Google Maps"
+                src={mapEmbedUrl}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                style={{ width: "100%", height: 260, border: 0, display: "block" }}
+              />
+            ) : (
+              <div style={{ padding: 12, color: "var(--muted)" }}>
+                {mapBusy
+                  ? (lang === "ro" ? "Se încarcă harta…" : "Loading map…")
+                  : (lang === "ro"
+                      ? "Previzualizarea hărții nu este disponibilă. Deschide locația în Google Maps."
+                      : "Map preview is not available. Open the location in Google Maps.")}
+              </div>
+            )}
+            {mapOpenUrl ? (
+              <div style={{ padding: 10, borderTop: "1px solid var(--border)", display: "grid", gap: 6 }}>
+                <a
+                  href={mapOpenUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: "var(--primary)", textDecoration: "none", fontWeight: 800, fontSize: 12 }}
+                >
+                  {lang === "ro" ? "Deschide în Google Maps" : "Open in Google Maps"}
+                </a>
                 {!prop.social_location && prop.contact_address ? (
-                  <div style={{ padding: 10, borderTop: mapOpenUrl ? undefined : "1px solid var(--border)", color: "var(--muted)", fontSize: 12 }}>
+                  <div style={{ color: "var(--muted)", fontSize: 12 }}>
                     {prop.contact_address}
                   </div>
                 ) : null}
               </div>
-
-              <div
-                style={{
-                  border: "1px solid var(--border)",
-                  background: "var(--card)",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                }}
-              >
-                <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)", fontWeight: 900, fontSize: 12, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)" }}>
-                  {T("preContactTitle")}
-                </div>
-                <div style={{ padding: 12, display: "grid", gap: 8 }}>
-                  {prop.contact_email && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span aria-hidden style={{ width: 16, height: 16, display: "block", backgroundColor: "var(--primary)", WebkitMaskImage: "url(/svg_email_demo.svg)", maskImage: "url(/svg_email_demo.svg)", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center", WebkitMaskSize: "contain", maskSize: "contain" }} />
-                      <a href={`mailto:${prop.contact_email}`} style={{ color: "var(--text)", textDecoration: "none" }}>
-                        {prop.contact_email}
-                      </a>
-                    </div>
-                  )}
-                  {prop.contact_phone && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span aria-hidden style={{ width: 16, height: 16, display: "block", backgroundColor: "var(--primary)", WebkitMaskImage: "url(/svg_phone_demo.svg)", maskImage: "url(/svg_phone_demo.svg)", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center", WebkitMaskSize: "contain", maskSize: "contain" }} />
-                      <a href={`tel:${(prop.contact_phone || "").replace(/\s+/g, "")}`} style={{ color: "var(--text)", textDecoration: "none" }}>
-                        {prop.contact_phone}
-                      </a>
-                    </div>
-                  )}
-                  {prop.contact_address && (
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                      <span aria-hidden style={{ width: 16, height: 16, display: "block", backgroundColor: "var(--primary)", marginTop: 2, WebkitMaskImage: "url(/svg_location_demo.svg)", maskImage: "url(/svg_location_demo.svg)", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center", WebkitMaskSize: "contain", maskSize: "contain" }} />
-                      <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.4 }}>{prop.contact_address}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="ci-actionBtn"
-              style={{
-                width: "100%",
-                maxWidth: isNarrow ? undefined : 520,
-                margin: isNarrow ? undefined : "0 auto",
-              }}
-              onClick={() => {
-                setStage("form");
-                try {
-                  requestAnimationFrame(() => {
-                    formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  });
-                } catch {}
-              }}
-            >
-              {T("preCta")}
-            </button>
+            ) : null}
           </div>
         </section>
       )}
