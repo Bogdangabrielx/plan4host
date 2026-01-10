@@ -1035,8 +1035,25 @@ export default function CheckinClient() {
 
   const mapEmbedUrl = useMemo(() => {
     const loc = (prop?.social_location || "").trim();
-    if (loc && (/\/maps\/embed\b/i.test(loc) || /output=embed/i.test(loc))) return loc;
+    if (loc) {
+      // Prefer the exact location link (pin-based), trying to coerce to an embeddable URL when possible.
+      try {
+        if (/\/maps\/embed\b/i.test(loc) || /output=embed/i.test(loc)) return loc;
+        const u = new URL(loc);
+        const host = u.hostname.toLowerCase();
+        if (host.endsWith("google.com") && u.pathname.startsWith("/maps")) {
+          // Many google.com/maps links work when adding output=embed.
+          if (!u.searchParams.get("output")) u.searchParams.set("output", "embed");
+          return u.toString();
+        }
+        // Short links (maps.app.goo.gl) may not be embeddable without expanding; keep the URL as-is.
+        return loc;
+      } catch {
+        return loc;
+      }
+    }
 
+    // Fallback when no location link exists: use the written address/name.
     const q = (prop?.contact_address || prop?.name || "").trim();
     if (!q) return null;
     return `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
@@ -1949,7 +1966,7 @@ export default function CheckinClient() {
                     {lang === "ro" ? "Locația nu este disponibilă." : "Location is not available."}
                   </div>
                 )}
-                {prop.social_location && (
+                {prop.social_location ? (
                   <div style={{ padding: 10, borderTop: "1px solid var(--border)" }}>
                     <a
                       href={prop.social_location}
@@ -1960,7 +1977,11 @@ export default function CheckinClient() {
                       {lang === "ro" ? "Deschide în Google Maps" : "Open in Google Maps"}
                     </a>
                   </div>
-                )}
+                ) : prop.contact_address ? (
+                  <div style={{ padding: 10, borderTop: "1px solid var(--border)", color: "var(--muted)", fontSize: 12 }}>
+                    {prop.contact_address}
+                  </div>
+                ) : null}
               </div>
 
               <div
