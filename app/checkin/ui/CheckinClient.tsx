@@ -1033,51 +1033,73 @@ export default function CheckinClient() {
 
   const hasTypes = types.length > 0;
 
-  const mapEmbedUrl = useMemo(() => {
+  const [mapEmbedUrl, setMapEmbedUrl] = useState<string | null>(null);
+  const [mapOpenUrl, setMapOpenUrl] = useState<string | null>(null);
+  const [mapBusy, setMapBusy] = useState<boolean>(false);
+
+  useEffect(() => {
+    let alive = true;
     const loc = (prop?.social_location || "").trim();
-    if (loc) {
-      // Always prefer the exact location link (pin-based) from social_location.
-      // Convert it to an embeddable URL when possible; otherwise embed a Google Maps view for that link.
-      if (/\/maps\/embed\b/i.test(loc) || /output=embed/i.test(loc)) return loc;
+    const fallbackQuery = (prop?.contact_address || prop?.name || "").trim();
+
+    const extractLatLng = (url: string): { lat: string; lng: string } | null => {
+      const at = url.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+      if (at) return { lat: at[1]!, lng: at[2]! };
+      const pb = url.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+      if (pb) return { lat: pb[1]!, lng: pb[2]! };
+      return null;
+    };
+
+    (async () => {
+      setMapBusy(true);
       try {
-        const u = new URL(loc);
-        const host = u.hostname.toLowerCase();
+        if (loc) {
+          // Always embed based on social_location (pin link). Never derive from address when link exists.
+          setMapOpenUrl(loc);
 
-        // If we can extract coordinates, embed by coordinates (best pin fidelity).
-        const at = u.pathname.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
-        const q = u.searchParams.get("q") || u.searchParams.get("query") || u.searchParams.get("ll");
-        const qp = q?.match(/(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
-        const lat = at?.[1] || qp?.[1];
-        const lng = at?.[2] || qp?.[2];
-        if (lat && lng) {
-          return `https://www.google.com/maps?q=${encodeURIComponent(`${lat},${lng}`)}&output=embed`;
+          // Already embeddable?
+          if (/\/maps\/embed\b/i.test(loc) || /output=embed/i.test(loc)) {
+            if (alive) setMapEmbedUrl(loc);
+            return;
+          }
+
+          // Quick parse for direct google.com/maps links with coordinates.
+          const coords = extractLatLng(loc);
+          if (coords) {
+            if (alive) setMapEmbedUrl(`https://www.google.com/maps?q=${encodeURIComponent(`${coords.lat},${coords.lng}`)}&output=embed`);
+            return;
+          }
+
+          // Resolve short links / redirects on the server to avoid "custom content" iframe errors.
+          const res = await fetch(`/api/public/map-embed?url=${encodeURIComponent(loc)}`, { cache: "no-store" });
+          const j = await res.json().catch(() => ({} as any));
+          if (!alive) return;
+          if (res.ok) {
+            setMapEmbedUrl((j?.embed_url as string | null) || null);
+            setMapOpenUrl((j?.open_url as string | null) || loc);
+          } else {
+            setMapEmbedUrl(null);
+            setMapOpenUrl(loc);
+          }
+          return;
         }
 
-        if (host.endsWith("google.com") && u.pathname.startsWith("/maps")) {
-          // Many google.com/maps links work when adding output=embed.
-          if (!u.searchParams.get("output")) u.searchParams.set("output", "embed");
-          return u.toString();
+        // Fallback when no location link exists: embed based on address/name.
+        if (fallbackQuery) {
+          setMapEmbedUrl(`https://www.google.com/maps?q=${encodeURIComponent(fallbackQuery)}&output=embed`);
+          setMapOpenUrl(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fallbackQuery)}`);
+        } else {
+          setMapEmbedUrl(null);
+          setMapOpenUrl(null);
         }
-
-        // Fallback: embed Google Maps "q=" view using the original location URL.
-        return `https://www.google.com/maps?q=${encodeURIComponent(loc)}&output=embed`;
-      } catch {
-        return `https://www.google.com/maps?q=${encodeURIComponent(loc)}&output=embed`;
+      } finally {
+        if (alive) setMapBusy(false);
       }
-    }
+    })();
 
-    // Fallback when no location link exists: use the written address/name.
-    const q = (prop?.contact_address || prop?.name || "").trim();
-    if (!q) return null;
-    return `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
-  }, [prop?.social_location, prop?.contact_address, prop?.name]);
-
-  const mapOpenUrl = useMemo(() => {
-    const loc = (prop?.social_location || "").trim();
-    if (loc) return loc;
-    const q = (prop?.contact_address || prop?.name || "").trim();
-    if (!q) return null;
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+    return () => {
+      alive = false;
+    };
   }, [prop?.social_location, prop?.contact_address, prop?.name]);
 
   function maybeShowIdUploadInfo(e?: React.MouseEvent) {
@@ -1984,7 +2006,11 @@ export default function CheckinClient() {
                   />
                 ) : (
                   <div style={{ padding: 12, color: "var(--muted)" }}>
-                    {lang === "ro" ? "Locația nu este disponibilă." : "Location is not available."}
+                    {mapBusy
+                      ? (lang === "ro" ? "Se încarcă harta…" : "Loading map…")
+                      : (lang === "ro"
+                          ? "Previzualizarea hărții nu este disponibilă. Deschide locația în Google Maps."
+                          : "Map preview is not available. Open the location in Google Maps.")}
                   </div>
                 )}
                 {mapOpenUrl ? (
