@@ -1332,7 +1332,7 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
                   : {
                       borderBottomLeftRadius: 16,
                       borderBottomRightRadius: 16,
-                      overflow: "hidden",
+                      overflow: showLangMenu ? "visible" : "hidden",
                       borderBottom: "none",
                     }),
               }}
@@ -1360,7 +1360,7 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
 	                        const rect = el.getBoundingClientRect();
 	                        const spaceBelow = window.innerHeight - rect.bottom;
 	                        const spaceAbove = rect.top;
-	                        const preferDown = spaceBelow >= 220 || spaceBelow >= spaceAbove;
+	                        const preferDown = spaceAbove < 180 && spaceBelow > spaceAbove;
 	                        const avail = (preferDown ? spaceBelow : spaceAbove) - 16;
 	                        setLangMenuPlacement(preferDown ? "down" : "up");
 	                        setLangMenuMaxHeight(Math.max(140, Math.min(260, Math.floor(avail))));
@@ -1389,6 +1389,7 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
 	              <div
 	                style={{
 	                  ...dropdownStyle,
+	                  zIndex: 9999,
 	                  maxHeight: langMenuMaxHeight,
 	                  ...(langMenuPlacement === "up"
 	                    ? { bottom: "calc(100% + 6px)", top: "auto" }
