@@ -1322,7 +1322,21 @@ const AMENITIES_ICON_BY_SUBTOPIC: Record<AmenitiesSubtopic, string> = {
             </button>
           </div>
 
-	          <div style={{ ...languageBarStyle, position: "relative", zIndex: 2 }}>
+	          <div
+              style={{
+                ...languageBarStyle,
+                position: "relative",
+                zIndex: 2,
+                ...(chatLang
+                  ? {}
+                  : {
+                      borderBottomLeftRadius: 16,
+                      borderBottomRightRadius: 16,
+                      overflow: "hidden",
+                      borderBottom: "none",
+                    }),
+              }}
+            >
             <div style={{ display: "grid", gap: 2 }}>
               <span style={{ opacity: 0.9 }}>
                 Select language
