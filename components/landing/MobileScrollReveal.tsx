@@ -11,9 +11,6 @@ export default function MobileScrollReveal() {
       window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
     if (prefersReducedMotion) return;
 
-    const mq = window.matchMedia?.("(max-width: 900px), (hover: none)") ?? null;
-    if (!mq?.matches) return;
-
     const root = document.documentElement;
     const targets = Array.from(
       document.querySelectorAll<HTMLElement>("[data-p4h-reveal]")
