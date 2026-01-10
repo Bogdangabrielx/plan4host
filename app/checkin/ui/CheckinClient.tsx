@@ -1489,6 +1489,64 @@ export default function CheckinClient() {
               opacity: .55;
               cursor: not-allowed !important;
             }
+            .ci-formBlock{ width: 100%; max-width: 520px; margin: 0 auto; }
+            @media (max-width: 560px){ .ci-formBlock{ max-width: none; margin: 0; } }
+            .ci-sectionHead{ display:flex; align-items:center; gap: 10px; margin-bottom: 10px; }
+            .ci-sectionIcon{
+              width: 32px;
+              height: 32px;
+              border-radius: 12px;
+              border: 1px solid var(--border);
+              background: color-mix(in srgb, var(--card) 86%, transparent);
+              display:grid;
+              place-items:center;
+              flex: 0 0 auto;
+              box-shadow: 0 10px 24px rgba(0,0,0,0.14);
+            }
+            .ci-sectionIcon::before{
+              content:"";
+              width: 18px;
+              height: 18px;
+              background-color: color-mix(in srgb, var(--text) 65%, transparent);
+              -webkit-mask-image: url(/svg_what_to_visit.svg);
+                      mask-image: url(/svg_what_to_visit.svg);
+              -webkit-mask-repeat: no-repeat;
+                      mask-repeat: no-repeat;
+              -webkit-mask-position: center;
+                      mask-position: center;
+              -webkit-mask-size: contain;
+                      mask-size: contain;
+            }
+            .ci-sectionTitle{
+              font-size: 12px;
+              font-weight: 800;
+              letter-spacing: .12em;
+              text-transform: uppercase;
+              color: var(--muted);
+              line-height: 1.2;
+            }
+            .ci-uploadBtn{ justify-content: center; }
+            .ci-uploadMetaRow{
+              margin-top: 10px;
+              display:flex;
+              align-items:center;
+              justify-content:space-between;
+              gap: 12px;
+              flex-wrap: wrap;
+              color: var(--muted);
+              font-size: 12px;
+            }
+            .ci-consentCard{
+              padding: 12px 14px;
+              border-radius: 12px;
+              border: 1px solid var(--border);
+              background: var(--card);
+              display: flex;
+              align-items: flex-start;
+              gap: 10px;
+            }
+            .ci-consentText{ font-size: 13px; color: var(--muted); line-height: 1.45; }
+            .ci-consentHint{ margin-top: 6px; font-size: 12px; color: color-mix(in srgb, var(--muted) 92%, transparent); }
             @media (max-width: 560px){ .ci-type{ --ci-font-h:24px; } }
             @media (max-width: 900px){
               .ci-langSwitch{
@@ -2073,15 +2131,17 @@ export default function CheckinClient() {
               )}
 
             {/* Upload ID document (photo/PDF) — obligatoriu */}
-            <div style={{ marginTop: 6 }}>
-              <label style={LABEL}>{T('uploadId')}</label>
+            <div className="ci-formBlock" style={{ marginTop: 16 }}>
+              <div className="ci-sectionHead">
+                <span className="ci-sectionIcon" aria-hidden />
+                <div className="ci-sectionTitle">{T('uploadId')}</div>
+              </div>
+
               <label
-                className="ci-actionBtn"
+                className="ci-actionBtn ci-uploadBtn"
                 style={{
                   display: "flex",
                   width: "100%",
-                  maxWidth: isNarrow ? undefined : 520,
-                  margin: isNarrow ? undefined : "0 auto",
                   boxSizing: "border-box",
                   cursor: "pointer",
                   userSelect: "none",
@@ -2092,7 +2152,6 @@ export default function CheckinClient() {
                 onClick={(e) => { if (maybeShowIdUploadInfo(e)) return; }}
               >
                 {lang === "ro" ? "Alege fișier…" : "Choose file…"}
-                
                 <input
                   type="file"
                   accept="image/*,application/pdf"
@@ -2109,38 +2168,47 @@ export default function CheckinClient() {
                     }
                   }}
                   style={{ display: 'none' }}
-                
-                
                 />
               </label>
+
               {docFile && (
-                <div style={{ marginTop: 6, color:'var(--muted)', fontSize: 12 }}>
-                  {T('selected')} <strong style={{ color:'var(--text)' }}>{docFile.name}</strong>
-                </div>
-              )}
-                {docFile && (
-                  <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
-                    {docFilePreview ? (
-                      <img
-                        src={docFilePreview}
-                        alt="Preview"
-                        style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }}
-                      />
-                    ) : (
-                      <small style={{ color: "var(--muted)" }}>
-                        {docFile.name} ({docFile.type || "application/octet-stream"})
-                      </small>
-                    )}
+                <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+                  <div className="ci-uploadMetaRow">
+                    <div>
+                      {T('selected')} <strong style={{ color: "var(--text)" }}>{docFile.name}</strong>
+                    </div>
                     <button
                       type="button"
                       onClick={() => { setDocFile(null); setDocFilePreview(null); }}
                       style={BTN_GHOST}
                     >
-                      Remove file
+                      {lang === "ro" ? "Șterge" : "Remove"}
                     </button>
                   </div>
-                )}
-              </div>
+                  {docFilePreview ? (
+                    <img
+                      src={docFilePreview}
+                      alt="Preview"
+                      style={{
+                        width: "100%",
+                        maxWidth: 240,
+                        height: 150,
+                        objectFit: "contain",
+                        objectPosition: "center",
+                        borderRadius: 12,
+                        border: "1px solid var(--border)",
+                        background: "#fff",
+                        justifySelf: "center",
+                      }}
+                    />
+                  ) : (
+                    <small style={{ color: "var(--muted)", justifySelf: "center" }}>
+                      {docFile.name} ({docFile.type || "application/octet-stream"})
+                    </small>
+                  )}
+                </div>
+              )}
+            </div>
             </div>
 
             {showIdUploadInfo && (
@@ -2176,51 +2244,45 @@ export default function CheckinClient() {
             )}
 
             {/* Consent — ALWAYS visible; checkbox enabled only after opening the PDF (if exists) */}
-            <div
-              style={{
-                padding: 10,
-                borderRadius: 10,
-                border: "1px solid var(--border)",
-                background: "var(--card)",
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 5,
-              }}
-            >
-              <input
-                id="agree"
-                type="checkbox"
-                checked={agree}
-                disabled={!!pdfUrl && !pdfViewed}
-                onChange={(e) => setAgree(e.currentTarget.checked)}
-                style={{ marginTop: 3, cursor: (!!pdfUrl && !pdfViewed) ? "not-allowed" : "pointer" }}
-                title={!!pdfUrl && !pdfViewed ? "Open the House Rules to enable this checkbox." : undefined}
-              />
-              <label htmlFor="agree" style={{ fontSize:13, color: "var(--muted)" }}>
-                {T('consentPrefix')}
-                {pdfUrl ? (
-                  <a
-                    href={pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={onOpenPdf}
-                    style={{ fontWeight: 700, fontSize:12, color: 'var(--primary)' }}
-                  >
-                    Property Rules (pdf)
-                  </a>
-                ) : (
-                  <span style={{ fontStyle: "italic" }}>{T('houseRules')}</span>
-                )}
-                .
-                {!!pdfUrl && !pdfViewed && (
-                  <span style={{ marginLeft: 6 }}>{T('openPdfHint')}</span>
-                )}
-                {!!pdfUrl && pdfViewed && (
-                  <span style={{ marginLeft: 6, color: "var(--text)", fontWeight: 700, fontSize:9 }}>
-                    Opened
-                  </span>
-                )}
-              </label>
+            <div className="ci-formBlock" style={{ marginTop: 12 }}>
+              <div className="ci-consentCard">
+                <input
+                  id="agree"
+                  type="checkbox"
+                  checked={agree}
+                  disabled={!!pdfUrl && !pdfViewed}
+                  onChange={(e) => setAgree(e.currentTarget.checked)}
+                  style={{ marginTop: 2, cursor: (!!pdfUrl && !pdfViewed) ? "not-allowed" : "pointer" }}
+                  title={!!pdfUrl && !pdfViewed ? "Open the House Rules to enable this checkbox." : undefined}
+                />
+                <div style={{ minWidth: 0 }}>
+                  <label htmlFor="agree" className="ci-consentText">
+                    {T('consentPrefix')}
+                    {pdfUrl ? (
+                      <a
+                        href={pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={onOpenPdf}
+                        style={{ fontWeight: 700, fontSize: 12, color: 'var(--primary)' }}
+                      >
+                        Property Rules (pdf)
+                      </a>
+                    ) : (
+                      <span style={{ fontStyle: "italic" }}>{T('houseRules')}</span>
+                    )}
+                    .
+                    {!!pdfUrl && pdfViewed && (
+                      <span style={{ marginLeft: 8, color: "var(--text)", fontWeight: 700, fontSize: 11 }}>
+                        Opened
+                      </span>
+                    )}
+                  </label>
+                  {!!pdfUrl && !pdfViewed && (
+                    <div className="ci-consentHint">{T('openPdfHint')}</div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Signature — show only after guest agrees to House Rules */}
