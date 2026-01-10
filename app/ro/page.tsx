@@ -1147,7 +1147,7 @@ export default function HomePageRO() {
 
 	      {/* Despre */}
 		      <section id="about" className={styles.about} aria-labelledby="about-title">
-	        <h2 id="about-title">Despre</h2>
+	        <h2 id="about-title" data-p4h-reveal>Despre</h2>
 	        <div className={styles.aboutGrid}>
 	          <div className={styles.aboutVisual} aria-label="Previzualizare sincronizare calendare" data-p4h-reveal>
 	            <img src="/Calendar_Sync.png" alt="Previzualizare sincronizare calendare" />
@@ -1281,10 +1281,10 @@ export default function HomePageRO() {
 
       {/* Prețuri */}
 	      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
-	        <h2 id="pricing-title">Prețuri</h2>
-	        <div className={styles.pricingGrid}>
+	        <h2 id="pricing-title" data-p4h-reveal>Prețuri</h2>
+        <div className={styles.pricingGrid}>
 	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
-            <div className={styles.priceTier}>BASIC</div>
+	            <div className={styles.priceTier}>BASIC</div>
             <ul className={styles.priceList}>
 	              {beneficii.map((b, i) => {
 	                const basicX = [
@@ -1372,7 +1372,7 @@ export default function HomePageRO() {
 
       {/* FAQ */}
 	      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
-	        <h2 id="faq-title">FAQ</h2>
+	        <h2 id="faq-title" data-p4h-reveal>FAQ</h2>
         {[
           {
             id: 'units',

@@ -1324,7 +1324,7 @@ export default function HomePage() {
 
 	      {/* About */}
 	      <section id="about" className={styles.about} aria-labelledby="about-title">
-	        <h2 id="about-title">About</h2>
+	        <h2 id="about-title" data-p4h-reveal>About</h2>
 	        <div className={styles.aboutGrid}>
 	          <div className={styles.aboutVisual} aria-label="Calendar sync preview" data-p4h-reveal>
 	            <img src="/Calendar_Sync.png" alt="Calendar sync preview" />
@@ -1459,7 +1459,7 @@ export default function HomePage() {
 
 	      {/* Pricing */}
 	      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
-	        <h2 id="pricing-title">Pricing</h2>
+	        <h2 id="pricing-title" data-p4h-reveal>Pricing</h2>
 	        <div className={styles.pricingGrid}>
 	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
 	            <div className={styles.priceTier}>BASIC</div>
@@ -1566,7 +1566,7 @@ export default function HomePage() {
 
 	      {/* FAQ */}
 	      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
-	        <h2 id="faq-title">FAQ</h2>
+	        <h2 id="faq-title" data-p4h-reveal>FAQ</h2>
 	        {[
 	          {
             id: 'units',
