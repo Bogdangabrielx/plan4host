@@ -15,6 +15,11 @@ type PropertyInfo = {
   contact_address?: string | null;
   presentation_image_url?: string | null;
   contact_overlay_position?: 'top' | 'center' | 'down' | null;
+  social_facebook?: string | null;
+  social_instagram?: string | null;
+  social_tiktok?: string | null;
+  social_website?: string | null;
+  social_location?: string | null;
 };
 
 type RoomType = { id: string; name: string };
@@ -335,6 +340,10 @@ export default function CheckinClient() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
+  // Always start with the property intro (no fast path).
+  const [stage, setStage] = useState<"intro" | "form">("intro");
+  const formTopRef = useRef<HTMLDivElement | null>(null);
+
   // selections (deprecated UI; kept for compatibility, not used)
   const [selectedTypeId, setSelectedTypeId] = useState<string>("");
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
@@ -380,6 +389,11 @@ export default function CheckinClient() {
       intro4: 'The email will also include a QR code you can present at reception, or use as proof that you have completed this form.',
       intro5: 'Please note that all information you provide is strictly confidential.',
       intro6: 'Thank you for your patience!',
+      preTitle: (name: string) => `Welcome to ${name}`,
+      preBody: 'In the next step, please complete the accommodation form so the host can prepare everything for your arrival.',
+      preCta: 'Complete the form',
+      preMapTitle: 'Location',
+      preContactTitle: 'Contact',
       loading: 'Loading…',
       thanksTitle: 'Thank you! ✅',
       thanksMsg: 'Your check-in details were submitted successfully.',
@@ -441,6 +455,11 @@ export default function CheckinClient() {
       intro4: 'Emailul va include și un cod QR pe care îl poți prezenta la recepție sau îl poți folosi drept dovadă că ai completat acest formular.',
       intro5: 'Toate informațiile furnizate sunt strict confidențiale.',
       intro6: 'Îți mulțumim pentru răbdare!',
+      preTitle: (name: string) => `Bine ai venit la ${name}`,
+      preBody: 'În pasul următor, te rugăm să completezi fișa de cazare, ca gazda să poată pregăti totul din timp pentru sosirea ta.',
+      preCta: 'Completează formularul',
+      preMapTitle: 'Locație',
+      preContactTitle: 'Contact',
       loading: 'Se încarcă…',
       thanksTitle: 'Mulțumim! ✅',
       thanksMsg: 'Detaliile tale de check‑in au fost trimise cu succes.',
@@ -909,8 +928,10 @@ export default function CheckinClient() {
 
   // 1) URL params
   useEffect(() => {
-    setPropertyId(getQueryParam("property"));
+    const pid = getQueryParam("property");
+    setPropertyId(pid);
     setBookingId(getQueryParam("booking"));
+    if (pid) setStage("intro");
   }, []);
 
   // 2) catalog public
@@ -1012,6 +1033,15 @@ export default function CheckinClient() {
 
   const hasTypes = types.length > 0;
 
+  const mapEmbedUrl = useMemo(() => {
+    const loc = (prop?.social_location || "").trim();
+    if (loc && (/\/maps\/embed\b/i.test(loc) || /output=embed/i.test(loc))) return loc;
+
+    const q = (prop?.contact_address || prop?.name || "").trim();
+    if (!q) return null;
+    return `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
+  }, [prop?.social_location, prop?.contact_address, prop?.name]);
+
   function maybeShowIdUploadInfo(e?: React.MouseEvent) {
     try {
       const k = 'p4h:checkin:idUploadInfoShown';
@@ -1100,6 +1130,48 @@ export default function CheckinClient() {
             <span>{prop.contact_address}</span>
           </div>
         )}
+      </div>
+    );
+  }
+
+  function SocialPills({ prop }: { prop: PropertyInfo }) {
+    const links = [
+      { key: "facebook", url: prop.social_facebook || null, icon: "/facebook_forlight.png", label: "Facebook" },
+      { key: "instagram", url: prop.social_instagram || null, icon: "/instagram_forlight.png", label: "Instagram" },
+      { key: "tiktok", url: prop.social_tiktok || null, icon: "/tiktok_forlight.png", label: "TikTok" },
+      { key: "site", url: prop.social_website || null, icon: "/website_forlight.png", label: "Website" },
+      { key: "location", url: prop.social_location || null, icon: "/social_location_forlight.png", label: "Location" },
+    ].filter((l) => !!l.url);
+    if (links.length === 0) return null;
+    return (
+      <div style={{ padding: 12, display: "flex", justifyContent: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "8px 12px",
+            borderRadius: 999,
+            border: "1px solid var(--border)",
+            background: "rgba(255,255,255,0.68)",
+            WebkitBackdropFilter: "blur(10px) saturate(130%)",
+            backdropFilter: "blur(10px) saturate(130%)",
+            boxShadow: "0 10px 20px rgba(0,0,0,0.08)",
+          }}
+        >
+          {links.map((l) => (
+            <a
+              key={l.key}
+              href={l.url!}
+              target="_blank"
+              rel="noreferrer"
+              title={l.label}
+              style={{ lineHeight: 0, padding: 4, borderRadius: 10 }}
+            >
+              <img src={l.icon} alt={l.label} width={22} height={22} />
+            </a>
+          ))}
+        </div>
       </div>
     );
   }
@@ -1738,14 +1810,17 @@ export default function CheckinClient() {
       {prop && (
         <section className="sb-card" style={{ padding: 0 }}>
           {prop.presentation_image_url ? (
-            <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', maxWidth: 900, margin: '0 auto' }}>
-              <img
-                src={prop.presentation_image_url}
-                alt="Property"
-                style={{ display:'block', width: '100%', height: 300, objectFit: 'cover' }}
-              />
-              <ContactOverlay prop={prop} />
-            </div>
+            <>
+              <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', maxWidth: 900, margin: '0 auto' }}>
+                <img
+                  src={prop.presentation_image_url}
+                  alt="Property"
+                  style={{ display:'block', width: '100%', height: 300, objectFit: 'cover' }}
+                />
+                <ContactOverlay prop={prop} />
+              </div>
+              <SocialPills prop={prop} />
+            </>
           ) : (
             (prop.contact_email || prop.contact_phone || prop.contact_address) ? (
               <div style={{ padding: 12, display:'grid', gap:6 }}>
@@ -1821,30 +1896,155 @@ export default function CheckinClient() {
                     <span>{prop.contact_address}</span>
                   </div>
                 )}
+                <SocialPills prop={prop} />
               </div>
             ) : null
           )}
         </section>
       )}
 
-      {/* Form */}
-      <section style={CARD}>
-        {loading ? (
-          <div style={{ color: "var(--muted)" }}>{T('loading')}</div>
-        ) : (submitState === "success" && confirmStatus === "sent") ? (
-          <div>
-            <h2 style={{ marginTop: 0 }}>{T('thanksTitle')}</h2>
-            <p style={{ color: "var(--muted)" }}>{T('thanksMsg')}</p>
+      {stage === "intro" && prop && (
+        <section style={CARD}>
+          <div style={{ display: "grid", gap: 14, justifyItems: "center", textAlign: "center" }}>
+            <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: ".02em" }}>
+              {((TXT as any)[lang].preTitle as (name: string) => string)(
+                prop?.name ?? (lang === "ro" ? "proprietate" : "the property"),
+              )}
+            </div>
+            <p style={{ margin: 0, color: "var(--muted)", maxWidth: 62 * 12 }}>
+              {T("preBody")}
+            </p>
+
+            <div
+              style={{
+                width: "100%",
+                display: "grid",
+                gap: 12,
+                gridTemplateColumns: isNarrow ? "1fr" : "1.25fr 0.75fr",
+                alignItems: "start",
+              }}
+            >
+              <div
+                style={{
+                  border: "1px solid var(--border)",
+                  background: "var(--card)",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  minHeight: 220,
+                }}
+              >
+                <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)", fontWeight: 900, fontSize: 12, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)" }}>
+                  {T("preMapTitle")}
+                </div>
+                {mapEmbedUrl ? (
+                  <iframe
+                    title="Google Maps"
+                    src={mapEmbedUrl}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    style={{ width: "100%", height: 260, border: 0, display: "block" }}
+                  />
+                ) : (
+                  <div style={{ padding: 12, color: "var(--muted)" }}>
+                    {lang === "ro" ? "Locația nu este disponibilă." : "Location is not available."}
+                  </div>
+                )}
+                {prop.social_location && (
+                  <div style={{ padding: 10, borderTop: "1px solid var(--border)" }}>
+                    <a
+                      href={prop.social_location}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: "var(--primary)", textDecoration: "none", fontWeight: 800, fontSize: 12 }}
+                    >
+                      {lang === "ro" ? "Deschide în Google Maps" : "Open in Google Maps"}
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              <div
+                style={{
+                  border: "1px solid var(--border)",
+                  background: "var(--card)",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                }}
+              >
+                <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)", fontWeight: 900, fontSize: 12, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)" }}>
+                  {T("preContactTitle")}
+                </div>
+                <div style={{ padding: 12, display: "grid", gap: 8 }}>
+                  {prop.contact_email && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span aria-hidden style={{ width: 16, height: 16, display: "block", backgroundColor: "var(--primary)", WebkitMaskImage: "url(/svg_email_demo.svg)", maskImage: "url(/svg_email_demo.svg)", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center", WebkitMaskSize: "contain", maskSize: "contain" }} />
+                      <a href={`mailto:${prop.contact_email}`} style={{ color: "var(--text)", textDecoration: "none" }}>
+                        {prop.contact_email}
+                      </a>
+                    </div>
+                  )}
+                  {prop.contact_phone && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span aria-hidden style={{ width: 16, height: 16, display: "block", backgroundColor: "var(--primary)", WebkitMaskImage: "url(/svg_phone_demo.svg)", maskImage: "url(/svg_phone_demo.svg)", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center", WebkitMaskSize: "contain", maskSize: "contain" }} />
+                      <a href={`tel:${(prop.contact_phone || "").replace(/\s+/g, "")}`} style={{ color: "var(--text)", textDecoration: "none" }}>
+                        {prop.contact_phone}
+                      </a>
+                    </div>
+                  )}
+                  {prop.contact_address && (
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                      <span aria-hidden style={{ width: 16, height: 16, display: "block", backgroundColor: "var(--primary)", marginTop: 2, WebkitMaskImage: "url(/svg_location_demo.svg)", maskImage: "url(/svg_location_demo.svg)", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center", WebkitMaskSize: "contain", maskSize: "contain" }} />
+                      <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.4 }}>{prop.contact_address}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="ci-actionBtn"
+              style={{
+                width: "100%",
+                maxWidth: isNarrow ? undefined : 520,
+                margin: isNarrow ? undefined : "0 auto",
+              }}
+              onClick={() => {
+                setStage("form");
+                try {
+                  requestAnimationFrame(() => {
+                    formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  });
+                } catch {}
+              }}
+            >
+              {T("preCta")}
+            </button>
           </div>
-        ) : (
-          <form
-            onSubmit={onSubmit}
-            onPointerDownCapture={onFirstInteract}
-            style={{ display: "grid", gap: 14 }}
-            translate="no"
-            className="notranslate"
-            aria-busy={submitState === "submitting"}
-          >
+        </section>
+      )}
+
+      {stage === "form" && (
+        <>
+          <div ref={formTopRef} />
+          {/* Form */}
+          <section style={CARD}>
+            {loading ? (
+              <div style={{ color: "var(--muted)" }}>{T('loading')}</div>
+            ) : (submitState === "success" && confirmStatus === "sent") ? (
+              <div>
+                <h2 style={{ marginTop: 0 }}>{T('thanksTitle')}</h2>
+                <p style={{ color: "var(--muted)" }}>{T('thanksMsg')}</p>
+              </div>
+            ) : (
+              <form
+                onSubmit={onSubmit}
+                onPointerDownCapture={onFirstInteract}
+                style={{ display: "grid", gap: 14 }}
+                translate="no"
+                className="notranslate"
+                aria-busy={submitState === "submitting"}
+              >
             {/* Dates */}
             <div style={{
               display: "grid",
@@ -2350,6 +2550,8 @@ export default function CheckinClient() {
           </form>
         )}
       </section>
+        </>
+      )}
 
       {/* Companions wizard modal */}
       {companionsOpen && expectedCompanions > 0 && (
