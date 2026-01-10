@@ -1036,20 +1036,33 @@ export default function CheckinClient() {
   const mapEmbedUrl = useMemo(() => {
     const loc = (prop?.social_location || "").trim();
     if (loc) {
-      // Prefer the exact location link (pin-based), trying to coerce to an embeddable URL when possible.
+      // Always prefer the exact location link (pin-based) from social_location.
+      // Convert it to an embeddable URL when possible; otherwise embed a Google Maps view for that link.
+      if (/\/maps\/embed\b/i.test(loc) || /output=embed/i.test(loc)) return loc;
       try {
-        if (/\/maps\/embed\b/i.test(loc) || /output=embed/i.test(loc)) return loc;
         const u = new URL(loc);
         const host = u.hostname.toLowerCase();
+
+        // If we can extract coordinates, embed by coordinates (best pin fidelity).
+        const at = u.pathname.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
+        const q = u.searchParams.get("q") || u.searchParams.get("query") || u.searchParams.get("ll");
+        const qp = q?.match(/(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
+        const lat = at?.[1] || qp?.[1];
+        const lng = at?.[2] || qp?.[2];
+        if (lat && lng) {
+          return `https://www.google.com/maps?q=${encodeURIComponent(`${lat},${lng}`)}&output=embed`;
+        }
+
         if (host.endsWith("google.com") && u.pathname.startsWith("/maps")) {
           // Many google.com/maps links work when adding output=embed.
           if (!u.searchParams.get("output")) u.searchParams.set("output", "embed");
           return u.toString();
         }
-        // Short links (maps.app.goo.gl) may not be embeddable without expanding; keep the URL as-is.
-        return loc;
+
+        // Fallback: embed Google Maps "q=" view using the original location URL.
+        return `https://www.google.com/maps?q=${encodeURIComponent(loc)}&output=embed`;
       } catch {
-        return loc;
+        return `https://www.google.com/maps?q=${encodeURIComponent(loc)}&output=embed`;
       }
     }
 
@@ -1057,6 +1070,14 @@ export default function CheckinClient() {
     const q = (prop?.contact_address || prop?.name || "").trim();
     if (!q) return null;
     return `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
+  }, [prop?.social_location, prop?.contact_address, prop?.name]);
+
+  const mapOpenUrl = useMemo(() => {
+    const loc = (prop?.social_location || "").trim();
+    if (loc) return loc;
+    const q = (prop?.contact_address || prop?.name || "").trim();
+    if (!q) return null;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
   }, [prop?.social_location, prop?.contact_address, prop?.name]);
 
   function maybeShowIdUploadInfo(e?: React.MouseEvent) {
@@ -1825,7 +1846,7 @@ export default function CheckinClient() {
 
       {/* Property info (contact + image) — always visible */}
       {prop && (
-        <section className="sb-card" style={{ padding: 0 }}>
+        <section style={{ ...CARD, padding: 0 }}>
           {prop.presentation_image_url ? (
             <>
               <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', maxWidth: 900, margin: '0 auto' }}>
@@ -1966,10 +1987,10 @@ export default function CheckinClient() {
                     {lang === "ro" ? "Locația nu este disponibilă." : "Location is not available."}
                   </div>
                 )}
-                {prop.social_location ? (
+                {mapOpenUrl ? (
                   <div style={{ padding: 10, borderTop: "1px solid var(--border)" }}>
                     <a
-                      href={prop.social_location}
+                      href={mapOpenUrl}
                       target="_blank"
                       rel="noreferrer"
                       style={{ color: "var(--primary)", textDecoration: "none", fontWeight: 800, fontSize: 12 }}
@@ -1977,8 +1998,9 @@ export default function CheckinClient() {
                       {lang === "ro" ? "Deschide în Google Maps" : "Open in Google Maps"}
                     </a>
                   </div>
-                ) : prop.contact_address ? (
-                  <div style={{ padding: 10, borderTop: "1px solid var(--border)", color: "var(--muted)", fontSize: 12 }}>
+                ) : null}
+                {!prop.social_location && prop.contact_address ? (
+                  <div style={{ padding: 10, borderTop: mapOpenUrl ? undefined : "1px solid var(--border)", color: "var(--muted)", fontSize: 12 }}>
                     {prop.contact_address}
                   </div>
                 ) : null}
