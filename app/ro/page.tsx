@@ -8,6 +8,7 @@ import styles from "../home.module.css";
 import { createPortal } from "react-dom";
 import AutoOpenOnLanding from "@/components/consent/AutoOpenOnLanding";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import WhatsAppPill from "@/components/landing/WhatsAppPill";
 
 // Copiem componentele ușoare din landing (CTA + Cookie consent + Carousel)
 
@@ -1704,6 +1705,8 @@ export default function HomePageRO() {
 
       {/* Cookie consent */}
       <CookieConsentLanding />
+
+      <WhatsAppPill lang="ro" />
 
       {/* JSON-LD Organization (RO) */}
       <script

@@ -9,6 +9,7 @@ import styles from "./home.module.css";
 import { createPortal } from "react-dom";
 import AutoOpenOnLanding from "@/components/consent/AutoOpenOnLanding";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import WhatsAppPill from "@/components/landing/WhatsAppPill";
 // ...
 
 <AutoOpenOnLanding delay={150} />
@@ -1909,6 +1910,8 @@ export default function HomePage() {
 
       {/* 🍪 Cookie consent — doar pe landing */}
       <CookieConsentLanding />
+
+      <WhatsAppPill lang="en" />
       {/* JSON-LD Organization */}
       <script
         type="application/ld+json"
