@@ -10,6 +10,7 @@ import { createPortal } from "react-dom";
 import AutoOpenOnLanding from "@/components/consent/AutoOpenOnLanding";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import WhatsAppPill from "@/components/landing/WhatsAppPill";
+import CookieFab from "@/components/landing/CookieFab";
 // ...
 
 <AutoOpenOnLanding delay={150} />
@@ -625,6 +626,14 @@ function CookieConsentLanding() {
   const [preferences, setPreferences] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    const onOpen = () => {
+      setOpen(true);
+      setShowPrefs(true);
+    };
+    try { window.addEventListener("p4h:cookie:open", onOpen as any); } catch {}
+    return () => { try { window.removeEventListener("p4h:cookie:open", onOpen as any); } catch {} };
+  }, []);
 
   // citește consimțământ existent
   useEffect(() => {
@@ -1912,6 +1921,7 @@ export default function HomePage() {
       <CookieConsentLanding />
 
       <WhatsAppPill lang="en" />
+      <CookieFab lang="en" />
       {/* JSON-LD Organization */}
       <script
         type="application/ld+json"

@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import AutoOpenOnLanding from "@/components/consent/AutoOpenOnLanding";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import WhatsAppPill from "@/components/landing/WhatsAppPill";
+import CookieFab from "@/components/landing/CookieFab";
 
 // Copiem componentele ușoare din landing (CTA + Cookie consent + Carousel)
 
@@ -579,6 +580,14 @@ function CookieConsentLanding() {
   const [showPrefs, setShowPrefs] = useState(false);
   const [preferences, setPreferences] = useState(false);
   useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    const onOpen = () => {
+      setOpen(true);
+      setShowPrefs(true);
+    };
+    try { window.addEventListener("p4h:cookie:open", onOpen as any); } catch {}
+    return () => { try { window.removeEventListener("p4h:cookie:open", onOpen as any); } catch {} };
+  }, []);
   useEffect(() => {
     try {
       const now = Date.now();
@@ -1707,6 +1716,7 @@ export default function HomePageRO() {
       <CookieConsentLanding />
 
       <WhatsAppPill lang="ro" />
+      <CookieFab lang="ro" />
 
       {/* JSON-LD Organization (RO) */}
       <script
