@@ -2498,6 +2498,8 @@ export default function CheckinClient() {
                 </div>
               )}
 
+            </div>
+
             {/* Upload ID document (photo/PDF) — obligatoriu */}
             <div className="ci-formBlock" style={{ marginTop: 16 }}>
               <div className="ci-sectionHead">
@@ -2576,7 +2578,6 @@ export default function CheckinClient() {
                   )}
                 </div>
               )}
-            </div>
             </div>
 
             {showIdUploadInfo && (
