@@ -1648,7 +1648,7 @@ export default function CheckinClient() {
               align-items: center;
               gap: 10px;
               height: 44px;
-              padding: 0 12px;
+              padding: 0 12px 0 0;
               max-width: min(320px, calc(100vw - 32px));
               border-radius: 999px;
               border: 1px solid rgba(255,255,255,0.14);
@@ -1666,8 +1666,8 @@ export default function CheckinClient() {
             }
             .ci-waPill:active{ transform: scale(0.99); }
             .ci-waPill img{
-              width: 36px;
-              height: 36px;
+              width: 44px;
+              height: 44px;
               display: block;
               box-shadow: none;
               filter: drop-shadow(0 10px 18px rgba(0,0,0,0.18));
