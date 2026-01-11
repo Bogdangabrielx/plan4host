@@ -1043,6 +1043,16 @@ will-change: transform;
   min-height: 44px;
 }
 .cookieBtnPrimary { font-weight: var(--fw-bold); }
+.cookieBtnPrimary:global(.sb-btn--primary){
+  background: transparent;
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--primary) 60%, var(--border));
+  box-shadow: none;
+}
+.cookieBtnPrimary:global(.sb-btn--primary):hover{
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+  border-color: var(--primary);
+}
 .cookieHint { margin: 0; color: color-mix(in srgb, var(--text) 70%, transparent); font-size: var(--fs-s); line-height: var(--lh-s); }
 .cookieLink { color: var(--primary); text-decoration: none; }
 .cookieLink:hover { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--primary) 45%, transparent); }
