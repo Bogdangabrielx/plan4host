@@ -26,7 +26,8 @@ export default function CookieFab({ lang }: { lang: "en" | "ro" }) {
           position: fixed;
           left: 16px;
           bottom: calc(16px + env(safe-area-inset-bottom));
-          z-index: 900;
+          /* Keep visible even above the cookie modal overlay */
+          z-index: 2147483647;
           width: 50px;
           height: 50px;
           border-radius: 999px;
@@ -60,4 +61,3 @@ export default function CookieFab({ lang }: { lang: "en" | "ro" }) {
     </>
   );
 }
-
