@@ -6,12 +6,29 @@ import { createPortal } from "react-dom";
 export default function CookieFab({ lang }: { lang: "en" | "ro" }) {
   const label = lang === "ro" ? "Setări cookie" : "Cookie settings";
   const [mounted, setMounted] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    const onOpen = () => setHidden(true);
+    const onConsent = () => {
+      // Cookie modal closes right after saving/accepting; re-show the FAB.
+      window.setTimeout(() => setHidden(false), 120);
+    };
+
+    try { window.addEventListener("p4h:cookie:open", onOpen as any); } catch {}
+    try { window.addEventListener("p4h:consent", onConsent as any); } catch {}
+    return () => {
+      try { window.removeEventListener("p4h:cookie:open", onOpen as any); } catch {}
+      try { window.removeEventListener("p4h:consent", onConsent as any); } catch {}
+    };
+  }, []);
+
   if (!mounted) return null;
+  if (hidden) return null;
 
   return createPortal(
     <>
@@ -22,6 +39,7 @@ export default function CookieFab({ lang }: { lang: "en" | "ro" }) {
         title={label}
         onClick={() => {
           try {
+            setHidden(true);
             window.dispatchEvent(new CustomEvent("p4h:cookie:open"));
           } catch {}
         }}
