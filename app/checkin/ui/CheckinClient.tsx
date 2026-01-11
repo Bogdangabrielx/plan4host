@@ -2724,94 +2724,94 @@ export default function CheckinClient() {
           </form>
         )}
       </section>
+        </>
+      )}
 
-          {/* WhatsApp mini chat (outside <form> to avoid privacy capture) */}
-          {waPhoneDigits && (
-            <div className="ci-waFab">
-              <button
-                type="button"
-                className="ci-waPill"
-                onClick={() => setWaOpen(true)}
-                aria-label={T("waPill")}
-                title={T("waPill")}
-              >
-                <img src="/logo_whatsapp.png" alt="" />
-                <span>{T("waPill")}</span>
-              </button>
-            </div>
-          )}
+      {/* WhatsApp mini chat (available from the first screen; outside <form> to avoid privacy capture) */}
+      {waPhoneDigits && (
+        <div className="ci-waFab">
+          <button
+            type="button"
+            className="ci-waPill"
+            onClick={() => setWaOpen(true)}
+            aria-label={T("waPill")}
+            title={T("waPill")}
+          >
+            <img src="/logo_whatsapp.png" alt="" />
+            <span>{T("waPill")}</span>
+          </button>
+        </div>
+      )}
 
-          {waOpen && waPhoneDigits && (
-            <div
-              className="ci-waOverlay"
-              role="dialog"
-              aria-modal="true"
-              aria-label="WhatsApp"
-              onClick={() => setWaOpen(false)}
-            >
-              <div className="ci-waChat" onClick={(e) => e.stopPropagation()}>
-                <div className="ci-waTop">
-                  <div className="ci-waTopTitle">
-                    <img src="/logo_whatsapp.png" alt="" style={{ width: 22, height: 22, display: "block", filter: "drop-shadow(0 8px 14px rgba(0,0,0,0.16))" }} />
-                    <div style={{ minWidth: 0 }}>
-                      WhatsApp{" "}
-                      <small>
-                        {(prop?.contact_phone || "").trim().length > 0
-                          ? prop!.contact_phone
-                          : `+${waPhoneDigits}`}
-                      </small>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="ci-waClose"
-                    aria-label={lang === "ro" ? "Închide" : "Close"}
-                    onClick={() => setWaOpen(false)}
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div className="ci-waMessages">
-                  <div className="ci-waBubble ci-waLeft">{T("waHello")}</div>
-                  {waText.trim().length > 0 && (
-                    <div className="ci-waBubble ci-waRight">{waText.trim()}</div>
-                  )}
-                </div>
-
-                <div className="ci-waComposer">
-                  <textarea
-                    ref={waInputRef}
-                    className="ci-waInput"
-                    rows={2}
-                    value={waText}
-                    onChange={(e) => setWaText(e.currentTarget.value)}
-                    placeholder={T("waPlaceholder")}
-                    aria-label={T("waPlaceholder")}
-                  />
-                  <button
-                    type="button"
-                    className="ci-waSend"
-                    aria-label={T("waSend")}
-                    title={T("waSend")}
-                    disabled={waText.trim().length === 0}
-                    onClick={() => {
-                      const text = waText.trim();
-                      if (!text) return;
-                      const url = `https://wa.me/${waPhoneDigits}?text=${encodeURIComponent(text)}`;
-                      try {
-                        window.open(url, "_blank", "noopener,noreferrer");
-                      } catch {
-                        try { window.location.assign(url); } catch {}
-                      }
-                      setWaOpen(false);
-                    }}
-                  />
+      {waOpen && waPhoneDigits && (
+        <div
+          className="ci-waOverlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="WhatsApp"
+          onClick={() => setWaOpen(false)}
+        >
+          <div className="ci-waChat" onClick={(e) => e.stopPropagation()}>
+            <div className="ci-waTop">
+              <div className="ci-waTopTitle">
+                <img src="/logo_whatsapp.png" alt="" style={{ width: 22, height: 22, display: "block", filter: "drop-shadow(0 8px 14px rgba(0,0,0,0.16))" }} />
+                <div style={{ minWidth: 0 }}>
+                  WhatsApp{" "}
+                  <small>
+                    {(prop?.contact_phone || "").trim().length > 0
+                      ? prop!.contact_phone
+                      : `+${waPhoneDigits}`}
+                  </small>
                 </div>
               </div>
+              <button
+                type="button"
+                className="ci-waClose"
+                aria-label={lang === "ro" ? "Închide" : "Close"}
+                onClick={() => setWaOpen(false)}
+              >
+                ×
+              </button>
             </div>
-          )}
-        </>
+
+            <div className="ci-waMessages">
+              <div className="ci-waBubble ci-waLeft">{T("waHello")}</div>
+              {waText.trim().length > 0 && (
+                <div className="ci-waBubble ci-waRight">{waText.trim()}</div>
+              )}
+            </div>
+
+            <div className="ci-waComposer">
+              <textarea
+                ref={waInputRef}
+                className="ci-waInput"
+                rows={2}
+                value={waText}
+                onChange={(e) => setWaText(e.currentTarget.value)}
+                placeholder={T("waPlaceholder")}
+                aria-label={T("waPlaceholder")}
+              />
+              <button
+                type="button"
+                className="ci-waSend"
+                aria-label={T("waSend")}
+                title={T("waSend")}
+                disabled={waText.trim().length === 0}
+                onClick={() => {
+                  const text = waText.trim();
+                  if (!text) return;
+                  const url = `https://wa.me/${waPhoneDigits}?text=${encodeURIComponent(text)}`;
+                  try {
+                    window.open(url, "_blank", "noopener,noreferrer");
+                  } catch {
+                    try { window.location.assign(url); } catch {}
+                  }
+                  setWaOpen(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Companions wizard modal */}
