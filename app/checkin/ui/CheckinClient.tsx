@@ -1668,9 +1668,9 @@ export default function CheckinClient() {
             .ci-waPill img{
               width: 36px;
               height: 36px;
-              border-radius: 12px;
               display: block;
-              box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+              box-shadow: none;
+              filter: drop-shadow(0 10px 18px rgba(0,0,0,0.18));
               flex: 0 0 auto;
             }
             .ci-waPill span{ white-space: nowrap; font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
@@ -2752,7 +2752,7 @@ export default function CheckinClient() {
               <div className="ci-waChat" onClick={(e) => e.stopPropagation()}>
                 <div className="ci-waTop">
                   <div className="ci-waTopTitle">
-                    <img src="/logo_whatsapp.png" alt="" style={{ width: 22, height: 22, borderRadius: 8, display: "block" }} />
+                    <img src="/logo_whatsapp.png" alt="" style={{ width: 22, height: 22, display: "block", filter: "drop-shadow(0 8px 14px rgba(0,0,0,0.16))" }} />
                     <div style={{ minWidth: 0 }}>
                       WhatsApp{" "}
                       <small>

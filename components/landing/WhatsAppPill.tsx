@@ -74,9 +74,9 @@ export default function WhatsAppPill({ lang }: Props) {
         .p4h-waPill img {
           width: 36px;
           height: 36px;
-          border-radius: 12px;
           display: block;
-          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+          box-shadow: none;
+          filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.18));
           flex: 0 0 auto;
         }
         .p4h-waPill span {
@@ -94,4 +94,3 @@ export default function WhatsAppPill({ lang }: Props) {
     </>
   );
 }
-
