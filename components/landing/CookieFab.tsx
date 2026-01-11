@@ -54,7 +54,7 @@ export default function CookieFab({ lang }: { lang: "en" | "ro" }) {
           box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 14%, transparent), 0 22px 58px rgba(0, 0, 0, 0.18);
         }
         .p4h-cookieFab span {
-          font-size: 22px;
+          font-size: 26px;
           line-height: 1;
         }
       `}</style>
