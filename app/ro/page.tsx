@@ -1148,11 +1148,12 @@ export default function HomePageRO() {
 		        id="insights"
 		        aria-labelledby="insights-title"
 		        className={styles.features}
-		        data-p4h-reveal
 		        style={{ paddingTop: 0, paddingBottom: 0 }}
 		      >
-        <h2 id="insights-title">Impact</h2>
-        <TimeSavingsStripRo />
+        <h2 id="insights-title" data-p4h-reveal>Impact</h2>
+        <div data-p4h-reveal>
+          <TimeSavingsStripRo />
+        </div>
       </section>
 
 	      {/* Despre */}
@@ -1179,10 +1180,11 @@ export default function HomePageRO() {
 	      </section>
 
 	      {/* Funcții */}
-	      <section id="features" className={styles.features} aria-labelledby="features-title" data-p4h-reveal>
-        <h2 id="features-title">Funcții</h2>
+	      <section id="features" className={styles.features} aria-labelledby="features-title">
+        <h2 id="features-title" data-p4h-reveal>Funcții</h2>
         <div
           className="sb-cardglow"
+          data-p4h-reveal
           style={{ borderRadius: 12, overflow: 'hidden', position: 'relative' }}
           onPointerEnter={() => setFeaturesHover(true)}
           onPointerLeave={() => setFeaturesHover(false)}
@@ -1243,9 +1245,9 @@ export default function HomePageRO() {
       </section>
 
       {/* Recenzii */}
-      <section id="recenzii" className={styles.reviews} aria-labelledby="reviews-title" data-p4h-reveal>
-        <h2 id="reviews-title">Ce spun utilizatorii noștri</h2>
-        <div className={styles.reviewsBody}>
+      <section id="recenzii" className={styles.reviews} aria-labelledby="reviews-title">
+        <h2 id="reviews-title" data-p4h-reveal>Ce spun utilizatorii noștri</h2>
+        <div className={styles.reviewsBody} data-p4h-reveal>
           <div
             className={styles.reviewsCard}
             role="region"
@@ -1522,9 +1524,9 @@ export default function HomePageRO() {
       </section>
 
       {/* Contact */}
-      <section id="contact" className={`${styles.contact}`} aria-labelledby="contact-title" data-p4h-reveal>
-	          <h2 id="contact-title">Contact</h2>
-	        <div className={styles.contactCard}>
+      <section id="contact" className={`${styles.contact}`} aria-labelledby="contact-title">
+	          <h2 id="contact-title" data-p4h-reveal>Contact</h2>
+	        <div className={styles.contactCard} data-p4h-reveal>
 	          <div style={{ display: 'grid', gap: 16 }}>
 	            <p style={{ margin: 0, color: 'var(--muted)' }}>
 	              <span>Uneori ai nevoie doar de un răspuns rapid.</span><br />
