@@ -1,11 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function CookieFab({ lang }: { lang: "en" | "ro" }) {
   const label = lang === "ro" ? "Setări cookie" : "Cookie settings";
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <>
       <button
         type="button"
@@ -59,5 +67,5 @@ export default function CookieFab({ lang }: { lang: "en" | "ro" }) {
         }
       `}</style>
     </>
-  );
+  , document.body);
 }
