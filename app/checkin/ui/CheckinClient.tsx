@@ -257,6 +257,11 @@ export default function CheckinClient() {
   const [pendingOpenAfterInfo, setPendingOpenAfterInfo] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // WhatsApp mini chat (public check-in)
+  const [waOpen, setWaOpen] = useState(false);
+  const [waText, setWaText] = useState("");
+  const waInputRef = useRef<HTMLTextAreaElement | null>(null);
+
   // Language toggle (EN/RO)
   type Lang = 'en' | 'ro';
   function readCookie(name: string): string | null {
@@ -308,6 +313,10 @@ export default function CheckinClient() {
       nationality: 'Nationality (citizenship)*',
       ariaNationality: 'Nationality',
       uploadId: 'Upload ID document (photo/PDF)*',
+      waPill: 'Message us on WhatsApp',
+      waHello: 'Hi! How can we help you?',
+      waPlaceholder: 'Type a message…',
+      waSend: 'Send',
       docTypeLabel: 'Document type*',
       docOptionId: 'Identity card',
       docOptionPassport: 'Passport',
@@ -373,6 +382,10 @@ export default function CheckinClient() {
       nationality: 'Naționalitate (cetățenie)*',
       ariaNationality: 'Naționalitate',
       uploadId: 'Încarcă actul de identitate (poză/PDF)*',
+      waPill: 'Scrie-ne pe WhatsApp',
+      waHello: 'Bună! Cu ce te putem ajuta?',
+      waPlaceholder: 'Scrie un mesaj…',
+      waSend: 'Trimite',
       docTypeLabel: 'Tip document*',
       docOptionId: 'Buletin',
       docOptionPassport: 'Pașaport',
@@ -458,6 +471,22 @@ export default function CheckinClient() {
       setProviderHint(src ? src.toString() : null);
     } catch {}
   }, []);
+
+  const waPhoneDigits = useMemo(() => {
+    const raw = (prop?.contact_phone || "").trim();
+    if (!raw) return null;
+    let digits = raw.replace(/\D/g, "");
+    if (digits.startsWith("00")) digits = digits.slice(2);
+    if (digits.length < 8) return null;
+    return digits;
+  }, [prop?.contact_phone]);
+
+  useEffect(() => {
+    if (!waOpen) return;
+    try {
+      requestAnimationFrame(() => waInputRef.current?.focus());
+    } catch {}
+  }, [waOpen]);
 
   // Document section
   type DocType = "" | "id_card" | "passport";
@@ -1606,6 +1635,207 @@ export default function CheckinClient() {
                 box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 26%, transparent);
               }
             }
+
+            .ci-waFab{
+              position: fixed;
+              right: 16px;
+              bottom: calc(16px + env(safe-area-inset-bottom));
+              z-index: 980;
+              pointer-events: auto;
+            }
+            .ci-waPill{
+              display: inline-flex;
+              align-items: center;
+              gap: 10px;
+              padding: 10px 12px;
+              max-width: min(320px, calc(100vw - 32px));
+              border-radius: 999px;
+              border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+              background: rgba(15,23,42,0.72);
+              -webkit-backdrop-filter: blur(12px) saturate(130%);
+                      backdrop-filter: blur(12px) saturate(130%);
+              box-shadow: 0 16px 40px rgba(0,0,0,0.26);
+              color: #fff;
+              font-weight: 650;
+              cursor: pointer;
+              user-select: none;
+              transition: transform .05s ease, box-shadow .2s ease, border-color .2s ease;
+            }
+            .ci-waPill:hover{
+              border-color: color-mix(in srgb, var(--muted) 70%, var(--border));
+              box-shadow: 0 20px 52px rgba(0,0,0,0.30);
+            }
+            .ci-waPill:active{ transform: scale(0.99); }
+            .ci-waPill img{
+              width: 22px;
+              height: 22px;
+              border-radius: 8px;
+              display: block;
+              box-shadow: 0 10px 24px rgba(0,0,0,0.20);
+              flex: 0 0 auto;
+            }
+            .ci-waPill span{ white-space: nowrap; font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
+
+            .ci-waOverlay{
+              position: fixed;
+              inset: 0;
+              z-index: 990;
+              background: rgba(2,6,23,.62);
+              -webkit-backdrop-filter: blur(10px);
+                      backdrop-filter: blur(10px);
+              display: grid;
+              place-items: end;
+              padding: 16px;
+            }
+            .ci-waChat{
+              width: min(520px, 100%);
+              border-radius: 18px;
+              border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+              background: rgba(15,23,42,0.78);
+              -webkit-backdrop-filter: blur(16px) saturate(135%);
+                      backdrop-filter: blur(16px) saturate(135%);
+              box-shadow: 0 22px 60px rgba(0,0,0,0.34);
+              overflow: hidden;
+              display: grid;
+              grid-template-rows: auto 1fr auto;
+              max-height: min(540px, calc(100vh - 32px - env(safe-area-inset-bottom)));
+            }
+            .ci-waTop{
+              display:flex;
+              align-items:center;
+              justify-content:space-between;
+              gap: 12px;
+              padding: 12px;
+              border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+            }
+            .ci-waTopTitle{
+              display:flex;
+              align-items:center;
+              gap: 10px;
+              min-width: 0;
+              color: #fff;
+              font-weight: 850;
+              font-size: 12px;
+              letter-spacing: .10em;
+              text-transform: uppercase;
+            }
+            .ci-waTopTitle small{
+              font-weight: 650;
+              letter-spacing: normal;
+              text-transform: none;
+              color: color-mix(in srgb, #fff 70%, transparent);
+              font-size: 12px;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            .ci-waClose{
+              width: 36px;
+              height: 36px;
+              border-radius: 999px;
+              border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+              background: rgba(255,255,255,0.06);
+              color: #fff;
+              font-weight: 900;
+              cursor: pointer;
+              display:grid;
+              place-items:center;
+              line-height: 1;
+            }
+            .ci-waClose:hover{ background: rgba(255,255,255,0.10); }
+            .ci-waMessages{
+              padding: 14px;
+              display: grid;
+              gap: 10px;
+              overflow: auto;
+            }
+            .ci-waBubble{
+              max-width: 88%;
+              padding: 10px 12px;
+              border-radius: 14px;
+              font-size: 14px;
+              line-height: 1.45;
+              color: #fff;
+              border: 1px solid rgba(255,255,255,0.10);
+            }
+            .ci-waLeft{
+              justify-self: start;
+              background: rgba(255,255,255,0.08);
+              border-bottom-left-radius: 6px;
+            }
+            .ci-waRight{
+              justify-self: end;
+              background: rgba(59,130,246,0.16);
+              border-color: rgba(59,130,246,0.22);
+              border-bottom-right-radius: 6px;
+            }
+            .ci-waComposer{
+              display: grid;
+              grid-template-columns: 1fr auto;
+              gap: 10px;
+              padding: 12px;
+              border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+            }
+            .ci-waInput{
+              width: 100%;
+              resize: none;
+              min-height: 44px;
+              max-height: 140px;
+              padding: 10px 12px;
+              border-radius: 14px;
+              border: 1px solid rgba(255,255,255,0.10);
+              background: rgba(255,255,255,0.06);
+              color: #fff;
+              outline: none;
+              font-size: 14px;
+              line-height: 1.35;
+            }
+            .ci-waInput::placeholder{ color: rgba(255,255,255,0.65); }
+            .ci-waInput:focus{
+              border-color: rgba(255,255,255,0.18);
+              box-shadow: 0 0 0 4px rgba(59,130,246,0.12);
+            }
+            .ci-waSend{
+              width: 44px;
+              height: 44px;
+              border-radius: 999px;
+              border: 1px solid rgba(59,130,246,0.28);
+              background: rgba(59,130,246,0.18);
+              cursor: pointer;
+              display: grid;
+              place-items: center;
+              transition: transform .05s ease, box-shadow .2s ease, background .2s ease;
+            }
+            .ci-waSend::before{
+              content:"";
+              width: 18px;
+              height: 18px;
+              background-color: color-mix(in srgb, var(--primary) 90%, white);
+              -webkit-mask-image: url(/svg_send_demo.svg);
+                      mask-image: url(/svg_send_demo.svg);
+              -webkit-mask-repeat: no-repeat;
+                      mask-repeat: no-repeat;
+              -webkit-mask-position: center;
+                      mask-position: center;
+              -webkit-mask-size: contain;
+                      mask-size: contain;
+              transform: translateX(1px);
+            }
+            .ci-waSend:hover{
+              background: rgba(59,130,246,0.22);
+              box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+            }
+            .ci-waSend:active{ transform: scale(0.99); }
+            .ci-waSend:disabled{
+              opacity: .55;
+              cursor: not-allowed;
+              box-shadow: none;
+            }
+
+            @media (max-width: 560px){
+              .ci-waOverlay{ place-items: end center; padding: 12px; }
+              .ci-waChat{ width: 100%; }
+            }
           `,
         }}
       />
@@ -2488,6 +2718,92 @@ export default function CheckinClient() {
           </form>
         )}
       </section>
+
+          {/* WhatsApp mini chat (outside <form> to avoid privacy capture) */}
+          {waPhoneDigits && (
+            <div className="ci-waFab">
+              <button
+                type="button"
+                className="ci-waPill"
+                onClick={() => setWaOpen(true)}
+                aria-label={T("waPill")}
+                title={T("waPill")}
+              >
+                <img src="/logo_whatsapp.png" alt="" />
+                <span>{T("waPill")}</span>
+              </button>
+            </div>
+          )}
+
+          {waOpen && waPhoneDigits && (
+            <div
+              className="ci-waOverlay"
+              role="dialog"
+              aria-modal="true"
+              aria-label="WhatsApp"
+              onClick={() => setWaOpen(false)}
+            >
+              <div className="ci-waChat" onClick={(e) => e.stopPropagation()}>
+                <div className="ci-waTop">
+                  <div className="ci-waTopTitle">
+                    <img src="/logo_whatsapp.png" alt="" style={{ width: 22, height: 22, borderRadius: 8, display: "block" }} />
+                    <div style={{ minWidth: 0 }}>
+                      WhatsApp{" "}
+                      <small>
+                        {(prop?.contact_phone || "").trim().length > 0
+                          ? prop!.contact_phone
+                          : `+${waPhoneDigits}`}
+                      </small>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="ci-waClose"
+                    aria-label={lang === "ro" ? "Închide" : "Close"}
+                    onClick={() => setWaOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="ci-waMessages">
+                  <div className="ci-waBubble ci-waLeft">{T("waHello")}</div>
+                  {waText.trim().length > 0 && (
+                    <div className="ci-waBubble ci-waRight">{waText.trim()}</div>
+                  )}
+                </div>
+
+                <div className="ci-waComposer">
+                  <textarea
+                    ref={waInputRef}
+                    className="ci-waInput"
+                    value={waText}
+                    onChange={(e) => setWaText(e.currentTarget.value)}
+                    placeholder={T("waPlaceholder")}
+                    aria-label={T("waPlaceholder")}
+                  />
+                  <button
+                    type="button"
+                    className="ci-waSend"
+                    aria-label={T("waSend")}
+                    title={T("waSend")}
+                    disabled={waText.trim().length === 0}
+                    onClick={() => {
+                      const text = waText.trim();
+                      if (!text) return;
+                      const url = `https://wa.me/${waPhoneDigits}?text=${encodeURIComponent(text)}`;
+                      try {
+                        window.open(url, "_blank", "noopener,noreferrer");
+                      } catch {
+                        try { window.location.assign(url); } catch {}
+                      }
+                      setWaOpen(false);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 
