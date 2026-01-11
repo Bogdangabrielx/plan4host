@@ -1650,10 +1650,8 @@ export default function CheckinClient() {
               padding: 10px 12px;
               max-width: min(320px, calc(100vw - 32px));
               border-radius: 999px;
-              border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
-              background: rgba(15,23,42,0.72);
-              -webkit-backdrop-filter: blur(12px) saturate(130%);
-                      backdrop-filter: blur(12px) saturate(130%);
+              border: 1px solid rgba(255,255,255,0.14);
+              background: linear-gradient(135deg, #25D366, #128C7E);
               box-shadow: 0 16px 40px rgba(0,0,0,0.26);
               color: #fff;
               font-weight: 650;
@@ -1662,8 +1660,8 @@ export default function CheckinClient() {
               transition: transform .05s ease, box-shadow .2s ease, border-color .2s ease;
             }
             .ci-waPill:hover{
-              border-color: color-mix(in srgb, var(--muted) 70%, var(--border));
-              box-shadow: 0 20px 52px rgba(0,0,0,0.30);
+              border-color: rgba(255,255,255,0.22);
+              box-shadow: 0 22px 58px rgba(0,0,0,0.32);
             }
             .ci-waPill:active{ transform: scale(0.99); }
             .ci-waPill img{
@@ -1671,7 +1669,7 @@ export default function CheckinClient() {
               height: 22px;
               border-radius: 8px;
               display: block;
-              box-shadow: 0 10px 24px rgba(0,0,0,0.20);
+              box-shadow: 0 10px 24px rgba(0,0,0,0.18);
               flex: 0 0 auto;
             }
             .ci-waPill span{ white-space: nowrap; font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
@@ -1680,9 +1678,9 @@ export default function CheckinClient() {
               position: fixed;
               inset: 0;
               z-index: 990;
-              background: rgba(2,6,23,.62);
-              -webkit-backdrop-filter: blur(10px);
-                      backdrop-filter: blur(10px);
+              background: rgba(2,6,23,.55);
+              -webkit-backdrop-filter: blur(8px);
+                      backdrop-filter: blur(8px);
               display: grid;
               place-items: end;
               padding: 16px;
@@ -1690,10 +1688,8 @@ export default function CheckinClient() {
             .ci-waChat{
               width: min(520px, 100%);
               border-radius: 18px;
-              border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-              background: rgba(15,23,42,0.78);
-              -webkit-backdrop-filter: blur(16px) saturate(135%);
-                      backdrop-filter: blur(16px) saturate(135%);
+              border: 1px solid rgba(255,255,255,0.10);
+              background: #0b141a;
               box-shadow: 0 22px 60px rgba(0,0,0,0.34);
               overflow: hidden;
               display: grid;
@@ -1706,7 +1702,8 @@ export default function CheckinClient() {
               justify-content:space-between;
               gap: 12px;
               padding: 12px;
-              border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+              background: #128C7E;
+              border-bottom: 1px solid rgba(0,0,0,0.10);
             }
             .ci-waTopTitle{
               display:flex;
@@ -1723,7 +1720,7 @@ export default function CheckinClient() {
               font-weight: 650;
               letter-spacing: normal;
               text-transform: none;
-              color: color-mix(in srgb, #fff 70%, transparent);
+              color: rgba(255,255,255,0.88);
               font-size: 12px;
               white-space: nowrap;
               overflow: hidden;
@@ -1733,8 +1730,8 @@ export default function CheckinClient() {
               width: 36px;
               height: 36px;
               border-radius: 999px;
-              border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-              background: rgba(255,255,255,0.06);
+              border: 1px solid rgba(255,255,255,0.18);
+              background: rgba(0,0,0,0.10);
               color: #fff;
               font-weight: 900;
               cursor: pointer;
@@ -1742,12 +1739,16 @@ export default function CheckinClient() {
               place-items:center;
               line-height: 1;
             }
-            .ci-waClose:hover{ background: rgba(255,255,255,0.10); }
+            .ci-waClose:hover{ background: rgba(0,0,0,0.14); }
             .ci-waMessages{
               padding: 14px;
               display: grid;
               gap: 10px;
               overflow: auto;
+              background:
+                radial-gradient(900px 560px at 10% 0%, rgba(37,211,102,0.08), transparent 60%),
+                radial-gradient(900px 560px at 90% 100%, rgba(18,140,126,0.08), transparent 60%),
+                #0b141a;
             }
             .ci-waBubble{
               max-width: 88%;
@@ -1756,17 +1757,17 @@ export default function CheckinClient() {
               font-size: 14px;
               line-height: 1.45;
               color: #fff;
-              border: 1px solid rgba(255,255,255,0.10);
+              border: 1px solid rgba(255,255,255,0.08);
             }
             .ci-waLeft{
               justify-self: start;
-              background: rgba(255,255,255,0.08);
+              background: #202c33;
               border-bottom-left-radius: 6px;
             }
             .ci-waRight{
               justify-self: end;
-              background: rgba(59,130,246,0.16);
-              border-color: rgba(59,130,246,0.22);
+              background: #005c4b;
+              border-color: rgba(0,168,132,0.20);
               border-bottom-right-radius: 6px;
             }
             .ci-waComposer{
@@ -1774,33 +1775,34 @@ export default function CheckinClient() {
               grid-template-columns: 1fr auto;
               gap: 10px;
               padding: 12px;
-              border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+              background: #111b21;
+              border-top: 1px solid rgba(255,255,255,0.08);
             }
             .ci-waInput{
               width: 100%;
               resize: none;
-              min-height: 44px;
-              max-height: 140px;
-              padding: 10px 12px;
-              border-radius: 14px;
-              border: 1px solid rgba(255,255,255,0.10);
-              background: rgba(255,255,255,0.06);
+              min-height: 38px;
+              max-height: 92px;
+              padding: 9px 12px;
+              border-radius: 999px;
+              border: 1px solid rgba(255,255,255,0.08);
+              background: #202c33;
               color: #fff;
               outline: none;
               font-size: 14px;
-              line-height: 1.35;
+              line-height: 1.25;
             }
             .ci-waInput::placeholder{ color: rgba(255,255,255,0.65); }
             .ci-waInput:focus{
-              border-color: rgba(255,255,255,0.18);
-              box-shadow: 0 0 0 4px rgba(59,130,246,0.12);
+              border-color: rgba(255,255,255,0.14);
+              box-shadow: 0 0 0 4px rgba(37,211,102,0.10);
             }
             .ci-waSend{
               width: 44px;
               height: 44px;
               border-radius: 999px;
-              border: 1px solid rgba(59,130,246,0.28);
-              background: rgba(59,130,246,0.18);
+              border: 1px solid rgba(0,168,132,0.45);
+              background: #00a884;
               cursor: pointer;
               display: grid;
               place-items: center;
@@ -1810,7 +1812,7 @@ export default function CheckinClient() {
               content:"";
               width: 18px;
               height: 18px;
-              background-color: color-mix(in srgb, var(--primary) 90%, white);
+              background-color: #fff;
               -webkit-mask-image: url(/svg_send_demo.svg);
                       mask-image: url(/svg_send_demo.svg);
               -webkit-mask-repeat: no-repeat;
@@ -1819,10 +1821,9 @@ export default function CheckinClient() {
                       mask-position: center;
               -webkit-mask-size: contain;
                       mask-size: contain;
-              transform: translateX(1px);
             }
             .ci-waSend:hover{
-              background: rgba(59,130,246,0.22);
+              background: #00b195;
               box-shadow: 0 16px 40px rgba(0,0,0,0.18);
             }
             .ci-waSend:active{ transform: scale(0.99); }
@@ -2778,6 +2779,7 @@ export default function CheckinClient() {
                   <textarea
                     ref={waInputRef}
                     className="ci-waInput"
+                    rows={2}
                     value={waText}
                     onChange={(e) => setWaText(e.currentTarget.value)}
                     placeholder={T("waPlaceholder")}
