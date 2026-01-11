@@ -1647,7 +1647,8 @@ export default function CheckinClient() {
               display: inline-flex;
               align-items: center;
               gap: 10px;
-              padding: 10px 12px;
+              height: 44px;
+              padding: 0 12px;
               max-width: min(320px, calc(100vw - 32px));
               border-radius: 999px;
               border: 1px solid rgba(255,255,255,0.14);
@@ -1665,9 +1666,9 @@ export default function CheckinClient() {
             }
             .ci-waPill:active{ transform: scale(0.99); }
             .ci-waPill img{
-              width: 22px;
-              height: 22px;
-              border-radius: 8px;
+              width: 36px;
+              height: 36px;
+              border-radius: 12px;
               display: block;
               box-shadow: 0 10px 24px rgba(0,0,0,0.18);
               flex: 0 0 auto;
@@ -1745,10 +1746,13 @@ export default function CheckinClient() {
               display: grid;
               gap: 10px;
               overflow: auto;
-              background:
-                radial-gradient(900px 560px at 10% 0%, rgba(37,211,102,0.08), transparent 60%),
-                radial-gradient(900px 560px at 90% 100%, rgba(18,140,126,0.08), transparent 60%),
-                #0b141a;
+              background-color: #0b141a;
+              background-image:
+                linear-gradient(rgba(11,20,26,0.90), rgba(11,20,26,0.90)),
+                url(/whatsapp_background.jpg);
+              background-repeat: repeat;
+              background-position: top left;
+              background-size: clamp(360px, 72vw, 520px);
             }
             .ci-waBubble{
               max-width: 88%;
