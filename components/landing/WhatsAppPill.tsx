@@ -352,7 +352,7 @@ export default function WhatsAppPill({ lang }: Props) {
         @media (max-width: 560px) {
           .p4h-waOverlay {
             place-items: end center;
-            padding: 12px;
+            padding: 12px 12px calc(12px + env(safe-area-inset-bottom) + 48px);
           }
           .p4h-waChat {
             width: 100%;

@@ -1843,7 +1843,7 @@ export default function CheckinClient() {
             }
 
             @media (max-width: 560px){
-              .ci-waOverlay{ place-items: end center; padding: 12px; }
+              .ci-waOverlay{ place-items: end center; padding: 12px 12px calc(12px + env(safe-area-inset-bottom) + 48px); }
               .ci-waChat{ width: 100%; }
             }
           `,
