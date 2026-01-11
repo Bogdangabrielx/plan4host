@@ -1691,6 +1691,8 @@ export default function CheckinClient() {
               border-radius: 18px;
               border: 1px solid rgba(255,255,255,0.10);
               background: #0b141a;
+              font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+              font-weight: 400;
               box-shadow: 0 22px 60px rgba(0,0,0,0.34);
               overflow: hidden;
               display: grid;
@@ -1761,6 +1763,7 @@ export default function CheckinClient() {
               font-size: 14px;
               line-height: 1.45;
               color: #fff;
+              font-weight: 400;
               border: 1px solid rgba(255,255,255,0.08);
             }
             .ci-waLeft{
@@ -1795,6 +1798,8 @@ export default function CheckinClient() {
               outline: none;
               font-size: 14px;
               line-height: 1.25;
+              font-family: inherit;
+              font-weight: 400;
             }
             .ci-waInput::placeholder{ color: rgba(255,255,255,0.65); }
             .ci-waInput:focus{

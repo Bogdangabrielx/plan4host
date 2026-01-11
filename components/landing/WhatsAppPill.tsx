@@ -186,6 +186,9 @@ export default function WhatsAppPill({ lang }: Props) {
           border-radius: 18px;
           border: 1px solid rgba(255, 255, 255, 0.1);
           background: #0b141a;
+          font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+            "Segoe UI Emoji";
+          font-weight: 400;
           box-shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
           overflow: hidden;
           display: grid;
@@ -263,6 +266,7 @@ export default function WhatsAppPill({ lang }: Props) {
           font-size: 14px;
           line-height: 1.45;
           color: #fff;
+          font-weight: 400;
           border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .p4h-waLeft {
@@ -297,6 +301,8 @@ export default function WhatsAppPill({ lang }: Props) {
           outline: none;
           font-size: 14px;
           line-height: 1.25;
+          font-family: inherit;
+          font-weight: 400;
         }
         .p4h-waInput::placeholder {
           color: rgba(255, 255, 255, 0.65);
