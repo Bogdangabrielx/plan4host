@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
+import { DIAL_OPTIONS } from "@/lib/phone/dialOptions";
 
 type Property = {
   id: string;
@@ -110,6 +111,32 @@ function Info({ text }: { text: string }) {
 
 const IMAGE_INFO = "Recommended: 3:1 banner, min 1200×400 (ideal 1800×600), JPG/WebP, under ~500 KB. Keep the subject centered; image is cropped (cover).";
 const PDF_INFO = "PDF (House Rules), preferably under 5 MB. A4 portrait recommended; keep text readable.";
+
+function flagEmoji(cc: string | null | undefined): string {
+  if (!cc) return "";
+  const up = cc.toUpperCase();
+  if (up.length !== 2) return "";
+  const A = 0x1f1e6;
+  const code1 = up.charCodeAt(0) - 65 + A;
+  const code2 = up.charCodeAt(1) - 65 + A;
+  return String.fromCodePoint(code1, code2);
+}
+
+function splitPhoneToDialAndRest(full: string): { dial: string; rest: string } {
+  const raw = (full || "").trim();
+  const digitsPlus = raw.replace(/[^\d+]/g, "");
+  if (!digitsPlus.startsWith("+")) {
+    return { dial: "+40", rest: raw.replace(/\D/g, "") };
+  }
+  const codes = Array.from(new Set(DIAL_OPTIONS.map((d) => d.code))).sort(
+    (a, b) => b.length - a.length,
+  );
+  const match = codes.find((c) => digitsPlus.startsWith(c)) || "+40";
+  const rest = digitsPlus.startsWith(match)
+    ? digitsPlus.slice(match.length).replace(/\D/g, "")
+    : digitsPlus.replace(/\D/g, "");
+  return { dial: match, rest };
+}
 
 export default function CheckinEditorClient({ initialProperties }: { initialProperties: Array<{ id: string; name: string }> }) {
   const supabase = useMemo(() => createClient(), []);
@@ -223,6 +250,40 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   }
 
   useEffect(() => { if (propertyReady) refresh(); }, [propertyId, supabase, propertyReady]);
+
+  // Dial code dropdown state for Contact Phone
+  const [contactDial, setContactDial] = useState<string>("+40");
+  const [contactPhoneLocal, setContactPhoneLocal] = useState<string>("");
+  const [dialOpen, setDialOpen] = useState<boolean>(false);
+  const dialWrapRef = useRef<HTMLDivElement | null>(null);
+  const hydratedPhoneKey = useRef<string>("");
+  useEffect(() => {
+    if (!prop) return;
+    const saved = (lastSavedContact.current.phone || "").trim();
+    const current = (prop.contact_phone || "").trim();
+    // Hydrate only from the last-saved server value to avoid clobbering edits.
+    if (current !== saved) return;
+    const key = `${prop.id}:${saved}`;
+    if (hydratedPhoneKey.current === key) return;
+    hydratedPhoneKey.current = key;
+    const split = splitPhoneToDialAndRest(saved);
+    setContactDial(split.dial);
+    setContactPhoneLocal(split.rest);
+  }, [prop?.id, prop?.contact_phone]);
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      const t = e.target as Node | null;
+      if (dialWrapRef.current && t && !dialWrapRef.current.contains(t)) setDialOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  function composeFullPhone(dial: string, local: string): string {
+    const digits = (local || "").replace(/\D/g, "");
+    if (!digits) return "";
+    return `${dial}${digits}`;
+  }
 
   // Read onboarding highlight hint from URL (e.g., ?highlight=contacts|picture|house_rules)
   useEffect(() => {
@@ -1057,17 +1118,102 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   style={FIELD}
                 />
               </div>
-              <div>
-                <label style={{ display:'block', marginBottom:6 }}>Phone</label>
-                <input
-                  type="tel"
-                  value={prop.contact_phone ?? ''}
-                  onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_phone: v } : prev); }}
-                  onBlur={(e) => autoSaveContactField('phone', e.currentTarget.value)}
-                  placeholder="+40 712 345 678"
-                  style={FIELD}
-                />
-              </div>
+	              <div>
+	                <label style={{ display:'block', marginBottom:6 }}>Phone</label>
+	                <div ref={dialWrapRef} style={{ position: "relative" }}>
+	                  <button
+	                    type="button"
+	                    onClick={() => setDialOpen((v) => !v)}
+	                    aria-label="Dial code"
+	                    style={{
+	                      position: "absolute",
+	                      left: 8,
+	                      top: "50%",
+	                      transform: "translateY(-50%)",
+	                      zIndex: 2,
+	                      border: "1px solid var(--border)",
+	                      background: "var(--card)",
+	                      color: "var(--text)",
+	                      borderRadius: 8,
+	                      padding: "6px 8px",
+	                      fontWeight: 800,
+	                      cursor: "pointer",
+	                      display: "inline-flex",
+	                      alignItems: "center",
+	                      gap: 6,
+	                    }}
+	                  >
+	                    <span aria-hidden>
+	                      {flagEmoji((DIAL_OPTIONS.find((d) => d.code === contactDial)?.cc) || "RO")}
+	                    </span>
+	                    <span>{contactDial}</span>
+	                  </button>
+	                  <input
+	                    type="tel"
+	                    value={contactPhoneLocal}
+	                    onChange={(e) => {
+	                      const v = e.currentTarget.value;
+	                      setContactPhoneLocal(v);
+	                      const full = composeFullPhone(contactDial, v);
+	                      setProp((prev) => (prev ? { ...prev, contact_phone: full } : prev));
+	                    }}
+	                    onBlur={() => autoSaveContactField("phone", composeFullPhone(contactDial, contactPhoneLocal))}
+	                    placeholder="712 345 678"
+	                    style={{ ...FIELD, paddingLeft: 96 }}
+	                  />
+	                  {dialOpen && (
+	                    <div
+	                      role="listbox"
+	                      style={{
+	                        position: "absolute",
+	                        left: 8,
+	                        top: "calc(100% + 6px)",
+	                        zIndex: 30,
+	                        background: "var(--panel)",
+	                        border: "1px solid var(--border)",
+	                        borderRadius: 10,
+	                        padding: 6,
+	                        display: "grid",
+	                        gap: 4,
+	                        maxHeight: 240,
+	                        overflow: "auto",
+	                        width: "min(420px, calc(100vw - 32px))",
+	                      }}
+	                    >
+	                      {DIAL_OPTIONS.map((opt) => (
+	                        <button
+	                          key={`${opt.cc}-${opt.code}`}
+	                          type="button"
+	                          onClick={() => {
+	                            setContactDial(opt.code);
+	                            setDialOpen(false);
+	                            const full = composeFullPhone(opt.code, contactPhoneLocal);
+	                            setProp((prev) => (prev ? { ...prev, contact_phone: full } : prev));
+	                            autoSaveContactField("phone", full);
+	                          }}
+	                          style={{
+	                            padding: "6px 8px",
+	                            borderRadius: 8,
+	                            border: "1px solid var(--border)",
+	                            background: opt.code === contactDial ? "var(--primary)" : "var(--card)",
+	                            color: opt.code === contactDial ? "#0c111b" : "var(--text)",
+	                            fontWeight: 800,
+	                            cursor: "pointer",
+	                            display: "flex",
+	                            alignItems: "center",
+	                            gap: 8,
+	                            textAlign: "left",
+	                          }}
+	                        >
+	                          <span aria-hidden>{flagEmoji(opt.cc)}</span>
+	                          <span style={{ width: 56, display: "inline-block" }}>{opt.code}</span>
+	                          <span style={{ color: "var(--muted)", fontWeight: 600 }}>{opt.name}</span>
+	                        </button>
+	                      ))}
+	                    </div>
+	                  )}
+	                </div>
+	              </div>
               <div>
                 <label style={{ display:'block', marginBottom:6 }}>Address</label>
                 <input

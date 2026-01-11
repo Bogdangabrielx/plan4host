@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useRef, useState, useImperativeHandle } from
 import Image from "next/image";
 import QrWithLogo from "@/components/QrWithLogo";
 import homeStyles from "../../home.module.css";
+import { DIAL_OPTIONS } from "@/lib/phone/dialOptions";
 
 type PropertyInfo = {
   id: string;
@@ -53,109 +54,6 @@ function flagEmoji(cc: string | null | undefined): string {
   const code2 = up.charCodeAt(1) - 65 + A;
   return String.fromCodePoint(code1, code2);
 }
-
-// Dial code options shown in the inline dropdown (extended list, many common countries)
-const DIAL_OPTIONS: Array<{ cc: string; code: string; name: string }> = [
-  // Europe
-  { cc: 'RO', code: '+40', name: 'Romania' },
-  { cc: 'DE', code: '+49', name: 'Germany' },
-  { cc: 'IT', code: '+39', name: 'Italy' },
-  { cc: 'FR', code: '+33', name: 'France' },
-  { cc: 'ES', code: '+34', name: 'Spain' },
-  { cc: 'GB', code: '+44', name: 'United Kingdom' },
-  { cc: 'IE', code: '+353', name: 'Ireland' },
-  { cc: 'PT', code: '+351', name: 'Portugal' },
-  { cc: 'NL', code: '+31', name: 'Netherlands' },
-  { cc: 'BE', code: '+32', name: 'Belgium' },
-  { cc: 'LU', code: '+352', name: 'Luxembourg' },
-  { cc: 'CH', code: '+41', name: 'Switzerland' },
-  { cc: 'AT', code: '+43', name: 'Austria' },
-  { cc: 'PL', code: '+48', name: 'Poland' },
-  { cc: 'CZ', code: '+420', name: 'Czech Republic' },
-  { cc: 'SK', code: '+421', name: 'Slovakia' },
-  { cc: 'HU', code: '+36', name: 'Hungary' },
-  { cc: 'BG', code: '+359', name: 'Bulgaria' },
-  { cc: 'GR', code: '+30', name: 'Greece' },
-  { cc: 'HR', code: '+385', name: 'Croatia' },
-  { cc: 'SI', code: '+386', name: 'Slovenia' },
-  { cc: 'RS', code: '+381', name: 'Serbia' },
-  { cc: 'BA', code: '+387', name: 'Bosnia and Herzegovina' },
-  { cc: 'MK', code: '+389', name: 'North Macedonia' },
-  { cc: 'ME', code: '+382', name: 'Montenegro' },
-  { cc: 'AL', code: '+355', name: 'Albania' },
-  { cc: 'UA', code: '+380', name: 'Ukraine' },
-  { cc: 'MD', code: '+373', name: 'Moldova' },
-  { cc: 'RU', code: '+7', name: 'Russia' },
-  { cc: 'BY', code: '+375', name: 'Belarus' },
-  { cc: 'EE', code: '+372', name: 'Estonia' },
-  { cc: 'LV', code: '+371', name: 'Latvia' },
-  { cc: 'LT', code: '+370', name: 'Lithuania' },
-  { cc: 'FI', code: '+358', name: 'Finland' },
-  { cc: 'SE', code: '+46', name: 'Sweden' },
-  { cc: 'NO', code: '+47', name: 'Norway' },
-  { cc: 'DK', code: '+45', name: 'Denmark' },
-  { cc: 'IS', code: '+354', name: 'Iceland' },
-  { cc: 'CY', code: '+357', name: 'Cyprus' },
-  { cc: 'MT', code: '+356', name: 'Malta' },
-  { cc: 'MC', code: '+377', name: 'Monaco' },
-  { cc: 'SM', code: '+378', name: 'San Marino' },
-  { cc: 'LI', code: '+423', name: 'Liechtenstein' },
-  { cc: 'AD', code: '+376', name: 'Andorra' },
-  { cc: 'VA', code: '+39', name: 'Vatican City' },
-
-  // Middle East & Africa
-  { cc: 'TR', code: '+90', name: 'Turkey' },
-  { cc: 'IL', code: '+972', name: 'Israel' },
-  { cc: 'AE', code: '+971', name: 'United Arab Emirates' },
-  { cc: 'SA', code: '+966', name: 'Saudi Arabia' },
-  { cc: 'EG', code: '+20', name: 'Egypt' },
-  { cc: 'MA', code: '+212', name: 'Morocco' },
-  { cc: 'TN', code: '+216', name: 'Tunisia' },
-  { cc: 'ZA', code: '+27', name: 'South Africa' },
-   // a few more African countries commonly used
-  { cc: 'NG', code: '+234', name: 'Nigeria' },
-  { cc: 'KE', code: '+254', name: 'Kenya' },
-  { cc: 'TZ', code: '+255', name: 'Tanzania' },
-  { cc: 'GH', code: '+233', name: 'Ghana' },
-  { cc: 'ET', code: '+251', name: 'Ethiopia' },
-  { cc: 'SN', code: '+221', name: 'Senegal' },
-
-  // Asia
-  { cc: 'IN', code: '+91', name: 'India' },
-  { cc: 'CN', code: '+86', name: 'China' },
-  { cc: 'JP', code: '+81', name: 'Japan' },
-  { cc: 'KR', code: '+82', name: 'South Korea' },
-  { cc: 'SG', code: '+65', name: 'Singapore' },
-  { cc: 'TH', code: '+66', name: 'Thailand' },
-  { cc: 'VN', code: '+84', name: 'Vietnam' },
-  { cc: 'ID', code: '+62', name: 'Indonesia' },
-  { cc: 'MY', code: '+60', name: 'Malaysia' },
-  { cc: 'PH', code: '+63', name: 'Philippines' },
-  { cc: 'HK', code: '+852', name: 'Hong Kong' },
-  { cc: 'TW', code: '+886', name: 'Taiwan' },
-  { cc: 'PK', code: '+92', name: 'Pakistan' },
-  { cc: 'BD', code: '+880', name: 'Bangladesh' },
-  { cc: 'LK', code: '+94', name: 'Sri Lanka' },
-
-  // Oceania
-  { cc: 'AU', code: '+61', name: 'Australia' },
-  { cc: 'NZ', code: '+64', name: 'New Zealand' },
-
-  // Americas
-  { cc: 'US', code: '+1', name: 'United States' },
-  { cc: 'CA', code: '+1', name: 'Canada' },
-  { cc: 'MX', code: '+52', name: 'Mexico' },
-  { cc: 'BR', code: '+55', name: 'Brazil' },
-  { cc: 'AR', code: '+54', name: 'Argentina' },
-  { cc: 'CL', code: '+56', name: 'Chile' },
-  { cc: 'CO', code: '+57', name: 'Colombia' },
-  { cc: 'PE', code: '+51', name: 'Peru' },
-  { cc: 'UY', code: '+598', name: 'Uruguay' },
-  { cc: 'PY', code: '+595', name: 'Paraguay' },
-  { cc: 'BO', code: '+591', name: 'Bolivia' },
-  { cc: 'EC', code: '+593', name: 'Ecuador' },
-  { cc: 'VE', code: '+58', name: 'Venezuela' },
-];
 
 function getQueryParam(k: string): string | null {
   if (typeof window === "undefined") return null;
