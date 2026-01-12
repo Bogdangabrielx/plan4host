@@ -1037,16 +1037,27 @@ export default function HomePageRO() {
 		        </a>
 		      </div>
 
-      {/* Hero */}
-      <section id="content" className={styles.hero}>
-        <div className={styles.heroText}>
-          <h1>
-            Mai puține mesaje. Mai puțin haos. Mai mult control.
-          </h1>
-          <p className={styles.heroKicker}>
-            Un singur sistem care conectează oaspeți, rezervări și curățenie — ca să nu scape nimic.
-          </p>
-          <div className={styles.heroCta}>
+	      {/* Hero */}
+	      <section id="content" className={styles.hero}>
+	        <div className={styles.heroText}>
+	          <h1 className={styles.heroHeadline}>
+	            <span className={styles.heroHeadlineLine}>
+	              <span className={styles.heroHeadlineTag}>Mai puține</span>
+	              <span>mesaje.</span>
+	            </span>
+	            <span className={styles.heroHeadlineLine}>
+	              <span className={styles.heroHeadlineTag}>Mai puțin</span>
+	              <span>haos.</span>
+	            </span>
+	            <span className={styles.heroHeadlineLine}>
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess}`}>Mai mult</span>
+	              <span className={styles.heroHeadlineAccent}>control.</span>
+	            </span>
+	          </h1>
+	          <p className={styles.heroKicker}>
+	            Un singur sistem care conectează oaspeți, rezervări și curățenie — ca să nu scape nimic.
+	          </p>
+	          <div className={styles.heroCta}>
             <button
               type="button"
               onClick={() => scrollToId("features-title")}
@@ -1311,50 +1322,50 @@ export default function HomePageRO() {
               <li>Proprietăți și camere nelimitate</li>
             </ul>
           </div>
-        <div className={styles.pricingGrid}>
-	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
-	            <div className={styles.priceTier}>BASIC</div>
-              <p className={styles.planPrice}>50 RON / lună</p>
-              <p className={styles.planMeta}>Pentru gazde mici</p>
-              <ul className={styles.includedList}>
-                <li>Sync calendar la 60 minute</li>
-                <li>Automatizare mesaje standard</li>
+	        <div className={styles.pricingGrid}>
+		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
+		            <div className={styles.priceTier}>BASIC</div>
+	              <span className={styles.srOnly}>50 RON / lună</span>
+	              <p className={styles.planMeta}>Pentru gazde mici</p>
+	              <ul className={styles.includedList}>
+	                <li>Sync calendar la 60 minute</li>
+	                <li>Automatizare mesaje standard</li>
                 <li>Coordonare task-uri curățenie</li>
               </ul>
             <img className={styles.priceImg} src="/basic_ron_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Basic</Link>
           </div>
 
-	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
-            <div className={styles.priceTier}>STANDARD</div>
-              <div className={styles.planBadge}>Pentru proprietăți în creștere ⭐</div>
-              <p className={styles.planPrice}>75 RON / lună</p>
-              <ul className={styles.includedList}>
-                <li>Sync calendar la 30 minute</li>
-                <li>Mesaje automate mai rapide</li>
-                <li>Update-uri prioritare pentru task-uri</li>
+		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
+	            <div className={styles.priceTier}>STANDARD</div>
+	              <div className={styles.planBadge}>Pentru proprietăți în creștere ⭐</div>
+	              <span className={styles.srOnly}>75 RON / lună</span>
+	              <ul className={styles.includedList}>
+	                <li>Sync calendar la 30 minute</li>
+	                <li>Mesaje automate mai rapide</li>
+	                <li>Update-uri prioritare pentru task-uri</li>
               </ul>
             <img className={styles.priceImg} src="/standard_ron_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Standard</Link>
           </div>
 
-	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
-            <div className={styles.priceTier}>PREMIUM</div>
-              <p className={styles.planPrice}>90 RON / lună</p>
-              <p className={styles.planMeta}>Pentru operațiuni aglomerate</p>
-              <ul className={styles.includedList}>
-                <li>Sync calendar la 10 minute</li>
-                <li>Automatizare aproape în timp real</li>
+		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
+	            <div className={styles.priceTier}>PREMIUM</div>
+	              <span className={styles.srOnly}>90 RON / lună</span>
+	              <p className={styles.planMeta}>Pentru operațiuni aglomerate</p>
+	              <ul className={styles.includedList}>
+	                <li>Sync calendar la 10 minute</li>
+	                <li>Automatizare aproape în timp real</li>
                 <li>Reacție mai rapidă la schimbări</li>
               </ul>
             <img className={styles.priceImg} src="/premium_ron_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Premium</Link>
-          </div>
-        </div>
-        <p style={{ marginTop: 16, color: "var(--muted)" }}>
-          Prețurile sunt: 50.00 RON/lună (Basic), 75.00 RON/lună (Standard), 90.00 RON/lună (Premium). TVA inclus.
-        </p>
-      </section>
+	          </div>
+	        </div>
+	        <p className={styles.srOnly}>
+	          Prețurile sunt: 50.00 RON/lună (Basic), 75.00 RON/lună (Standard), 90.00 RON/lună (Premium). TVA inclus.
+	        </p>
+	      </section>
 
       {/* FAQ */}
 	      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">

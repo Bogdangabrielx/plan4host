@@ -1211,16 +1211,27 @@ export default function HomePage() {
 			        </a>
 		      </div>
 
-      {/* Hero */}
-      <section id="content" className={styles.hero}>
-        <div className={styles.heroText}>
-          <h1>
-            Less messages. Less chaos. More control.
-          </h1>
-          <p className={styles.heroKicker}>
-            One system that connects guests, bookings and cleaning — so nothing falls through the cracks.
-          </p>
-          <div className={styles.heroCta}>
+	      {/* Hero */}
+	      <section id="content" className={styles.hero}>
+	        <div className={styles.heroText}>
+	          <h1 className={styles.heroHeadline}>
+	            <span className={styles.heroHeadlineLine}>
+	              <span className={styles.heroHeadlineTag}>Less</span>
+	              <span>messages.</span>
+	            </span>
+	            <span className={styles.heroHeadlineLine}>
+	              <span className={styles.heroHeadlineTag}>Less</span>
+	              <span>chaos.</span>
+	            </span>
+	            <span className={styles.heroHeadlineLine}>
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess}`}>More</span>
+	              <span className={styles.heroHeadlineAccent}>control.</span>
+	            </span>
+	          </h1>
+	          <p className={styles.heroKicker}>
+	            One system that connects guests, bookings and cleaning — so nothing falls through the cracks.
+	          </p>
+	          <div className={styles.heroCta}>
             <button
               type="button"
               onClick={() => scrollToId("features-title")}
@@ -1491,15 +1502,15 @@ export default function HomePage() {
               <li>Unlimited properties and rooms</li>
             </ul>
           </div>
-	        <div className={styles.pricingGrid}>
-	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
-	            <div className={styles.priceTier}>BASIC</div>
-              <p className={styles.planPrice}>€9.99 / month</p>
-              <p className={styles.planMeta}>Best for small hosts</p>
-              <ul className={styles.includedList}>
-                <li>Calendar sync every 60 minutes</li>
-                <li>Standard message automation</li>
-                <li>Cleaning task coordination</li>
+		        <div className={styles.pricingGrid}>
+		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
+		            <div className={styles.priceTier}>BASIC</div>
+	              <span className={styles.srOnly}>€9.99 / month</span>
+	              <p className={styles.planMeta}>Best for small hosts</p>
+	              <ul className={styles.includedList}>
+	                <li>Calendar sync every 60 minutes</li>
+	                <li>Standard message automation</li>
+	                <li>Cleaning task coordination</li>
               </ul>
             <img className={styles.priceImg} src="/basic_forlight.png" alt="" aria-hidden="true" />
             <Link
@@ -1510,14 +1521,14 @@ export default function HomePage() {
             </Link>
           </div>
 
-	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
-	            <div className={styles.priceTier}>STANDARD</div>
-              <div className={styles.planBadge}>Best for growing properties ⭐</div>
-              <p className={styles.planPrice}>€14.99 / month</p>
-              <ul className={styles.includedList}>
-                <li>Calendar sync every 30 minutes</li>
-                <li>Faster guest message automation</li>
-                <li>Priority daily task updates</li>
+		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
+		            <div className={styles.priceTier}>STANDARD</div>
+	              <div className={styles.planBadge}>Best for growing properties ⭐</div>
+	              <span className={styles.srOnly}>€14.99 / month</span>
+	              <ul className={styles.includedList}>
+	                <li>Calendar sync every 30 minutes</li>
+	                <li>Faster guest message automation</li>
+	                <li>Priority daily task updates</li>
               </ul>
             <img className={styles.priceImg} src="/standard_forlight.png" alt="" aria-hidden="true" />
             <Link
@@ -1528,13 +1539,13 @@ export default function HomePage() {
             </Link>
           </div>
 
-	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
-	            <div className={styles.priceTier}>PREMIUM</div>
-              <p className={styles.planPrice}>€17.99 / month</p>
-              <p className={styles.planMeta}>Best for busy operations</p>
-              <ul className={styles.includedList}>
-                <li>Calendar sync every 10 minutes</li>
-                <li>Near real-time automation</li>
+		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
+		            <div className={styles.priceTier}>PREMIUM</div>
+	              <span className={styles.srOnly}>€17.99 / month</span>
+	              <p className={styles.planMeta}>Best for busy operations</p>
+	              <ul className={styles.includedList}>
+	                <li>Calendar sync every 10 minutes</li>
+	                <li>Near real-time automation</li>
                 <li>Faster reaction to changes</li>
               </ul>
             <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
@@ -1545,12 +1556,12 @@ export default function HomePage() {
               Choose Premium
             </Link>
           </div>
-        </div>
-        {/* Textual prices for SEO (VAT included) */}
-        <p style={{ marginTop: 16, color: "var(--muted)" }}>
-          Prices: €9.99/month (Basic), €14.99/month (Standard), €17.99/month (Premium). VAT included.
-        </p>
-      </section>
+	        </div>
+	        {/* Textual prices for SEO (VAT included) */}
+	        <p className={styles.srOnly}>
+	          Prices: €9.99/month (Basic), €14.99/month (Standard), €17.99/month (Premium). VAT included.
+	        </p>
+	      </section>
 
 	      {/* FAQ */}
 	      <section id="faq" className={`${styles.contact}`} aria-labelledby="faq-title">
