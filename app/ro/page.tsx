@@ -1323,6 +1323,7 @@ export default function HomePageRO() {
 	              <li>Calendar unificat cu iCal sync</li>
 	              <li>Check‑in digital & confirmări</li>
 	              <li>Mesaje automate, în funcție de rezervare</li>
+	              <li>Ghid oaspeți (sosire, coduri acces, locație, reguli, check‑out)</li>
 	              <li>Proprietăți și camere nelimitate</li>
 	            </ul>
 	          </div>
@@ -1334,7 +1335,7 @@ export default function HomePageRO() {
 	              <ul className={styles.includedList}>
 	                <li>Sync calendar la 60 minute</li>
 	                <li>Automatizare mesaje standard</li>
-	                <li>Link de check‑in pentru oaspeți</li>
+	                <li>Ghid esențial pentru sosire</li>
 	              </ul>
 	            <img className={styles.priceImg} src="/basic_ron_forlight.png" alt="" aria-hidden="true" />
 	            <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Basic</Link>
@@ -1361,7 +1362,6 @@ export default function HomePageRO() {
 	                <li>Sync calendar la 10 minute</li>
 	                <li>Status curățenie în timp real</li>
 	                <li>Smart Guest Guide</li>
-	                <li>Ghid oaspeți (sosire, coduri acces, locație, reguli, check‑out)</li>
 	              </ul>
 	            <img className={styles.priceImg} src="/premium_ron_forlight.png" alt="" aria-hidden="true" />
 	            <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Premium</Link>

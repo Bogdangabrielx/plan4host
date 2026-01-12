@@ -1503,6 +1503,7 @@ export default function HomePage() {
 	              <li>Unified booking calendar with iCal sync</li>
 	              <li>Digital guest check-in & confirmations</li>
 	              <li>Automated, reservation-aware guest messages</li>
+	              <li>Guest guide (arrival, access codes, location, house rules, check-out)</li>
 	              <li>Unlimited properties and rooms</li>
 	            </ul>
 	          </div>
@@ -1514,7 +1515,7 @@ export default function HomePage() {
 	              <ul className={styles.includedList}>
 	                <li>Calendar sync every 60 minutes</li>
 	                <li>Standard message automation</li>
-	                <li>Shareable guest check-in link</li>
+	                <li>Guest guide essentials for arrivals</li>
 	              </ul>
 	            <img className={styles.priceImg} src="/basic_forlight.png" alt="" aria-hidden="true" />
 	            <Link
@@ -1551,7 +1552,6 @@ export default function HomePage() {
 	                <li>Calendar sync every 10 minutes</li>
 	                <li>Real-time cleaning status updates</li>
 	                <li>Smart Guest Guide</li>
-	                <li>Guest guide (arrival, access codes, location, house rules, check-out)</li>
 	              </ul>
 	            <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
 	            <Link
