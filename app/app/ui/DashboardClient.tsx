@@ -759,8 +759,9 @@ export default function DashboardClient({
                 <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 12 }}>
                   <div style={{ display: "grid", gap: 6 }}>
                     <h3 style={{ margin: 0 }}>Your guest check-in link is ready</h3>
-                    <div style={{ color: "var(--muted)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
-                      This is what your guest will see before arriving. Everything they need — without messaging you.
+                    <div style={{ display: "grid", gap: 6, color: "var(--muted)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
+                      <div>This is what your guest will see.</div>
+                      <div>Share this link and guests can check in, see arrival info and stop asking questions.</div>
                     </div>
                   </div>
                   <button
