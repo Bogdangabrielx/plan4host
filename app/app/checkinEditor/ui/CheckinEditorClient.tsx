@@ -175,12 +175,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   // Onboarding highlight target (contacts / picture / house_rules)
   const [highlightTarget, setHighlightTarget] = useState<"contacts" | "picture" | "house_rules" | null>(null);
   const [showCalendarConnectedBanner, setShowCalendarConnectedBanner] = useState<boolean>(false);
-  const [contactsOnboardingIntroOpen, setContactsOnboardingIntroOpen] = useState<boolean>(false);
-  const [contactsOnboardingActive, setContactsOnboardingActive] = useState<boolean>(false);
-  const [contactsOnboardingRewardOpen, setContactsOnboardingRewardOpen] = useState<boolean>(false);
-  const [contactsSaving, setContactsSaving] = useState<boolean>(false);
-  const contactsSectionRef = useRef<HTMLElement | null>(null);
-  const houseRulesSectionRef = useRef<HTMLElement | null>(null);
 
   // AI assistant – house rules text source
   const [aiModalOpen, setAiModalOpen] = useState(false);
@@ -266,22 +260,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       if (flag === "1" || flag === "true") {
         setShowCalendarConnectedBanner(true);
         u.searchParams.delete("calendar");
-        window.history.replaceState({}, "", u.toString());
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  // Onboarding step 4 intro (Links & Contact)
-  useEffect(() => {
-    try {
-      const u = new URL(window.location.href);
-      const flag = (u.searchParams.get("onboarding") || "").toLowerCase();
-      if (flag === "contacts" || flag === "links" || flag === "contact") {
-        setContactsOnboardingActive(true);
-        setContactsOnboardingIntroOpen(true);
-        u.searchParams.delete("onboarding");
         window.history.replaceState({}, "", u.toString());
       }
     } catch {
@@ -390,36 +368,25 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   async function saveContacts(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!prop) return;
-    setContactsSaving(true);
+    // Require overlay position selection
+    if (!prop.contact_overlay_position) { alert('Please select the overlay position for the property banner.'); return; }
     setStatus('Saving…');
-    const overlayPos = (prop.contact_overlay_position || 'center') as any;
     const { error } = await supabase
       .from('properties')
       .update({
         contact_email: prop.contact_email ?? null,
         contact_phone: prop.contact_phone ?? null,
         contact_address: prop.contact_address ?? null,
-        contact_overlay_position: overlayPos,
+        contact_overlay_position: prop.contact_overlay_position ?? null,
       })
       .eq('id', prop.id);
-    if (error) { setStatus('Error'); setContactsSaving(false); return; }
-    setProp(prev => prev ? { ...prev, contact_overlay_position: overlayPos } : prev);
-    lastSavedContact.current = {
-      email: (prop.contact_email ?? "").trim(),
-      phone: (prop.contact_phone ?? "").trim(),
-      address: (prop.contact_address ?? "").trim(),
-    };
+    if (error) { setStatus('Error'); return; }
     try {
       window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
     } catch {
       // ignore
     }
-    if (contactsOnboardingActive) {
-      setContactsOnboardingRewardOpen(true);
-      setContactsOnboardingActive(false);
-    }
     setStatus('Synced'); setTimeout(() => setStatus('Idle'), 800);
-    setContactsSaving(false);
   }
   async function autoSaveContactField(key: 'email' | 'phone' | 'address', value: string) {
     if (!prop) return;
@@ -702,194 +669,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
                 Your availability is now managed.
               </div>
-            </div>
-          </div>
-        )}
-
-        {contactsOnboardingIntroOpen && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={() => setContactsOnboardingIntroOpen(false)}
-            style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 240,
-              background: "rgba(0,0,0,0.55)",
-              display: "grid",
-              placeItems: "center",
-              padding: 12,
-              paddingTop: "calc(var(--safe-top, 0px) + 12px)",
-              paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
-            }}
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="sb-card"
-              style={{
-                width: "min(520px, 100%)",
-                background: "var(--panel)",
-                border: "1px solid var(--border)",
-                borderRadius: 14,
-                padding: 16,
-                display: "grid",
-                gap: 14,
-              }}
-            >
-              <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
-                <div aria-hidden />
-                <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6 }}>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 800,
-                      textTransform: "uppercase",
-                      letterSpacing: ".14em",
-                      color: "color-mix(in srgb, var(--text) 86%, transparent)",
-                    }}
-                  >
-                    Add your contact details
-                  </div>
-                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                    This information appears in your guest check-in portal.
-                  </div>
-                </div>
-                <button
-                  aria-label="Close"
-                  className="sb-btn sb-cardglow sb-btn--icon"
-                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
-                  onClick={() => setContactsOnboardingIntroOpen(false)}
-                >
-                  ×
-                </button>
-              </div>
-
-              <div style={{ display: "grid", gap: 10, color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
-                <div>This step is quick and optional.</div>
-                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                  Add only what you want guests to see.
-                </div>
-              </div>
-
-              <button
-                className="sb-btn sb-btn--primary"
-                style={{ width: "100%", minHeight: 44 }}
-                onClick={() => {
-                  setContactsOnboardingIntroOpen(false);
-                  try {
-                    contactsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  } catch {}
-                }}
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        )}
-
-        {contactsOnboardingRewardOpen && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={() => setContactsOnboardingRewardOpen(false)}
-            style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 241,
-              background: "rgba(0,0,0,0.55)",
-              display: "grid",
-              placeItems: "center",
-              padding: 12,
-              paddingTop: "calc(var(--safe-top, 0px) + 12px)",
-              paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
-            }}
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="sb-card"
-              style={{
-                width: "min(520px, 100%)",
-                background: "var(--panel)",
-                border: "1px solid var(--border)",
-                borderRadius: 14,
-                padding: 16,
-                display: "grid",
-                gap: 14,
-              }}
-            >
-              <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
-                <div aria-hidden />
-                <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6 }}>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 800,
-                      textTransform: "uppercase",
-                      letterSpacing: ".14em",
-                      color: "color-mix(in srgb, var(--text) 86%, transparent)",
-                    }}
-                  >
-                    Guest portal updated
-                  </div>
-                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                    Your contact details are now visible to guests.
-                  </div>
-                </div>
-                <button
-                  aria-label="Close"
-                  className="sb-btn sb-cardglow sb-btn--icon"
-                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
-                  onClick={() => setContactsOnboardingRewardOpen(false)}
-                >
-                  ×
-                </button>
-              </div>
-
-              <div style={{ display: "grid", gap: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                  <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
-                  <span style={{ fontWeight: 800 }}>Shown in guest check-in portal</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                  <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
-                  <span style={{ fontWeight: 800 }}>Guests know how to reach you</span>
-                </div>
-              </div>
-
-              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-                You can change this anytime.
-              </div>
-
-              <button
-                className="sb-btn sb-btn--primary"
-                style={{ width: "100%", minHeight: 44 }}
-                onClick={() => {
-                  setContactsOnboardingRewardOpen(false);
-                  setHighlightTarget("house_rules");
-                  try {
-                    houseRulesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  } catch {}
-                }}
-              >
-                Continue
-              </button>
-              {prop?.id && (
-                <a
-                  href={buildCheckinLink(prop.id)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: "var(--primary)",
-                    fontSize: "var(--fs-s)",
-                    lineHeight: "var(--lh-s)",
-                    textAlign: "center",
-                    textDecoration: "none",
-                    marginTop: 2,
-                  }}
-                >
-                  View guest link
-                </a>
-              )}
             </div>
           </div>
         )}
@@ -1202,7 +981,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           {/* House Rules PDF */}
           <section
             className="sb-cardglow"
-            ref={houseRulesSectionRef as any}
             style={{
               ...card,
               ...(highlightTarget === "house_rules"
@@ -1357,7 +1135,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           {/* Contact details */}
           <section
             className="sb-cardglow"
-            ref={contactsSectionRef as any}
             style={{
               ...card,
               ...(highlightTarget === "contacts"
@@ -1370,9 +1147,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             }}
           >
             <h3 style={{ marginTop: 0 }}>Property Contact</h3>
-            <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginBottom: 10 }}>
-              These details are shown in your guest check-in portal.
-            </div>
             <form onSubmit={saveContacts} style={{ display:'grid', gap:12, maxWidth:560 }}>
               <div>
                 <label style={{ display:'block', marginBottom:6 }}>Email</label>
@@ -1384,9 +1158,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   placeholder="example@hotel.com"
                   style={FIELD}
                 />
-                <small style={{ color: "var(--muted)" }}>
-                  Guests can use this to contact you before or during their stay.
-                </small>
               </div>
 	              <div>
 	                <label style={{ display:'block', marginBottom:6 }}>Phone</label>
@@ -1483,9 +1254,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                    </div>
 	                  )}
 	                </div>
-                  <small style={{ color: "var(--muted)" }}>
-                    Useful for urgent questions or arrival issues.
-                  </small>
 	              </div>
               <div>
                 <label style={{ display:'block', marginBottom:6 }}>Address</label>
@@ -1496,18 +1264,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   placeholder="Street, city, optional details"
                   style={FIELD}
                 />
-                <small style={{ color: "var(--muted)" }}>
-                  Shown only if you want guests to see the exact location.
-                </small>
               </div>
               {/* Overlay selector + Save: desktop on one row; mobile stacked with full-width Save */}
               {isNarrow ? (
                 <div style={{ display:'grid', gap:8 }}>
                   <div>
                     <label style={{ display:'block', marginBottom:6 }}>Overlay position on banner</label>
-                    <small style={{ color: "var(--muted)", display: "block", marginTop: -2, marginBottom: 8 }}>
-                      Choose where this information appears in the guest portal.
-                    </small>
                     <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
                       <select
                         value={prop.contact_overlay_position ?? ''}
@@ -1519,7 +1281,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         <option value="center">center</option>
                         <option value="down">down</option>
                       </select>
-                      <Info text={'Choose where this information appears in the guest portal.'} />
+                      <Info text={'These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom.'} />
                     </div>
                   </div>
                   <div>
@@ -1528,7 +1290,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       className={PRIMARY_ACTION_CLASS}
                       style={{ ...PRIMARY_ACTION_STYLE, width: "100%" }}
                     >
-                      {contactsSaving ? "Saving contact details…" : "Save"}
+                      Save
                     </button>
                   </div>
                 </div>
@@ -1546,11 +1308,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       <option value="center">center</option>
                       <option value="down">down</option>
                     </select>
-                    <Info text={'Choose where this information appears in the guest portal.'} />
+                    <Info text={'These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom.'} />
                   </div>
                   <div>
                     <button type="submit" className={PRIMARY_ACTION_CLASS} style={PRIMARY_ACTION_STYLE}>
-                      {contactsSaving ? "Saving contact details…" : "Save"}
+                      Save
                     </button>
                   </div>
                 </div>
@@ -1814,10 +1576,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
 
   return (
     <div ref={containerRef}>
-      <label style={{ display:'block', marginBottom:6 }}>Social links</label>
-      <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginBottom: 8 }}>
-        Optional — share only what you want guests to see.
-      </div>
+      <label style={{ display:'block', marginBottom:6 }}>Social Links</label>
       <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
         {(['facebook','instagram','tiktok','website','location'] as Key[]).map(k => (
           <button
