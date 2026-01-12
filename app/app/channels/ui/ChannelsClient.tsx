@@ -652,9 +652,18 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               gap: 14,
             }}
           >
-            <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 12 }}>
-              <div style={{ display: "grid", gap: 6 }}>
-                <strong style={{ fontSize: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
+              <div aria-hidden />
+              <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6 }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: ".14em",
+                    color: "color-mix(in srgb, var(--text) 86%, transparent)",
+                  }}
+                >
                   {calendarOnboardingStep === "intro"
                     ? "Connect your booking calendar"
                     : calendarOnboardingStep === "provider"
@@ -664,7 +673,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                         : calendarOnboardingStep === "reward"
                           ? "Calendar connected"
                           : "Optional: export your Plan4Host calendar"}
-                </strong>
+                </div>
                 <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
                   {calendarOnboardingStep === "intro"
                     ? "This prevents double bookings and keeps availability up to date."

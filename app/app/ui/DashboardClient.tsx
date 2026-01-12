@@ -772,27 +772,38 @@ export default function DashboardClient({
 	              gap: 12,
 	            }}
 		          >
-		            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-		              <strong>
-		                {firstPropertyStep === 1 ? "Create your first property" : "Add a photo (optional)"}
-		              </strong>
+		            <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
+		              <div aria-hidden />
+		              <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6 }}>
+		                <div
+		                  style={{
+		                    fontSize: 13,
+		                    fontWeight: 800,
+		                    textTransform: "uppercase",
+		                    letterSpacing: ".14em",
+		                    color: "color-mix(in srgb, var(--text) 86%, transparent)",
+		                  }}
+		                >
+		                  {firstPropertyStep === 1 ? "Add property" : "Add photo"}
+		                </div>
+		              </div>
 		              <button
 		                aria-label="Close"
 		                className="sb-btn sb-cardglow sb-btn--icon"
 		                style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
 		                onClick={() => {
-	                  setShowFirstPropertyGuide(false);
-	                  setFirstPropertyStep(0);
-	                  setFirstPropertyPhoto(null);
-	                }}
-	              >
-	                ×
-	              </button>
+		                  setShowFirstPropertyGuide(false);
+		                  setFirstPropertyStep(0);
+		                  setFirstPropertyPhoto(null);
+		                }}
+		              >
+		                ×
+		              </button>
 		            </div>
 
 		            {firstPropertyStep === 1 ? (
 		              <div style={{ display: "grid", gap: 12 }}>
-		                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+		                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
 		                  Takes less than 30 seconds.
 		                </div>
 		                <div style={{ display: "grid", gap: 6 }}>
@@ -965,8 +976,21 @@ export default function DashboardClient({
 	                gap: 12,
 	              }}
 	            >
-	              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-	                <strong>Guest link ready</strong>
+	              <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
+	                <div aria-hidden />
+	                <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6 }}>
+	                  <div
+	                    style={{
+	                      fontSize: 13,
+	                      fontWeight: 800,
+	                      textTransform: "uppercase",
+	                      letterSpacing: ".14em",
+	                      color: "color-mix(in srgb, var(--text) 86%, transparent)",
+	                    }}
+	                  >
+	                    Guest link ready
+	                  </div>
+	                </div>
 	                <button
 	                  aria-label="Close"
 	                  className="sb-btn sb-cardglow sb-btn--icon"
@@ -976,7 +1000,7 @@ export default function DashboardClient({
 	                  ×
 	                </button>
 	              </div>
-		              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+		              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
 		                This is what your guest will see.
 		              </div>
 

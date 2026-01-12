@@ -446,15 +446,20 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                 gap: 14,
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: 12 }}>
-                <div style={{ display: 'grid', gap: 6 }}>
-                  <strong style={{ fontSize: 16 }}>
-                    {unitWizardStep === 'hostType'
-                      ? 'How do you host this property?'
-                      : unitWizardStep === 'unitCount'
-                        ? 'How many units does this property have?'
-                        : 'Your units are ready'}
-                  </strong>
+              <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr 40px', alignItems: 'start', gap: 12 }}>
+                <div aria-hidden />
+                <div style={{ display: 'grid', justifyItems: 'center', textAlign: 'center', gap: 6 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '.14em',
+                      color: 'color-mix(in srgb, var(--text) 86%, transparent)',
+                    }}
+                  >
+                    {unitWizardStep === 'reward' ? 'Units ready' : 'Add units'}
+                  </div>
                   <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
                     {unitWizardStep === 'hostType'
                       ? 'This helps us organize calendars and availability correctly.'
