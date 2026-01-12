@@ -597,7 +597,14 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <span aria-hidden style={{ color: 'var(--success)', fontWeight: 900 }}>✓</span>
+                          <img
+                            src={isDark ? "/room_fordark.png" : "/room_forlight.png"}
+                            alt=""
+                            aria-hidden="true"
+                            width={18}
+                            height={18}
+                            style={{ width: 18, height: 18, objectFit: "contain", display: "block", flex: "0 0 auto" }}
+                          />
                           <span style={{ fontWeight: 800 }}>{u}</span>
                         </div>
                         <span style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)' }}>Calendar ready</span>
