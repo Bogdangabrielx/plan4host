@@ -237,10 +237,10 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     setUnitWizardLoading(true);
 
     const start = Date.now();
-    const minMs = 900;
+    const minMs = 1400;
 
     if (unitWizardLoadingTimerRef.current) window.clearTimeout(unitWizardLoadingTimerRef.current);
-    unitWizardLoadingTimerRef.current = window.setTimeout(() => setUnitWizardLoadingStage(1), 1100);
+    unitWizardLoadingTimerRef.current = window.setTimeout(() => setUnitWizardLoadingStage(1), 950);
 
     try {
       const rows = Array.from({ length: count }, (_, i) => ({
@@ -667,7 +667,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                   Setting up your units…
                 </div>
                 <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
-                  {unitWizardLoadingStage === 0 ? 'Setting up your units…' : 'Preparing calendars…'}
+                  {unitWizardLoadingStage === 0 ? 'Setting up your units…' : 'We’re almost done…'}
                 </div>
               </div>
             </div>

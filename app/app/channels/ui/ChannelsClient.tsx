@@ -763,7 +763,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   style={{ justifyContent: "center", border: "1px solid var(--border)", background: "transparent", color: "var(--muted)", borderRadius: 999 }}
                   onClick={() => {
                     setCalendarOnboardingOpen(false);
-                    window.location.href = `/app/checkinEditor?highlight=contacts`;
+                    window.location.href = `/app/checkinEditor?onboarding=contacts&highlight=contacts`;
                   }}
                 >
                   I’ll add it later
@@ -851,7 +851,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   style={{ width: "100%", minHeight: 44 }}
                   onClick={() => {
                     setCalendarOnboardingOpen(false);
-                    window.location.href = `/app/checkinEditor?highlight=contacts&calendar=1`;
+                    window.location.href = `/app/checkinEditor?onboarding=contacts&highlight=contacts&calendar=1`;
                   }}
                 >
                   Continue
