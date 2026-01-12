@@ -6,10 +6,12 @@ import { createClient } from "@/lib/supabase/client";
 import SettingsTab from "./SettingsTab";
 import RoomsTab from "./RoomsTab";
 import RoomDetailsTab from "./RoomDetailsTab";
-import CleaningTab from "./CleaningTab";
-import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
-import { useHeader } from "@/app/app/_components/HeaderContext";
-import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
+	import CleaningTab from "./CleaningTab";
+	import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
+	import { useHeader } from "@/app/app/_components/HeaderContext";
+	import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
+	import LoadingPill from "@/app/app/_components/LoadingPill";
+	import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
 
 type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null; };
 type Room = { id: string; name: string; capacity: number | null; property_id: string; sort_index: number; room_type_id: string | null };
@@ -43,25 +45,45 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   const [tasks, setTasks]     = useState<TaskDef[]>([]);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
 
-  const [plan, setPlan] = useState<Plan | null>(null);
-  const selected = properties.find(p => p.id === selectedId) || null;
-  // First-time guidance modal (after first property creation)
-  const [showRoomsGuide, setShowRoomsGuide] = useState<boolean>(false);
-  const [showEntirePrompt, setShowEntirePrompt] = useState<boolean>(false);
-  const [showRoomTypesPrompt, setShowRoomTypesPrompt] = useState<boolean>(false);
-  const [roomTypesGuideTick, setRoomTypesGuideTick] = useState<number>(0);
+	  const [plan, setPlan] = useState<Plan | null>(null);
+	  const selected = properties.find(p => p.id === selectedId) || null;
+	  // First-time guidance modal (after first property creation)
+	  const [showRoomsGuide, setShowRoomsGuide] = useState<boolean>(false);
+	  const [unitWizardStep, setUnitWizardStep] = useState<"hostType" | "unitCount" | "reward">("hostType");
+	  const [unitCountRaw, setUnitCountRaw] = useState<string>("");
+	  const [unitWizardError, setUnitWizardError] = useState<string | null>(null);
+	  const [unitWizardLoading, setUnitWizardLoading] = useState<boolean>(false);
+	  const [unitWizardLoadingStage, setUnitWizardLoadingStage] = useState<0 | 1>(0);
+	  const unitWizardLoadingTimerRef = useRef<number | null>(null);
+	  const [createdUnits, setCreatedUnits] = useState<string[]>([]);
+	  const prevShowRoomsGuideRef = useRef<boolean>(false);
+	  const prevWizardPropertyIdRef = useRef<string | null>(null);
+	  const [roomTypesGuideTick, setRoomTypesGuideTick] = useState<number>(0);
   // Cache property presentation images for avatar in the pill
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
 
-  const { setTitle, setPill } = useHeader();
-  useEffect(() => { setTitle("Property Setup"); }, [setTitle]);
-  useEffect(() => {
-    try {
-      const u = new URL(window.location.href);
-      const guide = (u.searchParams.get('guide') || '').toLowerCase();
-      if (guide === 'rooms') setShowRoomsGuide(true);
-    } catch { /* noop */ }
-  }, []);
+	  const { setTitle, setPill } = useHeader();
+	  useEffect(() => { setTitle("Property Setup"); }, [setTitle]);
+
+	  useEffect(() => {
+	    const wasOpen = prevShowRoomsGuideRef.current;
+	    const prevPropertyId = prevWizardPropertyIdRef.current;
+	    prevShowRoomsGuideRef.current = showRoomsGuide;
+	    prevWizardPropertyIdRef.current = selectedId;
+
+	    if (!showRoomsGuide) return;
+	    const isOpening = !wasOpen;
+	    const isPropertyChange = prevPropertyId !== null && prevPropertyId !== selectedId;
+	    if (!isOpening && !isPropertyChange) return;
+
+	    if (unitWizardStep === "reward") return;
+	    if (rooms.length > 0) return;
+
+	    setUnitWizardError(null);
+	    setCreatedUnits([]);
+	    setUnitCountRaw("");
+	    setUnitWizardStep("hostType");
+	  }, [showRoomsGuide, selectedId, rooms.length, unitWizardStep]);
 
   // Detect small screens (fallback override if CSS not applied yet on device)
   useEffect(() => {
@@ -203,6 +225,65 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   function startSaving(){ setStatus("Saving…"); }
   function finishSaving(ok:boolean){ setStatus(ok ? "Synced" : "Error"); setTimeout(() => setStatus("Idle"), 800); }
 
+  async function createUnits(count: number) {
+    if (!canWrite) return;
+    if (!selected) return;
+    if (count < 1) return;
+    if ((rooms?.length ?? 0) > 0) return;
+
+    setUnitWizardError(null);
+    setUnitWizardLoadingStage(0);
+    setShowRoomsGuide(false);
+    setUnitWizardLoading(true);
+
+    const start = Date.now();
+    const minMs = 900;
+
+    if (unitWizardLoadingTimerRef.current) window.clearTimeout(unitWizardLoadingTimerRef.current);
+    unitWizardLoadingTimerRef.current = window.setTimeout(() => setUnitWizardLoadingStage(1), 1100);
+
+    try {
+      const rows = Array.from({ length: count }, (_, i) => ({
+        property_id: selected.id,
+        name: `Unit ${i + 1}`,
+        sort_index: i,
+      }));
+
+      const { data, error } = await supabase
+        .from("rooms")
+        .insert(rows as any)
+        .select("id,name,capacity,property_id,sort_index,room_type_id");
+      if (error) throw error;
+
+      const created = ((data ?? []) as any[])
+        .slice()
+        .sort((a, b) => (a.sort_index ?? 0) - (b.sort_index ?? 0));
+      setRooms(created as Room[]);
+      setCreatedUnits(created.map((r) => String(r.name || "")).filter(Boolean));
+
+      try {
+        window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+      } catch {
+        // ignore
+      }
+
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(minMs - elapsed, 0);
+      if (remaining) await new Promise<void>((r) => setTimeout(r, remaining));
+
+      setUnitWizardStep("reward");
+      setShowRoomsGuide(true);
+    } catch (e: any) {
+      setUnitWizardError(e?.message || "Could not create units.");
+      setUnitWizardStep("unitCount");
+      setShowRoomsGuide(true);
+    } finally {
+      setUnitWizardLoading(false);
+      if (unitWizardLoadingTimerRef.current) window.clearTimeout(unitWizardLoadingTimerRef.current);
+      unitWizardLoadingTimerRef.current = null;
+    }
+  }
+
   // SETTINGS
   async function saveTime(field: "check_in_time" | "check_out_time", value: string) {
     if (!canWrite) return;
@@ -334,150 +415,244 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
         <PlanHeaderBadge title="Property Setup" slot="under-title" />
 
-        {showRoomsGuide && (
+        {/* Step 2 — Units setup wizard (only when no rooms exist yet, plus reward screen) */}
+        {showRoomsGuide && selected && (rooms.length === 0 || unitWizardStep === "reward") && (
           <div
             role="dialog"
             aria-modal="true"
-            onClick={(e)=>{ e.stopPropagation(); /* require OK */ }}
-            style={{ position:'fixed', inset:0, zIndex: 240, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
-                     paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
-            <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                <strong>Next steps</strong>
-              </div>
-              <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
-                <div style={{ display:'grid', gridTemplateColumns:'24px 1fr', alignItems:'start', gap:8 }}>
-                  {/* Rooms / room types — PNG icon (light/dark) */}
-                  <img
-                    src={isDark ? '/room_fordark.png' : '/room_forlight.png'}
-                    alt=""
-                    width={22}
-                    height={22}
-                    style={{ display:'block', opacity:.95 }}
-                  />
-                  <div>
-                    Please add your rooms and, if you use them, define room types.
+            onClick={(e) => { e.stopPropagation(); }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 240,
+              background: 'rgba(0,0,0,0.55)',
+              display: 'grid',
+              placeItems: 'center',
+              padding: 12,
+              paddingTop: 'calc(var(--safe-top, 0px) + 12px)',
+              paddingBottom: 'calc(var(--safe-bottom, 0px) + 12px)',
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="sb-card"
+              style={{
+                width: 'min(560px, 100%)',
+                background: 'var(--panel)',
+                border: '1px solid var(--border)',
+                borderRadius: 14,
+                padding: 16,
+                display: 'grid',
+                gap: 14,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: 12 }}>
+                <div style={{ display: 'grid', gap: 6 }}>
+                  <strong style={{ fontSize: 16 }}>
+                    {unitWizardStep === 'hostType'
+                      ? 'How do you host this property?'
+                      : unitWizardStep === 'unitCount'
+                        ? 'How many units does this property have?'
+                        : 'Your units are ready'}
+                  </strong>
+                  <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+                    {unitWizardStep === 'hostType'
+                      ? 'This helps us organize calendars and availability correctly.'
+                      : unitWizardStep === 'unitCount'
+                        ? 'We’ll create them automatically so you can start right away.'
+                        : 'Each unit now has its own calendar and availability.'}
                   </div>
                 </div>
-                <div style={{ display:'grid', gridTemplateColumns:'24px 1fr', alignItems:'start', gap:8 }}>
-                  {/* Apartment / studio — PNG icon (light/dark) */}
-                  <img
-                    src={isDark ? '/formular_address_fordark.png' : '/formular_address_forlight.png'}
-                    alt=""
-                    width={22}
-                    height={22}
-                    style={{ display:'block', opacity:.95 }}
-                  />
-                  <div>
-                    If you rent full apartments or studios, add each apartment or studio as one room, so that calendar integration works correctly.
-                  </div>
-                </div>
-              </div>
-              <div style={{ display:'flex', justifyContent:'flex-end' }}>
                 <button
-                  className="sb-btn sb-btn--primary"
-                  onClick={()=>{
-                    setShowRoomsGuide(false);
-                    if ((rooms?.length || 0) === 0) setShowEntirePrompt(true);
-                    try { window.dispatchEvent(new CustomEvent('p4h:activateRoomsTab')); } catch {}
-                  }}
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showEntirePrompt && selected && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={(e)=>{ e.stopPropagation(); }}
-            style={{ position:'fixed', inset:0, zIndex: 241, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
-                     paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
-            <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:12 }}>
-              <strong style={{ fontSize: 16 }}>Quick setup</strong>
-              <div style={{ color:'var(--text)' }}>
-                Are you renting one unit only?<br/>
-                If yes, we will crate a room named as: “<strong>{selected.name}</strong>” in order to activate iCal.
-              </div>
-              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-                <button
-                  className="sb-btn"
-                  onClick={() => {
-                    setShowEntirePrompt(false);
-                    setShowRoomTypesPrompt(true);
-                  }}
-                >
-                  No
-                </button>
-                <button className="sb-btn sb-btn--primary" onClick={async ()=>{ await addRoomNamed(selected.name); setShowEntirePrompt(false); }}>Yes</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showRoomTypesPrompt && selected && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={(e)=>{ e.stopPropagation(); }}
-            style={{ position:'fixed', inset:0, zIndex: 242, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
-                     paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
-            <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:12 }}>
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                <strong style={{ fontSize: 16 }}>Room types</strong>
-                <button
-                  type="button"
-                  className="sb-btn sb-btn--small"
-                  onClick={() => setShowRoomTypesPrompt(false)}
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: "999px",
-                    padding: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
+                  aria-label="Close"
+                  className="sb-btn sb-cardglow sb-btn--icon"
+                  style={{ width: 40, height: 40, borderRadius: 999, display: 'grid', placeItems: 'center', fontWeight: 900 }}
+                  onClick={() => setShowRoomsGuide(false)}
                 >
                   ×
                 </button>
               </div>
-              <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
-                <div style={{ display:'grid', gridTemplateColumns:'24px 1fr', alignItems:'start', gap:8 }}>
-                  <img
-                    src={isDark ? '/room_fordark.png' : '/room_forlight.png'}
-                    alt=""
-                    width={22}
-                    height={22}
-                    style={{ display:'block', opacity:.95 }}
-                  />
-                  <div>
-                    <span style={{ fontWeight: 700 }}>Do you use room types</span> (e.g. Double Room, Studio, Deluxe Suite)?
+
+              {unitWizardStep === 'hostType' && (
+                <div style={{ display: 'grid', gap: 10 }}>
+                  <div
+                    style={{
+                      border: '1px solid var(--border)',
+                      borderRadius: 12,
+                      padding: 14,
+                      display: 'grid',
+                      gap: 6,
+                      background: 'color-mix(in srgb, var(--card) 88%, transparent)',
+                    }}
+                  >
+                    <div style={{ fontWeight: 800 }}>Single unit</div>
+                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+                      Apartment, cabin, or entire place rented as one unit.
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button className="sb-btn sb-btn--primary" onClick={() => void createUnits(1)}>
+                        Use single unit
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      border: '1px solid var(--border)',
+                      borderRadius: 12,
+                      padding: 14,
+                      display: 'grid',
+                      gap: 6,
+                      background: 'color-mix(in srgb, var(--card) 88%, transparent)',
+                    }}
+                  >
+                    <div style={{ fontWeight: 800 }}>Multiple units</div>
+                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+                      Guesthouse or hotel with separate units.
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button
+                        className="sb-btn"
+                        style={{
+                          border: '1px solid var(--primary)',
+                          background: 'transparent',
+                          color: 'var(--text)',
+                          borderRadius: 999,
+                          fontWeight: 700,
+                        }}
+                        onClick={() => setUnitWizardStep('unitCount')}
+                      >
+                        Set up units
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div style={{ fontSize: 13, color:'var(--muted)' }}>
-                  If yes, we recommend defining them now so you can assign each reservation to the correct type in Calendar and automatic messages.
+              )}
+
+              {unitWizardStep === 'unitCount' && (
+                <div style={{ display: 'grid', gap: 12 }}>
+                  <div style={{ display: 'grid', gap: 6 }}>
+                    <label style={{ display: 'block' }}>Number of units</label>
+                    <input
+                      type="number"
+                      min={2}
+                      inputMode="numeric"
+                      placeholder="e.g. 3"
+                      value={unitCountRaw}
+                      onChange={(e) => setUnitCountRaw(e.currentTarget.value)}
+                      style={{
+                        width: '100%',
+                        padding: 10,
+                        background: 'var(--card)',
+                        color: 'var(--text)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 10,
+                        fontFamily: 'inherit',
+                      }}
+                    />
+                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+                      You can rename units and set room types later.
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gap: 6 }}>
+                    <button
+                      className="sb-btn sb-btn--primary"
+                      style={{ width: '100%', minHeight: 44 }}
+                      onClick={() => {
+                        const n = Math.max(0, Math.floor(Number(unitCountRaw || 0)));
+                        if (n < 2) { setUnitWizardError('Please enter 2 or more.'); return; }
+                        void createUnits(n);
+                      }}
+                    >
+                      Create units
+                    </button>
+                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)', textAlign: 'center' }}>
+                      Takes a few seconds.
+                    </div>
+                    {unitWizardError && (
+                      <div style={{ color: 'var(--danger)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)', textAlign: 'center' }}>
+                        {unitWizardError}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-                <button
-                  className="sb-btn"
-                  onClick={() => setShowRoomTypesPrompt(false)}
-                >
-                  No
-                </button>
-                <button
-                  className="sb-btn sb-btn--primary"
-                  onClick={() => {
-                    setShowRoomTypesPrompt(false);
-                    setRoomTypesGuideTick((x) => x + 1);
-                  }}
-                >
-                  Yes
-                </button>
+              )}
+
+              {unitWizardStep === 'reward' && (
+                <div style={{ display: 'grid', gap: 12 }}>
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    {(createdUnits.length ? createdUnits : ['Unit 1']).map((u) => (
+                      <div
+                        key={u}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 12,
+                          padding: '10px 12px',
+                          borderRadius: 12,
+                          border: '1px solid var(--border)',
+                          background: 'color-mix(in srgb, var(--card) 88%, transparent)',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span aria-hidden style={{ color: 'var(--success)', fontWeight: 900 }}>✓</span>
+                          <span style={{ fontWeight: 800 }}>{u}</span>
+                        </div>
+                        <span style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)' }}>Calendar ready</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    className="sb-btn sb-btn--primary"
+                    style={{ width: '100%', minHeight: 44 }}
+                    onClick={() => { window.location.href = '/app/channels'; }}
+                  >
+                    Connect your first calendar
+                  </button>
+                  <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)', textAlign: 'center' }}>
+                    To automate availability and avoid double bookings.
+                  </div>
+
+                  <button
+                    className="sb-btn sb-btn--ghost"
+                    style={{
+                      width: '100%',
+                      minHeight: 44,
+                      borderRadius: 999,
+                      border: '1px solid var(--border)',
+                      background: 'transparent',
+                      color: 'var(--text)',
+                      fontWeight: 700,
+                      justifyContent: 'center',
+                    }}
+                    onClick={() => {
+                      setShowRoomsGuide(false);
+                      try { window.dispatchEvent(new CustomEvent('p4h:activateRoomsTab')); } catch {}
+                    }}
+                  >
+                    Edit unit details
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Units loading overlay (between create and reward) */}
+        {unitWizardLoading && (
+          <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label="Setting up your units…" style={{ zIndex: 241 }}>
+            <div style={{ display: 'grid', justifyItems: 'center', gap: 12, padding: 12 }}>
+              <LoadingPill title="Setting up your units…" />
+              <div style={{ display: 'grid', gap: 6, textAlign: 'center' }}>
+                <div style={{ color: 'var(--text)', fontSize: 'var(--fs-b)', lineHeight: 'var(--lh-b)', fontWeight: 700 }}>
+                  Setting up your units…
+                </div>
+                <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+                  {unitWizardLoadingStage === 0 ? 'Setting up your units…' : 'Preparing calendars…'}
+                </div>
               </div>
             </div>
           </div>
