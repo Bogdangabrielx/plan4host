@@ -75,6 +75,11 @@ export default function DashboardClient({
   const [highlightName, setHighlightName] = useState<boolean>(false);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const guideShownRef = useRef<boolean>(false);
+  // Optional: photo during first property creation
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+  // AHA modal (first property): show the guest check-in link
+  const [firstPropertyAha, setFirstPropertyAha] = useState<{ propertyId: string; link: string } | null>(null);
 
   // Copied! state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -172,7 +177,12 @@ export default function DashboardClient({
 
   async function addProperty() {
     if (!name || !country) return;
+    const isFirstProperty = list.length === 0;
     setStatus("Saving…");
+    if (isFirstProperty) {
+      pillLockRef.current = true;
+      setPill(overlayMessageNode("Creating your guest experience…"));
+    }
 
     try {
       const res = await fetch('/api/properties', {
@@ -189,16 +199,39 @@ export default function DashboardClient({
       if (!res.ok) {
         const j = await res.json().catch(() => ({} as any));
         console.error('Create property error:', j?.error || res.statusText);
+        pillLockRef.current = false;
         setStatus('Error');
         return;
       }
 
       const j = await res.json().catch(() => ({} as any));
       const createdId: string | undefined = j?.property?.id;
+      const createdProp: Property | undefined = j?.property as any;
 
-      // If this is the first property, redirect straight to Property Setup with guidance popup
-      if (createdId && list.length === 0) {
-        window.location.href = `/app/propertySetup?property=${encodeURIComponent(createdId)}&guide=rooms`;
+      // Optional: upload photo (best effort)
+      if (createdId && photoFile) {
+        try {
+          const fd = new FormData();
+          fd.set("propertyId", createdId);
+          fd.set("file", photoFile);
+          await fetch("/api/property/profile/upload", { method: "POST", body: fd });
+        } catch {}
+      }
+
+      if (createdId && createdProp) {
+        setList((prev) => [...prev, createdProp]);
+      }
+      setName("");
+      setCountry("");
+      setPhotoFile(null);
+
+      // First property: show AHA moment instead of forcing setup immediately.
+      if (createdId && isFirstProperty) {
+        setShowFirstPropertyGuide(false);
+        const link = buildPropertyCheckinLink({ ...(createdProp as any), id: createdId } as Property);
+        setFirstPropertyAha({ propertyId: createdId, link });
+        pillLockRef.current = false;
+        setStatus("Idle");
         return;
       }
 
@@ -210,8 +243,6 @@ export default function DashboardClient({
         .order("created_at", { ascending: true });
 
       setList((refreshed ?? []) as Property[]);
-      setName("");
-      setCountry("");
       // Use the same overlay UX as the rest of the app: dots while saving, then "Saved" briefly.
       pillLockRef.current = true;
       setPill(overlayMessageNode("Saved"));
@@ -220,6 +251,7 @@ export default function DashboardClient({
       setStatus("Idle");
     } catch (e) {
       console.error(e);
+      pillLockRef.current = false;
       setStatus('Error');
     }
   }
@@ -430,11 +462,11 @@ export default function DashboardClient({
       >
       {/* Add property */}
       <section className="sb-cardglow" ref={addCardRef} style={card}>
-        <h2 style={{ marginTop: 0 }}>New Property</h2>
+        <h2 style={{ marginTop: 0 }}>{list.length === 0 ? "Create your first property" : "New Property"}</h2>
 
         <div style={{ display: "grid", gap: 12 }}>
           <div style={FIELD_WRAPPER}>
-            <label style={{ display: "block", marginBottom: 6 }}>Property Name*</label>
+            <label style={{ display: "block", marginBottom: 6 }}>Property name</label>
             <input
               value={name}
               onChange={(e) => setName(e.currentTarget.value)}
@@ -447,10 +479,13 @@ export default function DashboardClient({
                 transition: 'box-shadow 160ms ease, border-color 160ms ease',
               }}
             />
+            <div style={{ marginTop: 6, color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+              This is the name guests will see. You can change it anytime.
+            </div>
           </div>
 
           <div style={FIELD_WRAPPER}>
-            <label style={{ display: "block", marginBottom: 6 }}>Country Location*</label>
+            <label style={{ display: "block", marginBottom: 6 }}>Country</label>
             <select value={country} onChange={(e) => setCountry(e.currentTarget.value)} style={FIELD_STYLE}>
               <option value="">— select —</option>
               {TZ_COUNTRIES.slice()
@@ -465,6 +500,35 @@ export default function DashboardClient({
                   </option>
                 ))}
             </select>
+            <div style={{ marginTop: 6, color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+              Used to personalize guest information and local recommendations.
+            </div>
+          </div>
+
+          <div style={FIELD_WRAPPER}>
+            <label style={{ display: "block", marginBottom: 6 }}>Property photo (optional)</label>
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => setPhotoFile(e.currentTarget.files?.[0] ?? null)}
+            />
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              className="sb-btn sb-cardglow sb-btn--p4h-copylink"
+              style={{ width: "100%", minHeight: 44, justifyContent: "center" }}
+            >
+              {photoFile ? "Change photo" : "Add photo"}
+            </button>
+            <div style={{ marginTop: 6, color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+              Optional. This helps guests recognize your place, but you can skip it for now.
+            </div>
+          </div>
+
+          <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+            Don’t worry about getting this perfect. You’ll be able to review everything from the guest’s point of view next.
           </div>
 
           <div style={{ ...FIELD_WRAPPER, marginTop: 6 }}>
@@ -472,11 +536,15 @@ export default function DashboardClient({
               onClick={addProperty}
               className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
               style={{ width: "100%", minHeight: 44 }}
+              disabled={!name || !country || status === "Saving…"}
             >
-              Save
+              {status === "Saving…" ? "Creating your guest experience…" : "Create & view guest link"}
             </button>
+            <div style={{ marginTop: 6, color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+              Takes about 20 seconds.
+            </div>
           </div>
-         
+	         
         </div>
       </section>
 
@@ -636,13 +704,13 @@ export default function DashboardClient({
 	          onClick={(e)=>{ e.stopPropagation(); /* require button to dismiss */ }}
 	          style={{ position:'fixed', inset:0, zIndex: 240, background:'rgba(0,0,0,0.55)', display:'grid', placeItems:'center', padding:12,
 	                   paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
-	          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
-	            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-	              <strong>Add your first property</strong>
-	            </div>
-	            <div style={{ color:'var(--text)' }}>
-	              Enter the name and choose the country.
-	            </div>
+		          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
+		            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+		              <strong>Create a quick guest preview</strong>
+		            </div>
+		            <div style={{ color:'var(--text)' }}>
+		              Just add a name and a country. You can change everything later.
+		            </div>
 	            <div style={{ display:'flex', justifyContent:'flex-end' }}>
 	              <button
 	                className="sb-btn sb-btn--primary"
@@ -658,7 +726,124 @@ export default function DashboardClient({
 	            </div>
 	          </div>
 	        </div>
-	      )}
+		      )}
+
+        {/* First property AHA modal */}
+        {firstPropertyAha && (
+          <>
+            <div
+              onClick={() => setFirstPropertyAha(null)}
+              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 241 }}
+            />
+            <div
+              role="dialog"
+              aria-modal="true"
+              style={{ position: "fixed", inset: 0, display: "grid", placeItems: "center", zIndex: 242, padding: 12,
+                       paddingTop: "calc(var(--safe-top, 0px) + 12px)", paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)" }}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  width: "min(560px, 100%)",
+                  maxHeight: "100%",
+                  overflow: "auto",
+                  background: "var(--panel)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 14,
+                  padding: 16,
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
+                  display: "grid",
+                  gap: 12,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 12 }}>
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <h3 style={{ margin: 0 }}>Your guest check-in link is ready</h3>
+                    <div style={{ color: "var(--muted)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
+                      This is what your guest will see before arriving. Everything they need — without messaging you.
+                    </div>
+                  </div>
+                  <button
+                    aria-label="Close"
+                    onClick={() => setFirstPropertyAha(null)}
+                    className="sb-btn sb-cardglow sb-btn--icon"
+                    style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div style={{ display: "grid", gap: 8 }}>
+                  <div style={{ fontSize: "var(--fs-s)", color: "var(--muted)", letterSpacing: ".12em", textTransform: "uppercase", fontWeight: "var(--fw-bold)" }}>
+                    Check-in link
+                  </div>
+                  <input
+                    readOnly
+                    value={firstPropertyAha.link}
+                    onFocus={(e) => e.currentTarget.select()}
+                    style={{ ...FIELD_STYLE, width: "100%", fontSize: "var(--fs-s)", color: "var(--text)" }}
+                  />
+                </div>
+
+                <div style={{ display: "grid", gap: 10 }}>
+                  <button
+                    className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
+                    style={{ width: "100%", minHeight: 44 }}
+                    onClick={() => {
+                      try {
+                        window.open(firstPropertyAha.link, "_blank", "noopener,noreferrer");
+                      } catch {
+                        window.location.href = firstPropertyAha.link;
+                      }
+                    }}
+                  >
+                    View guest link
+                  </button>
+                  <button
+                    className="sb-btn sb-cardglow sb-btn--p4h-copylink"
+                    style={{ width: "100%", minHeight: 44 }}
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(firstPropertyAha.link);
+                      } catch {}
+                    }}
+                  >
+                    Copy link
+                  </button>
+                  <div style={{ marginTop: -6, color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                    You can share this anytime.
+                  </div>
+                  <button
+                    className="sb-btn"
+                    style={{
+                      width: "100%",
+                      minHeight: 44,
+                      borderRadius: 999,
+                      border: "1px solid var(--border)",
+                      background: "transparent",
+                      color: "var(--text)",
+                      fontWeight: "var(--fw-medium)",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      const url = `/app/propertySetup?property=${encodeURIComponent(firstPropertyAha.propertyId)}&guide=rooms`;
+                      window.location.href = url;
+                    }}
+                  >
+                    Continue setup
+                  </button>
+                  <div style={{ marginTop: -6, color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                    To automate this for real bookings.
+                  </div>
+                </div>
+
+                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                  You can improve this later. This already works for guests.
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
       {/* Confirm Delete Modal */}
       {toDelete && (
