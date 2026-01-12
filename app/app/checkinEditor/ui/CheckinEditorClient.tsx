@@ -174,6 +174,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const lastSavedContact = useRef<{ email: string; phone: string; address: string }>({ email: "", phone: "", address: "" });
   // Onboarding highlight target (contacts / picture / house_rules)
   const [highlightTarget, setHighlightTarget] = useState<"contacts" | "picture" | "house_rules" | null>(null);
+  const [showCalendarConnectedBanner, setShowCalendarConnectedBanner] = useState<boolean>(false);
 
   // AI assistant – house rules text source
   const [aiModalOpen, setAiModalOpen] = useState(false);
@@ -250,6 +251,21 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   }
 
   useEffect(() => { if (propertyReady) refresh(); }, [propertyId, supabase, propertyReady]);
+
+  // Onboarding banner (arrive after calendar onboarding)
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href);
+      const flag = (u.searchParams.get("calendar") || "").toLowerCase();
+      if (flag === "1" || flag === "true") {
+        setShowCalendarConnectedBanner(true);
+        u.searchParams.delete("calendar");
+        window.history.replaceState({}, "", u.toString());
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Dial code dropdown state for Contact Phone
   const [contactDial, setContactDial] = useState<string>("+40");
@@ -631,6 +647,31 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </div>
           {isNarrow && <div style={{ flexBasis: "100%", height: 8 }} />}
         </div>
+
+        {showCalendarConnectedBanner && (
+          <div
+            className="sb-cardglow"
+            style={{
+              background: "color-mix(in srgb, var(--panel) 90%, transparent)",
+              border: "1px solid var(--border)",
+              borderRadius: 14,
+              padding: "12px 14px",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
+            <div style={{ display: "grid", gap: 2 }}>
+              <div style={{ fontWeight: 800, fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
+                Calendar connected
+              </div>
+              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                Your availability is now managed.
+              </div>
+            </div>
+          </div>
+        )}
 
       {prop && (
         <>

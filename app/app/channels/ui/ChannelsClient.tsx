@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
+import LoadingPill from "@/app/app/_components/LoadingPill";
+import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
 
 /** DB types */
 type Property = { id: string; name: string; timezone: string | null };
@@ -108,6 +110,17 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [rooms, setRooms] = useState<Room[]>([]);
   const [types, setTypes] = useState<RoomType[]>([]);
   const [integrations, setIntegrations] = useState<TypeIntegration[]>([]);
+
+  // Onboarding — Calendar connection (Step 3)
+  const [calendarOnboardingOpen, setCalendarOnboardingOpen] = useState<boolean>(false);
+  const [calendarOnboardingStep, setCalendarOnboardingStep] = useState<"intro" | "provider" | "paste" | "reward" | "export">("intro");
+  const [calendarOnboardingProvider, setCalendarOnboardingProvider] = useState<string>("Airbnb");
+  const [calendarOnboardingUrl, setCalendarOnboardingUrl] = useState<string>("");
+  const [calendarOnboardingLoading, setCalendarOnboardingLoading] = useState<boolean>(false);
+  const [calendarOnboardingLoadingStage, setCalendarOnboardingLoadingStage] = useState<0 | 1>(0);
+  const calendarOnboardingLoadingTimerRef = useRef<number | null>(null);
+  const [calendarOnboardingError, setCalendarOnboardingError] = useState<string | null>(null);
+  const [calendarOnboardingDidSync, setCalendarOnboardingDidSync] = useState<boolean>(false);
 
   const [origin, setOrigin] = useState<string>("");
   useEffect(() => { setOrigin(window.location.origin); }, []);
@@ -327,9 +340,107 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   // Trigger refresh when ready and when property changes
   useEffect(() => { if (propertyReady) refresh(); }, [propertyReady, refresh]);
 
+  // Open calendar onboarding wizard when arriving from Step 2 (units reward)
+  useEffect(() => {
+    if (!propertyReady || !propertyId) return;
+    if (status !== "Idle") return;
+    if (integrations.length > 0) return;
+    try {
+      const u = new URL(window.location.href);
+      const onb = (u.searchParams.get("onboarding") || "").toLowerCase();
+      const shouldOpen = onb === "1" || onb === "calendar" || onb === "calendars";
+      if (!shouldOpen) return;
+      setCalendarOnboardingOpen(true);
+      setCalendarOnboardingStep("intro");
+      setCalendarOnboardingError(null);
+      setCalendarOnboardingDidSync(false);
+      setCalendarOnboardingUrl("");
+      setCalendarOnboardingProvider("Airbnb");
+      // best-effort: keep URL clean
+      u.searchParams.delete("onboarding");
+      window.history.replaceState({}, "", u.toString());
+    } catch {
+      // ignore
+    }
+  }, [propertyReady, propertyId, status, integrations.length]);
+
   /* URLs & helpers */
   function roomIcsUrl(id: string) { return `${origin}/api/ical/rooms/${id}.ics`; }
   function typeIcsUrl(id: string) { return `${origin}/api/ical/types/${id}.ics`; }
+
+  async function onboardingImportCalendar(): Promise<boolean> {
+    setCalendarOnboardingError(null);
+    setCalendarOnboardingDidSync(false);
+    const url = (calendarOnboardingUrl || "").trim();
+    if (!url) {
+      setCalendarOnboardingError("Please paste your iCal link.");
+      return false;
+    }
+    if (!propertyId) {
+      setCalendarOnboardingError("No property selected.");
+      return false;
+    }
+    // Choose a default target: prefer type if present, else first room.
+    const typeId = types[0]?.id || null;
+    const roomId = rooms[0]?.id || null;
+    if (!typeId && !roomId) {
+      setCalendarOnboardingError("Please add a unit first.");
+      return false;
+    }
+
+    setCalendarOnboardingLoadingStage(0);
+    setCalendarOnboardingLoading(true);
+    const start = Date.now();
+    const minMs = 900;
+
+    if (calendarOnboardingLoadingTimerRef.current) window.clearTimeout(calendarOnboardingLoadingTimerRef.current);
+    calendarOnboardingLoadingTimerRef.current = window.setTimeout(() => setCalendarOnboardingLoadingStage(1), 1100);
+
+    try {
+      const newId = typeId
+        ? await addIntegration(typeId, calendarOnboardingProvider, url)
+        : await addRoomIntegration(roomId as string, calendarOnboardingProvider, url);
+
+      if (!newId) throw new Error("Could not save calendar link.");
+
+      try {
+        window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+      } catch {
+        // ignore
+      }
+
+      // First sync "on the house" (even if not premium), only for onboarding.
+      const res = await fetch("/api/ical/sync/all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ propertyId, allowFirstRun: true }),
+      });
+      if (res.ok) {
+        setCalendarOnboardingDidSync(true);
+        const nowIso = new Date().toISOString();
+        setIntegrations((prev) =>
+          prev.map((x) => (x.id === newId ? { ...x, last_sync: nowIso } : x)),
+        );
+      } else {
+        setCalendarOnboardingDidSync(false);
+      }
+
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(minMs - elapsed, 0);
+      if (remaining) await new Promise<void>((r) => setTimeout(r, remaining));
+
+      setCalendarOnboardingStep("reward");
+      setCalendarOnboardingOpen(true);
+      return true;
+    } catch (e: any) {
+      setCalendarOnboardingError(e?.message || "Could not import calendar.");
+      return false;
+    } finally {
+      setCalendarOnboardingLoading(false);
+      if (calendarOnboardingLoadingTimerRef.current) window.clearTimeout(calendarOnboardingLoadingTimerRef.current);
+      calendarOnboardingLoadingTimerRef.current = null;
+    }
+  }
 
   /* Integrations CRUD (Import per TYPE) */
   async function addIntegration(roomTypeId: string, provider: string, url: string): Promise<string | null> {
@@ -509,6 +620,255 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   return (
     <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
       <PlanHeaderBadge title="Sync Calendars" slot="under-title" />
+
+      {/* Onboarding — Calendar connection wizard */}
+      {calendarOnboardingOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setCalendarOnboardingOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 240,
+            background: "rgba(0,0,0,0.55)",
+            display: "grid",
+            placeItems: "center",
+            padding: 12,
+            paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+            paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
+          }}
+        >
+          <div
+            className="sb-card"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(560px, 100%)",
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 14,
+              padding: 16,
+              display: "grid",
+              gap: 14,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 12 }}>
+              <div style={{ display: "grid", gap: 6 }}>
+                <strong style={{ fontSize: 16 }}>
+                  {calendarOnboardingStep === "intro"
+                    ? "Connect your booking calendar"
+                    : calendarOnboardingStep === "provider"
+                      ? "Where do you receive bookings?"
+                      : calendarOnboardingStep === "paste"
+                        ? "Paste your booking calendar link"
+                        : calendarOnboardingStep === "reward"
+                          ? "Calendar connected"
+                          : "Optional: export your Plan4Host calendar"}
+                </strong>
+                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                  {calendarOnboardingStep === "intro"
+                    ? "This prevents double bookings and keeps availability up to date."
+                    : calendarOnboardingStep === "provider"
+                      ? "Choose one platform to connect first."
+                      : calendarOnboardingStep === "paste"
+                        ? "Copy the iCal link from your booking platform and paste it below."
+                        : calendarOnboardingStep === "reward"
+                          ? "Your reservations are now visible in Plan4Host."
+                          : "This blocks dates on other platforms when things change."}
+                </div>
+              </div>
+              <button
+                aria-label="Close"
+                className="sb-btn sb-cardglow sb-btn--icon"
+                style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
+                onClick={() => setCalendarOnboardingOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            {calendarOnboardingStep === "intro" && (
+              <div style={{ display: "grid", gap: 12 }}>
+                <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
+                  To get started, you only need to connect one calendar.
+                  <br />
+                  We’ll keep it updated automatically for you.
+                </div>
+                <button className="sb-btn sb-btn--primary" style={{ width: "100%", minHeight: 44 }} onClick={() => setCalendarOnboardingStep("provider")}>
+                  Continue
+                </button>
+              </div>
+            )}
+
+            {calendarOnboardingStep === "provider" && (
+              <div style={{ display: "grid", gap: 12 }}>
+                <div style={{ display: "grid", gap: 10 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                    {[
+                      { key: "Airbnb", label: "Airbnb", logo: "/airbnb.png" },
+                      { key: "Booking", label: "Booking", logo: "/booking.png" },
+                      { key: "Trivago", label: "Trivago", logo: "/trivago.png" },
+                      { key: "Expedia", label: "Expedia", logo: "/expedia.png" },
+                      { key: "Other", label: "Other platforms", logo: null as string | null },
+                    ].map((p) => {
+                      const active = calendarOnboardingProvider === p.key;
+                      return (
+                        <button
+                          key={p.key}
+                          type="button"
+                          onClick={() => setCalendarOnboardingProvider(p.key)}
+                          className="sb-cardglow"
+                          style={{
+                            borderRadius: 14,
+                            border: `1px solid ${active ? "var(--primary)" : "var(--border)"}`,
+                            background: "color-mix(in srgb, var(--card) 86%, transparent)",
+                            padding: "10px 12px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 10,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {p.logo ? (
+                            <img src={p.logo} alt="" aria-hidden="true" width={22} height={22} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
+                          ) : (
+                            <span aria-hidden style={{ width: 22, height: 22, borderRadius: 6, display: "grid", placeItems: "center", border: "1px solid var(--border)" }}>
+                              +
+                            </span>
+                          )}
+                          <span style={{ fontWeight: 800 }}>{p.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                    Any platform that provides an iCal link works.
+                  </div>
+                </div>
+                <button className="sb-btn sb-btn--primary" style={{ width: "100%", minHeight: 44 }} onClick={() => setCalendarOnboardingStep("paste")}>
+                  I have my iCal link
+                </button>
+                <button
+                  type="button"
+                  className="sb-btn sb-btn--ghost"
+                  style={{ justifyContent: "center", border: "1px solid var(--border)", background: "transparent", color: "var(--muted)", borderRadius: 999 }}
+                  onClick={() => {
+                    setCalendarOnboardingOpen(false);
+                    window.location.href = `/app/checkinEditor?highlight=contacts`;
+                  }}
+                >
+                  I’ll add it later
+                </button>
+              </div>
+            )}
+
+            {calendarOnboardingStep === "paste" && (
+              <div style={{ display: "grid", gap: 12 }}>
+                <div style={{ display: "grid", gap: 6 }}>
+                  <label style={{ display: "block" }}>iCal link</label>
+                  <input
+                    value={calendarOnboardingUrl}
+                    onChange={(e) => setCalendarOnboardingUrl(e.currentTarget.value)}
+                    placeholder="Paste iCal link here"
+                    style={{
+                      width: "100%",
+                      padding: 10,
+                      background: "var(--card)",
+                      color: "var(--text)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 10,
+                      fontFamily: "inherit",
+                    }}
+                  />
+                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                    We’ll import your reservations and keep them in sync.
+                  </div>
+                </div>
+                <button className="sb-btn sb-btn--primary" style={{ width: "100%", minHeight: 44 }} onClick={() => void onboardingImportCalendar()}>
+                  Import calendar
+                </button>
+                {calendarOnboardingError && (
+                  <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                    {calendarOnboardingError}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {calendarOnboardingStep === "reward" && (
+              <div style={{ display: "grid", gap: 12 }}>
+                <div style={{ display: "grid", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+                    <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
+                    <span style={{ fontWeight: 800 }}>Existing bookings imported</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+                    <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
+                    <span style={{ fontWeight: 800 }}>Availability updated</span>
+                  </div>
+                </div>
+                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                  We’ll keep this calendar updated for you.
+                </div>
+                {!calendarOnboardingDidSync && (
+                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                    Import can take a moment — your calendar is already connected.
+                  </div>
+                )}
+                <button className="sb-btn sb-btn--primary" style={{ width: "100%", minHeight: 44 }} onClick={() => setCalendarOnboardingStep("export")}>
+                  Continue
+                </button>
+              </div>
+            )}
+
+            {calendarOnboardingStep === "export" && (
+              <div style={{ display: "grid", gap: 12 }}>
+                <button
+                  className="sb-btn"
+                  style={{ width: "100%", minHeight: 44, borderRadius: 999, border: "1px solid var(--primary)", background: "transparent", color: "var(--text)", justifyContent: "center" }}
+                  onClick={async () => {
+                    const exportUrl = types[0]?.id ? typeIcsUrl(types[0].id) : rooms[0]?.id ? roomIcsUrl(rooms[0].id) : "";
+                    if (!exportUrl) return;
+                    try { await navigator.clipboard.writeText(exportUrl); } catch { prompt("Copy export link:", exportUrl); }
+                  }}
+                >
+                  Copy export link
+                </button>
+                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                  You can add this anytime from Calendar settings.
+                </div>
+                <button
+                  className="sb-btn sb-btn--primary"
+                  style={{ width: "100%", minHeight: 44 }}
+                  onClick={() => {
+                    setCalendarOnboardingOpen(false);
+                    window.location.href = `/app/checkinEditor?highlight=contacts&calendar=1`;
+                  }}
+                >
+                  Continue
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {calendarOnboardingLoading && (
+        <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label="Importing your reservations…" style={{ zIndex: 241 }}>
+          <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
+            <LoadingPill title="Importing your reservations…" />
+            <div style={{ display: "grid", gap: 6, textAlign: "center" }}>
+              <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", fontWeight: 700 }}>
+                Importing your reservations…
+              </div>
+              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                {calendarOnboardingLoadingStage === 0 ? "Importing your reservations…" : "Preparing your availability…"}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
       {/* Toolbar minimalistă */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' }}>

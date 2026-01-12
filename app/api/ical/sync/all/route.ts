@@ -355,6 +355,7 @@ export async function POST(req: Request) {
 
     const body = await req.json().catch(() => ({}));
     const propertyId: string | undefined = body?.propertyId;
+    const allowFirstRun: boolean = !!body?.allowFirstRun;
     if (!propertyId) return j(400, { error: "Missing propertyId" });
 
     const { data: prop, error: eProp } = await rls
@@ -368,14 +369,46 @@ export async function POST(req: Request) {
 
     const can = await rls.rpc("account_can_sync_now_v2", { p_account_id: accountId, p_event_type: "sync_now" });
     if (can.error) return j(400, { error: "Policy check failed", details: can.error.message });
+    let skipUsageRegister = false;
     if (!can.data?.allowed) {
-      return j(429, {
-        error: "Rate limited",
-        reason: can.data?.reason,
-        cooldown_remaining_sec: can.data?.cooldown_remaining_sec ?? 0,
-        remaining_in_window: can.data?.remaining_in_window ?? 0,
-        retry_after_sec: can.data?.cooldown_remaining_sec ?? 0,
-      });
+      const reason = can.data?.reason as string | undefined;
+      // Onboarding exception: allow exactly one first sync even on non‑premium plans.
+      if (allowFirstRun && reason === "sync_now_only_on_premium") {
+        try {
+          const { count: syncedCount } = (await rls
+            .from("ical_type_integrations")
+            .select("id", { count: "exact", head: true })
+            .eq("property_id", propertyId)
+            .not("last_sync", "is", null)) as any;
+          if ((syncedCount ?? 0) === 0) {
+            skipUsageRegister = true;
+          } else {
+            return j(429, {
+              error: "Rate limited",
+              reason,
+              cooldown_remaining_sec: can.data?.cooldown_remaining_sec ?? 0,
+              remaining_in_window: can.data?.remaining_in_window ?? 0,
+              retry_after_sec: can.data?.cooldown_remaining_sec ?? 0,
+            });
+          }
+        } catch {
+          return j(429, {
+            error: "Rate limited",
+            reason,
+            cooldown_remaining_sec: can.data?.cooldown_remaining_sec ?? 0,
+            remaining_in_window: can.data?.remaining_in_window ?? 0,
+            retry_after_sec: can.data?.cooldown_remaining_sec ?? 0,
+          });
+        }
+      } else {
+        return j(429, {
+          error: "Rate limited",
+          reason,
+          cooldown_remaining_sec: can.data?.cooldown_remaining_sec ?? 0,
+          remaining_in_window: can.data?.remaining_in_window ?? 0,
+          retry_after_sec: can.data?.cooldown_remaining_sec ?? 0,
+        });
+      }
     }
 
     const { data: feeds, error: fErr } = await rls
@@ -419,7 +452,9 @@ export async function POST(req: Request) {
       }
     }
 
-    await rls.rpc("account_register_sync_usage_v2", { p_account_id: accountId, p_event_type: "sync_now" });
+    if (!skipUsageRegister) {
+      await rls.rpc("account_register_sync_usage_v2", { p_account_id: accountId, p_event_type: "sync_now" });
+    }
 
     return j(200, { ok: true, propertyId, importedTotal, results });
   } catch (e: any) {

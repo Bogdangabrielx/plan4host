@@ -615,7 +615,11 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                   <button
                     className="sb-btn sb-btn--primary"
                     style={{ width: '100%', minHeight: 44 }}
-                    onClick={() => { window.location.href = '/app/channels'; }}
+                    onClick={() => {
+                      const pid = selected?.id;
+                      const q = pid ? `?onboarding=1&property=${encodeURIComponent(pid)}` : `?onboarding=1`;
+                      window.location.href = `/app/channels${q}`;
+                    }}
                   >
                     Connect your first calendar
                   </button>
