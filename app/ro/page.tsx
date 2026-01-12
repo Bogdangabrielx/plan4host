@@ -853,49 +853,9 @@ export default function HomePageRO() {
   // Recenzii (RO)
   const recenziiRo: Array<{ title: string; author: string; body: string }> = [
     {
-      title: "„Recomand, mai ales dacă ai multe sosiri și plecări în aceeași zi”",
+      title: "„De când folosesc Plan4Host, văd totul dintr-o privire și îmi e mult mai ușor să coordonez.”",
       author: "— Andrei Popa, Brașov • 3 apartamente",
-      body: "La mine, când se aglomera situația, mai încurcam ordinea camerelor. De când folosesc Plan4Host, văd totul dintr-o privire și îmi e mult mai ușor să coordonez.",
-    },
-    {
-      title: "„Un mic ajutor care chiar contează”",
-      author: "— Ioana Rusu, Zona Sibiului • Guesthouse de 4 camere",
-      body: "Nu pot spune că greșeam des, dar mi s-a întâmplat să trimit același mesaj la mai mulți oaspeți fără să-l ajustez. Acum aplicația personalizează automat și totul arată mult mai profesionist.",
-    },
-    {
-      title: "„Pentru cine mai răspunde uneori prea târziu”",
-      author: "— Mihai Ioniță, Cluj-Napoca • 2 studiouri Airbnb",
-      body: "Eu mai prindeam uneori ore târzii până trimiteam detaliile de check-in. Cu Plan4Host mesajele pleacă la timp și oaspeții ajung mult mai liniștiți. Se simte clar în experiența lor.",
-    },
-    {
-      title: "„Dacă ai avut măcar o dată rezervări încurcate…”",
-      author: "— Elena Badea, București • Apartamente regim hotelier",
-      body: "Am pățit-o și eu când am avut două check-in-uri apropiate. Calendarul din aplicație m-a scăpat de grijă — am totul în același loc și nu mai risc să greșesc.",
-    },
-    {
-      title: "„Nu schimbă modul de lucru, doar îl face mai clar”",
-      author: "— Vlad Rădulescu, Oradea • 4 apartamente în regim hotelier",
-      body: "Eu sunt obișnuit să-mi notez totul, dar uneori pierdeam timp căutând informații prin mesaje. Aici e totul ordonat și nu simt că m-am complicat, dimpotrivă.",
-    },
-    {
-      title: "„Recomand pentru modul în care trimite informațiile”",
-      author: "— Alina Ghermani, Suceava • Cabana turistică",
-      body: "Trimiteam de multe ori toate detaliile dintr-o dată, iar oaspeții ziceau că e cam mult. Acum mesajele vin pe rând și sunt întrebată mult mai rar lucruri în privat. Se simte că fluxul e mai natural.",
-    },
-    {
-      title: "„Dacă ai personal la curățenie, te ajută enorm”",
-      author: "— Gabriel Stan, Târgu Mureș • Pensiune",
-      body: "Mai greșeam uneori camera care trebuia pregătită prima. Plan4Host îți arată clar ordinea, ora și taskurile. Pentru noi chiar a fost un upgrade.",
-    },
-    {
-      title: "„Surprinzător de utilă”",
-      author: "— Cristina Pavel, Constanța • Apartament de vacanță la malul mării",
-      body: "Nu credeam că am nevoie de încă o aplicație, sincer. Dar mi-am dat seama că uitam uneori câte un detaliu. Acum primesc notificări și nu mai sar peste nimic.",
-    },
-    {
-      title: "„Mai puțină agitație, mai mult control”",
-      author: "— Radu Dumitrescu, Iași • 5 unități în regim hotelier",
-      body: "Nu eram chiar copleșit, dar uneori mai scăpa câte o informație în conversațiile lungi cu oaspeții. Cu aplicația văd totul clar și îmi simt programul mult mai organizat.",
+      body: "",
     },
   ];
   const [revIdx, setRevIdx] = useState<number>(0);
@@ -1081,29 +1041,22 @@ export default function HomePageRO() {
       <section id="content" className={styles.hero}>
         <div className={styles.heroText}>
           <h1>
-            Stay Smart, <br />Host <span className={styles.betterGrad}>Better</span>
+            Mai puține mesaje. Mai puțin haos. Mai mult control.
           </h1>
-          <p className={styles.heroKicker}>PMS + check‑in online cu sincronizare iCal</p>
-          <p>Gestionezi rezervări, task‑uri și comunicarea cu oaspeții dintr‑un singur loc.</p>
-          <ul className={styles.heroBullets}>
-            <li>Calendar centralizat + iCal sync</li>
-            <li>Mesaje automate către oaspeți</li>
-            <li>Guest AI assistant: sosire, facilități, recomandări, check‑out</li>
-          </ul>
+          <p className={styles.heroKicker}>
+            Un singur sistem care conectează oaspeți, rezervări și curățenie — ca să nu scape nimic.
+          </p>
           <div className={styles.heroCta}>
             <button
               type="button"
-              onClick={() => setTryModalOpen(true)}
+              onClick={() => scrollToId("features-title")}
               className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
             >
-              Testează formularul de check‑in
-	            </button>
-	            <CtaLink
-	              href="/guest-ai-assistant/demo?lang=ro"
-	              className={`sb-cardglow ${styles.btn} ${styles.btnAi} ${styles.focusable}`}
-	            >
-	              <span className={styles.btnAiLabel}>Vezi Guest AI assistant</span>
-	            </CtaLink>
+              Vezi cum funcționează
+            </button>
+            <Link href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.focusable}`}>
+              Începe gratuit
+            </Link>
           </div>
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview" data-p4h-reveal>
@@ -1143,45 +1096,76 @@ export default function HomePageRO() {
 	        </div>
 	      )}
 
-	      {/* Impact (statistici timp/valoare înainte de Funcții) */}
-		      <section
-		        id="insights"
-		        aria-labelledby="insights-title"
-		        className={styles.features}
-		        style={{ paddingTop: 0, paddingBottom: 0 }}
-		      >
-        <h2 id="insights-title" data-p4h-reveal>Impact</h2>
-        <div data-p4h-reveal>
-          <TimeSavingsStripRo />
-        </div>
-      </section>
+	      {/* Dovadă */}
+	      <section id="insights" aria-labelledby="insights-title" className={styles.features} style={{ paddingTop: 0 }}>
+          <h2 id="insights-title" data-p4h-reveal>
+            Gândit pentru hosting real, nu pentru demo‑uri
+          </h2>
+          <ul className={styles.proofList} data-p4h-reveal>
+            <li>De la primul login la check‑in gata de folosit, în câteva minute</li>
+            <li>Fără training</li>
+            <li>Funcționează pentru apartamente single și proprietăți cu mai multe unități</li>
+          </ul>
+        </section>
 
-	      {/* Despre */}
-		      <section id="about" className={styles.about} aria-labelledby="about-title">
-	        <h2 id="about-title" data-p4h-reveal>Despre</h2>
+	      {/* Identificare */}
+	      <section id="about" className={styles.about} aria-labelledby="about-title">
+	        <h2 id="about-title" data-p4h-reveal>Îți sună familiar?</h2>
 	        <div className={styles.aboutGrid}>
 	          <div className={styles.aboutVisual} aria-label="Previzualizare sincronizare calendare" data-p4h-reveal>
 	            <img src="/Calendar_Sync.png" alt="Previzualizare sincronizare calendare" />
 	          </div>
-		          <div className={styles.aboutCard} data-p4h-reveal>
-	            <div className={styles.aboutBrandTitle}>Plan4Host</div>
-	            <div className={styles.aboutTitle}>Claritate. Precizie. Control fără efort.</div>
-	            <div className={styles.aboutSub}>Unelte simple pentru ospitalitate reală.</div>
-	            <p className={styles.aboutBody}>
-	              Un flux calm pentru rezervări și comunicarea cu oaspeții.
-	            </p>
-	            <ul className={styles.aboutList}>
-	              <li>Toate rezervările într‑un singur calendar (cu iCal sync)</li>
-	              <li>Linkuri de check‑in și confirmări</li>
-	              <li>Mesaje automate, trimise la timp</li>
-	            </ul>
-	          </div>
+	          <div className={styles.aboutCard} data-p4h-reveal>
+              <ul className={styles.problemList}>
+                <li>Oaspeții pun aceleași întrebări, iar și iar</li>
+                <li>Rezervările vin din mai multe platforme</li>
+                <li>Curățenia se coordonează pe WhatsApp</li>
+                <li>Verifici totul de două ori — „ca să fii sigur”</li>
+              </ul>
+              <p className={styles.problemClose}>Plan4Host a fost construit ca să oprească asta.</p>
+            </div>
 	        </div>
 	      </section>
 
-	      {/* Funcții */}
+	      {/* Cum rulează totul */}
 	      <section id="features" className={styles.features} aria-labelledby="features-title">
-        <h2 id="features-title" data-p4h-reveal>Funcții</h2>
+        <h2 id="features-title" data-p4h-reveal>Totul rulează dintr‑un singur loc, calm</h2>
+
+        <div className={styles.calmGrid}>
+          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+            <div className={styles.calmHead}>
+              <div className={styles.calmEmoji} aria-hidden>🧍</div>
+              <h3>Oaspeți</h3>
+            </div>
+            <ul className={styles.calmList}>
+              <li>Un singur link cu tot ce au nevoie</li>
+              <li>Check‑in, sosire, facilități, check‑out</li>
+              <li>În limba lor, fără să te întrebe</li>
+            </ul>
+          </div>
+          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+            <div className={styles.calmHead}>
+              <div className={styles.calmEmoji} aria-hidden>📅</div>
+              <h3>Rezervări</h3>
+            </div>
+            <ul className={styles.calmList}>
+              <li>Toate rezervările într‑un singur calendar</li>
+              <li>iCal sync în timp real între platforme</li>
+              <li>Fără ghicit, fără suprapuneri</li>
+            </ul>
+          </div>
+          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+            <div className={styles.calmHead}>
+              <div className={styles.calmEmoji} aria-hidden>🧹</div>
+              <h3>Curățenie</h3>
+            </div>
+            <ul className={styles.calmList}>
+              <li>Task-urile urmează automat check‑out‑urile</li>
+              <li>Priorități clare pentru azi</li>
+              <li>Toată lumea știe ce urmează</li>
+            </ul>
+          </div>
+        </div>
         <div
           className="sb-cardglow"
           data-p4h-reveal
@@ -1244,9 +1228,9 @@ export default function HomePageRO() {
         </div>
       </section>
 
-      {/* Recenzii */}
+      {/* Testimonial */}
       <section id="recenzii" className={styles.reviews} aria-labelledby="reviews-title">
-        <h2 id="reviews-title" data-p4h-reveal>Ce spun utilizatorii noștri</h2>
+        <h2 id="reviews-title" data-p4h-reveal>Ce spun gazdele</h2>
         <div className={styles.reviewsBody} data-p4h-reveal>
           <div
             className={styles.reviewsCard}
@@ -1259,12 +1243,14 @@ export default function HomePageRO() {
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
-            <button
-              type="button"
-              className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
-              aria-label="Recenzia anterioară"
-              onClick={() => setRevIdx(i => (i - 1 + recenziiRo.length) % recenziiRo.length)}
-            />
+            {recenziiRo.length > 1 && (
+              <button
+                type="button"
+                className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
+                aria-label="Recenzia anterioară"
+                onClick={() => setRevIdx(i => (i - 1 + recenziiRo.length) % recenziiRo.length)}
+              />
+            )}
             {(() => {
               const r = recenziiRo[revIdx];
               const parts = String(r.author || '').split('•');
@@ -1273,7 +1259,7 @@ export default function HomePageRO() {
 	              return (
 	                <div style={{ display: 'grid', gap: 16 }}>
 	                  <div className={styles.reviewTitle}>{r.title}</div>
-	                  <div className={styles.reviewBody}>{r.body}</div>
+	                  {r.body ? <div className={styles.reviewBody}>{r.body}</div> : null}
 	                  <div className={styles.reviewAuthor}>
 	                    <span className={styles.authorMain}>{left}</span>
 	                    {right && <span className={styles.authorDetail}> • {right}</span>}
@@ -1281,98 +1267,86 @@ export default function HomePageRO() {
 	                </div>
 	              );
 	            })()}
-            <button
-              type="button"
-              className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
-              aria-label="Recenzia următoare"
-              onClick={() => setRevIdx(i => (i + 1) % recenziiRo.length)}
-            />
+            {recenziiRo.length > 1 && (
+              <button
+                type="button"
+                className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
+                aria-label="Recenzia următoare"
+                onClick={() => setRevIdx(i => (i + 1) % recenziiRo.length)}
+              />
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA final */}
+      <section className={styles.features} aria-labelledby="cta-title">
+        <div className={`sb-cardglow ${styles.finalCtaCard}`} data-p4h-reveal>
+          <h2 id="cta-title">Oprește haosul. Începe să găzduiești calm.</h2>
+          <div className={styles.finalCtaActions}>
+            <Link
+              href="/auth/login?mode=signup"
+              className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+            >
+              Încearcă Plan4Host gratuit
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Prețuri */}
 	      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
-	        <h2 id="pricing-title" data-p4h-reveal>Prețuri</h2>
+	        <h2 id="pricing-title" data-p4h-reveal>Prețuri simple. Totul conectat.</h2>
+          <p className={styles.pricingLead} data-p4h-reveal>
+            Toate planurile includ comunicare cu oaspeții, sincronizare rezervări și flux de curățenie.
+          </p>
+          <div className={styles.includedBox} data-p4h-reveal>
+            <div className={styles.includedTitle}>Inclus în orice plan</div>
+            <ul className={styles.includedList}>
+              <li>Calendar unificat cu iCal sync</li>
+              <li>Check‑in digital & confirmări</li>
+              <li>Mesaje automate, în funcție de rezervare</li>
+              <li>Ghid pentru oaspeți (sosire, facilități, check‑out)</li>
+              <li>Task-uri de curățenie legate de check‑out</li>
+              <li>Proprietăți și camere nelimitate</li>
+            </ul>
+          </div>
         <div className={styles.pricingGrid}>
 	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
 	            <div className={styles.priceTier}>BASIC</div>
-            <ul className={styles.priceList}>
-	              {beneficii.map((b, i) => {
-	                const basicX = [
-	                  'Prioritizare curățenie camere',
-	                  'Listă personalizată de task-uri pentru curățenie',
-	                  'Actualizează în timp real statusul curățeniei',
-	                  'Împarte activitățile zilnice cu membrii din echipă',
-	                  'Sincronizare instantă a rezervărilor în calendarul aplicației',
-	                  'Guest AI assistant',
-	                ].some((s) => b.includes(s));
-	                return (
-	                  <li key={`basic-b-${i}`}>
-	                    {basicX ? (
-	                      <svg viewBox="0 0 24 24" aria-hidden="true">
-	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--danger) 12%, white)" stroke="var(--danger)" strokeWidth="1.8" />
-	                        <path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="var(--danger)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-	                      </svg>
-	                    ) : (
-	                      <svg viewBox="0 0 24 24" aria-hidden="true">
-	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
-	                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                    <span>{b.startsWith('Sincronizarea automată a rezervărilor între platforme') ? 'Sincronizarea automată a rezervărilor între platforme (la 60 min)' : b}</span>
-                  </li>
-                );
-              })}
-            </ul>
+              <p className={styles.planPrice}>50 RON / lună</p>
+              <p className={styles.planMeta}>Pentru gazde mici</p>
+              <ul className={styles.includedList}>
+                <li>Sync calendar la 60 minute</li>
+                <li>Automatizare mesaje standard</li>
+                <li>Coordonare task-uri curățenie</li>
+              </ul>
             <img className={styles.priceImg} src="/basic_ron_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Basic</Link>
           </div>
 
 	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
             <div className={styles.priceTier}>STANDARD</div>
-            <ul className={styles.priceList}>
-	              {beneficii.map((b, i) => {
-	                const standardX = [
-	                  'Împarte activitățile zilnice cu membrii din echipă',
-	                  'Sincronizare instantă a rezervărilor în calendarul aplicației',
-	                  'Guest AI assistant',
-	                ].some((s) => b.includes(s));
-	                return (
-	                  <li key={`standard-b-${i}`}>
-	                    {standardX ? (
-	                      <svg viewBox="0 0 24 24" aria-hidden="true">
-	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--danger) 12%, white)" stroke="var(--danger)" strokeWidth="1.8" />
-	                        <path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="var(--danger)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-	                      </svg>
-	                    ) : (
-	                      <svg viewBox="0 0 24 24" aria-hidden="true">
-	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
-	                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                    <span>{b.startsWith('Sincronizarea automată a rezervărilor între platforme') ? 'Sincronizarea automată a rezervărilor între platforme (la 30 min)' : b}</span>
-                  </li>
-                );
-              })}
-            </ul>
+              <div className={styles.planBadge}>Pentru proprietăți în creștere ⭐</div>
+              <p className={styles.planPrice}>75 RON / lună</p>
+              <ul className={styles.includedList}>
+                <li>Sync calendar la 30 minute</li>
+                <li>Mesaje automate mai rapide</li>
+                <li>Update-uri prioritare pentru task-uri</li>
+              </ul>
             <img className={styles.priceImg} src="/standard_ron_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Standard</Link>
           </div>
 
 	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
             <div className={styles.priceTier}>PREMIUM</div>
-            <ul className={styles.priceList}>
-              {beneficii.map((b, i) => (
-                <li key={`premium-b-${i}`}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
-                    <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span>{b.startsWith('Sincronizarea automată a rezervărilor între platforme') ? 'Sincronizarea automată a rezervărilor între platforme (la 10 min)' : b}</span>
-                </li>
-              ))}
-            </ul>
+              <p className={styles.planPrice}>90 RON / lună</p>
+              <p className={styles.planMeta}>Pentru operațiuni aglomerate</p>
+              <ul className={styles.includedList}>
+                <li>Sync calendar la 10 minute</li>
+                <li>Automatizare aproape în timp real</li>
+                <li>Reacție mai rapidă la schimbări</li>
+              </ul>
             <img className={styles.priceImg} src="/premium_ron_forlight.png" alt="" aria-hidden="true" />
             <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Premium</Link>
           </div>

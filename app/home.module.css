@@ -574,6 +574,217 @@ will-change: transform;
 /* Features */
 .features { max-width: 1100px; margin: 80px auto; padding: 0 24px; position: relative; }
 .features h2 { margin: 0 0 24px; }
+
+/* Problem-led sections */
+.sectionLead {
+  margin: 0 0 16px;
+  color: var(--muted);
+  max-width: 70ch;
+  font-size: var(--fs-b);
+  line-height: var(--lh-b);
+}
+.problemList{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  max-width: 70ch;
+  color: color-mix(in srgb, var(--text) 84%, transparent);
+}
+.problemList li{
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 10px;
+  align-items: start;
+  line-height: var(--lh-b);
+}
+.problemList li::before{
+  content: "•";
+  color: var(--primary);
+  line-height: 1.2;
+  margin-top: 2px;
+}
+.problemClose{
+  margin: 18px 0 0;
+  font-weight: var(--fw-bold);
+  color: var(--text);
+}
+
+.calmGrid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.calmCard{
+  border-radius: 16px;
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  background: var(--panel);
+}
+.calmHead{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.calmEmoji{
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 86%, transparent);
+  font-size: 18px;
+  flex: 0 0 auto;
+}
+.calmCard h3{
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--fw-bold);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text) 78%, transparent);
+}
+.calmList{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  color: var(--muted);
+  font-size: var(--fs-s);
+  line-height: var(--lh-s);
+}
+.calmList li{
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.calmList li::before{
+  content: "•";
+  color: color-mix(in srgb, var(--primary) 75%, transparent);
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+.proofList{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  max-width: 70ch;
+  color: var(--muted);
+  font-size: var(--fs-b);
+  line-height: var(--lh-b);
+}
+.proofList li{
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.proofList li::before{
+  content: "✓";
+  color: var(--primary);
+  font-weight: var(--fw-bold);
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+.finalCtaCard{
+  border-radius: 18px;
+  padding: 22px;
+  display: grid;
+  gap: 14px;
+  align-items: center;
+  text-align: center;
+}
+.finalCtaCard h2{
+  margin: 0;
+}
+.finalCtaActions{
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.pricingLead{
+  margin: -10px 0 18px;
+  color: var(--muted);
+  max-width: 70ch;
+}
+.includedBox{
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  background: var(--panel);
+  margin-bottom: 18px;
+}
+.includedTitle{
+  font-weight: var(--fw-bold);
+  color: var(--text);
+  margin: 0 0 10px;
+  font-size: var(--fs-s);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.includedList{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  color: var(--muted);
+  font-size: var(--fs-s);
+  line-height: var(--lh-s);
+}
+.includedList li{
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.includedList li::before{
+  content: "✓";
+  color: var(--primary);
+  font-weight: var(--fw-bold);
+  margin-top: 1px;
+}
+.planMeta{
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-s);
+  line-height: var(--lh-s);
+}
+.planPrice{
+  margin: 0;
+  font-weight: var(--fw-bold);
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.planBadge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 86%, transparent);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  color: color-mix(in srgb, var(--text) 78%, transparent);
+  width: fit-content;
+}
+@media (max-width: 900px){
+  .calmGrid{ grid-template-columns: 1fr; }
+  .finalCtaActions{ flex-direction: column; align-items: stretch; }
+}
 /* Anchor offset for sticky header: ensure titles are visible on hash navigation */
 #insights-title,
 #features-title,

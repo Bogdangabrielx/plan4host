@@ -989,49 +989,9 @@ export default function HomePage() {
   // Reviews (EN)
   const reviewsEn: Array<{ title: string; author: string; body: string }> = [
     {
-      title: "“I recommend it, especially if you have many arrivals and departures on the same day”",
+      title: "“Since using Plan4Host, I see everything at a glance and it’s much easier to coordinate.”",
       author: "— Andrei Popa, Brașov • 3 apartments",
-      body: "When things got crowded, I sometimes mixed up the room order. Since using Plan4Host, I see everything at a glance and it’s much easier to coordinate.",
-    },
-    {
-      title: "“A small help that truly matters”",
-      author: "— Ioana Rusu, Sibiu area • 4‑room guesthouse",
-      body: "I can’t say I made mistakes often, but I did sometimes send the same message to multiple guests without adjusting it. Now the app personalizes automatically and everything looks much more professional.",
-    },
-    {
-      title: "“For anyone who sometimes replies too late”",
-      author: "— Mihai Ioniță, Cluj‑Napoca • 2 Airbnb studios",
-      body: "I sometimes reached late hours before sending check‑in details. With Plan4Host, messages go out on time and guests arrive much calmer. It clearly shows in their experience.",
-    },
-    {
-      title: "“If you’ve ever had tangled bookings…”",
-      author: "— Elena Badea, Bucharest • Serviced apartments",
-      body: "It happened to me too when I had two close check‑ins. The app’s calendar took the worry away — everything is in one place and I no longer risk mistakes.",
-    },
-    {
-      title: "“It doesn’t change how you work — it just makes it clearer”",
-      author: "— Vlad Rădulescu, Oradea • 4 serviced apartments",
-      body: "I’m used to writing everything down, but sometimes I lost time searching through messages. Here everything is organized and I don’t feel more complicated — quite the opposite.",
-    },
-    {
-      title: "“Recommended for how it delivers information”",
-      author: "— Alina Ghermani, Suceava • Mountain cabin",
-      body: "I used to send all details at once and guests said it was a bit much. Now messages arrive in sequence and I’m asked far fewer private questions. The flow feels more natural.",
-    },
-    {
-      title: "“If you have cleaning staff, it helps a lot”",
-      author: "— Gabriel Stan, Târgu Mureș • Guesthouse",
-      body: "I sometimes got the first room to prepare wrong. Plan4Host shows the order, time and tasks clearly. For us it really was an upgrade.",
-    },
-    {
-      title: "“Surprisingly useful”",
-      author: "— Cristina Pavel, Constanța • Seaside holiday apartment",
-      body: "I didn’t think I needed another app, honestly. But I realized I sometimes missed a detail. Now I get notifications and don’t skip anything.",
-    },
-    {
-      title: "“Less hustle, more control”",
-      author: "— Radu Dumitrescu, Iași • 5 serviced units",
-      body: "I wasn’t overwhelmed, but information sometimes got lost in long guest conversations. With the app I see everything clearly and my schedule feels much more organized.",
+      body: "",
     },
   ];
 
@@ -1255,31 +1215,25 @@ export default function HomePage() {
       <section id="content" className={styles.hero}>
         <div className={styles.heroText}>
           <h1>
-            Stay Smart, <br />Host <span className={styles.betterGrad}>Better</span>
+            Less messages. Less chaos. More control.
           </h1>
-          <p className={styles.heroKicker}>PMS + online check‑in with iCal sync</p>
-          <p>Run reservations, tasks, and guest communication from one place.</p>
-          <ul className={styles.heroBullets}>
-            <li>Centralized calendar + iCal sync</li>
-            <li>Automated guest messaging</li>
-            <li>Guest AI assistant for arrival, amenities, recommendations, check‑out</li>
-          </ul>
+          <p className={styles.heroKicker}>
+            One system that connects guests, bookings and cleaning — so nothing falls through the cracks.
+          </p>
           <div className={styles.heroCta}>
-            {/* Start free -> login in signup mode (animated) */}
             <button
               type="button"
-              onClick={() => setTryModalOpen(true)}
+              onClick={() => scrollToId("features-title")}
               className={`sb-cardglow ${styles.btn}  ${styles.btnChoose} ${styles.focusable}`}
             >
-              Try the guest check-in form
+              See how it works
 	            </button>
-	            <CtaLink
-	              href="/guest-ai-assistant/demo"
-	              className={`sb-cardglow ${styles.btn} ${styles.btnAi} ${styles.focusable}`}
-	              onNavigate={() => { /* no-op for now */ }}
+	            <Link
+                href="/auth/login?mode=signup"
+	              className={`sb-cardglow ${styles.btn} ${styles.focusable}`}
 	            >
-	              <span className={styles.btnAiLabel}>See Guest AI assistant</span>
-	            </CtaLink>
+	              Start free
+	            </Link>
           </div>
         </div>
 
@@ -1320,45 +1274,77 @@ export default function HomePage() {
 	        </div>
 	      )}
 
-	      {/* Impact (time/value stats before Features) */}
-		      <section
-		        id="insights"
-		        aria-labelledby="insights-title"
-		        className={styles.features}
-		        style={{ paddingTop: 0, paddingBottom: 0 }}
-		      >
-        <h2 id="insights-title" data-p4h-reveal>Impact</h2>
-        <div data-p4h-reveal>
-          <TimeSavingsStrip />
-        </div>
-      </section>
+	      {/* Proof */}
+	      <section id="insights" aria-labelledby="insights-title" className={styles.features} style={{ paddingTop: 0 }}>
+          <h2 id="insights-title" data-p4h-reveal>
+            Built for real hosting, not demos
+          </h2>
+          <ul className={styles.proofList} data-p4h-reveal>
+            <li>From first login to ready-to-use check-in in minutes</li>
+            <li>No training required</li>
+            <li>Works for single apartments and multi-unit properties</li>
+          </ul>
+        </section>
 
 	      {/* About */}
 	      <section id="about" className={styles.about} aria-labelledby="about-title">
-	        <h2 id="about-title" data-p4h-reveal>About</h2>
+	        <h2 id="about-title" data-p4h-reveal>Does this sound familiar?</h2>
 	        <div className={styles.aboutGrid}>
 	          <div className={styles.aboutVisual} aria-label="Calendar sync preview" data-p4h-reveal>
 	            <img src="/Calendar_Sync.png" alt="Calendar sync preview" />
 	          </div>
-		          <div className={styles.aboutCard} data-p4h-reveal>
-		            <div className={styles.aboutBrandTitle}>Plan4Host</div>
-		            <div className={styles.aboutTitle}>Clarity. Precision. Effortless control.</div>
-		            <div className={styles.aboutSub}>A simple toolkit for real hospitality.</div>
-		            <p className={styles.aboutBody}>
-		              A calm workflow for reservations and guest communication.
-	            </p>
-	            <ul className={styles.aboutList}>
-	              <li>All bookings in one calendar (with iCal sync)</li>
-	              <li>Digital check‑in links and confirmations</li>
-	              <li>Automated, well‑timed guest messages</li>
-	            </ul>
-	          </div>
+	          <div className={styles.aboutCard} data-p4h-reveal>
+              <ul className={styles.problemList}>
+                <li>Guests keep asking the same questions</li>
+                <li>Bookings come from everywhere</li>
+                <li>Cleaning is coordinated on WhatsApp</li>
+                <li>You double-check everything — just in case</li>
+              </ul>
+              <p className={styles.problemClose}>Plan4Host was built to stop this.</p>
+            </div>
 	        </div>
 	      </section>
 
 	      {/* Features */}
 	      <section id="features" className={styles.features} aria-labelledby="features-title">
-        <h2 id="features-title" data-p4h-reveal>Features</h2>
+        <h2 id="features-title" data-p4h-reveal>Everything runs from one calm place</h2>
+
+        <div className={styles.calmGrid}>
+          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+            <div className={styles.calmHead}>
+              <div className={styles.calmEmoji} aria-hidden>🧍</div>
+              <h3>Guests</h3>
+            </div>
+            <ul className={styles.calmList}>
+              <li>One link with everything they need</li>
+              <li>Check-in, arrival info, amenities, check-out</li>
+              <li>In their language, without asking you</li>
+            </ul>
+          </div>
+          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+            <div className={styles.calmHead}>
+              <div className={styles.calmEmoji} aria-hidden>📅</div>
+              <h3>Bookings</h3>
+            </div>
+            <ul className={styles.calmList}>
+              <li>All reservations in one calendar</li>
+              <li>Real-time iCal sync across platforms</li>
+              <li>No guessing, no overlaps</li>
+            </ul>
+          </div>
+          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+            <div className={styles.calmHead}>
+              <div className={styles.calmEmoji} aria-hidden>🧹</div>
+              <h3>Cleaning</h3>
+            </div>
+            <ul className={styles.calmList}>
+              <li>Tasks follow check-outs automatically</li>
+              <li>Clear priorities for today</li>
+              <li>Everyone knows what’s next</li>
+            </ul>
+          </div>
+        </div>
+
         <div
           className="sb-cardglow"
           data-p4h-reveal
@@ -1424,7 +1410,7 @@ export default function HomePage() {
 
 	      {/* Reviews */}
 	      <section id="reviews" className={styles.reviews} aria-labelledby="reviews-title">
-        <h2 id="reviews-title" data-p4h-reveal>What our users say</h2>
+        <h2 id="reviews-title" data-p4h-reveal>What hosts say</h2>
         <div className={styles.reviewsBody} data-p4h-reveal>
           <div
             className={styles.reviewsCard}
@@ -1437,12 +1423,14 @@ export default function HomePage() {
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
-	            <button
-	              type="button"
-	              className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
-	              aria-label="Previous review"
-	              onClick={() => setRevIdx(i => (i - 1 + reviewsEn.length) % reviewsEn.length)}
-	            />
+	            {reviewsEn.length > 1 && (
+                <button
+                  type="button"
+                  className={`${styles.reviewsArrow} ${styles.reviewsArrowLeft}`}
+                  aria-label="Previous review"
+                  onClick={() => setRevIdx(i => (i - 1 + reviewsEn.length) % reviewsEn.length)}
+                />
+              )}
             {(() => {
               const r = reviewsEn[revIdx];
               const parts = String(r.author || '').split('•');
@@ -1451,7 +1439,7 @@ export default function HomePage() {
 	              return (
 	                <div style={{ display: 'grid', gap: 16 }}>
 	                  <div className={styles.reviewTitle}>{r.title}</div>
-	                  <div className={styles.reviewBody}>{r.body}</div>
+	                  {r.body ? <div className={styles.reviewBody}>{r.body}</div> : null}
 	                  <div className={styles.reviewAuthor}>
 	                    <span className={styles.authorMain}>{left}</span>
 	                    {right && <span className={styles.authorDetail}> • {right}</span>}
@@ -1459,50 +1447,60 @@ export default function HomePage() {
 	                </div>
 	              );
 	            })()}
-	            <button
-	              type="button"
-	              className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
-	              aria-label="Next review"
-	              onClick={() => setRevIdx(i => (i + 1) % reviewsEn.length)}
-	            />
+	            {reviewsEn.length > 1 && (
+                <button
+                  type="button"
+                  className={`${styles.reviewsArrow} ${styles.reviewsArrowRight}`}
+                  aria-label="Next review"
+                  onClick={() => setRevIdx(i => (i + 1) % reviewsEn.length)}
+                />
+              )}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className={styles.features} aria-labelledby="cta-title">
+        <div className={`sb-cardglow ${styles.finalCtaCard}`} data-p4h-reveal>
+          <h2 id="cta-title">Stop managing chaos. Start hosting calmly.</h2>
+          <div className={styles.finalCtaActions}>
+            <Link
+              href="/auth/login?mode=signup"
+              className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+            >
+              Try Plan4Host free
+            </Link>
           </div>
         </div>
       </section>
 
 	      {/* Pricing */}
 	      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
-	        <h2 id="pricing-title" data-p4h-reveal>Pricing</h2>
+	        <h2 id="pricing-title" data-p4h-reveal>Simple pricing. Everything connected.</h2>
+          <p className={styles.pricingLead} data-p4h-reveal>
+            All plans include guest communication, booking sync and cleaning workflows.
+          </p>
+          <div className={styles.includedBox} data-p4h-reveal>
+            <div className={styles.includedTitle}>Included in every plan</div>
+            <ul className={styles.includedList}>
+              <li>Unified booking calendar with iCal sync</li>
+              <li>Digital guest check-in & confirmations</li>
+              <li>Automated, reservation-aware guest messages</li>
+              <li>Multilingual guest guide (arrival, amenities, check-out)</li>
+              <li>Cleaning tasks linked to check-outs</li>
+              <li>Unlimited properties and rooms</li>
+            </ul>
+          </div>
 	        <div className={styles.pricingGrid}>
 	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
 	            <div className={styles.priceTier}>BASIC</div>
-	            <ul className={styles.priceList}>
-		              {benefits.map((b, i) => {
-	                const basicX = [
-	                  'Prioritize room cleaning',
-	                  'Personalized cleaning task',
-	                  'Real-time cleaning status',
-	                  'Share daily tasks',
-	                  'Instant sync of reservations in the app calendar',
-	                  'Guest AI assistant',
-	                ].some((s) => b.includes(s));
-	                return (
-	                  <li key={`basic-b-${i}`}>
-	                    {basicX ? (
-	                      <svg viewBox="0 0 24 24" aria-hidden="true">
-	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--danger) 12%, white)" stroke="var(--danger)" strokeWidth="1.8" />
-	                        <path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="var(--danger)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-	                      </svg>
-	                    ) : (
-	                      <svg viewBox="0 0 24 24" aria-hidden="true">
-	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
-	                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                    <span>{b.startsWith('Automatic sync of reservations between platforms') ? 'Automatic sync of reservations between platforms (every 60 min)' : b}</span>
-                  </li>
-                );
-              })}
-            </ul>
+              <p className={styles.planPrice}>€9.99 / month</p>
+              <p className={styles.planMeta}>Best for small hosts</p>
+              <ul className={styles.includedList}>
+                <li>Calendar sync every 60 minutes</li>
+                <li>Standard message automation</li>
+                <li>Cleaning task coordination</li>
+              </ul>
             <img className={styles.priceImg} src="/basic_forlight.png" alt="" aria-hidden="true" />
             <Link
               href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1"
@@ -1514,31 +1512,13 @@ export default function HomePage() {
 
 	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
 	            <div className={styles.priceTier}>STANDARD</div>
-	            <ul className={styles.priceList}>
-		              {benefits.map((b, i) => {
-	                const standardX = [
-	                  'Share daily tasks',
-	                  'Instant sync of reservations in the app calendar',
-	                  'Guest AI assistant',
-	                ].some((s) => b.includes(s));
-	                return (
-	                  <li key={`standard-b-${i}`}>
-	                    {standardX ? (
-	                      <svg viewBox="0 0 24 24" aria-hidden="true">
-	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--danger) 12%, white)" stroke="var(--danger)" strokeWidth="1.8" />
-	                        <path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="var(--danger)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-	                      </svg>
-	                    ) : (
-	                      <svg viewBox="0 0 24 24" aria-hidden="true">
-	                        <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
-	                        <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                    <span>{b.startsWith('Automatic sync of reservations between platforms') ? 'Automatic sync of reservations between platforms (every 30 min)' : b}</span>
-                  </li>
-                );
-              })}
-            </ul>
+              <div className={styles.planBadge}>Best for growing properties ⭐</div>
+              <p className={styles.planPrice}>€14.99 / month</p>
+              <ul className={styles.includedList}>
+                <li>Calendar sync every 30 minutes</li>
+                <li>Faster guest message automation</li>
+                <li>Priority daily task updates</li>
+              </ul>
             <img className={styles.priceImg} src="/standard_forlight.png" alt="" aria-hidden="true" />
             <Link
               href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1"
@@ -1550,17 +1530,13 @@ export default function HomePage() {
 
 	          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
 	            <div className={styles.priceTier}>PREMIUM</div>
-	            <ul className={styles.priceList}>
-	              {benefits.map((b, i) => (
-                <li key={`premium-b-${i}`}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
-                    <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span>{b.startsWith('Automatic sync of reservations between platforms') ? 'Automatic sync of reservations between platforms (every 10 min)' : b}</span>
-                </li>
-              ))}
-            </ul>
+              <p className={styles.planPrice}>€17.99 / month</p>
+              <p className={styles.planMeta}>Best for busy operations</p>
+              <ul className={styles.includedList}>
+                <li>Calendar sync every 10 minutes</li>
+                <li>Near real-time automation</li>
+                <li>Faster reaction to changes</li>
+              </ul>
             <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
             <Link
               href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1"
