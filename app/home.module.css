@@ -744,15 +744,24 @@ will-change: transform;
 }
 .includedList li{
   display: grid;
-  grid-template-columns: 16px 1fr;
+  grid-template-columns: 18px 1fr;
   gap: 10px;
   align-items: start;
 }
 .includedList li::before{
   content: "✓";
-  color: var(--primary);
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--success);
+  border: 2px solid var(--success);
+  background: color-mix(in srgb, var(--success) 14%, white);
   font-weight: var(--fw-bold);
-  margin-top: 1px;
+  font-size: 12px;
+  line-height: 1;
+  margin-top: calc((1em * var(--lh-s) - 18px) / 2);
 }
 .planMeta{
   margin: 0;
