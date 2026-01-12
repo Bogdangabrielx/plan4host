@@ -237,7 +237,8 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     setUnitWizardLoading(true);
 
     const start = Date.now();
-    const minMs = 1400;
+    // Keep the "We are almost done…" line visible for ~3s.
+    const minMs = 3950;
 
     if (unitWizardLoadingTimerRef.current) window.clearTimeout(unitWizardLoadingTimerRef.current);
     unitWizardLoadingTimerRef.current = window.setTimeout(() => setUnitWizardLoadingStage(1), 950);
@@ -667,7 +668,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                   Setting up your units…
                 </div>
                 <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
-                  {unitWizardLoadingStage === 0 ? 'Setting up your units…' : 'We’re almost done…'}
+                  {unitWizardLoadingStage === 0 ? 'Setting up your units…' : 'We are almost done…'}
                 </div>
               </div>
             </div>

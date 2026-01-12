@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
+import LoadingPill from "@/app/app/_components/LoadingPill";
+import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
 import { DIAL_OPTIONS } from "@/lib/phone/dialOptions";
 
 type Property = {
@@ -27,6 +29,7 @@ type Property = {
 };
 
 type ProviderItem = { slug: string; label: string; logo?: string | null };
+type SocialKey = "facebook" | "instagram" | "tiktok" | "website" | "location";
 
 const card: React.CSSProperties = {
   background: "var(--panel)",
@@ -175,6 +178,28 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   // Onboarding highlight target (contacts / picture / house_rules)
   const [highlightTarget, setHighlightTarget] = useState<"contacts" | "picture" | "house_rules" | null>(null);
   const [showCalendarConnectedBanner, setShowCalendarConnectedBanner] = useState<boolean>(false);
+  const [contactsWizardRequested, setContactsWizardRequested] = useState<boolean>(false);
+  const [contactsWizardOpen, setContactsWizardOpen] = useState<boolean>(false);
+  const [contactsWizardStep, setContactsWizardStep] = useState<"contacts" | "social" | "reward">("contacts");
+  const [contactsWizardLoading, setContactsWizardLoading] = useState<boolean>(false);
+  const [contactsWizardLoadingText, setContactsWizardLoadingText] = useState<string>("Saving contact details…");
+  const [contactsWizardError, setContactsWizardError] = useState<string | null>(null);
+  const [contactsWizardSocialKey, setContactsWizardSocialKey] = useState<SocialKey>("website");
+  const [contactsWizardSocialDrafts, setContactsWizardSocialDrafts] = useState<Record<SocialKey, string>>({
+    facebook: "",
+    instagram: "",
+    tiktok: "",
+    website: "",
+    location: "",
+  });
+  const houseRulesSectionRef = useRef<HTMLElement | null>(null);
+  const [wizardIsDark, setWizardIsDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const attr = document.documentElement.getAttribute("data-theme");
+    if (attr === "dark") return true;
+    if (attr === "light") return false;
+    return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false;
+  });
 
   // AI assistant – house rules text source
   const [aiModalOpen, setAiModalOpen] = useState(false);
@@ -201,6 +226,28 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       mounted = false;
     };
   }, [supabase]);
+
+  // Track theme for onboarding icons (light/dark)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const root = document.documentElement;
+    const detect = () => {
+      const attr = root.getAttribute("data-theme");
+      if (attr === "dark") { setWizardIsDark(true); return; }
+      if (attr === "light") { setWizardIsDark(false); return; }
+      setWizardIsDark(window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false);
+    };
+    detect();
+    const mo = new MutationObserver(detect);
+    mo.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
+    const onMq = () => detect();
+    try { mq?.addEventListener("change", onMq); } catch { mq?.addListener?.(onMq as any); }
+    return () => {
+      try { mq?.removeEventListener("change", onMq); } catch { mq?.removeListener?.(onMq as any); }
+      mo.disconnect();
+    };
+  }, []);
 
   // Responsive helper: treat phones/narrow screens differently for layout
   const [isNarrow, setIsNarrow] = useState<boolean>(() => {
@@ -267,6 +314,38 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     }
   }, []);
 
+  // Step 4 onboarding: open successive popups (contacts → social → reward)
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href);
+      const flag = (u.searchParams.get("onboarding") || "").toLowerCase();
+      if (flag === "contacts" || flag === "links" || flag === "contact") {
+        setContactsWizardRequested(true);
+        u.searchParams.delete("onboarding");
+        window.history.replaceState({}, "", u.toString());
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Open wizard after property is loaded (so drafts can be prefilled)
+  useEffect(() => {
+    if (!contactsWizardRequested) return;
+    if (!prop) return;
+    setContactsWizardRequested(false);
+    setContactsWizardError(null);
+    setContactsWizardStep("contacts");
+    setContactsWizardOpen(true);
+    setContactsWizardSocialDrafts({
+      facebook: prop.social_facebook || "",
+      instagram: prop.social_instagram || "",
+      tiktok: prop.social_tiktok || "",
+      website: prop.social_website || "",
+      location: prop.social_location || "",
+    });
+  }, [contactsWizardRequested, prop?.id]);
+
   // Dial code dropdown state for Contact Phone
   const [contactDial, setContactDial] = useState<string>("+40");
   const [contactPhoneLocal, setContactPhoneLocal] = useState<string>("");
@@ -317,6 +396,77 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       // ignore
     }
   }, []);
+
+  function socialIcon(key: SocialKey) {
+    const suffix = wizardIsDark ? "fordark" : "forlight";
+    if (key === "location") return `/social_location_${suffix}.png`;
+    return `/${key}_${suffix}.png`;
+  }
+
+  async function saveContactsWizard() {
+    if (!prop) return;
+    setContactsWizardError(null);
+    setContactsWizardLoadingText("Saving contact details…");
+    setContactsWizardLoading(true);
+    const start = Date.now();
+    const minMs = 900;
+    try {
+      const overlayPos = (prop.contact_overlay_position || "center") as any;
+      const payload = {
+        contact_email: (prop.contact_email || "").trim() || null,
+        contact_phone: (composeFullPhone(contactDial, contactPhoneLocal) || prop.contact_phone || "").trim() || null,
+        contact_address: (prop.contact_address || "").trim() || null,
+        contact_overlay_position: overlayPos,
+      };
+      const { error } = await supabase.from("properties").update(payload).eq("id", prop.id);
+      if (error) throw error;
+      setProp((prev) => (prev ? { ...prev, ...payload } : prev));
+      lastSavedContact.current = {
+        email: (payload.contact_email || "").toString(),
+        phone: (payload.contact_phone || "").toString(),
+        address: (payload.contact_address || "").toString(),
+      };
+      try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(minMs - elapsed, 0);
+      if (remaining) await new Promise<void>((r) => setTimeout(r, remaining));
+      setContactsWizardStep("social");
+    } catch (e: any) {
+      setContactsWizardError(e?.message || "Could not save contact details.");
+    } finally {
+      setContactsWizardLoading(false);
+    }
+  }
+
+  async function saveSocialWizard() {
+    if (!prop) return;
+    setContactsWizardError(null);
+    setContactsWizardLoadingText("Updating guest portal…");
+    setContactsWizardLoading(true);
+    const start = Date.now();
+    const minMs = 900;
+    try {
+      const payload = {
+        social_facebook: contactsWizardSocialDrafts.facebook.trim() || null,
+        social_instagram: contactsWizardSocialDrafts.instagram.trim() || null,
+        social_tiktok: contactsWizardSocialDrafts.tiktok.trim() || null,
+        social_website: contactsWizardSocialDrafts.website.trim() || null,
+        social_location: contactsWizardSocialDrafts.location.trim() || null,
+      };
+      const { error } = await supabase.from("properties").update(payload).eq("id", prop.id);
+      if (error) throw error;
+      setProp((prev) => (prev ? { ...prev, ...payload } : prev));
+      try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(minMs - elapsed, 0);
+      if (remaining) await new Promise<void>((r) => setTimeout(r, remaining));
+      setContactsWizardStep("reward");
+    } catch (e: any) {
+      setContactsWizardError(e?.message || "Could not save social links.");
+    } finally {
+      setContactsWizardLoading(false);
+    }
+  }
 
   function onPropChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.currentTarget.value;
@@ -673,6 +823,355 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </div>
         )}
 
+        {contactsWizardOpen && prop && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setContactsWizardOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 240,
+              background: "rgba(0,0,0,0.55)",
+              display: "grid",
+              placeItems: "center",
+              padding: 12,
+              paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+              paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="sb-card"
+              style={{
+                width: "min(560px, 100%)",
+                background: "var(--panel)",
+                border: "1px solid var(--border)",
+                borderRadius: 14,
+                padding: 16,
+                display: "grid",
+                gap: 14,
+              }}
+            >
+              <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
+                <div aria-hidden />
+                <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                      letterSpacing: ".14em",
+                      color: "color-mix(in srgb, var(--text) 86%, transparent)",
+                    }}
+                  >
+                    {contactsWizardStep === "contacts"
+                      ? "Add your contact details"
+                      : contactsWizardStep === "social"
+                        ? "Social links"
+                        : "Guest portal updated"}
+                  </div>
+                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                    {contactsWizardStep === "contacts"
+                      ? "This information appears in your guest check-in portal."
+                      : contactsWizardStep === "social"
+                        ? "Optional — share only what you want guests to see."
+                        : "Your contact details are now visible to guests."}
+                  </div>
+                </div>
+                <button
+                  aria-label="Close"
+                  className="sb-btn sb-cardglow sb-btn--icon"
+                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
+                  onClick={() => setContactsWizardOpen(false)}
+                >
+                  ×
+                </button>
+              </div>
+
+              {contactsWizardStep === "contacts" && (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
+                    <div>This step is quick and optional.</div>
+                    <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginTop: 6 }}>
+                      Add only what you want guests to see.
+                    </div>
+                  </div>
+
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <label>Email</label>
+                      <input
+                        type="email"
+                        value={prop.contact_email ?? ""}
+                        onChange={(e) => {
+                          const v = e.currentTarget.value;
+                          setProp((prev) => (prev ? { ...prev, contact_email: v } : prev));
+                        }}
+                        placeholder="example@hotel.com"
+                        style={FIELD}
+                      />
+                      <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                        Guests can use this to contact you before or during their stay.
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <label>Phone</label>
+                      <div ref={dialWrapRef} style={{ position: "relative" }}>
+                        <button
+                          type="button"
+                          onClick={() => setDialOpen((v) => !v)}
+                          aria-label="Dial code"
+                          style={{
+                            position: "absolute",
+                            left: 8,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            zIndex: 2,
+                            border: "1px solid var(--border)",
+                            background: "var(--card)",
+                            color: "var(--text)",
+                            borderRadius: 8,
+                            padding: "6px 8px",
+                            fontWeight: 800,
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          <span aria-hidden>
+                            {flagEmoji((DIAL_OPTIONS.find((d) => d.code === contactDial)?.cc) || "RO")}
+                          </span>
+                          <span>{contactDial}</span>
+                        </button>
+                        <input
+                          type="tel"
+                          value={contactPhoneLocal}
+                          onChange={(e) => setContactPhoneLocal(e.currentTarget.value)}
+                          placeholder="712 345 678"
+                          style={{ ...FIELD, paddingLeft: 96 }}
+                        />
+                        {dialOpen && (
+                          <div
+                            role="listbox"
+                            style={{
+                              position: "absolute",
+                              left: 8,
+                              top: "calc(100% + 6px)",
+                              zIndex: 30,
+                              background: "var(--panel)",
+                              border: "1px solid var(--border)",
+                              borderRadius: 10,
+                              padding: 6,
+                              display: "grid",
+                              gap: 4,
+                              maxHeight: 240,
+                              overflow: "auto",
+                              width: "min(420px, calc(100vw - 32px))",
+                            }}
+                          >
+                            {DIAL_OPTIONS.map((opt) => (
+                              <button
+                                key={`${opt.cc}-${opt.code}`}
+                                type="button"
+                                onClick={() => {
+                                  setContactDial(opt.code);
+                                  setDialOpen(false);
+                                }}
+                                style={{
+                                  padding: "6px 8px",
+                                  borderRadius: 8,
+                                  border: "1px solid var(--border)",
+                                  background: opt.code === contactDial ? "var(--primary)" : "var(--card)",
+                                  color: opt.code === contactDial ? "#0c111b" : "var(--text)",
+                                  fontWeight: 800,
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  textAlign: "left",
+                                }}
+                              >
+                                <span aria-hidden>{flagEmoji(opt.cc)}</span>
+                                <span style={{ width: 56, display: "inline-block" }}>{opt.code}</span>
+                                <span style={{ color: "var(--muted)", fontWeight: 600 }}>{opt.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                        Useful for urgent questions or arrival issues.
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <label>Address</label>
+                      <input
+                        value={prop.contact_address ?? ""}
+                        onChange={(e) => {
+                          const v = e.currentTarget.value;
+                          setProp((prev) => (prev ? { ...prev, contact_address: v } : prev));
+                        }}
+                        placeholder="Street, city, optional details"
+                        style={FIELD}
+                      />
+                      <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                        Shown only if you want guests to see the exact location.
+                      </div>
+                    </div>
+                  </div>
+
+                  {contactsWizardError && (
+                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                      {contactsWizardError}
+                    </div>
+                  )}
+
+                  <button
+                    className="sb-btn sb-btn--primary"
+                    style={{ width: "100%", minHeight: 44 }}
+                    onClick={() => void saveContactsWizard()}
+                  >
+                    Continue
+                  </button>
+                </div>
+              )}
+
+              {contactsWizardStep === "social" && (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    {(["website", "facebook", "instagram", "tiktok", "location"] as SocialKey[]).map((k) => {
+                      const active = contactsWizardSocialKey === k;
+                      return (
+                        <button
+                          key={k}
+                          type="button"
+                          onClick={() => setContactsWizardSocialKey(k)}
+                          className="sb-cardglow"
+                          style={{
+                            borderRadius: 999,
+                            border: `1px solid ${active ? "var(--primary)" : "var(--border)"}`,
+                            background: "transparent",
+                            padding: "8px 10px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 8,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <img src={socialIcon(k)} alt="" aria-hidden="true" width={20} height={20} style={{ width: 20, height: 20 }} />
+                          <span style={{ fontWeight: 800, textTransform: "capitalize" }}>{k === "website" ? "website" : k}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={{ textTransform: "capitalize" }}>
+                      {contactsWizardSocialKey === "website" ? "Website" : contactsWizardSocialKey === "location" ? "Location" : contactsWizardSocialKey}
+                    </label>
+                    <input
+                      value={contactsWizardSocialDrafts[contactsWizardSocialKey]}
+                      onChange={(e) =>
+                        setContactsWizardSocialDrafts((prev) => ({
+                          ...prev,
+                          [contactsWizardSocialKey]: e.currentTarget.value,
+                        }))
+                      }
+                      placeholder={
+                        contactsWizardSocialKey === "location"
+                          ? "Paste Google Maps link"
+                          : "Paste URL"
+                      }
+                      style={FIELD}
+                    />
+                    <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                      Optional — share only what you want guests to see.
+                    </div>
+                  </div>
+
+                  {contactsWizardError && (
+                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                      {contactsWizardError}
+                    </div>
+                  )}
+
+                  <button
+                    className="sb-btn sb-btn--primary"
+                    style={{ width: "100%", minHeight: 44 }}
+                    onClick={() => void saveSocialWizard()}
+                  >
+                    Continue
+                  </button>
+                </div>
+              )}
+
+              {contactsWizardStep === "reward" && (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+                      <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
+                      <span style={{ fontWeight: 800 }}>Shown in guest check-in portal</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+                      <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
+                      <span style={{ fontWeight: 800 }}>Guests know how to reach you</span>
+                    </div>
+                  </div>
+
+                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                    You can change this anytime.
+                  </div>
+
+                  <button
+                    className="sb-btn sb-btn--primary"
+                    style={{ width: "100%", minHeight: 44 }}
+                    onClick={() => {
+                      setContactsWizardOpen(false);
+                      setHighlightTarget("house_rules");
+                      try { houseRulesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch {}
+                    }}
+                  >
+                    Continue
+                  </button>
+
+                  <a
+                    href={buildCheckinLink(prop.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: "var(--primary)",
+                      fontSize: "var(--fs-s)",
+                      lineHeight: "var(--lh-s)",
+                      textAlign: "center",
+                      textDecoration: "none",
+                      marginTop: 2,
+                    }}
+                  >
+                    View guest link
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {contactsWizardLoading && (
+          <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label={contactsWizardLoadingText} style={{ zIndex: 241 }}>
+            <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
+              <LoadingPill title={contactsWizardLoadingText} />
+              <div style={{ display: "grid", gap: 6, textAlign: "center" }}>
+                <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", fontWeight: 700 }}>
+                  {contactsWizardLoadingText}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       {prop && (
         <>
           {/* Check-in Link */}
@@ -981,6 +1480,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           {/* House Rules PDF */}
           <section
             className="sb-cardglow"
+            ref={houseRulesSectionRef as any}
             style={{
               ...card,
               ...(highlightTarget === "house_rules"

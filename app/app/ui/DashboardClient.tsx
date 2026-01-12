@@ -842,7 +842,7 @@ export default function DashboardClient({
 
 		                <div style={{ display: "flex", justifyContent: "flex-end" }}>
 		                  <button
-		                    className="sb-btn"
+		                    className="sb-btn sb-cardglow"
 		                    disabled={!name || !country}
 		                    style={{
 		                      border: "1px solid var(--primary)",
