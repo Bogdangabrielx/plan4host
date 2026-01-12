@@ -1305,23 +1305,22 @@ export default function HomePageRO() {
         </div>
       </section>
 
-      {/* Prețuri */}
-	      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
-	        <h2 id="pricing-title" data-p4h-reveal>Prețuri simple. Totul conectat.</h2>
-          <p className={styles.pricingLead} data-p4h-reveal>
-            Toate planurile includ comunicare cu oaspeții, sincronizare rezervări și flux de curățenie.
-          </p>
-          <div className={styles.includedBox} data-p4h-reveal>
-            <div className={styles.includedTitle}>Inclus în orice plan</div>
-            <ul className={styles.includedList}>
-              <li>Calendar unificat cu iCal sync</li>
-              <li>Check‑in digital & confirmări</li>
-              <li>Mesaje automate, în funcție de rezervare</li>
-              <li>Ghid pentru oaspeți (sosire, facilități, check‑out)</li>
-              <li>Task-uri de curățenie legate de check‑out</li>
-              <li>Proprietăți și camere nelimitate</li>
-            </ul>
-          </div>
+	      {/* Prețuri */}
+		      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
+		        <h2 id="pricing-title" data-p4h-reveal>Prețuri simple. Totul conectat.</h2>
+	          <p className={styles.pricingLead} data-p4h-reveal>
+	            Toate planurile includ comunicare cu oaspeții și sincronizare rezervări. Curățenia este inclusă din Standard în sus.
+	          </p>
+	          <div className={styles.includedBox} data-p4h-reveal>
+	            <div className={styles.includedTitle}>Inclus în orice plan</div>
+	            <ul className={styles.includedList}>
+	              <li>Calendar unificat cu iCal sync</li>
+	              <li>Check‑in digital & confirmări</li>
+	              <li>Mesaje automate, în funcție de rezervare</li>
+	              <li>Ghid pentru oaspeți (sosire, facilități, check‑out)</li>
+	              <li>Proprietăți și camere nelimitate</li>
+	            </ul>
+	          </div>
 	        <div className={styles.pricingGrid}>
 		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
 		            <div className={styles.priceTier}>BASIC</div>
@@ -1330,11 +1329,11 @@ export default function HomePageRO() {
 	              <ul className={styles.includedList}>
 	                <li>Sync calendar la 60 minute</li>
 	                <li>Automatizare mesaje standard</li>
-                <li>Coordonare task-uri curățenie</li>
-              </ul>
-            <img className={styles.priceImg} src="/basic_ron_forlight.png" alt="" aria-hidden="true" />
-            <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Basic</Link>
-          </div>
+	                <li>Ghid esențial pentru sosire</li>
+	              </ul>
+	            <img className={styles.priceImg} src="/basic_ron_forlight.png" alt="" aria-hidden="true" />
+	            <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Basic</Link>
+	          </div>
 
 		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
 	            <div className={styles.priceTier}>STANDARD</div>
@@ -1343,11 +1342,11 @@ export default function HomePageRO() {
 	              <ul className={styles.includedList}>
 	                <li>Sync calendar la 30 minute</li>
 	                <li>Mesaje automate mai rapide</li>
-	                <li>Update-uri prioritare pentru task-uri</li>
-              </ul>
-            <img className={styles.priceImg} src="/standard_ron_forlight.png" alt="" aria-hidden="true" />
-            <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Standard</Link>
-          </div>
+	                <li>Task-uri de curățenie legate de check‑out</li>
+	              </ul>
+	            <img className={styles.priceImg} src="/standard_ron_forlight.png" alt="" aria-hidden="true" />
+	            <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Standard</Link>
+	          </div>
 
 		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
 	            <div className={styles.priceTier}>PREMIUM</div>
@@ -1355,11 +1354,11 @@ export default function HomePageRO() {
 	              <p className={styles.planMeta}>Pentru operațiuni aglomerate</p>
 	              <ul className={styles.includedList}>
 	                <li>Sync calendar la 10 minute</li>
-	                <li>Automatizare aproape în timp real</li>
-                <li>Reacție mai rapidă la schimbări</li>
-              </ul>
-            <img className={styles.priceImg} src="/premium_ron_forlight.png" alt="" aria-hidden="true" />
-            <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Premium</Link>
+	                <li>Status curățenie în timp real</li>
+	                <li>Smart Guest Guide</li>
+	              </ul>
+	            <img className={styles.priceImg} src="/premium_ron_forlight.png" alt="" aria-hidden="true" />
+	            <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Premium</Link>
 	          </div>
 	        </div>
 	        <p className={styles.srOnly}>

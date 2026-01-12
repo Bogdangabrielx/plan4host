@@ -1488,20 +1488,19 @@ export default function HomePage() {
 	      {/* Pricing */}
 	      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
 	        <h2 id="pricing-title" data-p4h-reveal>Simple pricing. Everything connected.</h2>
-          <p className={styles.pricingLead} data-p4h-reveal>
-            All plans include guest communication, booking sync and cleaning workflows.
-          </p>
-          <div className={styles.includedBox} data-p4h-reveal>
-            <div className={styles.includedTitle}>Included in every plan</div>
-            <ul className={styles.includedList}>
-              <li>Unified booking calendar with iCal sync</li>
-              <li>Digital guest check-in & confirmations</li>
-              <li>Automated, reservation-aware guest messages</li>
-              <li>Multilingual guest guide (arrival, amenities, check-out)</li>
-              <li>Cleaning tasks linked to check-outs</li>
-              <li>Unlimited properties and rooms</li>
-            </ul>
-          </div>
+	          <p className={styles.pricingLead} data-p4h-reveal>
+	            All plans include guest communication and booking sync. Standard and above add cleaning workflows.
+	          </p>
+	          <div className={styles.includedBox} data-p4h-reveal>
+	            <div className={styles.includedTitle}>Included in every plan</div>
+	            <ul className={styles.includedList}>
+	              <li>Unified booking calendar with iCal sync</li>
+	              <li>Digital guest check-in & confirmations</li>
+	              <li>Automated, reservation-aware guest messages</li>
+	              <li>Multilingual guest guide (arrival, amenities, check-out)</li>
+	              <li>Unlimited properties and rooms</li>
+	            </ul>
+	          </div>
 		        <div className={styles.pricingGrid}>
 		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
 		            <div className={styles.priceTier}>BASIC</div>
@@ -1510,11 +1509,11 @@ export default function HomePage() {
 	              <ul className={styles.includedList}>
 	                <li>Calendar sync every 60 minutes</li>
 	                <li>Standard message automation</li>
-	                <li>Cleaning task coordination</li>
-              </ul>
-            <img className={styles.priceImg} src="/basic_forlight.png" alt="" aria-hidden="true" />
-            <Link
-              href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1"
+	                <li>Guest guide essentials for arrivals</li>
+	              </ul>
+	            <img className={styles.priceImg} src="/basic_forlight.png" alt="" aria-hidden="true" />
+	            <Link
+	              href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1"
               className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
             >
               Choose Basic
@@ -1528,11 +1527,11 @@ export default function HomePage() {
 	              <ul className={styles.includedList}>
 	                <li>Calendar sync every 30 minutes</li>
 	                <li>Faster guest message automation</li>
-	                <li>Priority daily task updates</li>
-              </ul>
-            <img className={styles.priceImg} src="/standard_forlight.png" alt="" aria-hidden="true" />
-            <Link
-              href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1"
+	                <li>Cleaning tasks linked to check-outs</li>
+	              </ul>
+	            <img className={styles.priceImg} src="/standard_forlight.png" alt="" aria-hidden="true" />
+	            <Link
+	              href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1"
               className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
             >
               Choose Standard
@@ -1545,12 +1544,12 @@ export default function HomePage() {
 	              <p className={styles.planMeta}>Best for busy operations</p>
 	              <ul className={styles.includedList}>
 	                <li>Calendar sync every 10 minutes</li>
-	                <li>Near real-time automation</li>
-                <li>Faster reaction to changes</li>
-              </ul>
-            <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
-            <Link
-              href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1"
+	                <li>Real-time cleaning status updates</li>
+	                <li>Smart Guest Guide</li>
+	              </ul>
+	            <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
+	            <Link
+	              href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1"
               className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
             >
               Choose Premium
