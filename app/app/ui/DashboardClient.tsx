@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "../_components/HeaderContext";
 import { COUNTRIES as TZ_COUNTRIES, findCountry } from "@/lib/timezones";
 import PlanHeaderBadge from "../_components/PlanHeaderBadge";
+import LoadingPill from "../_components/LoadingPill";
+import overlayStyles from "../_components/AppLoadingOverlay.module.css";
 
 type Property = {
   id: string;
@@ -80,6 +82,11 @@ export default function DashboardClient({
   const firstPropertyPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const [firstPropertyResult, setFirstPropertyResult] = useState<{ propertyId: string; link: string } | null>(null);
   const [firstPropertyCopied, setFirstPropertyCopied] = useState<boolean>(false);
+  const [firstPropertyLoading, setFirstPropertyLoading] = useState(false);
+  const [firstPropertyLoadingIdx, setFirstPropertyLoadingIdx] = useState(0);
+  const firstPropertyLoadingTimerRef = useRef<number | null>(null);
+  const firstPropertyLoadingIntervalRef = useRef<number | null>(null);
+  const [firstPropertyError, setFirstPropertyError] = useState<string | null>(null);
 
   // Copied! state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -177,9 +184,94 @@ export default function DashboardClient({
     return c?.tz || "Europe/Bucharest";
   }
 
+  const FIRST_PROPERTY_LOADING_TITLE = "Preparing your guest experience…";
+  const FIRST_PROPERTY_LOADING_DETAILS = [
+    "This is what your guests will see before arrival.",
+    "Creating guest check-in link…",
+    "Final touches…",
+  ];
+
+  async function createFirstProperty() {
+    if (!name || !country) return;
+    setFirstPropertyError(null);
+    setFirstPropertyLoadingIdx(0);
+    setFirstPropertyLoading(true);
+
+    const start = Date.now();
+    const minMs = 1000;
+
+    // Only start rotating micro-messages if we're still loading after ~2s.
+    if (firstPropertyLoadingTimerRef.current) window.clearTimeout(firstPropertyLoadingTimerRef.current);
+    firstPropertyLoadingTimerRef.current = window.setTimeout(() => {
+      if (firstPropertyLoadingIntervalRef.current) window.clearInterval(firstPropertyLoadingIntervalRef.current);
+      firstPropertyLoadingIntervalRef.current = window.setInterval(() => {
+        setFirstPropertyLoadingIdx((i) => (i + 1) % FIRST_PROPERTY_LOADING_DETAILS.length);
+      }, 900);
+    }, 2000);
+
+    try {
+      const res = await fetch("/api/properties", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          country_code: country,
+          timezone: guessTZ(country),
+          check_in_time: "14:00",
+          check_out_time: "11:00",
+        }),
+      });
+
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({} as any));
+        throw new Error(j?.error || "Could not create property.");
+      }
+
+      const j = await res.json().catch(() => ({} as any));
+      const createdId: string | undefined = j?.property?.id;
+      if (!createdId) throw new Error("Could not create property.");
+
+      // Best-effort: upload optional photo selected in step 2
+      if (firstPropertyPhoto) {
+        try {
+          const fd = new FormData();
+          fd.set("propertyId", createdId);
+          fd.set("file", firstPropertyPhoto);
+          await fetch("/api/property/profile/upload", { method: "POST", body: fd });
+        } catch {}
+      }
+
+      // Update list so the dashboard reflects the created property immediately.
+      try {
+        if (j?.property) setList((prev) => (prev.length ? prev : [j.property as Property]));
+      } catch {}
+
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(minMs - elapsed, 0);
+      if (remaining) await wait(remaining);
+
+      const link = buildPropertyCheckinLink({ id: createdId } as Property);
+      setFirstPropertyResult({ propertyId: createdId, link });
+      setFirstPropertyCopied(false);
+      setFirstPropertyPhoto(null);
+      setName("");
+      setCountry("");
+    } catch (e: any) {
+      setFirstPropertyError(e?.message || "Could not create property.");
+      // Reopen step 2 so user can retry quickly
+      setShowFirstPropertyGuide(true);
+      setFirstPropertyStep(2);
+    } finally {
+      if (firstPropertyLoadingIntervalRef.current) window.clearInterval(firstPropertyLoadingIntervalRef.current);
+      firstPropertyLoadingIntervalRef.current = null;
+      setFirstPropertyLoading(false);
+      if (firstPropertyLoadingTimerRef.current) window.clearTimeout(firstPropertyLoadingTimerRef.current);
+      firstPropertyLoadingTimerRef.current = null;
+    }
+  }
+
   async function addProperty() {
     if (!name || !country) return;
-    const isFirstProperty = list.length === 0;
     setStatus("Saving…");
 
     try {
@@ -203,32 +295,6 @@ export default function DashboardClient({
 
       const j = await res.json().catch(() => ({} as any));
       const createdId: string | undefined = j?.property?.id;
-
-      if (createdId && isFirstProperty) {
-        setShowFirstPropertyGuide(false);
-        setFirstPropertyStep(0);
-
-        // Best-effort: upload optional photo selected in step 2
-        if (firstPropertyPhoto) {
-          try {
-            const fd = new FormData();
-            fd.set("propertyId", createdId);
-            fd.set("file", firstPropertyPhoto);
-            await fetch("/api/property/profile/upload", { method: "POST", body: fd });
-          } catch {}
-        }
-
-        setFirstPropertyPhoto(null);
-        setFirstPropertyCopied(false);
-        setList((prev) => (prev.length ? prev : [j?.property as Property].filter(Boolean)));
-        setName("");
-        setCountry("");
-        setStatus("Idle");
-
-        const link = buildPropertyCheckinLink({ id: createdId } as Property);
-        setFirstPropertyResult({ propertyId: createdId, link });
-        return;
-      }
 
       const { data: refreshed } = await supabase
         .from("properties")
@@ -497,7 +563,15 @@ export default function DashboardClient({
 
           <div style={{ ...FIELD_WRAPPER, marginTop: 6 }}>
             <button
-              onClick={addProperty}
+              onClick={() => {
+                if (list.length === 0) {
+                  setFirstPropertyError(null);
+                  setShowFirstPropertyGuide(true);
+                  setFirstPropertyStep(1);
+                  return;
+                }
+                addProperty();
+              }}
               className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
               style={{ width: "100%", minHeight: 44 }}
             >
@@ -656,11 +730,11 @@ export default function DashboardClient({
       </section>
       </div>
 
-	      {/* First property wizard (3 steps) */}
-	      {showFirstPropertyGuide && list.length === 0 && firstPropertyStep > 0 && (
-	        <div
-	          role="dialog"
-	          aria-modal="true"
+		      {/* First property wizard (3 steps) */}
+		      {showFirstPropertyGuide && list.length === 0 && firstPropertyStep > 0 && (
+		        <div
+		          role="dialog"
+		          aria-modal="true"
 	          onClick={(e) => {
 	            // Require explicit close button
 	            e.stopPropagation();
@@ -689,16 +763,16 @@ export default function DashboardClient({
 	              display: "grid",
 	              gap: 12,
 	            }}
-	          >
-	            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-	              <strong>
-	                {firstPropertyStep === 1 ? "Create your first property" : "Add a photo (optional)"}
-	              </strong>
-	              <button
-	                aria-label="Close"
-	                className="sb-btn sb-cardglow sb-btn--icon"
-	                style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
-	                onClick={() => {
+		          >
+		            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+		              <strong>
+		                {firstPropertyStep === 1 ? "Create your first property" : "Add a photo (optional)"}
+		              </strong>
+		              <button
+		                aria-label="Close"
+		                className="sb-btn sb-cardglow sb-btn--icon"
+		                style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
+		                onClick={() => {
 	                  setShowFirstPropertyGuide(false);
 	                  setFirstPropertyStep(0);
 	                  setFirstPropertyPhoto(null);
@@ -706,22 +780,25 @@ export default function DashboardClient({
 	              >
 	                ×
 	              </button>
-	            </div>
+		            </div>
 
-	            {firstPropertyStep === 1 ? (
-	              <div style={{ display: "grid", gap: 12 }}>
-	                <div style={{ display: "grid", gap: 6 }}>
-	                  <label style={{ display: "block" }}>Property name</label>
-	                  <input
-	                    value={name}
+		            {firstPropertyStep === 1 ? (
+		              <div style={{ display: "grid", gap: 12 }}>
+		                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+		                  Takes less than 30 seconds.
+		                </div>
+		                <div style={{ display: "grid", gap: 6 }}>
+		                  <label style={{ display: "block" }}>Property name</label>
+		                  <input
+		                    value={name}
 	                    onChange={(e) => setName(e.currentTarget.value)}
 	                    placeholder="e.g. BOA aFrame"
 	                    style={FIELD_STYLE}
 	                  />
-	                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-	                    Guests will see this. Change anytime.
-	                  </div>
-	                </div>
+		                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+		                    Guests will see this. Change anytime.
+		                  </div>
+		                </div>
 
 	                <div style={{ display: "grid", gap: 6 }}>
 	                  <label style={{ display: "block" }}>Country</label>
@@ -739,25 +816,32 @@ export default function DashboardClient({
 	                        </option>
 	                      ))}
 	                  </select>
-	                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-	                    Helps personalize guest info.
-	                  </div>
-	                </div>
+		                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+		                    Helps personalize guest info.
+		                  </div>
+		                </div>
 
-	                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-	                  <button
-	                    className="sb-btn sb-btn--primary"
-	                    disabled={!name || !country}
-	                    onClick={() => setFirstPropertyStep(2)}
-	                  >
-	                    Continue
-	                  </button>
-	                </div>
-	              </div>
+		                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+		                  <button
+		                    className="sb-btn"
+		                    disabled={!name || !country}
+		                    style={{
+		                      border: "1px solid var(--primary)",
+		                      background: "transparent",
+		                      color: "var(--text)",
+		                      borderRadius: 999,
+		                      fontWeight: "var(--fw-medium)",
+		                    }}
+		                    onClick={() => setFirstPropertyStep(2)}
+		                  >
+		                    Continue
+		                  </button>
+		                </div>
+		              </div>
 	            ) : (
 	              <div style={{ display: "grid", gap: 12 }}>
-	                <div style={{ display: "grid", gap: 6 }}>
-	                  <label style={{ display: "block" }}>Property photo (optional)</label>
+		                <div style={{ display: "grid", gap: 6 }}>
+		                  <label style={{ display: "block" }}>Property photo (optional)</label>
 	                  <input
 	                    ref={firstPropertyPhotoInputRef}
 	                    type="file"
@@ -765,54 +849,82 @@ export default function DashboardClient({
 	                    style={{ display: "none" }}
 	                    onChange={(e) => setFirstPropertyPhoto(e.currentTarget.files?.[0] ?? null)}
 	                  />
-	                  <button
-	                    type="button"
-	                    className="sb-btn"
-	                    style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
-	                    onClick={() => firstPropertyPhotoInputRef.current?.click()}
-	                  >
-	                    {firstPropertyPhoto ? "Change photo" : "Add photo"}
-	                  </button>
-	                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-	                    {firstPropertyPhoto ? firstPropertyPhoto.name : "Optional — helps guests recognize your place."}
-	                  </div>
-	                </div>
+		                  <button
+		                    type="button"
+		                    className="sb-btn"
+		                    style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
+		                    onClick={() => firstPropertyPhotoInputRef.current?.click()}
+		                  >
+		                    {firstPropertyPhoto ? "Change photo" : "Add photo"}
+		                  </button>
+		                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+		                    {firstPropertyPhoto ? firstPropertyPhoto.name : "Optional — you can skip this for now."}
+		                  </div>
+		                </div>
 
-	                <div style={{ display: "grid", gap: 10 }}>
-	                  <button
-	                    className="sb-btn sb-btn--primary"
-	                    style={{ width: "100%", minHeight: 44 }}
-	                    disabled={!name || !country || status === "Saving…"}
-	                    onClick={() => {
-	                      setShowFirstPropertyGuide(false);
-	                      setFirstPropertyStep(0);
-	                      addProperty();
-	                    }}
-	                  >
-	                    Create & view guest link
-	                  </button>
-	                  <button
-	                    className="sb-btn"
-	                    style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
-	                    disabled={!name || !country || status === "Saving…"}
-	                    onClick={() => {
-	                      setFirstPropertyPhoto(null);
-	                      setShowFirstPropertyGuide(false);
-	                      setFirstPropertyStep(0);
-	                      addProperty();
-	                    }}
-	                  >
-	                    Skip photo
-	                  </button>
-	                </div>
+		                <div style={{ display: "grid", gap: 10 }}>
+		                  <button
+		                    className="sb-btn sb-btn--primary"
+		                    style={{ width: "100%", minHeight: 44 }}
+		                    disabled={!name || !country || firstPropertyLoading}
+		                    onClick={() => {
+		                      setShowFirstPropertyGuide(false);
+		                      setFirstPropertyStep(0);
+		                      createFirstProperty();
+		                    }}
+		                  >
+		                    Create & view guest link
+		                  </button>
+		                  <button
+		                    className="sb-btn"
+		                    style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
+		                    disabled={!name || !country || firstPropertyLoading}
+		                    onClick={() => {
+		                      setFirstPropertyPhoto(null);
+		                      setShowFirstPropertyGuide(false);
+		                      setFirstPropertyStep(0);
+		                      createFirstProperty();
+		                    }}
+		                  >
+		                    Skip photo
+		                  </button>
+		                  {firstPropertyError && (
+		                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+		                      {firstPropertyError}
+		                    </div>
+		                  )}
+		                </div>
+		              </div>
+		            )}
+		          </div>
+		        </div>
+		      )}
+
+	      {/* First property loading (between step 2 and feedback) */}
+	      {firstPropertyLoading && (
+	        <div
+	          className={overlayStyles.overlay}
+	          role="status"
+	          aria-live="polite"
+	          aria-label={FIRST_PROPERTY_LOADING_TITLE}
+	          style={{ zIndex: 243 }}
+	        >
+	          <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
+	            <LoadingPill title={FIRST_PROPERTY_LOADING_TITLE} />
+	            <div style={{ display: "grid", gap: 6, textAlign: "center" }}>
+	              <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", fontWeight: 700 }}>
+	                {FIRST_PROPERTY_LOADING_TITLE}
 	              </div>
-	            )}
+	              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+	                {FIRST_PROPERTY_LOADING_DETAILS[firstPropertyLoadingIdx] ?? FIRST_PROPERTY_LOADING_DETAILS[0]}
+	              </div>
+	            </div>
 	          </div>
 	        </div>
 	      )}
 
-	      {/* AHA modal: guest link ready (no explicit link shown) */}
-	      {firstPropertyResult && (
+		      {/* AHA modal: guest link ready (no explicit link shown) */}
+		      {firstPropertyResult && (
 	        <>
 	          <div
 	            onClick={() => setFirstPropertyResult(null)}
@@ -856,11 +968,11 @@ export default function DashboardClient({
 	                  ×
 	                </button>
 	              </div>
-	              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-	                This is what your guest will see.
-	              </div>
+		              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+		                This is what your guest will see.
+		              </div>
 
-	              <div style={{ display: "grid", gap: 10 }}>
+		              <div style={{ display: "grid", gap: 10 }}>
 	                <button
 	                  className="sb-btn sb-btn--primary"
 	                  style={{ width: "100%", minHeight: 44 }}
@@ -889,20 +1001,41 @@ export default function DashboardClient({
 	                >
 	                  {firstPropertyCopied ? "Copied" : "Copy link"}
 	                </button>
-	                <button
-	                  className="sb-btn sb-btn--ghost"
-	                  style={{ justifyContent: "center" }}
-	                  onClick={() => {
-	                    window.location.href = `/app/propertySetup?property=${encodeURIComponent(firstPropertyResult.propertyId)}&guide=rooms`;
-	                  }}
-	                >
-	                  Continue setup
-	                </button>
-	              </div>
-	            </div>
-	          </div>
-	        </>
-	      )}
+		                <button
+		                  className="sb-btn sb-btn--ghost"
+		                  style={{
+		                    justifyContent: "center",
+		                    border: "1px solid var(--primary)",
+		                    background: "transparent",
+		                    color: "var(--text)",
+		                    borderRadius: 999,
+		                  }}
+		                  onClick={() => {
+		                    window.location.href = `/app/propertySetup?property=${encodeURIComponent(firstPropertyResult.propertyId)}&guide=rooms`;
+		                  }}
+		                >
+		                  Continue setup
+		                </button>
+		                <a
+		                  href={firstPropertyResult.link}
+		                  target="_blank"
+		                  rel="noopener noreferrer"
+		                  style={{
+		                    color: "var(--primary)",
+		                    fontSize: "var(--fs-s)",
+		                    lineHeight: "var(--lh-s)",
+		                    textAlign: "center",
+		                    textDecoration: "none",
+		                    overflowWrap: "anywhere",
+		                  }}
+		                >
+		                  {firstPropertyResult.link}
+		                </a>
+		              </div>
+		            </div>
+		          </div>
+		        </>
+		      )}
 
       {/* Confirm Delete Modal */}
       {toDelete && (
