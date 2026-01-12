@@ -1142,37 +1142,43 @@ export default function HomePageRO() {
 	      <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title" data-p4h-reveal>Totul rulează dintr‑un singur loc, calm</h2>
 
-        <div className={styles.calmGrid}>
-          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
-            <div className={styles.calmHead}>
-              <div className={styles.calmEmoji} aria-hidden>🧍</div>
-              <h3>Oaspeți</h3>
-            </div>
-            <ul className={styles.calmList}>
-              <li>Un singur link cu tot ce au nevoie</li>
-              <li>Check‑in, sosire, facilități, check‑out</li>
+	        <div className={styles.calmGrid}>
+	          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+	            <div className={styles.calmHead}>
+	              <div className={styles.calmEmoji} aria-hidden>
+	                <img className={styles.calmEmojiImg} src="/landing_guest.png" alt="" />
+	              </div>
+	              <h3>Oaspeți</h3>
+	            </div>
+	            <ul className={styles.calmList}>
+	              <li>Un singur link cu tot ce au nevoie</li>
+	              <li>Check‑in, sosire, facilități, check‑out</li>
               <li>În limba lor, fără să te întrebe</li>
             </ul>
           </div>
-          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
-            <div className={styles.calmHead}>
-              <div className={styles.calmEmoji} aria-hidden>📅</div>
-              <h3>Rezervări</h3>
-            </div>
-            <ul className={styles.calmList}>
-              <li>Toate rezervările într‑un singur calendar</li>
-              <li>iCal sync în timp real între platforme</li>
+	          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+	            <div className={styles.calmHead}>
+	              <div className={styles.calmEmoji} aria-hidden>
+	                <img className={styles.calmEmojiImg} src="/landing_calendar.png" alt="" />
+	              </div>
+	              <h3>Rezervări</h3>
+	            </div>
+	            <ul className={styles.calmList}>
+	              <li>Toate rezervările într‑un singur calendar</li>
+	              <li>iCal sync în timp real între platforme</li>
               <li>Fără ghicit, fără suprapuneri</li>
             </ul>
           </div>
-          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
-            <div className={styles.calmHead}>
-              <div className={styles.calmEmoji} aria-hidden>🧹</div>
-              <h3>Curățenie</h3>
-            </div>
-            <ul className={styles.calmList}>
-              <li>Task-urile urmează automat check‑out‑urile</li>
-              <li>Priorități clare pentru azi</li>
+	          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+	            <div className={styles.calmHead}>
+	              <div className={styles.calmEmoji} aria-hidden>
+	                <img className={styles.calmEmojiImg} src="/landing_cleaning.png" alt="" />
+	              </div>
+	              <h3>Curățenie</h3>
+	            </div>
+	            <ul className={styles.calmList}>
+	              <li>Task-urile urmează automat check‑out‑urile</li>
+	              <li>Priorități clare pentru azi</li>
               <li>Toată lumea știe ce urmează</li>
             </ul>
           </div>

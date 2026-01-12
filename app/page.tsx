@@ -1320,37 +1320,43 @@ export default function HomePage() {
 	      <section id="features" className={styles.features} aria-labelledby="features-title">
         <h2 id="features-title" data-p4h-reveal>Everything runs from one calm place</h2>
 
-        <div className={styles.calmGrid}>
-          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
-            <div className={styles.calmHead}>
-              <div className={styles.calmEmoji} aria-hidden>🧍</div>
-              <h3>Guests</h3>
-            </div>
-            <ul className={styles.calmList}>
-              <li>One link with everything they need</li>
-              <li>Check-in, arrival info, amenities, check-out</li>
+	        <div className={styles.calmGrid}>
+	          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+	            <div className={styles.calmHead}>
+	              <div className={styles.calmEmoji} aria-hidden>
+	                <img className={styles.calmEmojiImg} src="/landing_guest.png" alt="" />
+	              </div>
+	              <h3>Guests</h3>
+	            </div>
+	            <ul className={styles.calmList}>
+	              <li>One link with everything they need</li>
+	              <li>Check-in, arrival info, amenities, check-out</li>
               <li>In their language, without asking you</li>
             </ul>
           </div>
-          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
-            <div className={styles.calmHead}>
-              <div className={styles.calmEmoji} aria-hidden>📅</div>
-              <h3>Bookings</h3>
-            </div>
-            <ul className={styles.calmList}>
-              <li>All reservations in one calendar</li>
-              <li>Real-time iCal sync across platforms</li>
+	          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+	            <div className={styles.calmHead}>
+	              <div className={styles.calmEmoji} aria-hidden>
+	                <img className={styles.calmEmojiImg} src="/landing_calendar.png" alt="" />
+	              </div>
+	              <h3>Bookings</h3>
+	            </div>
+	            <ul className={styles.calmList}>
+	              <li>All reservations in one calendar</li>
+	              <li>Real-time iCal sync across platforms</li>
               <li>No guessing, no overlaps</li>
             </ul>
           </div>
-          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
-            <div className={styles.calmHead}>
-              <div className={styles.calmEmoji} aria-hidden>🧹</div>
-              <h3>Cleaning</h3>
-            </div>
-            <ul className={styles.calmList}>
-              <li>Tasks follow check-outs automatically</li>
-              <li>Clear priorities for today</li>
+	          <div className={`sb-cardglow ${styles.calmCard}`} data-p4h-reveal>
+	            <div className={styles.calmHead}>
+	              <div className={styles.calmEmoji} aria-hidden>
+	                <img className={styles.calmEmojiImg} src="/landing_cleaning.png" alt="" />
+	              </div>
+	              <h3>Cleaning</h3>
+	            </div>
+	            <ul className={styles.calmList}>
+	              <li>Tasks follow check-outs automatically</li>
+	              <li>Clear priorities for today</li>
               <li>Everyone knows what’s next</li>
             </ul>
           </div>

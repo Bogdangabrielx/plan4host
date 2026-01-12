@@ -670,6 +670,13 @@ will-change: transform;
   font-size: 18px;
   flex: 0 0 auto;
 }
+.calmEmojiImg{
+  width: 22px;
+  height: 22px;
+  display: block;
+  object-fit: contain;
+  filter: saturate(1.05);
+}
 .calmCard h3{
   margin: 0;
   font-size: 13px;
