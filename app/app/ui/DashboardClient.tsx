@@ -237,7 +237,12 @@ export default function DashboardClient({
           const fd = new FormData();
           fd.set("propertyId", createdId);
           fd.set("file", firstPropertyPhoto);
-          await fetch("/api/property/profile/upload", { method: "POST", body: fd });
+          const up = await fetch("/api/property/profile/upload", { method: "POST", body: fd });
+          if (up.ok) {
+            try {
+              window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+            } catch {}
+          }
         } catch {}
       }
 
@@ -256,6 +261,9 @@ export default function DashboardClient({
       setFirstPropertyPhoto(null);
       setName("");
       setCountry("");
+      try {
+        window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+      } catch {}
     } catch (e: any) {
       setFirstPropertyError(e?.message || "Could not create property.");
       // Reopen step 2 so user can retry quickly
