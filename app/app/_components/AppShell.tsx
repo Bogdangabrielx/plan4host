@@ -21,12 +21,12 @@ type OnboardingStep = {
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
   { id: "property", label: "Add property" },
-  { id: "room", label: "Add room" },
-  { id: "links_contact", label: "Links & contact" },
   { id: "picture", label: "Add photo" },
-  { id: "message_template", label: "Message template" },
-  { id: "house_rules", label: "House rules" },
+  { id: "room", label: "Add room" },
   { id: "calendars", label: "Calendar sync" },
+  { id: "links_contact", label: "Links and contact" },
+  { id: "house_rules", label: "House rules" },
+  { id: "message_template", label: "Message template" },
 ];
 
 function ActivityTracker() {

@@ -7,12 +7,12 @@ export const runtime = "nodejs";
 
 const STEPS = [
   "property",
-  "room",
-  "links_contact",
   "picture",
-  "message_template",
-  "house_rules",
+  "room",
   "calendars",
+  "links_contact",
+  "house_rules",
+  "message_template",
 ] as const;
 
 export type OnboardingStepId = (typeof STEPS)[number];
