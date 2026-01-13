@@ -1521,8 +1521,10 @@ export default function CheckinClient() {
               color: color-mix(in srgb, var(--text) 92%, transparent);
             }
             .ci-titleBreak{ display:inline; margin-left: .25em; }
+            .ci-breakSm{ display:inline; margin-left: .25em; }
             @media (max-width: 450px){
               .ci-titleBreak{ display:block; margin-left: 0; }
+              .ci-breakSm{ display:block; margin-left: 0; }
             }
             .ci-hSubtitle{
               --ci-accent: var(--success, var(--primary));
@@ -2091,7 +2093,10 @@ export default function CheckinClient() {
                   </>
                 ) : (
                   <>
-                    <p className="ci-infoIntro">Thank you for choosing to stay with us.</p>
+                    <p className="ci-infoIntro">
+                      Thank you for choosing
+                      <span className="ci-breakSm">to stay with us.</span>
+                    </p>
                     <p className="ci-infoMain">
                       To ensure a smooth arrival, please complete the online check-in form below.
                       <br />
