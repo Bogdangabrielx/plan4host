@@ -1502,28 +1502,31 @@ export default function CheckinClient() {
             .ci-heroText{ width: 100%; max-width: 980px; }
             .ci-langSwitch{ position:absolute; top: 12px; right: 12px; display:flex; gap: 8px; }
             .ci-type{
-              --ci-font-h:clamp(34px, 4.8vw, 46px);
-              --ci-font-b:16px;
-              --ci-font-s:14px;
-              --ci-weight-m:500;
-              --ci-weight-b:800;
+              --ci-font-h: 32px;
+              --ci-font-b: 16px;
+              --ci-font-s: 13px;
+              --ci-weight-r: 400;
+              --ci-weight-m: 500;
+              --ci-weight-sb: 600;
               font-family: inherit;
             }
             .ci-heroTitle{ margin:0; }
             .ci-hTitle{
-              margin:0;
+              margin: 0 auto 12px;
+              max-width: 720px;
               font-size: var(--ci-font-h);
-              font-weight: var(--ci-weight-b);
-              letter-spacing: .02em;
-              line-height: 1.15;
+              font-weight: var(--ci-weight-sb);
+              letter-spacing: -0.2px;
+              line-height: 40px;
               color: color-mix(in srgb, var(--text) 92%, transparent);
             }
             .ci-hSubtitle{
               --ci-accent: var(--success, var(--primary));
-              margin: 6px 0 0;
+              margin: 0 auto 32px;
+              max-width: 720px;
               font-size: var(--ci-font-b);
-              font-weight: var(--ci-weight-m);
-              line-height: 1.45;
+              font-weight: var(--ci-weight-r);
+              line-height: 24px;
               color: color-mix(in srgb, var(--ci-accent) 78%, black);
               display: inline-flex;
               flex-wrap: wrap;
@@ -1532,60 +1535,64 @@ export default function CheckinClient() {
             }
             .ci-pillInline{
               --ci-accent: var(--success, var(--primary));
-              display: inline-block;
+              display: inline-flex;
+              align-items: center;
               vertical-align: baseline;
-              font-size: inherit;
-              line-height: inherit;
-              padding: 0 10px;
+              font-size: 13px;
+              line-height: 20px;
+              padding: 2px 10px;
               border-radius: 999px;
-              border: 1px solid color-mix(in srgb, var(--ci-accent) 34%, transparent);
-              background: color-mix(in srgb, var(--ci-accent) 12%, white);
-              color: color-mix(in srgb, var(--ci-accent) 86%, black);
-              font-weight: inherit;
+              border: 0;
+              background: var(--ci-accent);
+              color: #fff;
+              font-weight: var(--ci-weight-m);
               text-transform: uppercase;
               letter-spacing: .12em;
               white-space: nowrap;
             }
             .ci-pillProp{
               --ci-accent: var(--success, var(--primary));
-              display: inline-block;
+              display: inline-flex;
+              align-items: center;
               vertical-align: baseline;
-              font-size: inherit;
-              line-height: inherit;
-              padding: 2px 10px;
-              border-radius: 12px;
-              border: 1px solid color-mix(in srgb, var(--ci-accent) 26%, transparent);
-              background: color-mix(in srgb, var(--ci-accent) 78%, black 16%);
+              font-size: 14px;
+              line-height: 22px;
+              padding: 4px 12px;
+              border-radius: 999px;
+              border: 0;
+              background: var(--ci-accent);
               color: #fff;
-              font-weight: 600;
+              font-weight: var(--ci-weight-m);
               white-space: nowrap;
             }
-            .ci-heroStack{ margin-top: 14px; display:grid; gap: 14px; }
-            .ci-heroLead{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-b); color: color-mix(in srgb, var(--text) 92%, transparent); line-height: 1.55; }
-            .ci-heroBody{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 1.55; }
-            .ci-heroSmall{ margin:0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.55; }
-            .ci-heroNote{ margin-top: 6px; width: 100%; display:grid; gap: 14px; padding: 18px 22px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 90%, transparent); background: #fff; box-shadow: 0 12px 28px rgba(15,23,42,0.08); text-align: center; }
-            .ci-heroNoteTitle{ font-size: var(--ci-font-s); font-weight: var(--ci-weight-b); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); text-align: center; }
+            .ci-heroStack{ margin-top: 0; display:grid; gap: 14px; }
+            .ci-heroLead{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-sb); color: color-mix(in srgb, var(--text) 92%, transparent); line-height: 1.55; }
+            .ci-heroBody{ margin:0; font-size: 15px; font-weight: var(--ci-weight-r); color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 24px; }
+            .ci-heroSmall{ margin:0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-r); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 20px; }
+            .ci-heroNote{
+              margin-top: 0;
+              width: 100%;
+              max-width: 720px;
+              display: grid;
+              gap: 16px;
+              padding: 24px;
+              border-radius: 16px;
+              border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+              background: #fff;
+              box-shadow: 0 10px 24px rgba(15,23,42,0.08);
+              text-align: center;
+            }
+            .ci-heroNoteTitle{ font-size: 14px; font-weight: var(--ci-weight-m); letter-spacing: .18em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); text-align: center; }
             .ci-heroList{ list-style: none; padding: 0; margin: 0; display:grid; gap: 8px; text-align: left; }
             .ci-heroList li{ display:block; }
-            .ci-infoIntro{ margin: 0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 86%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; line-height: 1.6; }
-            .ci-infoMain{ margin: 0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; line-height: 1.65; }
-            .ci-infoLabel{
-              margin: 0;
-              font-size: calc(var(--ci-font-b) + 1px);
-              font-weight: 650;
-              color: color-mix(in srgb, var(--text) 84%, transparent);
-              max-width: 760px;
-              margin-left:auto;
-              margin-right:auto;
-              line-height: 1.55;
-              padding-top: 2px;
-            }
-            .ci-infoMeta{ margin: 0; font-size: var(--ci-font-s); font-weight: 550; color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.5; max-width: 760px; margin-left:auto; margin-right:auto; }
-            .ci-infoClose{ margin: 0; font-size: var(--ci-font-s); font-weight: 550; color: color-mix(in srgb, var(--text) 70%, transparent); line-height: 1.5; text-align: center; max-width: 760px; margin-left:auto; margin-right:auto; }
-            .ci-infoSep{ height: 1px; border: 0; margin: 16px auto; width: min(760px, 100%); background: color-mix(in srgb, var(--border) 70%, transparent); }
-            .ci-infoList{ list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 10px; width: min(760px, 100%); text-align: left; }
-            .ci-infoList li{ display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: start; color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 1.6; }
+            .ci-infoIntro{ margin: 0 auto 16px; max-width: 720px; font-size: 15px; font-weight: var(--ci-weight-m); line-height: 22px; color: color-mix(in srgb, var(--text) 82%, transparent); }
+            .ci-infoMain{ margin: 0 auto 8px; max-width: 600px; font-size: 15px; font-weight: var(--ci-weight-r); line-height: 24px; color: color-mix(in srgb, var(--text) 78%, transparent); }
+            .ci-infoLabel{ margin: 0 auto; max-width: 720px; font-size: 14px; font-weight: var(--ci-weight-m); line-height: 20px; color: color-mix(in srgb, var(--text) 82%, transparent); }
+            .ci-infoMeta{ margin: 0 auto; max-width: 720px; font-size: 13px; font-weight: var(--ci-weight-r); line-height: 20px; color: color-mix(in srgb, var(--text) 70%, transparent); }
+            .ci-infoClose{ margin: 0 auto; max-width: 720px; font-size: 14px; font-weight: var(--ci-weight-r); line-height: 22px; color: color-mix(in srgb, var(--text) 74%, transparent); text-align: center; }
+            .ci-infoSep{ height: 1px; border: 0; margin: 20px auto; width: min(600px, 100%); background: color-mix(in srgb, var(--border) 70%, transparent); }
+            .ci-infoList{ list-style: none; margin: 8px auto 16px; padding: 0; display: grid; gap: 8px; width: min(600px, 100%); text-align: left; font-size: 14px; line-height: 22px; font-weight: var(--ci-weight-r); }
+            .ci-infoList li{ display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: start; color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 22px; }
             .ci-infoList li::before{ content: "•"; color: color-mix(in srgb, var(--text) 48%, transparent); line-height: 1.2; margin-top: 2px; }
             .ci-actionBtn{
               display: inline-flex;
@@ -1672,7 +1679,12 @@ export default function CheckinClient() {
             }
             .ci-consentText{ font-size: 13px; color: var(--muted); line-height: 1.45; }
             .ci-consentHint{ margin-top: 6px; font-size: 12px; color: color-mix(in srgb, var(--muted) 92%, transparent); }
-            @media (max-width: 560px){ .ci-type{ --ci-font-h:clamp(30px, 8vw, 38px); } }
+            @media (max-width: 560px){
+              .ci-type{ --ci-font-h: 28px; }
+              .ci-hTitle{ line-height: 34px; }
+              .ci-hSubtitle{ margin-bottom: 24px; }
+              .ci-heroNote{ padding: 18px; }
+            }
             @media (max-width: 900px){
               .ci-langSwitch{
                 position: fixed;
