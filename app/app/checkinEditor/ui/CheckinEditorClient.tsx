@@ -512,37 +512,86 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     return (j?.url || "").toString().trim();
   }
 
+  async function sleep(ms: number) {
+    await new Promise<void>((r) => window.setTimeout(r, ms));
+  }
+
+  async function sleepUntilOrAbort(ms: number, shouldAbort: () => boolean) {
+    const start = Date.now();
+    while (Date.now() - start < ms) {
+      if (shouldAbort()) return;
+      await sleep(50);
+    }
+  }
+
+  async function runHouseRulesLoadingSequence<T>(opts: {
+    phases: string[];
+    minMsPerPhase?: number;
+    task: () => Promise<T>;
+  }): Promise<T> {
+    const minMsPerPhase = opts.minMsPerPhase ?? 2000;
+    setHouseRulesWizardError(null);
+    setHouseRulesWizardLoading(true);
+
+    let taskError: any = null;
+    let taskDone = false;
+    let taskValue: T | null = null;
+
+    const taskPromise = (async () => {
+      try {
+        taskValue = await opts.task();
+      } catch (e: any) {
+        taskError = e;
+      } finally {
+        taskDone = true;
+      }
+    })();
+
+    for (const phase of opts.phases) {
+      setHouseRulesWizardLoadingText(phase);
+      await sleepUntilOrAbort(minMsPerPhase, () => !!taskError);
+      if (taskError) break;
+      // If the task is already done, still continue to show the remaining phases (psychological loading).
+    }
+
+    await taskPromise;
+    setHouseRulesWizardLoading(false);
+
+    if (taskError) throw taskError;
+    return taskValue as T;
+  }
+
   async function createAndUploadHouseRulesPdf() {
     if (!prop) return;
-    setHouseRulesWizardError(null);
-    setHouseRulesWizardLoadingText("Creating your house rules…");
-    setHouseRulesWizardLoading(true);
-    const start = Date.now();
-    const minMs = 1100;
     try {
-      const bytes = buildSimplePdfBytes({
-        title: prop.name,
-        subtitle: "House Rules",
-        bodyLines: houseRulesToLines(houseRulesDraft),
+      const url = await runHouseRulesLoadingSequence({
+        phases: [
+          "Preparing your house rules…",
+          "Setting clear expectations for your guests…",
+          "Making sure guests confirm them before check-in…",
+        ],
+        task: async () => {
+          const bytes = buildSimplePdfBytes({
+            title: prop.name,
+            subtitle: "House Rules",
+            bodyLines: houseRulesToLines(houseRulesDraft),
+          });
+          const fname = `${(prop.name || "house-rules").toString().trim().replace(/\s+/g, "-")}-house-rules.pdf`;
+          const file = new File([bytes], fname, { type: "application/pdf" });
+          const u = await uploadHouseRulesPdf(file);
+          await refresh();
+          try {
+            window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+          } catch {
+            // ignore
+          }
+          return u;
+        },
       });
-      const fname = `${(prop.name || "house-rules").toString().trim().replace(/\s+/g, "-")}-house-rules.pdf`;
-      const file = new File([bytes], fname, { type: "application/pdf" });
-      const url = await uploadHouseRulesPdf(file);
-      await refresh();
-      try {
-        window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
-      } catch {
-        // ignore
-      }
-      const elapsed = Date.now() - start;
-      const remaining = Math.max(minMs - elapsed, 0);
-      if (remaining) await new Promise<void>((r) => setTimeout(r, remaining));
       setHouseRulesWizardPreviewUrl(url || null);
       setHouseRulesWizardStep("reward");
     } catch (e: any) {
       setHouseRulesWizardError(e?.message || "Could not create house rules.");
-    } finally {
-      setHouseRulesWizardLoading(false);
     }
   }
 
@@ -1434,24 +1483,25 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         input.onchange = async () => {
                           const file = input.files?.[0] || null;
                           if (!file) { input.remove(); return; }
-                          setHouseRulesWizardError(null);
-                          setHouseRulesWizardLoadingText("Uploading house rules…");
-                          setHouseRulesWizardLoading(true);
-                          const start = Date.now();
-                          const minMs = 900;
                           try {
-                            const url = await uploadHouseRulesPdf(file);
-                            await refresh();
-                            try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
-                            const elapsed = Date.now() - start;
-                            const remaining = Math.max(minMs - elapsed, 0);
-                            if (remaining) await new Promise<void>((r) => setTimeout(r, remaining));
+                            const url = await runHouseRulesLoadingSequence({
+                              phases: [
+                                "Preparing your house rules…",
+                                "Setting clear expectations for your guests…",
+                                "Making sure guests confirm them before check-in…",
+                              ],
+                              task: async () => {
+                                const u = await uploadHouseRulesPdf(file);
+                                await refresh();
+                                try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
+                                return u;
+                              },
+                            });
                             setHouseRulesWizardPreviewUrl(url || null);
                             setHouseRulesWizardStep("uploaded");
                           } catch (e: any) {
                             setHouseRulesWizardError(e?.message || "Could not upload house rules.");
                           } finally {
-                            setHouseRulesWizardLoading(false);
                             input.remove();
                           }
                         };
