@@ -1503,7 +1503,11 @@ export default function CheckinClient() {
             .ci-heroText{ width: 100%; max-width: 980px; }
             .ci-langSwitch{ position:absolute; top: 12px; right: 12px; display:flex; gap: 8px; }
             .ci-type{
-              --ci-font-h:28px; --ci-font-b:14px; --ci-font-s:12px; --ci-weight-m:600; --ci-weight-b:800;
+              --ci-font-h:clamp(34px, 4.8vw, 46px);
+              --ci-font-b:16px;
+              --ci-font-s:14px;
+              --ci-weight-m:500;
+              --ci-weight-b:800;
               font-family: inherit;
             }
             .ci-heroTitle{ margin:0; }
@@ -1526,13 +1530,6 @@ export default function CheckinClient() {
               flex-wrap: wrap;
               justify-content: center;
               gap: 6px;
-            }
-            .ci-hKicker{
-              margin: 10px 0 0;
-              font-size: var(--ci-font-b);
-              font-weight: var(--ci-weight-m);
-              color: color-mix(in srgb, var(--text) 70%, transparent);
-              text-align: center;
             }
             .ci-pillInline{
               --ci-accent: var(--success, var(--primary));
@@ -1564,20 +1561,20 @@ export default function CheckinClient() {
               font-weight: 600;
               white-space: nowrap;
             }
-            .ci-heroStack{ margin-top: 12px; display:grid; gap: 10px; }
+            .ci-heroStack{ margin-top: 14px; display:grid; gap: 14px; }
             .ci-heroLead{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-b); color: color-mix(in srgb, var(--text) 92%, transparent); line-height: 1.55; }
             .ci-heroBody{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 1.55; }
             .ci-heroSmall{ margin:0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.55; }
-            .ci-heroNote{ margin-top: 6px; width: 100%; display:grid; gap: 10px; padding: 14px 18px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 90%, transparent); background: #fff; box-shadow: 0 12px 28px rgba(15,23,42,0.08); text-align: center; }
+            .ci-heroNote{ margin-top: 6px; width: 100%; display:grid; gap: 14px; padding: 18px 22px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 90%, transparent); background: #fff; box-shadow: 0 12px 28px rgba(15,23,42,0.08); text-align: center; }
             .ci-heroNoteTitle{ font-size: var(--ci-font-s); font-weight: var(--ci-weight-b); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); text-align: center; }
             .ci-heroList{ list-style: none; padding: 0; margin: 0; display:grid; gap: 8px; text-align: left; }
             .ci-heroList li{ display:block; }
-            .ci-infoIntro{ margin: 0; font-size: var(--ci-font-b); font-weight: 700; color: color-mix(in srgb, var(--text) 88%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; }
-            .ci-infoMain{ margin: 0; font-size: var(--ci-font-b); font-weight: 550; color: color-mix(in srgb, var(--text) 78%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; }
+            .ci-infoIntro{ margin: 0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 86%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; line-height: 1.6; }
+            .ci-infoMain{ margin: 0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; line-height: 1.65; }
             .ci-infoLabel{ margin: 0; font-size: var(--ci-font-b); font-weight: 700; color: color-mix(in srgb, var(--text) 82%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; }
             .ci-infoMeta{ margin: 0; font-size: var(--ci-font-s); font-weight: 550; color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.5; max-width: 760px; margin-left:auto; margin-right:auto; }
             .ci-infoClose{ margin: 0; font-size: var(--ci-font-s); font-weight: 550; color: color-mix(in srgb, var(--text) 70%, transparent); line-height: 1.5; text-align: center; max-width: 760px; margin-left:auto; margin-right:auto; }
-            .ci-infoSep{ height: 1px; border: 0; margin: 12px auto; width: min(760px, 100%); background: color-mix(in srgb, var(--border) 70%, transparent); }
+            .ci-infoSep{ height: 1px; border: 0; margin: 16px auto; width: min(760px, 100%); background: color-mix(in srgb, var(--border) 70%, transparent); }
             .ci-infoList{ list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 8px; width: min(760px, 100%); text-align: left; }
             .ci-infoList li{ display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: start; color: color-mix(in srgb, var(--text) 78%, transparent); }
             .ci-infoList li::before{ content: "•"; color: color-mix(in srgb, var(--text) 48%, transparent); line-height: 1.2; margin-top: 2px; }
@@ -1666,7 +1663,7 @@ export default function CheckinClient() {
             }
             .ci-consentText{ font-size: 13px; color: var(--muted); line-height: 1.45; }
             .ci-consentHint{ margin-top: 6px; font-size: 12px; color: color-mix(in srgb, var(--muted) 92%, transparent); }
-            @media (max-width: 560px){ .ci-type{ --ci-font-h:24px; } }
+            @media (max-width: 560px){ .ci-type{ --ci-font-h:clamp(30px, 8vw, 38px); } }
             @media (max-width: 900px){
               .ci-langSwitch{
                 position: fixed;
@@ -1979,7 +1976,6 @@ export default function CheckinClient() {
                 </>
               )}
             </p>
-            <p className="ci-hKicker">{T("intro2")}</p>
             <div className="ci-heroStack">
               <div className="ci-heroNote">
                 <div className="ci-heroNoteTitle">{lang === "ro" ? "Informații" : "Info"}</div>
