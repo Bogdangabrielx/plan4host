@@ -71,10 +71,10 @@ export async function POST(req: Request) {
 	              Tocmai ai adăugat <strong>${escapeHtml(propName)}</strong> în Plan4Host — un prim pas foarte bun.
 	            </p>
 	            <p style="margin:0 0 14px; color:#334155;">
-	              Ce ai setat până acum este suficient ca să începi. De aici, totul devine mai ușor pe măsură ce adaugi detalii când ai timp.
+	              Ce ai setat până acum este suficient ca să începi. Linkul de check-in este activ și poate fi trimis oaspeților.
 	            </p>
 	            <p style="margin:0 0 14px;">
-	              Dacă vrei să vezi primul rezultat, aruncă o privire la cum arată pentru oaspeți:
+	              Dacă vrei să vezi primul rezultat, aruncă o privire la cum arată din perspectiva oaspetelui:
 	            </p>
 	            <p style="margin:0 0 16px;">
 	              <a href="${guestCheckinUrl}" target="_blank" rel="noopener"
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
 	              </a>
 	            </p>
 	            <p style="margin:0 0 18px; color:#334155;">
-	              Acest ecran face de obicei următorii pași mai clari — și mai ușor de continuat.
+	              De obicei, asta clarifică ce ai putea personaliza în continuare — detalii camere, mesaje sau timing — când ai timp.
 	            </p>
 	            <p style="margin:0 0 10px;">Dacă ai întrebări sau vrei ajutor cu setările:</p>
 	            <ul style="margin:0 0 18px; padding-left:18px; color:#0f172a;">
@@ -100,10 +100,10 @@ export async function POST(req: Request) {
 	              You’ve just added <strong>${escapeHtml(propName)}</strong> to Plan4Host — a solid first step.
 	            </p>
 	            <p style="margin:0 0 14px; color:#334155;">
-	              What you’ve set up so far is already enough to get started. From here, things only get easier as you add more details when you feel like it.
+	              What you’ve set up so far is already enough to get started. The check-in link is live and ready to be shared with your guests.
 	            </p>
 	            <p style="margin:0 0 14px;">
-	              If you want to see the first result, take a quick look at how this appears to your guests:
+	              If you want to see the first result, take a quick look at how this appears from the guest’s side:
 	            </p>
 	            <p style="margin:0 0 16px;">
 	              <a href="${guestCheckinUrl}" target="_blank" rel="noopener"
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
 	              </a>
 	            </p>
 	            <p style="margin:0 0 18px; color:#334155;">
-	              That view usually makes the next steps clearer — and easier to continue.
+	              That view usually makes it clear what you might want to personalize next — room details, messages, or timing — whenever you feel like it.
 	            </p>
 	            <p style="margin:0 0 10px;">If you have questions or want help setting things up, we’re always close:</p>
 	            <ul style="margin:0 0 18px; padding-left:18px; color:#0f172a;">
