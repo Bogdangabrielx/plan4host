@@ -797,13 +797,12 @@ export default function CheckinClient() {
 
   const OUTER_WRAP: React.CSSProperties = useMemo(
     () => ({
-      maxWidth: 860,
+      maxWidth: 980,
       margin: isSmall ? "12px auto" : "24px auto",
       padding: isSmall ? 10 : 12,
       display: "grid",
       gap: isSmall ? 12 : 16,
-      fontFamily:
-        "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
+      fontFamily: "inherit",
     }),
     [isSmall],
   );
@@ -816,7 +815,7 @@ export default function CheckinClient() {
     border: "1px solid var(--border)",
     fontFamily: 'inherit',
     borderRadius: 10,
-    fontSize: 14,
+    fontSize: 16,
   }), []);
   const INPUT_DATE: React.CSSProperties = useMemo(() => ({
     ...INPUT,
@@ -1995,7 +1994,9 @@ export default function CheckinClient() {
                     <p className="ci-infoMain">
                       Pentru o sosire cât mai ușoară, te rugăm să completezi formularul de check-in online de mai jos.
                       <br />
-                      După trimitere, vei primi automat un email de confirmare pentru sejurul tău la{" "}
+                      După trimitere, vei primi automat un email de confirmare
+                      <br />
+                      pentru sejurul tău la{" "}
                       <span className="ci-pillProp">{prop?.name ?? "proprietate"}</span>.
                     </p>
                     <hr className="ci-infoSep" />
@@ -2015,7 +2016,9 @@ export default function CheckinClient() {
                     <p className="ci-infoMain">
                       To ensure a smooth arrival, please complete the online check-in form below. Once submitted, you will
                       <br />
-                      automatically receive a confirmation email for your stay at{" "}
+                      automatically receive a confirmation email
+                      <br />
+                      for your stay at{" "}
                       <span className="ci-pillProp">{prop?.name ?? "the property"}</span>.
                     </p>
                     <hr className="ci-infoSep" />
