@@ -1507,57 +1507,53 @@ export default function CheckinClient() {
               font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
             }
             .ci-heroTitle{ margin:0; }
-            .ci-headline{ display:inline-grid; gap: 8px; justify-items:center; }
-            .ci-headlineLine{ display:inline-flex; align-items:baseline; justify-content:center; gap: 10px; flex-wrap: wrap; }
-            .ci-headlineText{
+            .ci-hTitle{
+              margin:0;
               font-size: var(--ci-font-h);
               font-weight: var(--ci-weight-b);
               letter-spacing: .02em;
               line-height: 1.15;
               color: color-mix(in srgb, var(--text) 92%, transparent);
             }
-            .ci-headlineTag{
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              padding: 4px 12px;
-              border-radius: 999px;
-              border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
-              background: color-mix(in srgb, var(--text) 6%, transparent);
-              color: color-mix(in srgb, var(--text) 78%, transparent);
-              font-size: 13px;
-              font-weight: 750;
-              letter-spacing: .12em;
-              text-transform: uppercase;
-              white-space: nowrap;
-            }
-            .ci-headlineTagSuccess{
-              --ci-success: var(--success, var(--primary));
-              border-color: color-mix(in srgb, var(--ci-success) 34%, transparent);
-              background: color-mix(in srgb, var(--ci-success) 12%, white);
-              color: color-mix(in srgb, var(--ci-success) 86%, black);
-            }
-            .ci-headlineTail{
-              font-size: var(--ci-font-b);
-              font-weight: var(--ci-weight-m);
-              color: color-mix(in srgb, var(--text) 78%, transparent);
-              line-height: 1.35;
-              white-space: nowrap;
-            }
-            .ci-subTitle{
-              margin:0;
+            .ci-hSubtitle{
+              --ci-accent: var(--success, var(--primary));
+              margin: 6px 0 0;
               font-size: var(--ci-font-b);
               font-weight: var(--ci-weight-m);
               line-height: 1.45;
+              color: color-mix(in srgb, var(--ci-accent) 78%, black);
               display: inline-flex;
               flex-wrap: wrap;
               justify-content: center;
-              gap: 8px;
+              gap: 6px;
             }
-            .ci-subAccent{
-              --ci-success: var(--success, var(--primary));
-              color: color-mix(in srgb, var(--ci-success) 78%, black);
-              font-weight: 700;
+            .ci-pillInline{
+              --ci-accent: var(--success, var(--primary));
+              display: inline-block;
+              vertical-align: baseline;
+              font-size: inherit;
+              line-height: inherit;
+              padding: 0 10px;
+              border-radius: 999px;
+              border: 1px solid color-mix(in srgb, var(--ci-accent) 34%, transparent);
+              background: color-mix(in srgb, var(--ci-accent) 12%, white);
+              color: color-mix(in srgb, var(--ci-accent) 86%, black);
+              font-weight: inherit;
+              white-space: nowrap;
+            }
+            .ci-pillProp{
+              --ci-accent: var(--success, var(--primary));
+              display: inline-block;
+              vertical-align: baseline;
+              font-size: inherit;
+              line-height: inherit;
+              padding: 2px 10px;
+              border-radius: 12px;
+              border: 1px solid color-mix(in srgb, var(--ci-accent) 26%, transparent);
+              background: color-mix(in srgb, var(--ci-accent) 10%, white);
+              color: color-mix(in srgb, var(--ci-accent) 80%, black);
+              font-weight: 500;
+              white-space: nowrap;
             }
             .ci-heroStack{ margin-top: 12px; display:grid; gap: 10px; }
             .ci-heroLead{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-b); color: color-mix(in srgb, var(--text) 92%, transparent); line-height: 1.55; }
@@ -1945,33 +1941,26 @@ export default function CheckinClient() {
           <div className="ci-heroText">
             <h1 className="ci-heroTitle">
               {lang === "ro" ? (
-                <span className="ci-headline">
-                  <span className="ci-headlineLine">
-                    <span className="ci-headlineText">Completează check-in-ul</span>
-                  </span>
-                  <span className="ci-headlineLine">
-                    <span className="ci-subTitle">
-                      <span className="ci-subAccent">În doar</span>
-                      <span className="ci-headlineTag ci-headlineTagSuccess">câteva minute</span>
-                      <span className="ci-subAccent">și primești confirmarea QR.</span>
-                    </span>
-                  </span>
-                </span>
+                <span className="ci-hTitle">Completează check-in-ul</span>
               ) : (
-                <span className="ci-headline">
-                  <span className="ci-headlineLine">
-                    <span className="ci-headlineText">Complete your check-in</span>
-                  </span>
-                  <span className="ci-headlineLine">
-                    <span className="ci-subTitle">
-                      <span className="ci-subAccent">In just</span>
-                      <span className="ci-headlineTag ci-headlineTagSuccess">a few minutes</span>
-                      <span className="ci-subAccent">and receive your QR confirmation.</span>
-                    </span>
-                  </span>
-                </span>
+                <span className="ci-hTitle">Complete your check-in</span>
               )}
             </h1>
+            <p className="ci-hSubtitle">
+              {lang === "ro" ? (
+                <>
+                  <span>În doar</span>
+                  <span className="ci-pillInline">câteva minute</span>
+                  <span>și primești confirmarea QR.</span>
+                </>
+              ) : (
+                <>
+                  <span>In just</span>
+                  <span className="ci-pillInline">a few minutes</span>
+                  <span>and receive your QR confirmation.</span>
+                </>
+              )}
+            </p>
             <div className="ci-heroStack">
               <div className="ci-heroNote">
                 <div className="ci-heroNoteTitle">{lang === "ro" ? "Informații" : "Info"}</div>
@@ -1983,12 +1972,12 @@ export default function CheckinClient() {
                     <p className="ci-heroBody" style={{ margin: 0 }}>
                       Pentru o sosire cât mai ușoară, te rugăm să completezi formularul de check-in online de mai jos.
                       După trimitere, vei primi automat un email de confirmare pentru sejurul tău la{" "}
-                      <strong style={{ color: "var(--text)" }}>{prop?.name ?? "proprietate"}</strong>.
+                      <span className="ci-pillProp">{prop?.name ?? "proprietate"}</span>.
                     </p>
                     <div className="ci-heroBody" style={{ margin: 0 }}>
-                      Emailul va include un cod QR, care poate fi:
+                      Emailul tău de confirmare va include:
                       <ul style={{ margin: "8px 0 0", paddingLeft: 18, display: "grid", gap: 6 }}>
-                        <li>prezentat la recepție (dacă este cazul), sau</li>
+                        <li>un cod QR ce poate fi prezentat la recepție (dacă este cazul), sau</li>
                         <li>folosit ca dovadă că check-in-ul a fost completat.</li>
                       </ul>
                     </div>
@@ -2007,10 +1996,10 @@ export default function CheckinClient() {
                     <p className="ci-heroBody" style={{ margin: 0 }}>
                       To ensure a smooth arrival, please complete the online check-in form below. Once submitted, you will
                       automatically receive a confirmation email for your stay at{" "}
-                      <strong style={{ color: "var(--text)" }}>{prop?.name ?? "the property"}</strong>.
+                      <span className="ci-pillProp">{prop?.name ?? "the property"}</span>.
                     </p>
                     <div className="ci-heroBody" style={{ margin: 0 }}>
-                      This email will include a QR code, which can be:
+                      Your confirmation email will include:
                       <ul style={{ margin: "8px 0 0", paddingLeft: 18, display: "grid", gap: 6 }}>
                         <li>presented at reception (if applicable), or</li>
                         <li>used as proof that your check-in has been completed.</li>
