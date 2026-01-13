@@ -723,16 +723,24 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     }
   }
 
-  function addSocialWizardAndAdvance() {
+  async function advanceSocialWizard(commit: boolean) {
     const currentKey = CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex];
-    setContactsWizardSocialDrafts((prev) => {
-      const updated = { ...prev, [currentKey]: contactsWizardSocialInput };
-      const nextIndex = Math.min(CONTACTS_SOCIAL_KEYS.length - 1, contactsWizardSocialIndex + 1);
+    const isLast = contactsWizardSocialIndex >= CONTACTS_SOCIAL_KEYS.length - 1;
+    const nextDrafts = commit
+      ? { ...contactsWizardSocialDrafts, [currentKey]: contactsWizardSocialInput }
+      : { ...contactsWizardSocialDrafts };
+    if (commit) setContactsWizardSocialDrafts(nextDrafts);
+
+    if (!isLast) {
+      const nextIndex = contactsWizardSocialIndex + 1;
       const nextKey = CONTACTS_SOCIAL_KEYS[nextIndex];
       setContactsWizardSocialIndex(nextIndex);
-      setContactsWizardSocialInput((updated[nextKey] ?? "").toString());
-      return updated;
-    });
+      setContactsWizardSocialInput((nextDrafts[nextKey] ?? "").toString());
+      return;
+    }
+
+    // Completed the loop: save everything once, then continue to reward.
+    await saveSocialWizard(nextDrafts);
   }
 
   function onPropChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -1325,7 +1333,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                <div style={{ display: "grid", gap: 12 }}>
 	                  <div style={{ display: "grid", gap: 10 }}>
 	                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
-	                      {(["website", "facebook", "instagram", "tiktok", "location"] as SocialKey[]).map((k) => {
+	                      {CONTACTS_SOCIAL_KEYS.map((k) => {
 	                        const active = CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex] === k;
 	                        return (
 	                          <div
@@ -1363,6 +1371,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                    </div>
 
 	                    <div style={{ display: "grid", gap: 6 }}>
+	                      <div style={{ color: "rgba(11,18,32,0.65)", fontSize: 12, fontWeight: 900, letterSpacing: ".18em", textTransform: "uppercase", textAlign: "center" }}>
+	                        {CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex]}{" "}
+	                        <span style={{ color: "rgba(11,18,32,0.35)", fontWeight: 800 }}>
+	                          {contactsWizardSocialIndex + 1}/{CONTACTS_SOCIAL_KEYS.length}
+	                        </span>
+	                      </div>
 	                      <input
 	                        value={contactsWizardSocialInput}
 	                        onChange={(e) => setContactsWizardSocialInput(e.currentTarget.value)}
@@ -1386,35 +1400,42 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                      <button
 	                        className="sb-btn"
 	                        style={{ width: "100%", minHeight: 44 }}
-	                        onClick={() => {
-	                          setContactsWizardStep("reward");
-	                        }}
+	                        onClick={() => void advanceSocialWizard(false)}
 	                      >
 	                        Skip
 	                      </button>
 	                      <button
 	                        className="sb-btn sb-btn--primary"
 	                        style={{ width: "100%", minHeight: 44 }}
-	                        onClick={() => addSocialWizardAndAdvance()}
+	                        onClick={() => void advanceSocialWizard(true)}
 	                      >
 	                        Add
 	                      </button>
 	                    </div>
 	                    <button
-	                      className="sb-btn sb-cardglow"
-	                      style={{ width: "100%", minHeight: 44, justifyContent: "center" }}
-	                      onClick={async () => {
-	                        const currentKey = CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex];
-	                        const drafts = { ...contactsWizardSocialDrafts, [currentKey]: contactsWizardSocialInput };
-	                        setContactsWizardSocialDrafts(drafts);
-	                        await saveSocialWizard(drafts);
-	                      }}
-	                    >
-	                      Save
-	                    </button>
-	                    <button
 	                      type="button"
-	                      onClick={() => setContactsWizardStep("reward")}
+	                      onClick={() => {
+	                        // Skip entire Social Links step (no saving) → go directly to House Rules
+	                        setContactsWizardOpen(false);
+	                        try {
+	                          document.documentElement.removeAttribute("data-p4h-modal-open");
+	                        } catch {
+	                          // ignore
+	                        }
+	                        // Reset drafts to current persisted values (discard local changes)
+	                        setContactsWizardSocialDrafts({
+	                          facebook: prop.social_facebook || "",
+	                          instagram: prop.social_instagram || "",
+	                          tiktok: prop.social_tiktok || "",
+	                          website: prop.social_website || "",
+	                          location: prop.social_location || "",
+	                        });
+	                        setContactsWizardSocialIndex(0);
+	                        setContactsWizardSocialInput((prop.social_facebook || "").toString());
+	                        setHighlightTarget("house_rules");
+	                        setNoPdfOpen(false);
+	                        openHouseRulesWizard();
+	                      }}
 	                      style={{
 	                        background: "transparent",
 	                        border: "none",
@@ -1670,6 +1691,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               {houseRulesWizardStep === "create" && (
                 <div style={{ display: "grid", gap: 12 }}>
                   <div
+                    className="p4h-hr-paper"
                     style={{
                       borderRadius: 16,
                       border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
@@ -1677,17 +1699,28 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       color: "#0b1220",
                       overflow: "hidden",
                       boxShadow: "0 10px 26px rgba(0,0,0,0.25)",
+                      position: "relative",
                     }}
                   >
                     <div
+                      aria-hidden
                       style={{
-                        position: "relative",
-                        padding: 16,
-                        backgroundColor: "#ffffff",
+                        position: "absolute",
+                        inset: 0,
                         backgroundImage: "url(/background_houserules.png)",
                         backgroundRepeat: "no-repeat",
                         backgroundPosition: "center",
-                        backgroundSize: "130% 130%",
+                        backgroundSize: "112% 112%",
+                        // The PNG has transparency around it; keep a clean white base behind.
+                        opacity: 1,
+                        pointerEvents: "none",
+                      }}
+                    />
+
+                    <div
+                      style={{
+                        position: "relative",
+                        padding: isNarrow ? 12 : 16,
                       }}
                     >
                       {houseRulesDraftBusy && (
@@ -1704,32 +1737,28 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         />
                       )}
                       <div style={{ position: "absolute", top: 12, right: 12, opacity: 0.85 }} aria-hidden>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                          <path
-                            d="M8 4h8a2 2 0 0 1 2 2v14H6V6a2 2 0 0 1 2-2Z"
-                            stroke="#0b1220"
-                            strokeWidth="1.6"
-                            opacity="0.55"
-                          />
-                          <path
-                            d="M9 8h6M9 12h6M9 16h4"
-                            stroke="#0b1220"
-                            strokeWidth="1.6"
-                            strokeLinecap="round"
-                            opacity="0.55"
-                          />
-                          <path
-                            d="M16 4V2"
-                            stroke="#0b1220"
-                            strokeWidth="1.6"
-                            strokeLinecap="round"
-                            opacity="0.55"
-                          />
-                        </svg>
+                        <img
+                          src="/svg_paste_demo.svg"
+                          alt=""
+                          aria-hidden="true"
+                          width={18}
+                          height={18}
+                          style={{ width: 18, height: 18, display: "block" }}
+                        />
                       </div>
 
-                      <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6, paddingTop: 8 }}>
-                        <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: ".02em" }}>{prop.name}</div>
+                      <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6, paddingTop: 6 }}>
+                        <div
+                          style={{
+                            fontSize: 18,
+                            fontWeight: 900,
+                            letterSpacing: ".14em",
+                            textTransform: "uppercase",
+                            color: "rgba(11,18,32,0.92)",
+                          }}
+                        >
+                          {prop.name}
+                        </div>
                         <div
                           style={{
                             fontSize: 11,
@@ -1743,10 +1772,24 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         </div>
                       </div>
 
-                      <div style={{ height: 14 }} />
+                      <div style={{ height: 12 }} />
 
-                      {/* Controls live on top of the paper */}
-                      <div style={{ display: "grid", gap: 12 }}>
+                      {/* Lined writing area */}
+                      <div
+                        className="p4h-hr-writing"
+                        style={{
+                          borderRadius: 14,
+                          backgroundColor: "rgba(255,255,255,0.92)",
+                          // match the notebook lines (consistent overlay) so text doesn't land "between" lines
+                          backgroundImage:
+                            "repeating-linear-gradient(to bottom, transparent 0 27px, rgba(37,99,235,0.10) 27px 28px)",
+                          backgroundPosition: "0 10px",
+                          padding: isNarrow ? "12px 12px 14px 54px" : "14px 16px 16px 64px",
+                          display: "grid",
+                          gap: 14,
+                        }}
+                      >
+                        {/* Controls live on top of the paper */}
                         {([
                           { key: "noSmoking", label: "Keep the indoor space smoke‑free." },
                           { key: "noParties", label: "No parties or events." },
@@ -1865,28 +1908,31 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                             }}
                           />
                         </div>
-                      </div>
-
-                      <div style={{ height: 18 }} />
-
-                      <div style={{ display: "grid", gap: 8 }}>
-                        <div style={{ fontSize: 12.5, fontWeight: 900, letterSpacing: ".16em", textTransform: "uppercase", color: "rgba(11,18,32,0.45)" }}>
-                          Preview
-                        </div>
-                        <div style={{ display: "grid", gap: 10 }}>
-                          {houseRulesDraftBusy && (
-                            <div style={{ fontSize: 12, color: "rgba(11,18,32,0.50)" }}>
-                              Adding it to your house rules…
+                        <div style={{ display: "grid", gap: 8 }}>
+                          <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: ".16em", textTransform: "uppercase", color: "rgba(11,18,32,0.50)" }}>
+                            Preview
+                          </div>
+                          <div style={{ display: "grid", gap: 10 }}>
+                            {houseRulesDraftBusy && (
+                              <div style={{ fontSize: 12, color: "rgba(11,18,32,0.50)" }}>
+                                Adding it to your house rules…
+                              </div>
+                            )}
+                            <div
+                              key={houseRulesPrintPulse}
+                              className="p4h-hr-print"
+                              style={{
+                                display: "grid",
+                                gap: 10,
+                                fontSize: 13.5,
+                                lineHeight: "28px",
+                                color: "rgba(11,18,32,0.92)",
+                              }}
+                            >
+                              {houseRulesToParagraphs(houseRulesDraft).map((t, idx) => (
+                                <div key={idx}>{t}</div>
+                              ))}
                             </div>
-                          )}
-                          <div
-                            key={houseRulesPrintPulse}
-                            className="p4h-hr-print"
-                            style={{ display: "grid", gap: 10, fontSize: 13.5, lineHeight: 1.55, color: "rgba(11,18,32,0.92)" }}
-                          >
-                            {houseRulesToParagraphs(houseRulesDraft).map((t, idx) => (
-                              <div key={idx}>{t}</div>
-                            ))}
                           </div>
                         </div>
                       </div>

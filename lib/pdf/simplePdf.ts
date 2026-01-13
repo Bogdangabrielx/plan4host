@@ -4,6 +4,17 @@ export type SimplePdfOptions = {
   bodyLines: string[];
 };
 
+function estimateHelveticaWidth(text: string, fontSize: number): number {
+  // Approximation: Helvetica average width ~0.52em per character.
+  return Math.max(0, text.length) * fontSize * 0.52;
+}
+
+function centerX(text: string, fontSize: number, pageWidth: number): number {
+  const est = estimateHelveticaWidth(text, fontSize);
+  const x = (pageWidth - est) / 2;
+  return Math.max(48, Math.min(pageWidth - 48, x));
+}
+
 function escapePdfText(text: string): string {
   return text
     .replace(/\\/g, "\\\\")
@@ -51,8 +62,8 @@ function concatBytes(chunks: Uint8Array[]): Uint8Array {
 }
 
 export function buildSimplePdfBytes(opts: SimplePdfOptions): Uint8Array {
-  const title = (opts.title || "").trim() || "House Rules";
-  const subtitle = (opts.subtitle || "").trim();
+  const title = (opts.title || "").trim().toUpperCase() || "HOUSE RULES";
+  const subtitle = (opts.subtitle || "").trim().toUpperCase();
 
   const body: string[] = [];
   for (const line of opts.bodyLines || []) {
@@ -64,16 +75,24 @@ export function buildSimplePdfBytes(opts: SimplePdfOptions): Uint8Array {
 
   const contentLines: string[] = [];
   contentLines.push("BT");
-  contentLines.push("/F1 20 Tf");
-  contentLines.push("72 740 Td");
+  const PAGE_W = 612;
+  const TITLE_FS = 18;
+  const SUB_FS = 11;
+  const BODY_FS = 11;
+  const yTitle = 742;
+  const xTitle = centerX(title, TITLE_FS, PAGE_W);
+  contentLines.push(`/F1 ${TITLE_FS} Tf`);
+  contentLines.push(`1 0 0 1 ${xTitle.toFixed(2)} ${yTitle.toFixed(2)} Tm`);
   contentLines.push(`(${escapePdfText(title)}) Tj`);
   if (subtitle) {
-    contentLines.push("0 -28 Td");
-    contentLines.push("/F1 14 Tf");
+    const xSub = centerX(subtitle, SUB_FS, PAGE_W);
+    contentLines.push(`/F1 ${SUB_FS} Tf`);
+    contentLines.push(`1 0 0 1 ${xSub.toFixed(2)} ${(yTitle - 22).toFixed(2)} Tm`);
+    // letter spacing approximation via extra spaces (keeps generator simple)
     contentLines.push(`(${escapePdfText(subtitle)}) Tj`);
   }
-  contentLines.push("0 -34 Td");
-  contentLines.push("/F1 11 Tf");
+  contentLines.push(`/F1 ${BODY_FS} Tf`);
+  contentLines.push(`1 0 0 1 72 690 Tm`);
   for (const line of body) {
     contentLines.push(`(${escapePdfText(line)}) Tj`);
     contentLines.push("0 -14 Td");
@@ -139,4 +158,3 @@ export function buildSimplePdfBytes(opts: SimplePdfOptions): Uint8Array {
   objects.push(toBytes(xrefLines.join("\n") + "\n" + trailer));
   return concatBytes(objects);
 }
-
