@@ -1520,6 +1520,10 @@ export default function CheckinClient() {
               line-height: 40px;
               color: color-mix(in srgb, var(--text) 92%, transparent);
             }
+            .ci-titleBreak{ display:inline; margin-left: .25em; }
+            @media (max-width: 420px){
+              .ci-titleBreak{ display:block; margin-left: 0; }
+            }
             .ci-hSubtitle{
               --ci-accent: var(--success, var(--primary));
               margin: 0 auto 32px;
@@ -2033,9 +2037,13 @@ export default function CheckinClient() {
           <div className="ci-heroText">
             <h1 className="ci-heroTitle">
               {lang === "ro" ? (
-                <span className="ci-hTitle">Completează check-in-ul</span>
+                <span className="ci-hTitle">
+                  Completează<span className="ci-titleBreak">check‑in‑ul</span>
+                </span>
               ) : (
-                <span className="ci-hTitle">Complete your check-in</span>
+                <span className="ci-hTitle">
+                  Complete your<span className="ci-titleBreak">check-in</span>
+                </span>
               )}
             </h1>
             <p className="ci-hSubtitle">
