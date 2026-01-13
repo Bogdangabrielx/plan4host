@@ -286,6 +286,17 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     };
   }, []);
 
+  // Prevent background "click-away autosaves" while any wizard modal is open.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const open = contactsWizardOpen || houseRulesWizardOpen;
+    if (open) {
+      document.documentElement.setAttribute("data-p4h-modal-open", "1");
+    } else {
+      document.documentElement.removeAttribute("data-p4h-modal-open");
+    }
+  }, [contactsWizardOpen, houseRulesWizardOpen]);
+
   // Close wizard dial dropdown on outside click
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -2673,6 +2684,9 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
 
   async function commitActive() {
     if (!active) return;
+    if (typeof document !== "undefined" && document.documentElement.getAttribute("data-p4h-modal-open") === "1") {
+      return;
+    }
     const current = getVal(active);
     if ((current || '') === (draft || '')) return; // no change
     await save(active, draft);
@@ -2687,6 +2701,9 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
+      if (typeof document !== "undefined" && document.documentElement.getAttribute("data-p4h-modal-open") === "1") {
+        return;
+      }
       const t = e.target as Node | null;
       if (containerRef.current && t && !containerRef.current.contains(t)) {
         commitActive();
