@@ -1527,6 +1527,13 @@ export default function CheckinClient() {
               justify-content: center;
               gap: 6px;
             }
+            .ci-hKicker{
+              margin: 10px 0 0;
+              font-size: var(--ci-font-b);
+              font-weight: var(--ci-weight-m);
+              color: color-mix(in srgb, var(--text) 70%, transparent);
+              text-align: center;
+            }
             .ci-pillInline{
               --ci-accent: var(--success, var(--primary));
               display: inline-block;
@@ -1970,6 +1977,7 @@ export default function CheckinClient() {
                 </>
               )}
             </p>
+            <p className="ci-hKicker">{T("intro2")}</p>
             <div className="ci-heroStack">
               <div className="ci-heroNote">
                 <div className="ci-heroNoteTitle">{lang === "ro" ? "Informații" : "Info"}</div>
