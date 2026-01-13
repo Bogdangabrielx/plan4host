@@ -462,6 +462,37 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     openHouseRulesWizard();
   }, [houseRulesWizardRequested, prop?.id]);
 
+  // Gentle nudge: if contact details are set but house rules are missing, open the House Rules wizard once per session.
+  useEffect(() => {
+    if (!prop) return;
+    if (houseRulesWizardOpen) return;
+    if (houseRulesWizardRequested) return;
+    if ((prop.regulation_pdf_url || "").toString().trim()) return;
+
+    const hasOtherDetails = Boolean(
+      (prop.contact_email || "").toString().trim() ||
+        (prop.contact_phone || "").toString().trim() ||
+        (prop.contact_address || "").toString().trim() ||
+        (prop.presentation_image_url || "").toString().trim() ||
+        (prop.social_facebook || "").toString().trim() ||
+        (prop.social_instagram || "").toString().trim() ||
+        (prop.social_tiktok || "").toString().trim() ||
+        (prop.social_website || "").toString().trim() ||
+        (prop.social_location || "").toString().trim(),
+    );
+    if (!hasOtherDetails) return;
+
+    try {
+      const key = `p4h:hr:autoPrompted:${prop.id}`;
+      if (window.sessionStorage.getItem(key) === "1") return;
+      window.sessionStorage.setItem(key, "1");
+    } catch {
+      // ignore storage failures (still open once per mount)
+    }
+
+    openHouseRulesWizard();
+  }, [prop?.id, prop?.regulation_pdf_url, houseRulesWizardOpen, houseRulesWizardRequested]);
+
   useEffect(() => {
     return () => {
       if (houseRulesDraftBusyTimer.current) window.clearTimeout(houseRulesDraftBusyTimer.current);

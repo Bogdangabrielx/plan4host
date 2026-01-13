@@ -289,12 +289,13 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     if (unitWizardLoadingTimerRef.current) window.clearTimeout(unitWizardLoadingTimerRef.current);
     unitWizardLoadingTimerRef.current = window.setTimeout(() => setUnitWizardLoadingStage(1), 950);
 
-    try {
-      const rows = Array.from({ length: count }, (_, i) => ({
-        property_id: selected.id,
-        name: `Unit ${i + 1}`,
-        sort_index: i,
-      }));
+	    try {
+	      const singleUnitName = (selected.name || "").toString().trim() || "Unit 1";
+	      const rows = Array.from({ length: count }, (_, i) => ({
+	        property_id: selected.id,
+	        name: count === 1 ? singleUnitName : `Unit ${i + 1}`,
+	        sort_index: i,
+	      }));
 
       const { data, error } = await supabase
         .from("rooms")
