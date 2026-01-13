@@ -2014,7 +2014,7 @@ export default function CheckinClient() {
                     <hr className="ci-infoSep" />
                     <p className="ci-infoLabel">Emailul tău de confirmare va include:</p>
                     <ul className="ci-infoList">
-                      <li>un <strong style={{ fontWeight: 700, color: "var(--text)" }}>cod QR</strong> ce poate fi prezentat la recepție (dacă este cazul), sau</li>
+                      <li>un{"\u00A0"}<strong style={{ fontWeight: 700, color: "var(--text)" }}>cod QR</strong> ce poate fi prezentat la recepție (dacă este cazul), sau</li>
                       <li>folosit ca dovadă că check-in-ul a fost completat.</li>
                     </ul>
                     <p className="ci-infoMeta">
@@ -2036,7 +2036,7 @@ export default function CheckinClient() {
                     <hr className="ci-infoSep" />
                     <p className="ci-infoLabel">Your confirmation email will include:</p>
                     <ul className="ci-infoList">
-                      <li>a <strong style={{ fontWeight: 700, color: "var(--text)" }}>QR code</strong> that can be presented at reception (if applicable), or</li>
+                      <li>a{"\u00A0"}<strong style={{ fontWeight: 700, color: "var(--text)" }}>QR code</strong> that can be presented at reception (if applicable), or</li>
                       <li>used as proof that your check-in has been completed.</li>
                     </ul>
                     <p className="ci-infoMeta">
