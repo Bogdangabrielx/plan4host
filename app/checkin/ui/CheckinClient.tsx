@@ -1591,9 +1591,20 @@ export default function CheckinClient() {
             .ci-infoMeta{ margin: 0 auto; max-width: 720px; font-size: 13px; font-weight: var(--ci-weight-r); line-height: 20px; color: color-mix(in srgb, var(--text) 70%, transparent); }
             .ci-infoClose{ margin: 0 auto; max-width: 720px; font-size: 14px; font-weight: var(--ci-weight-r); line-height: 22px; color: color-mix(in srgb, var(--text) 74%, transparent); text-align: center; }
             .ci-infoSep{ height: 1px; border: 0; margin: 20px auto; width: min(600px, 100%); background: color-mix(in srgb, var(--border) 70%, transparent); }
-            .ci-infoList{ list-style: none; margin: 8px auto 16px; padding: 0; display: grid; gap: 8px; width: min(600px, 100%); text-align: left; font-size: 14px; line-height: 22px; font-weight: var(--ci-weight-r); }
-            .ci-infoList li{ display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: start; color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 22px; }
-            .ci-infoList li::before{ content: "•"; color: color-mix(in srgb, var(--text) 48%, transparent); line-height: 1.2; margin-top: 2px; }
+            .ci-infoList{
+              list-style: disc;
+              margin: 8px auto 16px;
+              padding-left: 22px;
+              display: grid;
+              gap: 8px;
+              width: min(600px, 100%);
+              text-align: left;
+              font-size: 14px;
+              line-height: 22px;
+              font-weight: var(--ci-weight-r);
+              color: color-mix(in srgb, var(--text) 78%, transparent);
+            }
+            .ci-infoList li{ line-height: 22px; }
             .ci-actionBtn{
               display: inline-flex;
               align-items: center;
@@ -2014,7 +2025,10 @@ export default function CheckinClient() {
                     <hr className="ci-infoSep" />
                     <p className="ci-infoLabel">Emailul tău de confirmare va include:</p>
                     <ul className="ci-infoList">
-                      <li>un{"\u00A0"}<strong style={{ fontWeight: 700, color: "var(--text)" }}>cod QR</strong> ce poate fi prezentat la recepție (dacă este cazul), sau</li>
+                      <li>
+                        un <strong style={{ fontWeight: 700, color: "var(--text)" }}>cod{"\u00A0"}QR</strong> ce poate fi
+                        prezentat la recepție (dacă este cazul), sau
+                      </li>
                       <li>folosit ca dovadă că check-in-ul a fost completat.</li>
                     </ul>
                     <p className="ci-infoMeta">
@@ -2036,7 +2050,10 @@ export default function CheckinClient() {
                     <hr className="ci-infoSep" />
                     <p className="ci-infoLabel">Your confirmation email will include:</p>
                     <ul className="ci-infoList">
-                      <li>a{"\u00A0"}<strong style={{ fontWeight: 700, color: "var(--text)" }}>QR code</strong> that can be presented at reception (if applicable), or</li>
+                      <li>
+                        a <strong style={{ fontWeight: 700, color: "var(--text)" }}>QR{"\u00A0"}code</strong> that can be
+                        presented at reception (if applicable), or
+                      </li>
                       <li>used as proof that your check-in has been completed.</li>
                     </ul>
                     <p className="ci-infoMeta">
