@@ -8,18 +8,32 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const runtime = 'nodejs';
 
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const admin = createClient(URL, SERVICE, { auth: { persistSession: false } });
+let adminClient: ReturnType<typeof createClient> | null = null;
+let vapidConfigured = false;
 
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY!;
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:office@plan4host.com';
+function getAdminClient() {
+  if (adminClient) return adminClient;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !service) throw new Error("Missing Supabase service credentials");
+  adminClient = createClient(url, service, { auth: { persistSession: false } });
+  return adminClient;
+}
 
-webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+function ensureVapidConfigured() {
+  if (vapidConfigured) return;
+  const pub = process.env.VAPID_PUBLIC_KEY;
+  const priv = process.env.VAPID_PRIVATE_KEY;
+  const subject = process.env.VAPID_SUBJECT || 'mailto:office@plan4host.com';
+  if (!pub || !priv) throw new Error("Missing VAPID keys");
+  webpush.setVapidDetails(subject, pub, priv);
+  vapidConfigured = true;
+}
 
 export async function POST(req: NextRequest) {
   try {
+    const admin = getAdminClient();
+    ensureVapidConfigured();
     const supa = createSSRClient();
     const { data: auth } = await supa.auth.getUser();
     const user = auth.user;
@@ -62,4 +76,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e?.message || 'Unexpected error' }, { status: 500 });
   }
 }
-

@@ -6,7 +6,7 @@ const withPWAConfigured = withPWA({
   register: true,
   skipWaiting: true,
   cacheOnFrontEndNav: true,
-  disable: process.env.NODE_ENV === "development",
+  disable: process.env.NODE_ENV === "development" || process.env.NEXT_DISABLE_PWA === "1",
   workboxOptions: {
     importScripts: ["push-sw.js"],
   },

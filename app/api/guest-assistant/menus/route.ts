@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { openai } from "@/lib/openai";
+import { getOpenAI } from "@/lib/openai";
 
 type ChatTopicId =
   | "arrival"
@@ -75,6 +75,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ labels: BASE_LABELS });
     }
 
+    const openai = getOpenAI();
     const prompt = `
 You translate short UI menu labels for a guest assistant for a property.
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { openai } from "@/lib/openai";
+import { getOpenAI } from "@/lib/openai";
 
 type CheckoutRequest = {
   language?: string;
@@ -36,6 +36,7 @@ function stripHtml(html?: string | null): string {
 
 export async function POST(req: Request) {
   try {
+    const openai = getOpenAI();
     const body = (await req.json().catch(() => null)) as CheckoutRequest | null;
     if (!body) {
       return NextResponse.json({ error: "Invalid body" }, { status: 400 });

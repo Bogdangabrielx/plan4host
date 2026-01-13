@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { openai } from "@/lib/openai";
+import { getOpenAI } from "@/lib/openai";
 
 type AmenitiesTopic =
   | "wifi"
@@ -143,6 +143,7 @@ Reservation messages (plain text):
 ${messagesPlain || "(none)"}
 `.trim();
 
+    const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
