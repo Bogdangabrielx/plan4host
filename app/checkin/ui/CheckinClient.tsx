@@ -1542,9 +1542,9 @@ export default function CheckinClient() {
               line-height: 20px;
               padding: 2px 10px;
               border-radius: 999px;
-              border: 1px solid color-mix(in srgb, var(--ci-accent) 30%, transparent);
-              background: color-mix(in srgb, var(--ci-accent) 12%, white);
-              color: color-mix(in srgb, var(--ci-accent) 80%, black);
+              border: 1px solid color-mix(in srgb, var(--ci-accent) 85%, black);
+              background: color-mix(in srgb, var(--ci-accent) 14%, white);
+              color: color-mix(in srgb, var(--ci-accent) 85%, black);
               font-weight: var(--ci-weight-m);
               text-transform: uppercase;
               letter-spacing: .12em;
@@ -1690,6 +1690,50 @@ export default function CheckinClient() {
             }
             .ci-consentText{ font-size: 13px; color: var(--muted); line-height: 1.45; }
             .ci-consentHint{ margin-top: 6px; font-size: 12px; color: color-mix(in srgb, var(--muted) 92%, transparent); }
+            .ci-modalOverlay{
+              position: fixed;
+              inset: 0;
+              z-index: 2000;
+              background: rgba(10, 15, 25, 0.55);
+              display: grid;
+              place-items: center;
+              padding: 16px;
+            }
+            .ci-modalCard{
+              width: min(560px, 100%);
+              padding: 16px;
+              border-radius: 16px;
+              background: var(--card);
+              color: var(--text);
+              border: 1px solid var(--border);
+              box-shadow: 0 14px 40px rgba(0,0,0,0.22);
+            }
+            .ci-modalCard--wide{ width: min(720px, 100%); }
+            .ci-modalHead{ display:flex; align-items:center; justify-content:space-between; gap: 12px; margin-bottom: 12px; }
+            .ci-modalTitle{ font-size: 15px; font-weight: var(--ci-weight-sb); line-height: 20px; letter-spacing: -0.1px; color: var(--text); }
+            .ci-modalBody{ display:grid; gap: 12px; font-size: 14px; line-height: 22px; color: color-mix(in srgb, var(--text) 78%, transparent); }
+            .ci-modalBody p{ margin: 0; }
+            .ci-modalLink{ color: var(--primary); font-weight: var(--ci-weight-sb); text-decoration: none; }
+            .ci-modalLink:hover{ text-decoration: underline; }
+            .ci-modalCheckboxRow{ display:flex; align-items:flex-start; gap: 10px; color: var(--text); }
+            .ci-modalCheckboxRow input{ margin-top: 3px; }
+            .ci-modalActions{ display:flex; justify-content:flex-end; gap: 10px; }
+            .ci-modalIconBtn{
+              width: 36px;
+              height: 36px;
+              border-radius: 999px;
+              border: 1px solid var(--border);
+              background: var(--card);
+              color: color-mix(in srgb, var(--text) 90%, transparent);
+              font-weight: var(--ci-weight-sb);
+              font-size: 18px;
+              line-height: 1;
+              display: grid;
+              place-items: center;
+              cursor: pointer;
+            }
+            .ci-modalIconBtn:hover{ background: color-mix(in srgb, var(--card) 90%, var(--text) 3%); }
+            .ci-modalIconBtn:active{ transform: translateY(0.5px); }
             @media (max-width: 560px){
               .ci-type{ --ci-font-h: 28px; }
               .ci-hTitle{ line-height: 34px; }
@@ -2723,28 +2767,28 @@ export default function CheckinClient() {
             </div>
 
             {showIdUploadInfo && (
-              <div role="dialog" aria-modal="true" style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.5)', display:'grid', placeItems:'center', padding:16 }}>
-                <div className="sb-card" style={{ position:'relative', width:'min(720px, 100%)', maxWidth:'96vw', background:'var(--panel)', color:'var(--text)', border:'1px solid var(--border)', borderRadius:16, padding:16, boxShadow:'0 10px 30px rgba(0,0,0,0.35)' }}>
-                  <button aria-label="Close" onClick={onConfirmIdUploadInfo} style={{ position:'absolute', top:8, right:8, width:36, height:36, borderRadius:999, border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)', fontWeight:900, cursor:'pointer' }}>×</button>
-                  <div style={{ display:'grid', gap:10 }}>
-                    <div style={{ fontWeight:900, fontSize:18 }}>Info</div>
+              <div role="dialog" aria-modal="true" className="ci-modalOverlay" onClick={onConfirmIdUploadInfo}>
+                <div onClick={(e)=>e.stopPropagation()} className="sb-card ci-modalCard ci-modalCard--wide" style={{ position:'relative' }}>
+                  <button aria-label="Close" onClick={onConfirmIdUploadInfo} className="ci-modalIconBtn" style={{ position:'absolute', top:10, right:10 }}>×</button>
+                  <div className="ci-modalBody">
+                    <div className="ci-modalTitle">Info</div>
                     {lang === 'ro' ? (
                       <>
-                        <p style={{ margin:0 }}>
+                        <p>
                           Încarcă o fotografie a actului de identitate pentru a verifica datele de self check‑in (GDPR art. 6(1)(f));
                           este folosită doar pentru această verificare și se șterge automat la alocarea camerei (art. 5(1)(e)).
                         </p>
-                        <p style={{ margin:0 }}>
+                        <p>
                           Poți ascunde câmpurile sensibile — păstrează fața și câmpurile completate; maschează CNP/număr personal,
                           seria/numărul documentului, adresa și zona MRZ a pașaportului.
                         </p>
                       </>
                     ) : (
                       <>
-                        <p style={{ margin:0 }}>
+                        <p>
                           Upload an ID photo to verify your self check-in details (GDPR Art. 6(1)(f)); it’s used only for this check and auto-deleted at room assignment (Art. 5(1)(e)).
                         </p>
-                        <p style={{ margin:0 }}>
+                        <p>
                           You may redact sensitive fields—keep your face and the fields you typed; mask CNP/personal number, document series/number, address, and passport MRZ.
                         </p>
                       </>
@@ -3416,23 +3460,40 @@ export default function CheckinClient() {
 
       {/* Privacy Policy modal (first interaction gate) */}
       {privacyOpen && (
-        <div role="dialog" aria-modal="true" onClick={()=>setPrivacyOpen(false)}
-          style={{ position:'fixed', inset:0, zIndex: 320, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
-          <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', padding:16 }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-              <strong>{T('privacyTitle')}</strong>
-              <button className="sb-btn" onClick={()=>setPrivacyOpen(false)}>Close</button>
+        <div role="dialog" aria-modal="true" className="ci-modalOverlay" onClick={()=>setPrivacyOpen(false)}>
+          <div onClick={(e)=>e.stopPropagation()} className="sb-card ci-modalCard">
+            <div className="ci-modalHead">
+              <div className="ci-modalTitle">{T('privacyTitle')}</div>
+              <button className="ci-modalIconBtn" onClick={()=>setPrivacyOpen(false)} aria-label="Close">×</button>
             </div>
-            <div style={{ display:'grid', gap:10 }}>
-              <p style={{ margin:0, color:'var(--muted)' }}>
-                {T('privacyPrompt').replace('Privacy Policy', '')}
-                <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" onClick={()=>setPrivacyVisited(true)} style={{ color:'var(--primary)', fontWeight:800 }}>Privacy Policy</a>.
+            <div className="ci-modalBody">
+              <p>
+                {(() => {
+                  const prompt = T('privacyPrompt');
+                  const parts = prompt.split('Privacy Policy');
+                  if (parts.length < 2) return prompt;
+                  return (
+                    <>
+                      {parts[0]}
+                      <a
+                        href="/legal/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={()=>setPrivacyVisited(true)}
+                        className="ci-modalLink"
+                      >
+                        Privacy Policy
+                      </a>
+                      {parts.slice(1).join('Privacy Policy')}
+                    </>
+                  );
+                })()}
               </p>
-              <label style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <label className="ci-modalCheckboxRow">
                 <input type="checkbox" checked={privacyConfirm} onChange={(e)=>setPrivacyConfirm(e.currentTarget.checked)} />
                 <span>{T('privacyAcknowledge')}</span>
               </label>
-              <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+              <div className="ci-modalActions">
                 <button className="sb-btn" onClick={()=>setPrivacyOpen(false)} disabled={privacySaving}>Cancel</button>
                 <button className="sb-btn sb-btn--primary" disabled={!privacyConfirm || privacySaving} onClick={acceptPrivacyAck}>
                   {privacySaving ? 'Saving…' : T('privacyConfirm')}
