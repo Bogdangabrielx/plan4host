@@ -192,6 +192,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     website: "",
     location: "",
   });
+  const [contactsWizardDial, setContactsWizardDial] = useState<string>("+40");
+  const [contactsWizardPhoneLocal, setContactsWizardPhoneLocal] = useState<string>("");
+  const [contactsWizardDialOpen, setContactsWizardDialOpen] = useState<boolean>(false);
+  const contactsWizardDialWrapRef = useRef<HTMLDivElement | null>(null);
   const houseRulesSectionRef = useRef<HTMLElement | null>(null);
   const [wizardIsDark, setWizardIsDark] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -247,6 +251,18 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       try { mq?.removeEventListener("change", onMq); } catch { mq?.removeListener?.(onMq as any); }
       mo.disconnect();
     };
+  }, []);
+
+  // Close wizard dial dropdown on outside click
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      const t = e.target as Node | null;
+      if (contactsWizardDialWrapRef.current && t && !contactsWizardDialWrapRef.current.contains(t)) {
+        setContactsWizardDialOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
   // Responsive helper: treat phones/narrow screens differently for layout
@@ -337,6 +353,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     setContactsWizardError(null);
     setContactsWizardStep("contacts");
     setContactsWizardOpen(true);
+    const split = splitPhoneToDialAndRest((prop.contact_phone || "").trim());
+    setContactsWizardDial(split.dial);
+    setContactsWizardPhoneLocal(split.rest);
+    setContactsWizardDialOpen(false);
     setContactsWizardSocialDrafts({
       facebook: prop.social_facebook || "",
       instagram: prop.social_instagram || "",
@@ -414,13 +434,16 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       const overlayPos = (prop.contact_overlay_position || "center") as any;
       const payload = {
         contact_email: (prop.contact_email || "").trim() || null,
-        contact_phone: (composeFullPhone(contactDial, contactPhoneLocal) || prop.contact_phone || "").trim() || null,
+        contact_phone: (composeFullPhone(contactsWizardDial, contactsWizardPhoneLocal) || "").trim() || null,
         contact_address: (prop.contact_address || "").trim() || null,
         contact_overlay_position: overlayPos,
       };
       const { error } = await supabase.from("properties").update(payload).eq("id", prop.id);
       if (error) throw error;
       setProp((prev) => (prev ? { ...prev, ...payload } : prev));
+      // Keep the main contact input in sync (optional, but avoids confusion after wizard closes)
+      setContactDial(contactsWizardDial);
+      setContactPhoneLocal(contactsWizardPhoneLocal);
       lastSavedContact.current = {
         email: (payload.contact_email || "").toString(),
         phone: (payload.contact_phone || "").toString(),
@@ -918,10 +941,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 
                     <div style={{ display: "grid", gap: 6 }}>
                       <label>Phone</label>
-                      <div ref={dialWrapRef} style={{ position: "relative" }}>
+                      <div ref={contactsWizardDialWrapRef} style={{ position: "relative" }}>
                         <button
                           type="button"
-                          onClick={() => setDialOpen((v) => !v)}
+                          onClick={() => setContactsWizardDialOpen((v) => !v)}
                           aria-label="Dial code"
                           style={{
                             position: "absolute",
@@ -942,18 +965,18 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           }}
                         >
                           <span aria-hidden>
-                            {flagEmoji((DIAL_OPTIONS.find((d) => d.code === contactDial)?.cc) || "RO")}
+                            {flagEmoji((DIAL_OPTIONS.find((d) => d.code === contactsWizardDial)?.cc) || "RO")}
                           </span>
-                          <span>{contactDial}</span>
+                          <span>{contactsWizardDial}</span>
                         </button>
                         <input
                           type="tel"
-                          value={contactPhoneLocal}
-                          onChange={(e) => setContactPhoneLocal(e.currentTarget.value)}
+                          value={contactsWizardPhoneLocal}
+                          onChange={(e) => setContactsWizardPhoneLocal(e.currentTarget.value)}
                           placeholder="712 345 678"
                           style={{ ...FIELD, paddingLeft: 96 }}
                         />
-                        {dialOpen && (
+                        {contactsWizardDialOpen && (
                           <div
                             role="listbox"
                             style={{
@@ -977,15 +1000,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                                 key={`${opt.cc}-${opt.code}`}
                                 type="button"
                                 onClick={() => {
-                                  setContactDial(opt.code);
-                                  setDialOpen(false);
+                                  setContactsWizardDial(opt.code);
+                                  setContactsWizardDialOpen(false);
                                 }}
                                 style={{
                                   padding: "6px 8px",
                                   borderRadius: 8,
                                   border: "1px solid var(--border)",
-                                  background: opt.code === contactDial ? "var(--primary)" : "var(--card)",
-                                  color: opt.code === contactDial ? "#0c111b" : "var(--text)",
+                                  background: opt.code === contactsWizardDial ? "var(--primary)" : "var(--card)",
+                                  color: opt.code === contactsWizardDial ? "#0c111b" : "var(--text)",
                                   fontWeight: 800,
                                   cursor: "pointer",
                                   display: "flex",
