@@ -32,6 +32,8 @@ type Property = {
 type ProviderItem = { slug: string; label: string; logo?: string | null };
 type SocialKey = "facebook" | "instagram" | "tiktok" | "website" | "location";
 
+const CONTACTS_SOCIAL_KEYS: SocialKey[] = ["facebook", "instagram", "tiktok", "website", "location"];
+
 type HouseRulesDraft = {
   noSmoking: boolean;
   noParties: boolean;
@@ -196,7 +198,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [contactsWizardLoading, setContactsWizardLoading] = useState<boolean>(false);
   const [contactsWizardLoadingText, setContactsWizardLoadingText] = useState<string>("Saving contact details…");
   const [contactsWizardError, setContactsWizardError] = useState<string | null>(null);
-  const [contactsWizardSocialKey, setContactsWizardSocialKey] = useState<SocialKey>("website");
   const [contactsWizardSocialDrafts, setContactsWizardSocialDrafts] = useState<Record<SocialKey, string>>({
     facebook: "",
     instagram: "",
@@ -205,6 +206,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     location: "",
   });
   const [contactsWizardSocialInput, setContactsWizardSocialInput] = useState<string>("");
+  const [contactsWizardSocialIndex, setContactsWizardSocialIndex] = useState<number>(0);
   const [contactsWizardDial, setContactsWizardDial] = useState<string>("+40");
   const [contactsWizardPhoneLocal, setContactsWizardPhoneLocal] = useState<string>("");
   const [contactsWizardDialOpen, setContactsWizardDialOpen] = useState<boolean>(false);
@@ -230,6 +232,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     otherNotes: "",
   });
   const [houseRulesDraftBusy, setHouseRulesDraftBusy] = useState<boolean>(false);
+  const [houseRulesPrintPulse, setHouseRulesPrintPulse] = useState<number>(0);
+  const [houseRulesPendingKey, setHouseRulesPendingKey] = useState<
+    "noSmoking" | "noParties" | "quietHours" | "petsAllowed" | "maxGuestsEnabled" | null
+  >(null);
   const houseRulesDraftBusyTimer = useRef<number | null>(null);
   const [wizardIsDark, setWizardIsDark] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -430,8 +436,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       location: prop.social_location || "",
     };
     setContactsWizardSocialDrafts(drafts);
-    setContactsWizardSocialKey("website");
-    setContactsWizardSocialInput(drafts.website || "");
+    setContactsWizardSocialIndex(0);
+    setContactsWizardSocialInput(drafts[CONTACTS_SOCIAL_KEYS[0]] || "");
   }, [contactsWizardRequested, prop?.id]);
 
   function openHouseRulesWizard() {
@@ -497,32 +503,37 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     return `${dial}${digits}`;
   }
 
-  function updateHouseRuleDraftSlow(patch: Partial<HouseRulesDraft>) {
-    if (houseRulesDraftBusy) return;
-    setHouseRulesDraftBusy(true);
-    if (houseRulesDraftBusyTimer.current) window.clearTimeout(houseRulesDraftBusyTimer.current);
-    houseRulesDraftBusyTimer.current = window.setTimeout(() => {
-      setHouseRulesDraft((prev) => ({ ...prev, ...patch }));
-      setHouseRulesDraftBusy(false);
-      houseRulesDraftBusyTimer.current = null;
-    }, 320);
-  }
-
   function updateHouseRuleDraftImmediate(patch: Partial<HouseRulesDraft>) {
     setHouseRulesDraft((prev) => ({ ...prev, ...patch }));
   }
 
-  function houseRulesToLines(d: HouseRulesDraft): string[] {
+  function toggleHouseRuleWithDelay(
+    key: "noSmoking" | "noParties" | "quietHours" | "petsAllowed" | "maxGuestsEnabled",
+    next: boolean,
+  ) {
+    if (houseRulesDraftBusy) return;
+    setHouseRulesDraftBusy(true);
+    setHouseRulesPendingKey(key);
+    if (houseRulesDraftBusyTimer.current) window.clearTimeout(houseRulesDraftBusyTimer.current);
+    houseRulesDraftBusyTimer.current = window.setTimeout(() => {
+      setHouseRulesDraft((prev) => ({ ...prev, [key]: next }));
+      setHouseRulesDraftBusy(false);
+      setHouseRulesPendingKey(null);
+      setHouseRulesPrintPulse(Date.now());
+      houseRulesDraftBusyTimer.current = null;
+    }, 1000);
+  }
+
+  function houseRulesToParagraphs(d: HouseRulesDraft): string[] {
     const out: string[] = [];
-    out.push("Please read and respect the following house rules:");
-    if (d.noSmoking) out.push("- No smoking inside the property.");
-    if (d.noParties) out.push("- No parties or events.");
-    if (d.quietHours) out.push(`- Quiet hours after ${d.quietHoursAfter}.`);
-    if (d.petsAllowed) out.push("- Pets are allowed with prior approval from the host.");
-    if (d.maxGuestsEnabled) out.push(`- Maximum number of guests: ${d.maxGuests}.`);
-    if (d.otherNotes.trim()) out.push(`- ${d.otherNotes.trim()}`);
-    out.push("");
-    out.push("By completing check-in, you confirm you have read and agree to these rules.");
+    out.push("Thanks for reading — these guidelines help keep the stay smooth for everyone.");
+    if (d.noSmoking) out.push("Please keep the indoor space smoke‑free. If you smoke, use the outdoor area and dispose of cigarette butts safely.");
+    if (d.noParties) out.push("No parties or events — please keep things calm and respectful for the neighbours.");
+    if (d.quietHours) out.push(`After ${d.quietHoursAfter}, please keep noise low (music, loud conversations, outdoor noise).`);
+    if (d.petsAllowed) out.push("Pets are welcome with prior approval — please keep them under control and clean up after them.");
+    if (d.maxGuestsEnabled) out.push(`Please don’t exceed ${d.maxGuests} overnight guests.`);
+    if (d.otherNotes.trim()) out.push(d.otherNotes.trim());
+    out.push("By completing check‑in, you confirm you’ve read and agree to these house rules.");
     return out;
   }
 
@@ -599,7 +610,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           const bytes = buildSimplePdfBytes({
             title: prop.name,
             subtitle: "House Rules",
-            bodyLines: houseRulesToLines(houseRulesDraft),
+            bodyLines: houseRulesToParagraphs(houseRulesDraft),
           });
           const fname = `${(prop.name || "house-rules").toString().trim().replace(/\s+/g, "-")}-house-rules.pdf`;
           const file = new File([bytes], fname, { type: "application/pdf" });
@@ -681,7 +692,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     }
   }
 
-  async function saveSocialWizard() {
+  async function saveSocialWizard(draftsOverride?: Record<SocialKey, string>) {
     if (!prop) return;
     setContactsWizardError(null);
     setContactsWizardLoadingText("Updating guest portal…");
@@ -689,12 +700,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     const start = Date.now();
     const minMs = 900;
     try {
+      const drafts = draftsOverride || contactsWizardSocialDrafts;
       const payload = {
-        social_facebook: contactsWizardSocialDrafts.facebook.trim() || null,
-        social_instagram: contactsWizardSocialDrafts.instagram.trim() || null,
-        social_tiktok: contactsWizardSocialDrafts.tiktok.trim() || null,
-        social_website: contactsWizardSocialDrafts.website.trim() || null,
-        social_location: contactsWizardSocialDrafts.location.trim() || null,
+        social_facebook: drafts.facebook.trim() || null,
+        social_instagram: drafts.instagram.trim() || null,
+        social_tiktok: drafts.tiktok.trim() || null,
+        social_website: drafts.website.trim() || null,
+        social_location: drafts.location.trim() || null,
       };
       const { error } = await supabase.from("properties").update(payload).eq("id", prop.id);
       if (error) throw error;
@@ -711,13 +723,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     }
   }
 
-  function switchSocialWizardKey(next: SocialKey) {
-    // Keep draft for current key (no autosave, local only), then switch.
+  function addSocialWizardAndAdvance() {
+    const currentKey = CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex];
     setContactsWizardSocialDrafts((prev) => {
-      const nextDrafts = { ...prev, [contactsWizardSocialKey]: contactsWizardSocialInput };
-      setContactsWizardSocialKey(next);
-      setContactsWizardSocialInput(nextDrafts[next] ?? "");
-      return nextDrafts;
+      const updated = { ...prev, [currentKey]: contactsWizardSocialInput };
+      const nextIndex = Math.min(CONTACTS_SOCIAL_KEYS.length - 1, contactsWizardSocialIndex + 1);
+      const nextKey = CONTACTS_SOCIAL_KEYS[nextIndex];
+      setContactsWizardSocialIndex(nextIndex);
+      setContactsWizardSocialInput((updated[nextKey] ?? "").toString());
+      return updated;
     });
   }
 
@@ -1312,12 +1326,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                  <div style={{ display: "grid", gap: 10 }}>
 	                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
 	                      {(["website", "facebook", "instagram", "tiktok", "location"] as SocialKey[]).map((k) => {
-	                        const active = contactsWizardSocialKey === k;
+	                        const active = CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex] === k;
 	                        return (
-	                          <button
+	                          <div
 	                            key={k}
-	                            type="button"
-	                            onClick={() => switchSocialWizardKey(k)}
 	                            className="sb-cardglow"
 	                            style={{
 	                              borderRadius: 999,
@@ -1327,10 +1339,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                              display: "inline-flex",
 	                              alignItems: "center",
 	                              gap: 8,
-	                              cursor: "pointer",
+	                              cursor: "default",
 	                              opacity: active ? 1 : 0.55,
 	                              transform: active ? "scale(1.06)" : "scale(0.98)",
 	                              transition: "transform 140ms ease, opacity 140ms ease, border-color 140ms ease",
+	                              userSelect: "none",
 	                            }}
 	                          >
 	                            <img
@@ -1344,7 +1357,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                            <span style={{ fontWeight: 800, textTransform: "capitalize" }}>
 	                              {k === "website" ? "Website" : k === "location" ? "Location" : k}
 	                            </span>
-	                          </button>
+	                          </div>
 	                        );
 	                      })}
 	                    </div>
@@ -1353,7 +1366,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                      <input
 	                        value={contactsWizardSocialInput}
 	                        onChange={(e) => setContactsWizardSocialInput(e.currentTarget.value)}
-	                        placeholder={contactsWizardSocialKey === "location" ? "Paste Google Maps link" : "Paste URL"}
+	                        placeholder={CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex] === "location" ? "Paste Google Maps link" : "Paste URL"}
 	                        style={FIELD}
 	                      />
 	                      <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
@@ -1382,18 +1395,23 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                      <button
 	                        className="sb-btn sb-btn--primary"
 	                        style={{ width: "100%", minHeight: 44 }}
-	                        onClick={async () => {
-	                          // commit local draft for current key, then save explicitly (no autosave)
-	                          setContactsWizardSocialDrafts((prev) => ({
-	                            ...prev,
-	                            [contactsWizardSocialKey]: contactsWizardSocialInput,
-	                          }));
-	                          await saveSocialWizard();
-	                        }}
+	                        onClick={() => addSocialWizardAndAdvance()}
 	                      >
 	                        Add
 	                      </button>
 	                    </div>
+	                    <button
+	                      className="sb-btn sb-cardglow"
+	                      style={{ width: "100%", minHeight: 44, justifyContent: "center" }}
+	                      onClick={async () => {
+	                        const currentKey = CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex];
+	                        const drafts = { ...contactsWizardSocialDrafts, [currentKey]: contactsWizardSocialInput };
+	                        setContactsWizardSocialDrafts(drafts);
+	                        await saveSocialWizard(drafts);
+	                      }}
+	                    >
+	                      Save
+	                    </button>
 	                    <button
 	                      type="button"
 	                      onClick={() => setContactsWizardStep("reward")}
@@ -1470,27 +1488,27 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </div>
         )}
 
-	        {houseRulesWizardOpen && prop && (
-	          <div
-	            role="dialog"
-	            aria-modal="true"
-	            onClick={() => {
-	              setHouseRulesWizardOpen(false);
-	              try {
-	                document.documentElement.removeAttribute("data-p4h-modal-open");
-	              } catch {
-	                // ignore
-	              }
-	            }}
-	            style={{
-	              position: "fixed",
-	              inset: 0,
-              zIndex: 242,
+        {houseRulesWizardOpen && prop && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={() => {
+              setHouseRulesWizardOpen(false);
+              try {
+                document.documentElement.removeAttribute("data-p4h-modal-open");
+              } catch {
+                // ignore
+              }
+            }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 2147482500,
               background: "rgba(0,0,0,0.55)",
               display: "grid",
               placeItems: "center",
               padding: 12,
-              paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+              paddingTop: "calc(var(--safe-top, 0px) + var(--p4h-fixed-header-h, var(--app-header-h, 64px)) + 12px)",
               paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
             }}
           >
@@ -1504,7 +1522,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 borderRadius: 14,
                 padding: 16,
                 display: "grid",
+                gridTemplateRows: "auto 1fr",
                 gap: 14,
+                maxHeight:
+                  "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--p4h-fixed-header-h, var(--app-header-h, 64px)) + 24px))",
+                overflow: "hidden",
               }}
             >
               <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
@@ -1555,9 +1577,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                  }}
 	                >
 	                  ×
-	                </button>
+                </button>
               </div>
 
+              <div style={{ overflow: "auto", paddingRight: 2, paddingBottom: 2 }}>
               {houseRulesWizardStep === "intro" && (
                 <div style={{ display: "grid", gap: 14 }}>
                   <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", textAlign: "center" }}>
@@ -1648,163 +1671,246 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 <div style={{ display: "grid", gap: 12 }}>
                   <div
                     style={{
-                      display: "grid",
-                      gridTemplateColumns: isNarrow ? "1fr" : "1fr 1fr",
-                      gap: 12,
-                      alignItems: "start",
+                      borderRadius: 16,
+                      border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+                      backgroundColor: "#ffffff",
+                      color: "#0b1220",
+                      overflow: "hidden",
+                      boxShadow: "0 10px 26px rgba(0,0,0,0.25)",
                     }}
                   >
                     <div
-                      className="sb-cardglow"
                       style={{
-                        border: "1px solid var(--border)",
-                        background: "color-mix(in srgb, var(--card) 90%, transparent)",
-                        borderRadius: 14,
-                        padding: 12,
-                        display: "grid",
-                        gap: 10,
+                        position: "relative",
+                        padding: 16,
+                        backgroundColor: "#ffffff",
+                        backgroundImage: "url(/background_houserules.png)",
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "center",
+                        backgroundSize: "130% 130%",
                       }}
                     >
-                      <div style={{ fontWeight: 800, fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
-                        Quick rules
-                      </div>
-                      <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: houseRulesDraftBusy ? "not-allowed" : "pointer" }}>
-                        <input
-                          type="checkbox"
-                          checked={houseRulesDraft.noSmoking}
-                          disabled={houseRulesDraftBusy}
-                          onChange={(e) => updateHouseRuleDraftSlow({ noSmoking: e.currentTarget.checked })}
+                      {houseRulesDraftBusy && (
+                        <div
+                          className="p4h-hr-print-overlay"
+                          aria-hidden
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            pointerEvents: "auto",
+                            background:
+                              "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.65) 40%, rgba(255,255,255,0.05))",
+                          }}
                         />
-                        <span>No smoking inside</span>
-                      </label>
-                      <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: houseRulesDraftBusy ? "not-allowed" : "pointer" }}>
-                        <input
-                          type="checkbox"
-                          checked={houseRulesDraft.noParties}
-                          disabled={houseRulesDraftBusy}
-                          onChange={(e) => updateHouseRuleDraftSlow({ noParties: e.currentTarget.checked })}
-                        />
-                        <span>No parties or events</span>
-                      </label>
-                      <div style={{ display: "grid", gap: 8 }}>
-                        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: houseRulesDraftBusy ? "not-allowed" : "pointer" }}>
-                          <input
-                            type="checkbox"
-                            checked={houseRulesDraft.quietHours}
-                            disabled={houseRulesDraftBusy}
-                            onChange={(e) => updateHouseRuleDraftSlow({ quietHours: e.currentTarget.checked })}
+                      )}
+                      <div style={{ position: "absolute", top: 12, right: 12, opacity: 0.85 }} aria-hidden>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                          <path
+                            d="M8 4h8a2 2 0 0 1 2 2v14H6V6a2 2 0 0 1 2-2Z"
+                            stroke="#0b1220"
+                            strokeWidth="1.6"
+                            opacity="0.55"
                           />
-                          <span>Quiet hours after</span>
-                        </label>
-                        <input
-                          type="time"
-                          value={houseRulesDraft.quietHoursAfter}
-                          disabled={!houseRulesDraft.quietHours || houseRulesDraftBusy}
-                          onChange={(e) => updateHouseRuleDraftImmediate({ quietHoursAfter: e.currentTarget.value })}
-                          style={{ ...FIELD, maxWidth: 160 }}
-                        />
-                      </div>
-                      <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: houseRulesDraftBusy ? "not-allowed" : "pointer" }}>
-                        <input
-                          type="checkbox"
-                          checked={houseRulesDraft.petsAllowed}
-                          disabled={houseRulesDraftBusy}
-                          onChange={(e) => updateHouseRuleDraftSlow({ petsAllowed: e.currentTarget.checked })}
-                        />
-                        <span>Pets allowed (with approval)</span>
-                      </label>
-                      <div style={{ display: "grid", gap: 8 }}>
-                        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: houseRulesDraftBusy ? "not-allowed" : "pointer" }}>
-                          <input
-                            type="checkbox"
-                            checked={houseRulesDraft.maxGuestsEnabled}
-                            disabled={houseRulesDraftBusy}
-                            onChange={(e) => updateHouseRuleDraftSlow({ maxGuestsEnabled: e.currentTarget.checked })}
+                          <path
+                            d="M9 8h6M9 12h6M9 16h4"
+                            stroke="#0b1220"
+                            strokeWidth="1.6"
+                            strokeLinecap="round"
+                            opacity="0.55"
                           />
-                          <span>Maximum guests</span>
-                        </label>
-                        <input
-                          type="number"
-                          min={1}
-                          value={houseRulesDraft.maxGuests}
-                          disabled={!houseRulesDraft.maxGuestsEnabled || houseRulesDraftBusy}
-                          onChange={(e) => updateHouseRuleDraftImmediate({ maxGuests: e.currentTarget.value })}
-                          style={{ ...FIELD, maxWidth: 160 }}
-                        />
+                          <path
+                            d="M16 4V2"
+                            stroke="#0b1220"
+                            strokeWidth="1.6"
+                            strokeLinecap="round"
+                            opacity="0.55"
+                          />
+                        </svg>
                       </div>
-                      <div style={{ display: "grid", gap: 6 }}>
-                        <label>Anything else (optional)</label>
-                        <textarea
-                          value={houseRulesDraft.otherNotes}
-                          disabled={houseRulesDraftBusy}
-                          onChange={(e) => updateHouseRuleDraftImmediate({ otherNotes: e.currentTarget.value })}
-                          rows={3}
-                          style={{ ...FIELD, resize: "none" }}
-                          placeholder="e.g. Please dispose of trash before check-out."
-                        />
+
+                      <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6, paddingTop: 8 }}>
+                        <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: ".02em" }}>{prop.name}</div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 800,
+                            textTransform: "uppercase",
+                            letterSpacing: ".22em",
+                            color: "rgba(11,18,32,0.62)",
+                          }}
+                        >
+                          House Rules
+                        </div>
                       </div>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
+
+                      <div style={{ height: 14 }} />
+
+                      {/* Controls live on top of the paper */}
+                      <div style={{ display: "grid", gap: 12 }}>
+                        {([
+                          { key: "noSmoking", label: "Keep the indoor space smoke‑free." },
+                          { key: "noParties", label: "No parties or events." },
+                          { key: "quietHours", label: "Quiet hours after" },
+                          { key: "petsAllowed", label: "Pets allowed (with approval)." },
+                          { key: "maxGuestsEnabled", label: "Maximum overnight guests" },
+                        ] as const).map((item) => {
+                          const checked = (houseRulesDraft as any)[item.key] as boolean;
+                          const pending = houseRulesPendingKey === item.key;
+                          const showCheck = checked || pending;
+                          return (
+                            <div key={item.key} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center" }}>
+                              <button
+                                type="button"
+                                aria-pressed={checked}
+                                disabled={houseRulesDraftBusy}
+                                onClick={() => toggleHouseRuleWithDelay(item.key, !checked)}
+                                style={{
+                                  width: 22,
+                                  height: 22,
+                                  borderRadius: 6,
+                                  border: "1px solid rgba(11,18,32,0.38)",
+                                  background: showCheck ? "rgba(34,197,94,0.10)" : "transparent",
+                                  display: "grid",
+                                  placeItems: "center",
+                                  cursor: houseRulesDraftBusy ? "not-allowed" : "pointer",
+                                  transition: "background 180ms ease, transform 180ms ease",
+                                  transform: pending ? "scale(1.05)" : "scale(1)",
+                                }}
+                                title="Toggle"
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ opacity: showCheck ? 1 : 0 }}>
+                                  <path
+                                    d="M20 6L9 17l-5-5"
+                                    stroke="#16a34a"
+                                    strokeWidth="2.6"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    style={{
+                                      strokeDasharray: 40,
+                                      strokeDashoffset: pending ? 40 : 0,
+                                      transition: "stroke-dashoffset 380ms ease",
+                                    }}
+                                  />
+                                </svg>
+                              </button>
+
+                              <div style={{ fontSize: 13.5, lineHeight: 1.45, color: "rgba(11,18,32,0.92)" }}>
+                                {item.label}
+                              </div>
+
+                              {item.key === "quietHours" && (
+                                <input
+                                  type="time"
+                                  value={houseRulesDraft.quietHoursAfter}
+                                  disabled={!houseRulesDraft.quietHours || houseRulesDraftBusy}
+                                  onChange={(e) => updateHouseRuleDraftImmediate({ quietHoursAfter: e.currentTarget.value })}
+                                  style={{
+                                    width: 112,
+                                    background: "transparent",
+                                    color: "#0b1220",
+                                    border: "none",
+                                    borderBottom: "1px solid rgba(11,18,32,0.35)",
+                                    padding: "2px 2px",
+                                    fontWeight: 800,
+                                    outline: "none",
+                                  }}
+                                />
+                              )}
+
+                              {item.key === "maxGuestsEnabled" && (
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={houseRulesDraft.maxGuests}
+                                  disabled={!houseRulesDraft.maxGuestsEnabled || houseRulesDraftBusy}
+                                  onChange={(e) => updateHouseRuleDraftImmediate({ maxGuests: e.currentTarget.value })}
+                                  style={{
+                                    width: 72,
+                                    background: "transparent",
+                                    color: "#0b1220",
+                                    border: "none",
+                                    borderBottom: "1px solid rgba(11,18,32,0.35)",
+                                    padding: "2px 2px",
+                                    fontWeight: 800,
+                                    outline: "none",
+                                    textAlign: "center",
+                                  }}
+                                />
+                              )}
+                            </div>
+                          );
+                        })}
+
+                        <div style={{ display: "grid", gap: 6 }}>
+                          <div style={{ fontSize: 13.5, color: "rgba(11,18,32,0.92)" }}>
+                            Anything else you want guests to know?
+                          </div>
+                          <textarea
+                            value={houseRulesDraft.otherNotes}
+                            disabled={houseRulesDraftBusy}
+                            onChange={(e) => updateHouseRuleDraftImmediate({ otherNotes: e.currentTarget.value })}
+                            rows={2}
+                            placeholder="Write it here…"
+                            style={{
+                              width: "100%",
+                              background: "transparent",
+                              color: "#0b1220",
+                              border: "none",
+                              borderBottom: "1px solid rgba(11,18,32,0.28)",
+                              padding: "4px 2px",
+                              outline: "none",
+                              resize: "none",
+                              fontSize: 13.5,
+                              lineHeight: 1.45,
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ height: 18 }} />
+
+                      <div style={{ display: "grid", gap: 8 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 900, letterSpacing: ".16em", textTransform: "uppercase", color: "rgba(11,18,32,0.45)" }}>
+                          Preview
+                        </div>
+                        <div style={{ display: "grid", gap: 10 }}>
+                          {houseRulesDraftBusy && (
+                            <div style={{ fontSize: 12, color: "rgba(11,18,32,0.50)" }}>
+                              Adding it to your house rules…
+                            </div>
+                          )}
+                          <div
+                            key={houseRulesPrintPulse}
+                            className="p4h-hr-print"
+                            style={{ display: "grid", gap: 10, fontSize: 13.5, lineHeight: 1.55, color: "rgba(11,18,32,0.92)" }}
+                          >
+                            {houseRulesToParagraphs(houseRulesDraft).map((t, idx) => (
+                              <div key={idx}>{t}</div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ height: 12 }} />
+
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
                         <button className="sb-btn" type="button" onClick={() => setHouseRulesWizardStep("choose")}>
                           Back
                         </button>
                         <button
                           className="sb-btn sb-btn--primary"
                           type="button"
-                          style={{ flex: 1, minWidth: 200 }}
+                          style={{ minWidth: 220 }}
                           onClick={createAndUploadHouseRulesPdf}
                         >
                           Save house rules
                         </button>
                       </div>
                       {houseRulesWizardError && (
-                        <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                        <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginTop: 10, textAlign: "center" }}>
                           {houseRulesWizardError}
                         </div>
                       )}
-                    </div>
-
-                    <div
-                      className="sb-cardglow"
-                      style={{
-                        border: "1px solid var(--border)",
-                        background: "linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, transparent), color-mix(in srgb, var(--panel) 92%, transparent))",
-                        borderRadius: 14,
-                        padding: 12,
-                        display: "grid",
-                        gap: 10,
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
-                        <div style={{ fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", fontSize: 12 }}>
-                          Preview
-                        </div>
-                        <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                          {houseRulesDraftBusy ? "Updating…" : " "}
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          border: "1px dashed color-mix(in srgb, var(--border) 80%, transparent)",
-                          borderRadius: 12,
-                          padding: 14,
-                          background: "color-mix(in srgb, var(--panel) 80%, transparent)",
-                          minHeight: isNarrow ? 180 : 260,
-                          display: "grid",
-                          gap: 10,
-                        }}
-                      >
-                        <div style={{ fontWeight: 900, fontSize: 16 }}>{prop.name}</div>
-                        <div style={{ color: "var(--muted)", fontSize: 12, letterSpacing: ".12em", textTransform: "uppercase" }}>
-                          House Rules
-                        </div>
-                        <div style={{ display: "grid", gap: 6, color: "var(--text)", fontSize: 13, lineHeight: 1.45 }}>
-                          {houseRulesToLines(houseRulesDraft)
-                            .filter((l) => l.trim() !== "")
-                            .map((l, idx) => (
-                              <div key={idx}>{l}</div>
-                            ))}
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1832,13 +1938,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           border: "1px solid var(--border)",
                           borderRadius: 14,
                           overflow: "hidden",
-                          background: "var(--card)",
+                          background: "#ffffff",
                         }}
                       >
                         <iframe
                           src={url}
                           title="House Rules PDF"
-                          style={{ width: "100%", height: isNarrow ? "44vh" : "52vh", border: 0, display: "block" }}
+                          style={{ width: "100%", height: isNarrow ? "62vh" : "56vh", border: 0, display: "block" }}
                         />
                       </div>
                     );
@@ -1867,9 +1973,39 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   </div>
                 </div>
               )}
+              </div>
             </div>
           </div>
         )}
+
+        <style jsx global>{`
+          @keyframes p4hHrPrintIn {
+            0% { transform: translate3d(0, 10px, 0); opacity: 0; }
+            60% { transform: translate3d(0, 0, 0); opacity: 1; }
+            100% { transform: translate3d(0, 0, 0); opacity: 1; }
+          }
+          @keyframes p4hHrScan {
+            0% { transform: translateY(-30%); opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { transform: translateY(30%); opacity: 0; }
+          }
+          .p4h-hr-print {
+            animation: p4hHrPrintIn 520ms ease both;
+          }
+          .p4h-hr-print-overlay::after {
+            content: "";
+            position: absolute;
+            left: 14px;
+            right: 14px;
+            top: 20%;
+            height: 54px;
+            border-radius: 14px;
+            background: linear-gradient(90deg, transparent, rgba(16,185,129,0.18), transparent);
+            filter: blur(0.2px);
+            animation: p4hHrScan 900ms ease both;
+          }
+        `}</style>
 
         {contactsWizardLoading && (
           <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label={contactsWizardLoadingText} style={{ zIndex: 241 }}>
