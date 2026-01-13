@@ -1404,13 +1404,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                      })}
 	                    </div>
 
-	                    <div style={{ display: "grid", gap: 6 }}>
-	                      <div style={{ color: "rgba(11,18,32,0.65)", fontSize: 12, fontWeight: 900, letterSpacing: ".18em", textTransform: "uppercase", textAlign: "center" }}>
-	                        {CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex]}{" "}
-	                        <span style={{ color: "rgba(11,18,32,0.35)", fontWeight: 800 }}>
-	                          {contactsWizardSocialIndex + 1}/{CONTACTS_SOCIAL_KEYS.length}
-	                        </span>
-	                      </div>
+		                    <div style={{ display: "grid", gap: 6 }}>
+		                      <div style={{ color: "var(--text)", fontSize: 12, fontWeight: 900, letterSpacing: ".18em", textTransform: "uppercase", textAlign: "center" }}>
+		                        {CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex]}{" "}
+		                        <span style={{ color: "var(--muted)", fontWeight: 800 }}>
+		                          {contactsWizardSocialIndex + 1}/{CONTACTS_SOCIAL_KEYS.length}
+		                        </span>
+		                      </div>
 	                      <input
 	                        value={contactsWizardSocialInput}
 	                        onChange={(e) => setContactsWizardSocialInput(e.currentTarget.value)}
@@ -1487,18 +1487,56 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                </div>
 	              )}
 
-              {contactsWizardStep === "reward" && (
-                <div style={{ display: "grid", gap: 12 }}>
-                  <div style={{ display: "grid", gap: 10 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                      <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
-                      <span style={{ fontWeight: 800 }}>Shown in guest check-in portal</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                      <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
-                      <span style={{ fontWeight: 800 }}>Guests know how to reach you</span>
-                    </div>
-                  </div>
+	              {contactsWizardStep === "reward" && (
+	                <div style={{ display: "grid", gap: 12 }}>
+	                  <div style={{ display: "grid", gap: 10 }}>
+	                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+	                      <span
+	                        aria-hidden
+	                        style={{
+	                          width: 18,
+	                          height: 18,
+	                          borderRadius: 999,
+	                          border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
+	                          background: "color-mix(in srgb, var(--success) 16%, var(--card))",
+	                          display: "grid",
+	                          placeItems: "center",
+	                          color: "color-mix(in srgb, var(--success) 90%, var(--text))",
+	                          fontWeight: 900,
+	                          fontSize: 12,
+	                          flex: "0 0 auto",
+	                        }}
+	                      >
+	                        ✓
+	                      </span>
+	                      <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 600, color: "var(--text)" }}>
+	                        Shown in guest check-in portal
+	                      </span>
+	                    </div>
+	                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+	                      <span
+	                        aria-hidden
+	                        style={{
+	                          width: 18,
+	                          height: 18,
+	                          borderRadius: 999,
+	                          border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
+	                          background: "color-mix(in srgb, var(--success) 16%, var(--card))",
+	                          display: "grid",
+	                          placeItems: "center",
+	                          color: "color-mix(in srgb, var(--success) 90%, var(--text))",
+	                          fontWeight: 900,
+	                          fontSize: 12,
+	                          flex: "0 0 auto",
+	                        }}
+	                      >
+	                        ✓
+	                      </span>
+	                      <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 600, color: "var(--text)" }}>
+	                        Guests know how to reach you
+	                      </span>
+	                    </div>
+	                  </div>
 
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
                     You can change this anytime.
@@ -1995,18 +2033,56 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 </div>
               )}
 
-              {(houseRulesWizardStep === "uploaded" || houseRulesWizardStep === "reward") && (
-                <div style={{ display: "grid", gap: 12 }}>
-                  <div style={{ display: "grid", gap: 10 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                      <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
-                      <span style={{ fontWeight: 800 }}>Shown in guest check-in portal</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                      <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
-                      <span style={{ fontWeight: 800 }}>Protects you by setting expectations</span>
-                    </div>
-                  </div>
+	              {(houseRulesWizardStep === "uploaded" || houseRulesWizardStep === "reward") && (
+	                <div style={{ display: "grid", gap: 12 }}>
+	                  <div style={{ display: "grid", gap: 10 }}>
+	                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+	                      <span
+	                        aria-hidden
+	                        style={{
+	                          width: 18,
+	                          height: 18,
+	                          borderRadius: 999,
+	                          border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
+	                          background: "color-mix(in srgb, var(--success) 16%, var(--card))",
+	                          display: "grid",
+	                          placeItems: "center",
+	                          color: "color-mix(in srgb, var(--success) 90%, var(--text))",
+	                          fontWeight: 900,
+	                          fontSize: 12,
+	                          flex: "0 0 auto",
+	                        }}
+	                      >
+	                        ✓
+	                      </span>
+	                      <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 600, color: "var(--text)" }}>
+	                        Shown in guest check-in portal
+	                      </span>
+	                    </div>
+	                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+	                      <span
+	                        aria-hidden
+	                        style={{
+	                          width: 18,
+	                          height: 18,
+	                          borderRadius: 999,
+	                          border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
+	                          background: "color-mix(in srgb, var(--success) 16%, var(--card))",
+	                          display: "grid",
+	                          placeItems: "center",
+	                          color: "color-mix(in srgb, var(--success) 90%, var(--text))",
+	                          fontWeight: 900,
+	                          fontSize: 12,
+	                          flex: "0 0 auto",
+	                        }}
+	                      >
+	                        ✓
+	                      </span>
+	                      <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 600, color: "var(--text)" }}>
+	                        Protects you by setting expectations
+	                      </span>
+	                    </div>
+	                  </div>
 
                   {(() => {
                     const url = (houseRulesWizardPreviewUrl || prop.regulation_pdf_url || "").toString().trim();

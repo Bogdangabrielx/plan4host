@@ -825,12 +825,50 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <div style={{ display: "grid", gap: 12 }}>
                 <div style={{ display: "grid", gap: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                    <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
-                    <span style={{ fontWeight: 800 }}>Existing bookings imported</span>
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: 999,
+                        border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
+                        background: "color-mix(in srgb, var(--success) 16%, var(--card))",
+                        display: "grid",
+                        placeItems: "center",
+                        color: "color-mix(in srgb, var(--success) 90%, var(--text))",
+                        fontWeight: 900,
+                        fontSize: 12,
+                        flex: "0 0 auto",
+                      }}
+                    >
+                      ✓
+                    </span>
+                    <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 600, color: "var(--text)" }}>
+                      Existing bookings imported
+                    </span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                    <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
-                    <span style={{ fontWeight: 800 }}>Availability updated</span>
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: 999,
+                        border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
+                        background: "color-mix(in srgb, var(--success) 16%, var(--card))",
+                        display: "grid",
+                        placeItems: "center",
+                        color: "color-mix(in srgb, var(--success) 90%, var(--text))",
+                        fontWeight: 900,
+                        fontSize: 12,
+                        flex: "0 0 auto",
+                      }}
+                    >
+                      ✓
+                    </span>
+                    <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 600, color: "var(--text)" }}>
+                      Availability updated
+                    </span>
                   </div>
                 </div>
                 <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
