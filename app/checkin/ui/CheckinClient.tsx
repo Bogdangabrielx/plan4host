@@ -1500,7 +1500,7 @@ export default function CheckinClient() {
             .ci-heroCard{ position: relative; overflow: hidden; }
             .ci-heroCard::before{ display:none; }
             .ci-heroInner{ position: relative; z-index: 1; display:grid; justify-items:center; text-align:center; padding: 4px 6px 0; }
-            .ci-heroText{ max-width: 64ch; }
+            .ci-heroText{ width: 100%; max-width: 980px; }
             .ci-langSwitch{ position:absolute; top: 12px; right: 12px; display:flex; gap: 8px; }
             .ci-type{
               --ci-font-h:28px; --ci-font-b:14px; --ci-font-s:12px; --ci-weight-m:600; --ci-weight-b:800;
@@ -1566,7 +1566,7 @@ export default function CheckinClient() {
             .ci-heroLead{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-b); color: color-mix(in srgb, var(--text) 92%, transparent); line-height: 1.55; }
             .ci-heroBody{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 1.55; }
             .ci-heroSmall{ margin:0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.55; }
-            .ci-heroNote{ margin-top: 6px; display:grid; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 90%, transparent); background: #fff; box-shadow: 0 12px 28px rgba(15,23,42,0.08); text-align: left; }
+            .ci-heroNote{ margin-top: 6px; width: 100%; display:grid; gap: 10px; padding: 14px 18px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 90%, transparent); background: #fff; box-shadow: 0 12px 28px rgba(15,23,42,0.08); text-align: center; }
             .ci-heroNoteTitle{ font-size: var(--ci-font-s); font-weight: var(--ci-weight-b); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); text-align: center; }
             .ci-heroList{ list-style: none; padding: 0; margin: 0; display:grid; gap: 8px; text-align: left; }
             .ci-heroList li{ display:block; }
@@ -1575,8 +1575,8 @@ export default function CheckinClient() {
             .ci-infoLabel{ margin: 0; font-size: var(--ci-font-b); font-weight: 700; color: color-mix(in srgb, var(--text) 82%, transparent); }
             .ci-infoMeta{ margin: 0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.5; }
             .ci-infoClose{ margin: 0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 70%, transparent); line-height: 1.5; text-align: center; }
-            .ci-infoSep{ height: 1px; border: 0; margin: 6px 0; background: color-mix(in srgb, var(--border) 70%, transparent); }
-            .ci-infoList{ list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+            .ci-infoSep{ height: 1px; border: 0; margin: 8px auto; width: min(760px, 100%); background: color-mix(in srgb, var(--border) 70%, transparent); }
+            .ci-infoList{ list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 8px; width: min(760px, 100%); text-align: left; }
             .ci-infoList li{ display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: start; color: color-mix(in srgb, var(--text) 78%, transparent); }
             .ci-infoList li::before{ content: "•"; color: color-mix(in srgb, var(--text) 48%, transparent); line-height: 1.2; margin-top: 2px; }
             .ci-actionBtn{

@@ -21,7 +21,7 @@
 }
 
 .main{
-  width: min(860px, calc(100vw - 32px));
+  width: min(980px, calc(100vw - 32px));
   padding: 16px;
   translate: no;
   z-index: 1;
