@@ -122,6 +122,15 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	    setUnitWizardStep("hostType");
 		  }, [showRoomsGuide, selectedId, rooms.length, unitWizardStep]);
 
+		  const unitRenameDirty = useMemo(() => {
+		    if (unitWizardStep !== "rename") return false;
+		    return rooms.some((r) => {
+		      const current = (r.name || "").toString().trim();
+		      const draft = (unitRenameDrafts[r.id] ?? r.name ?? "").toString().trim();
+		      return draft !== current;
+		    });
+		  }, [rooms, unitRenameDrafts, unitWizardStep]);
+
   // Detect small screens (fallback override if CSS not applied yet on device)
   useEffect(() => {
     const detect = () => {
@@ -838,14 +847,16 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                    </div>
 	                  )}
 
-	                  <button
-	                    className="sb-btn sb-btn--primary"
-	                    style={{ width: "100%", minHeight: 44 }}
-	                    disabled={unitRenameSaving}
-	                    onClick={() => void saveUnitNamesAndContinue()}
-	                  >
-	                    Save
-	                  </button>
+	                  {unitRenameDirty && (
+	                    <button
+	                      className="sb-btn sb-btn--primary"
+	                      style={{ width: "100%", minHeight: 44 }}
+	                      disabled={unitRenameSaving}
+	                      onClick={() => void saveUnitNamesAndContinue()}
+	                    >
+	                      Save
+	                    </button>
+	                  )}
 
 	                  <button
 	                    type="button"
