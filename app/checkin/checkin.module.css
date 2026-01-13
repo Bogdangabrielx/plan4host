@@ -2,6 +2,55 @@
 
 @property --sweep-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
 
+.shell{
+  min-height: 100dvh;
+  display: grid;
+  place-items: start center;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+
+  /* Force a light, vibrant palette inside /checkin without touching global theme */
+  --bg: #f7fafc;
+  --panel: rgba(255,255,255,0.88);
+  --card: rgba(255,255,255,0.96);
+  --border: rgba(15,23,42,0.12);
+  --text: #0b1220;
+  --muted: rgba(15,23,42,0.62);
+}
+
+.shell::before,
+.shell::after{
+  content: "";
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.shell::before{
+  background:
+    radial-gradient(520px 420px at 12% 10%, rgba(16,185,129,0.18), transparent 62%),
+    radial-gradient(620px 520px at 92% 96%, rgba(59,130,246,0.12), transparent 60%);
+  filter: blur(8px);
+  opacity: 1;
+}
+
+.shell::after{
+  background:
+    radial-gradient(460px 360px at 85% 18%, rgba(99,102,241,0.10), transparent 60%),
+    radial-gradient(420px 320px at 18% 92%, rgba(16,185,129,0.08), transparent 60%);
+  filter: blur(14px);
+  opacity: 0.9;
+}
+
+.main{
+  width: min(860px, calc(100vw - 32px));
+  padding: 16px;
+  translate: no;
+  z-index: 1;
+}
+
 .sparkleWrap { position: relative; display: inline-block; border-radius: 12px; }
 .sparkleWrap > * { position: relative; z-index: 0; border-radius: 10px; }
 

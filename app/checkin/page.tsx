@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CheckinClient from "./ui/CheckinClient";
+import styles from "./checkin.module.css";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -33,18 +34,10 @@ export default async function CheckinPage({ searchParams }: { searchParams: Sear
   // UI public, simplu
   return (
     <div
-      style={{
-        minHeight: "100dvh",
-        background: "var(--bg)",
-        color: "var(--text)",
-        display: "grid",
-        placeItems: "start center",
-      }}
+      className={styles.shell}
     >
       <main
-        style={{ width: "min(860px, calc(100vw - 32px))", padding: 16 }}
-        translate="no"
-        className="notranslate"
+        className={`${styles.main} notranslate`}
       >
         <CheckinClient />
       </main>

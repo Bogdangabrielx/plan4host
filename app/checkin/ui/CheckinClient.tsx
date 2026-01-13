@@ -4,7 +4,6 @@
 import React, { useEffect, useMemo, useRef, useState, useImperativeHandle } from "react";
 import Image from "next/image";
 import QrWithLogo from "@/components/QrWithLogo";
-import homeStyles from "../../home.module.css";
 import { DIAL_OPTIONS } from "@/lib/phone/dialOptions";
 
 type PropertyInfo = {
@@ -766,7 +765,7 @@ export default function CheckinClient() {
     return () => ob.disconnect();
   }, []);
 
-  // formular_* icons — force dark variant in check-in
+  // formular_* icons — use light variant (check-in page is styled as light)
   const formIcon = (key: "email"|"phone"|"address"|"city"|"country"|"id"|"firstname"|"lastname") => {
     const token = {
       email: "email",
@@ -778,21 +777,21 @@ export default function CheckinClient() {
       firstname: "firstname",
       lastname: "lastname",
     }[key];
-    return `/formular_${token}_fordark.png`;
+    return `/formular_${token}_forlight.png`;
   };
 
-  // generic icons — force dark variant in check-in
-  const themedIcon = (base: "room") => `/${base}_fordark.png`;
+  // generic icons — use light variant in check-in
+  const themedIcon = (base: "room") => `/${base}_forlight.png`;
 
 
   
   // ---------- STYLES ----------
   const CARD: React.CSSProperties = useMemo(() => ({
-    background: "var(--panel)",
+    background: "color-mix(in srgb, var(--panel) 92%, transparent)",
     border: "1px solid var(--border)",
     borderRadius: isSmall ? 14 : 16,
     padding: isSmall ? 14 : 16,
-    boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
+    boxShadow: "0 14px 36px rgba(15,23,42,0.10)",
     overflow: "hidden",
   }), [isSmall]);
 
@@ -800,7 +799,7 @@ export default function CheckinClient() {
     () => ({
       maxWidth: 860,
       margin: isSmall ? "12px auto" : "24px auto",
-      padding: isSmall ? 12 : 16,
+      padding: isSmall ? 10 : 12,
       display: "grid",
       gap: isSmall ? 12 : 16,
       fontFamily:
@@ -1510,12 +1509,33 @@ export default function CheckinClient() {
             .ci-heroText{ max-width: 64ch; }
             .ci-langSwitch{ position:absolute; top: 12px; right: 12px; display:flex; gap: 8px; }
             .ci-type{ --ci-font-h:28px; --ci-font-b:14px; --ci-font-s:12px; --ci-weight-m:600; --ci-weight-b:800; }
-            .ci-heroTitle{ margin:0; font-size: var(--ci-font-h); font-weight: var(--ci-weight-b); letter-spacing: .02em; line-height: 1.15; }
+            .ci-heroTitle{ margin:0; display:flex; flex-wrap:wrap; justify-content:center; gap: 10px; line-height: 1.1; }
+            .ci-pillWord{
+              display:inline-flex;
+              align-items:center;
+              justify-content:center;
+              padding: 6px 14px;
+              border-radius: 999px;
+              border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+              background: color-mix(in srgb, var(--text) 6%, transparent);
+              color: color-mix(in srgb, var(--text) 88%, transparent);
+              font-size: clamp(14px, 2.2vw, 18px);
+              font-weight: var(--ci-weight-b);
+              letter-spacing: .12em;
+              text-transform: uppercase;
+              white-space: nowrap;
+            }
+            .ci-pillWordSuccess{
+              --ci-success: var(--success, var(--primary));
+              border-color: color-mix(in srgb, var(--ci-success) 34%, transparent);
+              background: color-mix(in srgb, var(--ci-success) 12%, white);
+              color: color-mix(in srgb, var(--ci-success) 86%, black);
+            }
             .ci-heroStack{ margin-top: 12px; display:grid; gap: 10px; }
             .ci-heroLead{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-b); color: color-mix(in srgb, var(--text) 92%, transparent); line-height: 1.55; }
             .ci-heroBody{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 1.55; }
             .ci-heroSmall{ margin:0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.55; }
-            .ci-heroNote{ margin-top: 6px; display:grid; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 70%, transparent); background: color-mix(in srgb, var(--panel) 55%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent); }
+            .ci-heroNote{ margin-top: 6px; display:grid; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 90%, transparent); background: color-mix(in srgb, #fff 78%, transparent); box-shadow: 0 16px 40px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.72); }
             .ci-heroNoteTitle{ font-size: var(--ci-font-s); font-weight: var(--ci-weight-b); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); }
             .ci-heroList{ list-style: none; padding: 0; margin: 0; display:grid; gap: 8px; text-align: left; }
             .ci-heroList li{ display:block; }
@@ -1614,10 +1634,10 @@ export default function CheckinClient() {
                 padding: 6px;
                 border-radius: 999px;
                 border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
-                background: rgba(15,23,42,0.45);
+                background: rgba(255,255,255,0.78);
                 -webkit-backdrop-filter: blur(12px) saturate(130%);
                         backdrop-filter: blur(12px) saturate(130%);
-                box-shadow: 0 14px 34px rgba(0,0,0,0.20);
+                box-shadow: 0 14px 34px rgba(15,23,42,0.16);
               }
               .ci-langSwitch .ci-flagBtn{
                 width: 34px !important;
@@ -1860,7 +1880,7 @@ export default function CheckinClient() {
             inset: 0,
             zIndex: 999,
             background:
-              "radial-gradient(700px 500px at 10% 0%, rgba(16,185,129,0.14), transparent 58%), radial-gradient(700px 500px at 90% 100%, rgba(59,130,246,0.12), transparent 58%), rgba(2,6,23,.60)",
+              "radial-gradient(700px 500px at 10% 0%, rgba(16,185,129,0.18), transparent 58%), radial-gradient(700px 500px at 90% 100%, rgba(59,130,246,0.14), transparent 58%), rgba(248,250,252,0.86)",
             WebkitBackdropFilter: "blur(8px)",
             backdropFilter: "blur(8px)",
             display: "grid",
@@ -1876,11 +1896,11 @@ export default function CheckinClient() {
               gap: 10,
               padding: "12px 14px",
               borderRadius: 999,
-              border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
-              background: "rgba(15,23,42,0.72)",
+              border: "1px solid color-mix(in srgb, var(--border) 90%, transparent)",
+              background: "rgba(255,255,255,0.86)",
               WebkitBackdropFilter: "blur(10px) saturate(130%)",
               backdropFilter: "blur(10px) saturate(130%)",
-              boxShadow: "0 16px 40px rgba(0,0,0,0.28)",
+              boxShadow: "0 16px 40px rgba(15,23,42,0.12)",
             }}
           >
             <span className="p4h-dots" aria-hidden>
@@ -1888,7 +1908,7 @@ export default function CheckinClient() {
               <span className="p4h-dot" />
               <span className="p4h-dot" />
             </span>
-            <span style={{ fontWeight: 650, color: "#fff" }}>{T("loading")}</span>
+            <span style={{ fontWeight: 650, color: "var(--text)" }}>{T("loading")}</span>
           </div>
         </div>
       )}
@@ -1897,7 +1917,19 @@ export default function CheckinClient() {
         <div className="ci-heroInner">
           <div className="ci-heroText">
             <h1 className="ci-heroTitle">
-              Stay Smart, Experience <span className={homeStyles.betterGrad}>Better</span>
+              {lang === "ro" ? (
+                <>
+                  <span className="ci-pillWord">CHECK-IN RAPID</span>
+                  <span className="ci-pillWord">CONFIRMARE INSTANT</span>
+                  <span className="ci-pillWord ci-pillWordSuccess">SEJUR PLĂCUT</span>
+                </>
+              ) : (
+                <>
+                  <span className="ci-pillWord">QUICK CHECK-IN</span>
+                  <span className="ci-pillWord">INSTANT CONFIRMATION</span>
+                  <span className="ci-pillWord ci-pillWordSuccess">ENJOY YOUR STAY</span>
+                </>
+              )}
             </h1>
             <div className="ci-heroStack">
               <p className="ci-heroSmall">{T('intro2')}</p>
@@ -1917,7 +1949,7 @@ export default function CheckinClient() {
                     <span className="ci-heroBody">
                       {T('intro4')}{" "}
                       <img
-                        src="/QR_fordark.png"
+                        src="/QR_forlight.png"
                         alt="QR"
                         width={16}
                         height={16}
