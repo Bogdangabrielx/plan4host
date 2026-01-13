@@ -1504,7 +1504,7 @@ export default function CheckinClient() {
             .ci-langSwitch{ position:absolute; top: 12px; right: 12px; display:flex; gap: 8px; }
             .ci-type{
               --ci-font-h:28px; --ci-font-b:14px; --ci-font-s:12px; --ci-weight-m:600; --ci-weight-b:800;
-              font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+              font-family: inherit;
             }
             .ci-heroTitle{ margin:0; }
             .ci-hTitle{
@@ -1744,7 +1744,7 @@ export default function CheckinClient() {
               border-radius: 18px;
               border: 1px solid rgba(255,255,255,0.10);
               background: #0b141a;
-              font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+              font-family: inherit;
               font-weight: 400;
               box-shadow: 0 22px 60px rgba(0,0,0,0.34);
               overflow: hidden;
