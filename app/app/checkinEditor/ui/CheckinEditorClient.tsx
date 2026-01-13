@@ -8,6 +8,7 @@ import { usePersistentPropertyState } from "@/app/app/_components/PropertySelect
 import LoadingPill from "@/app/app/_components/LoadingPill";
 import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
 import { DIAL_OPTIONS } from "@/lib/phone/dialOptions";
+import { buildSimplePdfBytes } from "@/lib/pdf/simplePdf";
 
 type Property = {
   id: string;
@@ -30,6 +31,17 @@ type Property = {
 
 type ProviderItem = { slug: string; label: string; logo?: string | null };
 type SocialKey = "facebook" | "instagram" | "tiktok" | "website" | "location";
+
+type HouseRulesDraft = {
+  noSmoking: boolean;
+  noParties: boolean;
+  quietHours: boolean;
+  quietHoursAfter: string;
+  petsAllowed: boolean;
+  maxGuestsEnabled: boolean;
+  maxGuests: string;
+  otherNotes: string;
+};
 
 const card: React.CSSProperties = {
   background: "var(--panel)",
@@ -197,6 +209,27 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [contactsWizardDialOpen, setContactsWizardDialOpen] = useState<boolean>(false);
   const contactsWizardDialWrapRef = useRef<HTMLDivElement | null>(null);
   const houseRulesSectionRef = useRef<HTMLElement | null>(null);
+  const [houseRulesWizardRequested, setHouseRulesWizardRequested] = useState<boolean>(false);
+  const [houseRulesWizardOpen, setHouseRulesWizardOpen] = useState<boolean>(false);
+  const [houseRulesWizardStep, setHouseRulesWizardStep] = useState<
+    "intro" | "choose" | "create" | "uploaded" | "reward"
+  >("intro");
+  const [houseRulesWizardLoading, setHouseRulesWizardLoading] = useState<boolean>(false);
+  const [houseRulesWizardLoadingText, setHouseRulesWizardLoadingText] = useState<string>("Preparing your house rules…");
+  const [houseRulesWizardError, setHouseRulesWizardError] = useState<string | null>(null);
+  const [houseRulesWizardPreviewUrl, setHouseRulesWizardPreviewUrl] = useState<string | null>(null);
+  const [houseRulesDraft, setHouseRulesDraft] = useState<HouseRulesDraft>({
+    noSmoking: true,
+    noParties: true,
+    quietHours: false,
+    quietHoursAfter: "22:00",
+    petsAllowed: false,
+    maxGuestsEnabled: false,
+    maxGuests: "2",
+    otherNotes: "",
+  });
+  const [houseRulesDraftBusy, setHouseRulesDraftBusy] = useState<boolean>(false);
+  const houseRulesDraftBusyTimer = useRef<number | null>(null);
   const [wizardIsDark, setWizardIsDark] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     const attr = document.documentElement.getAttribute("data-theme");
@@ -345,6 +378,21 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     }
   }, []);
 
+  // Step 5 onboarding: open house rules wizard
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href);
+      const flag = (u.searchParams.get("onboarding") || "").toLowerCase();
+      if (flag === "house_rules" || flag === "houserules" || flag === "rules") {
+        setHouseRulesWizardRequested(true);
+        u.searchParams.delete("onboarding");
+        window.history.replaceState({}, "", u.toString());
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // Open wizard after property is loaded (so drafts can be prefilled)
   useEffect(() => {
     if (!contactsWizardRequested) return;
@@ -365,6 +413,30 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       location: prop.social_location || "",
     });
   }, [contactsWizardRequested, prop?.id]);
+
+  function openHouseRulesWizard() {
+    if (!prop) return;
+    setHouseRulesWizardRequested(false);
+    setHouseRulesWizardError(null);
+    setHouseRulesWizardLoading(false);
+    setHouseRulesWizardLoadingText("Preparing your house rules…");
+    setHouseRulesWizardPreviewUrl(prop.regulation_pdf_url || null);
+    setHouseRulesWizardStep("intro");
+    setHouseRulesWizardOpen(true);
+  }
+
+  useEffect(() => {
+    if (!houseRulesWizardRequested) return;
+    if (!prop) return;
+    openHouseRulesWizard();
+  }, [houseRulesWizardRequested, prop?.id]);
+
+  useEffect(() => {
+    return () => {
+      if (houseRulesDraftBusyTimer.current) window.clearTimeout(houseRulesDraftBusyTimer.current);
+      houseRulesDraftBusyTimer.current = null;
+    };
+  }, []);
 
   // Dial code dropdown state for Contact Phone
   const [contactDial, setContactDial] = useState<string>("+40");
@@ -398,6 +470,80 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     const digits = (local || "").replace(/\D/g, "");
     if (!digits) return "";
     return `${dial}${digits}`;
+  }
+
+  function updateHouseRuleDraftSlow(patch: Partial<HouseRulesDraft>) {
+    if (houseRulesDraftBusy) return;
+    setHouseRulesDraftBusy(true);
+    if (houseRulesDraftBusyTimer.current) window.clearTimeout(houseRulesDraftBusyTimer.current);
+    houseRulesDraftBusyTimer.current = window.setTimeout(() => {
+      setHouseRulesDraft((prev) => ({ ...prev, ...patch }));
+      setHouseRulesDraftBusy(false);
+      houseRulesDraftBusyTimer.current = null;
+    }, 320);
+  }
+
+  function updateHouseRuleDraftImmediate(patch: Partial<HouseRulesDraft>) {
+    setHouseRulesDraft((prev) => ({ ...prev, ...patch }));
+  }
+
+  function houseRulesToLines(d: HouseRulesDraft): string[] {
+    const out: string[] = [];
+    out.push("Please read and respect the following house rules:");
+    if (d.noSmoking) out.push("- No smoking inside the property.");
+    if (d.noParties) out.push("- No parties or events.");
+    if (d.quietHours) out.push(`- Quiet hours after ${d.quietHoursAfter}.`);
+    if (d.petsAllowed) out.push("- Pets are allowed with prior approval from the host.");
+    if (d.maxGuestsEnabled) out.push(`- Maximum number of guests: ${d.maxGuests}.`);
+    if (d.otherNotes.trim()) out.push(`- ${d.otherNotes.trim()}`);
+    out.push("");
+    out.push("By completing check-in, you confirm you have read and agree to these rules.");
+    return out;
+  }
+
+  async function uploadHouseRulesPdf(file: File): Promise<string> {
+    if (!propertyId) throw new Error("Missing property");
+    const fd = new FormData();
+    fd.append("propertyId", propertyId);
+    fd.append("file", file);
+    const res = await fetch("/api/property/regulation/upload", { method: "POST", body: fd });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(j?.error || "Upload failed");
+    return (j?.url || "").toString().trim();
+  }
+
+  async function createAndUploadHouseRulesPdf() {
+    if (!prop) return;
+    setHouseRulesWizardError(null);
+    setHouseRulesWizardLoadingText("Creating your house rules…");
+    setHouseRulesWizardLoading(true);
+    const start = Date.now();
+    const minMs = 1100;
+    try {
+      const bytes = buildSimplePdfBytes({
+        title: prop.name,
+        subtitle: "House Rules",
+        bodyLines: houseRulesToLines(houseRulesDraft),
+      });
+      const fname = `${(prop.name || "house-rules").toString().trim().replace(/\s+/g, "-")}-house-rules.pdf`;
+      const file = new File([bytes], fname, { type: "application/pdf" });
+      const url = await uploadHouseRulesPdf(file);
+      await refresh();
+      try {
+        window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+      } catch {
+        // ignore
+      }
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(minMs - elapsed, 0);
+      if (remaining) await new Promise<void>((r) => setTimeout(r, remaining));
+      setHouseRulesWizardPreviewUrl(url || null);
+      setHouseRulesWizardStep("reward");
+    } catch (e: any) {
+      setHouseRulesWizardError(e?.message || "Could not create house rules.");
+    } finally {
+      setHouseRulesWizardLoading(false);
+    }
   }
 
   // Read onboarding highlight hint from URL (e.g., ?highlight=contacts|picture|house_rules)
@@ -1155,7 +1301,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     onClick={() => {
                       setContactsWizardOpen(false);
                       setHighlightTarget("house_rules");
-                      try { houseRulesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch {}
+                      setNoPdfOpen(false);
+                      openHouseRulesWizard();
                     }}
                   >
                     Continue
@@ -1182,6 +1329,392 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </div>
         )}
 
+        {houseRulesWizardOpen && prop && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setHouseRulesWizardOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 242,
+              background: "rgba(0,0,0,0.55)",
+              display: "grid",
+              placeItems: "center",
+              padding: 12,
+              paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+              paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="sb-card"
+              style={{
+                width: "min(760px, 100%)",
+                background: "var(--panel)",
+                border: "1px solid var(--border)",
+                borderRadius: 14,
+                padding: 16,
+                display: "grid",
+                gap: 14,
+              }}
+            >
+              <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
+                <div aria-hidden />
+                <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                      letterSpacing: ".14em",
+                      color: "color-mix(in srgb, var(--text) 86%, transparent)",
+                    }}
+                  >
+                    {houseRulesWizardStep === "intro"
+                      ? "House rules = clear limits"
+                      : houseRulesWizardStep === "choose"
+                        ? "Add house rules"
+                        : houseRulesWizardStep === "create"
+                          ? "Create house rules"
+                          : houseRulesWizardStep === "uploaded"
+                            ? "House rules uploaded"
+                            : "This is how guests see your house rules"}
+                  </div>
+                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                    {houseRulesWizardStep === "intro"
+                      ? "Protect yourself before guests arrive."
+                      : houseRulesWizardStep === "choose"
+                        ? "Choose the easiest option for you."
+                        : houseRulesWizardStep === "create"
+                          ? "Answer a few questions — we’ll do the rest."
+                          : houseRulesWizardStep === "uploaded"
+                            ? "Guests will see them during check-in."
+                            : "They must confirm them before check-in."}
+                  </div>
+                </div>
+                <button
+                  aria-label="Close"
+                  className="sb-btn sb-cardglow sb-btn--icon"
+                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
+                  onClick={() => setHouseRulesWizardOpen(false)}
+                >
+                  ×
+                </button>
+              </div>
+
+              {houseRulesWizardStep === "intro" && (
+                <div style={{ display: "grid", gap: 14 }}>
+                  <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", textAlign: "center" }}>
+                    By adding house rules, guests can read and confirm them before check-in.
+                  </div>
+                  <div style={{ display: "grid", gap: 8, justifyItems: "center" }}>
+                    <button
+                      className="sb-btn sb-btn--primary"
+                      style={{ width: "min(520px, 100%)", minHeight: 44 }}
+                      onClick={() => setHouseRulesWizardStep("choose")}
+                    >
+                      Continue
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {houseRulesWizardStep === "choose" && (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <button
+                      className="sb-btn sb-cardglow"
+                      style={{ width: "100%", justifyContent: "center" }}
+                      onClick={() => {
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.accept = "application/pdf";
+                        input.style.display = "none";
+                        input.onchange = async () => {
+                          const file = input.files?.[0] || null;
+                          if (!file) { input.remove(); return; }
+                          setHouseRulesWizardError(null);
+                          setHouseRulesWizardLoadingText("Uploading house rules…");
+                          setHouseRulesWizardLoading(true);
+                          const start = Date.now();
+                          const minMs = 900;
+                          try {
+                            const url = await uploadHouseRulesPdf(file);
+                            await refresh();
+                            try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
+                            const elapsed = Date.now() - start;
+                            const remaining = Math.max(minMs - elapsed, 0);
+                            if (remaining) await new Promise<void>((r) => setTimeout(r, remaining));
+                            setHouseRulesWizardPreviewUrl(url || null);
+                            setHouseRulesWizardStep("uploaded");
+                          } catch (e: any) {
+                            setHouseRulesWizardError(e?.message || "Could not upload house rules.");
+                          } finally {
+                            setHouseRulesWizardLoading(false);
+                            input.remove();
+                          }
+                        };
+                        document.body.appendChild(input);
+                        input.click();
+                      }}
+                    >
+                      Upload a PDF
+                    </button>
+                    <button
+                      className="sb-btn sb-btn--primary"
+                      style={{ width: "100%", justifyContent: "center" }}
+                      onClick={() => setHouseRulesWizardStep("create")}
+                    >
+                      Create them here
+                    </button>
+                    <button
+                      className="sb-btn"
+                      style={{ width: "100%", justifyContent: "center" }}
+                      onClick={() => {
+                        setHouseRulesWizardOpen(false);
+                        window.location.href = "/app/reservationMessage";
+                      }}
+                    >
+                      I’ll add this later
+                    </button>
+                  </div>
+
+                  {houseRulesWizardError && (
+                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                      {houseRulesWizardError}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {houseRulesWizardStep === "create" && (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: isNarrow ? "1fr" : "1fr 1fr",
+                      gap: 12,
+                      alignItems: "start",
+                    }}
+                  >
+                    <div
+                      className="sb-cardglow"
+                      style={{
+                        border: "1px solid var(--border)",
+                        background: "color-mix(in srgb, var(--card) 90%, transparent)",
+                        borderRadius: 14,
+                        padding: 12,
+                        display: "grid",
+                        gap: 10,
+                      }}
+                    >
+                      <div style={{ fontWeight: 800, fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
+                        Quick rules
+                      </div>
+                      <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: houseRulesDraftBusy ? "not-allowed" : "pointer" }}>
+                        <input
+                          type="checkbox"
+                          checked={houseRulesDraft.noSmoking}
+                          disabled={houseRulesDraftBusy}
+                          onChange={(e) => updateHouseRuleDraftSlow({ noSmoking: e.currentTarget.checked })}
+                        />
+                        <span>No smoking inside</span>
+                      </label>
+                      <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: houseRulesDraftBusy ? "not-allowed" : "pointer" }}>
+                        <input
+                          type="checkbox"
+                          checked={houseRulesDraft.noParties}
+                          disabled={houseRulesDraftBusy}
+                          onChange={(e) => updateHouseRuleDraftSlow({ noParties: e.currentTarget.checked })}
+                        />
+                        <span>No parties or events</span>
+                      </label>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: houseRulesDraftBusy ? "not-allowed" : "pointer" }}>
+                          <input
+                            type="checkbox"
+                            checked={houseRulesDraft.quietHours}
+                            disabled={houseRulesDraftBusy}
+                            onChange={(e) => updateHouseRuleDraftSlow({ quietHours: e.currentTarget.checked })}
+                          />
+                          <span>Quiet hours after</span>
+                        </label>
+                        <input
+                          type="time"
+                          value={houseRulesDraft.quietHoursAfter}
+                          disabled={!houseRulesDraft.quietHours || houseRulesDraftBusy}
+                          onChange={(e) => updateHouseRuleDraftImmediate({ quietHoursAfter: e.currentTarget.value })}
+                          style={{ ...FIELD, maxWidth: 160 }}
+                        />
+                      </div>
+                      <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: houseRulesDraftBusy ? "not-allowed" : "pointer" }}>
+                        <input
+                          type="checkbox"
+                          checked={houseRulesDraft.petsAllowed}
+                          disabled={houseRulesDraftBusy}
+                          onChange={(e) => updateHouseRuleDraftSlow({ petsAllowed: e.currentTarget.checked })}
+                        />
+                        <span>Pets allowed (with approval)</span>
+                      </label>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: houseRulesDraftBusy ? "not-allowed" : "pointer" }}>
+                          <input
+                            type="checkbox"
+                            checked={houseRulesDraft.maxGuestsEnabled}
+                            disabled={houseRulesDraftBusy}
+                            onChange={(e) => updateHouseRuleDraftSlow({ maxGuestsEnabled: e.currentTarget.checked })}
+                          />
+                          <span>Maximum guests</span>
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={houseRulesDraft.maxGuests}
+                          disabled={!houseRulesDraft.maxGuestsEnabled || houseRulesDraftBusy}
+                          onChange={(e) => updateHouseRuleDraftImmediate({ maxGuests: e.currentTarget.value })}
+                          style={{ ...FIELD, maxWidth: 160 }}
+                        />
+                      </div>
+                      <div style={{ display: "grid", gap: 6 }}>
+                        <label>Anything else (optional)</label>
+                        <textarea
+                          value={houseRulesDraft.otherNotes}
+                          disabled={houseRulesDraftBusy}
+                          onChange={(e) => updateHouseRuleDraftImmediate({ otherNotes: e.currentTarget.value })}
+                          rows={3}
+                          style={{ ...FIELD, resize: "none" }}
+                          placeholder="e.g. Please dispose of trash before check-out."
+                        />
+                      </div>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
+                        <button className="sb-btn" type="button" onClick={() => setHouseRulesWizardStep("choose")}>
+                          Back
+                        </button>
+                        <button
+                          className="sb-btn sb-btn--primary"
+                          type="button"
+                          style={{ flex: 1, minWidth: 200 }}
+                          onClick={createAndUploadHouseRulesPdf}
+                        >
+                          Save house rules
+                        </button>
+                      </div>
+                      {houseRulesWizardError && (
+                        <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                          {houseRulesWizardError}
+                        </div>
+                      )}
+                    </div>
+
+                    <div
+                      className="sb-cardglow"
+                      style={{
+                        border: "1px solid var(--border)",
+                        background: "linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, transparent), color-mix(in srgb, var(--panel) 92%, transparent))",
+                        borderRadius: 14,
+                        padding: 12,
+                        display: "grid",
+                        gap: 10,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+                        <div style={{ fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", fontSize: 12 }}>
+                          Preview
+                        </div>
+                        <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                          {houseRulesDraftBusy ? "Updating…" : " "}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          border: "1px dashed color-mix(in srgb, var(--border) 80%, transparent)",
+                          borderRadius: 12,
+                          padding: 14,
+                          background: "color-mix(in srgb, var(--panel) 80%, transparent)",
+                          minHeight: isNarrow ? 180 : 260,
+                          display: "grid",
+                          gap: 10,
+                        }}
+                      >
+                        <div style={{ fontWeight: 900, fontSize: 16 }}>{prop.name}</div>
+                        <div style={{ color: "var(--muted)", fontSize: 12, letterSpacing: ".12em", textTransform: "uppercase" }}>
+                          House Rules
+                        </div>
+                        <div style={{ display: "grid", gap: 6, color: "var(--text)", fontSize: 13, lineHeight: 1.45 }}>
+                          {houseRulesToLines(houseRulesDraft)
+                            .filter((l) => l.trim() !== "")
+                            .map((l, idx) => (
+                              <div key={idx}>{l}</div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(houseRulesWizardStep === "uploaded" || houseRulesWizardStep === "reward") && (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+                      <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
+                      <span style={{ fontWeight: 800 }}>Shown in guest check-in portal</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+                      <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
+                      <span style={{ fontWeight: 800 }}>Protects you by setting expectations</span>
+                    </div>
+                  </div>
+
+                  {(() => {
+                    const url = (houseRulesWizardPreviewUrl || prop.regulation_pdf_url || "").toString().trim();
+                    if (!url) return null;
+                    return (
+                      <div
+                        style={{
+                          border: "1px solid var(--border)",
+                          borderRadius: 14,
+                          overflow: "hidden",
+                          background: "var(--card)",
+                        }}
+                      >
+                        <iframe
+                          src={url}
+                          title="House Rules PDF"
+                          style={{ width: "100%", height: isNarrow ? "44vh" : "52vh", border: 0, display: "block" }}
+                        />
+                      </div>
+                    );
+                  })()}
+
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <a
+                      href={buildCheckinLink(prop.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="sb-btn sb-cardglow"
+                      style={{ width: "100%", justifyContent: "center", textDecoration: "none" }}
+                    >
+                      Preview as guest
+                    </a>
+                    <button
+                      className="sb-btn sb-btn--primary"
+                      style={{ width: "100%", justifyContent: "center" }}
+                      onClick={() => {
+                        setHouseRulesWizardOpen(false);
+                        window.location.href = "/app/reservationMessage";
+                      }}
+                    >
+                      Continue
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {contactsWizardLoading && (
           <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label={contactsWizardLoadingText} style={{ zIndex: 241 }}>
             <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
@@ -1189,6 +1722,22 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               <div style={{ display: "grid", gap: 6, textAlign: "center" }}>
                 <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", fontWeight: 700 }}>
                   {contactsWizardLoadingText}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {houseRulesWizardLoading && (
+          <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label={houseRulesWizardLoadingText} style={{ zIndex: 243 }}>
+            <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
+              <LoadingPill title={houseRulesWizardLoadingText} />
+              <div style={{ display: "grid", gap: 6, textAlign: "center" }}>
+                <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", fontWeight: 700 }}>
+                  {houseRulesWizardLoadingText}
+                </div>
+                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                  This is what guests will see before arrival.
                 </div>
               </div>
             </div>
