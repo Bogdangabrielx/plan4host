@@ -78,7 +78,7 @@ export async function POST(req: Request) {
 	            </p>
 	            <p style="margin:0 0 16px;">
 	              <a href="${guestCheckinUrl}" target="_blank" rel="noopener"
-	                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:#16b981; color:#0c111b; font-weight:800; text-decoration:none; border:1px solid #16b981;">
+	                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:#16b981; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid #16b981;">
 	                Vezi check-in-ul pentru oaspeți
 	              </a>
 	            </p>
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
 	            </p>
 	            <p style="margin:0 0 16px;">
 	              <a href="${guestCheckinUrl}" target="_blank" rel="noopener"
-	                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:#16b981; color:#0c111b; font-weight:800; text-decoration:none; border:1px solid #16b981;">
+	                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:#16b981; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid #16b981;">
 	                View guest check-in
 	              </a>
 	            </p>

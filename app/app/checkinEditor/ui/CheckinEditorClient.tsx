@@ -846,6 +846,16 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     await saveSocialWizard(nextDrafts);
   }
 
+  function backSocialWizard() {
+    const currentKey = CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex];
+    const nextDrafts = { ...contactsWizardSocialDrafts, [currentKey]: contactsWizardSocialInput };
+    setContactsWizardSocialDrafts(nextDrafts);
+    const prevIndex = Math.max(contactsWizardSocialIndex - 1, 0);
+    const prevKey = CONTACTS_SOCIAL_KEYS[prevIndex];
+    setContactsWizardSocialIndex(prevIndex);
+    setContactsWizardSocialInput((nextDrafts[prevKey] ?? "").toString());
+  }
+
   function onPropChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.currentTarget.value;
     if (!next || next === propertyId) return;
@@ -1499,20 +1509,22 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                  )}
 
 	                  <div style={{ display: "grid", gap: 10 }}>
-	                    <div style={{ display: "grid", gridTemplateColumns: isNarrow ? "1fr" : "1fr 1fr", gap: 10 }}>
-	                      <button
-	                        className="sb-btn"
-	                        style={{ width: "100%", minHeight: 44 }}
-	                        onClick={() => void advanceSocialWizard(false)}
-	                      >
-	                        Skip
-	                      </button>
+	                    <div style={{ display: "grid", gridTemplateColumns: contactsWizardSocialIndex > 0 && !isNarrow ? "1fr 1fr" : "1fr", gap: 10 }}>
+	                      {contactsWizardSocialIndex > 0 && (
+	                        <button
+	                          className="sb-btn"
+	                          style={{ width: "100%", minHeight: 44 }}
+	                          onClick={backSocialWizard}
+	                        >
+	                          Back
+	                        </button>
+	                      )}
 	                      <button
 	                        className="sb-btn sb-btn--primary"
 	                        style={{ width: "100%", minHeight: 44 }}
 	                        onClick={() => void advanceSocialWizard(true)}
 	                      >
-	                        Add
+	                        {contactsWizardSocialIndex >= CONTACTS_SOCIAL_KEYS.length - 1 ? "Save" : "Next"}
 	                      </button>
 	                    </div>
 	                    <button
