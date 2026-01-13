@@ -1521,7 +1521,7 @@ export default function CheckinClient() {
               color: color-mix(in srgb, var(--text) 92%, transparent);
             }
             .ci-titleBreak{ display:inline; margin-left: .25em; }
-            @media (max-width: 420px){
+            @media (max-width: 450px){
               .ci-titleBreak{ display:block; margin-left: 0; }
             }
             .ci-hSubtitle{
