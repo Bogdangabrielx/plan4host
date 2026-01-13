@@ -79,7 +79,6 @@ function OnboardingChecklistFab() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [dismissedSteps, setDismissedSteps] = useState<string[]>([]);
   const [completedAt, setCompletedAt] = useState<string | null>(null);
-  const [showCelebration, setShowCelebration] = useState(false);
 
   const total = ONBOARDING_STEPS.length;
   const completed = completedSteps.length + dismissedSteps.length;
@@ -194,9 +193,8 @@ function OnboardingChecklistFab() {
     if (loading) return;
     if (completedAt) return;
     const done = completedSteps.length + dismissedSteps.length;
-    if (done >= total && !showCelebration) {
+    if (done >= total) {
       const nowIso = new Date().toISOString();
-      setShowCelebration(true);
       setCompletedAt(nowIso);
       fetch("/api/onboarding", {
         method: "POST",
@@ -204,7 +202,7 @@ function OnboardingChecklistFab() {
         body: JSON.stringify({ action: "complete_all" }),
       }).catch(() => {});
     }
-  }, [completedSteps, dismissedSteps, completedAt, loading, total, showCelebration]);
+  }, [completedSteps, dismissedSteps, completedAt, loading, total]);
 
   const fabStyle: React.CSSProperties = {
     position: "fixed",
@@ -248,8 +246,9 @@ function OnboardingChecklistFab() {
     alignItems: "center",
     justifyContent: "space-between",
     gap: 8,
-    background: "linear-gradient(135deg, #00d1ff, #4f46e5)",
-    color: "#f9fafb",
+    // WhatsApp-style green gradient (always, regardless of theme)
+    background: "linear-gradient(135deg, #25D366, #128C7E)",
+    color: "#ffffff",
   };
 
   const bodyStyle: React.CSSProperties = {
@@ -265,154 +264,13 @@ function OnboardingChecklistFab() {
     return null;
   }
 
-  // Dacă onboarding-ul este deja completat și pop-up-ul de celebrare nu e afișat, ascundem complet widget-ul.
-  if (completedAt && !showCelebration) {
+  // Dacă onboarding-ul este deja completat, ascundem complet widget-ul.
+  if (completedAt) {
     return null;
   }
 
   return (
     <>
-      {showCelebration && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 260,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(15,23,42,0.55)",
-            backdropFilter: "blur(4px)",
-          }}
-        >
-          <>
-            {/* Confetti falling from the top */}
-            <style
-              dangerouslySetInnerHTML={{
-                __html: `
-                  @keyframes p4h-confetti-fall {
-                    0% {
-                      transform: translate3d(0, -110vh, 0) rotateZ(0deg);
-                      opacity: 1;
-                    }
-                    100% {
-                      transform: translate3d(0, 110vh, 0) rotateZ(360deg);
-                      opacity: 0;
-                    }
-                  }
-                `,
-              }}
-            />
-            <div
-              aria-hidden
-              style={{
-                position: "fixed",
-                inset: 0,
-                overflow: "hidden",
-                pointerEvents: "none",
-                zIndex: 261,
-              }}
-            >
-              {Array.from({ length: 80 }).map((_, i) => {
-                const colors = ["#22c55e", "#0ea5e9", "#6366f1", "#ec4899", "#eab308"];
-                const color = colors[i % colors.length];
-                const left = (i * 13) % 100; // pseudo-random
-                const delay = (i % 10) * 0.12;
-                const duration = 3 + (i % 4) * 0.4;
-                const size = 6 + (i % 3) * 2;
-                return (
-                  <span
-                    key={i}
-                    style={{
-                      position: "absolute",
-                      top: "-10vh",
-                      left: `${left}%`,
-                      width: size,
-                      height: size * 1.8,
-                      borderRadius: 2,
-                      backgroundColor: color,
-                      opacity: 0.95,
-                      transform: "translate3d(0, -100vh, 0)",
-                      animation: `p4h-confetti-fall ${duration}s ease-out ${delay}s forwards`,
-                    }}
-                  />
-                );
-              })}
-            </div>
-
-            {/* Celebration card */}
-            <div
-              style={{
-                width: "min(360px, 90vw)",
-                borderRadius: 16,
-                border: "1px solid rgba(148,163,184,0.8)",
-                background:
-                  "radial-gradient(circle at top, rgba(0,209,255,0.12), transparent 55%), var(--panel)",
-                boxShadow: "0 20px 45px rgba(15,23,42,0.7)",
-                padding: 16,
-                display: "grid",
-                gap: 10,
-                position: "relative",
-                zIndex: 1,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <div
-                  aria-hidden
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    background:
-                      "conic-gradient(from 140deg, #22c55e, #3b82f6, #8b5cf6, #22c55e)",
-                    display: "flex",
-                    alignItems: "center",
-	                    justifyContent: "center",
-	                    color: "#fff",
-	                    fontSize: "var(--fs-h)",
-	                  }}
-	                >
-	                  🎉
-	                </div>
-	                <div>
-	                  <div style={{ fontSize: "var(--fs-b)", fontWeight: "var(--fw-bold)" }}>
-	                    You’re all set
-	                  </div>
-	                  <div style={{ fontSize: "var(--fs-s)", color: "var(--muted)" }}>
-	                    Your first property is ready. Start using Plan4Host.
-	                  </div>
-	                </div>
-	              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCelebration(false);
-                }}
-                style={{
-                  marginTop: 4,
-                  alignSelf: "flex-end",
-	                  borderRadius: 999,
-	                  border: "1px solid var(--border)",
-	                  padding: "6px 14px",
-	                  background: "var(--panel)",
-	                  fontSize: "var(--fs-s)",
-	                  fontWeight: "var(--fw-medium)",
-	                  cursor: "pointer",
-	                }}
-	              >
-	                Close
-              </button>
-            </div>
-          </>
-        </div>
-      )}
-
       {open && (
         <div style={panelStyle}>
 	          <div style={headerStyle}>
@@ -431,9 +289,9 @@ function OnboardingChecklistFab() {
                 borderRadius: "999px",
                 width: 26,
                 height: 26,
-                border: "1px solid rgba(15,23,42,0.3)",
-                background: "rgba(15,23,42,0.6)",
-                color: "#f9fafb",
+                border: "1px solid rgba(255,255,255,0.35)",
+                background: "rgba(255,255,255,0.16)",
+                color: "#ffffff",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
