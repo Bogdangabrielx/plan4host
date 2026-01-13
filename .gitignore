@@ -5,3 +5,5 @@ public/Test\ booking.mp4
 .DS_Store
 **/.DS_Store
 *.tsbuildinfo
+public/sw.js
+public/workbox-*.js
