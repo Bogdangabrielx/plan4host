@@ -62,7 +62,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
 
     // booking + property
     const [rBk, rProp] = await Promise.all([
-      admin.from('bookings').select('id, property_id, start_date, end_date, start_time, end_time, room_id, status, guest_first_name, guest_last_name').eq('id', msg.booking_id).maybeSingle(),
+      admin.from('bookings').select('id, property_id, start_date, end_date, start_time, end_time, room_id, status, source, guest_first_name, guest_last_name').eq('id', msg.booking_id).maybeSingle(),
       admin.from('properties').select('id, account_id, name, timezone, check_in_time, check_out_time, contact_email, contact_phone, contact_address, presentation_image_url, regulation_pdf_url, ai_house_rules_text, contact_overlay_position, social_facebook, social_instagram, social_tiktok, social_website, social_location').eq('id', msg.property_id).maybeSingle(),
     ]);
     if (rBk.error || !rBk.data) return bad(404, { error: 'Booking not found' });
@@ -237,6 +237,9 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
       ? ((booking as any).guest_companions as any[])
       : [];
 
+    const isOnboardingDemo = String((booking as any)?.source || '').toLowerCase() === 'onboarding_demo';
+    const ciTimeDisplay = isOnboardingDemo ? 'Now' : ciTimeRaw;
+
     return NextResponse.json(
       { ok: true, property_id: msg.property_id, booking_id: msg.booking_id, expires_at: msg.expires_at, items,
         details: {
@@ -246,7 +249,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
           start_date: booking.start_date,
           end_date: booking.end_date,
           room_name: roomLabel,
-          check_in_time: ciTimeRaw,
+          check_in_time: ciTimeDisplay,
           check_out_time: coTimeRaw,
           guest_companions_count: companions.length,
         },

@@ -932,38 +932,40 @@ export default function DashboardClient({
 		                  </div>
 		                </div>
 
-		                <div style={{ display: "grid", gap: 10 }}>
-		                  <button
-		                    className="sb-btn sb-btn--primary"
-		                    style={{ width: "100%", minHeight: 44 }}
-		                    disabled={!name || !country || firstPropertyLoading}
-		                    onClick={() => {
-		                      setShowFirstPropertyGuide(false);
-		                      setFirstPropertyStep(0);
-		                      createFirstProperty();
-		                    }}
-		                  >
-		                    Create & view guest link
-		                  </button>
-		                  <button
-		                    className="sb-btn"
-		                    style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
-		                    disabled={!name || !country || firstPropertyLoading}
-		                    onClick={() => {
-		                      setFirstPropertyPhoto(null);
-		                      setShowFirstPropertyGuide(false);
-		                      setFirstPropertyStep(0);
-		                      createFirstProperty();
-		                    }}
-		                  >
-		                    Skip photo
-		                  </button>
-		                  {firstPropertyError && (
-		                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-		                      {firstPropertyError}
-		                    </div>
-		                  )}
-		                </div>
+			                <div style={{ display: "grid", gap: 10 }}>
+			                  <button
+			                    className="sb-btn sb-btn--primary"
+			                    style={{ width: "100%", minHeight: 44 }}
+			                    disabled={!name || !country || firstPropertyLoading}
+			                    onClick={() => {
+			                      setShowFirstPropertyGuide(false);
+			                      setFirstPropertyStep(0);
+			                      createFirstProperty();
+			                    }}
+			                  >
+			                    Create & view guest link
+			                  </button>
+			                  {!firstPropertyPhoto && (
+			                    <button
+			                      className="sb-btn"
+			                      style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
+			                      disabled={!name || !country || firstPropertyLoading}
+			                      onClick={() => {
+			                        setFirstPropertyPhoto(null);
+			                        setShowFirstPropertyGuide(false);
+			                        setFirstPropertyStep(0);
+			                        createFirstProperty();
+			                      }}
+			                    >
+			                      Skip photo
+			                    </button>
+			                  )}
+			                  {firstPropertyError && (
+			                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+			                      {firstPropertyError}
+			                    </div>
+			                  )}
+			                </div>
 		              </div>
 		            )}
 		          </div>

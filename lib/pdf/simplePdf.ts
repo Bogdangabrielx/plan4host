@@ -231,13 +231,24 @@ export function buildSimplePdfBytes(opts: SimplePdfOptions): Uint8Array {
 
   // Footer note (small, grey)
   if (footerNote) {
-    const xFoot = centerX(footerNote, FOOT_FS, PAGE_W);
-    const yFoot = 38;
+    const footLines = wrapText(footerNote, 80);
+    const yFoot = 48 + (Math.max(0, footLines.length - 1) * 10);
     contentLines.push("BT");
     contentLines.push("0.35 g");
     contentLines.push(`/F1 ${FOOT_FS} Tf`);
-    contentLines.push(`1 0 0 1 ${xFoot.toFixed(2)} ${yFoot.toFixed(2)} Tm`);
-    contentLines.push(`(${escapePdfText(footerNote)}) Tj`);
+    if (footLines.length === 0) {
+      const xFoot = centerX(footerNote, FOOT_FS, PAGE_W);
+      contentLines.push(`1 0 0 1 ${xFoot.toFixed(2)} ${yFoot.toFixed(2)} Tm`);
+      contentLines.push(`(${escapePdfText(footerNote)}) Tj`);
+    } else {
+      for (let i = 0; i < footLines.length; i++) {
+        const line = footLines[i];
+        const xFoot = centerX(line, FOOT_FS, PAGE_W);
+        const y = yFoot - i * 10;
+        contentLines.push(`1 0 0 1 ${xFoot.toFixed(2)} ${y.toFixed(2)} Tm`);
+        contentLines.push(`(${escapePdfText(line)}) Tj`);
+      }
+    }
     contentLines.push("0 g");
     contentLines.push("ET");
   }

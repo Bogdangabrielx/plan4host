@@ -533,7 +533,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     if (d.petsAllowed) out.push("Pets are welcome with prior approval — please keep them under control and clean up after them.");
     if (d.maxGuestsEnabled) out.push(`Please don’t exceed ${d.maxGuests} overnight guests.`);
     if (d.otherNotes.trim()) out.push(d.otherNotes.trim());
-    out.push("By completing check‑in, you confirm you’ve read and agree to these house rules.");
     return out;
   }
 
@@ -643,7 +642,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             title: prop.name,
             subtitle: "House Rules",
             bodyLines: houseRulesToParagraphs(houseRulesDraft),
-            footerNote: "Guests can read and confirm these rules before check-in.",
+            footerNote:
+              "Guests can read and confirm these rules before check-in. By completing check-in, you confirm you’ve read and agree to these house rules.",
             imageJpegBytes,
           });
           const fname = `${(prop.name || "house-rules").toString().trim().replace(/\s+/g, "-")}-house-rules.pdf`;

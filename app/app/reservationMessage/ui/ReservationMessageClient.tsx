@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import { useHeader } from "@/app/app/_components/HeaderContext";
+import LoadingPill from "@/app/app/_components/LoadingPill";
+import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
 
 /** ---------------- Types ---------------- */
 type Property = { id: string; name: string };
@@ -60,34 +62,78 @@ type OnboardingTemplate = {
 const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
   {
     key: "welcome_calm",
-    title: "Welcome & check-in",
+    title: "Welcome & essentials",
     blocks_en: [
-      { id: "h", type: "heading", text: "WELCOME TO {{property_name}}" },
-      { id: "p1", type: "paragraph", text: "Hi {{guest_first_name}} — you’re all set for arrival." },
-      { id: "p2", type: "paragraph", text: "Check‑in: {{check_in_time}} · Unit: {{room_name}}" },
-      { id: "p3", type: "paragraph", text: "Use the guest portal for house rules, location and recommendations." },
+      { id: "h", type: "heading", text: "WELCOME TO {{property_name}} 👋" },
+      {
+        id: "p1",
+        type: "paragraph",
+        text:
+          "Hi {{guest_first_name}} — happy to have you!\n\n✅ Check‑in: Now\n🕚 Check‑out: {{check_out_time}}\n🏠 Your unit: {{room_name}}",
+      },
+      {
+        id: "p2",
+        type: "paragraph",
+        text:
+          "Everything you need is in the guest portal:\n📍 Location\n📄 House rules\n🍽️ Recommendations\n\nIf you have any questions, use “Contact the host” in the portal.",
+      },
     ],
     blocks_ro: [
-      { id: "h", type: "heading", text: "BUN VENIT LA {{property_name}}" },
-      { id: "p1", type: "paragraph", text: "Salut {{guest_first_name}} — totul este pregătit pentru sosire." },
-      { id: "p2", type: "paragraph", text: "Check‑in: {{check_in_time}} · Unitate: {{room_name}}" },
-      { id: "p3", type: "paragraph", text: "Folosește portalul pentru regulament, locație și recomandări." },
+      { id: "h", type: "heading", text: "BUN VENIT LA {{property_name}} 👋" },
+      {
+        id: "p1",
+        type: "paragraph",
+        text:
+          "Salut {{guest_first_name}} — ne bucurăm să te avem!\n\n✅ Check‑in: Acum\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitatea ta: {{room_name}}",
+      },
+      {
+        id: "p2",
+        type: "paragraph",
+        text:
+          "În portal găsești tot ce ai nevoie:\n📍 Locație\n📄 Regulament\n🍽️ Recomandări\n\nDacă ai întrebări, folosește „Contactează gazda” din portal.",
+      },
     ],
   },
   {
     key: "arrival_quick",
     title: "Arrival quick info",
     blocks_en: [
-      { id: "h", type: "heading", text: "ARRIVAL DETAILS" },
-      { id: "p1", type: "paragraph", text: "Welcome {{guest_first_name}}. Here’s what you need for arrival at {{property_name}}." },
-      { id: "p2", type: "paragraph", text: "Check‑in time: {{check_in_time}}" },
-      { id: "p3", type: "paragraph", text: "Your unit: {{room_name}}. If you need help, contact the host from the portal." },
+      { id: "h", type: "heading", text: "ARRIVAL DETAILS 🚪" },
+      {
+        id: "p1",
+        type: "paragraph",
+        text: "Welcome {{guest_first_name}}!\nHere’s the quick info for {{property_name}}:",
+      },
+      {
+        id: "p2",
+        type: "paragraph",
+        text: "✅ Check‑in: Now\n🕚 Check‑out: {{check_out_time}}\n🏠 Unit: {{room_name}}",
+      },
+      {
+        id: "p3",
+        type: "paragraph",
+        text:
+          "Need help finding the place or accessing the unit?\nUse “Contact the host” from the portal.",
+      },
     ],
     blocks_ro: [
-      { id: "h", type: "heading", text: "DETALII DE SOSIRE" },
-      { id: "p1", type: "paragraph", text: "Bun venit {{guest_first_name}}. Iată ce ai nevoie pentru sosirea la {{property_name}}." },
-      { id: "p2", type: "paragraph", text: "Ora de check‑in: {{check_in_time}}" },
-      { id: "p3", type: "paragraph", text: "Unitatea ta: {{room_name}}. Pentru ajutor, contactează gazda din portal." },
+      { id: "h", type: "heading", text: "DETALII DE SOSIRE 🚪" },
+      {
+        id: "p1",
+        type: "paragraph",
+        text: "Bun venit {{guest_first_name}}!\nIată info rapid pentru {{property_name}}:",
+      },
+      {
+        id: "p2",
+        type: "paragraph",
+        text: "✅ Check‑in: Acum\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitate: {{room_name}}",
+      },
+      {
+        id: "p3",
+        type: "paragraph",
+        text:
+          "Ai nevoie de ajutor cu locația sau accesul?\nFolosește „Contactează gazda” din portal.",
+      },
     ],
   },
   {
@@ -95,15 +141,33 @@ const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
     title: "Friendly welcome",
     blocks_en: [
       { id: "h", type: "heading", text: "HI {{guest_first_name}} 👋" },
-      { id: "p1", type: "paragraph", text: "Welcome to {{property_name}}." },
-      { id: "p2", type: "paragraph", text: "Check‑in: {{check_in_time}} · Check‑out: {{check_out_time}}" },
-      { id: "p3", type: "paragraph", text: "Everything is in the guest portal — enjoy your stay." },
+      {
+        id: "p1",
+        type: "paragraph",
+        text:
+          "Welcome to {{property_name}}.\n\n✅ Check‑in: Now\n🕚 Check‑out: {{check_out_time}}\n🏠 Unit: {{room_name}}",
+      },
+      {
+        id: "p2",
+        type: "paragraph",
+        text:
+          "📌 House rules, location and useful info are in the portal.\nEnjoy your stay!",
+      },
     ],
     blocks_ro: [
       { id: "h", type: "heading", text: "SALUT {{guest_first_name}} 👋" },
-      { id: "p1", type: "paragraph", text: "Bun venit la {{property_name}}." },
-      { id: "p2", type: "paragraph", text: "Check‑in: {{check_in_time}} · Check‑out: {{check_out_time}}" },
-      { id: "p3", type: "paragraph", text: "Totul este în portal — sejur plăcut." },
+      {
+        id: "p1",
+        type: "paragraph",
+        text:
+          "Bun venit la {{property_name}}.\n\n✅ Check‑in: Acum\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitate: {{room_name}}",
+      },
+      {
+        id: "p2",
+        type: "paragraph",
+        text:
+          "📌 Regulament, locație și info utile sunt în portal.\nSejur plăcut!",
+      },
     ],
   },
 ];
@@ -207,9 +271,11 @@ export default function ReservationMessageClient({
   const [onbChoice, setOnbChoice] = useState<OnboardingChoice | null>(null);
   const [onbPickedKey, setOnbPickedKey] = useState<string | null>(null);
   const [onbLoadingText, setOnbLoadingText] = useState<string>("Preparing your message…");
+  const [onbLoadingStage, setOnbLoadingStage] = useState<0 | 1>(0);
   const [onbCreatedTemplateId, setOnbCreatedTemplateId] = useState<string | null>(null);
   const [onbPreviewUrl, setOnbPreviewUrl] = useState<string | null>(null);
   const [onbError, setOnbError] = useState<string | null>(null);
+  const [onbConfettiSeed, setOnbConfettiSeed] = useState<number>(0);
   const onbPendingRewardRef = useRef<boolean>(false);
 
   const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
@@ -240,17 +306,24 @@ export default function ReservationMessageClient({
     return () => { alive = false; };
   }, [propertyId, propertyReady]);
 
+  async function sleep(ms: number) {
+    await new Promise<void>((r) => window.setTimeout(r, ms));
+  }
+
   async function runOnboardingLoadingSequence(task: () => Promise<void>) {
     setOnbError(null);
     setOnbStep("loading");
     setOnbLoadingText("Preparing your message…");
-    const timer1 = window.setTimeout(() => setOnbLoadingText("Setting up your guest experience…"), 1400);
-    const timer2 = window.setTimeout(() => setOnbLoadingText("Final touches…"), 3200);
+    setOnbLoadingStage(0);
+    const start = Date.now();
+    const stageTimer = window.setTimeout(() => setOnbLoadingStage(1), 1200);
+    const minTotalMs = 4200; // keep "We are almost done…" visible ~3s
     try {
       await task();
+      const elapsed = Date.now() - start;
+      if (elapsed < minTotalMs) await sleep(minTotalMs - elapsed);
     } finally {
-      window.clearTimeout(timer1);
-      window.clearTimeout(timer2);
+      window.clearTimeout(stageTimer);
     }
   }
 
@@ -334,6 +407,11 @@ export default function ReservationMessageClient({
       }
     })();
   }, [tpl.status, propertyId, activeId]);
+
+  useEffect(() => {
+    if (onbStep !== "reward") return;
+    setOnbConfettiSeed(Date.now());
+  }, [onbStep]);
 
   /** --------- Load template content (LS + server) --------- */
   useEffect(() => {
@@ -1443,7 +1521,12 @@ export default function ReservationMessageClient({
                           if (b.type === "heading") {
                             return `<div style="font-weight:900; letter-spacing:.14em; text-transform:uppercase; font-size:12px; margin-bottom:6px;">${titleToChips(b.text || "")}</div>`;
                           }
-                          return `<div style="font-size:13px; color:var(--muted); line-height:1.5; margin-top:6px;">${tokensToChipsHTML(markdownToHtmlInline(b.text || ""))}</div>`;
+                          const text = (b.text || "").toString();
+                          const html = text
+                            .split(/\r?\n/g)
+                            .map((line: string) => markdownToHtmlInline(line))
+                            .join("<br/>");
+                          return `<div style="font-size:13px; color:var(--muted); line-height:1.5; margin-top:6px;">${tokensToChipsHTML(html)}</div>`;
                         })
                         .join("");
                       return (
@@ -1473,58 +1556,73 @@ export default function ReservationMessageClient({
               )}
 
               {onbStep === "loading" && (
-                <div style={{ display: "grid", placeItems: "center", gap: 10, padding: "6px 0 2px" }}>
-                  <div
-                    className="sb-cardglow"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 10,
-                      padding: "10px 14px",
-                      borderRadius: 999,
-                      border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
-                      background: "rgba(255,255,255,0.06)",
-                      WebkitBackdropFilter: "blur(10px) saturate(140%)",
-                      backdropFilter: "blur(10px) saturate(140%)",
-                    }}
-                  >
-                    <div aria-hidden style={{ display: "inline-flex", gap: 6 }}>
-                      <span className="sb-dot" />
-                      <span className="sb-dot" />
-                      <span className="sb-dot" />
-                    </div>
-                    <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 700 }}>{onbLoadingText}</div>
-                  </div>
+                <div style={{ display: "grid", placeItems: "center", gap: 10, padding: "6px 0 2px", color: "var(--muted)", fontSize: 13 }}>
+                  Preparing your message…
                 </div>
               )}
 
               {onbStep === "reward" && (
-                <div style={{ display: "grid", gap: 12 }}>
-                  <div style={{ textAlign: "center" }}>
+                <div style={{ display: "grid", gap: 12, position: "relative" }}>
+                  <style
+                    dangerouslySetInnerHTML={{
+                      __html: `
+                        @keyframes p4hConfettiFall { 0% { transform: translate3d(0,-16px,0) rotate(0deg); opacity: 0; } 10% { opacity: .9; } 100% { transform: translate3d(0,140px,0) rotate(180deg); opacity: 0; } }
+                        .p4h-confetti { position:absolute; inset:0; pointer-events:none; overflow:hidden; border-radius: 14px; }
+                        .p4h-confetti i { position:absolute; top:-12px; width:8px; height:10px; border-radius:2px; opacity:0; animation: p4hConfettiFall 1.6s ease-out forwards; }
+                      `,
+                    }}
+                  />
+                  <div className="p4h-confetti" aria-hidden key={onbConfettiSeed}>
+                    {Array.from({ length: 14 }).map((_, idx) => {
+                      const left = (idx * 7) % 100;
+                      const delay = (idx % 7) * 0.05;
+                      const hue = 140 + (idx * 9) % 60;
+                      return (
+                        <i
+                          key={idx}
+                          style={{
+                            left: `${left}%`,
+                            animationDelay: `${delay}s`,
+                            background: `hsl(${hue} 75% 55%)`,
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
                     <div style={{ fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", fontSize: 12, color: "var(--text)" }}>
-                      Your automatic message is ready
+                      Everything is ready 🎉
                     </div>
-                    <div style={{ marginTop: 6, fontSize: 13, color: "var(--muted)" }}>This is what guests will receive.</div>
+                    <div style={{ fontSize: 13, color: "var(--muted)" }}>Your property is now ready to welcome guests.</div>
                   </div>
 
-                  <div className="sb-cardglow" style={{ border: "1px solid var(--border)", borderRadius: 14, padding: 12, background: "rgba(255,255,255,0.02)" }}>
-                    <div style={{ display: "grid", gap: 6 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                        <div style={{ fontSize: 12, color: "var(--muted)", letterSpacing: ".10em", textTransform: "uppercase" }}>Guest</div>
-                        <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 700 }}>John Doe</div>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                        <div style={{ fontSize: 12, color: "var(--muted)", letterSpacing: ".10em", textTransform: "uppercase" }}>Stay</div>
-                        <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 700 }}>Today → Tomorrow</div>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                        <div style={{ fontSize: 12, color: "var(--muted)", letterSpacing: ".10em", textTransform: "uppercase" }}>Timing</div>
-                        <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 700 }}>At arrival</div>
-                      </div>
+                  <div style={{ color: "var(--text)", fontSize: 13, lineHeight: 1.55, textAlign: "center" }}>
+                    <div style={{ color: "var(--muted)" }}>You’ve completed the essential setup.</div>
+                    <div style={{ marginTop: 6 }}>
+                      Your calendar, house rules, and automatic messages are active.
+                    </div>
+                    <div style={{ marginTop: 10, color: "var(--muted)" }}>
+                      You can customize everything anytime — rooms, calendars, messages, and more.
                     </div>
                   </div>
 
-                  <div style={{ display: "grid", gap: 8 }}>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <div style={{ display: "grid", gap: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+                        <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
+                        <span style={{ fontWeight: 800 }}>Calendar connected</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+                        <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
+                        <span style={{ fontWeight: 800 }}>Guests confirm house rules</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+                        <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
+                        <span style={{ fontWeight: 800 }}>Automatic messages enabled</span>
+                      </div>
+                    </div>
+
                     {onbPreviewUrl && (
                       <button
                         className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
@@ -1533,20 +1631,10 @@ export default function ReservationMessageClient({
                           try { window.open(onbPreviewUrl, "_blank", "noopener,noreferrer"); } catch {}
                         }}
                       >
-                        View guest link
+                        See guest portal
                       </button>
                     )}
-                    <button
-                      className="sb-btn sb-cardglow"
-                      style={{ width: "100%", justifyContent: "center", border: "1px solid var(--border)" }}
-                      onClick={() => {
-                        if (onbCreatedTemplateId) setActiveId(onbCreatedTemplateId);
-                        setOnbOpen(false);
-                        try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
-                      }}
-                    >
-                      Customize this message
-                    </button>
+
                     <button
                       className="sb-btn"
                       style={{ width: "100%", justifyContent: "center" }}
@@ -1557,11 +1645,45 @@ export default function ReservationMessageClient({
                     >
                       Go to dashboard
                     </button>
+
+                    <button
+                      className="sb-btn sb-cardglow"
+                      style={{ width: "100%", justifyContent: "center", border: "1px solid var(--border)" }}
+                      onClick={() => {
+                        if (onbCreatedTemplateId) setActiveId(onbCreatedTemplateId);
+                        setOnbOpen(false);
+                        try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
+                        window.location.href = "/app/propertySetup";
+                      }}
+                    >
+                      Customize settings
+                    </button>
+
+                    <div style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.5, textAlign: "center", marginTop: 4 }}>
+                      What you’ve set up is already enough to get started. Fine‑tuning can happen anytime.
+                    </div>
                   </div>
                 </div>
               )}
             </div>
           </div>
+      )}
+
+      {/* Onboarding loading overlay (between pick/custom and reward) */}
+      {onbStep === "loading" && (
+        <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label="Preparing your message…" style={{ zIndex: 262 }}>
+          <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
+            <LoadingPill title="Preparing your message…" />
+            <div style={{ display: "grid", gap: 6, textAlign: "center" }}>
+              <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", fontWeight: 700 }}>
+                Preparing your message…
+              </div>
+              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                {onbLoadingStage === 0 ? "Creating your automatic message…" : "We are almost done…"}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Popup: room variables hint */}
