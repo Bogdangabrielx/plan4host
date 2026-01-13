@@ -1542,9 +1542,9 @@ export default function CheckinClient() {
               line-height: 20px;
               padding: 2px 10px;
               border-radius: 999px;
-              border: 0;
-              background: var(--ci-accent);
-              color: #fff;
+              border: 1px solid color-mix(in srgb, var(--ci-accent) 30%, transparent);
+              background: color-mix(in srgb, var(--ci-accent) 12%, white);
+              color: color-mix(in srgb, var(--ci-accent) 80%, black);
               font-weight: var(--ci-weight-m);
               text-transform: uppercase;
               letter-spacing: .12em;
@@ -2040,9 +2040,9 @@ export default function CheckinClient() {
                   <>
                     <p className="ci-infoIntro">Thank you for choosing to stay with us.</p>
                     <p className="ci-infoMain">
-                      To ensure a smooth arrival, please complete the online check-in form below. Once submitted, you will
+                      To ensure a smooth arrival, please complete the online check-in form below.
                       <br />
-                      automatically receive a confirmation email
+                      Once submitted, you will automatically receive a confirmation email
                       <br />
                       for your stay at{" "}
                       <span className="ci-pillProp">{prop?.name ?? "the property"}</span>.
