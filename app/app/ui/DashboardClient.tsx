@@ -1086,13 +1086,13 @@ export default function DashboardClient({
 	                >
 	                  {firstPropertyCopied ? "Copied" : "Copy link"}
 	                </button>
-		                <button
-		                  className="sb-btn sb-btn--ghost"
-		                  style={{
-		                    justifyContent: "center",
-		                    border: "1px solid var(--primary)",
-		                    background: "transparent",
-		                    color: "var(--text)",
+			                <button
+			                  className="sb-btn sb-btn--ghost sb-cardglow"
+			                  style={{
+			                    justifyContent: "center",
+			                    border: "1px solid var(--primary)",
+			                    background: "transparent",
+			                    color: "var(--text)",
 		                    borderRadius: 999,
 		                  }}
 		                  onClick={() => {

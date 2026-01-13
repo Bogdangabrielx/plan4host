@@ -479,51 +479,69 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                 </button>
               </div>
 
-              {unitWizardStep === 'hostType' && (
-                <div style={{ display: 'grid', gap: 10 }}>
-                  <div
-                    style={{
-                      border: '1px solid var(--border)',
-                      borderRadius: 12,
-                      padding: 14,
-                      display: 'grid',
-                      gap: 6,
-                      background: 'color-mix(in srgb, var(--card) 88%, transparent)',
-                    }}
-                  >
-                    <div style={{ fontWeight: 800 }}>Single unit</div>
-                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
-                      Apartment, cabin, or entire place rented as one unit.
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <button className="sb-btn sb-btn--primary" onClick={() => void createUnits(1)}>
-                        Use single unit
-                      </button>
-                    </div>
-                  </div>
+	              {unitWizardStep === 'hostType' && (
+	                <div style={{ display: 'grid', gap: 10 }}>
+	                  <div
+	                    style={{
+	                      border: '1px solid var(--border)',
+	                      borderRadius: 12,
+	                      padding: 14,
+	                      display: 'grid',
+	                      gap: 6,
+	                      background: 'color-mix(in srgb, var(--card) 88%, transparent)',
+	                    }}
+	                  >
+	                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+	                      <img
+	                        src="/svg_singleunit_demo.svg"
+	                        alt=""
+	                        width={22}
+	                        height={22}
+	                        style={{ display: 'block', flex: '0 0 auto' }}
+	                      />
+	                      <div style={{ fontWeight: 800 }}>Single unit</div>
+	                    </div>
+	                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+	                      Apartment, cabin, or entire place rented as one unit.
+	                    </div>
+	                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+	                      <button className="sb-btn sb-btn--primary" onClick={() => void createUnits(1)}>
+	                        Use single unit
+	                      </button>
+	                    </div>
+	                  </div>
 
-                  <div
-                    style={{
-                      border: '1px solid var(--border)',
-                      borderRadius: 12,
-                      padding: 14,
-                      display: 'grid',
-                      gap: 6,
-                      background: 'color-mix(in srgb, var(--card) 88%, transparent)',
-                    }}
-                  >
-                    <div style={{ fontWeight: 800 }}>Multiple units</div>
-                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
-                      Guesthouse or hotel with separate units.
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <button
-                        className="sb-btn"
-                        style={{
-                          border: '1px solid var(--primary)',
-                          background: 'transparent',
-                          color: 'var(--text)',
-                          borderRadius: 999,
+	                  <div
+	                    style={{
+	                      border: '1px solid var(--border)',
+	                      borderRadius: 12,
+	                      padding: 14,
+	                      display: 'grid',
+	                      gap: 6,
+	                      background: 'color-mix(in srgb, var(--card) 88%, transparent)',
+	                    }}
+	                  >
+	                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+	                      <img
+	                        src="/svg_multipleunits_demo.svg"
+	                        alt=""
+	                        width={22}
+	                        height={22}
+	                        style={{ display: 'block', flex: '0 0 auto' }}
+	                      />
+	                      <div style={{ fontWeight: 800 }}>Multiple units</div>
+	                    </div>
+	                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+	                      Guesthouse or hotel with separate units.
+	                    </div>
+	                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+	                      <button
+	                        className="sb-btn sb-cardglow"
+	                        style={{
+	                          border: '1px solid var(--primary)',
+	                          background: 'transparent',
+	                          color: 'var(--text)',
+	                          borderRadius: 999,
                           fontWeight: 700,
                         }}
                         onClick={() => setUnitWizardStep('unitCount')}
@@ -587,36 +605,54 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 
               {unitWizardStep === 'reward' && (
                 <div style={{ display: 'grid', gap: 12 }}>
-                  <div style={{ display: 'grid', gap: 8 }}>
-                    {(createdUnits.length ? createdUnits : ['Unit 1']).map((u) => (
-                      <div
-                        key={u}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: 12,
-                          padding: '10px 12px',
-                          borderRadius: 12,
-                          border: '1px solid var(--border)',
-                          background: 'color-mix(in srgb, var(--card) 88%, transparent)',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <img
-                            src={isDark ? "/room_fordark.png" : "/room_forlight.png"}
-                            alt=""
-                            aria-hidden="true"
-                            width={18}
+	                  <div style={{ display: 'grid', gap: 8 }}>
+	                    {(createdUnits.length ? createdUnits : ['Unit 1']).map((u) => (
+	                      <div
+	                        key={u}
+	                        style={{
+	                          display: 'flex',
+	                          alignItems: 'center',
+	                          justifyContent: 'space-between',
+	                          gap: 12,
+	                          padding: '10px 12px',
+	                          borderRadius: 12,
+	                          border: '1px solid var(--border)',
+	                          background: 'color-mix(in srgb, var(--card) 88%, transparent)',
+	                        }}
+	                      >
+	                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+	                          <span
+	                            aria-hidden
+	                            style={{
+	                              width: 18,
+	                              height: 18,
+	                              borderRadius: 999,
+	                              border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
+	                              background: "color-mix(in srgb, var(--success) 16%, var(--card))",
+	                              display: "grid",
+	                              placeItems: "center",
+	                              color: "color-mix(in srgb, var(--success) 90%, var(--text))",
+	                              fontWeight: 900,
+	                              fontSize: 12,
+	                              flex: "0 0 auto",
+	                            }}
+	                          >
+	                            ✓
+	                          </span>
+	                          <img
+	                            src={isDark ? "/room_fordark.png" : "/room_forlight.png"}
+	                            alt=""
+	                            aria-hidden="true"
+	                            width={18}
                             height={18}
                             style={{ width: 18, height: 18, objectFit: "contain", display: "block", flex: "0 0 auto" }}
                           />
                           <span style={{ fontWeight: 800 }}>{u}</span>
                         </div>
-                        <span style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)' }}>Calendar ready</span>
-                      </div>
-                    ))}
-                  </div>
+	                        <span style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)' }}>Calendar ready</span>
+	                      </div>
+	                    ))}
+	                  </div>
 
                   <button
                     className="sb-btn sb-btn--primary"
@@ -633,27 +669,29 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                     To automate availability and avoid double bookings.
                   </div>
 
-                  <button
-                    className="sb-btn sb-btn--ghost"
-                    style={{
-                      width: '100%',
-                      minHeight: 44,
-                      borderRadius: 999,
-                      border: '1px solid var(--border)',
-                      background: 'transparent',
-                      color: 'var(--text)',
-                      fontWeight: 700,
-                      justifyContent: 'center',
-                    }}
-                    onClick={() => {
-                      setShowRoomsGuide(false);
-                      try { window.dispatchEvent(new CustomEvent('p4h:activateRoomsTab')); } catch {}
-                    }}
-                  >
-                    Edit unit details
-                  </button>
-                </div>
-              )}
+	                  <button
+	                    className="sb-btn"
+	                    style={{
+	                      width: '100%',
+	                      minHeight: 44,
+	                      borderRadius: 999,
+	                      border: '1px solid var(--border)',
+	                      background: 'transparent',
+	                      color: 'var(--muted)',
+	                      fontWeight: 500,
+	                      justifyContent: 'center',
+	                      textDecoration: 'underline',
+	                      textUnderlineOffset: 4,
+	                    }}
+	                    onClick={() => {
+	                      setShowRoomsGuide(false);
+	                      try { window.dispatchEvent(new CustomEvent('p4h:activateRoomsTab')); } catch {}
+	                    }}
+	                  >
+	                    Edit unit details
+	                  </button>
+	                </div>
+	              )}
             </div>
           </div>
         )}
