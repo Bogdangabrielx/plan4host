@@ -462,25 +462,43 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     openHouseRulesWizard();
   }, [houseRulesWizardRequested, prop?.id]);
 
+  const contactsAutoPromptedRef = useRef<boolean>(false);
+
+  // If house rules are missing and there are no contact details, nudge Links & Contact first (once per mount).
+  useEffect(() => {
+    if (!prop) return;
+    if (contactsWizardOpen) return;
+    if (contactsWizardRequested) return;
+    if (houseRulesWizardOpen) return;
+    if ((prop.regulation_pdf_url || "").toString().trim()) return;
+
+    const hasContactDetails = Boolean(
+      (prop.contact_email || "").toString().trim() ||
+        (prop.contact_phone || "").toString().trim() ||
+        (prop.contact_address || "").toString().trim(),
+    );
+    if (hasContactDetails) return;
+    if (contactsAutoPromptedRef.current) return;
+    contactsAutoPromptedRef.current = true;
+
+    setContactsWizardRequested(true);
+  }, [prop?.id, prop?.regulation_pdf_url, contactsWizardOpen, contactsWizardRequested, houseRulesWizardOpen]);
+
   // Gentle nudge: if contact details are set but house rules are missing, open the House Rules wizard once per session.
   useEffect(() => {
     if (!prop) return;
+    if (contactsWizardOpen) return;
+    if (contactsWizardRequested) return;
     if (houseRulesWizardOpen) return;
     if (houseRulesWizardRequested) return;
     if ((prop.regulation_pdf_url || "").toString().trim()) return;
 
-    const hasOtherDetails = Boolean(
+    const hasContactDetails = Boolean(
       (prop.contact_email || "").toString().trim() ||
         (prop.contact_phone || "").toString().trim() ||
-        (prop.contact_address || "").toString().trim() ||
-        (prop.presentation_image_url || "").toString().trim() ||
-        (prop.social_facebook || "").toString().trim() ||
-        (prop.social_instagram || "").toString().trim() ||
-        (prop.social_tiktok || "").toString().trim() ||
-        (prop.social_website || "").toString().trim() ||
-        (prop.social_location || "").toString().trim(),
+        (prop.contact_address || "").toString().trim(),
     );
-    if (!hasOtherDetails) return;
+    if (!hasContactDetails) return;
 
     try {
       const key = `p4h:hr:autoPrompted:${prop.id}`;
@@ -491,7 +509,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     }
 
     openHouseRulesWizard();
-  }, [prop?.id, prop?.regulation_pdf_url, houseRulesWizardOpen, houseRulesWizardRequested]);
+  }, [prop?.id, prop?.regulation_pdf_url, contactsWizardOpen, contactsWizardRequested, houseRulesWizardOpen, houseRulesWizardRequested]);
 
   useEffect(() => {
     return () => {
