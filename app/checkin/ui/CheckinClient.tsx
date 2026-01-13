@@ -1570,9 +1570,10 @@ export default function CheckinClient() {
             .ci-heroBody{ margin:0; font-size: 15px; font-weight: var(--ci-weight-r); color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 24px; }
             .ci-heroSmall{ margin:0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-r); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 20px; }
             .ci-heroNote{
-              margin-top: 0;
+              margin: 0 auto;
               width: 100%;
               max-width: 720px;
+              justify-self: center;
               display: grid;
               gap: 16px;
               padding: 24px;
