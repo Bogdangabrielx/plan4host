@@ -589,7 +589,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 		                    }}
 		                  >
 		                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-		                      <MaskedSvgIcon src="/svg_singleunit_demo.svg" size={22} zoom={1.18} />
+		                      <MaskedSvgIcon src="/svg_singleunit_demo.svg" size={22} zoom={1.0} />
 		                      <div style={{ fontWeight: 800 }}>Single unit</div>
 		                    </div>
 		                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
@@ -613,7 +613,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 		                    }}
 		                  >
 		                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-		                      <MaskedSvgIcon src="/svg_multipleunits_demo.svg" size={22} zoom={1.32} />
+		                      <MaskedSvgIcon src="/svg_multipleunits_demo.svg" size={26} zoom={1.18} />
 		                      <div style={{ fontWeight: 800 }}>Multiple units</div>
 		                    </div>
 		                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
