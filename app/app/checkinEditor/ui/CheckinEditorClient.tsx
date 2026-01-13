@@ -597,6 +597,37 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     return taskValue as T;
   }
 
+  async function fetchAsJpegBytes(url: string): Promise<Uint8Array | null> {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      const bitmap = await createImageBitmap(blob);
+      try {
+        const maxDim = 1200;
+        const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+        canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return null;
+        ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        const jpegBlob = await new Promise<Blob | null>((resolve) => canvas.toBlob((b) => resolve(b), "image/jpeg", 0.92));
+        if (!jpegBlob) return null;
+        const buf = await jpegBlob.arrayBuffer();
+        return new Uint8Array(buf);
+      } finally {
+        try {
+          bitmap.close();
+        } catch {
+          // ignore
+        }
+      }
+    } catch {
+      return null;
+    }
+  }
+
   async function createAndUploadHouseRulesPdf() {
     if (!prop) return;
     try {
@@ -607,10 +638,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           "Making sure guests confirm them before check-in…",
         ],
         task: async () => {
+          const imageJpegBytes = prop.presentation_image_url ? await fetchAsJpegBytes(prop.presentation_image_url) : null;
           const bytes = buildSimplePdfBytes({
             title: prop.name,
             subtitle: "House Rules",
             bodyLines: houseRulesToParagraphs(houseRulesDraft),
+            footerNote: "Guests can read and confirm these rules before check-in.",
+            imageJpegBytes,
           });
           const fname = `${(prop.name || "house-rules").toString().trim().replace(/\s+/g, "-")}-house-rules.pdf`;
           const file = new File([bytes], fname, { type: "application/pdf" });
@@ -1703,21 +1737,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     }}
                   >
                     <div
-                      aria-hidden
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        backgroundImage: "url(/background_houserules.png)",
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "center",
-                        backgroundSize: "112% 112%",
-                        // The PNG has transparency around it; keep a clean white base behind.
-                        opacity: 1,
-                        pointerEvents: "none",
-                      }}
-                    />
-
-                    <div
                       style={{
                         position: "relative",
                         padding: isNarrow ? 12 : 16,
@@ -1741,9 +1760,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           src="/svg_paste_demo.svg"
                           alt=""
                           aria-hidden="true"
-                          width={18}
-                          height={18}
-                          style={{ width: 18, height: 18, display: "block" }}
+                          width={22}
+                          height={22}
+                          style={{
+                            width: 22,
+                            height: 22,
+                            display: "block",
+                            filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.18))",
+                            opacity: 0.95,
+                          }}
                         />
                       </div>
 
@@ -1784,7 +1809,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           backgroundImage:
                             "repeating-linear-gradient(to bottom, transparent 0 27px, rgba(37,99,235,0.10) 27px 28px)",
                           backgroundPosition: "0 10px",
-                          padding: isNarrow ? "12px 12px 14px 54px" : "14px 16px 16px 64px",
+                          padding: isNarrow ? "14px 12px 14px 54px" : "16px 16px 16px 64px",
                           display: "grid",
                           gap: 14,
                         }}
@@ -1909,7 +1934,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           />
                         </div>
                         <div style={{ display: "grid", gap: 8 }}>
-                          <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: ".16em", textTransform: "uppercase", color: "rgba(11,18,32,0.50)" }}>
+                          <div
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 900,
+                              letterSpacing: ".18em",
+                              textTransform: "uppercase",
+                              color: "rgba(11,18,32,0.55)",
+                            }}
+                          >
                             Preview
                           </div>
                           <div style={{ display: "grid", gap: 10 }}>
@@ -1924,7 +1957,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                               style={{
                                 display: "grid",
                                 gap: 10,
-                                fontSize: 13.5,
+                                fontSize: 15,
                                 lineHeight: "28px",
                                 color: "rgba(11,18,32,0.92)",
                               }}
