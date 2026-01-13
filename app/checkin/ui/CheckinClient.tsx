@@ -1559,10 +1559,19 @@ export default function CheckinClient() {
             .ci-heroLead{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-b); color: color-mix(in srgb, var(--text) 92%, transparent); line-height: 1.55; }
             .ci-heroBody{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 1.55; }
             .ci-heroSmall{ margin:0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.55; }
-            .ci-heroNote{ margin-top: 6px; display:grid; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 90%, transparent); background: #fff; box-shadow: 0 12px 28px rgba(15,23,42,0.08); }
-            .ci-heroNoteTitle{ font-size: var(--ci-font-s); font-weight: var(--ci-weight-b); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); }
+            .ci-heroNote{ margin-top: 6px; display:grid; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 90%, transparent); background: #fff; box-shadow: 0 12px 28px rgba(15,23,42,0.08); text-align: left; }
+            .ci-heroNoteTitle{ font-size: var(--ci-font-s); font-weight: var(--ci-weight-b); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); text-align: center; }
             .ci-heroList{ list-style: none; padding: 0; margin: 0; display:grid; gap: 8px; text-align: left; }
             .ci-heroList li{ display:block; }
+            .ci-infoIntro{ margin: 0; font-size: var(--ci-font-b); font-weight: 700; color: color-mix(in srgb, var(--text) 88%, transparent); }
+            .ci-infoMain{ margin: 0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); }
+            .ci-infoLabel{ margin: 0; font-size: var(--ci-font-b); font-weight: 700; color: color-mix(in srgb, var(--text) 82%, transparent); }
+            .ci-infoMeta{ margin: 0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.5; }
+            .ci-infoClose{ margin: 0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 70%, transparent); line-height: 1.5; text-align: center; }
+            .ci-infoSep{ height: 1px; border: 0; margin: 6px 0; background: color-mix(in srgb, var(--border) 70%, transparent); }
+            .ci-infoList{ list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+            .ci-infoList li{ display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: start; color: color-mix(in srgb, var(--text) 78%, transparent); }
+            .ci-infoList li::before{ content: "•"; color: color-mix(in srgb, var(--text) 48%, transparent); line-height: 1.2; margin-top: 2px; }
             .ci-actionBtn{
               display: inline-flex;
               align-items: center;
@@ -1966,51 +1975,47 @@ export default function CheckinClient() {
                 <div className="ci-heroNoteTitle">{lang === "ro" ? "Informații" : "Info"}</div>
                 {lang === "ro" ? (
                   <>
-                    <p className="ci-heroBody" style={{ margin: 0 }}>
-                      Îți mulțumim că ai ales să stai la noi.
-                    </p>
-                    <p className="ci-heroBody" style={{ margin: 0 }}>
+                    <p className="ci-infoIntro">Îți mulțumim că ai ales să stai la noi.</p>
+                    <hr className="ci-infoSep" />
+                    <p className="ci-infoMain">
                       Pentru o sosire cât mai ușoară, te rugăm să completezi formularul de check-in online de mai jos.
                       După trimitere, vei primi automat un email de confirmare pentru sejurul tău la{" "}
                       <span className="ci-pillProp">{prop?.name ?? "proprietate"}</span>.
                     </p>
-                    <div className="ci-heroBody" style={{ margin: 0 }}>
-                      Emailul tău de confirmare va include:
-                      <ul style={{ margin: "8px 0 0", paddingLeft: 18, display: "grid", gap: 6 }}>
-                        <li>un cod QR ce poate fi prezentat la recepție (dacă este cazul), sau</li>
-                        <li>folosit ca dovadă că check-in-ul a fost completat.</li>
-                      </ul>
-                    </div>
-                    <p className="ci-heroSmall" style={{ margin: 0 }}>
+                    <hr className="ci-infoSep" />
+                    <p className="ci-infoLabel">Emailul tău de confirmare va include:</p>
+                    <ul className="ci-infoList">
+                      <li>un cod QR ce poate fi prezentat la recepție (dacă este cazul), sau</li>
+                      <li>folosit ca dovadă că check-in-ul a fost completat.</li>
+                    </ul>
+                    <hr className="ci-infoSep" />
+                    <p className="ci-infoMeta">
                       Toate informațiile sunt gestionate în siguranță și folosite doar pentru check-in și cerințe legale.
                     </p>
-                    <p className="ci-heroSmall" style={{ margin: 0 }}>
-                      Îți mulțumim pentru cooperare — abia așteptăm să te primim.
-                    </p>
+                    <hr className="ci-infoSep" />
+                    <p className="ci-infoClose">Îți mulțumim pentru cooperare — abia așteptăm să te primim.</p>
                   </>
                 ) : (
                   <>
-                    <p className="ci-heroBody" style={{ margin: 0 }}>
-                      Thank you for choosing to stay with us.
-                    </p>
-                    <p className="ci-heroBody" style={{ margin: 0 }}>
+                    <p className="ci-infoIntro">Thank you for choosing to stay with us.</p>
+                    <hr className="ci-infoSep" />
+                    <p className="ci-infoMain">
                       To ensure a smooth arrival, please complete the online check-in form below. Once submitted, you will
                       automatically receive a confirmation email for your stay at{" "}
                       <span className="ci-pillProp">{prop?.name ?? "the property"}</span>.
                     </p>
-                    <div className="ci-heroBody" style={{ margin: 0 }}>
-                      Your confirmation email will include:
-                      <ul style={{ margin: "8px 0 0", paddingLeft: 18, display: "grid", gap: 6 }}>
-                        <li>presented at reception (if applicable), or</li>
-                        <li>used as proof that your check-in has been completed.</li>
-                      </ul>
-                    </div>
-                    <p className="ci-heroSmall" style={{ margin: 0 }}>
+                    <hr className="ci-infoSep" />
+                    <p className="ci-infoLabel">Your confirmation email will include:</p>
+                    <ul className="ci-infoList">
+                      <li>a QR code that can be presented at reception (if applicable), or</li>
+                      <li>used as proof that your check-in has been completed.</li>
+                    </ul>
+                    <hr className="ci-infoSep" />
+                    <p className="ci-infoMeta">
                       All information you provide is handled securely and used only for check-in and legal requirements.
                     </p>
-                    <p className="ci-heroSmall" style={{ margin: 0 }}>
-                      Thank you for your cooperation — we look forward to welcoming you.
-                    </p>
+                    <hr className="ci-infoSep" />
+                    <p className="ci-infoClose">Thank you for your cooperation — we look forward to welcoming you.</p>
                   </>
                 )}
               </div>
