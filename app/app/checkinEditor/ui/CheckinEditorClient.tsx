@@ -409,6 +409,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     if (!contactsWizardRequested) return;
     if (!prop) return;
     setContactsWizardRequested(false);
+    try {
+      document.documentElement.setAttribute("data-p4h-modal-open", "1");
+    } catch {
+      // ignore
+    }
     setContactsWizardError(null);
     setContactsWizardStep("contacts");
     setContactsWizardOpen(true);
@@ -433,6 +438,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     setHouseRulesWizardLoadingText("Preparing your house rules…");
     setHouseRulesWizardPreviewUrl(prop.regulation_pdf_url || null);
     setHouseRulesWizardStep("intro");
+    try {
+      document.documentElement.setAttribute("data-p4h-modal-open", "1");
+    } catch {
+      // ignore
+    }
     setHouseRulesWizardOpen(true);
   }
 
@@ -1052,14 +1062,21 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </div>
         )}
 
-        {contactsWizardOpen && prop && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={() => setContactsWizardOpen(false)}
-            style={{
-              position: "fixed",
-              inset: 0,
+	        {contactsWizardOpen && prop && (
+	          <div
+	            role="dialog"
+	            aria-modal="true"
+	            onClick={() => {
+	              setContactsWizardOpen(false);
+	              try {
+	                document.documentElement.removeAttribute("data-p4h-modal-open");
+	              } catch {
+	                // ignore
+	              }
+	            }}
+	            style={{
+	              position: "fixed",
+	              inset: 0,
               zIndex: 240,
               background: "rgba(0,0,0,0.55)",
               display: "grid",
@@ -1108,14 +1125,21 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         : "Your contact details are now visible to guests."}
                   </div>
                 </div>
-                <button
-                  aria-label="Close"
-                  className="sb-btn sb-cardglow sb-btn--icon"
-                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
-                  onClick={() => setContactsWizardOpen(false)}
-                >
-                  ×
-                </button>
+	                <button
+	                  aria-label="Close"
+	                  className="sb-btn sb-cardglow sb-btn--icon"
+	                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
+	                  onClick={() => {
+	                    setContactsWizardOpen(false);
+	                    try {
+	                      document.documentElement.removeAttribute("data-p4h-modal-open");
+	                    } catch {
+	                      // ignore
+	                    }
+	                  }}
+	                >
+	                  ×
+	                </button>
               </div>
 
               {contactsWizardStep === "contacts" && (
@@ -1355,18 +1379,23 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     You can change this anytime.
                   </div>
 
-                  <button
-                    className="sb-btn sb-btn--primary"
-                    style={{ width: "100%", minHeight: 44 }}
-                    onClick={() => {
-                      setContactsWizardOpen(false);
-                      setHighlightTarget("house_rules");
-                      setNoPdfOpen(false);
-                      openHouseRulesWizard();
-                    }}
-                  >
-                    Continue
-                  </button>
+	                  <button
+	                    className="sb-btn sb-btn--primary"
+	                    style={{ width: "100%", minHeight: 44 }}
+	                    onClick={() => {
+	                      setContactsWizardOpen(false);
+	                      try {
+	                        document.documentElement.removeAttribute("data-p4h-modal-open");
+	                      } catch {
+	                        // ignore
+	                      }
+	                      setHighlightTarget("house_rules");
+	                      setNoPdfOpen(false);
+	                      openHouseRulesWizard();
+	                    }}
+	                  >
+	                    Continue
+	                  </button>
 
                   <a
                     href={buildCheckinLink(prop.id)}
@@ -1389,14 +1418,21 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </div>
         )}
 
-        {houseRulesWizardOpen && prop && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={() => setHouseRulesWizardOpen(false)}
-            style={{
-              position: "fixed",
-              inset: 0,
+	        {houseRulesWizardOpen && prop && (
+	          <div
+	            role="dialog"
+	            aria-modal="true"
+	            onClick={() => {
+	              setHouseRulesWizardOpen(false);
+	              try {
+	                document.documentElement.removeAttribute("data-p4h-modal-open");
+	              } catch {
+	                // ignore
+	              }
+	            }}
+	            style={{
+	              position: "fixed",
+	              inset: 0,
               zIndex: 242,
               background: "rgba(0,0,0,0.55)",
               display: "grid",
@@ -1453,14 +1489,21 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                             : "They must confirm them before check-in."}
                   </div>
                 </div>
-                <button
-                  aria-label="Close"
-                  className="sb-btn sb-cardglow sb-btn--icon"
-                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
-                  onClick={() => setHouseRulesWizardOpen(false)}
-                >
-                  ×
-                </button>
+	                <button
+	                  aria-label="Close"
+	                  className="sb-btn sb-cardglow sb-btn--icon"
+	                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
+	                  onClick={() => {
+	                    setHouseRulesWizardOpen(false);
+	                    try {
+	                      document.documentElement.removeAttribute("data-p4h-modal-open");
+	                    } catch {
+	                      // ignore
+	                    }
+	                  }}
+	                >
+	                  ×
+	                </button>
               </div>
 
               {houseRulesWizardStep === "intro" && (
@@ -2694,7 +2737,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
 
   function onPick(k: Key) {
     // save previous draft before switching
-    commitActive();
+    void commitActive().catch(() => {});
     setActive(k);
     setDraft(getVal(k));
   }
@@ -2706,7 +2749,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
       }
       const t = e.target as Node | null;
       if (containerRef.current && t && !containerRef.current.contains(t)) {
-        commitActive();
+        void commitActive().catch(() => {});
       }
     }
     document.addEventListener('mousedown', onDoc, true);
@@ -2736,7 +2779,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
             placeholder={`Paste ${active} URL`}
             value={draft}
             onChange={(e)=>setDraft(e.currentTarget.value)}
-            onBlur={()=>commitActive()}
+            onBlur={() => { void commitActive().catch(() => {}); }}
             style={FIELD}
           />
           <small style={{ color:'var(--muted)' }}>
