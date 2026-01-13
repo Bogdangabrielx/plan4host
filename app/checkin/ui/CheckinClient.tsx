@@ -1546,6 +1546,8 @@ export default function CheckinClient() {
               background: color-mix(in srgb, var(--ci-accent) 12%, white);
               color: color-mix(in srgb, var(--ci-accent) 86%, black);
               font-weight: inherit;
+              text-transform: uppercase;
+              letter-spacing: .12em;
               white-space: nowrap;
             }
             .ci-pillProp{
@@ -1557,9 +1559,9 @@ export default function CheckinClient() {
               padding: 2px 10px;
               border-radius: 12px;
               border: 1px solid color-mix(in srgb, var(--ci-accent) 26%, transparent);
-              background: color-mix(in srgb, var(--ci-accent) 10%, white);
-              color: color-mix(in srgb, var(--ci-accent) 80%, black);
-              font-weight: 500;
+              background: color-mix(in srgb, var(--ci-accent) 78%, black 16%);
+              color: #fff;
+              font-weight: 600;
               white-space: nowrap;
             }
             .ci-heroStack{ margin-top: 12px; display:grid; gap: 10px; }
@@ -1570,12 +1572,12 @@ export default function CheckinClient() {
             .ci-heroNoteTitle{ font-size: var(--ci-font-s); font-weight: var(--ci-weight-b); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); text-align: center; }
             .ci-heroList{ list-style: none; padding: 0; margin: 0; display:grid; gap: 8px; text-align: left; }
             .ci-heroList li{ display:block; }
-            .ci-infoIntro{ margin: 0; font-size: var(--ci-font-b); font-weight: 700; color: color-mix(in srgb, var(--text) 88%, transparent); }
-            .ci-infoMain{ margin: 0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); }
-            .ci-infoLabel{ margin: 0; font-size: var(--ci-font-b); font-weight: 700; color: color-mix(in srgb, var(--text) 82%, transparent); }
-            .ci-infoMeta{ margin: 0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.5; }
-            .ci-infoClose{ margin: 0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 70%, transparent); line-height: 1.5; text-align: center; }
-            .ci-infoSep{ height: 1px; border: 0; margin: 8px auto; width: min(760px, 100%); background: color-mix(in srgb, var(--border) 70%, transparent); }
+            .ci-infoIntro{ margin: 0; font-size: var(--ci-font-b); font-weight: 700; color: color-mix(in srgb, var(--text) 88%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; }
+            .ci-infoMain{ margin: 0; font-size: var(--ci-font-b); font-weight: 550; color: color-mix(in srgb, var(--text) 78%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; }
+            .ci-infoLabel{ margin: 0; font-size: var(--ci-font-b); font-weight: 700; color: color-mix(in srgb, var(--text) 82%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; }
+            .ci-infoMeta{ margin: 0; font-size: var(--ci-font-s); font-weight: 550; color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.5; max-width: 760px; margin-left:auto; margin-right:auto; }
+            .ci-infoClose{ margin: 0; font-size: var(--ci-font-s); font-weight: 550; color: color-mix(in srgb, var(--text) 70%, transparent); line-height: 1.5; text-align: center; max-width: 760px; margin-left:auto; margin-right:auto; }
+            .ci-infoSep{ height: 1px; border: 0; margin: 12px auto; width: min(760px, 100%); background: color-mix(in srgb, var(--border) 70%, transparent); }
             .ci-infoList{ list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 8px; width: min(760px, 100%); text-align: left; }
             .ci-infoList li{ display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: start; color: color-mix(in srgb, var(--text) 78%, transparent); }
             .ci-infoList li::before{ content: "•"; color: color-mix(in srgb, var(--text) 48%, transparent); line-height: 1.2; margin-top: 2px; }
@@ -1984,9 +1986,9 @@ export default function CheckinClient() {
                 {lang === "ro" ? (
                   <>
                     <p className="ci-infoIntro">Îți mulțumim că ai ales să stai la noi.</p>
-                    <hr className="ci-infoSep" />
                     <p className="ci-infoMain">
                       Pentru o sosire cât mai ușoară, te rugăm să completezi formularul de check-in online de mai jos.
+                      <br />
                       După trimitere, vei primi automat un email de confirmare pentru sejurul tău la{" "}
                       <span className="ci-pillProp">{prop?.name ?? "proprietate"}</span>.
                     </p>
@@ -1996,19 +1998,17 @@ export default function CheckinClient() {
                       <li>un cod QR ce poate fi prezentat la recepție (dacă este cazul), sau</li>
                       <li>folosit ca dovadă că check-in-ul a fost completat.</li>
                     </ul>
-                    <hr className="ci-infoSep" />
                     <p className="ci-infoMeta">
                       Toate informațiile sunt gestionate în siguranță și folosite doar pentru check-in și cerințe legale.
                     </p>
-                    <hr className="ci-infoSep" />
                     <p className="ci-infoClose">Îți mulțumim pentru cooperare — abia așteptăm să te primim.</p>
                   </>
                 ) : (
                   <>
                     <p className="ci-infoIntro">Thank you for choosing to stay with us.</p>
-                    <hr className="ci-infoSep" />
                     <p className="ci-infoMain">
                       To ensure a smooth arrival, please complete the online check-in form below. Once submitted, you will
+                      <br />
                       automatically receive a confirmation email for your stay at{" "}
                       <span className="ci-pillProp">{prop?.name ?? "the property"}</span>.
                     </p>
@@ -2018,11 +2018,9 @@ export default function CheckinClient() {
                       <li>a QR code that can be presented at reception (if applicable), or</li>
                       <li>used as proof that your check-in has been completed.</li>
                     </ul>
-                    <hr className="ci-infoSep" />
                     <p className="ci-infoMeta">
                       All information you provide is handled securely and used only for check-in and legal requirements.
                     </p>
-                    <hr className="ci-infoSep" />
                     <p className="ci-infoClose">Thank you for your cooperation — we look forward to welcoming you.</p>
                   </>
                 )}
