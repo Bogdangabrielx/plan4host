@@ -11,7 +11,7 @@ import RoomDetailsTab from "./RoomDetailsTab";
 	import { useHeader } from "@/app/app/_components/HeaderContext";
 	import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
 	import LoadingPill from "@/app/app/_components/LoadingPill";
-	import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
+import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
 
 type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null; };
 type Room = { id: string; name: string; capacity: number | null; property_id: string; sort_index: number; room_type_id: string | null };
@@ -21,6 +21,40 @@ type TaskDef  = { id: string; property_id: string; label: string; sort_index: nu
 type RoomType = { id: string; property_id: string; name: string };
 
 type Plan = "basic" | "standard" | "premium";
+
+function MaskedSvgIcon({
+  src,
+  size = 22,
+  zoom = 1,
+  color = "var(--text)",
+}: {
+  src: string;
+  size?: number;
+  zoom?: number;
+  color?: string;
+}) {
+  const zoomPct = `${Math.round(zoom * 100)}%`;
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        width: size,
+        height: size,
+        display: "block",
+        flex: "0 0 auto",
+        backgroundColor: color,
+        WebkitMaskImage: `url(${src})`,
+        maskImage: `url(${src})`,
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+        WebkitMaskSize: zoomPct,
+        maskSize: zoomPct,
+      }}
+    />
+  );
+}
 
 export default function PropertySetupClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
@@ -479,30 +513,24 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                 </button>
               </div>
 
-	              {unitWizardStep === 'hostType' && (
-	                <div style={{ display: 'grid', gap: 10 }}>
-	                  <div
-	                    style={{
-	                      border: '1px solid var(--border)',
+		              {unitWizardStep === 'hostType' && (
+		                <div style={{ display: 'grid', gap: 10 }}>
+		                  <div
+		                    style={{
+		                      border: '1px solid var(--border)',
 	                      borderRadius: 12,
 	                      padding: 14,
 	                      display: 'grid',
 	                      gap: 6,
 	                      background: 'color-mix(in srgb, var(--card) 88%, transparent)',
-	                    }}
-	                  >
-	                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-	                      <img
-	                        src="/svg_singleunit_demo.svg"
-	                        alt=""
-	                        width={22}
-	                        height={22}
-	                        style={{ display: 'block', flex: '0 0 auto' }}
-	                      />
-	                      <div style={{ fontWeight: 800 }}>Single unit</div>
-	                    </div>
-	                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
-	                      Apartment, cabin, or entire place rented as one unit.
+		                    }}
+		                  >
+		                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+		                      <MaskedSvgIcon src="/svg_singleunit_demo.svg" size={22} zoom={1.18} />
+		                      <div style={{ fontWeight: 800 }}>Single unit</div>
+		                    </div>
+		                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+		                      Apartment, cabin, or entire place rented as one unit.
 	                    </div>
 	                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
 	                      <button className="sb-btn sb-btn--primary" onClick={() => void createUnits(1)}>
@@ -519,20 +547,14 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                      display: 'grid',
 	                      gap: 6,
 	                      background: 'color-mix(in srgb, var(--card) 88%, transparent)',
-	                    }}
-	                  >
-	                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-	                      <img
-	                        src="/svg_multipleunits_demo.svg"
-	                        alt=""
-	                        width={22}
-	                        height={22}
-	                        style={{ display: 'block', flex: '0 0 auto' }}
-	                      />
-	                      <div style={{ fontWeight: 800 }}>Multiple units</div>
-	                    </div>
-	                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
-	                      Guesthouse or hotel with separate units.
+		                    }}
+		                  >
+		                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+		                      <MaskedSvgIcon src="/svg_multipleunits_demo.svg" size={22} zoom={1.32} />
+		                      <div style={{ fontWeight: 800 }}>Multiple units</div>
+		                    </div>
+		                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+		                      Guesthouse or hotel with separate units.
 	                    </div>
 	                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
 	                      <button
@@ -619,40 +641,42 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                          border: '1px solid var(--border)',
 	                          background: 'color-mix(in srgb, var(--card) 88%, transparent)',
 	                        }}
-	                      >
-	                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-	                          <span
-	                            aria-hidden
-	                            style={{
-	                              width: 18,
-	                              height: 18,
-	                              borderRadius: 999,
-	                              border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
-	                              background: "color-mix(in srgb, var(--success) 16%, var(--card))",
-	                              display: "grid",
-	                              placeItems: "center",
-	                              color: "color-mix(in srgb, var(--success) 90%, var(--text))",
-	                              fontWeight: 900,
-	                              fontSize: 12,
-	                              flex: "0 0 auto",
-	                            }}
-	                          >
-	                            ✓
-	                          </span>
-	                          <img
-	                            src={isDark ? "/room_fordark.png" : "/room_forlight.png"}
-	                            alt=""
-	                            aria-hidden="true"
+		                      >
+		                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+		                          <img
+		                            src={isDark ? "/room_fordark.png" : "/room_forlight.png"}
+		                            alt=""
+		                            aria-hidden="true"
 	                            width={18}
                             height={18}
-                            style={{ width: 18, height: 18, objectFit: "contain", display: "block", flex: "0 0 auto" }}
-                          />
-                          <span style={{ fontWeight: 800 }}>{u}</span>
-                        </div>
-	                        <span style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)' }}>Calendar ready</span>
-	                      </div>
-	                    ))}
-	                  </div>
+	                            style={{ width: 18, height: 18, objectFit: "contain", display: "block", flex: "0 0 auto" }}
+	                          />
+	                          <span style={{ fontWeight: 800 }}>{u}</span>
+	                        </div>
+		                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+		                          <span style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)' }}>Calendar ready</span>
+		                          <span
+		                            aria-hidden
+		                            style={{
+		                              width: 18,
+		                              height: 18,
+		                              borderRadius: 999,
+		                              border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
+		                              background: "color-mix(in srgb, var(--success) 16%, var(--card))",
+		                              display: "grid",
+		                              placeItems: "center",
+		                              color: "color-mix(in srgb, var(--success) 90%, var(--text))",
+		                              fontWeight: 900,
+		                              fontSize: 12,
+		                              flex: "0 0 auto",
+		                            }}
+		                          >
+		                            ✓
+		                          </span>
+		                        </div>
+		                      </div>
+		                    ))}
+		                  </div>
 
                   <button
                     className="sb-btn sb-btn--primary"

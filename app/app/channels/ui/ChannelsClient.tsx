@@ -674,7 +674,13 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                           ? "Calendar connected"
                           : "Optional: export your Plan4Host calendar"}
                 </div>
-                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                <div
+                  style={{
+                    color: calendarOnboardingStep === "intro" ? "var(--text)" : "var(--muted)",
+                    fontSize: "var(--fs-s)",
+                    lineHeight: "var(--lh-s)",
+                  }}
+                >
                   {calendarOnboardingStep === "intro"
                     ? "This prevents double bookings and keeps availability up to date."
                     : calendarOnboardingStep === "provider"
@@ -698,7 +704,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
             {calendarOnboardingStep === "intro" && (
               <div style={{ display: "grid", gap: 12 }}>
-                <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
+                <div style={{ color: "var(--muted)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
                   To get started, you only need to connect one calendar.
                   <br />
                   We’ll keep it updated automatically for you.
@@ -760,10 +766,20 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 </button>
                 <button
                   type="button"
-                  className="sb-btn sb-btn--ghost"
-                  style={{ justifyContent: "center", border: "1px solid var(--border)", background: "transparent", color: "var(--muted)", borderRadius: 999 }}
+                  className="sb-btn"
+                  style={{
+                    justifyContent: "center",
+                    border: "none",
+                    background: "transparent",
+                    color: "var(--muted)",
+                    borderRadius: 0,
+                    padding: 0,
+                    minHeight: 0,
+                    fontWeight: 500,
+                    textDecoration: "underline",
+                    textUnderlineOffset: 4,
+                  }}
                   onClick={() => {
-                    setCalendarOnboardingOpen(false);
                     window.location.href = `/app/checkinEditor?onboarding=contacts&highlight=contacts`;
                   }}
                 >
@@ -834,7 +850,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             {calendarOnboardingStep === "export" && (
               <div style={{ display: "grid", gap: 12 }}>
                 <button
-                  className="sb-btn"
+                  className="sb-btn sb-cardglow"
                   style={{ width: "100%", minHeight: 44, borderRadius: 999, border: "1px solid var(--primary)", background: "transparent", color: "var(--text)", justifyContent: "center" }}
                   onClick={async () => {
                     const exportUrl = types[0]?.id ? typeIcsUrl(types[0].id) : rooms[0]?.id ? roomIcsUrl(rooms[0].id) : "";

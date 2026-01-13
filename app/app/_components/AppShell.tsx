@@ -204,6 +204,8 @@ function OnboardingChecklistFab() {
     }
   }, [completedSteps, dismissedSteps, completedAt, loading, total]);
 
+  const whatsappGradient = "linear-gradient(135deg, #25D366, #128C7E)";
+
   const fabStyle: React.CSSProperties = {
     position: "fixed",
     left: 16,
@@ -211,11 +213,11 @@ function OnboardingChecklistFab() {
     width: 56,
     height: 56,
     borderRadius: "50%",
-    border: "1px solid rgba(148,163,184,0.45)",
-    background: "var(--card)",
+    border: "1px solid rgba(255,255,255,0.22)",
+    background: whatsappGradient,
     backdropFilter: "blur(14px) saturate(140%)",
     WebkitBackdropFilter: "blur(14px) saturate(140%)",
-    color: "#e5e7eb",
+    color: "#ffffff",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -247,7 +249,7 @@ function OnboardingChecklistFab() {
     justifyContent: "space-between",
     gap: 8,
     // WhatsApp-style green gradient (always, regardless of theme)
-    background: "linear-gradient(135deg, #25D366, #128C7E)",
+    background: whatsappGradient,
     color: "#ffffff",
   };
 
@@ -379,28 +381,22 @@ function OnboardingChecklistFab() {
 	            lineHeight: 1.2,
 	          }}
 	        >
-	          <span
-	            style={{
-	              fontSize: "var(--fs-s)",
-	              opacity: 0.95,
-	              backgroundImage:
-	                "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
+          <span
+            style={{
+              fontSize: "var(--fs-s)",
+              opacity: 0.92,
+              letterSpacing: 0.6,
+              textTransform: "uppercase",
+              color: "#ffffff",
             }}
           >
             Setup
           </span>
-	          <span
-	            style={{
-	              fontWeight: "var(--fw-bold)",
-	              letterSpacing: 0.3,
-	              backgroundImage:
-	                "linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
+          <span
+            style={{
+              fontWeight: "var(--fw-bold)",
+              letterSpacing: 0.4,
+              color: "#ffffff",
             }}
           >
             {completed}/{total}
