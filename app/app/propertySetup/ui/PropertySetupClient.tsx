@@ -613,7 +613,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 		                    }}
 		                  >
 		                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-		                      <MaskedSvgIcon src="/svg_multipleunits_demo.svg" size={26} zoom={1.18} />
+		                      <MaskedSvgIcon src="/svg_multipleunits_demo.svg" size={30} zoom={1.3} />
 		                      <div style={{ fontWeight: 800 }}>Multiple units</div>
 		                    </div>
 		                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
