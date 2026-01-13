@@ -204,6 +204,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     website: "",
     location: "",
   });
+  const [contactsWizardSocialInput, setContactsWizardSocialInput] = useState<string>("");
   const [contactsWizardDial, setContactsWizardDial] = useState<string>("+40");
   const [contactsWizardPhoneLocal, setContactsWizardPhoneLocal] = useState<string>("");
   const [contactsWizardDialOpen, setContactsWizardDialOpen] = useState<boolean>(false);
@@ -421,13 +422,16 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     setContactsWizardDial(split.dial);
     setContactsWizardPhoneLocal(split.rest);
     setContactsWizardDialOpen(false);
-    setContactsWizardSocialDrafts({
+    const drafts = {
       facebook: prop.social_facebook || "",
       instagram: prop.social_instagram || "",
       tiktok: prop.social_tiktok || "",
       website: prop.social_website || "",
       location: prop.social_location || "",
-    });
+    };
+    setContactsWizardSocialDrafts(drafts);
+    setContactsWizardSocialKey("website");
+    setContactsWizardSocialInput(drafts.website || "");
   }, [contactsWizardRequested, prop?.id]);
 
   function openHouseRulesWizard() {
@@ -705,6 +709,16 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     } finally {
       setContactsWizardLoading(false);
     }
+  }
+
+  function switchSocialWizardKey(next: SocialKey) {
+    // Keep draft for current key (no autosave, local only), then switch.
+    setContactsWizardSocialDrafts((prev) => {
+      const nextDrafts = { ...prev, [contactsWizardSocialKey]: contactsWizardSocialInput };
+      setContactsWizardSocialKey(next);
+      setContactsWizardSocialInput(nextDrafts[next] ?? "");
+      return nextDrafts;
+    });
   }
 
   function onPropChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -1293,74 +1307,112 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 </div>
               )}
 
-              {contactsWizardStep === "social" && (
-                <div style={{ display: "grid", gap: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                    {(["website", "facebook", "instagram", "tiktok", "location"] as SocialKey[]).map((k) => {
-                      const active = contactsWizardSocialKey === k;
-                      return (
-                        <button
-                          key={k}
-                          type="button"
-                          onClick={() => setContactsWizardSocialKey(k)}
-                          className="sb-cardglow"
-                          style={{
-                            borderRadius: 999,
-                            border: `1px solid ${active ? "var(--primary)" : "var(--border)"}`,
-                            background: "transparent",
-                            padding: "8px 10px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 8,
-                            cursor: "pointer",
-                          }}
-                        >
-                          <img src={socialIcon(k)} alt="" aria-hidden="true" width={20} height={20} style={{ width: 20, height: 20 }} />
-                          <span style={{ fontWeight: 800, textTransform: "capitalize" }}>{k === "website" ? "website" : k}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+	              {contactsWizardStep === "social" && (
+	                <div style={{ display: "grid", gap: 12 }}>
+	                  <div style={{ display: "grid", gap: 10 }}>
+	                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
+	                      {(["website", "facebook", "instagram", "tiktok", "location"] as SocialKey[]).map((k) => {
+	                        const active = contactsWizardSocialKey === k;
+	                        return (
+	                          <button
+	                            key={k}
+	                            type="button"
+	                            onClick={() => switchSocialWizardKey(k)}
+	                            className="sb-cardglow"
+	                            style={{
+	                              borderRadius: 999,
+	                              border: `1px solid ${active ? "color-mix(in srgb, var(--primary) 50%, var(--border))" : "var(--border)"}`,
+	                              background: "transparent",
+	                              padding: active ? "10px 12px" : "8px 10px",
+	                              display: "inline-flex",
+	                              alignItems: "center",
+	                              gap: 8,
+	                              cursor: "pointer",
+	                              opacity: active ? 1 : 0.55,
+	                              transform: active ? "scale(1.06)" : "scale(0.98)",
+	                              transition: "transform 140ms ease, opacity 140ms ease, border-color 140ms ease",
+	                            }}
+	                          >
+	                            <img
+	                              src={socialIcon(k)}
+	                              alt=""
+	                              aria-hidden="true"
+	                              width={22}
+	                              height={22}
+	                              style={{ width: 22, height: 22, filter: active ? "none" : "grayscale(0.6)" }}
+	                            />
+	                            <span style={{ fontWeight: 800, textTransform: "capitalize" }}>
+	                              {k === "website" ? "Website" : k === "location" ? "Location" : k}
+	                            </span>
+	                          </button>
+	                        );
+	                      })}
+	                    </div>
 
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ textTransform: "capitalize" }}>
-                      {contactsWizardSocialKey === "website" ? "Website" : contactsWizardSocialKey === "location" ? "Location" : contactsWizardSocialKey}
-                    </label>
-                    <input
-                      value={contactsWizardSocialDrafts[contactsWizardSocialKey]}
-                      onChange={(e) =>
-                        setContactsWizardSocialDrafts((prev) => ({
-                          ...prev,
-                          [contactsWizardSocialKey]: e.currentTarget.value,
-                        }))
-                      }
-                      placeholder={
-                        contactsWizardSocialKey === "location"
-                          ? "Paste Google Maps link"
-                          : "Paste URL"
-                      }
-                      style={FIELD}
-                    />
-                    <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                      Optional — share only what you want guests to see.
-                    </div>
-                  </div>
+	                    <div style={{ display: "grid", gap: 6 }}>
+	                      <input
+	                        value={contactsWizardSocialInput}
+	                        onChange={(e) => setContactsWizardSocialInput(e.currentTarget.value)}
+	                        placeholder={contactsWizardSocialKey === "location" ? "Paste Google Maps link" : "Paste URL"}
+	                        style={FIELD}
+	                      />
+	                      <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+	                        Optional — share only what you want guests to see.
+	                      </div>
+	                    </div>
+	                  </div>
 
-                  {contactsWizardError && (
-                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-                      {contactsWizardError}
-                    </div>
-                  )}
+	                  {contactsWizardError && (
+	                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+	                      {contactsWizardError}
+	                    </div>
+	                  )}
 
-                  <button
-                    className="sb-btn sb-btn--primary"
-                    style={{ width: "100%", minHeight: 44 }}
-                    onClick={() => void saveSocialWizard()}
-                  >
-                    Continue
-                  </button>
-                </div>
-              )}
+	                  <div style={{ display: "grid", gap: 10 }}>
+	                    <div style={{ display: "grid", gridTemplateColumns: isNarrow ? "1fr" : "1fr 1fr", gap: 10 }}>
+	                      <button
+	                        className="sb-btn"
+	                        style={{ width: "100%", minHeight: 44 }}
+	                        onClick={() => {
+	                          setContactsWizardStep("reward");
+	                        }}
+	                      >
+	                        Skip
+	                      </button>
+	                      <button
+	                        className="sb-btn sb-btn--primary"
+	                        style={{ width: "100%", minHeight: 44 }}
+	                        onClick={async () => {
+	                          // commit local draft for current key, then save explicitly (no autosave)
+	                          setContactsWizardSocialDrafts((prev) => ({
+	                            ...prev,
+	                            [contactsWizardSocialKey]: contactsWizardSocialInput,
+	                          }));
+	                          await saveSocialWizard();
+	                        }}
+	                      >
+	                        Add
+	                      </button>
+	                    </div>
+	                    <button
+	                      type="button"
+	                      onClick={() => setContactsWizardStep("reward")}
+	                      style={{
+	                        background: "transparent",
+	                        border: "none",
+	                        color: "var(--muted)",
+	                        fontSize: "var(--fs-s)",
+	                        lineHeight: "var(--lh-s)",
+	                        cursor: "pointer",
+	                        textDecoration: "underline",
+	                        textAlign: "center",
+	                      }}
+	                    >
+	                      Skip social links
+	                    </button>
+	                  </div>
+	                </div>
+	              )}
 
               {contactsWizardStep === "reward" && (
                 <div style={{ display: "grid", gap: 12 }}>
@@ -2495,7 +2547,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               )}
 
               {/* Social links quick editor */}
-              <SocialLinksEditor prop={prop} setProp={setProp} supabase={supabase} setStatus={setStatus} />
+              {!(contactsWizardOpen || houseRulesWizardOpen) && (
+                <SocialLinksEditor prop={prop} setProp={setProp} supabase={supabase} setStatus={setStatus} />
+              )}
             </form>
           </section>
 
