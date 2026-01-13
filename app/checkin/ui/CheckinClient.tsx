@@ -1571,12 +1571,22 @@ export default function CheckinClient() {
             .ci-heroList li{ display:block; }
             .ci-infoIntro{ margin: 0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 86%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; line-height: 1.6; }
             .ci-infoMain{ margin: 0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; line-height: 1.65; }
-            .ci-infoLabel{ margin: 0; font-size: var(--ci-font-b); font-weight: 700; color: color-mix(in srgb, var(--text) 82%, transparent); max-width: 760px; margin-left:auto; margin-right:auto; }
+            .ci-infoLabel{
+              margin: 0;
+              font-size: calc(var(--ci-font-b) + 1px);
+              font-weight: 650;
+              color: color-mix(in srgb, var(--text) 84%, transparent);
+              max-width: 760px;
+              margin-left:auto;
+              margin-right:auto;
+              line-height: 1.55;
+              padding-top: 2px;
+            }
             .ci-infoMeta{ margin: 0; font-size: var(--ci-font-s); font-weight: 550; color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.5; max-width: 760px; margin-left:auto; margin-right:auto; }
             .ci-infoClose{ margin: 0; font-size: var(--ci-font-s); font-weight: 550; color: color-mix(in srgb, var(--text) 70%, transparent); line-height: 1.5; text-align: center; max-width: 760px; margin-left:auto; margin-right:auto; }
             .ci-infoSep{ height: 1px; border: 0; margin: 16px auto; width: min(760px, 100%); background: color-mix(in srgb, var(--border) 70%, transparent); }
-            .ci-infoList{ list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 8px; width: min(760px, 100%); text-align: left; }
-            .ci-infoList li{ display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: start; color: color-mix(in srgb, var(--text) 78%, transparent); }
+            .ci-infoList{ list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 10px; width: min(760px, 100%); text-align: left; }
+            .ci-infoList li{ display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: start; color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 1.6; }
             .ci-infoList li::before{ content: "•"; color: color-mix(in srgb, var(--text) 48%, transparent); line-height: 1.2; margin-top: 2px; }
             .ci-actionBtn{
               display: inline-flex;
@@ -1991,7 +2001,7 @@ export default function CheckinClient() {
                     <hr className="ci-infoSep" />
                     <p className="ci-infoLabel">Emailul tău de confirmare va include:</p>
                     <ul className="ci-infoList">
-                      <li>un cod QR ce poate fi prezentat la recepție (dacă este cazul), sau</li>
+                      <li>un <strong style={{ fontWeight: 700, color: "var(--text)" }}>cod QR</strong> ce poate fi prezentat la recepție (dacă este cazul), sau</li>
                       <li>folosit ca dovadă că check-in-ul a fost completat.</li>
                     </ul>
                     <p className="ci-infoMeta">
@@ -2011,7 +2021,7 @@ export default function CheckinClient() {
                     <hr className="ci-infoSep" />
                     <p className="ci-infoLabel">Your confirmation email will include:</p>
                     <ul className="ci-infoList">
-                      <li>a QR code that can be presented at reception (if applicable), or</li>
+                      <li>a <strong style={{ fontWeight: 700, color: "var(--text)" }}>QR code</strong> that can be presented at reception (if applicable), or</li>
                       <li>used as proof that your check-in has been completed.</li>
                     </ul>
                     <p className="ci-infoMeta">
