@@ -719,36 +719,37 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                       { key: "Trivago", label: "Trivago", logo: "/trivago.png" },
                       { key: "Expedia", label: "Expedia", logo: "/expedia.png" },
                       { key: "Other", label: "Other platforms", logo: null as string | null },
-                    ].map((p) => {
-                      const active = calendarOnboardingProvider === p.key;
-                      return (
-                        <button
-                          key={p.key}
-                          type="button"
-                          onClick={() => setCalendarOnboardingProvider(p.key)}
-                          className="sb-cardglow"
-                          style={{
-                            borderRadius: 14,
-                            border: `1px solid ${active ? "var(--primary)" : "var(--border)"}`,
-                            background: "color-mix(in srgb, var(--card) 86%, transparent)",
-                            padding: "10px 12px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 10,
-                            cursor: "pointer",
-                          }}
-                        >
+	                    ].map((p) => {
+	                      const active = calendarOnboardingProvider === p.key;
+	                      return (
+	                        <button
+	                          key={p.key}
+	                          type="button"
+	                          onClick={() => setCalendarOnboardingProvider(p.key)}
+	                          className="sb-cardglow"
+	                          style={{
+	                            borderRadius: 14,
+	                            border: `1px solid ${active ? "var(--primary)" : "var(--border)"}`,
+	                            background: "color-mix(in srgb, var(--card) 86%, transparent)",
+	                            color: "var(--text)",
+	                            padding: "10px 12px",
+	                            display: "inline-flex",
+	                            alignItems: "center",
+	                            gap: 10,
+	                            cursor: "pointer",
+	                          }}
+	                        >
                           {p.logo ? (
                             <img src={p.logo} alt="" aria-hidden="true" width={22} height={22} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
                           ) : (
                             <span aria-hidden style={{ width: 22, height: 22, borderRadius: 6, display: "grid", placeItems: "center", border: "1px solid var(--border)" }}>
                               +
                             </span>
-                          )}
-                          <span style={{ fontWeight: 800 }}>{p.label}</span>
-                        </button>
-                      );
-                    })}
+	                          )}
+	                          <span style={{ fontWeight: 800, color: "var(--text)" }}>{p.label}</span>
+	                        </button>
+	                      );
+	                    })}
                   </div>
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
                     Any platform that provides an iCal link works.
