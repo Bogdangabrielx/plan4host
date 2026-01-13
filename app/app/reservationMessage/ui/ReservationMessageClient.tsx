@@ -1420,15 +1420,15 @@ export default function ReservationMessageClient({
                 gap: 14,
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ width: "100%", textAlign: "center" }}>
-                  <div style={{ fontSize: 12, letterSpacing: ".18em", textTransform: "uppercase", fontWeight: 900, color: "var(--text)" }}>
-                    Automatic messages
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="sb-btn sb-btn--small"
+	              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+	                <div style={{ width: "100%", textAlign: "center" }}>
+	                  <div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", fontWeight: 700, color: "var(--muted)" }}>
+	                    Automatic messages
+	                  </div>
+	                </div>
+	                <button
+	                  type="button"
+	                  className="sb-btn sb-btn--small"
                   onClick={() => {
                     if (onbStep === "reward") setOnbOpen(false);
                   }}
@@ -1447,12 +1447,12 @@ export default function ReservationMessageClient({
                 </button>
               </div>
 
-              {onbStep === "choose" && (
-                <div style={{ display: "grid", gap: 12 }}>
-                  <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
-                    Choose how you want to set up your message. Both options work — you can change everything later.
-                  </div>
-                  <div style={{ display: "grid", gap: 10 }}>
+	              {onbStep === "choose" && (
+	                <div style={{ display: "grid", gap: 12 }}>
+	                  <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
+	                    Pick a starting point. You can change it anytime.
+	                  </div>
+	                  <div style={{ display: "grid", gap: 10 }}>
                     <button
                       className="sb-cardglow"
                       style={{
@@ -1508,15 +1508,24 @@ export default function ReservationMessageClient({
                 </div>
               )}
 
-              {onbStep === "pick" && (
-                <div style={{ display: "grid", gap: 12 }}>
-                  <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13 }}>
-                    Pick one template. We’ll activate it for you.
-                  </div>
-                  <div style={{ display: "grid", gap: 10 }}>
-                    {ONBOARDING_TEMPLATES.map((t) => {
-                      const blocks = t.blocks_en.filter((b) => b.type !== "divider").slice(0, 3) as any[];
-                      const previewHtml = blocks
+	              {onbStep === "pick" && (
+	                <div style={{ display: "grid", gap: 12 }}>
+	                  <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13 }}>
+	                    Pick one template.
+	                  </div>
+	                  <div
+	                    style={{
+	                      display: "grid",
+	                      gap: 10,
+	                      maxHeight: "min(52vh, 360px)",
+	                      overflowY: "auto",
+	                      WebkitOverflowScrolling: "touch",
+	                      paddingRight: 4,
+	                    }}
+	                  >
+	                    {ONBOARDING_TEMPLATES.map((t) => {
+	                      const blocks = t.blocks_en.filter((b) => b.type !== "divider").slice(0, 3) as any[];
+	                      const previewHtml = blocks
                         .map((b: any) => {
                           if (b.type === "heading") {
                             return `<div style="font-weight:900; letter-spacing:.14em; text-transform:uppercase; font-size:12px; margin-bottom:6px;">${titleToChips(b.text || "")}</div>`;
@@ -1550,81 +1559,86 @@ export default function ReservationMessageClient({
                         </button>
                       );
                     })}
-                  </div>
-                  {onbError && <div style={{ color: "var(--danger)", fontSize: 12, textAlign: "center" }}>{onbError}</div>}
-                </div>
-              )}
+	                  </div>
+	                  {onbError && <div style={{ color: "var(--danger)", fontSize: 12, textAlign: "center" }}>{onbError}</div>}
+	                </div>
+	              )}
 
-              {onbStep === "loading" && (
-                <div style={{ display: "grid", placeItems: "center", gap: 10, padding: "6px 0 2px", color: "var(--muted)", fontSize: 13 }}>
-                  Preparing your message…
-                </div>
-              )}
+	              {onbStep === "loading" && <div style={{ height: 4 }} />}
 
-              {onbStep === "reward" && (
-                <div style={{ display: "grid", gap: 12, position: "relative" }}>
-                  <style
-                    dangerouslySetInnerHTML={{
-                      __html: `
-                        @keyframes p4hConfettiFall { 0% { transform: translate3d(0,-16px,0) rotate(0deg); opacity: 0; } 10% { opacity: .9; } 100% { transform: translate3d(0,140px,0) rotate(180deg); opacity: 0; } }
-                        .p4h-confetti { position:absolute; inset:0; pointer-events:none; overflow:hidden; border-radius: 14px; }
-                        .p4h-confetti i { position:absolute; top:-12px; width:8px; height:10px; border-radius:2px; opacity:0; animation: p4hConfettiFall 1.6s ease-out forwards; }
-                      `,
-                    }}
-                  />
-                  <div className="p4h-confetti" aria-hidden key={onbConfettiSeed}>
-                    {Array.from({ length: 14 }).map((_, idx) => {
-                      const left = (idx * 7) % 100;
-                      const delay = (idx % 7) * 0.05;
-                      const hue = 140 + (idx * 9) % 60;
-                      return (
-                        <i
-                          key={idx}
+	              {onbStep === "reward" && (
+	                <div style={{ display: "grid", gap: 12, position: "relative" }}>
+	                  <style
+	                    dangerouslySetInnerHTML={{
+	                      __html: `
+	                        @keyframes p4hConfettiFall { 0% { transform: translate3d(0,-16px,0) rotate(0deg); opacity: 0; } 10% { opacity: .9; } 100% { transform: translate3d(0,140px,0) rotate(180deg); opacity: 0; } }
+	                        .p4h-confetti { position:absolute; inset:0; pointer-events:none; overflow:hidden; border-radius: 14px; }
+	                        .p4h-confetti i { position:absolute; top:-12px; width:7px; height:9px; border-radius:2px; opacity:0; animation: p4hConfettiFall 1.4s ease-out forwards; }
+	                      `,
+	                    }}
+	                  />
+	                  <div className="p4h-confetti" aria-hidden key={onbConfettiSeed}>
+	                    {Array.from({ length: 12 }).map((_, idx) => {
+	                      const left = (idx * 8) % 100;
+	                      const delay = (idx % 6) * 0.06;
+	                      const hue = 140 + (idx * 11) % 55;
+	                      return (
+	                        <i
+	                          key={idx}
                           style={{
                             left: `${left}%`,
                             animationDelay: `${delay}s`,
                             background: `hsl(${hue} 75% 55%)`,
                           }}
                         />
-                      );
-                    })}
-                  </div>
+	                      );
+	                    })}
+	                  </div>
 
-                  <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
-                    <div style={{ fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", fontSize: 12, color: "var(--text)" }}>
-                      Everything is ready 🎉
-                    </div>
-                    <div style={{ fontSize: 13, color: "var(--muted)" }}>Your property is now ready to welcome guests.</div>
-                  </div>
+	                  <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
+	                    <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>
+	                      Everything is ready 🎉
+	                    </div>
+	                    <div style={{ fontSize: 13, color: "var(--muted)" }}>Your property is now ready to welcome guests.</div>
+	                  </div>
 
-                  <div style={{ color: "var(--text)", fontSize: 13, lineHeight: 1.55, textAlign: "center" }}>
-                    <div style={{ color: "var(--muted)" }}>You’ve completed the essential setup.</div>
-                    <div style={{ marginTop: 6 }}>
-                      Your calendar, house rules, and automatic messages are active.
-                    </div>
-                    <div style={{ marginTop: 10, color: "var(--muted)" }}>
-                      You can customize everything anytime — rooms, calendars, messages, and more.
-                    </div>
-                  </div>
+	                  <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.55, textAlign: "center" }}>
+	                    Essentials are active: calendar, house rules, and automatic messages.
+	                  </div>
 
-                  <div style={{ display: "grid", gap: 10 }}>
-                    <div style={{ display: "grid", gap: 10 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                        <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
-                        <span style={{ fontWeight: 800 }}>Calendar connected</span>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                        <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
-                        <span style={{ fontWeight: 800 }}>Guests confirm house rules</span>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                        <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
-                        <span style={{ fontWeight: 800 }}>Automatic messages enabled</span>
-                      </div>
-                    </div>
+	                  <div style={{ display: "grid", gap: 10 }}>
+	                    <div style={{ display: "grid", gap: 8 }}>
+	                      {[
+	                        "Calendar connected",
+	                        "Guests confirm house rules",
+	                        "Automatic messages enabled",
+	                      ].map((label) => (
+	                        <div key={label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+	                          <span
+	                            aria-hidden
+	                            style={{
+	                              width: 18,
+	                              height: 18,
+	                              borderRadius: 999,
+	                              border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
+	                              background: "color-mix(in srgb, var(--success) 16%, var(--card))",
+	                              display: "grid",
+	                              placeItems: "center",
+	                              color: "color-mix(in srgb, var(--success) 90%, var(--text))",
+	                              fontWeight: 900,
+	                              fontSize: 12,
+	                              flex: "0 0 auto",
+	                            }}
+	                          >
+	                            ✓
+	                          </span>
+	                          <span style={{ fontSize: 13, color: "var(--text)", fontWeight: 600 }}>{label}</span>
+	                        </div>
+	                      ))}
+	                    </div>
 
-                    {onbPreviewUrl && (
-                      <button
+	                    {onbPreviewUrl && (
+	                      <button
                         className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                         style={{ width: "100%", justifyContent: "center" }}
                         onClick={() => {
@@ -1646,9 +1660,9 @@ export default function ReservationMessageClient({
                       Go to dashboard
                     </button>
 
-                    <button
-                      className="sb-btn sb-cardglow"
-                      style={{ width: "100%", justifyContent: "center", border: "1px solid var(--border)" }}
+	                    <button
+	                      className="sb-btn sb-cardglow"
+	                      style={{ width: "100%", justifyContent: "center", border: "1px solid var(--border)" }}
                       onClick={() => {
                         if (onbCreatedTemplateId) setActiveId(onbCreatedTemplateId);
                         setOnbOpen(false);
@@ -1656,15 +1670,14 @@ export default function ReservationMessageClient({
                         window.location.href = "/app/propertySetup";
                       }}
                     >
-                      Customize settings
-                    </button>
-
-                    <div style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.5, textAlign: "center", marginTop: 4 }}>
-                      What you’ve set up is already enough to get started. Fine‑tuning can happen anytime.
-                    </div>
-                  </div>
-                </div>
-              )}
+	                      Customize settings
+	                    </button>
+	                    <div style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.5, textAlign: "center", marginTop: 2 }}>
+	                      You can customize everything anytime.
+	                    </div>
+	                  </div>
+	                </div>
+	              )}
             </div>
           </div>
       )}
