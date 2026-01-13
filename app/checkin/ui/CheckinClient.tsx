@@ -1544,6 +1544,21 @@ export default function CheckinClient() {
               line-height: 1.35;
               white-space: nowrap;
             }
+            .ci-subTitle{
+              margin:0;
+              font-size: var(--ci-font-b);
+              font-weight: var(--ci-weight-m);
+              line-height: 1.45;
+              display: inline-flex;
+              flex-wrap: wrap;
+              justify-content: center;
+              gap: 8px;
+            }
+            .ci-subAccent{
+              --ci-success: var(--success, var(--primary));
+              color: color-mix(in srgb, var(--ci-success) 78%, black);
+              font-weight: 700;
+            }
             .ci-heroStack{ margin-top: 12px; display:grid; gap: 10px; }
             .ci-heroLead{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-b); color: color-mix(in srgb, var(--text) 92%, transparent); line-height: 1.55; }
             .ci-heroBody{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 1.55; }
@@ -1935,8 +1950,11 @@ export default function CheckinClient() {
                     <span className="ci-headlineText">Completează check-in-ul</span>
                   </span>
                   <span className="ci-headlineLine">
-                    <span className="ci-headlineTag ci-headlineTagSuccess">ÎN CÂTEVA MINUTE</span>
-                    <span className="ci-headlineTail">și primești confirmarea QR.</span>
+                    <span className="ci-subTitle">
+                      <span className="ci-subAccent">În doar</span>
+                      <span className="ci-headlineTag ci-headlineTagSuccess">câteva minute</span>
+                      <span className="ci-subAccent">și primești confirmarea QR.</span>
+                    </span>
                   </span>
                 </span>
               ) : (
@@ -1945,43 +1963,67 @@ export default function CheckinClient() {
                     <span className="ci-headlineText">Complete your check-in</span>
                   </span>
                   <span className="ci-headlineLine">
-                    <span className="ci-headlineTag ci-headlineTagSuccess">IN MINUTES</span>
-                    <span className="ci-headlineTail">and get your QR confirmation.</span>
+                    <span className="ci-subTitle">
+                      <span className="ci-subAccent">In just</span>
+                      <span className="ci-headlineTag ci-headlineTagSuccess">a few minutes</span>
+                      <span className="ci-subAccent">and receive your QR confirmation.</span>
+                    </span>
                   </span>
                 </span>
               )}
             </h1>
             <div className="ci-heroStack">
-              <p className="ci-heroSmall">{T('intro2')}</p>
-
               <div className="ci-heroNote">
                 <div className="ci-heroNoteTitle">{lang === "ro" ? "Informații" : "Info"}</div>
-                <ul className="ci-heroList">
-                  <li>
-                    <span className="ci-heroBody">{T('intro1')}</span>
-                  </li>
-                  <li>
-                    <span className="ci-heroBody">
-                      <Intro3 name={prop?.name ?? (lang === 'ro' ? 'proprietate' : 'the property')} />
-                    </span>
-                  </li>
-                  <li>
-                    <span className="ci-heroBody">
-                      {T('intro4')}{" "}
-                      <img
-                        src="/QR_forlight.png"
-                        alt="QR"
-                        width={16}
-                        height={16}
-                        style={{ verticalAlign: "text-bottom", marginLeft: 4, marginRight: 2, display: "inline-block" }}
-                      />
-                    </span>
-                  </li>
-                  <li>
-                    <span className="ci-heroBody">{T('intro5')}</span>
-                  </li>
-                </ul>
-                <p className="ci-heroSmall">{T('intro6')}</p>
+                {lang === "ro" ? (
+                  <>
+                    <p className="ci-heroBody" style={{ margin: 0 }}>
+                      Îți mulțumim că ai ales să stai la noi.
+                    </p>
+                    <p className="ci-heroBody" style={{ margin: 0 }}>
+                      Pentru o sosire cât mai ușoară, te rugăm să completezi formularul de check-in online de mai jos.
+                      După trimitere, vei primi automat un email de confirmare pentru sejurul tău la{" "}
+                      <strong style={{ color: "var(--text)" }}>{prop?.name ?? "proprietate"}</strong>.
+                    </p>
+                    <div className="ci-heroBody" style={{ margin: 0 }}>
+                      Emailul va include un cod QR, care poate fi:
+                      <ul style={{ margin: "8px 0 0", paddingLeft: 18, display: "grid", gap: 6 }}>
+                        <li>prezentat la recepție (dacă este cazul), sau</li>
+                        <li>folosit ca dovadă că check-in-ul a fost completat.</li>
+                      </ul>
+                    </div>
+                    <p className="ci-heroSmall" style={{ margin: 0 }}>
+                      Toate informațiile sunt gestionate în siguranță și folosite doar pentru check-in și cerințe legale.
+                    </p>
+                    <p className="ci-heroSmall" style={{ margin: 0 }}>
+                      Îți mulțumim pentru cooperare — abia așteptăm să te primim.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="ci-heroBody" style={{ margin: 0 }}>
+                      Thank you for choosing to stay with us.
+                    </p>
+                    <p className="ci-heroBody" style={{ margin: 0 }}>
+                      To ensure a smooth arrival, please complete the online check-in form below. Once submitted, you will
+                      automatically receive a confirmation email for your stay at{" "}
+                      <strong style={{ color: "var(--text)" }}>{prop?.name ?? "the property"}</strong>.
+                    </p>
+                    <div className="ci-heroBody" style={{ margin: 0 }}>
+                      This email will include a QR code, which can be:
+                      <ul style={{ margin: "8px 0 0", paddingLeft: 18, display: "grid", gap: 6 }}>
+                        <li>presented at reception (if applicable), or</li>
+                        <li>used as proof that your check-in has been completed.</li>
+                      </ul>
+                    </div>
+                    <p className="ci-heroSmall" style={{ margin: 0 }}>
+                      All information you provide is handled securely and used only for check-in and legal requirements.
+                    </p>
+                    <p className="ci-heroSmall" style={{ margin: 0 }}>
+                      Thank you for your cooperation — we look forward to welcoming you.
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>
