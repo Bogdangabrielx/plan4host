@@ -482,7 +482,16 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     contactsAutoPromptedRef.current = true;
 
     setContactsWizardRequested(true);
-  }, [prop?.id, prop?.regulation_pdf_url, contactsWizardOpen, contactsWizardRequested, houseRulesWizardOpen]);
+  }, [
+    prop?.id,
+    prop?.regulation_pdf_url,
+    prop?.contact_email,
+    prop?.contact_phone,
+    prop?.contact_address,
+    contactsWizardOpen,
+    contactsWizardRequested,
+    houseRulesWizardOpen,
+  ]);
 
   // Gentle nudge: if contact details are set but house rules are missing, open the House Rules wizard once per session.
   useEffect(() => {
@@ -501,7 +510,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     if (!hasContactDetails) return;
 
     try {
-      const key = `p4h:hr:autoPrompted:${prop.id}`;
+      // Versioned key so older sessions don't block the refined gating logic.
+      const key = `p4h:hr:autoPrompted:v2:${prop.id}`;
       if (window.sessionStorage.getItem(key) === "1") return;
       window.sessionStorage.setItem(key, "1");
     } catch {
@@ -509,7 +519,17 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     }
 
     openHouseRulesWizard();
-  }, [prop?.id, prop?.regulation_pdf_url, contactsWizardOpen, contactsWizardRequested, houseRulesWizardOpen, houseRulesWizardRequested]);
+  }, [
+    prop?.id,
+    prop?.regulation_pdf_url,
+    prop?.contact_email,
+    prop?.contact_phone,
+    prop?.contact_address,
+    contactsWizardOpen,
+    contactsWizardRequested,
+    houseRulesWizardOpen,
+    houseRulesWizardRequested,
+  ]);
 
   useEffect(() => {
     return () => {
