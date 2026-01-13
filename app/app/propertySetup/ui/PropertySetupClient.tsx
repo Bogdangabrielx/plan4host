@@ -79,20 +79,23 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   const [tasks, setTasks]     = useState<TaskDef[]>([]);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
 
-	  const [plan, setPlan] = useState<Plan | null>(null);
-	  const selected = properties.find(p => p.id === selectedId) || null;
-	  // First-time guidance modal (after first property creation)
-	  const [showRoomsGuide, setShowRoomsGuide] = useState<boolean>(false);
-	  const [unitWizardStep, setUnitWizardStep] = useState<"hostType" | "unitCount" | "reward">("hostType");
-	  const [unitCountRaw, setUnitCountRaw] = useState<string>("");
-	  const [unitWizardError, setUnitWizardError] = useState<string | null>(null);
-	  const [unitWizardLoading, setUnitWizardLoading] = useState<boolean>(false);
-	  const [unitWizardLoadingStage, setUnitWizardLoadingStage] = useState<0 | 1>(0);
-	  const unitWizardLoadingTimerRef = useRef<number | null>(null);
-	  const [createdUnits, setCreatedUnits] = useState<string[]>([]);
-	  const prevShowRoomsGuideRef = useRef<boolean>(false);
-	  const prevWizardPropertyIdRef = useRef<string | null>(null);
-	  const [roomTypesGuideTick, setRoomTypesGuideTick] = useState<number>(0);
+		  const [plan, setPlan] = useState<Plan | null>(null);
+		  const selected = properties.find(p => p.id === selectedId) || null;
+		  // First-time guidance modal (after first property creation)
+		  const [showRoomsGuide, setShowRoomsGuide] = useState<boolean>(false);
+		  const [unitWizardStep, setUnitWizardStep] = useState<"hostType" | "unitCount" | "reward" | "rename">("hostType");
+		  const [unitCountRaw, setUnitCountRaw] = useState<string>("");
+		  const [unitWizardError, setUnitWizardError] = useState<string | null>(null);
+		  const [unitWizardLoading, setUnitWizardLoading] = useState<boolean>(false);
+		  const [unitWizardLoadingStage, setUnitWizardLoadingStage] = useState<0 | 1>(0);
+		  const unitWizardLoadingTimerRef = useRef<number | null>(null);
+		  const [createdUnits, setCreatedUnits] = useState<string[]>([]);
+		  const [unitRenameDrafts, setUnitRenameDrafts] = useState<Record<string, string>>({});
+		  const [unitRenameError, setUnitRenameError] = useState<string | null>(null);
+		  const [unitRenameSaving, setUnitRenameSaving] = useState<boolean>(false);
+		  const prevShowRoomsGuideRef = useRef<boolean>(false);
+		  const prevWizardPropertyIdRef = useRef<string | null>(null);
+		  const [roomTypesGuideTick, setRoomTypesGuideTick] = useState<number>(0);
   // Cache property presentation images for avatar in the pill
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
 
@@ -110,14 +113,14 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	    const isPropertyChange = prevPropertyId !== null && prevPropertyId !== selectedId;
 	    if (!isOpening && !isPropertyChange) return;
 
-	    if (unitWizardStep === "reward") return;
-	    if (rooms.length > 0) return;
+		    if (unitWizardStep === "reward" || unitWizardStep === "rename") return;
+		    if (rooms.length > 0) return;
 
 	    setUnitWizardError(null);
 	    setCreatedUnits([]);
 	    setUnitCountRaw("");
 	    setUnitWizardStep("hostType");
-	  }, [showRoomsGuide, selectedId, rooms.length, unitWizardStep]);
+		  }, [showRoomsGuide, selectedId, rooms.length, unitWizardStep]);
 
   // Detect small screens (fallback override if CSS not applied yet on device)
   useEffect(() => {
@@ -319,6 +322,50 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     }
   }
 
+  async function saveUnitNamesAndContinue() {
+    if (!canWrite) return;
+    if (!selected) return;
+    setUnitRenameError(null);
+    setUnitRenameSaving(true);
+    try {
+      const targets = rooms
+        .slice()
+        .sort((a, b) => a.sort_index - b.sort_index)
+        .map((r) => ({
+          id: r.id,
+          current: (r.name || "").toString(),
+          next: (unitRenameDrafts[r.id] ?? r.name ?? "").toString().trim(),
+        }));
+
+      for (const t of targets) {
+        const next = t.next || t.current || "Unit";
+        if (next === t.current) continue;
+        const { error } = await supabase.from("rooms").update({ name: next }).eq("id", t.id);
+        if (error) throw error;
+      }
+
+      setRooms((prev) =>
+        prev.map((r) => {
+          const next = (unitRenameDrafts[r.id] ?? r.name ?? "").toString().trim();
+          return next ? { ...r, name: next } : r;
+        }),
+      );
+
+      try {
+        window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+      } catch {
+        // ignore
+      }
+
+      const q = `?onboarding=1&property=${encodeURIComponent(selected.id)}`;
+      window.location.href = `/app/channels${q}`;
+    } catch (e: any) {
+      setUnitRenameError(e?.message || "Could not save unit names.");
+    } finally {
+      setUnitRenameSaving(false);
+    }
+  }
+
   // SETTINGS
   async function saveTime(field: "check_in_time" | "check_out_time", value: string) {
     if (!canWrite) return;
@@ -451,7 +498,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         <PlanHeaderBadge title="Property Setup" slot="under-title" />
 
         {/* Step 2 — Units setup wizard (only when no rooms exist yet, plus reward screen) */}
-        {showRoomsGuide && selected && (rooms.length === 0 || unitWizardStep === "reward") && (
+        {showRoomsGuide && selected && (rooms.length === 0 || unitWizardStep === "reward" || unitWizardStep === "rename") && (
           <div
             role="dialog"
             aria-modal="true"
@@ -493,15 +540,21 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                       color: 'color-mix(in srgb, var(--text) 86%, transparent)',
                     }}
                   >
-                    {unitWizardStep === 'reward' ? 'Units ready' : 'Add units'}
-                  </div>
-                  <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
-                    {unitWizardStep === 'hostType'
-                      ? 'This helps us organize calendars and availability correctly.'
-                      : unitWizardStep === 'unitCount'
-                        ? 'We’ll create them automatically so you can start right away.'
-                        : 'Each unit now has its own calendar and availability.'}
-                  </div>
+	                    {unitWizardStep === 'rename'
+	                      ? 'Name your units'
+	                      : unitWizardStep === 'reward'
+	                        ? 'Units ready'
+	                        : 'Add units'}
+	                  </div>
+	                  <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+	                    {unitWizardStep === 'hostType'
+	                      ? 'This helps us organize calendars and availability correctly.'
+	                      : unitWizardStep === 'unitCount'
+	                        ? 'We’ll create them automatically so you can start right away.'
+	                        : unitWizardStep === 'rename'
+	                          ? 'You can change these anytime.'
+	                          : 'Each unit now has its own calendar and availability.'}
+	                  </div>
                 </div>
                 <button
                   aria-label="Close"
@@ -707,12 +760,111 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                      textDecoration: 'underline',
 	                      textUnderlineOffset: 4,
 	                    }}
-	                    onClick={() => {
-	                      setShowRoomsGuide(false);
-	                      try { window.dispatchEvent(new CustomEvent('p4h:activateRoomsTab')); } catch {}
-	                    }}
+		                    onClick={() => {
+		                      setUnitRenameError(null);
+		                      setUnitWizardStep("rename");
+		                      setUnitRenameDrafts(() => {
+		                        const draft: Record<string, string> = {};
+		                        rooms
+		                          .slice()
+		                          .sort((a, b) => a.sort_index - b.sort_index)
+		                          .forEach((r) => {
+		                            draft[r.id] = (r.name || "").toString();
+		                          });
+		                        return draft;
+		                      });
+		                    }}
+		                  >
+		                    Edit unit details
+		                  </button>
+		                </div>
+		              )}
+
+	              {unitWizardStep === "rename" && (
+	                <div style={{ display: "grid", gap: 12 }}>
+	                  <div style={{ display: "grid", gap: 10 }}>
+	                    {rooms
+	                      .slice()
+	                      .sort((a, b) => a.sort_index - b.sort_index)
+	                      .map((r) => (
+	                        <div
+	                          key={r.id}
+	                          style={{
+	                            display: "grid",
+	                            gap: 6,
+	                            padding: "10px 12px",
+	                            borderRadius: 12,
+	                            border: "1px solid var(--border)",
+	                            background: "color-mix(in srgb, var(--card) 88%, transparent)",
+	                          }}
+	                        >
+	                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+	                            <img
+	                              src={isDark ? "/room_fordark.png" : "/room_forlight.png"}
+	                              alt=""
+	                              aria-hidden="true"
+	                              width={18}
+	                              height={18}
+	                              style={{ width: 18, height: 18, objectFit: "contain", display: "block", flex: "0 0 auto" }}
+	                            />
+	                            <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--muted)" }}>
+	                              Unit {r.sort_index + 1}
+	                            </span>
+	                          </div>
+	                          <input
+	                            value={(unitRenameDrafts[r.id] ?? r.name ?? "").toString()}
+	                            onChange={(e) => {
+	                              const v = e.currentTarget.value;
+	                              setUnitRenameDrafts((prev) => ({ ...prev, [r.id]: v }));
+	                            }}
+	                            placeholder={`e.g. Unit ${r.sort_index + 1}`}
+	                            style={{
+	                              width: "100%",
+	                              padding: 10,
+	                              background: "var(--card)",
+	                              color: "var(--text)",
+	                              border: "1px solid var(--border)",
+	                              borderRadius: 10,
+	                              fontFamily: "inherit",
+	                            }}
+	                          />
+	                        </div>
+	                      ))}
+	                  </div>
+
+	                  {unitRenameError && (
+	                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+	                      {unitRenameError}
+	                    </div>
+	                  )}
+
+	                  <button
+	                    className="sb-btn sb-btn--primary"
+	                    style={{ width: "100%", minHeight: 44 }}
+	                    disabled={unitRenameSaving}
+	                    onClick={() => void saveUnitNamesAndContinue()}
 	                  >
-	                    Edit unit details
+	                    Save
+	                  </button>
+
+	                  <button
+	                    type="button"
+	                    className="sb-btn"
+	                    style={{
+	                      width: "100%",
+	                      minHeight: 44,
+	                      borderRadius: 999,
+	                      border: "none",
+	                      background: "transparent",
+	                      color: "var(--muted)",
+	                      fontWeight: 500,
+	                      justifyContent: "center",
+	                      textDecoration: "underline",
+	                      textUnderlineOffset: 4,
+	                    }}
+	                    onClick={() => setUnitWizardStep("reward")}
+	                  >
+	                    Back
 	                  </button>
 	                </div>
 	              )}
