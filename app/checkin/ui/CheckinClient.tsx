@@ -1498,44 +1498,57 @@ export default function CheckinClient() {
             .p4h-dot:nth-child(2){background:color-mix(in srgb,var(--primary) 80%, white);animation-delay:120ms}
             .p4h-dot:nth-child(3){background:color-mix(in srgb,var(--primary) 95%, white);animation-delay:240ms}
             .ci-heroCard{ position: relative; overflow: hidden; }
-            .ci-heroCard::before{
-              content:""; position:absolute; inset:-2px; pointer-events:none;
-              background:
-                radial-gradient(600px 280px at 10% 0%, rgba(16,185,129,0.14), transparent 60%),
-                radial-gradient(600px 280px at 90% 90%, rgba(59,130,246,0.12), transparent 60%);
-              opacity: .9;
-            }
+            .ci-heroCard::before{ display:none; }
             .ci-heroInner{ position: relative; z-index: 1; display:grid; justify-items:center; text-align:center; padding: 4px 6px 0; }
             .ci-heroText{ max-width: 64ch; }
             .ci-langSwitch{ position:absolute; top: 12px; right: 12px; display:flex; gap: 8px; }
-            .ci-type{ --ci-font-h:28px; --ci-font-b:14px; --ci-font-s:12px; --ci-weight-m:600; --ci-weight-b:800; }
-            .ci-heroTitle{ margin:0; display:flex; flex-wrap:wrap; justify-content:center; gap: 10px; line-height: 1.1; }
-            .ci-pillWord{
-              display:inline-flex;
-              align-items:center;
-              justify-content:center;
-              padding: 6px 14px;
+            .ci-type{
+              --ci-font-h:28px; --ci-font-b:14px; --ci-font-s:12px; --ci-weight-m:600; --ci-weight-b:800;
+              font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            }
+            .ci-heroTitle{ margin:0; }
+            .ci-headline{ display:inline-grid; gap: 8px; justify-items:center; }
+            .ci-headlineLine{ display:inline-flex; align-items:baseline; justify-content:center; gap: 10px; flex-wrap: wrap; }
+            .ci-headlineText{
+              font-size: var(--ci-font-h);
+              font-weight: var(--ci-weight-b);
+              letter-spacing: .02em;
+              line-height: 1.15;
+              color: color-mix(in srgb, var(--text) 92%, transparent);
+            }
+            .ci-headlineTag{
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              padding: 4px 12px;
               border-radius: 999px;
               border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
               background: color-mix(in srgb, var(--text) 6%, transparent);
-              color: color-mix(in srgb, var(--text) 88%, transparent);
-              font-size: clamp(14px, 2.2vw, 18px);
-              font-weight: var(--ci-weight-b);
+              color: color-mix(in srgb, var(--text) 78%, transparent);
+              font-size: 13px;
+              font-weight: 750;
               letter-spacing: .12em;
               text-transform: uppercase;
               white-space: nowrap;
             }
-            .ci-pillWordSuccess{
+            .ci-headlineTagSuccess{
               --ci-success: var(--success, var(--primary));
               border-color: color-mix(in srgb, var(--ci-success) 34%, transparent);
               background: color-mix(in srgb, var(--ci-success) 12%, white);
               color: color-mix(in srgb, var(--ci-success) 86%, black);
             }
+            .ci-headlineTail{
+              font-size: var(--ci-font-b);
+              font-weight: var(--ci-weight-m);
+              color: color-mix(in srgb, var(--text) 78%, transparent);
+              line-height: 1.35;
+              white-space: nowrap;
+            }
             .ci-heroStack{ margin-top: 12px; display:grid; gap: 10px; }
             .ci-heroLead{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-b); color: color-mix(in srgb, var(--text) 92%, transparent); line-height: 1.55; }
             .ci-heroBody{ margin:0; font-size: var(--ci-font-b); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 78%, transparent); line-height: 1.55; }
             .ci-heroSmall{ margin:0; font-size: var(--ci-font-s); font-weight: var(--ci-weight-m); color: color-mix(in srgb, var(--text) 66%, transparent); line-height: 1.55; }
-            .ci-heroNote{ margin-top: 6px; display:grid; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 90%, transparent); background: color-mix(in srgb, #fff 78%, transparent); box-shadow: 0 16px 40px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.72); }
+            .ci-heroNote{ margin-top: 6px; display:grid; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--border) 90%, transparent); background: #fff; box-shadow: 0 12px 28px rgba(15,23,42,0.08); }
             .ci-heroNoteTitle{ font-size: var(--ci-font-s); font-weight: var(--ci-weight-b); letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 82%, transparent); }
             .ci-heroList{ list-style: none; padding: 0; margin: 0; display:grid; gap: 8px; text-align: left; }
             .ci-heroList li{ display:block; }
@@ -1879,8 +1892,7 @@ export default function CheckinClient() {
             position: "fixed",
             inset: 0,
             zIndex: 999,
-            background:
-              "radial-gradient(700px 500px at 10% 0%, rgba(16,185,129,0.18), transparent 58%), radial-gradient(700px 500px at 90% 100%, rgba(59,130,246,0.14), transparent 58%), rgba(248,250,252,0.86)",
+            background: "rgba(255,255,255,0.92)",
             WebkitBackdropFilter: "blur(8px)",
             backdropFilter: "blur(8px)",
             display: "grid",
@@ -1918,17 +1930,25 @@ export default function CheckinClient() {
           <div className="ci-heroText">
             <h1 className="ci-heroTitle">
               {lang === "ro" ? (
-                <>
-                  <span className="ci-pillWord">CHECK-IN RAPID</span>
-                  <span className="ci-pillWord">CONFIRMARE INSTANT</span>
-                  <span className="ci-pillWord ci-pillWordSuccess">SEJUR PLĂCUT</span>
-                </>
+                <span className="ci-headline">
+                  <span className="ci-headlineLine">
+                    <span className="ci-headlineText">Completează check-in-ul</span>
+                  </span>
+                  <span className="ci-headlineLine">
+                    <span className="ci-headlineTag ci-headlineTagSuccess">ÎN CÂTEVA MINUTE</span>
+                    <span className="ci-headlineTail">și primești confirmarea QR.</span>
+                  </span>
+                </span>
               ) : (
-                <>
-                  <span className="ci-pillWord">QUICK CHECK-IN</span>
-                  <span className="ci-pillWord">INSTANT CONFIRMATION</span>
-                  <span className="ci-pillWord ci-pillWordSuccess">ENJOY YOUR STAY</span>
-                </>
+                <span className="ci-headline">
+                  <span className="ci-headlineLine">
+                    <span className="ci-headlineText">Complete your check-in</span>
+                  </span>
+                  <span className="ci-headlineLine">
+                    <span className="ci-headlineTag ci-headlineTagSuccess">IN MINUTES</span>
+                    <span className="ci-headlineTail">and get your QR confirmation.</span>
+                  </span>
+                </span>
               )}
             </h1>
             <div className="ci-heroStack">
