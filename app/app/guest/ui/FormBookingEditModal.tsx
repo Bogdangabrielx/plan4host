@@ -348,8 +348,7 @@ export default function EditFormBookingModal({
         display: "grid",
         placeItems: "center",
         padding: 12,
-        fontFamily:
-          'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+        fontFamily: "inherit",
       }}
   >
         {popupMsg && (

@@ -225,8 +225,7 @@ export default function DayModal({
         paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
         paddingLeft: "12px",
         paddingRight: "12px",
-        fontFamily:
-          "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
+        fontFamily: "inherit",
       }}
     >
       <div

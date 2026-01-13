@@ -618,7 +618,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   }, [activeCount, propertyReady, status]);
 
   return (
-    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
+    <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
       <PlanHeaderBadge title="Sync Calendars" slot="under-title" />
 
       {/* Onboarding — Calendar connection wizard */}
@@ -1152,7 +1152,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 className="sb-card"
                 style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
               >
-                <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Room Types</h4>
+                <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Room Types</h4>
                 <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per type</small>
                 <button
                   className="sb-btn"
@@ -1180,7 +1180,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 className="sb-card"
                 style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
               >
-                <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Import · Room Types</h4>
+                <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Import · Room Types</h4>
                 <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics per room type</small>
                 <button
                   className="sb-btn"
@@ -1207,7 +1207,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               className="sb-card"
               style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
             >
-              <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Rooms</h4>
+              <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Rooms</h4>
               <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per room</small>
               <button
                 className="sb-btn"
@@ -1233,7 +1233,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               className="sb-card"
               style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
             >
-              <h4 style={{ margin: 0, textAlign: isSmall ? 'left' : 'left', fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', fontWeight: 800, fontSize: 14 }}>Import · Rooms</h4>
+              <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Import · Rooms</h4>
               <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics per room</small>
               <button
                 className="sb-btn"
@@ -1458,7 +1458,7 @@ function Modal({ title, children, onClose }:{
   return (
     <div
       role="dialog" aria-modal="true" onClick={onClose}
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 40, display: "grid", placeItems: "center", padding: 12, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 40, display: "grid", placeItems: "center", padding: 12, fontFamily: "inherit" }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -1489,7 +1489,7 @@ function InnerModal({ title, children, onClose }:{
   return (
     <div
       role="dialog" aria-modal="true" onClick={onClose}
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 50, display: "grid", placeItems: "center", padding: 12, fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 50, display: "grid", placeItems: "center", padding: 12, fontFamily: "inherit" }}
     >
       <div
         onClick={(e) => e.stopPropagation()}

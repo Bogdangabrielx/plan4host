@@ -1119,7 +1119,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   }
 
   return (
-    <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
+    <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
       <PlanHeaderBadge title="Check-in Editor" slot="under-title" />
       <div style={{ padding: isNarrow ? "10px 12px 16px" : "16px", display: "grid", gap: 16 }}>
         {/* Controls (same spacing pattern as Guest Overview) */}

@@ -927,7 +927,7 @@ export default function ReservationMessageClient({
 
   /** --------- Render --------- */
   return (
-    <div style={{ fontFamily: "Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif", color: "var(--text)" }}>
+    <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
       <PlanHeaderBadge title="Automatic Messages" slot="under-title" />
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 12 }}>
 

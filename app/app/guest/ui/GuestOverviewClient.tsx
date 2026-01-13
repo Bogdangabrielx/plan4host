@@ -600,7 +600,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   }, []);
 
   return (
-    <div style={{ fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif', color: "var(--text)" }}>
+    <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
       <PlanHeaderBadge title="Guest Overview" slot="under-title" />
 
       <div style={containerStyle}>

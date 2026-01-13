@@ -707,7 +707,7 @@ export default function RoomDetailModal({
         background: "rgba(0,0,0,0.6)",
         display: "grid",
         placeItems: "center",
-        fontFamily: 'Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+        fontFamily: "inherit",
         paddingTop: "calc(var(--safe-top) + 12px)",
         paddingBottom: "calc(var(--safe-bottom) + 12px)",
         paddingLeft: "12px",

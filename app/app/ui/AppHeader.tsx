@@ -27,8 +27,7 @@ type MeInfo = {
 };
 
 /* ---------------- Typography helpers ---------------- */
-const TITLE_FAMILY =
-  "'Switzer', ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Roboto, Helvetica, Arial, sans-serif";
+const TITLE_FAMILY = "inherit";
 
 function getNodeText(node: ReactNode): string {
   if (node == null || typeof node === "boolean") return "";
