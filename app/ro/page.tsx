@@ -1338,7 +1338,7 @@ export default function HomePageRO() {
 	                <li>Ghid esențial pentru sosire</li>
 	              </ul>
 	            <img className={styles.priceImg} src="/basic_ron_forlight.png" alt="" aria-hidden="true" />
-	            <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Basic</Link>
+	            <Link href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1" className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}>Alege Basic</Link>
 	          </div>
 
 		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
@@ -1351,7 +1351,7 @@ export default function HomePageRO() {
 	                <li>Task-uri de curățenie legate de check‑out</li>
 	              </ul>
 	            <img className={styles.priceImg} src="/standard_ron_forlight.png" alt="" aria-hidden="true" />
-	            <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Standard</Link>
+	            <Link href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1" className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}>Alege Standard</Link>
 	          </div>
 
 		          <div className={`sb-cardglow ${styles.priceCard}`} data-p4h-reveal>
@@ -1364,7 +1364,7 @@ export default function HomePageRO() {
 	                <li>Smart Guest Guide</li>
 	              </ul>
 	            <img className={styles.priceImg} src="/premium_ron_forlight.png" alt="" aria-hidden="true" />
-	            <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Alege Premium</Link>
+	            <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}>Alege Premium</Link>
 	          </div>
 	        </div>
 	        <p className={styles.srOnly}>
