@@ -1730,8 +1730,17 @@ export default function CheckinClient() {
             .ci-modalBody p{ margin: 0; }
             .ci-modalLink{ color: var(--primary); font-weight: var(--ci-weight-sb); text-decoration: none; }
             .ci-modalLink:hover{ text-decoration: underline; }
-            .ci-modalCheckboxRow{ display:flex; align-items:flex-start; gap: 10px; color: var(--text); }
-            .ci-modalCheckboxRow input{ margin-top: 3px; }
+            .ci-modalCheckboxRow{
+              display:flex;
+              align-items:flex-start;
+              gap: 10px;
+              padding: 12px 12px;
+              border-radius: 12px;
+              border: 1px solid color-mix(in srgb, var(--success) 85%, black);
+              background: var(--success);
+              color: #fff;
+            }
+            .ci-modalCheckboxRow input{ margin-top: 3px; accent-color: #0b1220; }
             .ci-modalActions{ display:flex; justify-content:flex-end; gap: 10px; }
             .ci-modalIconBtn{
               width: 36px;
@@ -2918,7 +2927,7 @@ export default function CheckinClient() {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="ci-actionBtn"
+                className="ci-actionBtn ci-actionBtn--success"
                 style={{
                   width: "100%",
                   maxWidth: isNarrow ? undefined : 520,
@@ -3520,7 +3529,6 @@ export default function CheckinClient() {
                 <span>{T('privacyAcknowledge')}</span>
               </label>
               <div className="ci-modalActions">
-                <button className="sb-btn" onClick={()=>setPrivacyOpen(false)} disabled={privacySaving}>Cancel</button>
                 <button className="sb-btn sb-btn--primary" disabled={!privacyConfirm || privacySaving} onClick={acceptPrivacyAck}>
                   {privacySaving ? 'Saving…' : T('privacyConfirm')}
                 </button>
