@@ -320,29 +320,9 @@ function OnboardingChecklistFab() {
                   cursor: "pointer",
                 }}
                 onClick={(e) => {
-                  const targetEl = e.target as HTMLElement | null;
-                  if (targetEl && targetEl.closest("button")) return;
                   handleStepClick(step.id);
                 }}
-                >
-	                <span
-	                  aria-hidden
-	                  style={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: "50%",
-                    border: "1px solid rgba(148,163,184,0.9)",
-	                    display: "flex",
-	                    alignItems: "center",
-	                    justifyContent: "center",
-	                    fontSize: "var(--fs-s)",
-	                    color: completedSteps.includes(step.id)
-	                      ? "#22c55e"
-	                      : "rgba(148,163,184,0.9)",
-	                  }}
-	                >
-	                  {completedSteps.includes(step.id) ? "✓" : "○"}
-	                </span>
+              >
                   <span
                     aria-hidden
                     style={{
@@ -350,11 +330,7 @@ function OnboardingChecklistFab() {
                       height: 16,
                       flex: "0 0 auto",
                       display: "inline-block",
-                      backgroundColor: dismissedSteps.includes(step.id)
-                        ? "#ef4444"
-                        : completedSteps.includes(step.id)
-                          ? "#22c55e"
-                          : "rgba(148,163,184,0.9)",
+                      backgroundColor: "rgba(148,163,184,0.9)",
                       WebkitMaskImage: `url(${step.iconSrc})`,
                       maskImage: `url(${step.iconSrc})`,
                       WebkitMaskRepeat: "no-repeat",
@@ -366,24 +342,33 @@ function OnboardingChecklistFab() {
                     }}
                   />
 	                <span style={{ fontSize: "var(--fs-s)", flex: 1 }}>{step.label}</span>
-	                {!completedSteps.includes(step.id) && (
-	                  <button
-	                    type="button"
-	                    style={{
-	                      border: "none",
-	                      background: "transparent",
-	                      color: dismissedSteps.includes(step.id)
-	                        ? "#ef4444"
-	                        : "var(--muted)",
-	                      fontSize: "var(--fs-b)",
-	                      cursor: "pointer",
-	                    }}
-	                    title="Mark as not needed"
-	                    onClick={() => handleDismissStep(step.id)}
-	                  >
-	                    ×
-	                  </button>
-	                )}
+                  {(() => {
+                    const done = completedSteps.includes(step.id) || dismissedSteps.includes(step.id);
+                    return (
+                      <span
+                        aria-hidden
+                        style={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: 999,
+                          border: done
+                            ? "1px solid color-mix(in srgb, var(--success) 80%, transparent)"
+                            : "1px solid rgba(148,163,184,0.9)",
+                          background: done
+                            ? "color-mix(in srgb, var(--success) 16%, white)"
+                            : "rgba(255,255,255,0.7)",
+                          display: "grid",
+                          placeItems: "center",
+                          color: done ? "var(--success)" : "rgba(148,163,184,0.9)",
+                          fontWeight: 900,
+                          fontSize: 12,
+                          flex: "0 0 auto",
+                        }}
+                      >
+                        {done ? "✓" : "×"}
+                      </span>
+                    );
+                  })()}
               </div>
             ))}
           </div>
