@@ -682,6 +682,8 @@ select:not(.sb-select){ /* opțional */
 }
 
 /* On light theme, when the global loading overlay is visible, make the mobile header non-transparent (bottom-nav layouts). */
-:root[data-theme="light"][data-p4h-app-loading="1"]{
+:root[data-theme="light"][data-p4h-app-loading="1"],
+:root[data-theme="light"][data-p4h-modal-open="1"],
+:root[data-theme="light"][data-p4h-dialog-open="1"]{
   --app-header-mobile-bg: var(--panel);
 }

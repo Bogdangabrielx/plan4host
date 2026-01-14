@@ -521,6 +521,32 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const transparentMobileHeader = isMobileNav;
   const mobileHeaderRadius = 23;
 
+  // When any modal dialog is open, keep the (otherwise transparent) mobile header on a solid surface
+  // so the blurred overlay doesn't make the top area look "see-through".
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    let raf = 0;
+
+    const update = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const anyDialog = !!document.body.querySelector('[role="dialog"][aria-modal="true"]');
+        if (anyDialog) root.setAttribute("data-p4h-dialog-open", "1");
+        else root.removeAttribute("data-p4h-dialog-open");
+      });
+    };
+
+    update();
+    const mo = new MutationObserver(update);
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      try { mo.disconnect(); } catch {}
+      if (raf) cancelAnimationFrame(raf);
+      root.removeAttribute("data-p4h-dialog-open");
+    };
+  }, []);
+
   const logoutItem =
     navRight.find((it) => it.href === "/auth/logout") ??
     navLeft.find((it) => it.href === "/auth/logout") ??
