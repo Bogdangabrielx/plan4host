@@ -165,6 +165,7 @@ will-change: transform;
   transition: transform .05s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease, color .2s ease;
   line-height: 1.1; white-space: nowrap; min-width: max-content; min-height: 48px;
 }
+.btn:hover { box-shadow: 0 10px 22px rgba(15, 23, 42, 0.10); }
 .btn:active { transform: scale(0.99); }
 .btnPrimary {
   background: var(--card); color: #ffffff; border-color: var(--border);
@@ -172,6 +173,18 @@ will-change: transform;
 }
 .btnPrimary:hover { box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18); }
 .btnGhost { background: transparent; color: var(--text); }
+
+/* Green filled CTA */
+.btnSolid {
+  background: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 72%, #0f172a);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+}
+.btnSolid:hover {
+  background: color-mix(in srgb, var(--primary) 92%, #0f172a);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+}
 
 /* AI gradient CTA */
 .btnAi {

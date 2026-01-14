@@ -962,8 +962,8 @@ export default function HomePageRO() {
 		          </a>
 		        </div>
         <div className={styles.actions}>
-          <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>Logare</Link>
-          <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}>Încearcă</CtaLink>
+          <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnText} ${styles.focusable}`}>Logare</Link>
+          <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}>Încearcă</CtaLink>
           <button
             type="button"
             className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
@@ -1065,7 +1065,7 @@ export default function HomePageRO() {
             >
               Vezi cum funcționează
             </button>
-            <Link href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.focusable}`}>
+            <Link href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}>
               Începe gratuit
             </Link>
           </div>

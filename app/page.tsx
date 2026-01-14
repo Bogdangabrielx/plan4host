@@ -1126,14 +1126,14 @@ export default function HomePage() {
 
         {/* Actions + Mobile toggle */}
         <div className={styles.actions}>
-          <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnGhost} ${styles.focusable}`}>
+          <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnText} ${styles.focusable}`}>
             Sign in
           </Link>
 
           {/* Get started -> login in signup mode (animated) */}
           <CtaLink
             href="/auth/login?mode=signup"
-            className={`sb-cardglow ${styles.btn}  ${styles.btnChoose} ${styles.focusable}`}
+            className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
           >
             Get started
           </CtaLink>
@@ -1241,7 +1241,7 @@ export default function HomePage() {
 	            </button>
 	            <Link
                 href="/auth/login?mode=signup"
-	              className={`sb-cardglow ${styles.btn} ${styles.focusable}`}
+	              className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
 	            >
 	              Start free
 	            </Link>
