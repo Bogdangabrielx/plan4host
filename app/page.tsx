@@ -1520,7 +1520,7 @@ export default function HomePage() {
 	            <img className={styles.priceImg} src="/basic_forlight.png" alt="" aria-hidden="true" />
 	            <Link
 	              href="/auth/login?mode=signup&plan=basic&next=%2Fapp%2Fsubscription%3Fplan%3Dbasic%26hl%3D1"
-              className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+              className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
             >
               Choose Basic
             </Link>
@@ -1538,7 +1538,7 @@ export default function HomePage() {
 	            <img className={styles.priceImg} src="/standard_forlight.png" alt="" aria-hidden="true" />
 	            <Link
 	              href="/auth/login?mode=signup&plan=standard&next=%2Fapp%2Fsubscription%3Fplan%3Dstandard%26hl%3D1"
-              className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+              className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
             >
               Choose Standard
             </Link>
@@ -1556,7 +1556,7 @@ export default function HomePage() {
 	            <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
 	            <Link
 	              href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1"
-              className={`${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+              className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
             >
               Choose Premium
             </Link>
