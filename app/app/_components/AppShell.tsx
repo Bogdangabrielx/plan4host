@@ -17,16 +17,17 @@ type Props = {
 type OnboardingStep = {
   id: string;
   label: string;
+  iconSrc: string;
 };
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
-  { id: "property", label: "Add property" },
-  { id: "picture", label: "Add photo" },
-  { id: "room", label: "Add room" },
-  { id: "calendars", label: "Calendar sync" },
-  { id: "links_contact", label: "Links and contact" },
-  { id: "house_rules", label: "House rules" },
-  { id: "message_template", label: "Message template" },
+  { id: "property", label: "Add property", iconSrc: "/svg_dashboard.svg" },
+  { id: "picture", label: "Add photo", iconSrc: "/svg_addphoto_demo.svg" },
+  { id: "room", label: "Add room", iconSrc: "/svg_singleunit_demo.svg" },
+  { id: "calendars", label: "Calendar sync", iconSrc: "/svg_calendar.svg" },
+  { id: "links_contact", label: "Links and contact", iconSrc: "/svg_linkscontact_demo.svg" },
+  { id: "house_rules", label: "House rules", iconSrc: "/svg_paste_demo.svg" },
+  { id: "message_template", label: "Message template", iconSrc: "/svg_email_demo.svg" },
 ];
 
 function ActivityTracker() {
@@ -342,6 +343,28 @@ function OnboardingChecklistFab() {
 	                >
 	                  {completedSteps.includes(step.id) ? "✓" : "○"}
 	                </span>
+                  <span
+                    aria-hidden
+                    style={{
+                      width: 16,
+                      height: 16,
+                      flex: "0 0 auto",
+                      display: "inline-block",
+                      backgroundColor: dismissedSteps.includes(step.id)
+                        ? "#ef4444"
+                        : completedSteps.includes(step.id)
+                          ? "#22c55e"
+                          : "rgba(148,163,184,0.9)",
+                      WebkitMaskImage: `url(${step.iconSrc})`,
+                      maskImage: `url(${step.iconSrc})`,
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                      WebkitMaskSize: "100%",
+                      maskSize: "100%",
+                    }}
+                  />
 	                <span style={{ fontSize: "var(--fs-s)", flex: 1 }}>{step.label}</span>
 	                {!completedSteps.includes(step.id) && (
 	                  <button
