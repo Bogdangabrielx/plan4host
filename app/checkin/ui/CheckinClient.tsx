@@ -2286,7 +2286,7 @@ export default function CheckinClient() {
                   ) : null}
 	                  <button
 	                    type="button"
-	                    className="ci-actionBtn ci-actionBtn--success sb-cardglow"
+	                    className="sb-btn sb-btn--primary ci-actionBtn ci-actionBtn--success sb-cardglow"
 	                    style={{
 	                      width: "100%",
 	                      maxWidth: isNarrow ? undefined : 520,
@@ -2391,7 +2391,7 @@ export default function CheckinClient() {
                     ) : null}
 	                    <button
 	                      type="button"
-	                      className="ci-actionBtn ci-actionBtn--success sb-cardglow"
+	                      className="sb-btn sb-btn--primary ci-actionBtn ci-actionBtn--success sb-cardglow"
 	                      style={{
 	                        width: "100%",
 	                        maxWidth: isNarrow ? undefined : 520,
