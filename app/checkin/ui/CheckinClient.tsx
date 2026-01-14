@@ -3359,14 +3359,34 @@ export default function CheckinClient() {
                         inputStyle={INPUT}
                       />
                     </div>
-                    <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                      <input
-                        type="checkbox"
-                        checked={existing.isMinor}
-                        onChange={e => update("isMinor", e.currentTarget.checked)}
-                      />
-                      <span>{(TXT as any)[lang].isMinor}</span>
-                    </label>
+	                    <label
+	                      style={{
+	                        display: "flex",
+	                        alignItems: "center",
+	                        gap: 10,
+	                        fontSize: 14,
+	                        lineHeight: "20px",
+	                        color: "color-mix(in srgb, var(--text) 90%, transparent)",
+	                        fontWeight: 600,
+	                        userSelect: "none",
+	                      }}
+	                    >
+	                      <input
+	                        type="checkbox"
+	                        checked={existing.isMinor}
+	                        onChange={(e) => update("isMinor", e.currentTarget.checked)}
+	                        style={{
+	                          width: 16,
+	                          height: 16,
+	                          margin: 0,
+	                          flex: "0 0 auto",
+	                          accentColor: "var(--primary)",
+	                        }}
+	                      />
+	                      <span style={{ display: "inline-flex", alignItems: "center", lineHeight: "20px" }}>
+	                        {(TXT as any)[lang].isMinor}
+	                      </span>
+	                    </label>
                     {existing.isMinor ? (
                       <div>
                         <label style={LABEL}>{(TXT as any)[lang].guardianLabel}</label>

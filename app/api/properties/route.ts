@@ -4,6 +4,9 @@ import { createTransport } from "nodemailer";
 
 export const runtime = "nodejs";
 
+// Email clients don't support CSS vars/OKLCH reliably; use a hex that matches the app's `--success`.
+const EMAIL_SUCCESS = "#66ac69";
+
 export async function POST(req: Request) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -78,7 +81,7 @@ export async function POST(req: Request) {
 	            </p>
 	            <p style="margin:0 0 16px;">
 	              <a href="${guestCheckinUrl}" target="_blank" rel="noopener"
-	                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:#16b981; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid #16b981;">
+	                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:${EMAIL_SUCCESS}; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid ${EMAIL_SUCCESS};">
 	                Vezi check-in-ul pentru oaspeți
 	              </a>
 	            </p>
@@ -107,7 +110,7 @@ export async function POST(req: Request) {
 	            </p>
 	            <p style="margin:0 0 16px;">
 	              <a href="${guestCheckinUrl}" target="_blank" rel="noopener"
-	                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:#16b981; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid #16b981;">
+	                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:${EMAIL_SUCCESS}; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid ${EMAIL_SUCCESS};">
 	                View guest check-in
 	              </a>
 	            </p>
@@ -165,7 +168,7 @@ function wrapSimple(subject: string, innerHtml: string): string {
     <title>${escapeHtml(subject || 'Welcome')}</title>
     <style>
       body { margin:0; padding:0; background:#ffffff; }
-      a { color:#16b981; }
+      a { color:${EMAIL_SUCCESS}; }
       .card { max-width:600px; margin:0 auto; background:#ffffff; border:1px solid ${border}; border-radius:14px; padding:20px; }
     </style>
   </head>
