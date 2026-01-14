@@ -17,6 +17,7 @@
   --card: #ffffff; /* white cards */
   --border: #e2e8f0; /* light border */
   --primary: #16b981; /* emerald */
+  --success: #66ac69; /* success green (CTA) */
   --accent1: #22d3ee; /* cyan */
   --accent2: #e6eef8; /* pale indigo/blue for light ring */
 
@@ -177,14 +178,15 @@ will-change: transform;
 /* Green filled CTA */
 .btnSolid {
   background: var(--success);
-  border-color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 72%, #0f172a);
   color: #ffffff;
-  font-weight: 650;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
 }
 .btnSolid:hover {
+  background: var(--card);
+  color: var(--success);
   border-color: var(--success);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
 }
 
 /* Green outline CTA (inverse hover vs .btnSolid) */
@@ -192,6 +194,7 @@ will-change: transform;
   background: transparent;
   border-color: var(--success);
   color: var(--success);
+  font-weight: 650;
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
 }
 .btnOutline:hover {
