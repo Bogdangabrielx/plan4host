@@ -676,7 +676,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     return taskValue as T;
   }
 
-  async function fetchAsJpegBytes(url: string): Promise<Uint8Array | null> {
+  async function fetchAsJpegBytes(url: string): Promise<Uint8Array<ArrayBuffer> | null> {
     try {
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) return null;

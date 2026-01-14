@@ -3,7 +3,7 @@ export type SimplePdfOptions = {
   subtitle?: string;
   bodyLines: string[];
   footerNote?: string;
-  imageJpegBytes?: Uint8Array | null;
+  imageJpegBytes?: Uint8Array<ArrayBuffer> | null;
 };
 
 function normalizeForPdf(text: string): string {
@@ -67,7 +67,7 @@ function wrapText(text: string, maxChars: number): string[] {
   return lines;
 }
 
-function toBytes(s: string): Uint8Array {
+function toBytes(s: string): Uint8Array<ArrayBuffer> {
   // Latin-1-ish bytes; we keep content ASCII after normalization.
   const out = new Uint8Array(s.length);
   for (let i = 0; i < s.length; i++) {
@@ -77,7 +77,7 @@ function toBytes(s: string): Uint8Array {
   return out;
 }
 
-function concatBytes(chunks: Uint8Array[]): Uint8Array {
+function concatBytes(chunks: Uint8Array<ArrayBuffer>[]): Uint8Array<ArrayBuffer> {
   const total = chunks.reduce((sum, c) => sum + c.length, 0);
   const out = new Uint8Array(total);
   let offset = 0;
@@ -143,7 +143,7 @@ function parseJpegSize(bytes: Uint8Array): { width: number; height: number; colo
   return null;
 }
 
-export function buildSimplePdfBytes(opts: SimplePdfOptions): Uint8Array {
+export function buildSimplePdfBytes(opts: SimplePdfOptions): Uint8Array<ArrayBuffer> {
   const title = (opts.title || "").trim().toUpperCase() || "HOUSE RULES";
   const subtitle = (opts.subtitle || "").trim().toUpperCase();
   const footerNote = (opts.footerNote || "").trim();

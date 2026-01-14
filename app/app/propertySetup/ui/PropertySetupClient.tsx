@@ -598,13 +598,17 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 		                    <div style={{ gridArea: 'title', alignSelf: 'center', fontWeight: 800 }}>Single unit</div>
 		                    <div style={{ gridArea: 'desc', alignSelf: 'start', color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
 		                      Apartment, cabin, or entire place rented as one unit.
-	                    </div>
-	                    <div style={{ gridArea: 'cta', alignSelf: 'center', justifySelf: 'end', display: 'flex' }}>
-	                      <button className="sb-btn sb-btn--primary" onClick={() => void createUnits(1)}>
-	                        Use single unit
-	                      </button>
-	                    </div>
-	                  </div>
+		                    </div>
+		                    <div style={{ gridArea: 'cta', alignSelf: 'center', justifySelf: 'end', display: 'flex' }}>
+		                      <button
+		                        className="sb-btn sb-btn--primary sb-cardglow"
+		                        style={{ width: "100%", background: "var(--primary)", justifyContent: "center" }}
+		                        onClick={() => void createUnits(1)}
+		                      >
+		                        Use single unit
+		                      </button>
+		                    </div>
+		                  </div>
 
 	                  <div
 	                    style={{
