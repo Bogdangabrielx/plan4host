@@ -280,12 +280,19 @@ textarea:focus-visible {
   background: var(--primary-strong);
   border-color: var(--primary-strong);
 }
-/* When a primary button also uses the glass effect, keep hover text readable in light theme */
-:root[data-theme="light"] .sb-btn.sb-btn--primary.sb-cardglow:hover,
-:root[data-theme="light"] .sb-btn.sb-btn--primary.sb-cardglow:focus-visible,
-:root[data-theme="light"] .sb-btn.sb-btn--primary.Sb-cardglow:hover,
-:root[data-theme="light"] .sb-btn.sb-btn--primary.Sb-cardglow:focus-visible{
-  color: var(--border) !important;
+.sb-btn.sb-btn--primary.sb-cardglow,
+.sb-btn.sb-btn--primary.Sb-cardglow{
+  background: var(--primary) !important;
+  border: 1px solid var(--primary) !important;
+  color: #fff !important;
+}
+.sb-btn.sb-btn--primary.sb-cardglow:hover,
+.sb-btn.sb-btn--primary.sb-cardglow:focus-visible,
+.sb-btn.sb-btn--primary.Sb-cardglow:hover,
+.sb-btn.sb-btn--primary.Sb-cardglow:focus-visible{
+  background: var(--primary-strong) !important;
+  border-color: var(--primary-strong) !important;
+  color: #fff !important;
 }
 .sb-btn:active { transform: scale(0.99); }
 .sb-btn--primary {
