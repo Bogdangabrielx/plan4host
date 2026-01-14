@@ -323,7 +323,7 @@ function OnboardingChecklistFab() {
                   if (targetEl && targetEl.closest("button")) return;
                   handleStepClick(step.id);
                 }}
-              >
+                >
 	                <span
 	                  aria-hidden
 	                  style={{
@@ -342,24 +342,25 @@ function OnboardingChecklistFab() {
 	                >
 	                  {completedSteps.includes(step.id) ? "✓" : "○"}
 	                </span>
-	                <span style={{ fontSize: "var(--fs-s)" }}>{step.label}</span>
-	                <button
-	                  type="button"
-	                  style={{
-                    marginLeft: "auto",
-                    border: "none",
-                    background: "transparent",
-                    color: dismissedSteps.includes(step.id)
-	                      ? "#ef4444"
-	                      : "var(--muted)",
-	                    fontSize: "var(--fs-b)",
-	                    cursor: "pointer",
-	                  }}
-	                  title="Mark as not needed"
-	                  onClick={() => handleDismissStep(step.id)}
-	                >
-                  ×
-                </button>
+	                <span style={{ fontSize: "var(--fs-s)", flex: 1 }}>{step.label}</span>
+	                {!completedSteps.includes(step.id) && (
+	                  <button
+	                    type="button"
+	                    style={{
+	                      border: "none",
+	                      background: "transparent",
+	                      color: dismissedSteps.includes(step.id)
+	                        ? "#ef4444"
+	                        : "var(--muted)",
+	                      fontSize: "var(--fs-b)",
+	                      cursor: "pointer",
+	                    }}
+	                    title="Mark as not needed"
+	                    onClick={() => handleDismissStep(step.id)}
+	                  >
+	                    ×
+	                  </button>
+	                )}
               </div>
             ))}
           </div>
