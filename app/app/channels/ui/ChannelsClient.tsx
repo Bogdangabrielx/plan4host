@@ -642,13 +642,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     setPill(pillLabel);
   }, [pillLabel, setPill]);
 
-  useEffect(() => {
-    if (!propertyReady) return;
-    if (status !== "Idle") return;
-    if (calendarInfoTouchedRef.current) return;
-    if (activeCount !== 0) return;
-    setCalendarInfoOpen(true);
-  }, [activeCount, propertyReady, status]);
+  // Keep the calendar integrations info legend collapsed by default (user can toggle it).
 
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
@@ -761,14 +755,20 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                       { key: "Booking", label: "Booking", logo: "/booking.png" },
                       { key: "Trivago", label: "Trivago", logo: "/trivago.png" },
                       { key: "Expedia", label: "Expedia", logo: "/expedia.png" },
-                      { key: "Other", label: "Other platforms", logo: null as string | null },
+                      { key: "Other", label: "Other platforms", logo: null as string | null, disabled: true },
 	                    ].map((p) => {
 	                      const active = calendarOnboardingProvider === p.key;
+                        const disabled = !!(p as any).disabled;
 	                      return (
 	                        <button
 	                          key={p.key}
 	                          type="button"
-	                          onClick={() => setCalendarOnboardingProvider(p.key)}
+                            disabled={disabled}
+                            aria-disabled={disabled}
+	                          onClick={() => {
+                              if (disabled) return;
+                              setCalendarOnboardingProvider(p.key);
+                            }}
 	                          className="sb-cardglow"
 	                          style={{
 	                            borderRadius: 14,
@@ -779,7 +779,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 	                            display: "inline-flex",
 	                            alignItems: "center",
 	                            gap: 10,
-	                            cursor: "pointer",
+	                            cursor: disabled ? "not-allowed" : "pointer",
+                            opacity: disabled ? 0.55 : 1,
+                            filter: disabled ? "grayscale(1)" : undefined,
 	                          }}
 	                        >
                           {p.logo ? (
