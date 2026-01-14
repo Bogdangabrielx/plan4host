@@ -285,7 +285,7 @@ textarea:focus-visible {
 :root[data-theme="light"] .sb-btn.sb-btn--primary.sb-cardglow:focus-visible,
 :root[data-theme="light"] .sb-btn.sb-btn--primary.Sb-cardglow:hover,
 :root[data-theme="light"] .sb-btn.sb-btn--primary.Sb-cardglow:focus-visible{
-  color: var(--primary) !important;
+  color: var(--border) !important;
 }
 .sb-btn:active { transform: scale(0.99); }
 .sb-btn--primary {
