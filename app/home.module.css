@@ -17,6 +17,7 @@
   --card: #ffffff; /* white cards */
   --border: #e2e8f0; /* light border */
   --primary: #16b981; /* emerald */
+  --success: #66ac69; /* success green (CTA) */
   --accent1: #22d3ee; /* cyan */
   --accent2: #e6eef8; /* pale indigo/blue for light ring */
 
@@ -176,14 +177,16 @@ will-change: transform;
 
 /* Green filled CTA */
 .btnSolid {
-  background: var(--primary);
-  border-color: color-mix(in srgb, var(--primary) 72%, #0f172a);
+  background: var(--success);
+  border-color: color-mix(in srgb, var(--success) 72%, #0f172a);
   color: #ffffff;
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
 }
 .btnSolid:hover {
-  background: color-mix(in srgb, var(--primary) 92%, #0f172a);
-  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+  background: var(--card);
+  color: var(--success);
+  border-color: var(--success);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
 }
 
 /* AI gradient CTA */
