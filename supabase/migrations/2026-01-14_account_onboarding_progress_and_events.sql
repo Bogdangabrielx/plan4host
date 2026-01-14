@@ -25,6 +25,12 @@ create trigger trg_accounts_create_onboarding_state
   after insert on public.accounts
   for each row execute function public.trg_accounts_create_onboarding_state();
 
+-- Backfill (safe): ensure all existing accounts have a row
+insert into public.account_onboarding_state(account_id)
+select a.id
+from public.accounts a
+on conflict (account_id) do nothing;
+
 -- 3) Event log: how onboarding is used (per account)
 create table if not exists public.account_onboarding_events (
   id uuid primary key default gen_random_uuid(),
@@ -56,4 +62,3 @@ begin
     for insert to authenticated
     with check (account_id = auth.uid());
 exception when duplicate_object then null; end $$;
-

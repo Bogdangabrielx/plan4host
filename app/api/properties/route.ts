@@ -49,6 +49,32 @@ export async function POST(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+  // Onboarding tracking: record "first property created" even if the user never opens the checklist UI.
+  // Best-effort: if migrations weren't applied yet, these writes will fail silently.
+  try {
+    if (hadCount === 0) {
+      const nowIso = new Date().toISOString();
+      await supabase
+        .from("account_onboarding_state")
+        .upsert(
+          {
+            account_id: user.id,
+            last_seen_at: nowIso,
+            steps: { property: { done: true, at: nowIso } },
+          } as any,
+          { onConflict: "account_id" },
+        );
+      await supabase.from("account_onboarding_events").insert({
+        account_id: user.id,
+        event: "first_property_created",
+        step_id: "property",
+        meta: { property_id: (data as any)?.id ?? null },
+      } as any);
+    }
+  } catch {
+    // ignore telemetry errors
+  }
+
   // If this is the user's first property, send a welcome email
   try {
     if (hadCount === 0) {
