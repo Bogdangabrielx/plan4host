@@ -2203,20 +2203,20 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       style={{ width: "100%", justifyContent: "center", textDecoration: "none" }}
                     >
                       Preview as guest
-                    </a>
-                    <button
-                      className="sb-btn sb-btn--primary"
-                      style={{ width: "100%", justifyContent: "center" }}
-                      onClick={() => {
-                        setHouseRulesWizardOpen(false);
-                        window.location.href = "/app/reservationMessage";
-                      }}
-                    >
-                      Continue
-                    </button>
-                  </div>
-                </div>
-              )}
+	                    </a>
+	                    <button
+	                      className="sb-btn sb-btn--primary sb-cardglow"
+	                      style={{ width: "100%", background: "var(--primary)", justifyContent: "center" }}
+	                      onClick={() => {
+	                        setHouseRulesWizardOpen(false);
+	                        window.location.href = "/app/reservationMessage";
+	                      }}
+	                    >
+	                      Continue
+	                    </button>
+	                  </div>
+	                </div>
+	              )}
               </div>
             </div>
           </div>
