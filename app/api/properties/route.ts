@@ -54,6 +54,7 @@ export async function POST(req: Request) {
   try {
     if (hadCount === 0) {
       const nowIso = new Date().toISOString();
+      const email = String(user.email || "").trim() || null;
       await supabase
         .from("account_onboarding_state")
         .upsert(
@@ -66,6 +67,7 @@ export async function POST(req: Request) {
         );
       await supabase.from("account_onboarding_events").insert({
         account_id: user.id,
+        account_email: email,
         event: "first_property_created",
         step_id: "property",
         meta: { property_id: (data as any)?.id ?? null },

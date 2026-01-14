@@ -189,9 +189,11 @@ export async function GET() {
         .eq("account_id", user.id);
     } catch {}
     try {
+      const email = String(user.email || "").trim() || null;
       await supabase.from("account_onboarding_events").insert(
         newlyCompleted.map((step) => ({
           account_id: user.id,
+          account_email: email,
           event: "step_completed",
           step_id: step,
           meta: {},
@@ -255,8 +257,10 @@ export async function POST(req: Request) {
         { onConflict: "account_id" },
       );
     try {
+      const email = String(user.email || "").trim() || null;
       await supabase.from("account_onboarding_events").insert({
         account_id: user.id,
+        account_email: email,
         event: "dismiss_step",
         step_id: step,
         meta: {},
@@ -274,8 +278,10 @@ export async function POST(req: Request) {
         { onConflict: "account_id" },
       );
     try {
+      const email = String(user.email || "").trim() || null;
       await supabase.from("account_onboarding_events").insert({
         account_id: user.id,
+        account_email: email,
         event: "complete_all",
         step_id: null,
         meta: {},
@@ -310,8 +316,10 @@ export async function POST(req: Request) {
         .eq("account_id", user.id);
     } catch {}
     try {
+      const email = String(user.email || "").trim() || null;
       await supabase.from("account_onboarding_events").insert({
         account_id: user.id,
+        account_email: email,
         event,
         step_id: step ?? null,
         meta,
