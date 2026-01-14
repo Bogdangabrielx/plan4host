@@ -23,6 +23,8 @@ type OnboardingStateResponse = {
   completedAt: string | null;
 };
 
+const TOUCH_THROTTLE_SECONDS = 60;
+
 export async function GET() {
   const supabase = createClient();
   const {
@@ -32,10 +34,17 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   }
 
+  // Ensure row exists (DB trigger also does this on account creation; this is defensive).
+  try {
+    await supabase
+      .from("account_onboarding_state")
+      .upsert({ account_id: user.id }, { onConflict: "account_id" });
+  } catch {}
+
   // If onboarding already marked as fully completed, just return that state.
   const { data: stateRow } = await supabase
     .from("account_onboarding_state")
-    .select("dismissed_steps, completed_at")
+    .select("dismissed_steps, completed_at, steps, last_seen_at")
     .eq("account_id", user.id)
     .maybeSingle();
 
@@ -43,6 +52,22 @@ export async function GET() {
   const completedAt = stateRow?.completed_at
     ? new Date(stateRow.completed_at as string).toISOString()
     : null;
+
+  const nowIso = new Date().toISOString();
+  const lastSeenIso = stateRow?.last_seen_at
+    ? new Date(stateRow.last_seen_at as string).toISOString()
+    : null;
+  const shouldTouch =
+    !lastSeenIso ||
+    Date.parse(lastSeenIso) < Date.now() - TOUCH_THROTTLE_SECONDS * 1000;
+  if (shouldTouch) {
+    try {
+      await supabase
+        .from("account_onboarding_state")
+        .update({ last_seen_at: nowIso })
+        .eq("account_id", user.id);
+    } catch {}
+  }
 
   if (completedAt) {
     const dismissedFiltered = dismissed.filter((s): s is OnboardingStepId =>
@@ -140,6 +165,41 @@ export async function GET() {
   if (hasHouseRules) completed.push("house_rules");
   if (hasCalendars) completed.push("calendars");
 
+  // Persist per-step completion timestamps + insert a single event when a step is first detected as completed.
+  // This lets you query onboarding progress per account without relying on UI-only state.
+  const existingSteps =
+    (stateRow as any)?.steps && typeof (stateRow as any).steps === "object"
+      ? ((stateRow as any).steps as Record<string, any>)
+      : {};
+  const newlyCompleted: OnboardingStepId[] = [];
+  const nextSteps: Record<string, any> = { ...existingSteps };
+  for (const stepId of completed) {
+    const cur = nextSteps[stepId];
+    const done = !!(cur && typeof cur === "object" && cur.done === true);
+    if (!done) {
+      nextSteps[stepId] = { done: true, at: nowIso };
+      newlyCompleted.push(stepId);
+    }
+  }
+  if (newlyCompleted.length > 0) {
+    try {
+      await supabase
+        .from("account_onboarding_state")
+        .update({ steps: nextSteps })
+        .eq("account_id", user.id);
+    } catch {}
+    try {
+      await supabase.from("account_onboarding_events").insert(
+        newlyCompleted.map((step) => ({
+          account_id: user.id,
+          event: "step_completed",
+          step_id: step,
+          meta: {},
+        })),
+      );
+    } catch {}
+  }
+
   const dismissedFiltered = dismissed.filter((s): s is OnboardingStepId =>
     (STEPS as readonly string[]).includes(s),
   );
@@ -163,8 +223,10 @@ export async function POST(req: Request) {
   }
 
   const body = (await req.json().catch(() => ({}))) as {
-    action?: "dismiss_step" | "complete_all";
+    action?: "dismiss_step" | "complete_all" | "track";
     step_id?: OnboardingStepId;
+    event?: string;
+    meta?: unknown;
   };
 
   const action = body.action;
@@ -192,6 +254,14 @@ export async function POST(req: Request) {
         { account_id: user.id, dismissed_steps: existing },
         { onConflict: "account_id" },
       );
+    try {
+      await supabase.from("account_onboarding_events").insert({
+        account_id: user.id,
+        event: "dismiss_step",
+        step_id: step,
+        meta: {},
+      });
+    } catch {}
     return NextResponse.json({ ok: true });
   }
 
@@ -203,7 +273,52 @@ export async function POST(req: Request) {
         { account_id: user.id, completed_at: now },
         { onConflict: "account_id" },
       );
+    try {
+      await supabase.from("account_onboarding_events").insert({
+        account_id: user.id,
+        event: "complete_all",
+        step_id: null,
+        meta: {},
+      } as any);
+    } catch {}
     return NextResponse.json({ ok: true, completed_at: now });
+  }
+
+  if (action === "track") {
+    const event = String(body.event || "").trim();
+    if (!event || event.length > 80) {
+      return NextResponse.json({ error: "Invalid event" }, { status: 400 });
+    }
+    const step = body.step_id;
+    if (step && !(STEPS as readonly string[]).includes(step)) {
+      return NextResponse.json({ error: "Invalid step_id" }, { status: 400 });
+    }
+    const meta =
+      body.meta && typeof body.meta === "object" && !Array.isArray(body.meta)
+        ? (body.meta as Record<string, unknown>)
+        : {};
+
+    try {
+      await supabase
+        .from("account_onboarding_state")
+        .upsert({ account_id: user.id }, { onConflict: "account_id" });
+    } catch {}
+    try {
+      await supabase
+        .from("account_onboarding_state")
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq("account_id", user.id);
+    } catch {}
+    try {
+      await supabase.from("account_onboarding_events").insert({
+        account_id: user.id,
+        event,
+        step_id: step ?? null,
+        meta,
+      } as any);
+    } catch {}
+
+    return NextResponse.json({ ok: true });
   }
 
   return NextResponse.json({ error: "Unsupported action" }, { status: 400 });

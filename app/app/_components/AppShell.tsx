@@ -84,6 +84,24 @@ function OnboardingChecklistFab() {
   const total = ONBOARDING_STEPS.length;
   const completed = completedSteps.length + dismissedSteps.length;
 
+  const track = (event: string, stepId?: string, meta?: Record<string, unknown>) => {
+    try {
+      void fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "track",
+          event,
+          step_id: stepId,
+          meta: meta || {},
+        }),
+        keepalive: true,
+      });
+    } catch {
+      // ignore
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -147,6 +165,7 @@ function OnboardingChecklistFab() {
 
   const handleStepClick = (stepId: string) => {
     if (typeof window === "undefined") return;
+    track("checklist_step_click", stepId, { path: window.location.pathname });
     let target = "/app/dashboard";
     let highlight: string | null = null;
     switch (stepId) {
@@ -378,7 +397,15 @@ function OnboardingChecklistFab() {
       <button
         type="button"
         style={fabStyle}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() =>
+          setOpen((v) => {
+            const next = !v;
+            track(next ? "checklist_open" : "checklist_close", undefined, {
+              path: typeof window !== "undefined" ? window.location.pathname : "",
+            });
+            return next;
+          })
+        }
         aria-label="Open setup checklist"
       >
 	        <div
