@@ -879,19 +879,19 @@ export default function DashboardClient({
 	                  />
 			                  <button
 			                    type="button"
-			                    className="sb-btn sb-cardglow"
+			                    className="sb-btn sb-btn--primary sb-cardglow"
 			                    style={{
 			                      width: "100%",
 			                      minHeight: 44,
 			                      borderRadius: 999,
 			                      border: "1px solid var(--primary)",
-			                      background: "transparent",
-			                      color: "var(--text)",
+			                      background: "var(--primary)",
+			                      color: "#fff",
 			                      display: "inline-flex",
 			                      alignItems: "center",
 			                      justifyContent: "center",
 			                      gap: 10,
-			                      fontWeight: "var(--fw-medium)",
+			                      fontWeight: 800,
 			                    }}
 			                    onClick={() => firstPropertyPhotoInputRef.current?.click()}
 			                  >
@@ -943,8 +943,17 @@ export default function DashboardClient({
 
 			                <div style={{ display: "grid", gap: 10 }}>
 				                  <button
-				                    className="sb-btn sb-btn--primary sb-cardglow"
-				                    style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+				                    className="sb-btn sb-cardglow"
+				                    style={{
+				                      width: "100%",
+				                      minHeight: 44,
+				                      borderRadius: 999,
+				                      border: "1px solid var(--primary)",
+				                      background: "transparent",
+				                      color: "var(--text)",
+				                      justifyContent: "center",
+				                      fontWeight: "var(--fw-medium)",
+				                    }}
 				                    disabled={!name || !country || firstPropertyLoading}
 				                    onClick={() => {
 				                      setShowFirstPropertyGuide(false);

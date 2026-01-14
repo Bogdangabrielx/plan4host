@@ -280,6 +280,13 @@ textarea:focus-visible {
   background: var(--primary-strong);
   border-color: var(--primary-strong);
 }
+/* When a primary button also uses the glass effect, keep hover text readable in light theme */
+:root[data-theme="light"] .sb-btn.sb-btn--primary.sb-cardglow:hover,
+:root[data-theme="light"] .sb-btn.sb-btn--primary.sb-cardglow:focus-visible,
+:root[data-theme="light"] .sb-btn.sb-btn--primary.Sb-cardglow:hover,
+:root[data-theme="light"] .sb-btn.sb-btn--primary.Sb-cardglow:focus-visible{
+  color: var(--primary) !important;
+}
 .sb-btn:active { transform: scale(0.99); }
 .sb-btn--primary {
   border: 0;
