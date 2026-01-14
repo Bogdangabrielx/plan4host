@@ -730,7 +730,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   <br />
                   We’ll keep it updated automatically for you.
                 </div>
-                <button className="sb-btn sb-btn--primary" style={{ width: "100%", minHeight: 44 }} onClick={() => setCalendarOnboardingStep("provider")}>
+                <button
+                  className="sb-btn sb-btn--primary sb-cardglow"
+                  style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+                  onClick={() => setCalendarOnboardingStep("provider")}
+                >
                   Continue
                 </button>
               </div>
@@ -782,7 +786,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     Any platform that provides an iCal link works.
                   </div>
                 </div>
-                <button className="sb-btn sb-btn--primary" style={{ width: "100%", minHeight: 44 }} onClick={() => setCalendarOnboardingStep("paste")}>
+                <button
+                  className="sb-btn sb-btn--primary sb-cardglow"
+                  style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+                  onClick={() => setCalendarOnboardingStep("paste")}
+                >
                   I have my iCal link
                 </button>
                 <button
@@ -831,7 +839,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     We’ll import your reservations and keep them in sync.
                   </div>
                 </div>
-                <button className="sb-btn sb-btn--primary" style={{ width: "100%", minHeight: 44 }} onClick={() => void onboardingImportCalendar()}>
+                <button
+                  className="sb-btn sb-btn--primary sb-cardglow"
+                  style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+                  onClick={() => void onboardingImportCalendar()}
+                >
                   Import calendar
                 </button>
                 {calendarOnboardingError && (
@@ -900,7 +912,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     Import can take a moment — your calendar is already connected.
                   </div>
                 )}
-                <button className="sb-btn sb-btn--primary" style={{ width: "100%", minHeight: 44 }} onClick={() => setCalendarOnboardingStep("export")}>
+                <button
+                  className="sb-btn sb-btn--primary sb-cardglow"
+                  style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+                  onClick={() => setCalendarOnboardingStep("export")}
+                >
                   Continue
                 </button>
               </div>
@@ -933,8 +949,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   You can add this anytime from Calendar settings.
                 </div>
                 <button
-                  className="sb-btn sb-btn--primary"
-                  style={{ width: "100%", minHeight: 44 }}
+                  className="sb-btn sb-btn--primary sb-cardglow"
+                  style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
                   onClick={() => {
                     setCalendarOnboardingOpen(false);
                     window.location.href = `/app/checkinEditor?onboarding=contacts&highlight=contacts&calendar=1`;

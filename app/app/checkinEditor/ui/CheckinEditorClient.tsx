@@ -727,18 +727,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	            imageJpegBytes,
 	          });
 	          const fname = `${(prop.name || "house-rules").toString().trim().replace(/\s+/g, "-")}-house-rules.pdf`;
-	          const toArrayBuffer = (data: Uint8Array): ArrayBuffer => {
-	            const b: any = (data as any).buffer;
-	            const offset = (data as any).byteOffset ?? 0;
-	            const length = (data as any).byteLength ?? data.length;
-	            if (typeof ArrayBuffer !== "undefined" && b instanceof ArrayBuffer) {
-	              return b.slice(offset, offset + length);
-	            }
-	            const copy = new Uint8Array(length);
-	            copy.set(data.subarray(0, length));
-	            return copy.buffer;
-	          };
-	          const file = new File([toArrayBuffer(bytes)], fname, { type: "application/pdf" });
+	          const pdfArrayBuffer = new ArrayBuffer(bytes.byteLength);
+	          new Uint8Array(pdfArrayBuffer).set(bytes);
+	          const file = new File([pdfArrayBuffer], fname, { type: "application/pdf" });
 	          const u = await uploadHouseRulesPdf(file);
 	          await refresh();
 	          try {
@@ -1448,8 +1439,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   )}
 
                   <button
-                    className="sb-btn sb-btn--primary"
-                    style={{ width: "100%", minHeight: 44 }}
+                    className="sb-btn sb-btn--primary sb-cardglow"
+                    style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
                     onClick={() => void saveContactsWizard()}
                   >
                     Continue
@@ -1535,8 +1526,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                        </button>
 	                      )}
 	                      <button
-	                        className="sb-btn sb-btn--primary"
-	                        style={{ width: "100%", minHeight: 44 }}
+	                        className="sb-btn sb-btn--primary sb-cardglow"
+	                        style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
 	                        onClick={() => void advanceSocialWizard(true)}
 	                      >
 	                        {contactsWizardSocialIndex >= CONTACTS_SOCIAL_KEYS.length - 1 ? "Save" : "Next"}
@@ -1639,8 +1630,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   </div>
 
 	                  <button
-	                    className="sb-btn sb-btn--primary"
-	                    style={{ width: "100%", minHeight: 44 }}
+	                    className="sb-btn sb-btn--primary sb-cardglow"
+	                    style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
 	                    onClick={() => {
 	                      setContactsWizardOpen(false);
 	                      try {
@@ -1660,14 +1651,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     href={buildCheckinLink(prop.id)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{
-                      color: "var(--primary)",
-                      fontSize: "var(--fs-s)",
-                      lineHeight: "var(--lh-s)",
-                      textAlign: "center",
-                      textDecoration: "none",
-                      marginTop: 2,
-                    }}
+                    className="sb-btn sb-btn--primary sb-cardglow"
+                    style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center", textDecoration: "none" }}
                   >
                     View guest link
                   </a>
@@ -1770,8 +1755,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   </div>
                   <div style={{ display: "grid", gap: 8, justifyItems: "center" }}>
                     <button
-                      className="sb-btn sb-btn--primary"
-                      style={{ width: "min(520px, 100%)", minHeight: 44 }}
+                      className="sb-btn sb-btn--primary sb-cardglow"
+                      style={{ width: "min(520px, 100%)", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
                       onClick={() => setHouseRulesWizardStep("choose")}
                     >
                       Continue
@@ -1823,8 +1808,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       Upload a PDF
                     </button>
 	                    <button
-	                      className="sb-btn sb-btn--primary"
-	                      style={{ width: "100%", justifyContent: "center" }}
+	                      className="sb-btn sb-btn--primary sb-cardglow"
+	                      style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
 	                      onClick={() => setHouseRulesWizardStep("create")}
 	                    >
 	                      {houseRulesCreateCtaFlip ? "It takes 30 sec." : "Create them here"}

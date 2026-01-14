@@ -633,18 +633,12 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                    </div>
 	                    <div style={{ gridArea: 'cta', alignSelf: 'center', justifySelf: 'end', display: 'flex' }}>
 	                      <button
-	                        className="sb-btn sb-cardglow"
-	                        style={{
-	                          border: '1px solid var(--primary)',
-	                          background: 'transparent',
-	                          color: 'var(--text)',
-	                          borderRadius: 999,
-                          fontWeight: 700,
-                        }}
-                        onClick={() => setUnitWizardStep('unitCount')}
-                      >
-                        Set up units
-                      </button>
+	                        className="sb-btn sb-btn--primary sb-cardglow"
+	                        style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+	                        onClick={() => setUnitWizardStep('unitCount')}
+	                      >
+	                        Set up units
+	                      </button>
                     </div>
                   </div>
                 </div>
@@ -753,17 +747,17 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 		                    ))}
 		                  </div>
 
-                  <button
-                    className="sb-btn sb-btn--primary"
-                    style={{ width: '100%', minHeight: 44 }}
-                    onClick={() => {
-                      const pid = selected?.id;
-                      const q = pid ? `?onboarding=1&property=${encodeURIComponent(pid)}` : `?onboarding=1`;
-                      window.location.href = `/app/channels${q}`;
-                    }}
-                  >
-                    Connect your first calendar
-                  </button>
+	                  <button
+	                    className="sb-btn sb-btn--primary sb-cardglow"
+	                    style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+	                    onClick={() => {
+	                      const pid = selected?.id;
+	                      const q = pid ? `?onboarding=1&property=${encodeURIComponent(pid)}` : `?onboarding=1`;
+	                      window.location.href = `/app/channels${q}`;
+	                    }}
+	                  >
+	                    Connect your first calendar
+	                  </button>
                   <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)', textAlign: 'center' }}>
                     To automate availability and avoid double bookings.
                   </div>

@@ -942,13 +942,13 @@ export default function DashboardClient({
 		                </div>
 
 			                <div style={{ display: "grid", gap: 10 }}>
-			                  <button
-			                    className="sb-btn sb-btn--primary"
-			                    style={{ width: "100%", minHeight: 44 }}
-			                    disabled={!name || !country || firstPropertyLoading}
-			                    onClick={() => {
-			                      setShowFirstPropertyGuide(false);
-			                      setFirstPropertyStep(0);
+				                  <button
+				                    className="sb-btn sb-btn--primary sb-cardglow"
+				                    style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+				                    disabled={!name || !country || firstPropertyLoading}
+				                    onClick={() => {
+				                      setShowFirstPropertyGuide(false);
+				                      setFirstPropertyStep(0);
 			                      createFirstProperty();
 			                    }}
 			                  >
@@ -1067,12 +1067,12 @@ export default function DashboardClient({
 		              </div>
 
 		              <div style={{ display: "grid", gap: 10 }}>
-	                <button
-	                  className="sb-btn sb-btn--primary"
-	                  style={{ width: "100%", minHeight: 44 }}
-	                  onClick={() => {
-	                    try {
-	                      window.open(firstPropertyResult.link, "_blank", "noopener,noreferrer");
+		                <button
+		                  className="sb-btn sb-btn--primary sb-cardglow"
+		                  style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+		                  onClick={() => {
+		                    try {
+		                      window.open(firstPropertyResult.link, "_blank", "noopener,noreferrer");
 	                    } catch {
 	                      window.location.href = firstPropertyResult.link;
 	                    }
