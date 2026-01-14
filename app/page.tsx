@@ -1235,7 +1235,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => scrollToId("features-title")}
-              className={`sb-cardglow ${styles.btn} ${styles.btnOutline} ${styles.focusable}`}
+              className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
             >
               See how it works
 	            </button>
