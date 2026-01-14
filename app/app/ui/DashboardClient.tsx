@@ -578,8 +578,8 @@ export default function DashboardClient({
             </select>
           </div>
 
-          <div style={{ ...FIELD_WRAPPER, marginTop: 6 }}>
-            <button
+	          <div style={{ ...FIELD_WRAPPER, marginTop: 6 }}>
+	            <button
               onClick={() => {
                 if (list.length === 0) {
                   setFirstPropertyError(null);
@@ -589,12 +589,12 @@ export default function DashboardClient({
                 }
                 addProperty();
               }}
-              className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
-              style={{ width: "100%", minHeight: 44 }}
-            >
-              Save
-            </button>
-          </div>
+	              className="sb-btn sb-btn--primary sb-cardglow"
+	              style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center", color: "#fff" }}
+	            >
+	              Save
+	            </button>
+	          </div>
          
         </div>
       </section>

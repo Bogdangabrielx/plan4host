@@ -670,18 +670,18 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gap: 6 }}>
-                    <button
-                      className="sb-btn sb-btn--primary"
-                      style={{ width: '100%', minHeight: 44 }}
-                      onClick={() => {
-                        const n = Math.max(0, Math.floor(Number(unitCountRaw || 0)));
-                        if (n < 2) { setUnitWizardError('Please enter 2 or more.'); return; }
-                        void createUnits(n);
-                      }}
-                    >
-                      Create units
-                    </button>
+	                  <div style={{ display: 'grid', gap: 6 }}>
+	                    <button
+	                      className="sb-btn sb-btn--primary sb-cardglow"
+	                      style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center", color: "#fff" }}
+	                      onClick={() => {
+	                        const n = Math.max(0, Math.floor(Number(unitCountRaw || 0)));
+	                        if (n < 2) { setUnitWizardError('Please enter 2 or more.'); return; }
+	                        void createUnits(n);
+	                      }}
+	                    >
+	                      Create units
+	                    </button>
                     <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)', textAlign: 'center' }}>
                       Takes a few seconds.
                     </div>

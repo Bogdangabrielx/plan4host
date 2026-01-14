@@ -2284,14 +2284,14 @@ export default function CheckinClient() {
                       {T("preBody")}
                     </p>
                   ) : null}
-                  <button
-                    type="button"
-                    className="ci-actionBtn ci-actionBtn--success"
-                    style={{
-                      width: "100%",
-                      maxWidth: isNarrow ? undefined : 520,
-                      margin: isNarrow ? undefined : "0 auto",
-                    }}
+	                  <button
+	                    type="button"
+	                    className="ci-actionBtn ci-actionBtn--success sb-cardglow"
+	                    style={{
+	                      width: "100%",
+	                      maxWidth: isNarrow ? undefined : 520,
+	                      margin: isNarrow ? undefined : "0 auto",
+	                    }}
                     onClick={() => {
                       setStage("form");
                       try {
@@ -2389,14 +2389,14 @@ export default function CheckinClient() {
                         {T("preBody")}
                       </p>
                     ) : null}
-                    <button
-                      type="button"
-                      className="ci-actionBtn ci-actionBtn--success"
-                      style={{
-                        width: "100%",
-                        maxWidth: isNarrow ? undefined : 520,
-                        margin: isNarrow ? undefined : "0 auto",
-                      }}
+	                    <button
+	                      type="button"
+	                      className="ci-actionBtn ci-actionBtn--success sb-cardglow"
+	                      style={{
+	                        width: "100%",
+	                        maxWidth: isNarrow ? undefined : 520,
+	                        margin: isNarrow ? undefined : "0 auto",
+	                      }}
                       onClick={() => {
                         setStage("form");
                         try {
