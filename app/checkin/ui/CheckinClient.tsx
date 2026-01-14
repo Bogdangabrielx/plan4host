@@ -291,7 +291,7 @@ export default function CheckinClient() {
       intro4: 'The email will also include a QR code you can present at reception, or use as proof that you have completed this form.',
       intro5: 'Please note that all information you provide is strictly confidential.',
       intro6: 'Thank you for your patience!',
-      preBody: 'Next, please complete the accommodation form so we can prepare everything in advance and make your stay as smooth as possible.',
+      preBody: '',
       preCta: 'Complete the form',
       preMapTitle: 'Location',
       preContactTitle: 'Contact',
@@ -360,7 +360,7 @@ export default function CheckinClient() {
       intro4: 'Emailul va include și un cod QR pe care îl poți prezenta la recepție sau îl poți folosi drept dovadă că ai completat acest formular.',
       intro5: 'Toate informațiile furnizate sunt strict confidențiale.',
       intro6: 'Îți mulțumim pentru răbdare!',
-      preBody: 'În cele ce urmează, te rugăm să completezi fișa de cazare, ca să pregătim din timp totul pentru ca șederea ta să fie cât mai plăcută.',
+      preBody: '',
       preCta: 'Completează formularul',
       preMapTitle: 'Locație',
       preContactTitle: 'Contact',
@@ -1626,9 +1626,17 @@ export default function CheckinClient() {
               transition: transform .05s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease, color .2s ease;
               text-decoration: none;
             }
+            .ci-actionBtn--success{
+              background: var(--success);
+              border-color: var(--success);
+              color: #fff;
+            }
             .ci-actionBtn:hover{
               border-color: color-mix(in srgb, var(--muted) 70%, var(--border));
               box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+            }
+            .ci-actionBtn--success:hover{
+              border-color: var(--success);
             }
             .ci-actionBtn:active{ transform: scale(0.99); }
             .ci-actionBtn:focus-visible{
@@ -2070,7 +2078,7 @@ export default function CheckinClient() {
                   <>
                     <p className="ci-infoIntro">Îți mulțumim că ai ales să stai la noi.</p>
                     <p className="ci-infoMain">
-                      Pentru o sosire cât mai ușoară, te rugăm să completezi formularul de check-in online de mai jos.
+                      Pentru o ședere cât mai plăcută, te rugăm să completezi formularul de check-in online de mai jos.
                       <br />
                       După trimitere, vei primi automat un email de confirmare
                       <br />
@@ -2208,12 +2216,14 @@ export default function CheckinClient() {
               <SocialPills prop={prop} />
               {stage === "intro" && (
                 <div style={{ padding: 16, borderTop: "1px solid var(--border)", display: "grid", gap: 12, textAlign: "center", justifyItems: "center" }}>
-                  <p style={{ margin: 0, color: "var(--muted)", maxWidth: 62 * 12 }}>
-                    {T("preBody")}
-                  </p>
+                  {String(T("preBody") || "").trim() ? (
+                    <p style={{ margin: 0, color: "var(--muted)", maxWidth: 62 * 12 }}>
+                      {T("preBody")}
+                    </p>
+                  ) : null}
                   <button
                     type="button"
-                    className="ci-actionBtn"
+                    className="ci-actionBtn ci-actionBtn--success"
                     style={{
                       width: "100%",
                       maxWidth: isNarrow ? undefined : 520,
@@ -2311,12 +2321,14 @@ export default function CheckinClient() {
                 <SocialPills prop={prop} />
                 {stage === "intro" && (
                   <div style={{ paddingTop: 10, borderTop: "1px solid var(--border)", display: "grid", gap: 12, textAlign: "center", justifyItems: "center" }}>
-                    <p style={{ margin: 0, color: "var(--muted)", maxWidth: 62 * 12 }}>
-                      {T("preBody")}
-                    </p>
+                    {String(T("preBody") || "").trim() ? (
+                      <p style={{ margin: 0, color: "var(--muted)", maxWidth: 62 * 12 }}>
+                        {T("preBody")}
+                      </p>
+                    ) : null}
                     <button
                       type="button"
-                      className="ci-actionBtn"
+                      className="ci-actionBtn ci-actionBtn--success"
                       style={{
                         width: "100%",
                         maxWidth: isNarrow ? undefined : 520,

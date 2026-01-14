@@ -110,6 +110,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [rooms, setRooms] = useState<Room[]>([]);
   const [types, setTypes] = useState<RoomType[]>([]);
   const [integrations, setIntegrations] = useState<TypeIntegration[]>([]);
+  const [loadedForPropertyId, setLoadedForPropertyId] = useState<string | null>(null);
+  const calendarOnboardingAutoOpenedRef = useRef<string | null>(null);
 
   // Onboarding — Calendar connection (Step 3)
   const [calendarOnboardingOpen, setCalendarOnboardingOpen] = useState<boolean>(false);
@@ -287,6 +289,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       setRooms((rRooms.data ?? []) as Room[]);
       setTypes((rTypes.data ?? []) as RoomType[]);
       setIntegrations((rInteg.data ?? []) as TypeIntegration[]);
+      setLoadedForPropertyId(pid);
 
       // Load plan to gate Sync button
       try {
@@ -335,6 +338,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     setTypes([]);
     setIntegrations([]);
     setTimezone("");
+    setLoadedForPropertyId(null);
+    calendarOnboardingAutoOpenedRef.current = null;
   }, [propertyId]);
 
   // Trigger refresh when ready and when property changes
@@ -345,11 +350,16 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     if (!propertyReady || !propertyId) return;
     if (status !== "Idle") return;
     if (integrations.length > 0) return;
+    if (loadedForPropertyId !== propertyId) return;
+    if (calendarOnboardingOpen) return;
     try {
       const u = new URL(window.location.href);
       const onb = (u.searchParams.get("onboarding") || "").toLowerCase();
-      const shouldOpen = onb === "1" || onb === "calendar" || onb === "calendars";
-      if (!shouldOpen) return;
+      const shouldOpenViaParam = onb === "1" || onb === "calendar" || onb === "calendars";
+      const shouldOpenAuto =
+        !shouldOpenViaParam && calendarOnboardingAutoOpenedRef.current !== propertyId;
+      if (!shouldOpenViaParam && !shouldOpenAuto) return;
+      if (shouldOpenAuto) calendarOnboardingAutoOpenedRef.current = propertyId;
       setCalendarOnboardingOpen(true);
       setCalendarOnboardingStep("intro");
       setCalendarOnboardingError(null);
@@ -362,7 +372,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     } catch {
       // ignore
     }
-  }, [propertyReady, propertyId, status, integrations.length]);
+  }, [propertyReady, propertyId, status, integrations.length, loadedForPropertyId, calendarOnboardingOpen]);
 
   /* URLs & helpers */
   function roomIcsUrl(id: string) { return `${origin}/api/ical/rooms/${id}.ics`; }

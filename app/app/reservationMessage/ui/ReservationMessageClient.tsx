@@ -49,8 +49,7 @@ const BUILTIN_VARS: Array<{ key: string; label: string }> = [
 
 const EMPTY: TemplateState = { blocks: [], blocks_en: [], fields: [], status: "draft" };
 
-type OnboardingChoice = "template" | "custom";
-type OnboardingStep = "choose" | "pick" | "loading" | "reward";
+type OnboardingStep = "pick" | "loading" | "reward";
 
 type OnboardingTemplate = {
   key: string;
@@ -267,16 +266,11 @@ export default function ReservationMessageClient({
   const [showNoTemplatePopup, setShowNoTemplatePopup] = useState<boolean>(false);
   const [showRoomVarsHint, setShowRoomVarsHint] = useState<boolean>(false);
   const [onbOpen, setOnbOpen] = useState<boolean>(false);
-  const [onbStep, setOnbStep] = useState<OnboardingStep>("choose");
-  const [onbChoice, setOnbChoice] = useState<OnboardingChoice | null>(null);
-  const [onbPickedKey, setOnbPickedKey] = useState<string | null>(null);
-  const [onbLoadingText, setOnbLoadingText] = useState<string>("Preparing your message…");
+  const [onbStep, setOnbStep] = useState<OnboardingStep>("pick");
   const [onbLoadingStage, setOnbLoadingStage] = useState<0 | 1>(0);
-  const [onbCreatedTemplateId, setOnbCreatedTemplateId] = useState<string | null>(null);
   const [onbPreviewUrl, setOnbPreviewUrl] = useState<string | null>(null);
   const [onbError, setOnbError] = useState<string | null>(null);
-  const [onbConfettiSeed, setOnbConfettiSeed] = useState<number>(0);
-  const onbPendingRewardRef = useRef<boolean>(false);
+  const [onbPortalOpened, setOnbPortalOpened] = useState<boolean>(false);
 
   const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
 
@@ -294,12 +288,10 @@ export default function ReservationMessageClient({
         setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
         if (items.length === 0) {
           setOnbOpen(true);
-          setOnbStep("choose");
-          setOnbChoice(null);
-          setOnbPickedKey(null);
-          setOnbCreatedTemplateId(null);
+          setOnbStep("pick");
           setOnbPreviewUrl(null);
           setOnbError(null);
+          setOnbPortalOpened(false);
         }
       } finally { if (alive) setLoadingList(false); }
     })();
@@ -313,7 +305,6 @@ export default function ReservationMessageClient({
   async function runOnboardingLoadingSequence(task: () => Promise<void>) {
     setOnbError(null);
     setOnbStep("loading");
-    setOnbLoadingText("Preparing your message…");
     setOnbLoadingStage(0);
     const start = Date.now();
     const stageTimer = window.setTimeout(() => setOnbLoadingStage(1), 1200);
@@ -366,10 +357,8 @@ export default function ReservationMessageClient({
   async function onboardingPickTemplate(key: string) {
     const picked = ONBOARDING_TEMPLATES.find((t) => t.key === key);
     if (!picked) return;
-    setOnbPickedKey(key);
     await runOnboardingLoadingSequence(async () => {
       const templateId = await createTemplateFromOnboarding(picked);
-      setOnbCreatedTemplateId(templateId);
       setActiveId(templateId);
       setScheduler("on_arrival");
       try {
@@ -381,37 +370,13 @@ export default function ReservationMessageClient({
       try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
       const previewUrl = await createDemoPreviewLink();
       setOnbPreviewUrl(previewUrl);
+      setOnbPortalOpened(false);
       setOnbStep("reward");
     }).catch((e: any) => {
       setOnbError(e?.message || "Something went wrong.");
       setOnbStep("pick");
     });
   }
-
-  // When user chose custom and publishes, show reward automatically.
-  useEffect(() => {
-    if (!onbPendingRewardRef.current) return;
-    if (!propertyId || !activeId) return;
-    if (tpl.status !== "published") return;
-    onbPendingRewardRef.current = false;
-    void (async () => {
-      try {
-        const url = await createDemoPreviewLink();
-        setOnbCreatedTemplateId(activeId);
-        setOnbPreviewUrl(url);
-        setOnbOpen(true);
-        setOnbStep("reward");
-        try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
-      } catch {
-        // ignore
-      }
-    })();
-  }, [tpl.status, propertyId, activeId]);
-
-  useEffect(() => {
-    if (onbStep !== "reward") return;
-    setOnbConfettiSeed(Date.now());
-  }, [onbStep]);
 
   /** --------- Load template content (LS + server) --------- */
   useEffect(() => {
@@ -625,39 +590,6 @@ export default function ReservationMessageClient({
       const items = Array.isArray(jl?.items) ? jl.items : [];
       setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
     } catch (e: any) { alert(e?.message || "Failed"); }
-  }
-
-  async function onAddNewOnboarding() {
-    if (!propertyId) return;
-    try {
-      const t = "Arrival message";
-      const res = await fetch("/api/reservation-message/template", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          property_id: propertyId,
-          title: t,
-          status: "draft",
-          schedule_kind: "on_arrival",
-          schedule_offset_hours: null,
-          blocks: [
-            { type: "heading", text: t, lang: "ro" },
-            { type: "heading", text: t, lang: "en" },
-          ],
-          fields: [],
-        }),
-      });
-      const j = await res.json().catch(() => ({}));
-      if (!res.ok || !j?.template_id) throw new Error(j?.error || "Create failed");
-      setActiveId(String(j.template_id));
-      setScheduler("on_arrival");
-      const rl = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(propertyId)}`, { cache: "no-store" });
-      const jl = await rl.json().catch(() => ({}));
-      const items = Array.isArray(jl?.items) ? jl.items : [];
-      setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
-    } catch (e: any) {
-      alert(e?.message || "Failed");
-    }
   }
   async function onDuplicate(id: string, title: string) {
     try {
@@ -1392,7 +1324,7 @@ export default function ReservationMessageClient({
             role="dialog"
             aria-modal="true"
             onClick={() => {
-              if (onbStep === "reward") setOnbOpen(false);
+              setOnbOpen(false);
             }}
             className="sb-cardglow"
             style={{
@@ -1430,7 +1362,7 @@ export default function ReservationMessageClient({
 	                  type="button"
 	                  className="sb-btn sb-btn--small"
                   onClick={() => {
-                    if (onbStep === "reward") setOnbOpen(false);
+                    setOnbOpen(false);
                   }}
                   style={{
                     width: 28,
@@ -1447,71 +1379,10 @@ export default function ReservationMessageClient({
                 </button>
               </div>
 
-	              {onbStep === "choose" && (
-	                <div style={{ display: "grid", gap: 12 }}>
-	                  <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
-	                    Pick a starting point. You can change it anytime.
-	                  </div>
-	                  <div style={{ display: "grid", gap: 10 }}>
-                    <button
-                      className="sb-cardglow"
-                      style={{
-                        width: "100%",
-                        borderRadius: 16,
-                        border: "1px solid var(--border)",
-                        background: "rgba(255,255,255,0.02)",
-                        padding: 12,
-                        textAlign: "left",
-                        display: "grid",
-                        gap: 6,
-                      }}
-                      onClick={() => {
-                        setOnbChoice("template");
-                        setOnbStep("pick");
-                      }}
-                    >
-                      <div style={{ fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", fontSize: 12, color: "var(--text)" }}>
-                        Use a ready‑made template
-                      </div>
-                      <div style={{ fontSize: 13, color: "var(--muted)" }}>Created by us, in Romanian and English.</div>
-                    </button>
-
-                    <button
-                      className="sb-cardglow"
-                      style={{
-                        width: "100%",
-                        borderRadius: 16,
-                        border: "1px solid var(--border)",
-                        background: "rgba(255,255,255,0.02)",
-                        padding: 12,
-                        textAlign: "left",
-                        display: "grid",
-                        gap: 6,
-                      }}
-                      onClick={() => {
-                        setOnbChoice("custom");
-                        setOnbOpen(false);
-                        setScheduler("on_arrival");
-                        onbPendingRewardRef.current = true;
-                        void onAddNewOnboarding();
-                      }}
-                    >
-                      <div style={{ fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", fontSize: 12, color: "var(--text)" }}>
-                        Write your own message
-                      </div>
-                      <div style={{ fontSize: 13, color: "var(--muted)" }}>Start from scratch and customize everything.</div>
-                    </button>
-                  </div>
-                  <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 12 }}>
-                    You can edit or replace this message anytime.
-                  </div>
-                </div>
-              )}
-
 	              {onbStep === "pick" && (
 	                <div style={{ display: "grid", gap: 12 }}>
 	                  <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13 }}>
-	                    Pick one template.
+	                    Choose a template to get started. You can customize it later.
 	                  </div>
 	                  <div
 	                    style={{
@@ -1567,113 +1438,44 @@ export default function ReservationMessageClient({
 	              {onbStep === "loading" && <div style={{ height: 4 }} />}
 
 	              {onbStep === "reward" && (
-	                <div style={{ display: "grid", gap: 12, position: "relative" }}>
-	                  <style
-	                    dangerouslySetInnerHTML={{
-	                      __html: `
-	                        @keyframes p4hConfettiFall { 0% { transform: translate3d(0,-16px,0) rotate(0deg); opacity: 0; } 10% { opacity: .9; } 100% { transform: translate3d(0,140px,0) rotate(180deg); opacity: 0; } }
-	                        .p4h-confetti { position:absolute; inset:0; pointer-events:none; overflow:hidden; border-radius: 14px; }
-	                        .p4h-confetti i { position:absolute; top:-12px; width:7px; height:9px; border-radius:2px; opacity:0; animation: p4hConfettiFall 1.4s ease-out forwards; }
-	                      `,
-	                    }}
-	                  />
-	                  <div className="p4h-confetti" aria-hidden key={onbConfettiSeed}>
-	                    {Array.from({ length: 12 }).map((_, idx) => {
-	                      const left = (idx * 8) % 100;
-	                      const delay = (idx % 6) * 0.06;
-	                      const hue = 140 + (idx * 11) % 55;
-	                      return (
-	                        <i
-	                          key={idx}
-                          style={{
-                            left: `${left}%`,
-                            animationDelay: `${delay}s`,
-                            background: `hsl(${hue} 75% 55%)`,
-                          }}
-                        />
-	                      );
-	                    })}
-	                  </div>
-
+	                <div style={{ display: "grid", gap: 12 }}>
 	                  <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
 	                    <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>
-	                      Everything is ready 🎉
+	                      Your automatic message is ready
 	                    </div>
-	                    <div style={{ fontSize: 13, color: "var(--muted)" }}>Your property is now ready to welcome guests.</div>
-	                  </div>
-
-	                  <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.55, textAlign: "center" }}>
-	                    Essentials are active: calendar, house rules, and automatic messages.
+	                    <div style={{ fontSize: 13, color: "var(--muted)" }}>This is what guests will receive at arrival.</div>
 	                  </div>
 
 	                  <div style={{ display: "grid", gap: 10 }}>
-	                    <div style={{ display: "grid", gap: 8 }}>
-	                      {[
-	                        "Calendar connected",
-	                        "Guests confirm house rules",
-	                        "Automatic messages enabled",
-	                      ].map((label) => (
-	                        <div key={label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-	                          <span
-	                            aria-hidden
-	                            style={{
-	                              width: 18,
-	                              height: 18,
-	                              borderRadius: 999,
-	                              border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
-	                              background: "color-mix(in srgb, var(--success) 16%, var(--card))",
-	                              display: "grid",
-	                              placeItems: "center",
-	                              color: "color-mix(in srgb, var(--success) 90%, var(--text))",
-	                              fontWeight: 900,
-	                              fontSize: 12,
-	                              flex: "0 0 auto",
-	                            }}
-	                          >
-	                            ✓
-	                          </span>
-	                          <span style={{ fontSize: 13, color: "var(--text)", fontWeight: 600 }}>{label}</span>
-	                        </div>
-	                      ))}
-	                    </div>
-
 	                    {onbPreviewUrl && (
 	                      <button
-                        className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
-                        style={{ width: "100%", justifyContent: "center" }}
-                        onClick={() => {
-                          try { window.open(onbPreviewUrl, "_blank", "noopener,noreferrer"); } catch {}
-                        }}
-                      >
-                        See guest portal
-                      </button>
-                    )}
+                          className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
+                          style={{ width: "100%", justifyContent: "center" }}
+                          onClick={() => {
+                            try { window.open(onbPreviewUrl, "_blank", "noopener,noreferrer"); } catch {}
+                            setOnbPortalOpened(true);
+                          }}
+                        >
+                          See guest portal
+                        </button>
+                      )}
 
-                    <button
-                      className="sb-btn"
-                      style={{ width: "100%", justifyContent: "center" }}
-                      onClick={() => {
-                        setOnbOpen(false);
-                        window.location.href = "/app/dashboard";
-                      }}
-                    >
-                      Go to dashboard
-                    </button>
+	                    {onbPortalOpened ? (
+	                      <button
+	                        className="sb-btn"
+	                        style={{ width: "100%", justifyContent: "center" }}
+	                        onClick={() => setOnbOpen(false)}
+	                      >
+	                        Continue
+	                      </button>
+	                    ) : (
+	                      <div style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.5, textAlign: "center" }}>
+	                        Open the guest portal to continue.
+	                      </div>
+	                    )}
 
-	                    <button
-	                      className="sb-btn sb-cardglow"
-	                      style={{ width: "100%", justifyContent: "center", border: "1px solid var(--border)" }}
-                      onClick={() => {
-                        if (onbCreatedTemplateId) setActiveId(onbCreatedTemplateId);
-                        setOnbOpen(false);
-                        try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
-                        window.location.href = "/app/propertySetup";
-                      }}
-                    >
-	                      Customize settings
-	                    </button>
 	                    <div style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.5, textAlign: "center", marginTop: 2 }}>
-	                      You can customize everything anytime.
+	                      You can customize this message anytime.
 	                    </div>
 	                  </div>
 	                </div>
