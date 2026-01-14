@@ -676,7 +676,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     return taskValue as T;
   }
 
-  async function fetchAsJpegBytes(url: string): Promise<Uint8Array<ArrayBuffer> | null> {
+  async function fetchAsJpegBytes(url: string): Promise<Uint8Array | null> {
     try {
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) return null;
@@ -716,23 +716,34 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           "Setting clear expectations for your guests…",
           "Making sure guests confirm them before check-in…",
         ],
-        task: async () => {
-          const imageJpegBytes = prop.presentation_image_url ? await fetchAsJpegBytes(prop.presentation_image_url) : null;
-          const bytes = buildSimplePdfBytes({
+	        task: async () => {
+	          const imageJpegBytes = prop.presentation_image_url ? await fetchAsJpegBytes(prop.presentation_image_url) : null;
+	          const bytes = buildSimplePdfBytes({
             title: prop.name,
             subtitle: "House Rules",
             bodyLines: houseRulesToParagraphs(houseRulesDraft),
             footerNote:
               "Guests can read and confirm these rules before check-in. By completing check-in, you confirm you’ve read and agree to these house rules.",
-            imageJpegBytes,
-          });
-          const fname = `${(prop.name || "house-rules").toString().trim().replace(/\s+/g, "-")}-house-rules.pdf`;
-          const file = new File([bytes], fname, { type: "application/pdf" });
-          const u = await uploadHouseRulesPdf(file);
-          await refresh();
-          try {
-            window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
-          } catch {
+	            imageJpegBytes,
+	          });
+	          const fname = `${(prop.name || "house-rules").toString().trim().replace(/\s+/g, "-")}-house-rules.pdf`;
+	          const toArrayBuffer = (data: Uint8Array): ArrayBuffer => {
+	            const b: any = (data as any).buffer;
+	            const offset = (data as any).byteOffset ?? 0;
+	            const length = (data as any).byteLength ?? data.length;
+	            if (typeof ArrayBuffer !== "undefined" && b instanceof ArrayBuffer) {
+	              return b.slice(offset, offset + length);
+	            }
+	            const copy = new Uint8Array(length);
+	            copy.set(data.subarray(0, length));
+	            return copy.buffer;
+	          };
+	          const file = new File([toArrayBuffer(bytes)], fname, { type: "application/pdf" });
+	          const u = await uploadHouseRulesPdf(file);
+	          await refresh();
+	          try {
+	            window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
+	          } catch {
             // ignore
           }
           return u;
