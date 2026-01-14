@@ -50,6 +50,7 @@ export default function CalendarClient({
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
   const [properties] = useState<Property[]>(initialProperties);
+  const isSinglePropertyAccount = properties.length === 1;
   const { propertyId, setPropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
   const [isSmall, setIsSmall] = useState(false);
   // Cache property presentation images (avatar in pill selector)
@@ -204,10 +205,11 @@ export default function CalendarClient({
   useEffect(() => {
     if (!propertyId) return;
     if (!hasLoadedRooms || loading !== "Idle") return;
+    if (!isSinglePropertyAccount) return;
     if (rooms.length === 0) {
       setShowNoRoomsPopup(true);
     }
-  }, [propertyId, rooms.length, loading, hasLoadedRooms]);
+  }, [propertyId, rooms.length, loading, hasLoadedRooms, isSinglePropertyAccount]);
 
   // Header pill (show Read-only when idle)
   useEffect(() => {

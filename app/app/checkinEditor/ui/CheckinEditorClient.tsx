@@ -160,6 +160,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const { setTitle, setPill } = useHeader();
 
   const [properties] = useState(initialProperties);
+  const isSinglePropertyAccount = properties.length === 1;
   const { propertyId, setPropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
 
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
@@ -347,8 +348,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   // Show prompt on entry if placeholder image is used
   useEffect(() => {
     const isPlaceholder = !!prop?.presentation_image_url && prop.presentation_image_url.includes('/hotel_room_1456x816.jpg');
+    if (!isSinglePropertyAccount) return;
     if (isPlaceholder && !imagePromptDismissed) setShowImagePrompt(true);
-  }, [prop?.presentation_image_url, imagePromptDismissed]);
+  }, [prop?.presentation_image_url, imagePromptDismissed, isSinglePropertyAccount]);
 
   async function refresh() {
     if (!propertyId) { setProp(null); return; }
@@ -398,14 +400,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       const u = new URL(window.location.href);
       const flag = (u.searchParams.get("onboarding") || "").toLowerCase();
       if (flag === "contacts" || flag === "links" || flag === "contact") {
-        setContactsWizardRequested(true);
+        if (isSinglePropertyAccount) setContactsWizardRequested(true);
         u.searchParams.delete("onboarding");
         window.history.replaceState({}, "", u.toString());
       }
     } catch {
       // ignore
     }
-  }, []);
+  }, [isSinglePropertyAccount]);
 
   // Step 5 onboarding: open house rules wizard
   useEffect(() => {
@@ -413,14 +415,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       const u = new URL(window.location.href);
       const flag = (u.searchParams.get("onboarding") || "").toLowerCase();
       if (flag === "house_rules" || flag === "houserules" || flag === "rules") {
-        setHouseRulesWizardRequested(true);
+        if (isSinglePropertyAccount) setHouseRulesWizardRequested(true);
         u.searchParams.delete("onboarding");
         window.history.replaceState({}, "", u.toString());
       }
     } catch {
       // ignore
     }
-  }, []);
+  }, [isSinglePropertyAccount]);
 
   // Open wizard after property is loaded (so drafts can be prefilled)
   useEffect(() => {
@@ -478,6 +480,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   // If house rules are missing and there are no contact details, nudge Links & Contact first (once per mount).
   useEffect(() => {
     if (!prop) return;
+    if (!isSinglePropertyAccount) return;
     if (contactsWizardOpen) return;
     if (contactsWizardRequested) return;
     if (houseRulesWizardOpen) return;
@@ -507,6 +510,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   // Gentle nudge: if contact details are set but house rules are missing, open the House Rules wizard once per session.
   useEffect(() => {
     if (!prop) return;
+    if (!isSinglePropertyAccount) return;
     if (contactsWizardOpen) return;
     if (contactsWizardRequested) return;
     if (houseRulesWizardOpen) return;

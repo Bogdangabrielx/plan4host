@@ -71,6 +71,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   });
 
   const [properties, setProperties] = useState<Property[]>(initialProperties);
+  const isSinglePropertyAccount = properties.length === 1;
   const { propertyId: selectedId, setPropertyId: setSelectedId, ready: propertyReady } = usePersistentPropertyState(properties);
 
   const [rooms, setRooms]     = useState<Room[]>([]);
@@ -259,14 +260,14 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         setTasks((r4.data ?? []) as TaskDef[]);
         setRoomTypes((r5.data ?? []) as RoomType[]);
         setStatus("Idle");
-        // If this property has no rooms yet, show the rooms guide so the user
-        // can choose whether it is a single unit or has multiple rooms.
-        if (loadedRooms.length === 0) {
+        // If this property has no rooms yet, show the onboarding guide only
+        // for accounts with a single property (first-time setup).
+        if (isSinglePropertyAccount && loadedRooms.length === 0) {
           setShowRoomsGuide(true);
         }
       }
     })();
-  }, [selectedId, supabase, propertyReady]);
+  }, [selectedId, supabase, propertyReady, isSinglePropertyAccount]);
 
   function startSaving(){ setStatus("Saving…"); }
   function finishSaving(ok:boolean){ setStatus(ok ? "Synced" : "Error"); setTimeout(() => setStatus("Idle"), 800); }
@@ -274,6 +275,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   async function createUnits(count: number) {
     if (!canWrite) return;
     if (!selected) return;
+    if (!isSinglePropertyAccount) return;
     if (count < 1) return;
     if ((rooms?.length ?? 0) > 0) return;
 
@@ -320,11 +322,11 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
       if (remaining) await new Promise<void>((r) => setTimeout(r, remaining));
 
       setUnitWizardStep("reward");
-      setShowRoomsGuide(true);
+      setShowRoomsGuide(isSinglePropertyAccount);
     } catch (e: any) {
       setUnitWizardError(e?.message || "Could not create units.");
       setUnitWizardStep("unitCount");
-      setShowRoomsGuide(true);
+      setShowRoomsGuide(isSinglePropertyAccount);
     } finally {
       setUnitWizardLoading(false);
       if (unitWizardLoadingTimerRef.current) window.clearTimeout(unitWizardLoadingTimerRef.current);
@@ -367,8 +369,10 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
         // ignore
       }
 
-      const q = `?onboarding=1&property=${encodeURIComponent(selected.id)}`;
-      window.location.href = `/app/channels${q}`;
+      const u = new URL("/app/channels", window.location.origin);
+      u.searchParams.set("property", selected.id);
+      if (isSinglePropertyAccount) u.searchParams.set("onboarding", "1");
+      window.location.href = `${u.pathname}${u.search}`;
     } catch (e: any) {
       setUnitRenameError(e?.message || "Could not save unit names.");
     } finally {
@@ -752,8 +756,10 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                    style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
 	                    onClick={() => {
 	                      const pid = selected?.id;
-	                      const q = pid ? `?onboarding=1&property=${encodeURIComponent(pid)}` : `?onboarding=1`;
-	                      window.location.href = `/app/channels${q}`;
+	                      const u = new URL("/app/channels", window.location.origin);
+	                      if (pid) u.searchParams.set("property", pid);
+	                      if (isSinglePropertyAccount) u.searchParams.set("onboarding", "1");
+	                      window.location.href = `${u.pathname}${u.search}`;
 	                    }}
 	                  >
 	                    Connect your first calendar

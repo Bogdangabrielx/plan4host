@@ -226,6 +226,7 @@ export default function ReservationMessageClient({
   isAdmin: boolean;
 }) {
   const [properties] = useState<Property[]>(initialProperties);
+  const isSinglePropertyAccount = properties.length === 1;
   const { propertyId, setPropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
@@ -319,7 +320,7 @@ export default function ReservationMessageClient({
         if (!alive) return;
         const items = Array.isArray(j?.items) ? j.items : [];
         setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
-        if (items.length === 0) {
+        if (items.length === 0 && isSinglePropertyAccount) {
           setOnbOpen(true);
           setOnbStep("intro");
           setOnbPreviewUrl(null);
@@ -329,7 +330,7 @@ export default function ReservationMessageClient({
       } finally { if (alive) setLoadingList(false); }
     })();
     return () => { alive = false; };
-  }, [propertyId, propertyReady]);
+  }, [propertyId, propertyReady, isSinglePropertyAccount]);
 
   async function sleep(ms: number) {
     await new Promise<void>((r) => window.setTimeout(r, ms));

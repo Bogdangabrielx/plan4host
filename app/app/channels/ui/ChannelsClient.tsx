@@ -91,6 +91,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   // Responsive: mobil (telefon)
 
   const [properties] = useState<Property[]>(initialProperties);
+  const isSinglePropertyAccount = properties.length === 1;
   const { propertyId, setPropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
   // Cache property presentation images (for avatar in pill selector)
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
@@ -363,6 +364,17 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     if (integrations.length > 0) return;
     if (loadedForPropertyId !== propertyId) return;
     if (calendarOnboardingOpen) return;
+    if (!isSinglePropertyAccount) {
+      // If we arrived with onboarding params, drop them to avoid repeated URL noise.
+      try {
+        const u = new URL(window.location.href);
+        if (u.searchParams.has("onboarding")) {
+          u.searchParams.delete("onboarding");
+          window.history.replaceState({}, "", u.toString());
+        }
+      } catch {}
+      return;
+    }
     try {
       const u = new URL(window.location.href);
       const onb = (u.searchParams.get("onboarding") || "").toLowerCase();
@@ -383,7 +395,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     } catch {
       // ignore
     }
-  }, [propertyReady, propertyId, status, integrations.length, loadedForPropertyId, calendarOnboardingOpen]);
+  }, [propertyReady, propertyId, status, integrations.length, loadedForPropertyId, calendarOnboardingOpen, isSinglePropertyAccount]);
 
   /* URLs & helpers */
   function roomIcsUrl(id: string) { return `${origin}/api/ical/rooms/${id}.ics`; }
