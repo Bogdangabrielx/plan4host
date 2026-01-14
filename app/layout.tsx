@@ -165,8 +165,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --card-h: 220;  --card-s: 3%; --card-l: 18%;
   --border-h: 220; --border-s: 4%; --border-l: 28%;
 
-  /* Primary derived from accent-h — stronger chroma for clearer accent */
-  --primary-h: var(--accent-h); --primary-s: 92%; --primary-l: 58%;
+  /* Primary (dark theme) — match light theme green */
+  --primary-h: 140; --primary-s: 60%; --primary-l: 52%;
   --danger-h: 6; --danger-s: 78%; --danger-l: 56%;
   --success-h: 135; --success-s: 58%; --success-l: 58%;
 
@@ -178,7 +178,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --panel-L: 0.22; --panel-C: 0.01; --panel-h-ok: 250;
   --card-L: 0.26;  --card-C: 0.01; --card-h-ok: 250;
   --border-L: 0.36; --border-C: 0.01; --border-h-ok: 250;
-  --primary-L: 0.70; --primary-C: 0.18; --primary-h-ok: var(--accent-h);
+  --primary-L: 0.68; --primary-C: 0.12; --primary-h-ok: 145;
   --danger-L: 0.63; --danger-C: 0.16; --danger-h-ok: 25;
   --success-L: 0.66; --success-C: 0.12; --success-h-ok: 145;
 }
