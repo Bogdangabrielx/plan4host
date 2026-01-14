@@ -268,11 +268,17 @@ export default function ReservationMessageClient({
   const [onbOpen, setOnbOpen] = useState<boolean>(false);
   const [onbStep, setOnbStep] = useState<OnboardingStep>("intro");
   const [onbLoadingStage, setOnbLoadingStage] = useState<0 | 1>(0);
+  const [onbLoadingVariant, setOnbLoadingVariant] = useState<"message" | "templates">("message");
   const [onbPreviewUrl, setOnbPreviewUrl] = useState<string | null>(null);
   const [onbError, setOnbError] = useState<string | null>(null);
   const [onbPortalOpened, setOnbPortalOpened] = useState<boolean>(false);
   const [onbCompletingAll, setOnbCompletingAll] = useState<boolean>(false);
   const [recapCopied, setRecapCopied] = useState<boolean>(false);
+  const onbOpenRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    onbOpenRef.current = onbOpen;
+  }, [onbOpen]);
 
   async function copyCheckinLink() {
     if (!propertyId) return;
@@ -329,8 +335,23 @@ export default function ReservationMessageClient({
     await new Promise<void>((r) => window.setTimeout(r, ms));
   }
 
+  async function runTemplatePickerIntroLoading() {
+    setOnbError(null);
+    setOnbLoadingVariant("templates");
+    setOnbStep("loading");
+    setOnbLoadingStage(0);
+    await sleep(3000);
+    if (!onbOpenRef.current) return;
+    setOnbLoadingStage(1);
+    await sleep(3000);
+    if (!onbOpenRef.current) return;
+    setOnbLoadingVariant("message");
+    setOnbStep("pick");
+  }
+
   async function runOnboardingLoadingSequence(task: () => Promise<void>) {
     setOnbError(null);
+    setOnbLoadingVariant("message");
     setOnbStep("loading");
     setOnbLoadingStage(0);
     const start = Date.now();
@@ -1385,11 +1406,13 @@ export default function ReservationMessageClient({
 		                    </div>
 		                  )}
 		                </div>
-		                <button
-		                  type="button"
+                <button
+                  type="button"
 	                  className="sb-btn sb-btn--small"
                   onClick={() => {
                     setOnbOpen(false);
+                    setOnbLoadingVariant("message");
+                    setOnbStep("intro");
                   }}
                   style={{
                     width: 28,
@@ -1421,9 +1444,9 @@ export default function ReservationMessageClient({
 		                    <button
 		                      className="sb-btn sb-btn--primary sb-cardglow"
 		                      style={{ width: "100%", background: "var(--primary)", justifyContent: "center", color: "#fff" }}
-		                      onClick={() => setOnbStep("pick")}
+		                      onClick={() => void runTemplatePickerIntroLoading()}
 		                    >
-		                      Choose template
+		                      View templates
 		                    </button>
 		                    <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 12, lineHeight: 1.5 }}>
 		                      Created by us, in Romanian and English.
@@ -1744,15 +1767,27 @@ export default function ReservationMessageClient({
 
       {/* Onboarding loading overlay (between pick/custom and reward) */}
       {onbStep === "loading" && (
-        <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label="Preparing your message…" style={{ zIndex: 262 }}>
+        <div
+          className={overlayStyles.overlay}
+          role="status"
+          aria-live="polite"
+          aria-label={onbLoadingVariant === "templates" ? "Preparing templates…" : "Preparing your message…"}
+          style={{ zIndex: 262 }}
+        >
           <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
-            <LoadingPill title="Preparing your message…" />
+            <LoadingPill title={onbLoadingVariant === "templates" ? "Preparing templates…" : "Preparing your message…"} />
             <div style={{ display: "grid", gap: 6, textAlign: "center" }}>
               <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", fontWeight: 700 }}>
-                Preparing your message…
+                {onbLoadingVariant === "templates" ? "Preparing templates…" : "Preparing your message…"}
               </div>
               <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                {onbLoadingStage === 0 ? "Creating your automatic message…" : "We are almost done…"}
+                {onbLoadingVariant === "templates"
+                  ? onbLoadingStage === 0
+                    ? "Crafting a selection for you…"
+                    : "Design is almost ready…"
+                  : onbLoadingStage === 0
+                    ? "Creating your automatic message…"
+                    : "We are almost done…"}
               </div>
             </div>
           </div>
