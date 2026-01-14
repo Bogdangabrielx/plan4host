@@ -123,6 +123,17 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const calendarOnboardingLoadingTimerRef = useRef<number | null>(null);
   const [calendarOnboardingError, setCalendarOnboardingError] = useState<string | null>(null);
   const [calendarOnboardingDidSync, setCalendarOnboardingDidSync] = useState<boolean>(false);
+  const [calendarExportCopyState, setCalendarExportCopyState] = useState<"idle" | "copied" | "hint">("idle");
+  const calendarExportCopyTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (calendarOnboardingStep === "export" && calendarOnboardingOpen) return;
+    setCalendarExportCopyState("idle");
+    if (calendarExportCopyTimerRef.current) {
+      window.clearTimeout(calendarExportCopyTimerRef.current);
+      calendarExportCopyTimerRef.current = null;
+    }
+  }, [calendarOnboardingStep, calendarOnboardingOpen, propertyId]);
 
   const [origin, setOrigin] = useState<string>("");
   useEffect(() => { setOrigin(window.location.origin); }, []);
@@ -904,9 +915,19 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     const exportUrl = types[0]?.id ? typeIcsUrl(types[0].id) : rooms[0]?.id ? roomIcsUrl(rooms[0].id) : "";
                     if (!exportUrl) return;
                     try { await navigator.clipboard.writeText(exportUrl); } catch { prompt("Copy export link:", exportUrl); }
+                    setCalendarExportCopyState("copied");
+                    if (calendarExportCopyTimerRef.current) window.clearTimeout(calendarExportCopyTimerRef.current);
+                    calendarExportCopyTimerRef.current = window.setTimeout(() => {
+                      setCalendarExportCopyState("hint");
+                      calendarExportCopyTimerRef.current = null;
+                    }, 1000);
                   }}
                 >
-                  Copy export link
+                  {calendarExportCopyState === "idle"
+                    ? "Copy export link"
+                    : calendarExportCopyState === "copied"
+                      ? "Copied"
+                      : "Use it on your booking platform"}
                 </button>
                 <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
                   You can add this anytime from Calendar settings.
