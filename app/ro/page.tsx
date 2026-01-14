@@ -1061,7 +1061,7 @@ export default function HomePageRO() {
             <button
               type="button"
               onClick={() => scrollToId("features-title")}
-              className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
+              className={`sb-cardglow ${styles.btn} ${styles.btnOutline} ${styles.focusable}`}
             >
               Vezi cum funcționează
             </button>
