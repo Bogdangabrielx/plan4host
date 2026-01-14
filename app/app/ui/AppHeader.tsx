@@ -559,7 +559,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           left: 0,
           right: 0,
           height: "var(--safe-top)",
-          background: transparentMobileHeader ? "transparent" : "var(--panel)",
+          background: transparentMobileHeader ? "var(--app-header-mobile-bg, transparent)" : "var(--panel)",
           ...(transparentMobileHeader
             ? { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }
             : null),
@@ -587,7 +587,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
           paddingTop: isSmall ? 12 : 10,
           paddingBottom: isSmall ? 12 : 10,
           paddingLeft: isSmall ? 10 : 14,
-          background: transparentMobileHeader ? "transparent" : "var(--panel)",
+          background: transparentMobileHeader ? "var(--app-header-mobile-bg, transparent)" : "var(--panel)",
           ...(transparentMobileHeader
             ? {
                 borderBottom: "1px solid var(--border)",

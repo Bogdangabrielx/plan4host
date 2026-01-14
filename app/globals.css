@@ -680,3 +680,8 @@ select:not(.sb-select){ /* opțional */
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 }
+
+/* On light theme, when the global loading overlay is visible, make the mobile header non-transparent (bottom-nav layouts). */
+:root[data-theme="light"][data-p4h-app-loading="1"]{
+  --app-header-mobile-bg: var(--panel);
+}

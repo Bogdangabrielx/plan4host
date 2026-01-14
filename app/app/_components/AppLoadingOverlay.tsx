@@ -45,6 +45,14 @@ export default function AppLoadingOverlay() {
   const showMessage = useMemo(() => hasOverlayMessage(pill), [pill]);
   const open = useMemo(() => isBusy || showMessage, [isBusy, showMessage]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!mounted) return;
+    if (open) root.setAttribute("data-p4h-app-loading", "1");
+    else root.removeAttribute("data-p4h-app-loading");
+    return () => root.removeAttribute("data-p4h-app-loading");
+  }, [open, mounted]);
+
   if (!mounted || !open) return null;
 
   return createPortal(
