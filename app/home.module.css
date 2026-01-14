@@ -189,6 +189,20 @@ will-change: transform;
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
 }
 
+/* Green outline CTA (inverse hover vs .btnSolid) */
+.btnOutline {
+  background: transparent;
+  border-color: var(--success);
+  color: var(--success);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+}
+.btnOutline:hover {
+  background: var(--success);
+  border-color: var(--success);
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.16);
+}
+
 /* AI gradient CTA */
 .btnAi {
   background: linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%);

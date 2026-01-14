@@ -962,7 +962,7 @@ export default function HomePageRO() {
 		          </a>
 		        </div>
         <div className={styles.actions}>
-          <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnText} ${styles.focusable}`}>Logare</Link>
+          <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnOutline} ${styles.focusable}`}>Logare</Link>
           <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}>Încearcă</CtaLink>
           <button
             type="button"
@@ -1061,7 +1061,7 @@ export default function HomePageRO() {
             <button
               type="button"
               onClick={() => scrollToId("features-title")}
-              className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+              className={`sb-cardglow ${styles.btn} ${styles.btnOutline} ${styles.focusable}`}
             >
               Vezi cum funcționează
             </button>

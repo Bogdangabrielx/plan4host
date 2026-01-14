@@ -1126,7 +1126,7 @@ export default function HomePage() {
 
         {/* Actions + Mobile toggle */}
         <div className={styles.actions}>
-          <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnText} ${styles.focusable}`}>
+          <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnOutline} ${styles.focusable}`}>
             Sign in
           </Link>
 
@@ -1235,7 +1235,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => scrollToId("features-title")}
-              className={`sb-cardglow ${styles.btn}  ${styles.btnChoose} ${styles.focusable}`}
+              className={`sb-cardglow ${styles.btn} ${styles.btnOutline} ${styles.focusable}`}
             >
               See how it works
 	            </button>
