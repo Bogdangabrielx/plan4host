@@ -80,6 +80,50 @@ function looksEnumHoldError(msg?: string) {
   return !!msg && /invalid input value for enum .*: "hold"/i.test(msg);
 }
 
+function wrapEmailHtml(subjectPlain: string, innerHtml: string): string {
+  const border = "#e2e8f0";
+  const text = "#0f172a";
+  const muted = "#475569";
+  const success = "#3ECF8E";
+  return `<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${subjectPlain || "Notification"}</title>
+    <style>
+      body { margin:0; padding:0; background:#f8fafc; }
+      img { border:0; outline:none; text-decoration:none; max-width:100%; height:auto; display:block; }
+      a { color:${success}; text-decoration:none; }
+      .muted { color:${muted}; }
+      @media (prefers-color-scheme: dark) {
+        body { background:#0c111b !important; color:#f8fafc !important; }
+        .card { background:#111827 !important; border-color:#22304a !important; }
+        .muted { color:#9aa4af !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background:#f8fafc;">
+      <tr>
+        <td align="center" style="padding:24px 16px;">
+          <table class="card" role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:600px; background:#ffffff; border:1px solid ${border}; border-radius:14px; box-shadow:0 6px 24px rgba(0,0,0,0.06);">
+            <tr>
+              <td style="padding:24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:${text}; font-size:16px; line-height:1.6;">
+                ${innerHtml}
+              </td>
+            </tr>
+          </table>
+          <div class="muted" style="max-width:600px; margin:12px auto 0; color:${muted}; font-size:12px; text-align:center; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+            Plan4Host · Bucharest, RO
+          </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>`;
+}
+
 /* ---------------- room/type helpers ---------------- */
 async function normalizeRoomId(room_id: any, property_id: string): Promise<string | null> {
   if (!room_id) return null;
@@ -509,19 +553,30 @@ export async function POST(req: NextRequest) {
             const appBase = (process.env.NEXT_PUBLIC_APP_URL || '').toString().replace(/\/+$/, '');
             const link = `${appBase}/app/guest?property=${encodeURIComponent(property_id)}`;
             const subject = `New check-in submitted ${propName ? ` — ${propName}` : ''}`;
-            const html = `
-              <div style="background:#ffffff; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0c111b; line-height:1.6; padding:16px;">
-                <h2 style="margin:0 0 12px;">New check-in submitted${propName ? ` for <span style=\"color:#3ECF8E\">${propName.replace(/[&<>\"]/g,'')}</span>` : ''}</h2>
-                <p style="margin:8px 0;">A guest completed the check-in form and the reservation is now <strong>awaiting room assignment</strong>.</p>
-                <div style="margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:grid; gap:10px;">
-                  <div style="display:flex; align-items:center; gap:8px;"><strong style="margin-right:6px;">Stay:</strong> <span>${start_date} → ${end_date}</span></div>
-                </div>
-                <p style="margin:8px 0; color:#475569;">Open Guest Overview to assign a room and confirm the reservation.</p>
-                <div style="margin-top:10px;">
-                  <a href="${link}" target="_blank" style="display:inline-block; padding:10px 14px; background:#ffffff; border:1px solid #e2e8f0; color:#16b981; text-decoration:none; border-radius:10px; font-weight:800;">Open Guest Overview</a>
+            const safeProp = propName.replace(/[&<>\"]/g,'');
+            const html = wrapEmailHtml(subject, `
+              <h2 style="margin:0 0 8px; font-size:22px; line-height:1.2;">
+                New check-in submitted${propName ? ` for <span style="color:#3ECF8E;">${safeProp}</span>` : ''}
+              </h2>
+              <p class="muted" style="margin:0 0 16px; color:#475569;">
+                A guest completed the check-in form and the reservation is now <strong>awaiting room assignment</strong>.
+              </p>
+              <div style="margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; display:grid; gap:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <strong style="margin-right:6px;">Stay:</strong>
+                  <span>${start_date} → ${end_date}</span>
                 </div>
               </div>
-            `;
+              <p class="muted" style="margin:0 0 14px; color:#475569;">
+                Open Guest Overview to assign a room and confirm the reservation.
+              </p>
+              <p style="margin:0; text-align:center;">
+                <a href="${link}" target="_blank" rel="noopener"
+                  style="display:inline-block; padding:12px 18px; background:#E9FBF3; border:1px solid #3ECF8E; color:#1f7a52; text-decoration:none; border-radius:999px; font-weight:800;">
+                  Guest overview
+                </a>
+              </p>
+            `);
             try { await transporter.sendMail({ from: `${fromName} <${fromEmail}>`, to, subject, html }); } catch {}
           }
         }

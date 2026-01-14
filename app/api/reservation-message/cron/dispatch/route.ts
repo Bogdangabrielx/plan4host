@@ -11,8 +11,9 @@ function bad(status: number, body: any) { return NextResponse.json(body, { statu
 function wrapEmailHtml(subjectPlain: string, innerHtml: string): string {
   const border = '#e2e8f0';
   const text = '#0f172a';
-  const muted = '#64748b';
-  const primary = '#16b981';
+  const muted = '#475569';
+  const success = '#3ECF8E';
+  const successSoft = '#E9FBF3';
   return `<!DOCTYPE html>
   <html lang="en">
   <head>
@@ -20,32 +21,35 @@ function wrapEmailHtml(subjectPlain: string, innerHtml: string): string {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${subjectPlain || 'New message'}</title>
     <style>
-      body { margin:0; padding:0; background:#ffffff; }
+      body { margin:0; padding:0; background:#f8fafc; }
       img { border:0; outline:none; text-decoration:none; max-width:100%; height:auto; display:block; }
-      a { color:${primary}; text-decoration:none; }
+      a { color:${success}; text-decoration:none; }
       .p4h h1,.p4h h2,.p4h h3{ margin:0 0 12px; line-height:1.25; }
       .p4h p, .p4h div { line-height:1.6; }
       .p4h hr { border:0; border-top:1px solid ${border}; margin:14px 0; opacity:.9; }
       .p4h-muted { color:${muted}; font-size:12px; }
-      @media (prefers-color-scheme: dark) { body { background:#ffffff !important; } }
+      @media (prefers-color-scheme: dark) {
+        body { background:#0c111b !important; color:#f8fafc !important; }
+        .card { background:#111827 !important; border-color:#22304a !important; }
+        .muted { color:#9aa4af !important; }
+        .btnSoft { background:rgba(62,207,142,0.16) !important; border-color:${success} !important; color:${success} !important; }
+      }
     </style>
   </head>
   <body>
     <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background:#ffffff;">
       <tr>
-        <td align="center" style="padding:16px; background:#f5f8fb;">
-          <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:640px; background:#ffffff; border:1px solid ${border}; border-radius:12px;">
+        <td align="center" style="padding:24px 16px; background:#f8fafc;">
+          <table class="card" role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:600px; background:#ffffff; border:1px solid ${border}; border-radius:14px; box-shadow:0 6px 24px rgba(0,0,0,0.06);">
             <tr>
               <td style="padding:24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:${text}; font-size:16px; line-height:1.6;">
                 <div class="p4h">${innerHtml}</div>
               </td>
             </tr>
-            <tr>
-              <td style="padding:12px 24px; border-top:1px solid ${border};">
-                <div class="p4h-muted" style="font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Powered by Plan4Host</div>
-              </td>
-            </tr>
           </table>
+          <div class="muted" style="max-width:600px; margin:12px auto 0; color:${muted}; font-size:12px; text-align:center; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+            Plan4Host · Bucharest, RO
+          </div>
         </td>
       </tr>
     </table>
@@ -160,21 +164,31 @@ export async function GET(req: NextRequest) {
         const link = `${base}/r/${m.token}`;
         const propName = (prop?.name || '').toString().trim() || 'Your property';
         const subject = `[Reservation messages] New message — ${propName} ${subjTag}`;
-        const htmlInner = `
-          <h2 style="margin:0 0 12px;">New message from <span style=\"color:#16b981;\">${(prop.name || '').toString()}</span></h2>
-          <p>You have a new message regarding your reservation.</p>
-          <p><a href="${link}" target="_blank" style="display:inline-block; padding:10px 14px; background:#16b981; color:#0c111b; text-decoration:none; border-radius:10px; font-weight:800;">Open reservation messages</a></p>
-          <p style="color:#64748b; font-size:12px;">This link shows all messages for your reservation.</p>
-        `;
         const subjectVisible = subject.replace(/\s*\[tpl:[^\]]+\]\s*$/, '');
         const subjectTagged = subject;
         const html = wrapEmailHtml(subjectVisible, `
-          <h2 style="margin:0 0 12px;">New message from <span style="color:#16b981;">${(prop.name || '').toString()}</span></h2>
-          <div style="margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-            <p style="margin:8px 0;">You have a new message regarding your reservation.</p>
-            <p style="margin:10px 0;"><a href="${link}" target="_blank" style="display:inline-block; padding:10px 14px; background:#16b981; color:#0c111b; text-decoration:none; border-radius:10px; font-weight:800;">Open reservation messages</a></p>
-            <p style="margin:8px 0; color:#64748b; font-size:12px;">This link shows all messages for your reservation.</p>
-          </div>
+          <h2 style="margin:0 0 8px; font-size:22px; line-height:1.2;">
+            New message from <span style="color:#3ECF8E;">${(prop.name || '').toString()}</span>
+          </h2>
+          <p class="muted" style="margin:0 0 16px; color:#475569;">
+            You have a new message regarding your reservation.
+          </p>
+
+          <p style="margin:0 0 14px; text-align:center;">
+            <a
+              class="btnSoft"
+              href="${link}"
+              target="_blank"
+              rel="noopener"
+              style="display:inline-block; padding:12px 18px; background:#E9FBF3; border:1px solid #3ECF8E; color:#1f7a52; text-decoration:none; border-radius:999px; font-weight:800;"
+            >
+              Reservation messages
+            </a>
+          </p>
+
+          <p class="muted" style="margin:0; color:#475569; font-size:12px; text-align:center;">
+            This link shows all messages for your reservation.
+          </p>
         `);
 
         // Send + outbox

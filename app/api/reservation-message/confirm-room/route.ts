@@ -148,10 +148,10 @@ export async function POST(req: Request) {
         </div>
       </div>
       <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap;">
-        <a href="${link}" target="_blank" style="display:inline-block; padding:10px 14px; background:#ffffff; border:1px solid #e2e8f0; color:#16b981; text-decoration:none; border-radius:10px; font-weight:800;">Open Reservation messages</a>
-        ${gcal ? `<a href=\"${gcal}\" target=\"_blank\" style=\"display:inline-block; padding:10px 14px; background:#ffffff; border:1px solid #e2e8f0; color:#16b981; text-decoration:none; border-radius:10px; font-weight:800;\">Add to calendar</a>` : ''}
+        <a href="${link}" target="_blank" rel="noopener" style="display:inline-block; padding:12px 18px; background:#E9FBF3; border:1px solid #3ECF8E; color:#1f7a52; text-decoration:none; border-radius:999px; font-weight:800;">Reservation messages</a>
+        ${gcal ? `<a href=\"${gcal}\" target=\"_blank\" rel=\"noopener\" style=\"display:inline-block; padding:12px 18px; background:#E9FBF3; border:1px solid #3ECF8E; color:#1f7a52; text-decoration:none; border-radius:999px; font-weight:800;\">Add to calendar</a>` : ''}
       </div>
-      <p style="margin:10px 0 0; color:#64748b; font-size:12px;">An .ics file is attached for your calendar.</p>
+      <p class="muted" style="margin:10px 0 0; color:#475569; font-size:12px;">An .ics file is attached for your calendar.</p>
     `;
     const html = wrapEmailHtml(subjectPlain, inner);
 
@@ -210,15 +210,43 @@ function escapeHtml(s: string) {
 function wrapEmailHtml(subjectPlain: string, innerHtml: string): string {
   const border = '#e2e8f0';
   const text = '#0f172a';
-  const link = '#16b981';
+  const muted = '#475569';
+  const success = '#3ECF8E';
   return `<!DOCTYPE html>
-    <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>${escapeHtml(subjectPlain)}</title>
-    <style>body{margin:0;padding:0;background:#ffffff;}img{border:0;outline:none;text-decoration:none;max-width:100%;height:auto;display:block;}a{color:${link};}</style>
-    </head><body>
-    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background:#ffffff;"><tr><td align="center" style="padding:16px; background:#f5f8fb;">
-    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:640px; background:#ffffff; border:1px solid ${border}; border-radius:12px;">
-    <tr><td style="padding:24px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:${text}; font-size:16px; line-height:1.6;">${innerHtml}</td></tr>
-    <tr><td style="padding:12px 24px; border-top:1px solid ${border};"><div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#64748b;font-size:12px;">Powered by Plan4Host</div></td></tr>
-    </table></td></tr></table>
-    </body></html>`;
+  <html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(subjectPlain || 'Reservation confirmation')}</title>
+    <style>
+      body{margin:0;padding:0;background:#f8fafc;}
+      img{border:0;outline:none;text-decoration:none;max-width:100%;height:auto;display:block;}
+      a{color:${success};text-decoration:none;}
+      .muted{color:${muted};}
+      @media (prefers-color-scheme: dark){
+        body{background:#0c111b !important;color:#f8fafc !important;}
+        .card{background:#111827 !important;border-color:#22304a !important;}
+        .muted{color:#9aa4af !important;}
+      }
+    </style>
+  </head>
+  <body>
+    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background:#f8fafc;">
+      <tr>
+        <td align="center" style="padding:24px 16px;">
+          <table class="card" role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:600px; background:#ffffff; border:1px solid ${border}; border-radius:14px; box-shadow:0 6px 24px rgba(0,0,0,0.06);">
+            <tr>
+              <td style="padding:24px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:${text}; font-size:16px; line-height:1.6;">
+                ${innerHtml}
+              </td>
+            </tr>
+          </table>
+          <div class="muted" style="max-width:600px; margin:12px auto 0; color:${muted}; font-size:12px; text-align:center; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+            Plan4Host · Bucharest, RO
+          </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>`;
 }
