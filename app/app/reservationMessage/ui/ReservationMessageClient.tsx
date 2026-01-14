@@ -1351,14 +1351,14 @@ export default function ReservationMessageClient({
                 gap: 14,
               }}
             >
-	              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-	                <div style={{ width: "100%", textAlign: "center" }}>
-	                  <div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", fontWeight: 700, color: "var(--muted)" }}>
-	                    Automatic messages
-	                  </div>
-	                </div>
-	                <button
-	                  type="button"
+		              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+		                <div style={{ width: "100%", textAlign: "center" }}>
+		                  <div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", fontWeight: 700, color: "var(--muted)" }}>
+		                    {onbStep === "recap" ? "Quick recap" : onbStep === "final" ? "You’re live 🎉" : "Automatic messages"}
+		                  </div>
+		                </div>
+		                <button
+		                  type="button"
 	                  className="sb-btn sb-btn--small"
                   onClick={() => {
                     setOnbOpen(false);
@@ -1480,66 +1480,87 @@ export default function ReservationMessageClient({
 	                </div>
 	              )}
 
-                {onbStep === "recap" && (
-                  <div style={{ display: "grid", gap: 12 }}>
-                    <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
-                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>
-                        Quick recap
-                      </div>
-                      <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)" }}>
-                        Invite → Check-in → Messages
-                      </div>
-                    </div>
+	                {onbStep === "recap" && (
+	                  <div style={{ display: "grid", gap: 12 }}>
+	                    <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
+	                      <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)" }}>
+	                        Invite → Check-in → Messages
+	                      </div>
+	                    </div>
 
-                    <div style={{ display: "grid", gap: 10 }}>
-                      <div style={{ padding: "12px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)", display: "grid", gap: 6 }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                          <div style={{ fontWeight: 800, color: "var(--text)" }}>1) You send the check-in link</div>
-                          <span
-                            aria-hidden
-                            style={{
-                              width: 18,
-                              height: 18,
-                              display: "block",
-                              backgroundColor: "var(--primary)",
-                              WebkitMaskImage: "url(/svg_copy_demo.svg)",
-                              maskImage: "url(/svg_copy_demo.svg)",
-                              WebkitMaskRepeat: "no-repeat",
-                              maskRepeat: "no-repeat",
-                              WebkitMaskPosition: "center",
-                              maskPosition: "center",
-                              WebkitMaskSize: "contain",
-                              maskSize: "contain",
-                              flex: "0 0 auto",
-                            }}
-                          />
-                        </div>
-                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
-                          From your booking platform (Booking, Airbnb, WhatsApp, email).
-                        </div>
-                      </div>
+	                    <div
+	                      style={{
+	                        padding: "12px 12px",
+	                        borderRadius: 12,
+	                        border: "1px solid var(--border)",
+	                        background: "color-mix(in srgb, var(--card) 88%, transparent)",
+	                        display: "grid",
+	                        gap: 12,
+	                      }}
+	                    >
+	                      <div style={{ display: "grid", gap: 6 }}>
+	                        <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap", textAlign: "center" }}>
+	                          <span style={{ fontWeight: 750, color: "var(--text)", fontSize: 13, lineHeight: 1.5 }}>
+	                            1️⃣ You send the check-in link
+	                          </span>
+	                          <span
+	                            aria-hidden
+	                            style={{
+	                              width: 18,
+	                              height: 18,
+	                              display: "inline-block",
+	                              backgroundColor: "var(--primary)",
+	                              WebkitMaskImage: "url(/svg_copy_demo.svg)",
+	                              maskImage: "url(/svg_copy_demo.svg)",
+	                              WebkitMaskRepeat: "no-repeat",
+	                              maskRepeat: "no-repeat",
+	                              WebkitMaskPosition: "center",
+	                              maskPosition: "center",
+	                              WebkitMaskSize: "contain",
+	                              maskSize: "contain",
+	                              flex: "0 0 auto",
+	                              transform: "translateY(1px)",
+	                            }}
+	                          />
+	                        </div>
+	                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5, textAlign: "center" }}>
+	                          From your booking platform (Booking, Airbnb, WhatsApp, email).
+	                        </div>
+	                      </div>
 
-                      <div style={{ padding: "12px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)", display: "grid", gap: 6 }}>
-                        <div style={{ fontWeight: 800, color: "var(--text)" }}>2) The guest completes check-in</div>
-                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
-                          They submit their details and accept your house rules. You get notified and confirm the reservation inside Plan4Host.
-                        </div>
-                      </div>
+	                      <div style={{ height: 1, background: "color-mix(in srgb, var(--border) 70%, transparent)" }} aria-hidden />
 
-                      <div style={{ padding: "12px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)", display: "grid", gap: 6 }}>
-                        <div style={{ fontWeight: 800, color: "var(--text)" }}>3) Messages appear automatically</div>
-                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
-                          After confirmation, guests access their message portal. Your scheduled messages show up there at the right time.
-                        </div>
-                      </div>
-                    </div>
+	                      <div style={{ display: "grid", gap: 6 }}>
+	                        <div style={{ fontWeight: 750, color: "var(--text)", fontSize: 13, lineHeight: 1.5, textAlign: "center" }}>
+	                          2️⃣ The guest completes check-in
+	                        </div>
+	                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5, textAlign: "center" }}>
+	                          They submit their details and accept your house rules.
+	                          <br />
+	                          You get notified and confirm the reservation inside Plan4Host.
+	                        </div>
+	                      </div>
 
-                    <button
-                      className="sb-btn sb-btn--primary sb-cardglow"
-                      style={{ width: "100%", justifyContent: "center", minHeight: 44 }}
-                      disabled={onbCompletingAll}
-                      onClick={async () => {
-                        setOnbCompletingAll(true);
+	                      <div style={{ height: 1, background: "color-mix(in srgb, var(--border) 70%, transparent)" }} aria-hidden />
+
+	                      <div style={{ display: "grid", gap: 6 }}>
+	                        <div style={{ fontWeight: 750, color: "var(--text)", fontSize: 13, lineHeight: 1.5, textAlign: "center" }}>
+	                          3️⃣ Messages appear automatically
+	                        </div>
+	                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5, textAlign: "center" }}>
+	                          After confirmation, guests access their message portal.
+	                          <br />
+	                          Your scheduled messages show up there at the right time.
+	                        </div>
+	                      </div>
+	                    </div>
+
+	                    <button
+	                      className="sb-btn sb-btn--primary sb-cardglow"
+	                      style={{ width: "100%", justifyContent: "center", minHeight: 44 }}
+	                      disabled={onbCompletingAll}
+	                      onClick={async () => {
+	                        setOnbCompletingAll(true);
                         try {
                           await fetch("/api/onboarding", {
                             method: "POST",
@@ -1549,16 +1570,16 @@ export default function ReservationMessageClient({
                           try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
                         } catch {
                           // ignore
-                        } finally {
-                          setOnbCompletingAll(false);
-                          setOnbStep("final");
-                        }
-                      }}
-                    >
-                      {onbCompletingAll ? "Marking…" : "Mark onboarding as completed"}
-                    </button>
-                  </div>
-                )}
+	                        } finally {
+	                          setOnbCompletingAll(false);
+	                          setOnbStep("final");
+	                        }
+	                      }}
+	                    >
+	                      {onbCompletingAll ? "Completing…" : "Complete"}
+	                    </button>
+	                  </div>
+	                )}
 
                 {onbStep === "final" && (
                   <div style={{ display: "grid", gap: 12 }}>
@@ -1569,15 +1590,38 @@ export default function ReservationMessageClient({
                       </div>
                     </div>
 
-                    <div style={{ display: "grid", gap: 10, color: "var(--muted)", fontSize: 13, lineHeight: 1.55 }}>
-                      <div style={{ padding: "12px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                        <div style={{ fontWeight: 800, color: "var(--text)", marginBottom: 6 }}>You can now:</div>
-                        <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 6 }}>
-                          <li>share the check-in link</li>
-                          <li>receive completed check-ins</li>
-                          <li>let messages run automatically</li>
-                        </ul>
-                      </div>
+	                    <div style={{ display: "grid", gap: 10, color: "var(--muted)", fontSize: 13, lineHeight: 1.55 }}>
+	                      <div style={{ padding: "12px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+	                        <div style={{ fontWeight: 800, color: "var(--text)", marginBottom: 6 }}>You can now:</div>
+	                        <div style={{ display: "grid", gap: 8 }}>
+	                          {[
+	                            "Share the check-in link",
+	                            "Receive completed check-ins",
+	                            "Let messages run automatically",
+	                          ].map((label) => (
+	                            <div key={label} style={{ display: "grid", gridTemplateColumns: "20px 1fr", alignItems: "center", gap: 10 }}>
+	                              <span
+	                                aria-hidden
+	                                style={{
+	                                  width: 18,
+	                                  height: 18,
+	                                  borderRadius: 999,
+	                                  border: "2px solid var(--success)",
+	                                  background: "color-mix(in srgb, var(--success) 16%, transparent)",
+	                                  display: "grid",
+	                                  placeItems: "center",
+	                                  color: "var(--success)",
+	                                  fontWeight: 900,
+	                                  lineHeight: 1,
+	                                }}
+	                              >
+	                                ✓
+	                              </span>
+	                              <div style={{ color: "var(--text)", fontWeight: 500 }}>{label}</div>
+	                            </div>
+	                          ))}
+	                        </div>
+	                      </div>
                       <div style={{ textAlign: "center" }}>
                         You can customize anything anytime: rooms, calendars, messages, schedules.
                       </div>

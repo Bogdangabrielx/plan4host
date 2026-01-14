@@ -647,7 +647,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         <div
           role="dialog"
           aria-modal="true"
-          onClick={() => setCalendarOnboardingOpen(false)}
+          onClick={() => {}}
           style={{
             position: "fixed",
             inset: 0,

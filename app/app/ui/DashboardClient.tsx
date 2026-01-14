@@ -995,15 +995,15 @@ export default function DashboardClient({
 	        </div>
 	      )}
 
-		      {/* AHA modal: guest link ready (no explicit link shown) */}
-		      {firstPropertyResult && (
-	        <>
-	          <div
-	            onClick={() => setFirstPropertyResult(null)}
-	            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 241 }}
-	          />
-	          <div
-	            role="dialog"
+			      {/* AHA modal: guest link ready (no explicit link shown) */}
+			      {firstPropertyResult && (
+		        <>
+		          <div
+		            onClick={() => {}}
+		            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 241 }}
+		          />
+		          <div
+		            role="dialog"
 	            aria-modal="true"
 	            style={{
 	              position: "fixed",
@@ -1044,15 +1044,15 @@ export default function DashboardClient({
 	                    Guest link ready
 	                  </div>
 	                </div>
-	                <button
-	                  aria-label="Close"
-	                  className="sb-btn sb-cardglow sb-btn--icon"
-	                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
-	                  onClick={() => setFirstPropertyResult(null)}
-	                >
-	                  ×
-	                </button>
-	              </div>
+		                <button
+		                  aria-label="Close"
+		                  className="sb-btn sb-cardglow sb-btn--icon"
+		                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
+		                  onClick={() => setFirstPropertyResult(null)}
+		                >
+		                  ×
+		                </button>
+		              </div>
 		              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
 		                This is what your guest will see.
 		              </div>

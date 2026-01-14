@@ -217,6 +217,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [houseRulesWizardStep, setHouseRulesWizardStep] = useState<
     "intro" | "choose" | "create" | "uploaded" | "reward"
   >("intro");
+  const [houseRulesCreateCtaFlip, setHouseRulesCreateCtaFlip] = useState<boolean>(false);
   const [houseRulesWizardLoading, setHouseRulesWizardLoading] = useState<boolean>(false);
   const [houseRulesWizardLoadingText, setHouseRulesWizardLoadingText] = useState<string>("Preparing your house rules…");
   const [houseRulesWizardError, setHouseRulesWizardError] = useState<string | null>(null);
@@ -303,6 +304,16 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       document.documentElement.removeAttribute("data-p4h-modal-open");
     }
   }, [contactsWizardOpen, houseRulesWizardOpen]);
+
+  useEffect(() => {
+    if (!houseRulesWizardOpen) return;
+    if (houseRulesWizardStep !== "choose") return;
+    setHouseRulesCreateCtaFlip(false);
+    const intervalId = window.setInterval(() => {
+      setHouseRulesCreateCtaFlip((prev) => !prev);
+    }, 1500);
+    return () => window.clearInterval(intervalId);
+  }, [houseRulesWizardOpen, houseRulesWizardStep]);
 
   // Close wizard dial dropdown on outside click
   useEffect(() => {
@@ -1211,22 +1222,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </div>
         )}
 
-	        {contactsWizardOpen && prop && (
-	          <div
-	            role="dialog"
-	            aria-modal="true"
-	            onClick={() => {
-	              setContactsWizardOpen(false);
-	              try {
-	                document.documentElement.removeAttribute("data-p4h-modal-open");
-	              } catch {
-	                // ignore
-	              }
-	            }}
-	            style={{
-	              position: "fixed",
-	              inset: 0,
-              zIndex: 240,
+		        {contactsWizardOpen && prop && (
+		          <div
+		            role="dialog"
+		            aria-modal="true"
+		            onClick={() => {}}
+		            style={{
+		              position: "fixed",
+		              inset: 0,
+	              zIndex: 240,
               background: "rgba(0,0,0,0.55)",
               display: "grid",
               placeItems: "center",
@@ -1662,22 +1666,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </div>
         )}
 
-        {houseRulesWizardOpen && prop && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            onClick={() => {
-              setHouseRulesWizardOpen(false);
-              try {
-                document.documentElement.removeAttribute("data-p4h-modal-open");
-              } catch {
-                // ignore
-              }
-            }}
-            style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 2147482500,
+	        {houseRulesWizardOpen && prop && (
+	          <div
+	            role="dialog"
+	            aria-modal="true"
+	            onClick={() => {}}
+	            style={{
+	              position: "fixed",
+	              inset: 0,
+	              zIndex: 2147482500,
               background: "rgba(0,0,0,0.55)",
               display: "grid",
               placeItems: "center",
@@ -1814,13 +1811,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     >
                       Upload a PDF
                     </button>
-                    <button
-                      className="sb-btn sb-btn--primary"
-                      style={{ width: "100%", justifyContent: "center" }}
-                      onClick={() => setHouseRulesWizardStep("create")}
-                    >
-                      Create them here
-                    </button>
+	                    <button
+	                      className="sb-btn sb-btn--primary"
+	                      style={{ width: "100%", justifyContent: "center" }}
+	                      onClick={() => setHouseRulesWizardStep("create")}
+	                    >
+	                      {houseRulesCreateCtaFlip ? "It takes 30 sec." : "Create them here"}
+	                    </button>
                     <button
                       className="sb-btn"
                       style={{ width: "100%", justifyContent: "center" }}

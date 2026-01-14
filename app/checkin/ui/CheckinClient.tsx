@@ -305,13 +305,25 @@ export default function CheckinClient() {
     if (stage !== "form") return;
     // Wait for PDF link to render (if any) and then scroll to consent/link.
     const scroll = () => {
-      const target = houseRulesLinkRef.current || consentCardRef.current;
-      if (!target) return;
+      const target = consentCardRef.current || houseRulesLinkRef.current;
+      if (!target) return false;
       try { target.scrollIntoView({ behavior: "smooth", block: "center" }); } catch {}
+      return true;
     };
+
     const raf = requestAnimationFrame(() => scroll());
-    const t = window.setTimeout(scroll, 120);
-    return () => { cancelAnimationFrame(raf); window.clearTimeout(t); };
+    // Retry a few times in case layout/data loads after mount (hero image, PDF URL, etc.).
+    const t1 = window.setTimeout(() => scroll(), 120);
+    const t2 = window.setTimeout(() => scroll(), 420);
+    const t3 = window.setTimeout(() => scroll(), 900);
+    const t4 = window.setTimeout(() => scroll(), 1500);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      window.clearTimeout(t3);
+      window.clearTimeout(t4);
+    };
   }, [highlightHouseRules, stage, pdfUrl]);
 
   const TXT = useMemo(() => ({
