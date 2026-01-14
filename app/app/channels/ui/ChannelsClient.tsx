@@ -1204,21 +1204,23 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             style={{
               display: 'grid',
               gap: isSmall ? 10 : 6,
-              gridTemplateColumns: isSmall ? '1fr' : 'repeat(3, minmax(0, 1fr))',
-              justifyItems: isSmall ? 'stretch' : 'center',
+              // Avoid overlap on "in-between" desktop widths: cards have a natural maxWidth,
+              // so we let the grid wrap instead of forcing 3 tight columns.
+              gridTemplateColumns: isSmall ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))',
+              justifyItems: 'stretch',
             }}
           >
             {types.length > 0 && (
               <div
                 className="sb-card"
-                style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
+                style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
               >
                 <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Room Types</h4>
                 <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per type</small>
                 <button
                   className="sb-btn"
                   style={{
-                    width: isSmall ? '100%' : 340,
+                    width: '100%',
                     padding: '8px 12px',
                     borderRadius: isSmall ? 29 : 10,
                     border: '1px solid var(--border)',
@@ -1239,14 +1241,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             {types.length > 0 && (
               <div
                 className="sb-card"
-                style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
+                style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
               >
                 <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Import · Room Types</h4>
                 <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics per room type</small>
                 <button
                   className="sb-btn"
                   style={{
-                    width: isSmall ? '100%' : 340,
+                    width: '100%',
                     padding: '8px 12px',
                     borderRadius: isSmall ? 29 : 10,
                     border: '1px solid var(--border)',
@@ -1266,14 +1268,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
             <div
               className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
+              style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
             >
               <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Rooms</h4>
               <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per room</small>
               <button
                 className="sb-btn"
                 style={{
-                  width: isSmall ? '100%' : 340,
+                  width: '100%',
                   padding: '8px 12px',
                   borderRadius: isSmall ? 29 : 10,
                   border: '1px solid var(--border)',
@@ -1292,14 +1294,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
             <div
               className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: isSmall ? '100%' : 360 }}
+              style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
             >
               <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Import · Rooms</h4>
               <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics per room</small>
               <button
                 className="sb-btn"
                 style={{
-                  width: isSmall ? '100%' : 340,
+                  width: '100%',
                   padding: '8px 12px',
                   borderRadius: isSmall ? 29 : 10,
                   border: '1px solid var(--border)',
