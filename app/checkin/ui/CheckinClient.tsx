@@ -898,7 +898,11 @@ export default function CheckinClient() {
     const pid = getQueryParam("property");
     setPropertyId(pid);
     setBookingId(getQueryParam("booking"));
-    if (pid) setStage("intro");
+    // Default to the intro screen (no fast path), unless we deep-link into the form (onboarding preview/highlight).
+    const s = getQueryParam("stage");
+    const h = getQueryParam("highlight");
+    if (s === "form" || h === "house_rules") setStage("form");
+    else if (pid) setStage("intro");
   }, []);
 
   // 2) catalog public

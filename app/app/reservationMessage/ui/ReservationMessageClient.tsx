@@ -272,6 +272,32 @@ export default function ReservationMessageClient({
   const [onbError, setOnbError] = useState<string | null>(null);
   const [onbPortalOpened, setOnbPortalOpened] = useState<boolean>(false);
   const [onbCompletingAll, setOnbCompletingAll] = useState<boolean>(false);
+  const [recapCopied, setRecapCopied] = useState<boolean>(false);
+
+  async function copyCheckinLink() {
+    if (!propertyId) return;
+    const link = `${window.location.origin}/checkin?property=${encodeURIComponent(propertyId)}`;
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = link;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        ta.style.top = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      } catch {
+        // ignore
+      }
+    }
+    setRecapCopied(true);
+    window.setTimeout(() => setRecapCopied(false), 1000);
+  }
 
   const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
 
@@ -1353,9 +1379,11 @@ export default function ReservationMessageClient({
             >
 		              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
 		                <div style={{ width: "100%", textAlign: "center" }}>
-		                  <div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", fontWeight: 700, color: "var(--muted)" }}>
-		                    {onbStep === "recap" ? "Quick recap" : onbStep === "final" ? "You’re live 🎉" : "Automatic messages"}
-		                  </div>
+		                  {onbStep === "pick" && (
+		                    <div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", fontWeight: 700, color: "var(--muted)" }}>
+		                      Automatic messages
+		                    </div>
+		                  )}
 		                </div>
 		                <button
 		                  type="button"
@@ -1462,7 +1490,7 @@ export default function ReservationMessageClient({
 	                    {onbPortalOpened ? (
 	                      <button
 	                        className="sb-btn sb-btn--primary sb-cardglow"
-	                        style={{ width: "100%", justifyContent: "center" }}
+	                        style={{ width: "100%", background:"var(--primary)", justifyContent: "center" }}
 	                        onClick={() => setOnbStep("recap")}
 	                      >
 	                        Continue
@@ -1483,6 +1511,7 @@ export default function ReservationMessageClient({
 	                {onbStep === "recap" && (
 	                  <div style={{ display: "grid", gap: 12 }}>
 	                    <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
+	                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>Quick recap</div>
 	                      <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)" }}>
 	                        Invite → Check-in → Messages
 	                      </div>
@@ -1499,29 +1528,46 @@ export default function ReservationMessageClient({
 	                      }}
 	                    >
 	                      <div style={{ display: "grid", gap: 6 }}>
-	                        <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap", textAlign: "center" }}>
-	                          <span style={{ fontWeight: 750, color: "var(--text)", fontSize: 13, lineHeight: 1.5 }}>
-	                            1️⃣ You send the check-in link
+	                        <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap", textAlign: "center" }}>
+	                          <span style={{ fontWeight: 750, color: "var(--text)", fontSize: 13, lineHeight: 1.5 }}>1️⃣ You send the</span>
+	                          <span style={{ fontWeight: 750, color: "var(--text)", fontSize: 13, lineHeight: 1.5, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 8 }}>
+	                            check-in link
+	                            <button
+	                              type="button"
+	                              aria-label="Copy check-in link"
+	                              onClick={() => void copyCheckinLink()}
+	                              className="sb-btn sb-btn--icon sb-cardglow"
+	                              style={{
+	                                width: 30,
+	                                height: 30,
+	                                borderRadius: 999,
+	                                display: "grid",
+	                                placeItems: "center",
+	                                border: `1px solid ${recapCopied ? "var(--success)" : "var(--border)"}`,
+	                                background: "color-mix(in srgb, var(--card) 88%, transparent)",
+	                                cursor: "pointer",
+	                              }}
+	                              title={recapCopied ? "Copied" : "Copy check-in link"}
+	                            >
+	                              <span
+	                                aria-hidden
+	                                style={{
+	                                  width: 16,
+	                                  height: 16,
+	                                  display: "block",
+	                                  backgroundColor: recapCopied ? "var(--success)" : "var(--primary)",
+	                                  WebkitMaskImage: "url(/svg_copy_demo.svg)",
+	                                  maskImage: "url(/svg_copy_demo.svg)",
+	                                  WebkitMaskRepeat: "no-repeat",
+	                                  maskRepeat: "no-repeat",
+	                                  WebkitMaskPosition: "center",
+	                                  maskPosition: "center",
+	                                  WebkitMaskSize: "contain",
+	                                  maskSize: "contain",
+	                                }}
+	                              />
+	                            </button>
 	                          </span>
-	                          <span
-	                            aria-hidden
-	                            style={{
-	                              width: 18,
-	                              height: 18,
-	                              display: "inline-block",
-	                              backgroundColor: "var(--primary)",
-	                              WebkitMaskImage: "url(/svg_copy_demo.svg)",
-	                              maskImage: "url(/svg_copy_demo.svg)",
-	                              WebkitMaskRepeat: "no-repeat",
-	                              maskRepeat: "no-repeat",
-	                              WebkitMaskPosition: "center",
-	                              maskPosition: "center",
-	                              WebkitMaskSize: "contain",
-	                              maskSize: "contain",
-	                              flex: "0 0 auto",
-	                              transform: "translateY(1px)",
-	                            }}
-	                          />
 	                        </div>
 	                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5, textAlign: "center" }}>
 	                          From your booking platform (Booking, Airbnb, WhatsApp, email).
@@ -1557,7 +1603,7 @@ export default function ReservationMessageClient({
 
 	                    <button
 	                      className="sb-btn sb-btn--primary sb-cardglow"
-	                      style={{ width: "100%", justifyContent: "center", minHeight: 44 }}
+	                      style={{ width: "100%", background:"var(--primary)", justifyContent: "center", minHeight: 44 }}
 	                      disabled={onbCompletingAll}
 	                      onClick={async () => {
 	                        setOnbCompletingAll(true);
@@ -1629,7 +1675,7 @@ export default function ReservationMessageClient({
 
                     <button
                       className="sb-btn sb-btn--primary sb-cardglow"
-                      style={{ width: "100%", justifyContent: "center", minHeight: 44 }}
+                      style={{ width: "100%", background:"var(--primary)", justifyContent: "center", minHeight: 44 }}
                       onClick={() => {
                         setOnbOpen(false);
                         window.location.href = "/app/dashboard";

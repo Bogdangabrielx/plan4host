@@ -429,8 +429,17 @@ export default function DashboardClient({
   async function confirmDelete() {
     if (!toDelete) return;
     setStatus("Saving…");
-    const { error } = await supabase.rpc("account_delete_property_self", { p_property_id: toDelete.id });
-    if (error) {
+    try {
+      const res = await fetch("/api/property/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ property_id: toDelete.id }),
+      });
+      if (!res.ok) {
+        setStatus("Error");
+        return;
+      }
+    } catch {
       setStatus("Error");
       return;
     }
