@@ -280,19 +280,20 @@ textarea:focus-visible {
   background: var(--primary-strong);
   border-color: var(--primary-strong);
 }
+/* Primary + glass buttons: keep as primary, but on LIGHT theme make hover a softer tint (40% intensity). */
 .sb-btn.sb-btn--primary.sb-cardglow,
 .sb-btn.sb-btn--primary.Sb-cardglow{
-  background: var(--primary) !important;
-  border: 1px solid var(--primary) !important;
-  color: #fff !important;
+  background: var(--primary);
+  border: 1px solid var(--primary);
+  color: #fff;
 }
-.sb-btn.sb-btn--primary.sb-cardglow:hover,
-.sb-btn.sb-btn--primary.sb-cardglow:focus-visible,
-.sb-btn.sb-btn--primary.Sb-cardglow:hover,
-.sb-btn.sb-btn--primary.Sb-cardglow:focus-visible{
-  background: var(--primary-strong) !important;
-  border-color: var(--primary-strong) !important;
-  color: #fff !important;
+:root[data-theme="light"] .sb-btn.sb-btn--primary.sb-cardglow:hover,
+:root[data-theme="light"] .sb-btn.sb-btn--primary.sb-cardglow:focus-visible,
+:root[data-theme="light"] .sb-btn.sb-btn--primary.Sb-cardglow:hover,
+:root[data-theme="light"] .sb-btn.sb-btn--primary.Sb-cardglow:focus-visible{
+  background: color-mix(in srgb, var(--primary) 40%, white) !important;
+  border-color: var(--primary) !important;
+  color: color-mix(in srgb, var(--primary) 85%, black) !important;
 }
 .sb-btn:active { transform: scale(0.99); }
 .sb-btn--primary {

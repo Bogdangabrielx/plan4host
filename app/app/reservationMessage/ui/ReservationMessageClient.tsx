@@ -1755,10 +1755,13 @@ export default function ReservationMessageClient({
                       style={{ width: "100%", background:"var(--primary)", justifyContent: "center", minHeight: 44 }}
                       onClick={() => {
                         setOnbOpen(false);
-                        window.location.href = "/app/dashboard";
+                        const target = propertyId
+                          ? `/app/guest?property=${encodeURIComponent(propertyId)}`
+                          : "/app/guest";
+                        window.location.href = target;
                       }}
                     >
-                      Go to dashboard
+                      Go to guests
                     </button>
                   </div>
                 )}
