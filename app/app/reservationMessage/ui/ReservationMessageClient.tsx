@@ -1413,7 +1413,7 @@ export default function ReservationMessageClient({
 		                      Choose how you want to set up your message
 		                    </div>
 		                    <div style={{ fontSize: 13, color: "var(--muted)" }}>
-		                      Both options work. You can change everything later.
+		                      Start with a ready-made message. You can adjust it anytime.
 		                    </div>
 		                  </div>
 
