@@ -2986,7 +2986,7 @@ export default function CheckinClient() {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="ci-actionBtn ci-actionBtn--success"
+                className="sb-btn sb-btn--primary ci-actionBtn ci-actionBtn--success sb-cardglow"
                 style={{
                   width: "100%",
                   maxWidth: isNarrow ? undefined : 520,
