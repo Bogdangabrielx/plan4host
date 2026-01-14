@@ -238,8 +238,14 @@ export default function CheckinClient() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   // Always start with the property intro (no fast path).
-  const [stage, setStage] = useState<"intro" | "form">("intro");
+  const [stage, setStage] = useState<"intro" | "form">(() => {
+    const s = getQueryParam("stage");
+    return s === "form" ? "form" : "intro";
+  });
   const formTopRef = useRef<HTMLDivElement | null>(null);
+  const houseRulesLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const consentCardRef = useRef<HTMLDivElement | null>(null);
+  const [highlightHouseRules, setHighlightHouseRules] = useState<boolean>(false);
 
   // selections (deprecated UI; kept for compatibility, not used)
   const [selectedTypeId, setSelectedTypeId] = useState<string>("");
@@ -281,6 +287,32 @@ export default function CheckinClient() {
     try { document.cookie = `site_lang=${lang}; path=/; max-age=${60*60*24*365}`; } catch {}
     try { document.documentElement.setAttribute('lang', lang); } catch {}
   }, [lang]);
+
+  // Deep-link support for "Preview as guest" from onboarding:
+  // - stage=form
+  // - highlight=house_rules -> scroll + highlight the House Rules link
+  useEffect(() => {
+    const h = getQueryParam("highlight");
+    if (h !== "house_rules") return;
+    setStage("form");
+    setHighlightHouseRules(true);
+    const t = window.setTimeout(() => setHighlightHouseRules(false), 2800);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (!highlightHouseRules) return;
+    if (stage !== "form") return;
+    // Wait for PDF link to render (if any) and then scroll to consent/link.
+    const scroll = () => {
+      const target = houseRulesLinkRef.current || consentCardRef.current;
+      if (!target) return;
+      try { target.scrollIntoView({ behavior: "smooth", block: "center" }); } catch {}
+    };
+    const raf = requestAnimationFrame(() => scroll());
+    const t = window.setTimeout(scroll, 120);
+    return () => { cancelAnimationFrame(raf); window.clearTimeout(t); };
+  }, [highlightHouseRules, stage, pdfUrl]);
 
   const TXT = useMemo(() => ({
     en: {
@@ -1638,6 +1670,21 @@ export default function CheckinClient() {
             .ci-actionBtn--success:hover{
               border-color: var(--success);
             }
+            .ci-hlRing{
+              box-shadow:
+                0 0 0 4px color-mix(in srgb, var(--success) 18%, transparent),
+                0 10px 24px rgba(0,0,0,0.18);
+              border-color: color-mix(in srgb, var(--success) 55%, var(--border)) !important;
+              animation: ciHlPulse 1.15s ease-in-out infinite;
+            }
+            @keyframes ciHlPulse{
+              0%,100%{ box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 16%, transparent), 0 10px 24px rgba(0,0,0,0.18); }
+              50%{ box-shadow: 0 0 0 7px color-mix(in srgb, var(--success) 22%, transparent), 0 10px 24px rgba(0,0,0,0.18); }
+            }
+            .ci-hlLink{
+              text-decoration-thickness: 2px;
+              text-underline-offset: 3px;
+            }
             .ci-actionBtn:active{ transform: scale(0.99); }
             .ci-actionBtn:focus-visible{
               outline: none;
@@ -2826,7 +2873,10 @@ export default function CheckinClient() {
 
             {/* Consent — ALWAYS visible; checkbox enabled only after opening the PDF (if exists) */}
             <div className="ci-formBlock" style={{ marginTop: 12 }}>
-              <div className="ci-consentCard">
+              <div
+                ref={consentCardRef}
+                className={`ci-consentCard${highlightHouseRules ? " ci-hlRing" : ""}`}
+              >
                 <input
                   id="agree"
                   type="checkbox"
@@ -2841,10 +2891,12 @@ export default function CheckinClient() {
                     {T('consentPrefix')}
                     {pdfUrl ? (
                       <a
+                        ref={houseRulesLinkRef}
                         href={pdfUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={onOpenPdf}
+                        className={highlightHouseRules ? "ci-hlLink" : undefined}
                         style={{ fontWeight: 700, fontSize: 12, color: 'var(--primary)' }}
                       >
                         Property Rules (pdf)

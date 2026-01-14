@@ -2188,7 +2188,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 
                   <div style={{ display: "grid", gap: 10 }}>
                     <a
-                      href={buildCheckinLink(prop.id)}
+                      href={`${buildCheckinLink(prop.id)}&stage=form&highlight=house_rules`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="sb-btn sb-cardglow"

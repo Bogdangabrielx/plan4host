@@ -49,7 +49,7 @@ const BUILTIN_VARS: Array<{ key: string; label: string }> = [
 
 const EMPTY: TemplateState = { blocks: [], blocks_en: [], fields: [], status: "draft" };
 
-type OnboardingStep = "pick" | "loading" | "reward";
+type OnboardingStep = "pick" | "loading" | "reward" | "recap" | "final";
 
 type OnboardingTemplate = {
   key: string;
@@ -271,6 +271,7 @@ export default function ReservationMessageClient({
   const [onbPreviewUrl, setOnbPreviewUrl] = useState<string | null>(null);
   const [onbError, setOnbError] = useState<string | null>(null);
   const [onbPortalOpened, setOnbPortalOpened] = useState<boolean>(false);
+  const [onbCompletingAll, setOnbCompletingAll] = useState<boolean>(false);
 
   const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
 
@@ -1323,9 +1324,7 @@ export default function ReservationMessageClient({
 	        <div
             role="dialog"
             aria-modal="true"
-            onClick={() => {
-              setOnbOpen(false);
-            }}
+            onClick={() => {}}
             className="sb-cardglow"
             style={{
               position: "fixed",
@@ -1462,9 +1461,9 @@ export default function ReservationMessageClient({
 
 	                    {onbPortalOpened ? (
 	                      <button
-	                        className="sb-btn"
+	                        className="sb-btn sb-btn--primary sb-cardglow"
 	                        style={{ width: "100%", justifyContent: "center" }}
-	                        onClick={() => setOnbOpen(false)}
+	                        onClick={() => setOnbStep("recap")}
 	                      >
 	                        Continue
 	                      </button>
@@ -1480,6 +1479,122 @@ export default function ReservationMessageClient({
 	                  </div>
 	                </div>
 	              )}
+
+                {onbStep === "recap" && (
+                  <div style={{ display: "grid", gap: 12 }}>
+                    <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
+                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>
+                        Quick recap
+                      </div>
+                      <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)" }}>
+                        Invite → Check-in → Messages
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gap: 10 }}>
+                      <div style={{ padding: "12px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)", display: "grid", gap: 6 }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                          <div style={{ fontWeight: 800, color: "var(--text)" }}>1) You send the check-in link</div>
+                          <span
+                            aria-hidden
+                            style={{
+                              width: 18,
+                              height: 18,
+                              display: "block",
+                              backgroundColor: "var(--primary)",
+                              WebkitMaskImage: "url(/svg_copy_demo.svg)",
+                              maskImage: "url(/svg_copy_demo.svg)",
+                              WebkitMaskRepeat: "no-repeat",
+                              maskRepeat: "no-repeat",
+                              WebkitMaskPosition: "center",
+                              maskPosition: "center",
+                              WebkitMaskSize: "contain",
+                              maskSize: "contain",
+                              flex: "0 0 auto",
+                            }}
+                          />
+                        </div>
+                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
+                          From your booking platform (Booking, Airbnb, WhatsApp, email).
+                        </div>
+                      </div>
+
+                      <div style={{ padding: "12px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)", display: "grid", gap: 6 }}>
+                        <div style={{ fontWeight: 800, color: "var(--text)" }}>2) The guest completes check-in</div>
+                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
+                          They submit their details and accept your house rules. You get notified and confirm the reservation inside Plan4Host.
+                        </div>
+                      </div>
+
+                      <div style={{ padding: "12px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)", display: "grid", gap: 6 }}>
+                        <div style={{ fontWeight: 800, color: "var(--text)" }}>3) Messages appear automatically</div>
+                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
+                          After confirmation, guests access their message portal. Your scheduled messages show up there at the right time.
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      className="sb-btn sb-btn--primary sb-cardglow"
+                      style={{ width: "100%", justifyContent: "center", minHeight: 44 }}
+                      disabled={onbCompletingAll}
+                      onClick={async () => {
+                        setOnbCompletingAll(true);
+                        try {
+                          await fetch("/api/onboarding", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ action: "complete_all" }),
+                          });
+                          try { window.dispatchEvent(new CustomEvent("p4h:onboardingDirty")); } catch {}
+                        } catch {
+                          // ignore
+                        } finally {
+                          setOnbCompletingAll(false);
+                          setOnbStep("final");
+                        }
+                      }}
+                    >
+                      {onbCompletingAll ? "Marking…" : "Mark onboarding as completed"}
+                    </button>
+                  </div>
+                )}
+
+                {onbStep === "final" && (
+                  <div style={{ display: "grid", gap: 12 }}>
+                    <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
+                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>You’re live 🎉</div>
+                      <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
+                        Everything is set up and ready for guests.
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gap: 10, color: "var(--muted)", fontSize: 13, lineHeight: 1.55 }}>
+                      <div style={{ padding: "12px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+                        <div style={{ fontWeight: 800, color: "var(--text)", marginBottom: 6 }}>You can now:</div>
+                        <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 6 }}>
+                          <li>share the check-in link</li>
+                          <li>receive completed check-ins</li>
+                          <li>let messages run automatically</li>
+                        </ul>
+                      </div>
+                      <div style={{ textAlign: "center" }}>
+                        You can customize anything anytime: rooms, calendars, messages, schedules.
+                      </div>
+                    </div>
+
+                    <button
+                      className="sb-btn sb-btn--primary sb-cardglow"
+                      style={{ width: "100%", justifyContent: "center", minHeight: 44 }}
+                      onClick={() => {
+                        setOnbOpen(false);
+                        window.location.href = "/app/dashboard";
+                      }}
+                    >
+                      Go to dashboard
+                    </button>
+                  </div>
+                )}
             </div>
           </div>
       )}
