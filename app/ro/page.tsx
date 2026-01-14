@@ -1303,7 +1303,7 @@ export default function HomePageRO() {
           <div className={styles.finalCtaActions}>
             <Link
               href="/auth/login?mode=signup"
-              className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
+              className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
             >
               Încearcă Plan4Host gratuit
             </Link>
