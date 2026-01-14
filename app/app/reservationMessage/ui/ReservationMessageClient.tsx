@@ -49,7 +49,7 @@ const BUILTIN_VARS: Array<{ key: string; label: string }> = [
 
 const EMPTY: TemplateState = { blocks: [], blocks_en: [], fields: [], status: "draft" };
 
-type OnboardingStep = "pick" | "loading" | "reward" | "recap" | "final";
+type OnboardingStep = "intro" | "pick" | "loading" | "reward" | "recap" | "final";
 
 type OnboardingTemplate = {
   key: string;
@@ -266,7 +266,7 @@ export default function ReservationMessageClient({
   const [showNoTemplatePopup, setShowNoTemplatePopup] = useState<boolean>(false);
   const [showRoomVarsHint, setShowRoomVarsHint] = useState<boolean>(false);
   const [onbOpen, setOnbOpen] = useState<boolean>(false);
-  const [onbStep, setOnbStep] = useState<OnboardingStep>("pick");
+  const [onbStep, setOnbStep] = useState<OnboardingStep>("intro");
   const [onbLoadingStage, setOnbLoadingStage] = useState<0 | 1>(0);
   const [onbPreviewUrl, setOnbPreviewUrl] = useState<string | null>(null);
   const [onbError, setOnbError] = useState<string | null>(null);
@@ -315,7 +315,7 @@ export default function ReservationMessageClient({
         setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
         if (items.length === 0) {
           setOnbOpen(true);
-          setOnbStep("pick");
+          setOnbStep("intro");
           setOnbPreviewUrl(null);
           setOnbError(null);
           setOnbPortalOpened(false);
@@ -1406,12 +1406,38 @@ export default function ReservationMessageClient({
                 </button>
               </div>
 
-	              {onbStep === "pick" && (
-	                <div style={{ display: "grid", gap: 12 }}>
-	                  <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13 }}>
-	                    Choose a template to get started. You can customize it later.
-	                  </div>
-	                  <div
+		              {onbStep === "intro" && (
+		                <div style={{ display: "grid", gap: 12 }}>
+		                  <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
+		                    <div style={{ fontWeight: 900, fontSize: 18, color: "var(--text)" }}>
+		                      Choose how you want to set up your message
+		                    </div>
+		                    <div style={{ fontSize: 13, color: "var(--muted)" }}>
+		                      Both options work. You can change everything later.
+		                    </div>
+		                  </div>
+
+		                  <div style={{ display: "grid", gap: 10 }}>
+		                    <button
+		                      className="sb-btn sb-btn--primary sb-cardglow"
+		                      style={{ width: "100%", background: "var(--primary)", justifyContent: "center", color: "#fff" }}
+		                      onClick={() => setOnbStep("pick")}
+		                    >
+		                      Choose template
+		                    </button>
+		                    <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 12, lineHeight: 1.5 }}>
+		                      Created by us, in Romanian and English.
+		                    </div>
+		                  </div>
+		                </div>
+		              )}
+
+		              {onbStep === "pick" && (
+		                <div style={{ display: "grid", gap: 12 }}>
+		                  <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13 }}>
+		                    Choose a template to get started. You can customize it later.
+		                  </div>
+		                  <div
 	                    style={{
 	                      display: "grid",
 	                      gap: 10,
@@ -1421,13 +1447,13 @@ export default function ReservationMessageClient({
 	                      paddingRight: 4,
 	                    }}
 	                  >
-	                    {ONBOARDING_TEMPLATES.map((t) => {
-	                      const blocks = t.blocks_en.filter((b) => b.type !== "divider").slice(0, 3) as any[];
-	                      const previewHtml = blocks
-                        .map((b: any) => {
-                          if (b.type === "heading") {
-                            return `<div style="font-weight:900; letter-spacing:.14em; text-transform:uppercase; font-size:12px; margin-bottom:6px;">${titleToChips(b.text || "")}</div>`;
-                          }
+		                    {ONBOARDING_TEMPLATES.map((t) => {
+		                      const blocks = t.blocks_en.filter((b) => b.type !== "divider").slice(0, 3) as any[];
+		                      const previewHtml = blocks
+	                        .map((b: any) => {
+	                          if (b.type === "heading") {
+	                            return `<div style="font-weight:900; letter-spacing:.14em; text-transform:uppercase; font-size:12px; margin-bottom:6px; color:var(--text);">${titleToChips(b.text || "")}</div>`;
+	                          }
                           const text = (b.text || "").toString();
                           const html = text
                             .split(/\r?\n/g)
@@ -1436,31 +1462,58 @@ export default function ReservationMessageClient({
                           return `<div style="font-size:13px; color:var(--muted); line-height:1.5; margin-top:6px;">${tokensToChipsHTML(html)}</div>`;
                         })
                         .join("");
-                      return (
-                        <button
-                          key={t.key}
-                          className="sb-cardglow"
-                          style={{
-                            width: "100%",
-                            borderRadius: 16,
-                            border: "1px solid var(--border)",
-                            background: "rgba(255,255,255,0.02)",
-                            padding: 12,
-                            textAlign: "left",
-                            display: "grid",
-                            gap: 6,
-                          }}
-                          onClick={() => onboardingPickTemplate(t.key)}
-                        >
-                          <div style={{ fontWeight: 800, color: "var(--text)", fontSize: 13 }}>{t.title}</div>
-                          <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
-                        </button>
-                      );
-                    })}
-	                  </div>
-	                  {onbError && <div style={{ color: "var(--danger)", fontSize: 12, textAlign: "center" }}>{onbError}</div>}
-	                </div>
-	              )}
+	                      return (
+	                        <div
+	                          key={t.key}
+	                          className="sb-cardglow"
+	                          role="button"
+	                          tabIndex={0}
+	                          style={{
+	                            width: "100%",
+	                            borderRadius: 16,
+	                            border: "1px solid var(--border)",
+	                            background: "rgba(255,255,255,0.02)",
+	                            padding: 12,
+	                            textAlign: "left",
+	                            color: "var(--text)",
+	                            display: "grid",
+	                            gap: 8,
+	                            cursor: "pointer",
+	                          }}
+	                          onClick={() => onboardingPickTemplate(t.key)}
+	                          onKeyDown={(e) => {
+	                            if (e.key === "Enter" || e.key === " ") onboardingPickTemplate(t.key);
+	                          }}
+	                        >
+	                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+	                            <div style={{ fontWeight: 800, color: "var(--text)", fontSize: 13 }}>{t.title}</div>
+	                            <button
+	                              type="button"
+	                              className="sb-btn sb-btn--primary sb-cardglow"
+	                              style={{
+	                                minHeight: 34,
+	                                padding: "8px 12px",
+	                                borderRadius: 999,
+	                                background: "var(--primary)",
+	                                color: "#fff",
+	                                fontWeight: 900,
+	                              }}
+	                              onClick={(e) => {
+	                                e.stopPropagation();
+	                                onboardingPickTemplate(t.key);
+	                              }}
+	                            >
+	                              Choose
+	                            </button>
+	                          </div>
+	                          <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+	                        </div>
+	                      );
+	                    })}
+		                  </div>
+		                  {onbError && <div style={{ color: "var(--danger)", fontSize: 12, textAlign: "center" }}>{onbError}</div>}
+		                </div>
+		              )}
 
 	              {onbStep === "loading" && <div style={{ height: 4 }} />}
 
