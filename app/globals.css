@@ -273,7 +273,7 @@ textarea:focus-visible {
 }
 .sb-btn--primary {
   background: var(--primary);
-  color: #0c111b;
+  color: #fff;
   border: 1px solid var(--primary);
 }
 .sb-btn--primary:hover { 
@@ -284,7 +284,7 @@ textarea:focus-visible {
 .sb-btn--primary {
   border: 0;
   background: var(--primary);
-  color: #0c111b;
+  color: #fff;
   font-weight: var(--fw-bold);
 }
 /* Make a primary button look like "Copy check-in link" (glass + solid primary border) */
@@ -466,7 +466,7 @@ select:not(.sb-select){ /* opțional */
 }
 .sb-seg > button[data-active="true"] {
   background: var(--primary);
-  color: #0c111b;
+  color: #fff;
 }
 
 /* Badge */

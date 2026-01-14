@@ -584,18 +584,22 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                      borderRadius: 12,
 	                      padding: 14,
 	                      display: 'grid',
-	                      gap: 6,
+	                      gridTemplateColumns: '44px 1fr auto',
+	                      gridTemplateRows: 'auto auto',
+	                      gridTemplateAreas: `"icon title cta" "icon desc cta"`,
+	                      columnGap: 12,
+	                      rowGap: 6,
 	                      background: 'color-mix(in srgb, var(--card) 88%, transparent)',
 		                    }}
 		                  >
-		                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-		                      <MaskedSvgIcon src="/svg_singleunit_demo.svg" size={22} zoom={1.0} />
-		                      <div style={{ fontWeight: 800 }}>Single unit</div>
-		                    </div>
-		                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+                        <div style={{ gridArea: 'icon', width: 44, height: 44, display: 'grid', placeItems: 'center' }}>
+                          <MaskedSvgIcon src="/svg_singleunit_demo.svg" size={26} zoom={0.95} />
+                        </div>
+		                    <div style={{ gridArea: 'title', alignSelf: 'center', fontWeight: 800 }}>Single unit</div>
+		                    <div style={{ gridArea: 'desc', alignSelf: 'start', color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
 		                      Apartment, cabin, or entire place rented as one unit.
 	                    </div>
-	                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+	                    <div style={{ gridArea: 'cta', alignSelf: 'center', justifySelf: 'end', display: 'flex' }}>
 	                      <button className="sb-btn sb-btn--primary" onClick={() => void createUnits(1)}>
 	                        Use single unit
 	                      </button>
@@ -608,18 +612,22 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                      borderRadius: 12,
 	                      padding: 14,
 	                      display: 'grid',
-	                      gap: 6,
+	                      gridTemplateColumns: '44px 1fr auto',
+	                      gridTemplateRows: 'auto auto',
+	                      gridTemplateAreas: `"icon title cta" "icon desc cta"`,
+	                      columnGap: 12,
+	                      rowGap: 6,
 	                      background: 'color-mix(in srgb, var(--card) 88%, transparent)',
 		                    }}
 		                  >
-		                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-		                      <MaskedSvgIcon src="/svg_multipleunits_demo.svg" size={44} zoom={0.85} />
-		                      <div style={{ fontWeight: 800 }}>Multiple units</div>
-		                    </div>
-		                    <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
+                        <div style={{ gridArea: 'icon', width: 44, height: 44, display: 'grid', placeItems: 'center' }}>
+                          <MaskedSvgIcon src="/svg_multipleunits_demo.svg" size={34} zoom={0.9} />
+                        </div>
+		                    <div style={{ gridArea: 'title', alignSelf: 'center', fontWeight: 800 }}>Multiple units</div>
+		                    <div style={{ gridArea: 'desc', alignSelf: 'start', color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
 		                      Guesthouse or hotel with separate units.
 	                    </div>
-	                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+	                    <div style={{ gridArea: 'cta', alignSelf: 'center', justifySelf: 'end', display: 'flex' }}>
 	                      <button
 	                        className="sb-btn sb-cardglow"
 	                        style={{
