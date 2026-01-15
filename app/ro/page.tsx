@@ -1112,7 +1112,7 @@ export default function HomePageRO() {
           <h2 id="insights-title" data-p4h-reveal>
             Gândit pentru hosting real, nu pentru demo‑uri
           </h2>
-          <ul className={styles.proofList} data-p4h-reveal>
+          <ul className={styles.includedList} data-p4h-reveal>
             <li>De la primul login la check‑in gata de folosit, în câteva minute</li>
             <li>Fără training</li>
             <li>Funcționează pentru apartamente single și proprietăți cu mai multe unități</li>
