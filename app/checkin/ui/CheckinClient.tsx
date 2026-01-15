@@ -2476,7 +2476,7 @@ export default function CheckinClient() {
               <div style={{ color: "var(--muted)" }}>{T('loading')}</div>
             ) : (submitState === "success" && confirmStatus === "sent") ? (
               <div>
-                <h2 style={{ marginTop: 0 }}>{T('thanksTitle')}</h2>
+                <h2 style={{ marginTop: 0, color:"var(--success)" }}>{T('thanksTitle')}</h2>
                 <p style={{ color: "var(--success)" }}>{T('thanksMsg')}</p>
               </div>
             ) : (
