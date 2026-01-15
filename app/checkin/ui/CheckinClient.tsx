@@ -2473,7 +2473,7 @@ export default function CheckinClient() {
           {/* Form */}
           <section style={CARD}>
             {loading ? (
-              <div style={{ color: "var(--success)" }}>{T('loading')}</div>
+              <div style={{ color: "var(--muted)" }}>{T('loading')}</div>
             ) : (submitState === "success" && confirmStatus === "sent") ? (
               <div>
                 <h2 style={{ marginTop: 0 }}>{T('thanksTitle')}</h2>
