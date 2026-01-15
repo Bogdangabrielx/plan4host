@@ -1290,7 +1290,7 @@ export default function HomePage() {
           <h2 id="insights-title" data-p4h-reveal>
             Built for real hosting, not demos
           </h2>
-          <ul className={styles.proofList} data-p4h-reveal>
+          <ul className={styles.includedList} data-p4h-reveal>
             <li>From first login to ready-to-use check-in in minutes</li>
             <li>No training required</li>
             <li>Works for single apartments and multi-unit properties</li>
