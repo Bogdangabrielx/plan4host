@@ -3487,6 +3487,7 @@ export default function CheckinClient() {
             backdropFilter:'blur(6px)',
             display:'grid',
             placeItems:'center',
+            color: "var(--text)",
             padding:12
           }}>
           <div
@@ -3496,7 +3497,7 @@ export default function CheckinClient() {
             className="sb-card"
             style={{ width:'min(540px, 100%)', padding:16 }}
           >
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+            <div style={{ display:'flex', alignItems:'center',color:"var(--text)", justifyContent:'space-between', marginBottom:8 }}>
               <strong>{T('confirmEmailTitle')}</strong>
               {confirmStatus !== 'sending' && (
                 <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>Close</button>
