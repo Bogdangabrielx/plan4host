@@ -96,7 +96,7 @@ export default function CheckInOnlineCazarePage() {
             <Link className={`${styles.btn} ${styles.btnSolid}`} href="/ro">
               Vezi cum functioneaza
             </Link>
-            <Link className={`${styles.btn} ${styles.btnOutline}`} href="/ro">
+            <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant/demo">
               Descopera experienta pentru oaspeti
             </Link>
           </div>
@@ -273,7 +273,7 @@ export default function CheckInOnlineCazarePage() {
               <Link className={`${styles.btn} ${styles.btnSolid}`} href="/ro">
                 Vezi landing page
               </Link>
-              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/ro">
+              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant/demo">
                 Descopera experienta pentru oaspeti
               </Link>
             </div>
@@ -289,4 +289,3 @@ export default function CheckInOnlineCazarePage() {
     </main>
   );
 }
-

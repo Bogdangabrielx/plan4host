@@ -96,7 +96,7 @@ export default function OnlineCheckInAccommodationPage() {
             <Link className={`${styles.btn} ${styles.btnSolid}`} href="/">
               See how it works
             </Link>
-            <Link className={`${styles.btn} ${styles.btnOutline}`} href="/">
+            <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant/demo">
               Discover the guest experience
             </Link>
           </div>
@@ -269,7 +269,7 @@ export default function OnlineCheckInAccommodationPage() {
               <Link className={`${styles.btn} ${styles.btnSolid}`} href="/">
                 See the homepage
               </Link>
-              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/">
+              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant/demo">
                 Discover the guest experience
               </Link>
             </div>
@@ -285,4 +285,3 @@ export default function OnlineCheckInAccommodationPage() {
     </main>
   );
 }
-
