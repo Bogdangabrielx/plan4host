@@ -113,9 +113,32 @@
   align-items: center;
 }
 
+.logosRow{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.logosLabel{
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 650;
+}
+
+.logoImg{
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  display: block;
+  filter: saturate(.95) contrast(1.02);
+}
+
 @media (max-width: 640px){
   .content{ gap: 48px; padding-bottom: 64px; }
   .h2{ font-size: 20px; }
   .card{ padding: 20px; }
 }
-

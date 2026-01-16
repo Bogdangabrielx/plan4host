@@ -6,9 +6,9 @@ import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
 
 export const metadata: Metadata = {
-  title: "Check-in online pentru cazari | Plan4Host",
+  title: "Check-in online cazare – formular digital pentru oaspeti | Plan4Host",
   description:
-    "Check-in online pentru cazari: o metoda simpla prin care gazdele reduc mesajele, stresul si timpul pierdut inainte de sosirea oaspetilor.",
+    "Colecteaza datele oaspetilor online, fara mesaje repetitive. Check-in digital pentru Airbnb si Booking, simplu si organizat.",
   alternates: {
     canonical: "/ro/check-in-online-cazare",
     languages: {
@@ -17,9 +17,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Check-in online pentru cazari | Plan4Host",
+    title: "Check-in online cazare – formular digital pentru oaspeti | Plan4Host",
     description:
-      "In loc de discutii repetitive, oaspetii completeaza datele necesare online, inainte de a ajunge la cazare.",
+      "Formular check-in digital pentru colectare date oaspeti online. Functioneaza pentru Airbnb si Booking.",
     url: "/ro/check-in-online-cazare",
     locale: "ro_RO",
     type: "article",
@@ -126,8 +126,33 @@ export default function CheckInOnlineCazarePage() {
               moment.
             </p>
             <p className={seo.p}>
+              Practic, este un <strong>formular check-in digital</strong> pentru <strong>colectare date oaspeti online</strong>.
+            </p>
+            <p className={seo.p}>
               Pentru oaspete, procesul este simplu si clar. Pentru gazda, totul este organizat intr-un singur loc.
             </p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="otas">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="otas" className={seo.h2}>
+              Check-in online pentru Airbnb si Booking
+            </h2>
+            <p className={seo.p}>
+              Multi hosti cauta exact asta: <strong>check-in online Airbnb</strong> si <strong>check-in online Booking</strong>, fara mesaje repetitive.
+              In practica, inseamna un singur link pe care il trimiti in conversatia de rezervare, pe WhatsApp sau pe email.
+            </p>
+            <p className={seo.p}>
+              Oaspetele completeaza formularul inainte de sosire, iar tu ai datele intr-un singur loc. Mai putin haos, mai putine intrebari, mai multa claritate.
+            </p>
+            <div className={seo.logosRow} aria-label="Platforme">
+              <span className={seo.logosLabel}>Platforme</span>
+              <Image className={seo.logoImg} src="/airbnb.png" alt="Airbnb" width={52} height={52} />
+              <Image className={seo.logoImg} src="/booking.png" alt="Booking.com" width={52} height={52} />
+              <Image className={seo.logoImg} src="/trivago.png" alt="Trivago" width={52} height={52} />
+              <Image className={seo.logoImg} src="/expedia.png" alt="Expedia" width={52} height={52} />
+            </div>
           </div>
         </section>
 

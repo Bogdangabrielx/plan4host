@@ -6,9 +6,9 @@ import styles from "../home.module.css";
 import seo from "../seo.module.css";
 
 export const metadata: Metadata = {
-  title: "Online check-in for accommodation | Plan4Host",
+  title: "Online check-in for rentals – digital guest form | Plan4Host",
   description:
-    "Online check-in for accommodation: a simple way for hosts to reduce messages, stress, and time wasted before guest arrival.",
+    "Collect guest details online without repetitive messages. Airbnb and Booking online check-in with a simple digital form.",
   alternates: {
     canonical: "/online-check-in-accommodation",
     languages: {
@@ -17,9 +17,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Online check-in for accommodation | Plan4Host",
+    title: "Online check-in for rentals – digital guest form | Plan4Host",
     description:
-      "Instead of repeated messages, guests submit the required details online before they arrive.",
+      "A digital check-in form to collect guest details online. Works for Airbnb and Booking.",
     url: "/online-check-in-accommodation",
     locale: "en_US",
     type: "article",
@@ -125,8 +125,33 @@ export default function OnlineCheckInAccommodationPage() {
               arrival. No separate messages, no last-minute WhatsApp photos, and no stressful back-and-forth.
             </p>
             <p className={seo.p}>
+              In simple terms, it’s a <strong>digital check-in form</strong> to <strong>collect guest details online</strong>.
+            </p>
+            <p className={seo.p}>
               For the guest, the process is simple and clear. For the host, everything stays organized in one place.
             </p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="otas">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="otas" className={seo.h2}>
+              Online check-in for Airbnb and Booking
+            </h2>
+            <p className={seo.p}>
+              Many hosts search for this exact thing: <strong>Airbnb online check-in</strong> and <strong>Booking online check-in</strong> without repetitive messages.
+              In practice, it’s one check-in link you can share from the booking platform, WhatsApp, or email.
+            </p>
+            <p className={seo.p}>
+              Guests complete the form before arrival, and you keep everything in one calm place. Less chasing. More clarity.
+            </p>
+            <div className={seo.logosRow} aria-label="Platforms">
+              <span className={seo.logosLabel}>Platforms</span>
+              <Image className={seo.logoImg} src="/airbnb.png" alt="Airbnb" width={52} height={52} />
+              <Image className={seo.logoImg} src="/booking.png" alt="Booking.com" width={52} height={52} />
+              <Image className={seo.logoImg} src="/trivago.png" alt="Trivago" width={52} height={52} />
+              <Image className={seo.logoImg} src="/expedia.png" alt="Expedia" width={52} height={52} />
+            </div>
           </div>
         </section>
 
