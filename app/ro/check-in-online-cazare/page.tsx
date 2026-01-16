@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
 import styles from "../../home.module.css";
@@ -64,13 +65,15 @@ export default function CheckInOnlineCazarePage() {
     <main
       className={styles.landing}
       style={{
+        paddingBottom: "var(--safe-bottom, 0px)",
         minHeight: "100dvh",
         overflowX: "hidden",
       }}
     >
+      <LandingSafeArea />
       <MobileScrollReveal />
 
-      <nav className={styles.nav} aria-label="Navigatie">
+      <nav className={styles.nav} aria-label="Navigatie" data-p4h-landing-nav>
         <Link href="/ro" className={styles.brand}>
           <img src="/Logo_Landing.png" alt="" aria-hidden="true" width={36} height={36} style={{ borderRadius: 12 }} />
           <strong>Plan4Host</strong>
