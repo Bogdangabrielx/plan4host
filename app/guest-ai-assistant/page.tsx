@@ -1,263 +1,294 @@
-import s from "../legal/legal.module.css";
-import ForceDark from "@/components/theme/ForceDark";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import LandingSafeArea from "@/components/landing/LandingSafeArea";
+import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import SeoFooter from "@/components/seo/SeoFooter";
+import styles from "../home.module.css";
+import seo from "../seo.module.css";
+
+export const metadata: Metadata = {
+  title: "Guest AI assistant for rentals | Plan4Host",
+  description:
+    "A language-aware assistant that helps guests find arrival, amenities, and check-out details instantly in a calm guest portal.",
+  alternates: {
+    canonical: "/guest-ai-assistant",
+    languages: {
+      en: "/guest-ai-assistant",
+      ro: "/ro/asistent-ai-oaspeti",
+    },
+  },
+  openGraph: {
+    title: "Guest AI assistant for rentals | Plan4Host",
+    description:
+      "Guests get clear answers for arrival, amenities and check-out in their language, using information you already manage in Plan4Host.",
+    url: "/guest-ai-assistant",
+    locale: "en_US",
+    type: "article",
+  },
+};
 
 export default function GuestAiAssistantPage() {
   return (
-    <main className={s.page}>
-      <ForceDark />
-      <div className={s.container}>
-      <article style={{ width: "100%", maxWidth: 960 }}>
-        <header
-          style={{
-            textAlign: "center",
-            marginBottom: 28,
-            display: "grid",
-            gap: 14,
-            placeItems: "center",
-          }}
-        >
-          <img
-            src="/Logo_Rotund_AI.png"
-            alt="Guest AI assistant"
-            width={80}
-            height={80}
-            style={{
-              borderRadius: 999,
-              border: "2px solid var(--border)",
-              background: "var(--card)",
-            }}
-          />
-          <h1 style={{ fontSize: 30, marginBottom: 4 }}>
-            <span className={s.aiGradTitle}>GUEST AI ASSISTANT</span> – smarter answers for your guests
+    <main
+      className={styles.landing}
+      style={{
+        paddingBottom: "var(--safe-bottom, 0px)",
+        minHeight: "100dvh",
+        overflowX: "hidden",
+      }}
+    >
+      <LandingSafeArea />
+      <MobileScrollReveal />
+
+      <nav className={styles.nav} aria-label="Navigation" data-p4h-landing-nav>
+        <Link href="/" className={styles.brand}>
+          <img src="/Logo_Landing.png" alt="" aria-hidden="true" width={36} height={36} style={{ borderRadius: 12 }} />
+          <strong>Plan4Host</strong>
+        </Link>
+        <div />
+        <div className={styles.actions}>
+          <Link className={`${styles.btn} ${styles.btnOutline}`} href="/">
+            Home page
+          </Link>
+        </div>
+      </nav>
+
+      <section className={styles.hero} aria-labelledby="title">
+        <div className={styles.heroText} data-p4h-reveal>
+          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+            Guest AI assistant
           </h1>
-          <p style={{ color: "var(--muted)", margin: 0, fontSize: 14 }}>
-            Help guests find arrival, amenities and check‑out details instantly, in their own language.
+          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+            Help guests find arrival, amenities, and check-out details instantly, in their language — without repetitive
+            back-and-forth.
           </p>
-        </header>
+          <div className={styles.heroCta}>
+            <Link className={`${styles.btn} ${styles.btnSolid}`} href="/guest-ai-assistant/demo">
+              See where guests receive messages
+            </Link>
+            <Link className={`${styles.btn} ${styles.btnOutline}`} href="/checkin?property=b1588b40-954d-4489-b36e-45659853489a">
+              See the check-in form
+            </Link>
+          </div>
+        </div>
 
-        <section>
-          <div
-            className={s.heroSplit}
-          >
-          <div
-            style={{
-              padding: 16,
-              borderRadius: 18,
-              border: "1px solid var(--border)",
-              background:
-                "radial-gradient(circle at top left, rgba(0,209,255,0.14), transparent 55%), radial-gradient(circle at bottom right, rgba(124,58,237,0.22), transparent 55%), var(--panel)",
-              boxShadow: "0 16px 40px rgba(0,0,0,0.55)",
-            }}
-          >
-            <h2 style={{ marginTop: 0, fontSize: 20 }}>What is the Guest AI assistant?</h2>
-            <p style={{ marginTop: 8 }}>
-              Guest AI assistant is a floating, language‑aware helper shown on the dedicated guest page where each
-              reservation sees your automated messages and key stay details. Instead of writing long questions, guests
-              tap smart menus like <strong>Arrival details</strong>, <strong>Amenities</strong>,{" "}
-              <strong>Extras</strong> or <strong>Check‑out</strong> and get short, clear answers.
+        <div className={styles.heroVisual} aria-label="Guest AI assistant preview" data-p4h-reveal>
+          <Image
+            src="/AI_chatbot.png"
+            alt="Preview of the Guest AI assistant interface"
+            width={900}
+            height={900}
+            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
+            priority
+          />
+        </div>
+      </section>
+
+      <div className={seo.content}>
+        <section className={seo.section} aria-labelledby="what">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <Image
+                src="/Logo_Rotund_AI.png"
+                alt=""
+                aria-hidden="true"
+                width={44}
+                height={44}
+                style={{ borderRadius: 999, border: "1px solid var(--border)", background: "var(--card)" }}
+              />
+              <h2 id="what" className={seo.h2} style={{ margin: 0 }}>
+                What it is
+              </h2>
+            </div>
+            <p className={seo.p}>
+              Guest AI assistant is a floating, language-aware helper shown in the guest portal. Instead of typing long
+              questions, guests tap menus like <strong>Arrival details</strong>, <strong>Amenities</strong>,{" "}
+              <strong>Extras</strong>, or <strong>Check-out</strong> and receive short, clear answers.
             </p>
-            <p style={{ marginTop: 8 }}>
-              It works on top of information you already manage in Plan4Host – your reservation messages, House Rules
-              PDF and the curated “House rules for AI” text from the Check‑in Editor.
+            <p className={seo.p}>
+              It uses the information you already manage in Plan4Host: reservation messages, your House Rules PDF, and
+              the “house rules for AI” text curated in Check-in Editor.
             </p>
           </div>
-          <div className={s.heroSplitMedia}>
+        </section>
+
+        <section className={seo.section} aria-labelledby="answers">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="answers" className={seo.h2}>
+              What it can answer
+            </h2>
+            <ul className={styles.includedList}>
+              <li>
+                <strong>Arrival details:</strong> parking, access codes, how to enter, and check-in time.
+              </li>
+              <li>
+                <strong>Amenities:</strong> Wi-Fi, coffee machine, AC, washing machine, dishwasher, minibar, and more.
+              </li>
+              <li>
+                <strong>Recommendations:</strong> local tips for food, coffee, and things to visit (when you provided
+                them).
+              </li>
+              <li>
+                <strong>Check-out:</strong> check-out time and instructions (keys, doors, trash) when you defined them.
+              </li>
+            </ul>
+            <p className={seo.p}>
+              Every answer ends with a clear “contact the host” option, so guests can always reach you directly.
+            </p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="examples">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="examples" className={seo.h2}>
+              See it in action
+            </h2>
             <div
-              className={s.heroSplitMediaInner}
-            >
-              <img
-                src="/AI_chatbot.png"
-                alt="Preview of the Guest AI assistant interface"
-                style={{ display: "block", width: "100%", height: "auto" }}
-              />
-            </div>
-          </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 style={{ marginTop: 0 }}>What can it answer?</h2>
-          <ul style={{ paddingLeft: "1.2rem", marginTop: 8 }}>
-            <li>
-              <strong>Arrival details:</strong> parking info, access codes, how to enter the property and configured
-              check‑in time.
-            </li>
-            <li>
-              <strong>Amenities:</strong> Wi‑Fi (network &amp; password), coffee machine, AC, washing machine,
-              dishwasher, minibar and more – including whether they are free or paid extra when this is written in your
-              rules or messages.
-            </li>
-            <li>
-              <strong>Recommendations:</strong> local tips for where to eat, have a coffee or what to visit nearby, when you
-              mention them in your content.
-            </li>
-            <li>
-              <strong>Check‑out:</strong> a short summary of check‑out date and time plus key check‑out instructions
-              (lights, doors, keys, trash) if you’ve provided them.
-            </li>
-          </ul>
-          <p style={{ marginTop: 8, color: "var(--muted)", fontSize: 13 }}>
-            Every AI answer ends with a clear “contact the host” option so guests can always reach you directly if they
-            still have questions.
-          </p>
-        </section>
-
-        <section>
-          <h2 style={{ marginTop: 28 }}>See it in action</h2>
-          <div
-            style={{
-              display: "grid",
-              gap: 16,
-              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-              alignItems: "stretch",
-            }}
-          >
-            <div className={s.card}>
-              <h3 style={{ marginTop: 0, marginBottom: 4 }}>Amenities menu</h3>
-              <p style={{ margin: "0 0 8px", color: "var(--muted)", fontSize: 13 }}>
-                This is how the Guest AI assistant shows the amenities menu — guests tap Wi‑Fi, coffee machine, AC and
-                other options instead of typing long questions.
-              </p>
-              <img
-                src="/AI_chatbot_amenities.png"
-                alt="Guest AI assistant amenities menu"
-                style={{
-                  display: "block",
-                  width: "100%",
-                  maxWidth: 360,
-                  height: "auto",
-                  borderRadius: 12,
-                  margin: "0 auto",
-                }}
-              />
-            </div>
-            <div className={s.card}>
-              <h3 style={{ marginTop: 0, marginBottom: 4 }}>Wi‑Fi answer example</h3>
-              <p style={{ margin: "0 0 8px", color: "var(--muted)", fontSize: 13 }}>
-                Here the assistant combines the Wi‑Fi network name (SSID) and password that you wrote in your messages
-                and House Rules, and returns one clear answer — without ever inventing credentials.
-              </p>
-              <img
-                src="/AI_chatbot_example.png"
-                alt="Guest AI assistant Wi‑Fi answer example"
-                style={{
-                  display: "block",
-                  width: "100%",
-                  maxWidth: 360,
-                  height: "auto",
-                  borderRadius: 12,
-                  margin: "0 auto",
-                }}
-              />
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 style={{ marginTop: 28 }}>Where does the assistant get its information?</h2>
-          <p>
-            Guest AI assistant never guesses. It can only use the information you have already provided in Plan4Host:
-          </p>
-          <ul style={{ paddingLeft: "1.2rem", marginTop: 8 }}>
-            <li>
-              <strong>Reservation messages</strong> (RO/EN) created in Automatic Messages and shown on the guest page.
-            </li>
-            <li>
-              <strong>House Rules PDF</strong> that you upload in the Check‑in Editor.
-            </li>
-            <li>
-              <strong>AI‑ready house rules</strong> – the text you review and save after using “Read &amp; prepare text
-              for AI” in Check‑in Editor.
-            </li>
-          </ul>
-          <p style={{ marginTop: 8 }}>
-            The assistant first looks for answers in your reservation messages, then in the AI‑ready house rules text.
-            If something is missing or unclear, it will say so and invite the guest to contact you, instead of making
-            something up.
-          </p>
-        </section>
-
-        <section>
-          <h2 style={{ marginTop: 28 }}>Safety: no invented codes or passwords</h2>
-          <p>
-            We explicitly instruct the Guest AI assistant to <strong>never invent</strong> or modify sensitive data:
-          </p>
-          <ul style={{ paddingLeft: "1.2rem", marginTop: 8 }}>
-            <li>no made‑up access codes or door/lockbox combinations,</li>
-            <li>no invented Wi‑Fi names or passwords,</li>
-            <li>no fake phone numbers, addresses or check‑in/out times.</li>
-          </ul>
-          <p style={{ marginTop: 8 }}>
-            If the assistant cannot find a precise value in your content, it will respond with a polite “it is not clear
-            from the available information” and advise the guest to contact you for exact details.
-          </p>
-        </section>
-
-        <section>
-          <h2 style={{ marginTop: 28 }}>How to enable Guest AI assistant</h2>
-          <ol style={{ paddingLeft: "1.2rem", marginTop: 8 }}>
-            <li>
-              In the app, go to <strong>Check‑in Editor</strong> and upload your House Rules PDF if you haven’t already.
-            </li>
-            <li>
-              Click <strong>Read &amp; prepare text for AI</strong>, review the extracted text and remove any codes,
-              passwords or private links you don’t want to expose.
-            </li>
-            <li>
-              Save the text as “House rules for AI”. The assistant will now use it, together with your Reservation
-              Messages, when answering questions.
-            </li>
-            <li>
-              For each reservation with active messages, guests will see the Guest AI assistant on their dedicated page.
-            </li>
-          </ol>
-        </section>
-
-        <section style={{ marginTop: 32 }}>
-          <div
-            style={{
-              padding: 16,
-              borderRadius: 18,
-              border: "1px solid rgba(148,163,184,0.55)",
-              background:
-                "linear-gradient(135deg, rgba(0,209,255,0.25), rgba(124,58,237,0.75))",
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 12,
-            }}
-          >
-            <div style={{ maxWidth: 520 }}>
-              <h2 style={{ margin: 0, fontSize: 20 }}>Available on Premium plans</h2>
-              <p style={{ marginTop: 6, marginBottom: 0, fontSize: 14 }}>
-                Guest AI assistant is currently available for <strong>Premium</strong> accounts. Activate it to reduce
-                repetitive questions and give guests clear answers before they even contact you.
-              </p>
-            </div>
-            <a
-              href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1"
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "10px 18px",
-                borderRadius: 999,
-                fontWeight: 700,
-                textDecoration: "none",
-                border: "1px solid rgba(15,23,42,0.4)",
-                background: "#0b1120",
-                color: "#f9fafb",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.65)",
-                whiteSpace: "nowrap",
+                display: "grid",
+                gap: 16,
+                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                alignItems: "stretch",
               }}
             >
-              Get your AI assistant
-            </a>
+              <div className={`sb-cardglow ${seo.faqItem}`} style={{ background: "var(--card)" }}>
+                <p className={seo.pStrong} style={{ margin: 0 }}>
+                  Amenities menu
+                </p>
+                <p className={seo.p}>
+                  Guests tap Wi-Fi, coffee machine, AC and other options instead of typing long questions.
+                </p>
+                <Image
+                  src="/AI_chatbot_amenities.png"
+                  alt="Guest AI assistant amenities menu"
+                  width={740}
+                  height={740}
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    borderRadius: 14,
+                    border: "1px solid var(--border)",
+                  }}
+                />
+              </div>
+              <div className={`sb-cardglow ${seo.faqItem}`} style={{ background: "var(--card)" }}>
+                <p className={seo.pStrong} style={{ margin: 0 }}>
+                  Wi-Fi answer example
+                </p>
+                <p className={seo.p}>
+                  The assistant combines the network name (SSID) and password you wrote, and returns one clear answer —
+                  without inventing credentials.
+                </p>
+                <Image
+                  src="/AI_chatbot_example.png"
+                  alt="Guest AI assistant Wi-Fi answer example"
+                  width={740}
+                  height={740}
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    borderRadius: 14,
+                    border: "1px solid var(--border)",
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </section>
-      </article>
+
+        <section className={seo.section} aria-labelledby="sources">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="sources" className={seo.h2}>
+              Where the assistant gets its information
+            </h2>
+            <p className={seo.p}>Guest AI assistant does not guess. It can only use what you already provided:</p>
+            <ul className={styles.includedList}>
+              <li>
+                <strong>Reservation messages</strong> (RO/EN) shown on the guest portal.
+              </li>
+              <li>
+                <strong>House Rules PDF</strong> uploaded in Check-in Editor.
+              </li>
+              <li>
+                <strong>AI-ready house rules</strong> saved after “Read &amp; prepare text for AI”.
+              </li>
+            </ul>
+            <p className={seo.p}>
+              If something is missing or unclear, it says so and invites the guest to contact you — instead of making
+              anything up.
+            </p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="safe">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="safe" className={seo.h2}>
+              Safety: no invented codes or passwords
+            </h2>
+            <p className={seo.p}>We instruct the assistant to never invent or modify sensitive details:</p>
+            <ul className={styles.includedList}>
+              <li>no made-up access codes or lockbox combinations</li>
+              <li>no invented Wi-Fi names or passwords</li>
+              <li>no fake phone numbers, addresses, or check-in/out times</li>
+            </ul>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="enable">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="enable" className={seo.h2}>
+              How to enable it
+            </h2>
+            <ol className={seo.steps}>
+              <li>
+                Upload your House Rules PDF in <strong>Check-in Editor</strong>.
+              </li>
+              <li>
+                Use <strong>Read &amp; prepare text for AI</strong>, then remove any codes, passwords, or private links
+                you don’t want to share.
+              </li>
+              <li>
+                Save the text as “House rules for AI”. The assistant will use it together with your reservation
+                messages.
+              </li>
+              <li>Guests will see the assistant inside their guest portal.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="premium">
+          <div
+            className={`sb-cardglow ${seo.card}`}
+            data-p4h-reveal
+            style={{
+              background:
+                "radial-gradient(36rem 24rem at 0% 0%, color-mix(in srgb, var(--accent1) 10%, transparent), transparent 62%), radial-gradient(36rem 24rem at 100% 100%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 62%), var(--card)",
+            }}
+          >
+            <h2 id="premium" className={seo.h2}>
+              Available on Premium
+            </h2>
+            <p className={seo.p}>
+              Guest AI assistant is available for <strong>Premium</strong> accounts. Activate it to reduce repetitive
+              questions and give guests clear answers before they contact you.
+            </p>
+            <div className={seo.ctaRow}>
+              <Link
+                className={`${styles.btn} ${styles.btnSolid}`}
+                href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1"
+              >
+                Get Premium
+              </Link>
+              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant/demo">
+                Preview guest portal
+              </Link>
+            </div>
+          </div>
+        </section>
       </div>
+
+      <SeoFooter locale="en" />
     </main>
   );
 }
