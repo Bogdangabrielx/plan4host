@@ -1899,6 +1899,21 @@ export default function HomePage() {
           </a>
         </div>
 
+	        {/* SEO guide links (subtle, footer-only) */}
+	        <div style={{ padding: '6px 0', color: 'var(--muted)' }}>
+	          <Link className={styles.footerLink} href="/online-check-in-accommodation">
+	            Online check-in for accommodation
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/automatic-guest-messages">
+	            Automatic guest messages for accommodation
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/airbnb-ical-sync">
+	            Next Guide
+	          </Link>
+	        </div>
+
         <div className={styles.legalBar}>
           <p>
             © {year} Plan4Host. All rights reserved. By using Plan4Host you agree to our{" "}

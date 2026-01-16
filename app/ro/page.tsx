@@ -1664,16 +1664,16 @@ export default function HomePageRO() {
         <style jsx>{`@media (min-width: 561px){ .p4h-social-row{ display: none !important; } }`}</style>
 
         {/* Insigne conformitate/plăți (aliniate la stânga; loc și pentru Stripe) */}
-	        <div
-	          style={{
-	            display: 'flex',
-	            alignItems: 'center',
-	            gap: 16,
-	            padding: '8px 0',
-	            justifyContent: 'flex-start',
-	            flexWrap: 'wrap',
-	          }}
-	        >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            padding: '8px 0',
+            justifyContent: 'flex-start',
+            flexWrap: 'wrap',
+          }}
+        >
           <a
             href="https://eservicii.anpc.ro/"
             target="_blank"
@@ -1693,8 +1693,23 @@ export default function HomePageRO() {
 	            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 8, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)' }}
 	          >
 	            <img src="/STRIPE.png" alt="Stripe" style={{ width: 120, height: 'auto' }} />
-	          </a>
+          </a>
         </div>
+
+	        {/* Linkuri ghiduri SEO (subtil, doar in footer) */}
+	        <div style={{ padding: '6px 0', color: 'var(--muted)' }}>
+	          <Link className={styles.footerLink} href="/ro/check-in-online-cazare">
+	            Check-in online pentru cazari
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/ro/mesaje-automate-pentru-oaspeti">
+	            Mesaje automate pentru oaspeti
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/ro/sincronizare-ical-airbnb">
+	            Urmatorul ghid
+	          </Link>
+	        </div>
 
         <div className={styles.legalBar}>
           <p>
