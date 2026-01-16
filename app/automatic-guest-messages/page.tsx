@@ -7,9 +7,9 @@ import styles from "../home.module.css";
 import seo from "../seo.module.css";
 
 export const metadata: Metadata = {
-  title: "Automatic guest messages for accommodation | Plan4Host",
+  title: "Automatic guest messages for Airbnb & Booking | Plan4Host",
   description:
-    "Send automatic guest messages after check-in. Arrival info, Wi-Fi, rules and check-out instructions delivered at the right time, without manual messaging.",
+    "Send automatic guest messages after check-in. Arrival info, Wi-Fi, rules and check-out instructions delivered at the right time, without manual replies.",
   alternates: {
     canonical: "/automatic-guest-messages",
     languages: {
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Automatic guest messages for accommodation | Plan4Host",
+    title: "Automatic guest messages for Airbnb & Booking | Plan4Host",
     description:
       "Send automatic guest messages after check-in: arrival, Wi-Fi, rules and check-out, delivered at the right time.",
     url: "/automatic-guest-messages",
@@ -30,20 +30,20 @@ export const metadata: Metadata = {
 export default function AutomaticGuestMessagesSeoPage() {
   const faq = [
     {
-      q: "Do guests receive emails or WhatsApp messages?",
-      a: "Messages appear inside a dedicated guest portal after confirmation.",
+      q: "Do guests receive emails or chat messages?",
+      a: "Messages are shown inside a dedicated guest portal after reservation confirmation.",
     },
     {
-      q: "Can I customize the messages?",
-      a: "Yes. Messages are fully customizable and can be edited anytime.",
+      q: "Can messages be customized?",
+      a: "Yes. Hosts can edit messages anytime and adjust them to their property.",
     },
     {
-      q: "Are messages sent without my confirmation?",
-      a: "No. Messages start only after the reservation is confirmed.",
+      q: "Are messages sent automatically without confirmation?",
+      a: "No. Messages start only after the reservation is confirmed by the host.",
     },
     {
       q: "Can guests reply to messages?",
-      a: "Messages are informational and designed to reduce unnecessary conversations.",
+      a: "Messages are designed to provide information and reduce unnecessary conversations.",
     },
   ];
 
@@ -80,12 +80,9 @@ export default function AutomaticGuestMessagesSeoPage() {
             Automatic guest messages for accommodation
           </h1>
           <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
-            Guest messages are one of the biggest sources of stress for hosts. Arrival details, Wi‑Fi, parking, house
-            rules — “just one more question”.
-            <br />
-            <br />
-            Automatic guest messages replace repetitive conversations with clear, well‑timed information — delivered
-            exactly when guests need it.
+            Automatic guest messages help hosts reduce repetitive conversations and deliver the right information to
+            guests at the right time. Instead of answering the same questions again and again, hosts prepare messages
+            once and let the system handle the rest.
           </p>
           <div className={styles.heroCta}>
             <Link className={`${styles.btn} ${styles.btnSolid}`} href="/guest-ai-assistant/demo">
@@ -116,13 +113,17 @@ export default function AutomaticGuestMessagesSeoPage() {
               What automatic guest messages mean
             </h2>
             <p className={seo.p}>
-              Automatic guest messages are scheduled messages sent to guests based on their reservation status.
+              Automatic guest messages are messages sent to guests based on their reservation status and timing.
             </p>
             <p className={seo.p}>
-              Instead of answering the same questions again and again, guests receive the right information automatically:{" "}
-              <strong>before arrival</strong>, <strong>at arrival</strong>, and <strong>before check-out</strong>.
+              They replace manual conversations with clear, scheduled information that guests receive when it is
+              actually useful — before arrival, during the stay, or before check-out.
             </p>
-            <p className={seo.pStrong}>No manual sending. No follow-ups. No missed messages.</p>
+            <ul className={styles.includedList}>
+              <li>No manual sending.</li>
+              <li>No forgotten messages.</li>
+              <li>No last-minute stress.</li>
+            </ul>
           </div>
         </section>
 
@@ -132,19 +133,50 @@ export default function AutomaticGuestMessagesSeoPage() {
               The problem with manual guest communication
             </h2>
             <p className={seo.p}>Most hosts communicate with guests using:</p>
-            <ul className={styles.problemList}>
-              <li>WhatsApp</li>
+            <ul
+              className={styles.includedList}
+              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+            >
               <li>booking platform chat</li>
-              <li>last-minute messages</li>
+              <li>WhatsApp</li>
+              <li>email messages sent in a hurry</li>
             </ul>
             <p className={seo.p}>This usually leads to:</p>
-            <ul className={styles.problemList}>
+            <ul
+              className={styles.includedList}
+              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+            >
               <li>repeated questions</li>
-              <li>forgotten details</li>
-              <li>stress right before arrival</li>
+              <li>missing details</li>
               <li>interruptions throughout the day</li>
+              <li>stress right before arrival</li>
             </ul>
-            <p className={seo.pStrong}>Manual communication does not scale — even for small properties.</p>
+            <p className={seo.pStrong}>
+              Even with only a few reservations, manual messaging becomes difficult to manage consistently.
+            </p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="otas">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="otas" className={seo.h2}>
+              Automatic messages for Airbnb and Booking
+            </h2>
+            <p className={seo.p}>Airbnb and Booking guests usually ask the same questions:</p>
+            <ul
+              className={styles.includedList}
+              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+            >
+              <li>How do I access the property?</li>
+              <li>Where can I park?</li>
+              <li>What is the Wi‑Fi password?</li>
+              <li>What time is check‑out?</li>
+            </ul>
+            <p className={seo.p}>
+              With automatic guest messages, this information is delivered without manual replies. Messages are prepared
+              once and shown automatically to guests based on their reservation — regardless of whether the booking
+              comes from Airbnb, Booking, or another platform.
+            </p>
           </div>
         </section>
 
@@ -162,10 +194,14 @@ export default function AutomaticGuestMessagesSeoPage() {
               <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>messages delivered</span>
             </div>
             <p className={seo.p}>
-              Once the guest completes online check-in and the host confirms the reservation, guests gain access to a
-              private message portal where scheduled messages appear automatically at the right time.
+              After the guest completes online check-in and the host confirms the reservation:
             </p>
-            <p className={seo.pStrong}>No extra actions are required from the host.</p>
+            <ul className={styles.includedList}>
+              <li>guests gain access to a private message portal</li>
+              <li>scheduled messages appear automatically at the right moment</li>
+              <li>all information stays organized in one place</li>
+            </ul>
+            <p className={seo.pStrong}>Hosts do not need to send messages manually.</p>
           </div>
         </section>
 
@@ -177,38 +213,33 @@ export default function AutomaticGuestMessagesSeoPage() {
             <p className={seo.p}>Automatic messages can include:</p>
             <ul className={styles.includedList}>
               <li>arrival instructions</li>
-              <li>access codes</li>
-              <li>Wi-Fi details</li>
-              <li>parking information</li>
+              <li>access details</li>
+              <li>Wi‑Fi information</li>
+              <li>parking guidance</li>
               <li>house rules reminders</li>
               <li>check-out instructions</li>
               <li>local recommendations</li>
             </ul>
             <p className={seo.pStrong}>
-              Messages are shown inside the guest portal — not scattered across emails or chats.
+              All messages are displayed inside the guest portal, not scattered across multiple chats or platforms.
             </p>
-            <div className={seo.logosRow} aria-label="Platforms">
-              <span className={seo.logosLabel}>Platforms</span>
-              <Image className={seo.logoImg} src="/airbnb.png" alt="Airbnb" width={52} height={52} />
-              <Image className={seo.logoImg} src="/booking.png" alt="Booking.com" width={52} height={52} />
-              <Image className={seo.logoImg} src="/trivago.png" alt="Trivago" width={52} height={52} />
-              <Image className={seo.logoImg} src="/expedia.png" alt="Expedia" width={52} height={52} />
-            </div>
           </div>
         </section>
 
         <section className={seo.section} aria-labelledby="when">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
             <h2 id="when" className={seo.h2}>
-              When messages are sent
+              When messages are delivered
             </h2>
-            <p className={seo.p}>Messages can be scheduled relative to the reservation:</p>
-            <ul className={styles.problemList}>
-              <li>before arrival (e.g. 1 hour before)</li>
+            <p className={seo.p}>Messages are scheduled relative to the reservation:</p>
+            <ul className={styles.includedList}>
+              <li>before arrival (for example, one hour before)</li>
               <li>at arrival</li>
-              <li>before check-out (e.g. 12 hours before)</li>
+              <li>before check-out (for example, twelve hours before)</li>
             </ul>
-            <p className={seo.pStrong}>Each message appears exactly when it is relevant for the guest.</p>
+            <p className={seo.pStrong}>
+              Guests see each message exactly when it is relevant, without searching through conversations.
+            </p>
           </div>
         </section>
 
@@ -218,10 +249,15 @@ export default function AutomaticGuestMessagesSeoPage() {
               What the guest sees
             </h2>
             <p className={seo.p}>
-              Guests do not receive random messages. They access a dedicated guest portal where messages appear in order,
-              reservation details are visible, house rules are accessible, and contact details are always available.
+              Guests access a dedicated guest portal where:
             </p>
-            <p className={seo.pStrong}>Everything is calm, structured, and easy to understand.</p>
+            <ul className={styles.includedList}>
+              <li>messages appear in a clear order</li>
+              <li>reservation details are visible</li>
+              <li>house rules are available</li>
+              <li>property contact information is always accessible</li>
+            </ul>
+            <p className={seo.pStrong}>The experience is calm, structured, and easy to follow.</p>
           </div>
         </section>
 
@@ -232,13 +268,15 @@ export default function AutomaticGuestMessagesSeoPage() {
             </h2>
             <p className={seo.p}>Automatic guest messages are ideal for:</p>
             <ul className={styles.includedList}>
-              <li>short-term rental hosts</li>
               <li>Airbnb and Booking hosts</li>
-              <li>properties without reception</li>
+              <li>short-term rental properties</li>
+              <li>accommodations without a permanent reception</li>
               <li>hosts managing multiple reservations</li>
-              <li>anyone who wants fewer interruptions</li>
+              <li>anyone who wants fewer interruptions during the day</li>
             </ul>
-            <p className={seo.pStrong}>This system is built for real hosting workflows — not hotel chains.</p>
+            <p className={seo.pStrong}>
+              They are built for real hosting workflows, not large hotel chains with complex systems.
+            </p>
           </div>
         </section>
 
@@ -260,10 +298,12 @@ export default function AutomaticGuestMessagesSeoPage() {
 
         <section className={seo.section} aria-labelledby="cta">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="cta" className={seo.h2}>
-              See how automatic messages look from the guest’s perspective
-            </h2>
-            <p className={seo.p}>A calm portal where guests see messages at the right time.</p>
+            <h2 id="cta" className={seo.h2}>Final note</h2>
+            <p className={seo.p}>
+              Automatic guest messages are not about removing hospitality. They are about removing repetition, stress,
+              and constant interruptions — while keeping guests informed and comfortable.
+            </p>
+            <p className={seo.pStrong}>See how automatic guest messages look from the guest’s perspective.</p>
             <div className={seo.ctaRow}>
               <Link className={`${styles.btn} ${styles.btnSolid}`} href="/guest-ai-assistant/demo">
                 See the guest message portal

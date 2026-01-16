@@ -7,9 +7,9 @@ import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
 
 export const metadata: Metadata = {
-  title: "Mesaje automate pentru oaspeti – cazare | Plan4Host",
+  title: "Mesaje automate pentru oaspeti Airbnb & Booking | Plan4Host",
   description:
-    "Trimite mesaje automate pentru oaspeti dupa check-in. Informatii de sosire, Wi-Fi, reguli si check-out, la momentul potrivit, fara mesaje manuale.",
+    "Trimite mesaje automate pentru oaspeti dupa check-in. Informatii de sosire, Wi-Fi, reguli si check-out, la momentul potrivit, fara raspunsuri manuale.",
   alternates: {
     canonical: "/ro/mesaje-automate-pentru-oaspeti",
     languages: {
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Mesaje automate pentru oaspeti – cazare | Plan4Host",
+    title: "Mesaje automate pentru oaspeti Airbnb & Booking | Plan4Host",
     description:
       "Mesaje automate pentru oaspeti dupa check-in: sosire, Wi-Fi, reguli si check-out, la momentul potrivit.",
     url: "/ro/mesaje-automate-pentru-oaspeti",
@@ -80,12 +80,9 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
             Mesaje automate pentru oaspeti
           </h1>
           <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
-            Mesajele catre oaspeti sunt una dintre cele mai mari surse de stres pentru gazde. Detalii de sosire, Wi‑Fi,
-            parcare, reguli — „inca o intrebare”.
-            <br />
-            <br />
-            Mesajele automate inlocuiesc conversatiile repetitive cu informatii clare, livrate la momentul potrivit —
-            exact cand oaspetele are nevoie.
+            Mesajele automate pentru oaspeti ajuta gazdele sa reduca discutiile repetitive si sa livreze informatiile
+            potrivite, la momentul potrivit. In loc sa raspunzi la aceleasi intrebari de fiecare data, pregatesti mesajele
+            o singura data, iar sistemul se ocupa de restul.
           </p>
           <div className={styles.heroCta}>
             <Link className={`${styles.btn} ${styles.btnSolid}`} href="/guest-ai-assistant/demo">
@@ -118,14 +115,15 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
             <h2 id="meaning" className={seo.h2}>
               Ce inseamna mesaje automate pentru oaspeti
             </h2>
+            <p className={seo.p}>Mesajele automate sunt mesaje trimise oaspetilor in functie de starea si timingul rezervarii.</p>
             <p className={seo.p}>
-              Mesajele automate sunt mesaje programate, afisate oaspetilor in functie de starea rezervarii.
+              Ele inlocuiesc discutiile manuale cu informatii clare si programate, afisate cand sunt cu adevarat utile — inainte de sosire, in timpul sejurului sau inainte de check-out.
             </p>
-            <p className={seo.p}>
-              In loc sa raspunzi la aceleasi intrebari, oaspetii primesc informatiile potrivite automat:{" "}
-              <strong>inainte de sosire</strong>, <strong>la sosire</strong> si <strong>inainte de check-out</strong>.
-            </p>
-            <p className={seo.pStrong}>Fara trimis manual. Fara follow-up. Fara mesaje ratate.</p>
+            <ul className={styles.includedList}>
+              <li>Fara trimis manual.</li>
+              <li>Fara mesaje uitate.</li>
+              <li>Fara stres in ultimul moment.</li>
+            </ul>
           </div>
         </section>
 
@@ -135,19 +133,48 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
               Problema comunicarii manuale
             </h2>
             <p className={seo.p}>Majoritatea gazdelor comunica cu oaspetii prin:</p>
-            <ul className={styles.problemList}>
-              <li>WhatsApp</li>
+            <ul
+              className={styles.includedList}
+              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+            >
               <li>chatul platformei de rezervari</li>
-              <li>mesaje in ultimul moment</li>
+              <li>WhatsApp</li>
+              <li>emailuri trimise in graba</li>
             </ul>
             <p className={seo.p}>Asta duce de obicei la:</p>
-            <ul className={styles.problemList}>
+            <ul
+              className={styles.includedList}
+              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+            >
               <li>intrebari repetitive</li>
-              <li>detalii uitate</li>
-              <li>stres chiar inainte de sosire</li>
+              <li>detalii lipsa</li>
               <li>intreruperi pe tot parcursul zilei</li>
+              <li>stres chiar inainte de sosire</li>
             </ul>
-            <p className={seo.pStrong}>Comunicarea manuala nu scaleaza — nici macar pentru proprietati mici.</p>
+            <p className={seo.pStrong}>
+              Chiar si cu cateva rezervari, mesajele manuale devin greu de gestionat constant.
+            </p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="otas">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="otas" className={seo.h2}>
+              Mesaje automate pentru Airbnb si Booking
+            </h2>
+            <p className={seo.p}>Oaspetii de pe Airbnb si Booking intreaba de obicei aceleasi lucruri:</p>
+            <ul
+              className={styles.includedList}
+              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+            >
+              <li>Cum intru in proprietate?</li>
+              <li>Unde pot parca?</li>
+              <li>Care este parola de Wi‑Fi?</li>
+              <li>La ce ora este check‑out?</li>
+            </ul>
+            <p className={seo.p}>
+              Cu mesaje automate, informatia ajunge fara raspunsuri manuale. Mesajele sunt pregatite o singura data si apar automat in portalul oaspetelui, in functie de rezervare — indiferent daca vine din Airbnb, Booking sau alta platforma.
+            </p>
           </div>
         </section>
 
@@ -164,11 +191,13 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
               <span className={seo.flowArrow}>→</span>
               <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>mesaje afisate</span>
             </div>
-            <p className={seo.p}>
-              Dupa ce oaspetele completeaza check-in-ul online si gazda confirma rezervarea, oaspetele are acces la un
-              portal privat unde mesajele apar automat, la momentul potrivit.
-            </p>
-            <p className={seo.pStrong}>Gazda nu trebuie sa faca pasi suplimentari.</p>
+            <p className={seo.p}>Dupa ce oaspetele completeaza check-in-ul online si gazda confirma rezervarea:</p>
+            <ul className={styles.includedList}>
+              <li>oaspetii au acces la un portal privat de mesaje</li>
+              <li>mesajele programate apar automat la momentul potrivit</li>
+              <li>toate informatiile raman organizate intr-un singur loc</li>
+            </ul>
+            <p className={seo.pStrong}>Gazdele nu trebuie sa trimita mesaje manual.</p>
           </div>
         </section>
 
@@ -180,36 +209,33 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
             <p className={seo.p}>Mesajele pot include:</p>
             <ul className={styles.includedList}>
               <li>instructiuni de sosire</li>
-              <li>coduri de acces</li>
-              <li>detalii Wi-Fi</li>
-              <li>informatii despre parcare</li>
+              <li>detalii de acces</li>
+              <li>informatii Wi‑Fi</li>
+              <li>ghidaj pentru parcare</li>
               <li>reamintiri despre reguli</li>
               <li>instructiuni de check-out</li>
               <li>recomandari locale</li>
             </ul>
-            <p className={seo.pStrong}>Mesajele apar in portalul oaspetelui, nu in emailuri sau chat-uri imprastiate.</p>
-            <div className={seo.logosRow} aria-label="Platforme">
-              <span className={seo.logosLabel}>Platforme</span>
-              <Image className={seo.logoImg} src="/airbnb.png" alt="Airbnb" width={52} height={52} />
-              <Image className={seo.logoImg} src="/booking.png" alt="Booking.com" width={52} height={52} />
-              <Image className={seo.logoImg} src="/trivago.png" alt="Trivago" width={52} height={52} />
-              <Image className={seo.logoImg} src="/expedia.png" alt="Expedia" width={52} height={52} />
-            </div>
+            <p className={seo.pStrong}>
+              Toate mesajele sunt afisate in portalul oaspetelui, nu imprastiate in chat-uri sau platforme diferite.
+            </p>
           </div>
         </section>
 
         <section className={seo.section} aria-labelledby="when">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
             <h2 id="when" className={seo.h2}>
-              Cand apar mesajele
+              Cand sunt livrate mesajele
             </h2>
-            <p className={seo.p}>Mesajele pot fi programate relativ la rezervare:</p>
-            <ul className={styles.problemList}>
-              <li>inainte de sosire (de ex. cu 1 ora inainte)</li>
+            <p className={seo.p}>Mesajele sunt programate relativ la rezervare:</p>
+            <ul className={styles.includedList}>
+              <li>inainte de sosire (de exemplu, cu o ora inainte)</li>
               <li>la sosire</li>
-              <li>inainte de check-out (de ex. cu 12 ore inainte)</li>
+              <li>inainte de check-out (de exemplu, cu douasprezece ore inainte)</li>
             </ul>
-            <p className={seo.pStrong}>Fiecare mesaj apare exact cand este relevant pentru oaspete.</p>
+            <p className={seo.pStrong}>
+              Oaspetele vede fiecare mesaj exact cand este relevant, fara sa caute prin conversatii.
+            </p>
           </div>
         </section>
 
@@ -218,11 +244,14 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
             <h2 id="see" className={seo.h2}>
               Ce vede oaspetele
             </h2>
-            <p className={seo.p}>
-              Oaspetii nu primesc mesaje aleatorii. Ei au acces la un portal dedicat unde mesajele apar in ordine, detaliile
-              rezervarii sunt vizibile, regulile sunt accesibile si datele de contact raman la indemana.
-            </p>
-            <p className={seo.pStrong}>Totul este calm, structurat si usor de inteles.</p>
+            <p className={seo.p}>Oaspetii au acces la un portal dedicat unde:</p>
+            <ul className={styles.includedList}>
+              <li>mesajele apar intr-o ordine clara</li>
+              <li>detaliile rezervarii sunt vizibile</li>
+              <li>regulile sunt disponibile</li>
+              <li>datele de contact ale proprietatii sunt mereu accesibile</li>
+            </ul>
+            <p className={seo.pStrong}>Experienta este calma, structurata si usor de urmarit.</p>
           </div>
         </section>
 
@@ -233,13 +262,15 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
             </h2>
             <p className={seo.p}>Mesajele automate sunt potrivite pentru:</p>
             <ul className={styles.includedList}>
-              <li>gazde de short-term rentals</li>
               <li>gazde pe Airbnb si Booking</li>
-              <li>proprietati fara receptie</li>
+              <li>proprietati de short-term rental</li>
+              <li>cazari fara receptie permanenta</li>
               <li>gazde care gestioneaza mai multe rezervari</li>
-              <li>orice gazda care vrea mai putine intreruperi</li>
+              <li>orice gazda care vrea mai putine intreruperi in timpul zilei</li>
             </ul>
-            <p className={seo.pStrong}>Sistemul este facut pentru hosting real, nu pentru lanturi hoteliere.</p>
+            <p className={seo.pStrong}>
+              Sunt facute pentru hosting real, nu pentru lanturi hoteliere mari cu sisteme complexe.
+            </p>
           </div>
         </section>
 
@@ -261,10 +292,12 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
 
         <section className={seo.section} aria-labelledby="cta">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="cta" className={seo.h2}>
-              Vezi cum arata mesajele din perspectiva oaspetelui
-            </h2>
-            <p className={seo.p}>Un portal calm, unde mesajele apar la momentul potrivit.</p>
+            <h2 id="cta" className={seo.h2}>Nota finala</h2>
+            <p className={seo.p}>
+              Mesajele automate nu sunt despre a elimina ospitalitatea. Sunt despre a elimina repetitia, stresul si
+              intreruperile constante — in timp ce oaspetii raman informati si confortabili.
+            </p>
+            <p className={seo.pStrong}>Vezi cum arata mesajele automate din perspectiva oaspetelui.</p>
             <div className={seo.ctaRow}>
               <Link className={`${styles.btn} ${styles.btnSolid}`} href="/guest-ai-assistant/demo">
                 Vezi portalul de mesaje pentru oaspeti
