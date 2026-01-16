@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import styles from "@/app/home.module.css";
-import seo from "@/app/seo.module.css";
 
 type Lang = "en" | "ro";
 
@@ -14,10 +13,10 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
   const checkinTitle = lang === "ro" ? "Check-in online pentru cazari" : "Online check-in for accommodation";
 
   const messagesHref = lang === "ro" ? "/ro/mesaje-automate-pentru-oaspeti" : "/automatic-guest-messages";
-  const messagesTitle = lang === "ro" ? "Mesaje automate pentru oaspeti" : "Automatic guest messages";
+  const messagesTitle = lang === "ro" ? "Mesaje automate pentru oaspeti" : "Automatic guest messages for accommodation";
 
+  const thirdHref = lang === "ro" ? "/ro/sincronizare-ical-airbnb" : "/airbnb-ical-sync";
   const thirdTitle = lang === "ro" ? "Urmatorul ghid" : "Next guide";
-  const thirdDesc = lang === "ro" ? "In curand" : "Coming next";
 
   return (
     <footer className={styles.footer} aria-label="Footer">
@@ -131,25 +130,19 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
         </a>
       </div>
 
-      <div className={seo.seoFooterGrid} aria-label="Related SEO pages">
-        <Link className={`sb-cardglow ${seo.seoFooterCard}`} href={checkinHref}>
-          <p className={seo.seoFooterTitle}>{checkinTitle}</p>
-          <p className={seo.seoFooterDesc}>
-            {lang === "ro" ? "Formular digital pentru oaspeti, fara mesaje repetitive." : "A digital guest form that reduces repetitive messages."}
-          </p>
+      {/* Related guides (simple links — no cards) */}
+      <div style={{ padding: "6px 0", color: "var(--muted)" }} aria-label="Related guides">
+        <Link className={styles.footerLink} href={checkinHref}>
+          {checkinTitle}
+        </Link>{" "}
+        ·{" "}
+        <Link className={styles.footerLink} href={messagesHref}>
+          {messagesTitle}
+        </Link>{" "}
+        ·{" "}
+        <Link className={styles.footerLink} href={thirdHref}>
+          {thirdTitle}
         </Link>
-        <Link className={`sb-cardglow ${seo.seoFooterCard}`} href={messagesHref}>
-          <p className={seo.seoFooterTitle}>{messagesTitle}</p>
-          <p className={seo.seoFooterDesc}>
-            {lang === "ro"
-              ? "Mesaje programate care apar la momentul potrivit."
-              : "Scheduled messages that appear at the right time."}
-          </p>
-        </Link>
-        <div className={`sb-cardglow ${seo.seoFooterCard} ${seo.seoFooterCardDisabled}`}>
-          <p className={seo.seoFooterTitle}>{thirdTitle}</p>
-          <p className={seo.seoFooterDesc}>{thirdDesc}</p>
-        </div>
       </div>
 
       <div className={styles.legalBar}>
@@ -160,4 +153,3 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
     </footer>
   );
 }
-
