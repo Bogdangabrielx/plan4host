@@ -20,7 +20,7 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
 
   return (
     <footer className={styles.footer} aria-label="Footer">
-      <div className={styles.footerGrid} style={{ gridTemplateColumns: "1.2fr 1fr", alignItems: "start" }}>
+      <div className={`${styles.footerGrid} p4h-seo-footer-grid`}>
         <div className={styles.footerCol}>
           <div className={styles.footerBrand}>
             <img src="/Logo_Landing.png" alt="" aria-hidden="true" className={styles.logoDark} />
@@ -81,6 +81,16 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
           </ul>
         </div>
       </div>
+      <style jsx>{`
+        .p4h-seo-footer-grid {
+          grid-template-columns: 1.2fr 1fr;
+        }
+        @media (max-width: 840px) {
+          .p4h-seo-footer-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
 
       <div
         style={{
