@@ -1,72 +1,160 @@
-export default function RoTravelminitIcalPage() {
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import styles from "../../home.module.css";
+import seo from "../../seo.module.css";
+
+export const metadata: Metadata = {
+  title: "Sincronizare iCal Travelminit – conecteaza calendarul | Plan4Host",
+  description:
+    "Ghid scurt pentru sincronizare iCal Travelminit: importi rezervarile in Plan4Host si exporti disponibilitatea inapoi ca sa eviti suprapunerile.",
+  alternates: {
+    canonical: "/ro/sincronizare-ical-travelminit",
+    languages: {
+      ro: "/ro/sincronizare-ical-travelminit",
+      en: "/travelminit-ical-sync",
+    },
+  },
+  openGraph: {
+    title: "Sincronizare iCal Travelminit – conecteaza calendarul | Plan4Host",
+    description:
+      "Sincronizare calendar Travelminit prin iCal (.ics): import rezervari si export disponibilitate pentru a reduce overbooking.",
+    url: "/ro/sincronizare-ical-travelminit",
+    locale: "ro_RO",
+    type: "article",
+  },
+};
+
+export default function SincronizareIcalTravelminitRO() {
+  const howToJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "Cum sincronizezi calendarul Travelminit cu iCal",
+    step: [
+      { "@type": "HowToStep", name: "Copiaza linkul iCal de export din Travelminit" },
+      { "@type": "HowToStep", name: "Adauga calendarul Travelminit in Plan4Host (Import iCal)" },
+      { "@type": "HowToStep", name: "Lipeste linkul Travelminit si salveaza" },
+      { "@type": "HowToStep", name: "Copiaza linkul de export din Plan4Host si importa-l inapoi in Travelminit" },
+      { "@type": "HowToStep", name: "Verifica daca rezervarile apar corect in ambele calendare" },
+    ],
+  };
+
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        padding: '32px 20px',
-        background: 'var(--bg)',
-      }}
-    >
-      <article style={{ width: '100%', maxWidth: 860 }}>
-        <header style={{ textAlign: 'center', marginBottom: 24, display: 'grid', gap: 10, placeItems: 'center' }}>
-          <img
-            src="/p4h_logo_rotund.png"
-            alt="Plan4Host"
-            width={80}
-            height={80}
-            style={{ borderRadius: 999, border: '2px solid var(--border)', background: 'var(--card)' }}
-          />
-          <h1 style={{ fontSize: 28, marginBottom: 4 }}>Sincronizare iCal Travelminit — Conectează calendarul</h1>
-          <p style={{ color: 'var(--muted)', margin: 0, fontSize: 14 }}>
-            Pași simpli pentru a conecta Travelminit cu Plan4Host.
+    <main className={styles.landing} style={{ minHeight: "100dvh", overflowX: "hidden" }}>
+      <MobileScrollReveal />
+
+      <nav className={styles.nav} aria-label="Navigatie">
+        <Link href="/ro" className={styles.brand}>
+          <img src="/Logo_Landing.png" alt="" aria-hidden="true" width={36} height={36} style={{ borderRadius: 12 }} />
+          <strong>Plan4Host</strong>
+        </Link>
+        <div />
+        <div className={styles.actions}>
+          <Link className={`${styles.btn} ${styles.btnSolid}`} href="/auth/login?mode=signup">
+            Incepe gratuit
+          </Link>
+          <Link className={`${styles.btn} ${styles.btnOutline}`} href="/ro">
+            Vezi pagina acasa
+          </Link>
+        </div>
+      </nav>
+
+      <section className={styles.hero} aria-labelledby="title">
+        <div className={styles.heroText} data-p4h-reveal>
+          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+            Sincronizare iCal Travelminit
+          </h1>
+          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+            Conectezi <strong>calendarul Travelminit</strong> prin <strong>iCal (.ics)</strong>, ca rezervarile si
+            disponibilitatea sa ramana aliniate intre Travelminit si Plan4Host.
           </p>
-        </header>
+          <div className={styles.heroCta}>
+            <Link className={`${styles.btn} ${styles.btnSolid}`} href="/auth/login?mode=signup">
+              Incepe gratuit
+            </Link>
+            <Link className={`${styles.btn} ${styles.btnOutline}`} href="/ro#features">
+              Afla mai mult
+            </Link>
+          </div>
+        </div>
 
-        <p style={{ color: 'var(--muted)' }}>
-          Ține Travelminit și celelalte calendare sincronizate cu iCal pentru a evita overbooking-ul. Mai jos găsești explicații și pașii esențiali.
-        </p>
+        <div className={styles.heroVisual} aria-label="Logo Travelminit" data-p4h-reveal>
+          <div style={{ width: "100%", height: "100%", display: "grid", placeItems: "center" }}>
+            <Image
+              src="/travelminit.png"
+              alt="Travelminit"
+              width={360}
+              height={360}
+              style={{ width: 160, height: 160 }}
+              priority
+            />
+          </div>
+        </div>
+      </section>
 
-        <h2 style={{ marginTop: 24 }}>Ce este sincronizarea iCal?</h2>
-        <p>
-          iCal este un format standard de calendar (.ics) folosit de multe platforme, inclusiv Travelminit, pentru import și export de rezervări și blocări de
-          disponibilitate. Plan4Host folosește iCal pentru a prelua periodic rezervări noi și pentru a distribui disponibilitatea către alte canale care acceptă iCal.
-        </p>
+      <div className={seo.content}>
+        <section className={seo.section} aria-labelledby="meaning">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="meaning" className={seo.h2}>
+              Ce inseamna sincronizarea iCal
+            </h2>
+            <p className={seo.p}>
+              iCal este un format standard de calendar (<strong>.ics</strong>) folosit pentru a partaja rezervari si
+              blocari. Pentru Travelminit iCal, de obicei conectezi doua directii: <strong>importi</strong> rezervarile
+              in Plan4Host si <strong>exporti</strong> disponibilitatea din Plan4Host inapoi in Travelminit.
+            </p>
+          </div>
+        </section>
 
-        <h2 style={{ marginTop: 24 }}>Pași de conectare</h2>
-        <ol>
-          <li>Deschide contul Travelminit și mergi în zona de Calendar / iCal.</li>
-          <li>Copiază linkul de export iCal din Travelminit pentru camera/unitatea dorită.</li>
-          <li>
-            În Plan4Host, deschide Management → Sync Calendars → Import și adaugă un canal nou iCal pentru aceeași cameră/unitate, apoi lipește URL-ul de export
-            Travelminit și salvează.
-          </li>
-          <li>
-            Din Plan4Host, copiază adresa URL iCal de export pentru acea cameră/unitate și importă-o înapoi în Travelminit, în secțiunea de iCal import (dacă este
-            disponibilă).
-          </li>
-          <li>
-            Reîmprospătează și, după prima sincronizare (conform planului tău), verifică apariția evenimentelor în ambele calendare.
-          </li>
-        </ol>
+        <section className={seo.section} aria-labelledby="steps">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="steps" className={seo.h2}>
+              Pasi de conectare Travelminit cu Plan4Host
+            </h2>
+            <ol className={seo.steps}>
+              <li>In Travelminit, gaseste sectiunea de calendar/iCal si copiaza linkul de export pentru unitate.</li>
+              <li>In Plan4Host, mergi la Sync Calendars → Import iCal si adauga un import pentru aceeasi camera/unitate.</li>
+              <li>Lipeste linkul Travelminit si salveaza.</li>
+              <li>Copiaza linkul de export din Plan4Host si importa-l inapoi in Travelminit (iCal import).</li>
+              <li>Verifica daca evenimentele apar corect in ambele calendare si nu exista suprapuneri.</li>
+            </ol>
+          </div>
+        </section>
 
-        <h2 style={{ marginTop: 24 }}>Sfaturi</h2>
-        <ul>
-          <li>Folosește un calendar separat per cameră/unitate pentru mapare clară și fără suprapuneri.</li>
-          <li>Nu partaja public link-urile iCal; tratează-le ca pe niște URL-uri private.</li>
-          <li>După configurare, forțează un refresh manual și verifică câteva date de test.</li>
-          <li>Păstrează fusurile orare consistente între Travelminit, Plan4Host și celelalte canale.</li>
-        </ul>
+        <section className={seo.section} aria-labelledby="tips">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="tips" className={seo.h2}>
+              Sfaturi practice
+            </h2>
+            <ul className={styles.problemList}>
+              <li>Foloseste un calendar per camera/unitate pentru mapare clara.</li>
+              <li>iCal sincronizeaza evenimente/blocari, nu preturi.</li>
+              <li>Pastreaza fusul orar consistent pe toate platformele.</li>
+            </ul>
+          </div>
+        </section>
 
-        <p style={{ marginTop: 24 }}>
-          Întrebări?{" "}
-          <a href="/auth/login?mode=signup" style={{ color: "var(--primary)" }}>
-            Încearcă gratuit
-          </a>{" "}
-          și configurează „Sync Calendars” în Plan4Host.
-        </p>
-      </article>
+        <section className={seo.section} aria-labelledby="cta">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="cta" className={seo.h2}>
+              Vrei sa conectezi calendarul?
+            </h2>
+            <p className={seo.p}>Incepe gratuit si conecteaza primul calendar iCal in cateva minute.</p>
+            <div className={seo.ctaRow}>
+              <Link className={`${styles.btn} ${styles.btnSolid}`} href="/auth/login?mode=signup">
+                Incepe gratuit
+              </Link>
+              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/ro">
+                Vezi pagina acasa
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
     </main>
   );
 }
+

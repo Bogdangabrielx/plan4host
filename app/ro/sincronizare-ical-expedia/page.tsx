@@ -1,48 +1,153 @@
-export default function RoExpediaIcalPage() {
-  return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        padding: '32px 20px',
-        background: 'var(--bg)',
-      }}
-    >
-      <article style={{ width: '100%', maxWidth: 860 }}>
-        <header style={{ textAlign: 'center', marginBottom: 24, display: 'grid', gap: 10, placeItems: 'center' }}>
-          <img
-            src="/p4h_logo_rotund.png"
-            alt="Plan4Host"
-            width={80}
-            height={80}
-            style={{ borderRadius: 999, border: '2px solid var(--border)', background: 'var(--card)' }}
-          />
-          <h1 style={{ fontSize: 28, marginBottom: 4 }}>Sincronizare iCal Expedia — Conectează calendarul</h1>
-          <p style={{ color: 'var(--muted)', margin: 0, fontSize: 14 }}>
-            Ghid rapid pentru conectarea Expedia cu Plan4Host prin iCal.
-          </p>
-        </header>
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import styles from "../../home.module.css";
+import seo from "../../seo.module.css";
 
-        <p style={{ color: 'var(--muted)' }}>
-        Expedia permite sincronizarea calendarului prin iCal. Iată pașii generali pentru conectare cu Plan4Host.
-      </p>
-      <h2 style={{ marginTop: 24 }}>Pași</h2>
-      <ol>
-        <li>Deschide Expedia Partner Central → Calendar.</li>
-        <li>Găsește linkul iCal de export și copiază-l.</li>
-        <li>În Plan4Host, adaugă un canal iCal pentru camera/unitatea dorită și lipește URL-ul de export Expedia.</li>
-        <li>Copiază URL-ul de export iCal din Plan4Host și importă-l înapoi în Expedia.</li>
-        <li>Reîmprospătează și verifică apariția evenimentelor.</li>
-      </ol>
-        <p style={{ marginTop: 24 }}>
-          Ai nevoie de ajutor?{" "}
-          <a href="/auth/login?mode=signup" style={{ color: "var(--primary)" }}>
-            Încearcă gratuit
-          </a>{" "}
-          și configurează „Sync Calendars”.
-        </p>
-      </article>
+export const metadata: Metadata = {
+  title: "Sincronizare iCal Expedia – conecteaza calendarul | Plan4Host",
+  description:
+    "Ghid scurt pentru sincronizare iCal Expedia: importi rezervarile in Plan4Host si exporti disponibilitatea inapoi ca sa eviti suprapunerile.",
+  alternates: {
+    canonical: "/ro/sincronizare-ical-expedia",
+    languages: {
+      ro: "/ro/sincronizare-ical-expedia",
+      en: "/expedia-ical-sync",
+    },
+  },
+  openGraph: {
+    title: "Sincronizare iCal Expedia – conecteaza calendarul | Plan4Host",
+    description:
+      "Sincronizare calendar Expedia prin iCal (.ics): import rezervari si export disponibilitate pentru a reduce overbooking.",
+    url: "/ro/sincronizare-ical-expedia",
+    locale: "ro_RO",
+    type: "article",
+  },
+};
+
+export default function SincronizareIcalExpediaRO() {
+  const howToJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "Cum sincronizezi calendarul Expedia cu iCal",
+    step: [
+      { "@type": "HowToStep", name: "Copiaza linkul iCal de export din Expedia" },
+      { "@type": "HowToStep", name: "Adauga calendarul Expedia in Plan4Host (Import iCal)" },
+      { "@type": "HowToStep", name: "Lipeste linkul Expedia si salveaza" },
+      { "@type": "HowToStep", name: "Copiaza linkul de export din Plan4Host si importa-l inapoi in Expedia" },
+      { "@type": "HowToStep", name: "Verifica daca rezervarile apar corect in ambele calendare" },
+    ],
+  };
+
+  return (
+    <main className={styles.landing} style={{ minHeight: "100dvh", overflowX: "hidden" }}>
+      <MobileScrollReveal />
+
+      <nav className={styles.nav} aria-label="Navigatie">
+        <Link href="/ro" className={styles.brand}>
+          <img src="/Logo_Landing.png" alt="" aria-hidden="true" width={36} height={36} style={{ borderRadius: 12 }} />
+          <strong>Plan4Host</strong>
+        </Link>
+        <div />
+        <div className={styles.actions}>
+          <Link className={`${styles.btn} ${styles.btnSolid}`} href="/auth/login?mode=signup">
+            Incepe gratuit
+          </Link>
+          <Link className={`${styles.btn} ${styles.btnOutline}`} href="/ro">
+            Vezi pagina acasa
+          </Link>
+        </div>
+      </nav>
+
+      <section className={styles.hero} aria-labelledby="title">
+        <div className={styles.heroText} data-p4h-reveal>
+          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+            Sincronizare iCal Expedia
+          </h1>
+          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+            Conectezi <strong>calendarul Expedia</strong> prin <strong>iCal (.ics)</strong>, ca rezervarile si
+            disponibilitatea sa ramana aliniate intre Expedia si Plan4Host.
+          </p>
+          <div className={styles.heroCta}>
+            <Link className={`${styles.btn} ${styles.btnSolid}`} href="/auth/login?mode=signup">
+              Incepe gratuit
+            </Link>
+            <Link className={`${styles.btn} ${styles.btnOutline}`} href="/ro#features">
+              Afla mai mult
+            </Link>
+          </div>
+        </div>
+
+        <div className={styles.heroVisual} aria-label="Logo Expedia" data-p4h-reveal>
+          <div style={{ width: "100%", height: "100%", display: "grid", placeItems: "center" }}>
+            <Image src="/expedia.png" alt="Expedia" width={360} height={360} style={{ width: 160, height: 160 }} priority />
+          </div>
+        </div>
+      </section>
+
+      <div className={seo.content}>
+        <section className={seo.section} aria-labelledby="meaning">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="meaning" className={seo.h2}>
+              Ce inseamna sincronizarea iCal
+            </h2>
+            <p className={seo.p}>
+              iCal este un format standard de calendar (<strong>.ics</strong>) folosit pentru a partaja rezervari si
+              blocari. Pentru Expedia iCal, de obicei conectezi doua directii: <strong>importi</strong> rezervarile in
+              Plan4Host si <strong>exporti</strong> disponibilitatea din Plan4Host inapoi in Expedia.
+            </p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="steps">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="steps" className={seo.h2}>
+              Pasi de conectare Expedia cu Plan4Host
+            </h2>
+            <ol className={seo.steps}>
+              <li>In Expedia Partner Central, gaseste zona de calendar/iCal si copiaza linkul de export.</li>
+              <li>In Plan4Host, mergi la Sync Calendars → Import iCal si adauga un import pentru aceeasi camera/unitate.</li>
+              <li>Lipeste linkul Expedia si salveaza.</li>
+              <li>Copiaza linkul de export din Plan4Host si importa-l inapoi in Expedia (iCal import).</li>
+              <li>Verifica daca evenimentele apar corect in ambele calendare si nu exista suprapuneri.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="tips">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="tips" className={seo.h2}>
+              Sfaturi practice
+            </h2>
+            <ul className={styles.problemList}>
+              <li>Foloseste un calendar per camera/unitate pentru mapare clara.</li>
+              <li>iCal sincronizeaza evenimente/blocari, nu preturi.</li>
+              <li>Pastreaza fusul orar consistent pe toate platformele.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="cta">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="cta" className={seo.h2}>
+              Vrei sa conectezi calendarul?
+            </h2>
+            <p className={seo.p}>Incepe gratuit si conecteaza primul calendar iCal in cateva minute.</p>
+            <div className={seo.ctaRow}>
+              <Link className={`${styles.btn} ${styles.btnSolid}`} href="/auth/login?mode=signup">
+                Incepe gratuit
+              </Link>
+              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/ro">
+                Vezi pagina acasa
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
     </main>
   );
 }
+

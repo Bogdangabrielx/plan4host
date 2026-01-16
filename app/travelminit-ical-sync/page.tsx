@@ -1,66 +1,153 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import styles from "../home.module.css";
+import seo from "../seo.module.css";
+
+export const metadata: Metadata = {
+  title: "Travelminit iCal sync – connect your calendar | Plan4Host",
+  description:
+    "A short guide for Travelminit iCal sync: import reservations into Plan4Host and export availability back to keep calendars aligned.",
+  alternates: {
+    canonical: "/travelminit-ical-sync",
+    languages: {
+      en: "/travelminit-ical-sync",
+      ro: "/ro/sincronizare-ical-travelminit",
+    },
+  },
+  openGraph: {
+    title: "Travelminit iCal sync – connect your calendar | Plan4Host",
+    description:
+      "Connect Travelminit calendar sync via iCal: import bookings and export availability to reduce overlaps.",
+    url: "/travelminit-ical-sync",
+    locale: "en_US",
+    type: "article",
+  },
+};
+
 export default function TravelminitIcalSyncPage() {
+  const howToJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "How to sync Travelminit calendar with iCal",
+    step: [
+      { "@type": "HowToStep", name: "Copy Travelminit iCal export URL" },
+      { "@type": "HowToStep", name: "Add Travelminit calendar in Plan4Host (Import iCal)" },
+      { "@type": "HowToStep", name: "Paste the Travelminit iCal link and save" },
+      { "@type": "HowToStep", name: "Copy Plan4Host export link and add it back to Travelminit (Import iCal)" },
+      { "@type": "HowToStep", name: "Verify that reservations and blocks appear on both sides" },
+    ],
+  };
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        padding: "32px 20px",
-        background: "var(--bg)",
-      }}
-    >
-      <article style={{ width: "100%", maxWidth: 860 }}>
-        <header style={{ textAlign: "center", marginBottom: 24, display: "grid", gap: 10, placeItems: "center" }}>
-          <img
-            src="/p4h_logo_rotund.png"
-            alt="Plan4Host"
-            width={80}
-            height={80}
-            style={{ borderRadius: 999, border: "2px solid var(--border)", background: "var(--card)" }}
-          />
-          <h1 style={{ fontSize: 28, marginBottom: 4 }}>Travelminit iCal Sync — Connect your calendar</h1>
-          <p style={{ color: "var(--muted)", margin: 0, fontSize: 14 }}>
-            Connect Travelminit with Plan4Host using iCal in a few steps.
-          </p>
-        </header>
+    <main className={styles.landing} style={{ minHeight: "100dvh", overflowX: "hidden" }}>
+      <MobileScrollReveal />
 
-        <p style={{ color: "var(--muted)" }}>
-          Travelminit supports calendar sync via iCal. Below you&apos;ll find what that means and how to connect it with Plan4Host.
-        </p>
-
-        <h2 style={{ marginTop: 24 }}>What is iCal sync?</h2>
-        <p>
-          iCal is a standard calendar format (.ics) that Travelminit and other OTAs use to import and export reservations and availability blocks.
-          Plan4Host uses iCal to pull new bookings from Travelminit and push availability back, helping to keep your calendars consistent and avoid
-          double bookings.
-        </p>
-
-        <h2 style={{ marginTop: 24 }}>Steps to connect</h2>
-        <ol>
-          <li>Open your Travelminit extranet account and go to the Calendar / iCal section.</li>
-          <li>Copy the iCal export URL from Travelminit for the room/unit you want to sync.</li>
-          <li>
-            In Plan4Host, go to Management → Sync Calendars → Import, add a new iCal channel for that specific room/unit and paste the Travelminit
-            export URL.
-          </li>
-          <li>Copy the Plan4Host iCal export URL for that room/unit and import it back into Travelminit under iCal import.</li>
-          <li>Refresh and verify that events sync in both directions as expected.</li>
-        </ol>
-
-        <h2 style={{ marginTop: 24 }}>Tips</h2>
-        <ul>
-          <li>Use one calendar per room/unit for clean mapping and fewer surprises.</li>
-          <li>iCal carries availability blocks and reservations, not price rules — keep your pricing in Travelminit.</li>
-          <li>Check timezones across Plan4Host and Travelminit to avoid date offsets.</li>
-        </ul>
-        <p style={{ marginTop: 24 }}>
-          Questions?{" "}
-          <a href="/auth/login?mode=signup" style={{ color: "var(--primary)" }}>
+      <nav className={styles.nav} aria-label="Navigation">
+        <Link href="/" className={styles.brand}>
+          <img src="/Logo_Landing.png" alt="" aria-hidden="true" width={36} height={36} style={{ borderRadius: 12 }} />
+          <strong>Plan4Host</strong>
+        </Link>
+        <div />
+        <div className={styles.actions}>
+          <Link className={`${styles.btn} ${styles.btnSolid}`} href="/auth/login?mode=signup">
             Start free
-          </a>{" "}
-          and configure Sync Calendars in Plan4Host.
-        </p>
-      </article>
+          </Link>
+          <Link className={`${styles.btn} ${styles.btnOutline}`} href="/">
+            Home page
+          </Link>
+        </div>
+      </nav>
+
+      <section className={styles.hero} aria-labelledby="title">
+        <div className={styles.heroText} data-p4h-reveal>
+          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+            Travelminit iCal sync
+          </h1>
+          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+            Connect your <strong>Travelminit calendar</strong> using <strong>iCal (.ics)</strong>, so reservations and
+            availability stay aligned between Travelminit and Plan4Host.
+          </p>
+          <div className={styles.heroCta}>
+            <Link className={`${styles.btn} ${styles.btnSolid}`} href="/auth/login?mode=signup">
+              Start free
+            </Link>
+            <Link className={`${styles.btn} ${styles.btnOutline}`} href="/#features">
+              Learn more
+            </Link>
+          </div>
+        </div>
+
+        <div className={styles.heroVisual} aria-label="Travelminit logo" data-p4h-reveal>
+          <div style={{ width: "100%", height: "100%", display: "grid", placeItems: "center" }}>
+            <Image src="/travelminit.png" alt="Travelminit" width={360} height={360} style={{ width: 160, height: 160 }} priority />
+          </div>
+        </div>
+      </section>
+
+      <div className={seo.content}>
+        <section className={seo.section} aria-labelledby="meaning">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="meaning" className={seo.h2}>
+              What iCal sync means
+            </h2>
+            <p className={seo.p}>
+              iCal is a standard calendar format (<strong>.ics</strong>) used to share reservations and blocked dates.
+              For Travelminit iCal sync, you usually import Travelminit bookings into Plan4Host and export availability
+              from Plan4Host back into Travelminit.
+            </p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="steps">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="steps" className={seo.h2}>
+              Steps to connect Travelminit with Plan4Host
+            </h2>
+            <ol className={seo.steps}>
+              <li>In Travelminit, locate the calendar/iCal section and copy the export link for your unit/room.</li>
+              <li>In Plan4Host, open Sync Calendars → Import iCal and add an import for the same unit/room.</li>
+              <li>Paste the Travelminit iCal link and save.</li>
+              <li>Copy the Plan4Host export link for that unit/room and add it back into Travelminit as an iCal import.</li>
+              <li>Verify that events appear correctly on both sides and there are no overlaps.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="tips">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="tips" className={seo.h2}>
+              Practical tips
+            </h2>
+            <ul className={styles.problemList}>
+              <li>Use one calendar per unit/room so mapping stays simple.</li>
+              <li>iCal syncs events/blocks, not pricing rules.</li>
+              <li>Keep timezone settings consistent across platforms.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="cta">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="cta" className={seo.h2}>
+              Ready to connect?
+            </h2>
+            <p className={seo.p}>Start free and connect your first Travelminit iCal calendar in a few minutes.</p>
+            <div className={seo.ctaRow}>
+              <Link className={`${styles.btn} ${styles.btnSolid}`} href="/auth/login?mode=signup">
+                Start free
+              </Link>
+              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/">
+                Home page
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
     </main>
   );
 }
+
