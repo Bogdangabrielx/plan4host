@@ -1909,8 +1909,8 @@ export default function HomePage() {
 	            Automatic guest messages for accommodation
 	          </Link>{" "}
 	          ·{" "}
-	          <Link className={styles.footerLink} href="/airbnb-ical-sync">
-	            Next Guide
+	          <Link className={styles.footerLink} href="/unified-booking-calendar">
+	            Unified booking calendar
 	          </Link>
 	        </div>
 

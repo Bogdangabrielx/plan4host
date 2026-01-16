@@ -15,8 +15,8 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
   const messagesHref = lang === "ro" ? "/ro/mesaje-automate-pentru-oaspeti" : "/automatic-guest-messages";
   const messagesTitle = lang === "ro" ? "Mesaje automate pentru oaspeti" : "Automatic guest messages for accommodation";
 
-  const thirdHref = lang === "ro" ? "/ro/sincronizare-ical-airbnb" : "/airbnb-ical-sync";
-  const thirdTitle = lang === "ro" ? "Urmatorul ghid" : "Next guide";
+  const thirdHref = lang === "ro" ? "/ro/calendar-rezervari-unificat" : "/unified-booking-calendar";
+  const thirdTitle = lang === "ro" ? "Calendar rezervari unificat" : "Unified booking calendar";
 
   return (
     <footer className={styles.footer} aria-label="Footer">

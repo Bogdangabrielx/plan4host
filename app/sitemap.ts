@@ -14,8 +14,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/travelminit-ical-sync",
     "/online-check-in-accommodation",
     "/automatic-guest-messages",
+    "/unified-booking-calendar",
     "/ro/check-in-online-cazare",
     "/ro/mesaje-automate-pentru-oaspeti",
+    "/ro/calendar-rezervari-unificat",
     
     "/checkin-forms-gdpr",
     "/ro/sincronizare-ical-airbnb",

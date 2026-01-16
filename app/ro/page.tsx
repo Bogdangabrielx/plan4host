@@ -1706,8 +1706,8 @@ export default function HomePageRO() {
 	            Mesaje automate pentru oaspeti
 	          </Link>{" "}
 	          ·{" "}
-	          <Link className={styles.footerLink} href="/ro/sincronizare-ical-airbnb">
-	            Urmatorul ghid
+	          <Link className={styles.footerLink} href="/ro/calendar-rezervari-unificat">
+	            Calendar rezervari unificat
 	          </Link>
 	        </div>
 
