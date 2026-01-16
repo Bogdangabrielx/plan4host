@@ -172,8 +172,53 @@
   margin-top: 1px;
 }
 
+.seoFooterGrid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.seoFooterCard{
+  --sb-glow-border: var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.seoFooterCard:hover{
+  border-color: color-mix(in srgb, var(--text) 18%, var(--border));
+}
+
+.seoFooterTitle{
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text) 78%, transparent);
+  font-weight: 800;
+}
+
+.seoFooterDesc{
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.seoFooterCardDisabled{
+  opacity: .6;
+  pointer-events: none;
+}
+
 @media (max-width: 640px){
   .content{ gap: 48px; padding-bottom: 64px; }
   .h2{ font-size: 20px; }
   .card{ padding: 20px; }
+  .seoFooterGrid{ grid-template-columns: 1fr; }
 }

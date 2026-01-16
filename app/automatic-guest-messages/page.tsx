@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import SeoFooter from "@/components/seo/SeoFooter";
 import styles from "../home.module.css";
 import seo from "../seo.module.css";
 
@@ -275,8 +276,9 @@ export default function AutomaticGuestMessagesSeoPage() {
         </section>
       </div>
 
+      <SeoFooter lang="en" />
+
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
     </main>
   );
 }
-
