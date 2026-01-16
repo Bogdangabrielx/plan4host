@@ -93,11 +93,14 @@ export default function OnlineCheckInAccommodationPage() {
             reach the property.
           </p>
           <div className={styles.heroCta}>
-            <Link className={`${styles.btn} ${styles.btnSolid}`} href="/">
-              See how it works
+            <Link
+              className={`${styles.btn} ${styles.btnSolid}`}
+              href="/checkin?property=b1588b40-954d-4489-b36e-45659853489a"
+            >
+              See the check-in form
             </Link>
             <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant/demo">
-              Discover the guest experience
+              See where guests receive messages
             </Link>
           </div>
         </div>

@@ -93,11 +93,14 @@ export default function CheckInOnlineCazarePage() {
             necesare online, inainte de a ajunge la cazare.
           </p>
           <div className={styles.heroCta}>
-            <Link className={`${styles.btn} ${styles.btnSolid}`} href="/ro">
-              Vezi cum functioneaza
+            <Link
+              className={`${styles.btn} ${styles.btnSolid}`}
+              href="/checkin?property=b1588b40-954d-4489-b36e-45659853489a"
+            >
+              Vezi formularul de check-in
             </Link>
             <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant/demo">
-              Descopera experienta pentru oaspeti
+              Vezi unde oaspetii primesc mesaje
             </Link>
           </div>
         </div>
