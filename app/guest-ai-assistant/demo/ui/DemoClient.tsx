@@ -1030,121 +1030,81 @@ export default function DemoClient() {
 
     const roBefore = `
       <h3>INAINTE DE SOSIRE ⏳</h3>
-      <p style="margin:0 0 8px; font-weight:800;">Detalii rapide pentru sejurul tau</p>
-      <p style="margin:0 0 10px;">Salut, ${esc(fullName)}. Rezervarea ta la ${chip(propertyName)} este pentru ${chip(stay)}.</p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        🕒 <strong>Check-in:</strong> ${esc(checkin)}<br/>
-        🕚 <strong>Check-out:</strong> ${esc(checkout)}
+      <p style="margin:0 0 10px; font-weight:800;">Subiect: Detalii check-in pentru ${chip(propertyName)}</p>
+      <p style="margin:0;">
+        Salut, ${esc(fullName)}. Multumim pentru rezervare — sejurul tau la ${chip(propertyName)} este ${chip(stay)}.
+        Check-in-ul este la <strong>${esc(checkin)}</strong>, iar check-out la <strong>${esc(checkout)}</strong>.
+        Codurile / instructiunile de acces le vei primi cu aproximativ o ora inainte de check-in.
       </p>
-      <p style="margin:10px 0 0;">
-        🔐 <strong>Codurile / instructiunile de acces</strong> vor fi comunicate cu aproximativ 1 ora inainte de check-in.
-      </p>
-      <p style="margin:10px 0 0;">
-        🚗 <strong>Parcare:</strong> parcheaza doar in zonele indicate si nu bloca drumuri de acces sau alei.
-      </p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        Daca ai intrebari inainte de sosire, foloseste <strong>Contacteaza gazda</strong> din portal.
+      <p style="margin:12px 0 0;">
+        Daca vii cu masina, te rugam sa parchezi doar in zonele indicate si sa nu blochezi drumurile de acces sau aleile.
+        Pentru orice intrebare inainte de sosire, foloseste <strong>Contacteaza gazda</strong> din portal.
       </p>
     `;
 
     const enBefore = `
       <h3>BEFORE ARRIVAL ⏳</h3>
-      <p style="margin:0 0 8px; font-weight:800;">Quick details for your stay</p>
-      <p style="margin:0 0 10px;">Hi, ${esc(fullName)}. Your stay at ${chip(propertyName)} is ${chip(stay)}.</p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        🕒 <strong>Check-in:</strong> ${esc(checkin)}<br/>
-        🕚 <strong>Check-out:</strong> ${esc(checkout)}
+      <p style="margin:0 0 10px; font-weight:800;">Subject: Check-in details for ${chip(propertyName)}</p>
+      <p style="margin:0;">
+        Hi ${esc(fullName)} — thanks for your booking. Your stay at ${chip(propertyName)} is ${chip(stay)}.
+        Check-in is at <strong>${esc(checkin)}</strong>, and check-out is at <strong>${esc(checkout)}</strong>.
+        Access codes / instructions will be shared about 1 hour before check-in.
       </p>
-      <p style="margin:10px 0 0;">
-        🔐 <strong>Access codes / instructions</strong> will be shared about 1 hour before check-in.
-      </p>
-      <p style="margin:10px 0 0;">
-        🚗 <strong>Parking:</strong> park only in the indicated areas and avoid blocking access roads or driveways.
-      </p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        If you have questions before arrival, use <strong>Contact the host</strong> from the portal.
+      <p style="margin:12px 0 0;">
+        If you arrive by car, please park only in the indicated areas and avoid blocking access roads or driveways.
+        If you have any questions before arrival, use <strong>Contact the host</strong> from the portal.
       </p>
     `;
 
     const roArrival = `
       <h3>LA SOSIRE 👋</h3>
-      <p style="margin:0 0 8px; font-weight:800;">Bun venit la ${chip(propertyName)}</p>
-      <p style="margin:0 0 10px;">Speram sa ai un sejur cat mai linistit. Mai jos ai cele mai importante informatii.</p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        ✅ <strong>Check-in:</strong> Acum<br/>
-        🕚 <strong>Check-out:</strong> ${esc(checkout)}
+      <p style="margin:0 0 10px; font-weight:800;">Subiect: Bun venit la ${chip(propertyName)}</p>
+      <p style="margin:0;">
+        Bun venit, ${esc(fullName)}. Poti face check-in <strong>acum</strong> — check-out este la <strong>${esc(checkout)}</strong>.
+        Pentru internet: WiFi ${chip(WIFI_SSID)} (parola ${chip(WIFI_PASS)}).
       </p>
-      <p style="margin:10px 0 0;">
-        📶 <strong>WiFi:</strong> ${chip(WIFI_SSID)} &nbsp;·&nbsp; <strong>Parola:</strong> ${chip(WIFI_PASS)}
-      </p>
-      <p style="margin:10px 0 0;">
-        🍽️ <strong>Unde mancam:</strong> la 10 minute exista o cafenea, iar vis-a-vis este un restaurant traditional.
-      </p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        Daca ai nevoie de ajutor cu accesul sau orice intrebare rapida, foloseste <strong>Contacteaza gazda</strong>.
+      <p style="margin:12px 0 0;">
+        Pentru ceva rapid de mancat: la ~10 minute exista o cafenea, iar vis-a-vis este un restaurant traditional.
+        Daca ai nevoie de ajutor cu accesul sau ai o intrebare, foloseste <strong>Contacteaza gazda</strong> din portal.
       </p>
     `;
 
     const enArrival = `
       <h3>AT ARRIVAL 👋</h3>
-      <p style="margin:0 0 8px; font-weight:800;">Welcome to ${chip(propertyName)}</p>
-      <p style="margin:0 0 10px;">We hope you have a smooth stay. Below are the key details to get started.</p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        ✅ <strong>Check-in:</strong> Now<br/>
-        🕚 <strong>Check-out:</strong> ${esc(checkout)}
+      <p style="margin:0 0 10px; font-weight:800;">Subject: Welcome to ${chip(propertyName)}</p>
+      <p style="margin:0;">
+        Welcome, ${esc(fullName)}. You can check in <strong>now</strong> — check-out is at <strong>${esc(checkout)}</strong>.
+        For internet access: WiFi ${chip(WIFI_SSID)} (password ${chip(WIFI_PASS)}).
       </p>
-      <p style="margin:10px 0 0;">
-        📶 <strong>WiFi:</strong> ${chip(WIFI_SSID)} &nbsp;·&nbsp; <strong>Password:</strong> ${chip(WIFI_PASS)}
-      </p>
-      <p style="margin:10px 0 0;">
-        🍽️ <strong>Where to eat:</strong> there is a cafe within 10 minutes, and a traditional restaurant across the street.
-      </p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        If you need help with access or a quick question, use <strong>Contact the host</strong>.
+      <p style="margin:12px 0 0;">
+        For something to eat: there’s a cafe within ~10 minutes, and a traditional restaurant across the street.
+        If you need help with access or a quick question, use <strong>Contact the host</strong> from the portal.
       </p>
     `;
 
     const roCheckout = `
       <h3>CHECK-OUT ✅</h3>
-      <p style="margin:0 0 8px; font-weight:800;">Multumim pentru sejur</p>
-      <p style="margin:0 0 10px;">${esc(fullName)}, speram ca ti-a placut la ${chip(propertyName)}.</p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        🕚 <strong>Check-out:</strong> ${esc(checkout)}<br/>
-        🧾 <strong>Minibar:</strong> produsele se achita la finalul sejurului, in functie de consum.
+      <p style="margin:0 0 10px; font-weight:800;">Subiect: Check-out si cateva lucruri rapide</p>
+      <p style="margin:0;">
+        ${esc(fullName)}, speram ca ti-a placut sejurul la ${chip(propertyName)}. Check-out este la <strong>${esc(checkout)}</strong>.
+        Te rugam sa verifici sa nu uiti nimic si sa inchizi usile/ferestrele la plecare.
       </p>
-      <p style="margin:10px 0 0;">
-        Te rugam sa verifici ca ai luat toate lucrurile personale si sa inchizi usile/ferestrele la plecare.
-      </p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        Drum bun. Daca ai nevoie de ajutor, foloseste <strong>Contacteaza gazda</strong>.
+      <p style="margin:12px 0 0;">
+        Daca ai consumat produse din minibar, acestea se achita la finalul sejurului, in functie de consum.
+        Drum bun — iar daca ai nevoie de ajutor, foloseste <strong>Contacteaza gazda</strong>.
       </p>
     `;
 
     const enCheckout = `
       <h3>CHECK-OUT ✅</h3>
-      <p style="margin:0 0 8px; font-weight:800;">Thanks for staying with us</p>
-      <p style="margin:0 0 10px;">${esc(fullName)}, we hope you enjoyed ${chip(propertyName)}.</p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        🕚 <strong>Check-out:</strong> ${esc(checkout)}<br/>
-        🧾 <strong>Minibar:</strong> items are paid at the end of the stay, based on consumption.
-      </p>
-      <p style="margin:10px 0 0;">
+      <p style="margin:0 0 10px; font-weight:800;">Subject: Check-out and a quick reminder</p>
+      <p style="margin:0;">
+        ${esc(fullName)}, we hope you enjoyed your stay at ${chip(propertyName)}. Check-out is at <strong>${esc(checkout)}</strong>.
         Please make sure you have all personal belongings and lock doors/windows when leaving.
       </p>
-      <hr />
-      <p style="margin:10px 0 0;">
-        Safe travels. If you need help, use <strong>Contact the host</strong>.
+      <p style="margin:12px 0 0;">
+        If you used the minibar, items are paid at the end of the stay based on consumption.
+        Safe travels — and if you need help, use <strong>Contact the host</strong> from the portal.
       </p>
     `;
 
