@@ -1,18 +1,27 @@
 export default function Head() {
-  const site = "https://www.plan4host.com";
+  const title = "Plan4Host – unified calendar, online check‑in, automated messages";
+  const description =
+    "One calendar for Booking and Airbnb, online check‑in for guests, and automated messages. Less chaos for hosts.";
+  const url = "https://plan4host.com/";
+  const ogImage = "https://plan4host.com/og-default.png";
+
   return (
     <>
-      <title>PMS with iCal Sync & Online Check‑in | Plan4Host</title>
-      <meta
-        name="description"
-        content="Plan4Host is a property management system (PMS) with iCal sync for Airbnb & Booking.com, secure GDPR‑friendly check‑in forms, and tools for small properties. (Software — not web hosting.)"
-      />
-      {/* Social overrides (optional, safe to keep) */}
-      <meta property="og:title" content="PMS with iCal Sync & Online Check‑in | Plan4Host" />
-      <meta property="og:description" content="PMS with iCal sync for Airbnb & Booking.com, secure online check‑in and simple tools for small and large properties." />
-      <meta name="twitter:title" content="PMS with iCal Sync & Online Check‑in | Plan4Host" />
-      <meta name="twitter:description" content="PMS with iCal sync for Airbnb & Booking.com, secure online check‑in and simple tools for small and large properties." />
-      <link rel="canonical" href={`${site}/`} />
+      <title>{title}</title>
+      <meta name="description" content={description} />
+      <link rel="canonical" href={url} />
+
+      <meta property="og:site_name" content="Plan4Host" />
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content={url} />
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:image" content={ogImage} />
+
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={ogImage} />
     </>
   );
 }

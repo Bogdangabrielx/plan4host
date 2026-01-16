@@ -9,8 +9,9 @@ import VisibilityManager from "@/components/system/VisibilityManager";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.plan4host.com";
 
 export const metadata: Metadata = {
-  title: "Plan4Host",
-  description: "Stay Smart, Host Better",
+  title: "Plan4Host – unified calendar, online check‑in, automated messages",
+  description:
+    "One calendar for Booking and Airbnb, online check‑in for guests, and automated messages. Less chaos for hosts.",
   applicationName: "Plan4Host",
   manifest: "/manifest.webmanifest",
   metadataBase: new URL(siteUrl),
@@ -25,16 +26,18 @@ export const metadata: Metadata = {
   openGraph: {
     siteName: "Plan4Host",
     type: "website",
-    title: "Plan4Host",
-    description: "Stay Smart, Host Better",
+    title: "Plan4Host – unified calendar, online check‑in, automated messages",
+    description:
+      "One calendar for Booking and Airbnb, online check‑in for guests, and automated messages. Less chaos for hosts.",
     images: [
       { url: "/og-default.png", width: 1200, height: 630, alt: "Plan4Host — Stay Smart, Host Better" },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Plan4Host",
-    description: "Stay Smart, Host Better",
+    title: "Plan4Host – unified calendar, online check‑in, automated messages",
+    description:
+      "One calendar for Booking and Airbnb, online check‑in for guests, and automated messages. Less chaos for hosts.",
     images: ["/og-default.png"],
   },
   robots: {

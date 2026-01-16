@@ -1,17 +1,27 @@
 export default function Head() {
-  const site = "https://www.plan4host.com";
+  const title = "Plan4Host – calendar unificat, check-in online si mesaje automate";
+  const description =
+    "Un singur calendar pentru Booking si Airbnb, check-in online pentru oaspeti si mesaje automate. Mai putin haos pentru gazde.";
+  const url = "https://plan4host.com/ro";
+  const ogImage = "https://plan4host.com/og-default.png";
+
   return (
     <>
-      <title>PMS cu sincronizare iCal și Check‑in Online | Plan4Host</title>
-      <meta
-        name="description"
-        content="PMS cu sincronizare iCal pentru Airbnb și Booking.com și check‑in online securizat pentru proprietăți mici."
-      />
-      <meta property="og:title" content="PMS cu sincronizare iCal și Check‑in Online | Plan4Host" />
-      <meta property="og:description" content="PMS cu sincronizare iCal pentru Airbnb și Booking.com și check‑in online securizat pentru proprietăți mici." />
-      <meta name="twitter:title" content="PMS cu sincronizare iCal și Check‑in Online | Plan4Host" />
-      <meta name="twitter:description" content="PMS cu sincronizare iCal pentru Airbnb și Booking.com și check‑in online securizat pentru proprietăți mici." />
-      <link rel="canonical" href={`${site}/ro`} />
+      <title>{title}</title>
+      <meta name="description" content={description} />
+      <link rel="canonical" href={url} />
+
+      <meta property="og:site_name" content="Plan4Host" />
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content={url} />
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:image" content={ogImage} />
+
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={ogImage} />
     </>
   );
 }
