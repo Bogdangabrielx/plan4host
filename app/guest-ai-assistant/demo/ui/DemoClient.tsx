@@ -988,9 +988,28 @@ function labelsFor(lang: Lang) {
   };
 }
 
+type MessageItem = {
+  id: string;
+  title?: string;
+  html_ro: string;
+  html_en: string;
+};
+
+function MessageHtml({ item, lang }: { item: MessageItem; lang: Lang }) {
+  const html = (lang === "ro" ? item.html_ro : item.html_en) || "";
+  return (
+    <div
+      className="rm-content"
+      // eslint-disable-next-line react/no-danger
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
 export default function DemoClient() {
   const params = useSearchParams();
   const [lang, setLang] = useState<Lang>("en");
+  const [openMsg, setOpenMsg] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const v = (params?.get("lang") || "").toLowerCase();
@@ -998,6 +1017,72 @@ export default function DemoClient() {
   }, [params]);
 
   const labels = labelsFor(lang);
+  const fullName = [DETAILS.guest_first_name || "", DETAILS.guest_last_name || ""].filter(Boolean).join(" ") || "—";
+  const stay = `${DETAILS.start_date || "—"} → ${DETAILS.end_date || "—"}`;
+  const checkin = DETAILS.check_in_time || "—";
+  const checkout = DETAILS.check_out_time || "—";
+  const propertyName = DETAILS.property_name || PROP.name || "—";
+
+  const messageItems: MessageItem[] = useMemo(() => {
+    const roBefore = `
+      <h3>Inainte de sosire</h3>
+      <p>Buna, ${fullName}.</p>
+      <p>Iti reamintim rezervarea la <strong>${propertyName}</strong> (${stay}).</p>
+      <hr />
+      <p><strong>Check-in:</strong> ${checkin} · <strong>Check-out:</strong> ${checkout}</p>
+      <p>Daca ai intrebari inainte de sosire, ne poti contacta din pagina de rezervare.</p>
+    `;
+    const enBefore = `
+      <h3>Before arrival</h3>
+      <p>Hi, ${fullName}.</p>
+      <p>This is a quick reminder for your stay at <strong>${propertyName}</strong> (${stay}).</p>
+      <hr />
+      <p><strong>Check-in:</strong> ${checkin} · <strong>Check-out:</strong> ${checkout}</p>
+      <p>If you have questions before arrival, you can contact the host from the reservation page.</p>
+    `;
+
+    const roArrival = `
+      <h3>La sosire</h3>
+      <p>Bun venit la <strong>${propertyName}</strong>.</p>
+      <p>Te rugam sa verifici detaliile rezervarii si informatiile utile pentru sosire.</p>
+      <hr />
+      <p><strong>WiFi:</strong> ${WIFI_SSID} · <strong>Parola:</strong> ${WIFI_PASS}</p>
+      <p>Daca ai nevoie de ajutor, foloseste optiunea „Contact the host”.</p>
+    `;
+    const enArrival = `
+      <h3>At arrival</h3>
+      <p>Welcome to <strong>${propertyName}</strong>.</p>
+      <p>Please check your reservation details and the key information for your arrival.</p>
+      <hr />
+      <p><strong>WiFi:</strong> ${WIFI_SSID} · <strong>Password:</strong> ${WIFI_PASS}</p>
+      <p>If you need help, use “Contact the host”.</p>
+    `;
+
+    const roCheckout = `
+      <h3>Check-out</h3>
+      <p>Multumim pentru vizita, ${fullName}.</p>
+      <p><strong>Check-out</strong> este la ${checkout}.</p>
+      <hr />
+      <p>Daca ai consumat produse din minibar, acestea se achita la finalul sejurului, in functie de consum.</p>
+      <p>Drum bun si te mai asteptam.</p>
+    `;
+    const enCheckout = `
+      <h3>Check-out</h3>
+      <p>Thank you for staying with us, ${fullName}.</p>
+      <p><strong>Check-out</strong> is at ${checkout}.</p>
+      <hr />
+      <p>If you used items from the minibar, they are paid at the end of the stay, based on consumption.</p>
+      <p>Safe travels.</p>
+    `;
+
+    return [
+      { id: "msg_before_arrival", html_ro: roBefore, html_en: enBefore },
+      { id: "msg_arrival", html_ro: roArrival, html_en: enArrival },
+      { id: "msg_checkout", html_ro: roCheckout, html_en: enCheckout },
+    ];
+  }, [checkin, checkout, fullName, propertyName, stay]);
+
+  const toggleMsg = (id: string) => setOpenMsg((prev) => ({ ...prev, [id]: !prev[id] }));
 
   return (
     <>
@@ -1193,6 +1278,44 @@ export default function DemoClient() {
               </div>
             </div>
           </article>
+
+          <div style={{ display: "grid", gap: 12, marginBottom: 16 }}>
+            {messageItems.map((it) => {
+              const isOpen = !!openMsg[it.id];
+              const titleFromHtml = (() => {
+                const src = (lang === "ro" ? it.html_ro : it.html_en) || "";
+                const m = src.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i);
+                if (!m) return it.title || (lang === "ro" ? "Mesaj" : "Message");
+                const tmp = m[1].replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim();
+                return tmp || it.title || (lang === "ro" ? "Mesaj" : "Message");
+              })();
+              const btnOpen = lang === "ro" ? "Deschide" : "Open";
+              const btnHide = lang === "ro" ? "Ascunde" : "Hide";
+              return (
+                <article key={it.id} className="rm-card" style={{ padding: 0 }}>
+                  <header
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: isOpen ? "center" : "space-between",
+                      padding: 12,
+                      borderBottom: isOpen ? "1px solid var(--border)" : "none",
+                    }}
+                  >
+                    {!isOpen && <strong>{titleFromHtml}</strong>}
+                    <button className="sb-btn" onClick={() => toggleMsg(it.id)} style={{ position: "relative" }}>
+                      {isOpen ? btnHide : btnOpen}
+                    </button>
+                  </header>
+                  {isOpen && (
+                    <div style={{ padding: 12 }}>
+                      <MessageHtml item={it} lang={lang} />
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
 
           <p className="rm-footer">Powered by Plan4Host.</p>
         </main>

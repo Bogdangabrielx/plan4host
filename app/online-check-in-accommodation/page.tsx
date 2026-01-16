@@ -267,7 +267,7 @@ export default function OnlineCheckInAccommodationPage() {
             </p>
             <div className={seo.ctaRow}>
               <Link className={`${styles.btn} ${styles.btnSolid}`} href="/">
-                See the homepage
+                Home page
               </Link>
               <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant/demo">
                 Discover the guest experience

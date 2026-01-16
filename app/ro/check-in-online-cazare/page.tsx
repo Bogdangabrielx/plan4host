@@ -271,7 +271,7 @@ export default function CheckInOnlineCazarePage() {
             </p>
             <div className={seo.ctaRow}>
               <Link className={`${styles.btn} ${styles.btnSolid}`} href="/ro">
-                Vezi landing page
+                Vezi pagina acasa
               </Link>
               <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant/demo">
                 Descopera experienta pentru oaspeti
