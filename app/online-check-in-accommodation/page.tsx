@@ -168,14 +168,20 @@ export default function OnlineCheckInAccommodationPage() {
               Problems with classic check-in
             </h2>
             <p className={seo.p}>Classic check-in often means:</p>
-            <ul className={styles.problemList}>
+            <ul
+              className={styles.includedList}
+              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+            >
               <li>last-minute messages</li>
               <li>incomplete information</li>
               <li>repeated questions</li>
               <li>time wasted exactly when you are already busy</li>
             </ul>
             <p className={seo.p}>Many guests ask the same things:</p>
-            <ul className={styles.problemList}>
+            <ul
+              className={styles.includedList}
+              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+            >
               <li>what time they can arrive</li>
               <li>where to park</li>
               <li>what documents are needed</li>

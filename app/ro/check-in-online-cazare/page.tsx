@@ -169,14 +169,20 @@ export default function CheckInOnlineCazarePage() {
               Problemele check-in-ului clasic
             </h2>
             <p className={seo.p}>Check-in-ul clasic inseamna, de obicei:</p>
-            <ul className={styles.problemList}>
+            <ul
+              className={styles.includedList}
+              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+            >
               <li>mesaje trimise in graba</li>
               <li>informatii incomplete</li>
               <li>intrebari repetitive</li>
               <li>timp pierdut exact cand ai alte lucruri de facut</li>
             </ul>
             <p className={seo.p}>Multi oaspeti intreaba aceleasi lucruri:</p>
-            <ul className={styles.problemList}>
+            <ul
+              className={styles.includedList}
+              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+            >
               <li>la ce ora pot ajunge</li>
               <li>unde se parcheaza</li>
               <li>ce documente sunt necesare</li>
