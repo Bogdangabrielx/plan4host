@@ -13,7 +13,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/expedia-ical-sync",
     "/travelminit-ical-sync",
     "/online-check-in-accommodation",
+    "/automatic-guest-messages",
     "/ro/check-in-online-cazare",
+    "/ro/mesaje-automate-pentru-oaspeti",
     
     "/checkin-forms-gdpr",
     "/ro/sincronizare-ical-airbnb",
