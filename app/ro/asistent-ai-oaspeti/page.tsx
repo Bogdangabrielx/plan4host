@@ -288,7 +288,7 @@ export default function RoGuestAiAssistantPage() {
         </section>
       </div>
 
-      <SeoFooter locale="ro" />
+      <SeoFooter lang="ro" />
     </main>
   );
 }

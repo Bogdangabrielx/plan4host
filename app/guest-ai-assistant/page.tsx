@@ -288,7 +288,7 @@ export default function GuestAiAssistantPage() {
         </section>
       </div>
 
-      <SeoFooter locale="en" />
+      <SeoFooter lang="en" />
     </main>
   );
 }
