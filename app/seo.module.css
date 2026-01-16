@@ -1,0 +1,121 @@
+.content{
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 64px;
+  padding-bottom: 80px;
+}
+
+.section{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  gap: 24px;
+}
+
+.card{
+  --sb-glow-border: var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  display: grid;
+  gap: 14px;
+}
+
+.h2{
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.p{
+  margin: 0;
+  color: var(--muted);
+  line-height: var(--lh-b);
+  max-width: 78ch;
+}
+
+.pStrong{
+  margin: 0;
+  color: var(--text);
+  line-height: var(--lh-b);
+  max-width: 78ch;
+}
+
+.flowRow{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.flowPill{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: color-mix(in srgb, var(--text) 78%, transparent);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.flowPillStrong{
+  border-color: color-mix(in srgb, var(--success) 34%, transparent);
+  background: color-mix(in srgb, var(--success) 12%, white);
+  color: color-mix(in srgb, var(--success) 82%, black);
+}
+
+.flowArrow{
+  color: color-mix(in srgb, var(--muted) 84%, transparent);
+  font-weight: 600;
+}
+
+.faqGrid{
+  display: grid;
+  gap: 12px;
+}
+
+.faqItem{
+  --sb-glow-border: var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: grid;
+  gap: 6px;
+}
+
+.faqQ{
+  margin: 0;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.faqA{
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.ctaRow{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+@media (max-width: 640px){
+  .content{ gap: 48px; padding-bottom: 64px; }
+  .h2{ font-size: 20px; }
+  .card{ padding: 20px; }
+}
+

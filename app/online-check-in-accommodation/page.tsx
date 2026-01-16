@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import styles from "../home.module.css";
+import seo from "../seo.module.css";
 
 export const metadata: Metadata = {
   title: "Online check-in for accommodation | Plan4Host",
   description:
-    "Understand what online check-in means for guests, why manual check-in is stressful, and how Plan4Host simplifies the process for hosts.",
+    "Online check-in for accommodation: a simple way for hosts to reduce messages, stress, and time wasted before guest arrival.",
   alternates: {
     canonical: "/online-check-in-accommodation",
     languages: {
@@ -12,29 +16,33 @@ export const metadata: Metadata = {
       ro: "/ro/check-in-online-cazare",
     },
   },
+  openGraph: {
+    title: "Online check-in for accommodation | Plan4Host",
+    description:
+      "Instead of repeated messages, guests submit the required details online before they arrive.",
+    url: "/online-check-in-accommodation",
+    locale: "en_US",
+    type: "article",
+  },
 };
 
 export default function OnlineCheckInAccommodationPage() {
   const faq = [
     {
-      question: "Does online check-in replace in-person check-in?",
-      answer:
-        "Not necessarily. Online check-in helps you collect guest details and confirmations before arrival. If you still meet guests or verify details on-site, you can keep that flow.",
+      q: "Is online check-in hard for guests?",
+      a: "No. Guests receive one link and complete a simple form.",
     },
     {
-      question: "What do guests need to do?",
-      answer:
-        "Guests open one link, complete the form, read and accept house rules (if you enabled them), and receive a confirmation that the check-in is completed.",
+      q: "Do I still need to message guests manually?",
+      a: "Less. You can share one check-in link and avoid repeated back-and-forth before arrival.",
     },
     {
-      question: "Will it reduce guest messages?",
-      answer:
-        "Yes. When guests have one place for arrival details and required steps, you avoid repeated questions and back-and-forth right before arrival.",
+      q: "Can I choose what information to request?",
+      a: "Yes. The form can be adapted to what your property needs.",
     },
     {
-      question: "Is it hard for guests?",
-      answer:
-        "No. The goal is a short, clear form that works on mobile. Guests complete it in minutes, before they arrive.",
+      q: "What happens after a guest submits the form?",
+      a: "You receive a notification and can confirm the reservation inside Plan4Host.",
     },
   ];
 
@@ -43,83 +51,231 @@ export default function OnlineCheckInAccommodationPage() {
     "@type": "FAQPage",
     mainEntity: faq.map((item) => ({
       "@type": "Question",
-      name: item.question,
+      name: item.q,
       acceptedAnswer: {
         "@type": "Answer",
-        text: item.answer,
+        text: item.a,
       },
     })),
   };
 
   return (
-    <main style={{ maxWidth: 860, margin: "0 auto", padding: "48px 20px" }}>
-      <h1>Online check-in for accommodation</h1>
-      <p>
-        Online check-in means guests can submit their details before arrival, without back-and-forth messages. Instead
-        of collecting information manually, you use a simple, repeatable flow. For hosts, this reduces stress and makes
-        arrivals more predictable.
-      </p>
+    <main
+      className={styles.landing}
+      style={{
+        minHeight: "100dvh",
+        overflowX: "hidden",
+      }}
+    >
+      <MobileScrollReveal />
 
-      <h2>What online check-in means for guests</h2>
-      <p>
-        For guests, online check-in is a single page where they complete the required information ahead of time. This
-        can include identification details, contact information, and confirmation of house rules. The important part is
-        clarity: one link, one place, one completion step.
-      </p>
-
-      <h2>Problems with classic check-in</h2>
-      <p>Manual check-in becomes stressful for the same reasons, over and over:</p>
-      <ul>
-        <li>Repeated questions from guests before arrival</li>
-        <li>Details sent in multiple messages, often incomplete</li>
-        <li>No clear confirmation that rules were read</li>
-        <li>Time wasted copying information between platforms</li>
-        <li>Urgent requests on arrival day, when you are already busy</li>
-      </ul>
-
-      <h2>How online check-in works with Plan4Host</h2>
-      <p>Plan4Host helps you collect guest details without manual messaging. The flow is simple:</p>
-      <p>
-        <strong>invited</strong> → <strong>form</strong> → <strong>confirmation</strong> → <strong>arrival</strong>
-      </p>
-      <p>
-        You share one check-in link, the guest completes the form, and you receive a clear confirmation. From there,
-        arrivals run smoother because the needed details are already organized.
-      </p>
-
-      <h2>What the guest sees (form, rules, confirmation)</h2>
-      <p>The guest experience is designed to be calm and clear:</p>
-      <ul>
-        <li>A check-in form with the required fields</li>
-        <li>House rules they can read and accept (if enabled)</li>
-        <li>A confirmation after submission, so they know the step is completed</li>
-      </ul>
-
-      <h2>Who benefits the most</h2>
-      <ul>
-        <li>Hosts who receive many repetitive questions</li>
-        <li>Properties with self check-in or flexible arrival</li>
-        <li>Small teams coordinating arrivals and cleaning</li>
-        <li>Hosts managing multiple units or back-to-back stays</li>
-      </ul>
-
-      <h2>Frequently asked questions</h2>
-      {faq.map((item) => (
-        <div key={item.question} style={{ marginBottom: 16 }}>
-          <p style={{ margin: 0, fontWeight: 600 }}>{item.question}</p>
-          <p style={{ margin: "6px 0 0" }}>{item.answer}</p>
+      <nav className={styles.nav} aria-label="Navigation">
+        <Link href="/" className={styles.brand}>
+          <img src="/Logo_Landing.png" alt="" aria-hidden="true" width={36} height={36} style={{ borderRadius: 12 }} />
+          <strong>Plan4Host</strong>
+        </Link>
+        <div />
+        <div className={styles.actions}>
+          <Link className={`${styles.btn} ${styles.btnOutline}`} href="/">
+            Back to Plan4Host
+          </Link>
         </div>
-      ))}
+      </nav>
 
-      <p style={{ marginTop: 28 }}>
-        If you want a calm, practical way to reduce manual messages and keep check-in predictable, start by seeing how
-        the flow looks for your guests.
-      </p>
-      <p>
-        <Link href="/">See how online check-in works</Link>
-        {" · "}
-        <Link href="/">Discover the guest experience</Link>
-      </p>
+      <section className={styles.hero} aria-labelledby="title">
+        <div className={styles.heroText} data-p4h-reveal>
+          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+            Online check-in for accommodation
+          </h1>
+          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+            Online check-in is one of the simplest ways for hosts to reduce guest messages, stress, and time wasted
+            before arrival. Instead of repeated conversations, guests submit the required details online, before they
+            reach the property.
+          </p>
+          <div className={styles.heroCta}>
+            <Link className={`${styles.btn} ${styles.btnSolid}`} href="/">
+              See how it works
+            </Link>
+            <Link className={`${styles.btn} ${styles.btnOutline}`} href="/">
+              Discover the guest experience
+            </Link>
+          </div>
+        </div>
+
+        <div className={styles.heroVisual} aria-label="Check-in preview" data-p4h-reveal>
+          <Image
+            src="/Landing_Mockups3.png"
+            alt="Plan4Host check-in preview"
+            width={900}
+            height={900}
+            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
+            priority
+          />
+        </div>
+      </section>
+
+      <div className={seo.content}>
+        <section className={seo.section} aria-labelledby="meaning">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="meaning" className={seo.h2}>
+              What online check-in means for guests
+            </h2>
+            <p className={seo.p}>
+              Online check-in means the guest receives a link where they complete the needed information before
+              arrival. No separate messages, no last-minute WhatsApp photos, and no stressful back-and-forth.
+            </p>
+            <p className={seo.p}>
+              For the guest, the process is simple and clear. For the host, everything stays organized in one place.
+            </p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="classic">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="classic" className={seo.h2}>
+              Problems with classic check-in
+            </h2>
+            <p className={seo.p}>Classic check-in often means:</p>
+            <ul className={styles.problemList}>
+              <li>last-minute messages</li>
+              <li>incomplete information</li>
+              <li>repeated questions</li>
+              <li>time wasted exactly when you are already busy</li>
+            </ul>
+            <p className={seo.p}>Many guests ask the same things:</p>
+            <ul className={styles.problemList}>
+              <li>what time they can arrive</li>
+              <li>where to park</li>
+              <li>what documents are needed</li>
+              <li>what the property rules are</li>
+            </ul>
+            <p className={seo.p}>It repeats from one reservation to the next.</p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="workflow">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="workflow" className={seo.h2}>
+              How online check-in works with Plan4Host
+            </h2>
+            <p className={seo.p}>With Plan4Host, online check-in follows a simple flow:</p>
+            <div className={seo.flowRow} aria-label="Workflow">
+              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>invited</span>
+              <span className={seo.flowArrow}>→</span>
+              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>online form</span>
+              <span className={seo.flowArrow}>→</span>
+              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>confirmation</span>
+              <span className={seo.flowArrow}>→</span>
+              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>arrival</span>
+            </div>
+            <p className={seo.p}>
+              The host shares one check-in link. The guest completes the form before arrival. The host receives a
+              notification and confirms the reservation.
+            </p>
+            <p className={seo.p}>Everything is clear before the guest reaches the property.</p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="form">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="form" className={seo.h2}>
+              What the guest fills in
+            </h2>
+            <p className={seo.p}>The online check-in form can include:</p>
+            <ul className={styles.includedList}>
+              <li>identification details</li>
+              <li>contact information</li>
+              <li>accepting house rules</li>
+              <li>other details requested by the host</li>
+            </ul>
+            <p className={seo.p}>
+              Guests see exactly what to do, without extra explanations. Hosts receive structured data, without separate
+              messages.
+            </p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="after">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="after" className={seo.h2}>
+              What the guest sees after check-in
+            </h2>
+            <p className={seo.p}>After completing the form, the guest:</p>
+            <ul className={styles.includedList}>
+              <li>receives a check-in confirmation</li>
+              <li>knows the reservation is registered</li>
+              <li>has access to the key information about the stay</li>
+            </ul>
+            <p className={seo.p}>No need for manual confirmation messages.</p>
+
+            <div style={{ marginTop: 10 }}>
+              <Image
+                src="/Confirmare%20primire%20formular.png"
+                alt="Example confirmation after submitting the check-in form"
+                width={1200}
+                height={800}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  borderRadius: 14,
+                  border: "1px solid var(--border)",
+                }}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="who">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="who" className={seo.h2}>
+              Who benefits the most
+            </h2>
+            <p className={seo.p}>Online check-in is a good fit for:</p>
+            <ul className={styles.includedList}>
+              <li>hosts with one or multiple properties</li>
+              <li>people managing the property alone</li>
+              <li>hosts who want fewer daily interruptions</li>
+              <li>properties without a permanent reception</li>
+            </ul>
+            <p className={seo.p}>It is not designed for large hotels with complex processes.</p>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="faq">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="faq" className={seo.h2}>
+              Frequently asked questions
+            </h2>
+            <div className={seo.faqGrid}>
+              {faq.map((item) => (
+                <div key={item.q} className={`sb-cardglow ${seo.faqItem}`} data-p4h-reveal>
+                  <p className={seo.faqQ}>{item.q}</p>
+                  <p className={seo.faqA}>{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={seo.section} aria-labelledby="cta">
+          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+            <h2 id="cta" className={seo.h2}>
+              In practice
+            </h2>
+            <p className={seo.p}>
+              If you want to see how online check-in works in practice, explore the full flow in Plan4Host.
+            </p>
+            <div className={seo.ctaRow}>
+              <Link className={`${styles.btn} ${styles.btnSolid}`} href="/">
+                See the homepage
+              </Link>
+              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/">
+                Discover the guest experience
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
 
       <script
         type="application/ld+json"
