@@ -245,8 +245,10 @@ export default function GuestAiAssistantPage() {
                 Upload your House Rules PDF in <strong className={seo.noBreak}>Check-in Editor</strong>.
               </li>
               <li>
-                Use <strong className={seo.noBreak}>Read &amp; prepare text for AI</strong>, then remove any codes,
-                passwords, or private links you don’t want to share.
+                <span className={seo.noBreak}>
+                  Use <strong className={seo.noBreak}>Read &amp; prepare text for AI</strong>, then
+                </span>{" "}
+                remove any codes, passwords, or private links you don’t want to share.
               </li>
               <li>
                 Save the text as “House rules for AI”. The assistant will use it together with your reservation
