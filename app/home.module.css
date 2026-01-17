@@ -726,10 +726,9 @@ will-change: transform;
   line-height: var(--lh-s);
 }
 .includedList li{
-  display: grid;
-  grid-template-columns: 18px 1fr;
+  display: flex;
   gap: 10px;
-  align-items: start;
+  align-items: flex-start;
 }
 .includedList li::before{
   content: "✓";
@@ -738,6 +737,7 @@ will-change: transform;
   border-radius: 999px;
   display: grid;
   place-items: center;
+  flex: 0 0 18px;
   color: var(--success);
   border: 2px solid var(--success);
   background: color-mix(in srgb, var(--success) 14%, white);
