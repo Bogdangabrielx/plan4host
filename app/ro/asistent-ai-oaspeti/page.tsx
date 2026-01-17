@@ -78,7 +78,7 @@ export default function RoGuestAiAssistantPage() {
 
         <div className={styles.heroVisual} aria-label="Previzualizare asistent AI" data-p4h-reveal>
           <Image
-            src="/AI_chatbot.png"
+            src="/Hero Guest AI.png"
             alt="Previzualizare interfata asistent AI pentru oaspeti"
             width={900}
             height={900}

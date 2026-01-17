@@ -75,7 +75,7 @@ export default function GuestAiAssistantPage() {
 
         <div className={styles.heroVisual} aria-label="Guest AI assistant preview" data-p4h-reveal>
           <Image
-            src="/AI_chatbot.png"
+            src="/Hero Guest AI.png"
             alt="Preview of the Guest AI assistant interface"
             width={900}
             height={900}
