@@ -153,6 +153,10 @@
   max-width: 78ch;
 }
 
+.noBreak{
+  white-space: nowrap;
+}
+
 .steps li{
   display: flex;
   gap: 12px;

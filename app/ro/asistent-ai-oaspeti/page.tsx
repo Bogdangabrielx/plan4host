@@ -130,7 +130,8 @@ export default function RoGuestAiAssistantPage() {
                 minibar si altele.
               </li>
               <li>
-                <strong>Recomandari:</strong> idei locale (cand sunt mentionate in continut).
+                <strong>Recomandari:</strong> ce poti sa vizitezi, unde poti sa mananci (doar daca sunt mentionate in
+                continut).
               </li>
               <li>
                 <strong>Check-out:</strong> ora si instructiuni (chei, usi, gunoi) daca sunt definite.
@@ -243,11 +244,11 @@ export default function RoGuestAiAssistantPage() {
             </h2>
             <ol className={seo.steps}>
               <li>
-                Incarca PDF-ul cu regulamentul in <strong>Check-in Editor</strong>.
+                Incarca PDF-ul cu regulamentul in <strong className={seo.noBreak}>Check-in Editor</strong>.
               </li>
               <li>
-                Foloseste <strong>Read &amp; prepare text for AI</strong>, apoi sterge coduri, parole sau linkuri
-                private pe care nu vrei sa le afisezi.
+                Foloseste <strong className={seo.noBreak}>Read &amp; prepare text for AI</strong>, apoi sterge coduri,
+                parole sau linkuri private pe care nu vrei sa le afisezi.
               </li>
               <li>
                 Salveaza textul ca „house rules for AI”. Asistentul il va folosi impreuna cu mesajele de rezervare.
