@@ -158,9 +158,8 @@
 }
 
 .steps li{
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  position: relative;
+  padding-left: 34px;
   color: var(--muted);
   line-height: var(--lh-b);
 }
@@ -173,7 +172,9 @@
   border-radius: 999px;
   display: grid;
   place-items: center;
-  flex: 0 0 22px;
+  position: absolute;
+  left: 0;
+  top: 1px;
   color: color-mix(in srgb, var(--text) 78%, transparent);
   border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
   background: color-mix(in srgb, var(--text) 6%, transparent);
