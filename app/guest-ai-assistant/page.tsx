@@ -126,8 +126,8 @@ export default function GuestAiAssistantPage() {
                 <strong>Amenities:</strong> Wi-Fi, coffee machine, AC, washing machine, dishwasher, minibar, and more.
               </li>
               <li>
-                <strong>Recommendations:</strong> local tips for food, coffee, and things to visit (when you provided
-                them).
+                <strong>Recommendations:</strong> what to visit and where to eat (only when you mentioned it in your
+                content).
               </li>
               <li>
                 <strong>Check-out:</strong> check-out time and instructions (keys, doors, trash) when you defined them.
