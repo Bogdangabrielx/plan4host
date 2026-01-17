@@ -247,8 +247,10 @@ export default function RoGuestAiAssistantPage() {
                 Incarca PDF-ul cu regulamentul in <strong className={seo.noBreak}>Check-in Editor</strong>.
               </li>
               <li>
-                Foloseste <strong className={seo.noBreak}>Read &amp; prepare text for AI</strong>, apoi sterge coduri,
-                parole sau linkuri private pe care nu vrei sa le afisezi.
+                <span className={seo.noBreak}>
+                  Foloseste <strong className={seo.noBreak}>Read &amp; prepare text for AI</strong>, apoi
+                </span>{" "}
+                sterge coduri, parole sau linkuri private pe care nu vrei sa le afisezi.
               </li>
               <li>
                 Salveaza textul ca „house rules for AI”. Asistentul il va folosi impreuna cu mesajele de rezervare.
