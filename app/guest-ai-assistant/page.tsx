@@ -114,7 +114,7 @@ export default function GuestAiAssistantPage() {
         </section>
 
         <section className={seo.section} aria-labelledby="answers">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+          <div className={`sb-cardglow ${seo.card} ${seo.cardNarrow}`} data-p4h-reveal>
             <h2 id="answers" className={seo.h2}>
               What it can answer
             </h2>
@@ -198,7 +198,7 @@ export default function GuestAiAssistantPage() {
         </section>
 
         <section className={seo.section} aria-labelledby="sources">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+          <div className={`sb-cardglow ${seo.card} ${seo.cardNarrow}`} data-p4h-reveal>
             <h2 id="sources" className={seo.h2}>
               Where the assistant gets its information
             </h2>
@@ -236,7 +236,7 @@ export default function GuestAiAssistantPage() {
         </section>
 
         <section className={seo.section} aria-labelledby="enable">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+          <div className={`sb-cardglow ${seo.card} ${seo.cardNarrow}`} data-p4h-reveal>
             <h2 id="enable" className={seo.h2}>
               How to enable it
             </h2>

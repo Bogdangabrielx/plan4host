@@ -22,6 +22,12 @@
   gap: 14px;
 }
 
+.cardNarrow{
+  width: 100%;
+  max-width: 840px;
+  margin: 0 auto;
+}
+
 .h2{
   margin: 0;
   font-size: 22px;

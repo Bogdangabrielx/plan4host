@@ -117,7 +117,7 @@ export default function RoGuestAiAssistantPage() {
         </section>
 
         <section className={seo.section} aria-labelledby="answers">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+          <div className={`sb-cardglow ${seo.card} ${seo.cardNarrow}`} data-p4h-reveal>
             <h2 id="answers" className={seo.h2}>
               La ce poate raspunde
             </h2>
@@ -199,7 +199,7 @@ export default function RoGuestAiAssistantPage() {
         </section>
 
         <section className={seo.section} aria-labelledby="sources">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+          <div className={`sb-cardglow ${seo.card} ${seo.cardNarrow}`} data-p4h-reveal>
             <h2 id="sources" className={seo.h2}>
               De unde are informatiile
             </h2>
@@ -237,7 +237,7 @@ export default function RoGuestAiAssistantPage() {
         </section>
 
         <section className={seo.section} aria-labelledby="enable">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+          <div className={`sb-cardglow ${seo.card} ${seo.cardNarrow}`} data-p4h-reveal>
             <h2 id="enable" className={seo.h2}>
               Cum il activezi
             </h2>
