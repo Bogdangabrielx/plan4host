@@ -1254,13 +1254,17 @@ export default function HomePage() {
 	              onMouseLeave={() => setHeroPill(null)}
 	            >
 	              <span
-	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleLess}`}
-	                data-alt="Less"
-	                data-swap={heroPill ? "1" : undefined}
+	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess} ${styles.heroHeadlineTagToggle} ${
+	                  heroPill === "control" ? styles.heroHeadlineTagToggleMore : styles.heroHeadlineTagToggleLess
+	                }`}
+	                data-alt={heroPill === "control" ? "More" : "Less"}
+	                data-swap={heroPill && heroPill !== "control" ? "1" : undefined}
 	              >
 	                <span className={styles.heroHeadlineTagLabel}>More</span>
 	              </span>
-	              <span className={heroPill === null ? styles.heroHeadlineWordAccent : styles.heroHeadlineWord}>
+	              <span
+	                className={heroPill === null || heroPill === "control" ? styles.heroHeadlineWordAccent : styles.heroHeadlineWord}
+	              >
 	                control.
 	              </span>
 	            </span>

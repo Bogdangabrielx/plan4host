@@ -1080,13 +1080,17 @@ export default function HomePageRO() {
 	              onMouseLeave={() => setHeroPill(null)}
 	            >
 	              <span
-	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleLess}`}
-	                data-alt="Mai puțin"
-	                data-swap={heroPill ? "1" : undefined}
+	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess} ${styles.heroHeadlineTagToggle} ${
+	                  heroPill === "control" ? styles.heroHeadlineTagToggleMore : styles.heroHeadlineTagToggleLess
+	                }`}
+	                data-alt={heroPill === "control" ? "Mai mult" : "Mai puțin"}
+	                data-swap={heroPill && heroPill !== "control" ? "1" : undefined}
 	              >
 	                <span className={styles.heroHeadlineTagLabel}>Mai mult</span>
 	              </span>
-	              <span className={heroPill === null ? styles.heroHeadlineWordAccent : styles.heroHeadlineWord}>
+	              <span
+	                className={heroPill === null || heroPill === "control" ? styles.heroHeadlineWordAccent : styles.heroHeadlineWord}
+	              >
 	                control.
 	              </span>
 	            </span>
