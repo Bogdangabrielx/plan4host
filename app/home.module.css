@@ -640,18 +640,7 @@ will-change: transform;
 .heroCta { display: flex; gap: 16px; }
 @media (max-width: 640px) {
   .heroText { text-align: center; }
-  .heroHeadline{ justify-items: stretch; }
-  /* Align hero pills vertically (same start), even when centered */
-  .heroHeadlineLine{
-    display: grid;
-    grid-template-columns: clamp(96px, 30vw, 152px) 1fr;
-    column-gap: 10px;
-    align-items: baseline;
-    width: min(440px, 100%);
-    margin-inline: auto;
-    justify-items: start;
-    text-align: left;
-  }
+  .heroHeadline{ justify-items: center; }
   .heroText p { margin-left: auto; margin-right: auto; }
   .heroCta { justify-content: center; }
 }
