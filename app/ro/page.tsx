@@ -1042,11 +1042,15 @@ export default function HomePageRO() {
 	        <div className={styles.heroText}>
 	          <h1 className={styles.heroHeadline}>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={styles.heroHeadlineTag}>Mai puține</span>
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle}`} data-alt="Mai mult">
+	                <span className={styles.heroHeadlineTagLabel}>Mai puține</span>
+	              </span>
 	              <span>mesaje.</span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={styles.heroHeadlineTag}>Mai puțin</span>
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle}`} data-alt="Mai mult">
+	                <span className={styles.heroHeadlineTagLabel}>Mai puțin</span>
+	              </span>
 	              <span>haos.</span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>

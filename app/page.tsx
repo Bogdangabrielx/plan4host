@@ -1216,11 +1216,15 @@ export default function HomePage() {
 	        <div className={styles.heroText}>
 	          <h1 className={styles.heroHeadline}>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={styles.heroHeadlineTag}>Less</span>
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle}`} data-alt="More">
+	                <span className={styles.heroHeadlineTagLabel}>Less</span>
+	              </span>
 	              <span>messages.</span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={styles.heroHeadlineTag}>Less</span>
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle}`} data-alt="More">
+	                <span className={styles.heroHeadlineTagLabel}>Less</span>
+	              </span>
 	              <span>chaos.</span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>
