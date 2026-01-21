@@ -828,6 +828,7 @@ export default function HomePage() {
   const [isPwa, setIsPwa] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [tryModalOpen, setTryModalOpen] = useState(false);
+  const [heroPill, setHeroPill] = useState<"messages" | "chaos" | "control" | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
   const [navHeight, setNavHeight] = useState<number>(72);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -1216,22 +1217,44 @@ export default function HomePage() {
 	        <div className={styles.heroText}>
 	          <h1 className={styles.heroHeadline}>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`} data-alt="More">
+	              <span
+	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`}
+	                data-alt="More"
+	                onMouseEnter={() => setHeroPill("messages")}
+	                onMouseLeave={() => setHeroPill(null)}
+	              >
 	                <span className={styles.heroHeadlineTagLabel}>Less</span>
 	              </span>
-	              <span className={styles.heroHeadlineWord}>messages.</span>
+	              <span className={heroPill === "messages" ? styles.heroHeadlineWordAccent : styles.heroHeadlineWord}>
+	                messages.
+	              </span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`} data-alt="More">
+	              <span
+	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`}
+	                data-alt="More"
+	                onMouseEnter={() => setHeroPill("chaos")}
+	                onMouseLeave={() => setHeroPill(null)}
+	              >
 	                <span className={styles.heroHeadlineTagLabel}>Less</span>
 	              </span>
-	              <span className={styles.heroHeadlineWord}>chaos.</span>
+	              <span className={heroPill === "chaos" ? styles.heroHeadlineWordAccent : styles.heroHeadlineWord}>
+	                chaos.
+	              </span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleLess}`} data-alt="Less">
+	              <span
+	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleLess}`}
+	                data-alt="Less"
+	                data-swap={heroPill && heroPill !== "control" ? "1" : undefined}
+	                onMouseEnter={() => setHeroPill("control")}
+	                onMouseLeave={() => setHeroPill(null)}
+	              >
 	                <span className={styles.heroHeadlineTagLabel}>More</span>
 	              </span>
-	              <span className={styles.heroHeadlineWordAccent}>control.</span>
+	              <span className={heroPill === null ? styles.heroHeadlineWordAccent : styles.heroHeadlineWord}>
+	                control.
+	              </span>
 	            </span>
 	          </h1>
 	          <p className={styles.heroKicker}>

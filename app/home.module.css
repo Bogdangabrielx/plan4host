@@ -552,6 +552,11 @@ will-change: transform;
   background: color-mix(in srgb, var(--text) 6%, transparent);
   color: color-mix(in srgb, #313336 78%, transparent);
 }
+.heroHeadlineTagSuccess.heroHeadlineTagToggleLess[data-swap="1"]{
+  border-color: color-mix(in srgb, var(--text) 14%, transparent);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: color-mix(in srgb, #313336 78%, transparent);
+}
 .heroHeadlineTagToggle:hover .heroHeadlineTagLabel,
 .heroHeadlineTagToggle:focus-visible .heroHeadlineTagLabel{
   opacity: 0;
@@ -567,6 +572,18 @@ will-change: transform;
 .heroHeadlineTagToggle:focus-visible::before{
   opacity: 1;
   transform: translateX(-120%) skewX(-14deg);
+}
+.heroHeadlineTagToggle[data-swap="1"] .heroHeadlineTagLabel{
+  opacity: 0;
+}
+.heroHeadlineTagToggle[data-swap="1"]::after{
+  opacity: 1;
+  transform: translateX(0px);
+  transition-delay: 0ms;
+}
+.heroHeadlineTagToggle[data-swap="1"]::before{
+  opacity: 0;
+  transform: translateX(120%) skewX(-14deg);
 }
 .heroHeadlineTagToggle:not(:hover):not(:focus-visible) .heroHeadlineTagLabel{
   transition-delay: 90ms;

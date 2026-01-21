@@ -721,6 +721,7 @@ export default function HomePageRO() {
   const [navOpen, setNavOpen] = useState(false);
   const [isPwa, setIsPwa] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [heroPill, setHeroPill] = useState<"mesaje" | "haos" | "control" | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
   const [navHeight, setNavHeight] = useState<number>(72);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -1042,22 +1043,44 @@ export default function HomePageRO() {
 	        <div className={styles.heroText}>
 	          <h1 className={styles.heroHeadline}>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`} data-alt="Mai mult">
+	              <span
+	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`}
+	                data-alt="Mai mult"
+	                onMouseEnter={() => setHeroPill("mesaje")}
+	                onMouseLeave={() => setHeroPill(null)}
+	              >
 	                <span className={styles.heroHeadlineTagLabel}>Mai puține</span>
 	              </span>
-	              <span className={styles.heroHeadlineWord}>mesaje.</span>
+	              <span className={heroPill === "mesaje" ? styles.heroHeadlineWordAccent : styles.heroHeadlineWord}>
+	                mesaje.
+	              </span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`} data-alt="Mai mult">
+	              <span
+	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`}
+	                data-alt="Mai mult"
+	                onMouseEnter={() => setHeroPill("haos")}
+	                onMouseLeave={() => setHeroPill(null)}
+	              >
 	                <span className={styles.heroHeadlineTagLabel}>Mai puțin</span>
 	              </span>
-	              <span className={styles.heroHeadlineWord}>haos.</span>
+	              <span className={heroPill === "haos" ? styles.heroHeadlineWordAccent : styles.heroHeadlineWord}>
+	                haos.
+	              </span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleLess}`} data-alt="Mai puțin">
+	              <span
+	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleLess}`}
+	                data-alt="Mai puțin"
+	                data-swap={heroPill && heroPill !== "control" ? "1" : undefined}
+	                onMouseEnter={() => setHeroPill("control")}
+	                onMouseLeave={() => setHeroPill(null)}
+	              >
 	                <span className={styles.heroHeadlineTagLabel}>Mai mult</span>
 	              </span>
-	              <span className={styles.heroHeadlineWordAccent}>control.</span>
+	              <span className={heroPill === null ? styles.heroHeadlineWordAccent : styles.heroHeadlineWord}>
+	                control.
+	              </span>
 	            </span>
 	          </h1>
 	          <p className={styles.heroKicker}>
