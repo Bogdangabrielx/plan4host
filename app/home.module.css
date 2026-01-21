@@ -541,6 +541,10 @@ will-change: transform;
 .heroHeadlineTagToggleLess::after{
   color: color-mix(in srgb, #313336 78%, transparent);
 }
+.heroHeadlineTagToggleMore[data-swap="1"]{
+  border-color: color-mix(in srgb, var(--success) 34%, transparent);
+  background: color-mix(in srgb, var(--success) 12%, white);
+}
 .heroHeadlineTagToggle:hover,
 .heroHeadlineTagToggle:focus-visible{
   border-color: color-mix(in srgb, var(--success) 34%, transparent);

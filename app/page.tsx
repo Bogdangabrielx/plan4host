@@ -1216,12 +1216,15 @@ export default function HomePage() {
 	      <section id="content" className={styles.hero}>
 	        <div className={styles.heroText}>
 	          <h1 className={styles.heroHeadline}>
-	            <span className={styles.heroHeadlineLine}>
+	            <span
+	              className={styles.heroHeadlineLine}
+	              onMouseEnter={() => setHeroPill("messages")}
+	              onMouseLeave={() => setHeroPill(null)}
+	            >
 	              <span
 	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`}
 	                data-alt="More"
-	                onMouseEnter={() => setHeroPill("messages")}
-	                onMouseLeave={() => setHeroPill(null)}
+	                data-swap={heroPill === "messages" ? "1" : undefined}
 	              >
 	                <span className={styles.heroHeadlineTagLabel}>Less</span>
 	              </span>
@@ -1229,12 +1232,15 @@ export default function HomePage() {
 	                messages.
 	              </span>
 	            </span>
-	            <span className={styles.heroHeadlineLine}>
+	            <span
+	              className={styles.heroHeadlineLine}
+	              onMouseEnter={() => setHeroPill("chaos")}
+	              onMouseLeave={() => setHeroPill(null)}
+	            >
 	              <span
 	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`}
 	                data-alt="More"
-	                onMouseEnter={() => setHeroPill("chaos")}
-	                onMouseLeave={() => setHeroPill(null)}
+	                data-swap={heroPill === "chaos" ? "1" : undefined}
 	              >
 	                <span className={styles.heroHeadlineTagLabel}>Less</span>
 	              </span>
@@ -1242,13 +1248,15 @@ export default function HomePage() {
 	                chaos.
 	              </span>
 	            </span>
-	            <span className={styles.heroHeadlineLine}>
+	            <span
+	              className={styles.heroHeadlineLine}
+	              onMouseEnter={() => setHeroPill("control")}
+	              onMouseLeave={() => setHeroPill(null)}
+	            >
 	              <span
 	                className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleLess}`}
 	                data-alt="Less"
-	                data-swap={heroPill && heroPill !== "control" ? "1" : undefined}
-	                onMouseEnter={() => setHeroPill("control")}
-	                onMouseLeave={() => setHeroPill(null)}
+	                data-swap={heroPill ? "1" : undefined}
 	              >
 	                <span className={styles.heroHeadlineTagLabel}>More</span>
 	              </span>
