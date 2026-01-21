@@ -1216,20 +1216,22 @@ export default function HomePage() {
 	        <div className={styles.heroText}>
 	          <h1 className={styles.heroHeadline}>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle}`} data-alt="More">
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`} data-alt="More">
 	                <span className={styles.heroHeadlineTagLabel}>Less</span>
 	              </span>
-	              <span>messages.</span>
+	              <span className={styles.heroHeadlineWord}>messages.</span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle}`} data-alt="More">
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`} data-alt="More">
 	                <span className={styles.heroHeadlineTagLabel}>Less</span>
 	              </span>
-	              <span>chaos.</span>
+	              <span className={styles.heroHeadlineWord}>chaos.</span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess}`}>More</span>
-	              <span className={styles.heroHeadlineAccent}>control.</span>
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleLess}`} data-alt="Less">
+	                <span className={styles.heroHeadlineTagLabel}>More</span>
+	              </span>
+	              <span className={styles.heroHeadlineWordAccent}>control.</span>
 	            </span>
 	          </h1>
 	          <p className={styles.heroKicker}>

@@ -535,10 +535,22 @@ will-change: transform;
     transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
 }
+.heroHeadlineTagToggleMore::after{
+  color: color-mix(in srgb, var(--success) 82%, black);
+}
+.heroHeadlineTagToggleLess::after{
+  color: color-mix(in srgb, #313336 78%, transparent);
+}
 .heroHeadlineTagToggle:hover,
 .heroHeadlineTagToggle:focus-visible{
   border-color: color-mix(in srgb, var(--success) 34%, transparent);
   background: color-mix(in srgb, var(--success) 12%, white);
+}
+.heroHeadlineTagSuccess.heroHeadlineTagToggleLess:hover,
+.heroHeadlineTagSuccess.heroHeadlineTagToggleLess:focus-visible{
+  border-color: color-mix(in srgb, var(--text) 14%, transparent);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: color-mix(in srgb, #313336 78%, transparent);
 }
 .heroHeadlineTagToggle:hover .heroHeadlineTagLabel,
 .heroHeadlineTagToggle:focus-visible .heroHeadlineTagLabel{
@@ -558,6 +570,22 @@ will-change: transform;
 }
 .heroHeadlineTagToggle:not(:hover):not(:focus-visible) .heroHeadlineTagLabel{
   transition-delay: 90ms;
+}
+.heroHeadlineWord{
+  color: var(--muted);
+  transition: color 200ms ease;
+}
+.heroHeadlineWordAccent{
+  color: color-mix(in srgb, var(--success) 82%, black);
+  transition: color 200ms ease;
+}
+.heroHeadlineTagToggleMore:hover + .heroHeadlineWord,
+.heroHeadlineTagToggleMore:focus-visible + .heroHeadlineWord{
+  color: color-mix(in srgb, var(--success) 82%, black);
+}
+.heroHeadlineTagToggleLess:hover + .heroHeadlineWordAccent,
+.heroHeadlineTagToggleLess:focus-visible + .heroHeadlineWordAccent{
+  color: var(--muted);
 }
 .heroHeadlineTagSuccess{
   border-color: color-mix(in srgb, var(--success) 34%, transparent);

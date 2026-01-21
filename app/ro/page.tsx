@@ -1042,20 +1042,22 @@ export default function HomePageRO() {
 	        <div className={styles.heroText}>
 	          <h1 className={styles.heroHeadline}>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle}`} data-alt="Mai mult">
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`} data-alt="Mai mult">
 	                <span className={styles.heroHeadlineTagLabel}>Mai puține</span>
 	              </span>
-	              <span>mesaje.</span>
+	              <span className={styles.heroHeadlineWord}>mesaje.</span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle}`} data-alt="Mai mult">
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleMore}`} data-alt="Mai mult">
 	                <span className={styles.heroHeadlineTagLabel}>Mai puțin</span>
 	              </span>
-	              <span>haos.</span>
+	              <span className={styles.heroHeadlineWord}>haos.</span>
 	            </span>
 	            <span className={styles.heroHeadlineLine}>
-	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess}`}>Mai mult</span>
-	              <span className={styles.heroHeadlineAccent}>control.</span>
+	              <span className={`${styles.heroHeadlineTag} ${styles.heroHeadlineTagSuccess} ${styles.heroHeadlineTagToggle} ${styles.heroHeadlineTagToggleLess}`} data-alt="Mai puțin">
+	                <span className={styles.heroHeadlineTagLabel}>Mai mult</span>
+	              </span>
+	              <span className={styles.heroHeadlineWordAccent}>control.</span>
 	            </span>
 	          </h1>
 	          <p className={styles.heroKicker}>
