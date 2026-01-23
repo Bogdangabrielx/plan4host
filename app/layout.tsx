@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import Script from "next/script";
 import ConsentOverlayHost from "@/components/consent/ConsentOverlayHost";
 import VisibilityManager from "@/components/system/VisibilityManager";
+import { Analytics } from "@vercel/analytics/react";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.plan4host.com";
 
@@ -324,6 +325,7 @@ html[data-page-visible="false"] * { animation-play-state: paused !important; }
 
         {/* Host global pentru modalul “emoji” (deschis din OpenCookieSettingsButton / AutoOpenOnLanding) */}
         <ConsentOverlayHost />
+        <Analytics />
       </body>
     </html>
   );
