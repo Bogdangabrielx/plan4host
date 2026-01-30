@@ -245,42 +245,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   --bground: linear-gradient(295deg, var(--card) 0%, var(--panel) 50%, #e3e6e3 100%);
 }
 
-html, body { background: var(--bg); color: var(--text); }
-
-/* Ambient background bubbles — OKLCH first, HSL fallback */
-@supports (color: oklch(0.6 0.1 240)){
-  :root[data-theme="dark"] body{
-    background:
-      radial-gradient(60rem 60rem at 10% 0%,
-        oklch(calc(var(--bg-L) + 0.06) calc(max(0, var(--bg-C) - 0.01)) var(--bg-h-ok)),
-        transparent 60%),
-      radial-gradient(50rem 50rem at 92% 10%,
-        oklch(calc(var(--primary-L) - 0.22) calc(max(0, var(--primary-C) - 0.08)) var(--primary-h-ok)),
-        transparent 62%),
-      radial-gradient(70rem 60rem at 30% 100%,
-        oklch(calc(var(--primary-L) - 0.10) calc(max(0, var(--primary-C) - 0.06)) var(--primary-h-ok)),
-        transparent 60%),
-      var(--bg);
-    background-attachment: fixed;
-  }
-}
-
-@supports not (color: oklch(0.6 0.1 240)){
-  :root[data-theme="dark"] body{
-    background:
-      radial-gradient(60rem 60rem at 10% 0%,
-        hsl(var(--bg-h) var(--bg-s) calc((var(--bg-l) + 4%))), transparent 60%),
-      radial-gradient(50rem 50rem at 92% 10%,
-        hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 22%))), transparent 62%),
-      radial-gradient(70rem 60rem at 30% 100%,
-        hsl(var(--primary-h) var(--primary-s) calc((var(--primary-l) - 10%))), transparent 60%),
-      var(--bg);
-  }
-}
-
-/* iOS: avoid fixed attachment */
-:root[data-os="ios"][data-theme="dark"] body{ background-attachment: scroll; }
-:root[data-os="ios"][data-theme="light"] body{ background-attachment: scroll; }
+/* Global background (no primary “aurora”) */
+html, body { background: var(--bground); color: var(--text); }
 
 * { transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
 
