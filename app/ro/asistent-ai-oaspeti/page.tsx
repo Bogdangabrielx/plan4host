@@ -266,7 +266,7 @@ export default function RoGuestAiAssistantPage() {
             data-p4h-reveal
             style={{
               background:
-                "radial-gradient(36rem 24rem at 0% 0%, color-mix(in srgb, var(--accent1) 10%, transparent), transparent 62%), radial-gradient(36rem 24rem at 100% 100%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 62%), var(--card)",
+                "radial-gradient(36rem 24rem at 0% 0%, color-mix(in srgb, var(--accent1) 10%, transparent), transparent 62%), radial-gradient(36rem 24rem at 100% 100%, color-mix(in srgb, #ffffff 6%, transparent), transparent 62%), var(--card)",
             }}
           >
             <h2 id="premium" className={seo.h2}>

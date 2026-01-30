@@ -34,7 +34,7 @@
   background:
     radial-gradient(60rem 60rem at 10% 0%, color-mix(in oklab, var(--accent1) 22%, transparent), transparent 60%),
     radial-gradient(50rem 50rem at 95% 10%, color-mix(in oklab, var(--accent2) 22%, transparent), transparent 60%),
-    radial-gradient(70rem 60rem at 30% 100%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 60%);
+    radial-gradient(70rem 60rem at 30% 100%, color-mix(in oklab, var(--muted) 18%, transparent), transparent 60%);
   filter: blur(28px) saturate(120%);
   opacity: .35;
 }
