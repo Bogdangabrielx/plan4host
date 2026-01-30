@@ -1128,8 +1128,7 @@ export default function DemoClient() {
           display: "grid",
           placeItems: "start center",
           padding: "16px 16px calc(16px + env(safe-area-inset-bottom))",
-          background:
-            "radial-gradient(700px 500px at 10% 0%, rgba(16,185,129,0.10), transparent 55%), radial-gradient(700px 500px at 90% 100%, rgba(59,130,246,0.08), transparent 55%), var(--bg, #f6f7fb)",
+          background: "var(--bground)",
         }}
       >
         <style
