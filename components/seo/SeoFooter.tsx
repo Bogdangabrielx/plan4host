@@ -78,6 +78,23 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
                 Instagram
               </a>
             </li>
+            <li>
+              <a
+                className={styles.footerLink}
+                href="https://www.linkedin.com/company/plan4host/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src="/linkedin.png"
+                  alt="LinkedIn"
+                  width={18}
+                  height={18}
+                  style={{ display: "inline-block", verticalAlign: "middle", marginRight: 8 }}
+                />
+                LinkedIn
+              </a>
+            </li>
           </ul>
         </div>
       </div>
