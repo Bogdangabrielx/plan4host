@@ -692,7 +692,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   }}
                 >
                   {calendarOnboardingStep === "intro"
-                    ? "Connect your booking calendar"
+                    ? "Avoid Double Bookings"
                     : calendarOnboardingStep === "provider"
                       ? "Where do you receive bookings?"
                       : calendarOnboardingStep === "paste"
@@ -709,7 +709,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   }}
                 >
                   {calendarOnboardingStep === "intro"
-                    ? "This prevents double bookings and keeps availability up to date."
+                    ? "Connect one booking calendar to keep availability updated automatically."
                     : calendarOnboardingStep === "provider"
                       ? "Choose one platform to connect first."
                       : calendarOnboardingStep === "paste"
@@ -741,7 +741,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
                   onClick={() => setCalendarOnboardingStep("provider")}
                 >
-                  Continue
+                  Start sync
                 </button>
               </div>
             )}
