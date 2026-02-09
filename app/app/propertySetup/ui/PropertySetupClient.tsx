@@ -567,7 +567,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                        ? 'We’ll create them automatically so you can start right away.'
 	                        : unitWizardStep === 'rename'
 	                          ? 'You can change these anytime.'
-	                          : 'Each unit now has its own calendar and availability.'}
+	                          : 'You can now manage availability per unit without overlaps.'}
 	                  </div>
                 </div>
                 <button

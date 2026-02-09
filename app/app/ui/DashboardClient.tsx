@@ -1059,7 +1059,7 @@ export default function DashboardClient({
 	                      color: "color-mix(in srgb, var(--text) 86%, transparent)",
 	                    }}
 	                  >
-	                    Guest link ready
+	                    CHECK-IN AUTOMATED
 	                  </div>
 	                </div>
 		                <button
@@ -1072,7 +1072,7 @@ export default function DashboardClient({
 		                </button>
 		              </div>
 		              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-		                This is what your guest will see.
+		                Your guests can now submit their ID and required details before arrival — no more manual collection in chat.
 		              </div>
 
 		              <div style={{ display: "grid", gap: 10 }}>
