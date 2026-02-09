@@ -762,7 +762,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                      window.location.href = `${u.pathname}${u.search}`;
 	                    }}
 	                  >
-	                    Connect your first calendar
+	                    Sync with Airbnb or Booking
 	                  </button>
                   <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)', textAlign: 'center' }}>
                     To automate availability and avoid double bookings.
