@@ -698,7 +698,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                       : calendarOnboardingStep === "paste"
                         ? "Paste your booking calendar link"
                         : calendarOnboardingStep === "reward"
-                          ? "Calendar connected"
+                          ? "Your bookings are now synced"
                           : "Optional: export your Plan4Host calendar"}
                 </div>
                 <div
@@ -715,7 +715,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                       : calendarOnboardingStep === "paste"
                         ? "Copy the iCal link from your booking platform and paste it below."
                         : calendarOnboardingStep === "reward"
-                          ? "Your reservations are now visible in Plan4Host."
+                          ? "Bookings are synced. Guest details will appear once they complete your check-in form."
                           : "This blocks dates on other platforms when things change."}
                 </div>
               </div>

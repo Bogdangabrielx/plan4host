@@ -1056,7 +1056,17 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 textAlign: "center",
               }}
             >
-              {query ? "No guests match your search." : "No current or upcoming reservations."}
+              {query ? (
+                "No guests match your search."
+              ) : (
+                <div>
+                  <div>🟢 No check-ins yet.</div>
+                  <div>Guest submissions will appear here for confirmation.</div>
+                  <div style={{ fontSize: 12, fontStyle: "italic", marginTop: 6 }}>
+                    Tip: Add your check-in link to your automatic messages on Airbnb, Booking, or other platforms to activate the full flow.
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

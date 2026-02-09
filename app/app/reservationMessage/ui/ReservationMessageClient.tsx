@@ -1434,10 +1434,10 @@ export default function ReservationMessageClient({
 		                <div style={{ display: "grid", gap: 12 }}>
 		                  <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
 		                    <div style={{ fontWeight: 900, fontSize: 18, color: "var(--text)" }}>
-		                      Choose how you want to set up your message
+		                      Automate Your Guest Communication
 		                    </div>
 		                    <div style={{ fontSize: 13, color: "var(--muted)" }}>
-		                      Start with a ready-made message. You can adjust it anytime.
+		                      Send consistent check-in instructions automatically — no more manual messaging.
 		                    </div>
 		                  </div>
 
@@ -1447,7 +1447,7 @@ export default function ReservationMessageClient({
 		                      style={{ width: "100%", background: "var(--primary)", justifyContent: "center", color: "#fff" }}
 		                      onClick={() => void runTemplatePickerIntroLoading()}
 		                    >
-		                      View templates
+		                      Choose message template
 		                    </button>
 		                    <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 12, lineHeight: 1.5 }}>
 		                      Created by us, in Romanian and English.
@@ -1547,7 +1547,7 @@ export default function ReservationMessageClient({
 	                    <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>
 	                      Your automatic message is ready
 	                    </div>
-	                    <div style={{ fontSize: 13, color: "var(--muted)" }}>This is what guests will receive at arrival.</div>
+	                    <div style={{ fontSize: 13, color: "var(--muted)" }}>This message will be sent automatically based on your schedule.</div>
 	                  </div>
 
 	                  <div style={{ display: "grid", gap: 10 }}>
@@ -1588,7 +1588,7 @@ export default function ReservationMessageClient({
 	                {onbStep === "recap" && (
 	                  <div style={{ display: "grid", gap: 12 }}>
 	                    <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
-	                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>Quick recap</div>
+	                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>🥇 YOUR SYSTEM IS READY — HERE’S HOW IT WORKS</div>
 	                      <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)" }}>
 	                        Invite → Check-in → Messages
 	                      </div>
@@ -1699,7 +1699,7 @@ export default function ReservationMessageClient({
 	                        }
 	                      }}
 	                    >
-	                      {onbCompletingAll ? "Completing…" : "Complete"}
+	                      {onbCompletingAll ? "Completing…" : "Start managing bookings"}
 	                    </button>
 	                  </div>
 	                )}
@@ -1707,9 +1707,9 @@ export default function ReservationMessageClient({
                 {onbStep === "final" && (
                   <div style={{ display: "grid", gap: 12 }}>
                     <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
-                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>You’re live 🎉</div>
+                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>YOUR AUTOMATED SYSTEM IS LIVE 🎉</div>
                       <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
-                        Everything is set up and ready for guests.
+                        Your check-in and communication flow is now active.
                       </div>
                     </div>
 
@@ -1720,7 +1720,7 @@ export default function ReservationMessageClient({
 	                          {[
 	                            "Share the check-in link",
 	                            "Receive completed check-ins",
-	                            "Let messages run automatically",
+	                            "Messages are sent automatically at the right time",
 	                          ].map((label) => (
 	                            <div key={label} style={{ display: "grid", gridTemplateColumns: "20px 1fr", alignItems: "center", gap: 10 }}>
 	                              <span

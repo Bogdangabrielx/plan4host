@@ -1273,15 +1273,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     {contactsWizardStep === "contacts"
                       ? "Add your contact details"
                       : contactsWizardStep === "social"
-                        ? "Social links"
-                        : "Guest portal updated"}
+                        ? "Increase Direct Guest Contact (Optional)"
+                        : "Guests Can Now Reach You Directly"}
                   </div>
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
                     {contactsWizardStep === "contacts"
-                      ? "This information appears in your guest check-in portal."
+                      ? "This helps guests reach you directly without messaging you repeatedly on booking platforms."
                       : contactsWizardStep === "social"
-                        ? "Optional — share only what you want guests to see."
-                        : "Your contact details are now visible to guests."}
+                        ? "Help guests find and contact you directly outside booking platforms. Build repeat stays and long-term visibility."
+                        : "Every booking now connects guests directly to you, creating a consistent communication channel for future stays."}
                   </div>
                 </div>
 	                <button
@@ -1324,7 +1324,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         style={FIELD}
                       />
                       <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                        Guests can use this to contact you before or during their stay.
+                        Guests will see this in their portal and can contact you directly if needed.
                       </div>
                     </div>
 
@@ -1572,7 +1572,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                        textAlign: "center",
 	                      }}
 	                    >
-	                      Skip social links
+	                      Skip for now
 	                    </button>
 	                  </div>
 	                </div>
@@ -1720,7 +1720,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           ? "Create house rules"
                           : houseRulesWizardStep === "uploaded"
                             ? "House rules uploaded"
-                            : "This is how guests see your house rules"}
+                            : "GUESTS MUST CONFIRM THESE BEFORE CHECK-IN"}
                   </div>
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
                     {houseRulesWizardStep === "intro"
@@ -1731,7 +1731,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           ? "Answer a few questions — we’ll do the rest."
                           : houseRulesWizardStep === "uploaded"
                             ? "Guests will see them during check-in."
-                            : "They must confirm them before check-in."}
+                            : "Guests confirm these rules before arrival — setting clear expectations from the start."}
                   </div>
                 </div>
 	                <button
@@ -1755,7 +1755,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               {houseRulesWizardStep === "intro" && (
                 <div style={{ display: "grid", gap: 14 }}>
                   <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", textAlign: "center" }}>
-                    By adding house rules, guests can read and confirm them before check-in.
+                    Clear rules confirmed before arrival help reduce last-minute surprises, disputes, and property-related issues.
                   </div>
                   <div style={{ display: "grid", gap: 8, justifyItems: "center" }}>
                     <button
