@@ -562,7 +562,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                  </div>
 	                  <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
 	                    {unitWizardStep === 'hostType'
-	                      ? 'This helps us organize calendars and availability correctly.'
+	                      ? 'This ensures your availability stays accurate across all bookings.'
 	                      : unitWizardStep === 'unitCount'
 	                        ? 'We’ll create them automatically so you can start right away.'
 	                        : unitWizardStep === 'rename'
