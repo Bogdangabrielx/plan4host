@@ -1270,8 +1270,8 @@ export default function HomePage() {
 	            </span>
 	          </h1>
           <p
-            className={styles.heroKicker}
-            style={{ fontWeight: 500, borderLeft: "2px solid var(--border)", paddingLeft: 12, lineHeight: 1.5 }}
+            className={`${styles.heroKicker} ${styles.heroKickerType}`}
+            style={{ fontWeight: 500, borderLeft: "2px solid var(--border)", paddingLeft: 12, lineHeight: 1.5, "--type-steps": 62 }}
           >
             Turn every <strong>Airbnb</strong> or <strong>Booking</strong> reservation into a clear, automated flow — from booking to check-out.
           </p>

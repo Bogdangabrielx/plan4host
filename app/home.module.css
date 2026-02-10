@@ -620,6 +620,21 @@ will-change: transform;
   -webkit-text-fill-color: transparent;
 }
 .heroKicker { margin: 0 0 24px; color: var(--muted); }
+.heroKickerType {
+  display: inline-block;
+  max-width: 100%;
+  clip-path: inset(0 100% 0 0);
+  animation: heroTypeClip 2.6s steps(var(--type-steps, 64)) 0.15s both;
+}
+@keyframes heroTypeClip {
+  to { clip-path: inset(0 0 0 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .heroKickerType {
+    animation: none;
+    clip-path: inset(0 0 0 0);
+  }
+}
 .heroText p { color: var(--muted); margin: 0 0 24px; max-width: 58ch; }
 .heroBullets { margin: 0 0 24px; padding: 0; list-style: none; display: grid; gap: 8px; color: var(--muted); max-width: 58ch; }
 .heroBullets li { display: grid; grid-template-columns: 16px 1fr; gap: 8px; align-items: start; }

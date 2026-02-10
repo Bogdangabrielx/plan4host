@@ -1096,8 +1096,8 @@ export default function HomePageRO() {
 	            </span>
 	          </h1>
           <p
-            className={styles.heroKicker}
-            style={{ fontWeight: 500, borderLeft: "2px solid var(--border)", paddingLeft: 12, lineHeight: 1.5 }}
+            className={`${styles.heroKicker} ${styles.heroKickerType}`}
+            style={{ fontWeight: 500, borderLeft: "2px solid var(--border)", paddingLeft: 12, lineHeight: 1.5, "--type-steps": 70 }}
           >
             Transformă fiecare rezervare <strong>Airbnb</strong> sau <strong>Booking</strong> într-un flux automat și organizat — de la rezervare la check-out.
           </p>
