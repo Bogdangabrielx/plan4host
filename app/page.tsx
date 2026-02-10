@@ -1274,8 +1274,6 @@ export default function HomePage() {
             style={
               {
                 fontWeight: 500,
-                borderLeft: "2px solid var(--border)",
-                paddingLeft: 12,
                 lineHeight: 1.5,
                 "--type-steps": 62,
               } as React.CSSProperties
