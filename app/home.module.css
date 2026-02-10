@@ -624,10 +624,13 @@ will-change: transform;
   display: inline-block;
   max-width: 100%;
   clip-path: inset(0 100% 0 0);
-  animation: heroTypeClip 2.6s steps(var(--type-steps, 64)) 0.15s both;
+  animation: heroTypeLoop 7.2s steps(var(--type-steps, 64)) 0.15s infinite both;
 }
-@keyframes heroTypeClip {
-  to { clip-path: inset(0 0 0 0); }
+@keyframes heroTypeLoop {
+  0% { clip-path: inset(0 100% 0 0); }
+  36% { clip-path: inset(0 0 0 0); }
+  64% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(0 100% 0 0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .heroKickerType {
