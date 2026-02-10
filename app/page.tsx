@@ -1270,7 +1270,7 @@ export default function HomePage() {
 	            </span>
 	          </h1>
           <p className={styles.heroKicker}>
-            Turn every Airbnb or Booking reservation into a clear, automated flow — from booking to check-out.
+            Turn every <strong>Airbnb</strong> or <strong>Booking</strong> reservation into a clear, automated flow — from booking to check-out.
           </p>
 	          <div className={styles.heroCta}>
             <button
