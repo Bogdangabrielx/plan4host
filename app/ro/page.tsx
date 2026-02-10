@@ -1096,18 +1096,22 @@ export default function HomePageRO() {
 	            </span>
 	          </h1>
           <p
-            className={`${styles.heroKicker} ${styles.heroKickerType}`}
-            style={
-              {
-                fontWeight: 500,
-                borderLeft: "2px solid var(--border)",
-                paddingLeft: 12,
-                lineHeight: 1.5,
-                "--type-steps": 70,
-              } as React.CSSProperties
-            }
+            className={`${styles.heroKicker} ${styles.heroKickerTyped}`}
+            style={{ fontWeight: 500, borderLeft: "2px solid var(--border)", paddingLeft: 12, lineHeight: 1.5 }}
           >
-            Transformă fiecare rezervare <strong>Airbnb</strong> sau <strong>Booking</strong> într-un flux automat și organizat — de la rezervare la check-out.
+            <span
+              className={`${styles.heroKickerLine} ${styles.heroKickerLineOne}`}
+              style={{ "--type-steps": 70 } as React.CSSProperties}
+            >
+              Transformă fiecare rezervare <strong>Airbnb</strong> sau <strong>Booking</strong> într-un flux automat și organizat
+            </span>
+            <br />
+            <span
+              className={`${styles.heroKickerLine} ${styles.heroKickerLineTwo}`}
+              style={{ "--type-steps": 32 } as React.CSSProperties}
+            >
+              — de la rezervare la check-out.
+            </span>
           </p>
 	          <div className={styles.heroCta}>
             <button

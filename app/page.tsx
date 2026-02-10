@@ -1270,18 +1270,22 @@ export default function HomePage() {
 	            </span>
 	          </h1>
           <p
-            className={`${styles.heroKicker} ${styles.heroKickerType}`}
-            style={
-              {
-                fontWeight: 500,
-                borderLeft: "2px solid var(--border)",
-                paddingLeft: 12,
-                lineHeight: 1.5,
-                "--type-steps": 62,
-              } as React.CSSProperties
-            }
+            className={`${styles.heroKicker} ${styles.heroKickerTyped}`}
+            style={{ fontWeight: 500, borderLeft: "2px solid var(--border)", paddingLeft: 12, lineHeight: 1.5 }}
           >
-            Turn every <strong>Airbnb</strong> or <strong>Booking</strong> reservation into a clear, automated flow — from booking to check-out.
+            <span
+              className={`${styles.heroKickerLine} ${styles.heroKickerLineOne}`}
+              style={{ "--type-steps": 64 } as React.CSSProperties}
+            >
+              Turn every <strong>Airbnb</strong> or <strong>Booking</strong> reservation into a clear, automated flow
+            </span>
+            <br />
+            <span
+              className={`${styles.heroKickerLine} ${styles.heroKickerLineTwo}`}
+              style={{ "--type-steps": 28 } as React.CSSProperties}
+            >
+              — from booking to check-out.
+            </span>
           </p>
 	          <div className={styles.heroCta}>
             <button
