@@ -1095,9 +1095,9 @@ export default function HomePageRO() {
 	              </span>
 	            </span>
 	          </h1>
-	          <p className={styles.heroKicker}>
-	            Un singur sistem care conectează oaspeți, rezervări și curățenie — ca să nu scape nimic.
-	          </p>
+          <p className={styles.heroKicker}>
+            Transformă fiecare rezervare de pe Airbnb sau Booking într-un flux clar, automat — de la rezervare la check-out.
+          </p>
 	          <div className={styles.heroCta}>
             <button
               type="button"
@@ -1151,7 +1151,7 @@ export default function HomePageRO() {
 	      {/* Dovadă */}
 	      <section id="insights" aria-labelledby="insights-title" className={styles.features} style={{ paddingTop: 0 }}>
           <h2 id="insights-title" data-p4h-reveal>
-            Gândit pentru hosting real, nu pentru demo‑uri
+            Creat pentru gazde care conduc organizat, nu improvizează.
           </h2>
           <ul className={styles.includedList} data-p4h-reveal>
             <li>De la primul login la check‑in gata de folosit, în câteva minute</li>

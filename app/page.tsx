@@ -1269,9 +1269,9 @@ export default function HomePage() {
 	              </span>
 	            </span>
 	          </h1>
-	          <p className={styles.heroKicker}>
-	            One system that connects guests, bookings and cleaning — so nothing falls through the cracks.
-	          </p>
+          <p className={styles.heroKicker}>
+            Turn every Airbnb or Booking reservation into a clear, automated flow — from booking to check-out.
+          </p>
 	          <div className={styles.heroCta}>
             <button
               type="button"
@@ -1329,7 +1329,7 @@ export default function HomePage() {
 	      {/* Proof */}
 	      <section id="insights" aria-labelledby="insights-title" className={styles.features} style={{ paddingTop: 0 }}>
           <h2 id="insights-title" data-p4h-reveal>
-            Built for real hosting, not demos
+            Built for hosts who run operations, not improvisations.
           </h2>
           <ul className={styles.includedList} data-p4h-reveal>
             <li>From first login to ready-to-use check-in in minutes</li>
