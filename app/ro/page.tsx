@@ -1096,7 +1096,7 @@ export default function HomePageRO() {
 	            </span>
 	          </h1>
           <p className={styles.heroKicker}>
-            Transformă fiecare rezervare de pe Airbnb sau Booking într-un flux clar, automat — de la rezervare la check-out.
+            Transformă fiecare rezervare Airbnb sau Booking într-un flux automat și organizat — de la rezervare la check-out.
           </p>
 	          <div className={styles.heroCta}>
             <button
