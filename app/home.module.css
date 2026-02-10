@@ -620,33 +620,20 @@ will-change: transform;
   -webkit-text-fill-color: transparent;
 }
 .heroKicker { margin: 0 0 24px; color: var(--muted); }
-.heroKickerTyped { display: inline-block; }
-.heroKickerLine {
+.heroKickerType {
   display: inline-block;
   max-width: 100%;
   clip-path: inset(0 100% 0 0);
-  animation-duration: 9s;
-  animation-timing-function: steps(var(--type-steps, 64));
-  animation-iteration-count: infinite;
-  animation-fill-mode: both;
+  animation: heroTypeLoop 7.2s steps(var(--type-steps, 64)) 0.15s infinite both;
 }
-.heroKickerLineOne { animation-name: heroTypeLineOne; }
-.heroKickerLineTwo { animation-name: heroTypeLineTwo; }
-@keyframes heroTypeLineOne {
+@keyframes heroTypeLoop {
   0% { clip-path: inset(0 100% 0 0); }
-  30% { clip-path: inset(0 0 0 0); }
-  80% { clip-path: inset(0 0 0 0); }
-  100% { clip-path: inset(0 100% 0 0); }
-}
-@keyframes heroTypeLineTwo {
-  0% { clip-path: inset(0 100% 0 0); }
-  30% { clip-path: inset(0 100% 0 0); }
-  60% { clip-path: inset(0 0 0 0); }
-  80% { clip-path: inset(0 0 0 0); }
+  36% { clip-path: inset(0 0 0 0); }
+  64% { clip-path: inset(0 0 0 0); }
   100% { clip-path: inset(0 100% 0 0); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .heroKickerLine {
+  .heroKickerType {
     animation: none;
     clip-path: inset(0 0 0 0);
   }
