@@ -916,7 +916,7 @@ export default function SubscriptionClient({
 
             <div style={{ color: 'var(--muted)' }}>
               <p style={{ margin: 0 }}>
-                You are currently on a free 7-day <strong>STANDARD</strong> trial{validUntil ? ` (active until ${validUntil})` : ''}.
+                You are currently on a free 30-day <strong>PREMIUM</strong> trial{validUntil ? ` (active until ${validUntil})` : ''}.
               </p>
               <p style={{ margin: '6px 0 0' }}>
                 Are you sure you want to activate <strong>{planLabel(pendingSelect)}</strong> now?
