@@ -322,13 +322,13 @@ export default function SubscriptionClient({
     })();
   }, [supabase]);
 
-  // Determine if free STANDARD trial is currently active
+  // Determine if free PREMIUM trial is currently active
   useEffect(() => {
     try {
       const now = Date.now();
       const vu = validUntilISO ? Date.parse(validUntilISO) : NaN;
       const hasFutureValidity = Number.isFinite(vu) ? vu > now : false;
-      // Heuristic: effective plan is STANDARD, but base (accounts.plan) is not STANDARD
+      // Heuristic: effective plan is PREMIUM, but base (accounts.plan) is not PREMIUM
       // and validity is in the future → most likely the free trial is active.
       const active = currentPlan === "standard" && basePlan !== "standard" && hasFutureValidity;
       setTrialActive(!!active);
@@ -875,7 +875,7 @@ export default function SubscriptionClient({
         </div>
       )}
 
-      {/* Confirm dialog while on STANDARD free trial */}
+      {/* Confirm dialog while on PREMIUM free trial */}
       {pendingSelect && (
         <div
           role="dialog"
