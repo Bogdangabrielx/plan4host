@@ -36,7 +36,7 @@ begin
   exception when others then null; end;
 
   begin
-    perform public.account_grant_trial(new.id, 7);
+    perform public.account_grant_trial(new.id, 30);
   exception when others then null; end;
 
   return new;

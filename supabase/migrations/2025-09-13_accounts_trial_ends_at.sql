@@ -13,7 +13,7 @@ end $$;
 -- 2) Ensure account_grant_trial sets both valid_until and trial_ends_at
 create or replace function public.account_grant_trial(
   p_account_id uuid,
-  p_days int default 7
+  p_days int default 30
 )
 returns void
 language plpgsql
@@ -27,7 +27,7 @@ begin
              + make_interval(days => p_days);
 
   update public.accounts
-     set plan = 'standard',
+     set plan = 'premium',
          valid_until = v_until,
          trial_ends_at = v_until
    where id = p_account_id;
@@ -46,4 +46,3 @@ update public.accounts
    set trial_ends_at = valid_until
  where trial_ends_at is null
    and valid_until is not null;
-

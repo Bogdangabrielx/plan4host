@@ -121,7 +121,7 @@ $fn$;
 -- Trial helper: set Standard + extend valid_until by N days
 create or replace function public.account_grant_trial(
   p_account_id uuid,
-  p_days int default 7
+  p_days int default 30
 )
 returns void
 language plpgsql
@@ -130,7 +130,7 @@ set search_path = public
 as $func$
 begin
   update public.accounts
-     set plan = 'standard',
+     set plan = 'premium',
          valid_until = greatest(coalesce(valid_until, now()), now()) + make_interval(days => p_days)
    where id = p_account_id;
 
@@ -166,7 +166,7 @@ begin
   exception when others then null; end;
 
   begin
-    perform public.account_grant_trial(new.id, 7);
+    perform public.account_grant_trial(new.id, 30);
   exception when others then null; end;
 
   return new;
@@ -196,7 +196,7 @@ begin
   left join public.account_users au on au.account_id = u.id and au.user_id = u.id
   where au.user_id is null;
 
-  perform public.account_grant_trial(id, 7)
+  perform public.account_grant_trial(id, 30)
     from public.accounts
    where valid_until is null or valid_until <= now();
 end $$;
@@ -307,4 +307,3 @@ $$;
 */
 
 -- End of migration
-
