@@ -5,6 +5,7 @@ import Image from "next/image";
 import styles from "../subscription.module.css";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
+type Lang = "en" | "ro";
 
 /** Plan definition sourced from landing (NOT from DB) */
 type Plan = {
@@ -45,28 +46,27 @@ const PLANS: Plan[] = [
   },
 ];
 
-// Same benefit set as the EN landing page
-const BENEFITS: string[] = [
-  "Custom digital check-in form",
-  "GDPR-ready e-signature & ID photo verification (auto-deleted once the booking is confirmed)",
-  "QR code for check-in validation",
-  "Push and email notifications for each new reservation",
-  "Automated, reservation-aware messages",
-  "Calendar integrations with multiple platforms (Booking, Airbnb, etc.)",
-  "Automatic sync of reservations between platforms",
-  "Unlimited properties and rooms in one account",
-  "Internal notes for each reservation",
-  "Custom checklists per reservation (breakfast included, daily towel change, etc.)",
-  "Manage front desk from your phone (confirm/modify reservations)",
-  "Export a PDF with each reservation's details",
-  "Quick WhatsApp link from each reservation",
-  "Prioritize room cleaning based on next check-in",
-  "Personalized cleaning task lists",
-  "Real-time cleaning status updates",
-  "Share daily tasks with team members",
-  "Instant sync of reservations in the app calendar with Sync Now button",
-  "Guest AI assistant (arrival, amenities, extras, check-out)",
-];
+const BENEFITS = [
+  { key: "custom_checkin_form", en: "Custom digital check-in form", ro: "Formular digital personalizat pentru check-in" },
+  { key: "gdpr_esign_id", en: "GDPR-ready e-signature & ID photo verification (auto-deleted once the booking is confirmed)", ro: "Semnatura electronica conform GDPR si verificare foto ID (stearsa automat dupa confirmarea rezervarii)" },
+  { key: "qr_validation", en: "QR code for check-in validation", ro: "Cod QR pentru validarea check-in-ului" },
+  { key: "push_email_new_res", en: "Push and email notifications for each new reservation", ro: "Notificari push si email pentru fiecare rezervare noua" },
+  { key: "automated_messages", en: "Automated, reservation-aware messages", ro: "Mesaje automate, adaptate fiecarei rezervari" },
+  { key: "multi_platform_integrations", en: "Calendar integrations with multiple platforms (Booking, Airbnb, etc.)", ro: "Integrari de calendar cu mai multe platforme (Booking, Airbnb etc.)" },
+  { key: "auto_sync", en: "Automatic sync of reservations between platforms", ro: "Sincronizare automata a rezervarilor intre platforme" },
+  { key: "unlimited_props_rooms", en: "Unlimited properties and rooms in one account", ro: "Proprietati si camere nelimitate intr-un singur cont" },
+  { key: "internal_notes", en: "Internal notes for each reservation", ro: "Notite interne pentru fiecare rezervare" },
+  { key: "custom_checklists", en: "Custom checklists per reservation (breakfast included, daily towel change, etc.)", ro: "Checklist-uri personalizate per rezervare (mic dejun inclus, schimb zilnic de prosoape etc.)" },
+  { key: "frontdesk_phone", en: "Manage front desk from your phone (confirm/modify reservations)", ro: "Gestioneaza front desk-ul de pe telefon (confirmi/modifici rezervari)" },
+  { key: "pdf_export", en: "Export a PDF with each reservation's details", ro: "Export PDF cu detaliile fiecarei rezervari" },
+  { key: "whatsapp_quick", en: "Quick WhatsApp link from each reservation", ro: "Link rapid de WhatsApp din fiecare rezervare" },
+  { key: "prioritize_cleaning", en: "Prioritize room cleaning based on next check-in", ro: "Prioritizezi curatenia camerelor in functie de urmatorul check-in" },
+  { key: "personalized_cleaning_tasks", en: "Personalized cleaning task lists", ro: "Liste personalizate de task-uri pentru curatenie" },
+  { key: "cleaning_realtime", en: "Real-time cleaning status updates", ro: "Actualizari in timp real pentru statusul curateniei" },
+  { key: "share_daily_tasks", en: "Share daily tasks with team members", ro: "Distribuie task-urile zilnice membrilor echipei" },
+  { key: "instant_sync_now", en: "Instant sync of reservations in the app calendar with Sync Now button", ro: "Sincronizare instant a rezervarilor in calendarul aplicatiei cu butonul Sync Now" },
+  { key: "guest_ai", en: "Guest AI assistant (arrival, amenities, extras, check-out)", ro: "Asistent AI pentru oaspete (sosire, facilitati, extra-optiuni, check-out)" },
+] as const;
 
 function planLabel(slug: string) {
   const s = slug.toLowerCase();
@@ -75,17 +75,17 @@ function planLabel(slug: string) {
 
 // Benefit rendering helpers (same logic as landing EN) — plan-specific X markers
 const basicX = [
-  'Prioritize room cleaning',
-  'Personalized cleaning task',
-  'Real-time cleaning status',
-  'Share daily tasks',
-  'Instant sync of reservations in the app calendar',
-  'Guest AI assistant',
+  "prioritize_cleaning",
+  "personalized_cleaning_tasks",
+  "cleaning_realtime",
+  "share_daily_tasks",
+  "instant_sync_now",
+  "guest_ai",
 ];
 const standardX = [
-  'Share daily tasks',
-  'Instant sync of reservations in the app calendar',
-  'Guest AI assistant',
+  "share_daily_tasks",
+  "instant_sync_now",
+  "guest_ai",
 ];
 
 export default function SubscriptionClient({
@@ -99,6 +99,7 @@ export default function SubscriptionClient({
   const { setPill } = useHeader();
 
   const [currentPlan, setCurrentPlan] = useState<"basic"|"standard"|"premium">("basic");
+  const [lang, setLang] = useState<Lang>("en");
   const [validUntil, setValidUntil] = useState<string | null>(null);        // localized display
   const [validUntilISO, setValidUntilISO] = useState<string | null>(null);  // raw ISO for comparisons
   const [basePlan, setBasePlan] = useState<"basic"|"standard"|"premium"|null>(null); // accounts.plan from server
@@ -134,6 +135,41 @@ export default function SubscriptionClient({
   const [upgradeBusy, setUpgradeBusy] = useState<boolean>(false);
   const [scheduleBusy, setScheduleBusy] = useState<boolean>(false);
   const [initializing, setInitializing] = useState<boolean>(true);
+  const t = {
+    en: {
+      stillActiveUntil: "Still active until:",
+      activeNow: "Active now:",
+      until: "until",
+      lastActivePlan: "Last active plan:",
+      expiredAt: "expired at",
+      expired: "expired",
+      readOnly: "(read-only)",
+      activePlan: "Active plan",
+      manageAccount: "Manage Account",
+      applying: "Applying...",
+      iWant: "I want",
+      syncEvery: "Automatic sync of reservations between platforms",
+      everyMin: "every",
+      min: "min",
+    },
+    ro: {
+      stillActiveUntil: "Activ pana la:",
+      activeNow: "Activ acum:",
+      until: "pana la",
+      lastActivePlan: "Ultimul plan activ:",
+      expiredAt: "expirat la",
+      expired: "expirat",
+      readOnly: "(doar citire)",
+      activePlan: "Plan activ",
+      manageAccount: "Gestioneaza contul",
+      applying: "Se aplica...",
+      iWant: "Vreau",
+      syncEvery: "Sincronizare automata a rezervarilor intre platforme",
+      everyMin: "la fiecare",
+      min: "min",
+    },
+  } as const;
+  const i18n = t[lang];
 
   // Account billing/status snapshot (pending change, cancel flag)
   const [pendingPlan, setPendingPlan] = useState<Plan["slug"] | null>(null);
@@ -197,6 +233,28 @@ export default function SubscriptionClient({
     return () => {
       alive = false;
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): Lang => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setLang(readLang());
+    const onStorage = () => setLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   useEffect(() => {
@@ -330,7 +388,7 @@ export default function SubscriptionClient({
       const hasFutureValidity = Number.isFinite(vu) ? vu > now : false;
       // Heuristic: effective plan is PREMIUM, but base (accounts.plan) is not PREMIUM
       // and validity is in the future → most likely the free trial is active.
-      const active = currentPlan === "standard" && basePlan !== "standard" && hasFutureValidity;
+      const active = currentPlan === "premium" && basePlan !== "premium" && hasFutureValidity;
       setTrialActive(!!active);
     } catch { setTrialActive(false); }
   }, [currentPlan, basePlan, validUntil]);
@@ -629,23 +687,23 @@ export default function SubscriptionClient({
         {isActive ? (
           cancelAtPeriodEnd ? (
             <>
-              <span className={`${styles.badge} sb-cardglow`}>Still active until:</span>
+              <span className={`${styles.badge} sb-cardglow`}>{i18n.stillActiveUntil}</span>
               <span className={styles.muted}>{validUntil ? `${validUntil}` : "—"}</span>
             </>
           ) : (
             <>
-              <span className={`${styles.badge} sb-cardglow`}>Active now: {planLabel(currentPlan)}</span>
-              <span className={styles.muted}>{validUntil ? `until ${validUntil}` : "—"}</span>
+              <span className={`${styles.badge} sb-cardglow`}>{i18n.activeNow} {planLabel(currentPlan)}</span>
+              <span className={styles.muted}>{validUntil ? `${i18n.until} ${validUntil}` : "—"}</span>
             </>
           )
         ) : (
           <>
-            <span className={`${styles.badge} sb-cardglow`}>Last active plan: {planLabel(currentPlan)}</span>
-            <span className={styles.muted}>{validUntil ? `expired at ${validUntil}` : 'expired'}</span>
+            <span className={`${styles.badge} sb-cardglow`}>{i18n.lastActivePlan} {planLabel(currentPlan)}</span>
+            <span className={styles.muted}>{validUntil ? `${i18n.expiredAt} ${validUntil}` : i18n.expired}</span>
           </>
         )}
         {/* We no longer display scheduled next plan; handled via Stripe Portal */}
-        {role !== "admin" && <span className={styles.muted}>(read-only)</span>}
+        {role !== "admin" && <span className={styles.muted}>{i18n.readOnly}</span>}
       </div>
 
       {/* Cards */}
@@ -665,15 +723,16 @@ export default function SubscriptionClient({
 
               <ul className={styles.list}>
                 {BENEFITS.map((b, i) => {
-                  const isSync = b.startsWith('Automatic sync of reservations between platforms');
+                  const isSync = b.key === "auto_sync";
+                  const baseText = lang === "ro" ? b.ro : b.en;
                   const text = isSync
-                    ? `Automatic sync of reservations between platforms (every ${p.syncIntervalMinutes} min)`
-                    : b;
+                    ? `${i18n.syncEvery} (${i18n.everyMin} ${p.syncIntervalMinutes} ${i18n.min})`
+                    : baseText;
                   const x = p.slug === 'premium'
                     ? false
                     : p.slug === 'standard'
-                      ? standardX.some(s => b.includes(s))
-                      : basicX.some(s => b.includes(s));
+                      ? standardX.includes(b.key)
+                      : basicX.includes(b.key);
 	                  return (
 	                    <li key={i} className={styles.liItem}>
 	                      {x ? (
@@ -713,20 +772,20 @@ export default function SubscriptionClient({
                     data-animate={highlightPlan === p.slug ? true : undefined}
                     data-plan={p.slug}
                   >
-                    {saving === p.slug ? "Applying…" : `I want ${planLabel(p.slug)}`}
+                    {saving === p.slug ? i18n.applying : `${i18n.iWant} ${planLabel(p.slug)}`}
                   </button>
                 ) : (
                   isCurrent ? (
                     isActive ? (
                       <div style={{ display:'flex', alignItems:'center', gap: 5 }}>
-                        <span className={`${styles.currentBadge} sb-cardglow`}>Active plan</span>
+                        <span className={`${styles.currentBadge} sb-cardglow`}>{i18n.activePlan}</span>
                         {hasStripeCustomer && (
                           <button
                             className={`sb-cardglow ${styles.btn} ${styles.btnChoose} ${styles.focusable}`}
                             onClick={() => setManageOpen(true)}
                             style={{ fontSize:13, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21 }}
                           >
-                            Manage Account
+                            {i18n.manageAccount}
                           </button>
                         )}
                       </div>
@@ -739,7 +798,7 @@ export default function SubscriptionClient({
                           data-animate={highlightPlan === p.slug ? true : undefined}
                           data-plan={p.slug}
                         >
-                          {saving === p.slug ? "Applying…" : `I want ${planLabel(p.slug)}`}
+                          {saving === p.slug ? i18n.applying : `${i18n.iWant} ${planLabel(p.slug)}`}
                         </button>
                         {hasStripeCustomer && (
                           <button
@@ -747,7 +806,7 @@ export default function SubscriptionClient({
                             onClick={() => setManageOpen(true)}
                             style={{ fontSize:13, color: "var(--text)",border:'1px solid var(--border)', background:'transparent',borderRadius:21 }}
                           >
-                            Manage Account
+                            {i18n.manageAccount}
                           </button>
                         )}
                       </div>
@@ -760,7 +819,7 @@ export default function SubscriptionClient({
                       data-animate={highlightPlan === p.slug ? true : undefined}
                       data-plan={p.slug}
                     >
-                      {saving === p.slug ? "Applying…" : `I want ${planLabel(p.slug)}`}
+                      {saving === p.slug ? i18n.applying : `${i18n.iWant} ${planLabel(p.slug)}`}
                     </button>
                   )
                 )}
@@ -781,7 +840,7 @@ export default function SubscriptionClient({
         >
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(680px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <h3 id="manage-title" style={{ margin:0 }}>Active plan</h3>
+              <h3 id="manage-title" style={{ margin:0 }}>{lang === "ro" ? "Plan activ" : "Active plan"}</h3>
               <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setManageOpen(false)}>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -790,9 +849,12 @@ export default function SubscriptionClient({
             </div>
 
             <div style={{ color:'var(--muted)' }}>
-              <p style={{ margin:0 }}>Current: <strong>{planLabel(currentPlan)}</strong></p>
+              <p style={{ margin:0 }}>{lang === "ro" ? "Curent:" : "Current:"} <strong>{planLabel(currentPlan)}</strong></p>
               <p style={{ margin:'4px 0 0' }}>
-                {trialActive ? 'Trial ends at ' : 'Current period ends at '}<strong>{validUntil ?? '—'}</strong>
+                {trialActive
+                  ? (lang === "ro" ? "Trialul se termina la " : "Trial ends at ")
+                  : (lang === "ro" ? "Perioada curenta se termina la " : "Current period ends at ")}
+                <strong>{validUntil ?? '—'}</strong>
               </p>
             </div>
 
@@ -817,40 +879,40 @@ export default function SubscriptionClient({
                   <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
                     <path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20Zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-1-9V7h2v6h-2Z" fill="currentColor"/>
                   </svg>
-                  Manage subscription
+                  {lang === "ro" ? "Gestioneaza abonamentul" : "Manage subscription"}
                 </button>
 
                 <button
                   className={`${styles.btn} ${styles.btnGhost} sb-cardglow`}
-                  title="See payment method"
-                  aria-label="See payment method"
+                  title={lang === "ro" ? "Vezi metoda de plata" : "See payment method"}
+                  aria-label={lang === "ro" ? "Vezi metoda de plata" : "See payment method"}
                   onClick={openPaymentMethod}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
                     <path d="M3 6h18v12H3z" fill="none" stroke="currentColor" strokeWidth="2"/>
                     <path d="M3 10h18" stroke="currentColor" strokeWidth="2"/>
                   </svg>
-                  See payment method
+                  {lang === "ro" ? "Vezi metoda de plata" : "See payment method"}
                 </button>
 
                 <button
                   className={`${styles.btn} ${styles.btnGhost} sb-cardglow`}
-                  title="Edit billing details"
-                  aria-label="Edit billing details"
+                  title={lang === "ro" ? "Editeaza datele de facturare" : "Edit billing details"}
+                  aria-label={lang === "ro" ? "Editeaza datele de facturare" : "Edit billing details"}
                   onClick={openBillingEdit}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
                     <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="none" stroke="currentColor" strokeWidth="1.6"/>
                     <path d="M14.06 6.19l2.12-2.12a2 2 0 1 1 2.83 2.83l-2.12 2.12-2.83-2.83z" fill="none" stroke="currentColor" strokeWidth="1.6"/>
                   </svg>
-                  Edit billing details
+                  {lang === "ro" ? "Editeaza datele de facturare" : "Edit billing details"}
                 </button>
 
                 <button
                   className={`${styles.btn} ${styles.btnDangerGhost}`}
-                  aria-label="Delete account permanently"
+                  aria-label={lang === "ro" ? "Sterge contul definitiv" : "Delete account permanently"}
                   onClick={async () => {
-                    const conf = prompt('Type DELETE to confirm account deletion. This removes ALL your data.');
+                    const conf = prompt(lang === "ro" ? "Scrie DELETE pentru a confirma stergerea contului. Aceasta actiune sterge TOATE datele." : "Type DELETE to confirm account deletion. This removes ALL your data.");
                     if ((conf || '').trim().toUpperCase() !== 'DELETE') return;
                     try {
                       const res = await fetch('/api/account/delete', { method:'POST' });
@@ -858,7 +920,7 @@ export default function SubscriptionClient({
                       // redirect to logout
                       window.location.assign('/auth/logout');
                     } catch (e:any) {
-                      alert(e?.message || 'Could not delete account.');
+                      alert(e?.message || (lang === "ro" ? "Contul nu a putut fi sters." : "Could not delete account."));
                     }
                   }}
                 >
@@ -867,7 +929,7 @@ export default function SubscriptionClient({
                     <path d="M8 6v-2h8v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                     <path d="M6 6l1 14h10l1-14" stroke="currentColor" strokeWidth="2" fill="none"/>
                   </svg>
-                  Delete account
+                  {lang === "ro" ? "Sterge contul" : "Delete account"}
                 </button>
               </div>
             </div>
@@ -904,7 +966,7 @@ export default function SubscriptionClient({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h3 id="confirm-title" style={{ margin: 0 }}>Confirm plan change</h3>
+              <h3 id="confirm-title" style={{ margin: 0 }}>{lang === "ro" ? "Confirma schimbarea planului" : "Confirm plan change"}</h3>
               <button
                 className={styles.btn}
                 onClick={() => setPendingSelect(null)}
@@ -916,10 +978,14 @@ export default function SubscriptionClient({
 
             <div style={{ color: 'var(--muted)' }}>
               <p style={{ margin: 0 }}>
-                You are currently on a free 30-day <strong>PREMIUM</strong> trial{validUntil ? ` (active until ${validUntil})` : ''}.
+                {lang === "ro"
+                  ? <>Esti in prezent in trial gratuit de 30 de zile <strong>PREMIUM</strong>{validUntil ? ` (activ pana la ${validUntil})` : ''}.</>
+                  : <>You are currently on a free 30-day <strong>PREMIUM</strong> trial{validUntil ? ` (active until ${validUntil})` : ''}.</>}
               </p>
               <p style={{ margin: '6px 0 0' }}>
-                Are you sure you want to activate <strong>{planLabel(pendingSelect)}</strong> now?
+                {lang === "ro"
+                  ? <>Sigur vrei sa activezi <strong>{planLabel(pendingSelect)}</strong> acum?</>
+                  : <>Are you sure you want to activate <strong>{planLabel(pendingSelect)}</strong> now?</>}
               </p>
             </div>
 
@@ -929,14 +995,14 @@ export default function SubscriptionClient({
                 onClick={() => setPendingSelect(null)}
                 style={{ border: '1px solid var(--border)', background: 'transparent' }}
               >
-                Keep trial
+                {lang === "ro" ? "Pastreaza trialul" : "Keep trial"}
               </button>
               <button
                 className={`${styles.btn} ${styles.btnPrimary}`}
                 onClick={() => { const slug = pendingSelect; setPendingSelect(null); if (slug) applyPlan(slug); }}
                 disabled={!!saving}
               >
-                Continue
+                {lang === "ro" ? "Continua" : "Continue"}
               </button>
             </div>
           </div>
@@ -954,7 +1020,7 @@ export default function SubscriptionClient({
         >
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <h3 id="pm-title" style={{ margin:0 }}>Payment method</h3>
+              <h3 id="pm-title" style={{ margin:0 }}>{lang === "ro" ? "Metoda de plata" : "Payment method"}</h3>
               <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPmOpen(false)}>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -963,7 +1029,7 @@ export default function SubscriptionClient({
             </div>
 
             {pmLoading ? (
-              <div style={{ color:'var(--muted)' }}>Loading…</div>
+              <div style={{ color:'var(--muted)' }}>{lang === "ro" ? "Se incarca..." : "Loading..."}</div>
             ) : pmCard ? (
               <div style={{ display:'grid', gap:12 }}>
                 <div className={styles.pmCard}>
@@ -981,11 +1047,11 @@ export default function SubscriptionClient({
                 </div>
               </div>
             ) : (
-              <div style={{ color:'var(--muted)' }}>No payment method on file.</div>
+              <div style={{ color:'var(--muted)' }}>{lang === "ro" ? "Nu exista metoda de plata salvata." : "No payment method on file."}</div>
             )}
 
             <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
-              <button className={`sb-cardglow ${styles.btn} ${styles.btnGhost}`} style={{ color:'var(--muted)',borderRadius:21 }}onClick={()=>setPmOpen(false)}>Close</button>
+              <button className={`sb-cardglow ${styles.btn} ${styles.btnGhost}`} style={{ color:'var(--muted)',borderRadius:21 }}onClick={()=>setPmOpen(false)}>{lang === "ro" ? "Inchide" : "Close"}</button>
               <button
                 className={`sb-cardglow ${styles.btn} `} style={{ color:'var(--text)',borderRadius:21, borderColor: 'var(--primary)' }}
                 onClick={async ()=>{
@@ -996,10 +1062,10 @@ export default function SubscriptionClient({
                     const url = j?.url as string | undefined;
                     if (url) window.location.assign(url);
                   } catch (e:any) {
-                    alert(e?.message || 'Could not open Stripe customer portal.');
+                    alert(e?.message || (lang === "ro" ? "Portalul Stripe nu a putut fi deschis." : "Could not open Stripe customer portal."));
                   }
                 }}
-              >Change payment method</button>
+              >{lang === "ro" ? "Schimba metoda de plata" : "Change payment method"}</button>
             </div>
           </div>
         </div>
@@ -1016,7 +1082,7 @@ export default function SubscriptionClient({
         >
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <h3 id="buyer-type-title" style={{ margin:0 }}>Billing Type</h3>
+              <h3 id="buyer-type-title" style={{ margin:0 }}>{lang === "ro" ? "Tip facturare" : "Billing Type"}</h3>
               <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setBuyerTypeOpen(false)}>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -1024,7 +1090,7 @@ export default function SubscriptionClient({
               </button>
             </div>
 
-            <p style={{ color:'var(--muted)', margin:'4px 0 0' }}>Who is paying for this subscription?</p>
+            <p style={{ color:'var(--muted)', margin:'4px 0 0' }}>{lang === "ro" ? "Cine plateste acest abonament?" : "Who is paying for this subscription?"}</p>
 
             <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
               <button
@@ -1032,13 +1098,13 @@ export default function SubscriptionClient({
                 data-selected={buyerType==='b2b' || undefined}
                 onClick={()=>{ setBuyerType('b2b'); setBuyerTypeOpen(false); setBillingFormOpen(true); }}
                 style={{ border:'1px solid var(--border)', background:'transparent' }}
-              >Business (B2B)</button>
+              >{lang === "ro" ? "Companie (B2B)" : "Business (B2B)"}</button>
               <button
                 className={`${styles.btn} ${styles.btnChoose}`}
                 data-selected={buyerType==='b2c' || undefined}
                 onClick={()=>{ setBuyerType('b2c'); setBuyerTypeOpen(false); setBillingFormOpen(true); }}
                 style={{ border:'1px solid var(--border)', background:'transparent' }}
-              >Individual (B2C)</button>
+              >{lang === "ro" ? "Persoana fizica (B2C)" : "Individual (B2C)"}</button>
             </div>
           </div>
         </div>
@@ -1069,7 +1135,11 @@ export default function SubscriptionClient({
             }}
           >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <h3 id="billing-title" style={{ margin:0 }}>{buyerType==='b2b' ? 'Billing Details (Business)' : 'Billing Details (Individual)'}</h3>
+              <h3 id="billing-title" style={{ margin:0 }}>
+                {buyerType==='b2b'
+                  ? (lang === "ro" ? 'Detalii facturare (Companie)' : 'Billing Details (Business)')
+                  : (lang === "ro" ? 'Detalii facturare (Persoana fizica)' : 'Billing Details (Individual)')}
+              </h3>
               <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>{ setBillingFormOpen(false); setBillingEditMode(false); }}>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -1080,35 +1150,35 @@ export default function SubscriptionClient({
             {buyerType === 'b2c' ? (
               <div style={{ display:'grid', gap:10 }}>
                 <div style={{ display:'grid', gap:6 }}>
-                  <label style={{ color:'var(--muted)' }}>Full name</label>
-                  <input className={styles.input} placeholder="e.g. Andrei Popescu" value={formB2C.fullName} onChange={e=>setFormB2C(s=>({...s, fullName:e.target.value}))} />
+                  <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Nume complet" : "Full name"}</label>
+                  <input className={styles.input} placeholder={lang === "ro" ? "ex: Andrei Popescu" : "e.g. Andrei Popescu"} value={formB2C.fullName} onChange={e=>setFormB2C(s=>({...s, fullName:e.target.value}))} />
                 </div>
                 <div style={{ display:'grid', gap:6 }}>
-                  <label style={{ color:'var(--muted)' }}>Street & number</label>
-                  <input className={styles.input} placeholder="e.g. Str. Lalelelor 12A" value={formB2C.street} onChange={e=>setFormB2C(s=>({...s, street:e.target.value}))} />
+                  <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Strada si numar" : "Street & number"}</label>
+                  <input className={styles.input} placeholder={lang === "ro" ? "ex: Str. Lalelelor 12A" : "e.g. Str. Lalelelor 12A"} value={formB2C.street} onChange={e=>setFormB2C(s=>({...s, street:e.target.value}))} />
                 </div>
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>City</label>
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Oras" : "City"}</label>
                     <input className={styles.input} value={formB2C.city} onChange={e=>setFormB2C(s=>({...s, city:e.target.value}))} />
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>County</label>
-                    <input className={styles.input} placeholder="Județ / Sector" value={formB2C.county} onChange={e=>setFormB2C(s=>({...s, county:e.target.value}))} />
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Judet" : "County"}</label>
+                    <input className={styles.input} placeholder={lang === "ro" ? "Judet / Sector" : "County / District"} value={formB2C.county} onChange={e=>setFormB2C(s=>({...s, county:e.target.value}))} />
                   </div>
                 </div>
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>Postal code</label>
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Cod postal" : "Postal code"}</label>
                     <input
                       className={styles.input}
-                      placeholder="010101 / NR5 8HZ"
+                      placeholder={lang === "ro" ? "010101" : "010101 / NR5 8HZ"}
                       value={formB2C.postalCode}
                       onChange={e=>setFormB2C(s=>({...s, postalCode:e.target.value}))}
                     />
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>Country</label>
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Tara" : "Country"}</label>
                     <select
                       className={styles.input}
                       value={formB2C.country}
@@ -1126,7 +1196,7 @@ export default function SubscriptionClient({
                   </div>
                 </div>
                 <div style={{ display:'grid', gap:6 }}>
-                  <label style={{ color:'var(--muted)' }}>{billingEditMode ? 'Email (managed by Stripe)' : 'Email'}</label>
+                  <label style={{ color:'var(--muted)' }}>{billingEditMode ? (lang === "ro" ? 'Email (gestionat de Stripe)' : 'Email (managed by Stripe)') : 'Email'}</label>
                   <input
                     className={styles.input}
                     type="email"
@@ -1138,67 +1208,67 @@ export default function SubscriptionClient({
                 </div>
                 {!billingEditMode && (
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>Confirm email</label>
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Confirma emailul" : "Confirm email"}</label>
                     <input
                       className={styles.input}
                       type="email"
-                      placeholder="retype your email"
+                      placeholder={lang === "ro" ? "rescrie emailul" : "retype your email"}
                       value={formB2C.confirmEmail}
                       onChange={e=>setFormB2C(s=>({...s, confirmEmail:e.target.value}))}
                       onPaste={(e)=>e.preventDefault()}
                     />
                     {formB2C.confirmEmail && formB2C.email.trim() !== formB2C.confirmEmail.trim() && (
-                      <span style={{ color:'var(--danger)', fontSize:12 }}>Emails do not match</span>
+                      <span style={{ color:'var(--danger)', fontSize:12 }}>{lang === "ro" ? "Emailurile nu coincid" : "Emails do not match"}</span>
                     )}
                   </div>
                 )}
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>Phone (optional)</label>
-                    <input className={styles.input} placeholder="+40 7xx xxx xxx" value={formB2C.phone} onChange={e=>setFormB2C(s=>({...s, phone:e.target.value}))} />
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Telefon (optional)" : "Phone (optional)"}</label>
+                    <input className={styles.input} placeholder={lang === "ro" ? "+40 7xx xxx xxx" : "+40 7xx xxx xxx"} value={formB2C.phone} onChange={e=>setFormB2C(s=>({...s, phone:e.target.value}))} />
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>National ID (optional)</label>
-                    <input className={styles.input} inputMode="numeric" placeholder="CNP ro - 13 digits" value={formB2C.cnp} onChange={e=>setFormB2C(s=>({...s, cnp:e.target.value.replace(/[^0-9]/g,'').slice(0,13)}))} />
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "CNP (optional)" : "National ID (optional)"}</label>
+                    <input className={styles.input} inputMode="numeric" placeholder={lang === "ro" ? "CNP - 13 cifre" : "National ID"} value={formB2C.cnp} onChange={e=>setFormB2C(s=>({...s, cnp:e.target.value.replace(/[^0-9]/g,'').slice(0,13)}))} />
                   </div>
                 </div>
               </div>
             ) : (
               <div style={{ display:'grid', gap:10 }}>
                 <div style={{ display:'grid', gap:6 }}>
-                  <label style={{ color:'var(--muted)' }}>Legal name</label>
-                  <input className={styles.input} placeholder="e.g. SC Exemplu SRL" value={formB2B.legalName} onChange={e=>setFormB2B(s=>({...s, legalName:e.target.value}))} />
+                  <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Denumire legala" : "Legal name"}</label>
+                  <input className={styles.input} placeholder={lang === "ro" ? "ex: SC Exemplu SRL" : "e.g. SC Exemplu SRL"} value={formB2B.legalName} onChange={e=>setFormB2B(s=>({...s, legalName:e.target.value}))} />
                 </div>
                 <div style={{ display:'grid', gap:6 }}>
-                  <label style={{ color:'var(--muted)' }}>Tax ID (CUI/CIF)</label>
-                  <input className={styles.input} inputMode="numeric" placeholder="digits only" value={formB2B.taxId} onChange={e=>setFormB2B(s=>({...s, taxId:e.target.value.replace(/[^0-9]/g,'').slice(0,10)}))} />
+                  <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "CUI/CIF" : "Tax ID (CUI/CIF)"}</label>
+                  <input className={styles.input} inputMode="numeric" placeholder={lang === "ro" ? "doar cifre" : "digits only"} value={formB2B.taxId} onChange={e=>setFormB2B(s=>({...s, taxId:e.target.value.replace(/[^0-9]/g,'').slice(0,10)}))} />
                 </div>
                 <div style={{ display:'grid', gap:6 }}>
-                  <label style={{ color:'var(--muted)' }}>Street & number</label>
-                  <input className={styles.input} placeholder="e.g. Str. Lalelelor 12A" value={formB2B.street} onChange={e=>setFormB2B(s=>({...s, street:e.target.value}))} />
+                  <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Strada si numar" : "Street & number"}</label>
+                  <input className={styles.input} placeholder={lang === "ro" ? "ex: Str. Lalelelor 12A" : "e.g. Str. Lalelelor 12A"} value={formB2B.street} onChange={e=>setFormB2B(s=>({...s, street:e.target.value}))} />
                 </div>
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>City</label>
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Oras" : "City"}</label>
                     <input className={styles.input} value={formB2B.city} onChange={e=>setFormB2B(s=>({...s, city:e.target.value}))} />
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>County</label>
-                    <input className={styles.input} placeholder="Județ / Sector" value={formB2B.county} onChange={e=>setFormB2B(s=>({...s, county:e.target.value}))} />
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Judet" : "County"}</label>
+                    <input className={styles.input} placeholder={lang === "ro" ? "Judet / Sector" : "County / District"} value={formB2B.county} onChange={e=>setFormB2B(s=>({...s, county:e.target.value}))} />
                   </div>
                 </div>
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>Postal code</label>
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Cod postal" : "Postal code"}</label>
                     <input
                       className={styles.input}
-                      placeholder="010101 / NR5 8HZ"
+                      placeholder={lang === "ro" ? "010101" : "010101 / NR5 8HZ"}
                       value={formB2B.postalCode}
                       onChange={e=>setFormB2B(s=>({...s, postalCode:e.target.value}))}
                     />
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>Country</label>
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Tara" : "Country"}</label>
                     <select
                       className={styles.input}
                       value={formB2B.country}
@@ -1216,11 +1286,11 @@ export default function SubscriptionClient({
                   </div>
                 </div>
                 <div style={{ display:'grid', gap:6 }}>
-                  <label style={{ color:'var(--muted)' }}>{billingEditMode ? 'Billing email (managed by Stripe)' : 'Billing email'}</label>
+                  <label style={{ color:'var(--muted)' }}>{billingEditMode ? (lang === "ro" ? 'Email facturare (gestionat de Stripe)' : 'Billing email (managed by Stripe)') : (lang === "ro" ? 'Email facturare' : 'Billing email')}</label>
                   <input
                     className={styles.input}
                     type="email"
-                    placeholder="billing@example.com"
+                    placeholder={lang === "ro" ? "facturare@example.com" : "billing@example.com"}
                     value={formB2B.email}
                     onChange={e=>setFormB2B(s=>({...s, email:e.target.value}))}
                     readOnly={billingEditMode}
@@ -1228,37 +1298,37 @@ export default function SubscriptionClient({
                 </div>
                 {!billingEditMode && (
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>Confirm billing email</label>
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Confirma emailul de facturare" : "Confirm billing email"}</label>
                     <input
                       className={styles.input}
                       type="email"
-                      placeholder="retype billing email"
+                      placeholder={lang === "ro" ? "rescrie emailul de facturare" : "retype billing email"}
                       value={formB2B.confirmEmail}
                       onChange={e=>setFormB2B(s=>({...s, confirmEmail:e.target.value}))}
                       onPaste={(e)=>e.preventDefault()}
                     />
                     {formB2B.confirmEmail && formB2B.email.trim() !== formB2B.confirmEmail.trim() && (
-                      <span style={{ color:'var(--danger)', fontSize:12 }}>Emails do not match</span>
+                      <span style={{ color:'var(--danger)', fontSize:12 }}>{lang === "ro" ? "Emailurile nu coincid" : "Emails do not match"}</span>
                     )}
                   </div>
                 )}
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
                   <label style={{ display:'flex', alignItems:'center', gap:8 }}>
-                    <input type="checkbox" checked={formB2B.vatRegistered} onChange={e=>setFormB2B(s=>({...s, vatRegistered:e.target.checked}))} /> VAT registered in RO
+                    <input type="checkbox" checked={formB2B.vatRegistered} onChange={e=>setFormB2B(s=>({...s, vatRegistered:e.target.checked}))} /> {lang === "ro" ? "Platitor TVA in RO" : "VAT registered in RO"}
                   </label>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>Phone (optional)</label>
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Telefon (optional)" : "Phone (optional)"}</label>
                     <input className={styles.input} placeholder="+40 7xx xxx xxx" value={formB2B.phone} onChange={e=>setFormB2B(s=>({...s, phone:e.target.value}))} />
                   </div>
                 </div>
                 <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>Company registration no. (optional)</label>
-                    <input className={styles.input} placeholder="e.g. J12/3456/2024" value={formB2B.regNo} onChange={e=>setFormB2B(s=>({...s, regNo:e.target.value}))} />
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Nr. inregistrare firma (optional)" : "Company registration no. (optional)"}</label>
+                    <input className={styles.input} placeholder={lang === "ro" ? "ex: J12/3456/2024" : "e.g. J12/3456/2024"} value={formB2B.regNo} onChange={e=>setFormB2B(s=>({...s, regNo:e.target.value}))} />
                   </div>
                   <div style={{ display:'grid', gap:6 }}>
-                    <label style={{ color:'var(--muted)' }}>Bank account (IBAN) (optional)</label>
-                    <input className={styles.input} placeholder="e.g. RO49AAAA1B31007593840000" value={formB2B.iban} onChange={e=>setFormB2B(s=>({...s, iban:e.target.value}))} />
+                    <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Cont bancar (IBAN) (optional)" : "Bank account (IBAN) (optional)"}</label>
+                    <input className={styles.input} placeholder={lang === "ro" ? "ex: RO49AAAA1B31007593840000" : "e.g. RO49AAAA1B31007593840000"} value={formB2B.iban} onChange={e=>setFormB2B(s=>({...s, iban:e.target.value}))} />
                   </div>
                 </div>
               </div>
@@ -1284,7 +1354,7 @@ export default function SubscriptionClient({
                       <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
                         <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      Back
+                      {lang === "ro" ? "Inapoi" : "Back"}
                     </button>
                   )}
                   <button
@@ -1301,7 +1371,7 @@ export default function SubscriptionClient({
                         startCheckout(plan);
                       }
                     }}
-                  >{billingEditMode ? 'Save changes' : 'Save & Continue'}</button>
+                  >{billingEditMode ? (lang === "ro" ? 'Salveaza modificarile' : 'Save changes') : (lang === "ro" ? 'Salveaza si continua' : 'Save & Continue')}</button>
                 </div>
               );
             })()}
@@ -1320,7 +1390,7 @@ export default function SubscriptionClient({
         >
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <h3 id="plan-change-title" style={{ margin:0 }}>Plan change</h3>
+              <h3 id="plan-change-title" style={{ margin:0 }}>{lang === "ro" ? "Schimbare plan" : "Plan change"}</h3>
               <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPlanConfirmOpen(false)}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
@@ -1330,20 +1400,24 @@ export default function SubscriptionClient({
               planConfirmPhase === 'intro' ? (
                 <>
                   <div style={{ color:'var(--muted)' }}>
-                    <p style={{ margin:0 }}>You are about to downgrade to <strong>{planLabel(planToSchedule)}</strong>.</p>
+                    <p style={{ margin:0 }}>{lang === "ro" ? <>Urmeaza sa faci downgrade la <strong>{planLabel(planToSchedule)}</strong>.</> : <>You are about to downgrade to <strong>{planLabel(planToSchedule)}</strong>.</>}</p>
                   </div>
                   <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
-                    <button className={`sb-cardglow ${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmOpen(false)}>Cancel</button>
-                    <button className={`sb-cardglow ${styles.btn} `} style={{ color:'var(--text)',borderRadius:21, borderColor:"var(--primary)" }} onClick={()=>setPlanConfirmPhase('confirmDate')}>Downgrade</button>
+                    <button className={`sb-cardglow ${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmOpen(false)}>{lang === "ro" ? "Anuleaza" : "Cancel"}</button>
+                    <button className={`sb-cardglow ${styles.btn} `} style={{ color:'var(--text)',borderRadius:21, borderColor:"var(--primary)" }} onClick={()=>setPlanConfirmPhase('confirmDate')}>{lang === "ro" ? "Downgrade" : "Downgrade"}</button>
                   </div>
                 </>
               ) : (
                 <>
                   <div style={{ color:'var(--muted)' }}>
-                    <p style={{ margin:0 }}>The new plan will start {validUntil ? <>on <strong>{validUntil}</strong></> : 'at the end of your current period'}.</p>
+                    <p style={{ margin:0 }}>
+                      {lang === "ro"
+                        ? <>Noul plan va incepe {validUntil ? <>la data de <strong>{validUntil}</strong></> : 'la finalul perioadei curente'}.</>
+                        : <>The new plan will start {validUntil ? <>on <strong>{validUntil}</strong></> : 'at the end of your current period'}.</>}
+                    </p>
                   </div>
                   <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
-                    <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmPhase('intro')}>Back</button>
+                    <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>setPlanConfirmPhase('intro')}>{lang === "ro" ? "Inapoi" : "Back"}</button>
                     <button
                       className={`${styles.btn} ${styles.btnPrimary}`}
                       onClick={async ()=>{
@@ -1356,7 +1430,7 @@ export default function SubscriptionClient({
                           alert(e?.message || 'Could not change plan.');
                         }
                       }}
-                    >Confirm</button>
+                    >{lang === "ro" ? "Confirma" : "Confirm"}</button>
                   </div>
                 </>
               )
@@ -1364,10 +1438,10 @@ export default function SubscriptionClient({
               <>
                 <div style={{ color:'var(--muted)' }}>
                   {planRelation === 'upgrade' && (
-                    <p style={{ margin:0 }}>Ready to upgrade your experience?</p>
+                    <p style={{ margin:0 }}>{lang === "ro" ? "Esti gata sa faci upgrade?" : "Ready to upgrade your experience?"}</p>
                   )}
                   {planRelation === 'same' && (
-                    <p style={{ margin:0 }}>You already have <strong>{planLabel(currentPlan)}</strong>. No change required.</p>
+                    <p style={{ margin:0 }}>{lang === "ro" ? <>Ai deja <strong>{planLabel(currentPlan)}</strong>. Nu este necesara nicio schimbare.</> : <>You already have <strong>{planLabel(currentPlan)}</strong>. No change required.</>}</p>
                   )}
                 </div>
                 <div style={{ display:'flex', gap:10, justifyContent:'flex-end', flexWrap:'wrap' }}>
@@ -1377,7 +1451,7 @@ export default function SubscriptionClient({
                         className={`${styles.btn} ${styles.btnPrimary}`}
                         disabled={upgradeBusy || scheduleBusy}
                         onClick={()=> setPayNowConfirmOpen(true)}
-                      >{upgradeBusy ? 'Processing…' : 'Pay now'}</button>
+                      >{upgradeBusy ? (lang === "ro" ? 'Se proceseaza...' : 'Processing...') : (lang === "ro" ? 'Plateste acum' : 'Pay now')}</button>
                       <button
                         className={`${styles.btn} ${styles.btnPrimary}`}
                         disabled={upgradeBusy}
@@ -1388,7 +1462,7 @@ export default function SubscriptionClient({
                             await openStripePortal();
                           } catch {}
                         }}
-                      >Upgrade at renewal</button>
+                      >{lang === "ro" ? "Upgrade la reinnoire" : "Upgrade at renewal"}</button>
                     </>
                   )}
                   {planRelation !== 'upgrade' && (
@@ -1408,7 +1482,7 @@ export default function SubscriptionClient({
                           setScheduleBusy(false);
                         }
                       }}
-                    >{scheduleBusy ? 'Applying…' : 'Confirm'}</button>
+                    >{scheduleBusy ? (lang === "ro" ? 'Se aplica...' : 'Applying...') : (lang === "ro" ? 'Confirma' : 'Confirm')}</button>
                   )}
                 </div>
               </>
@@ -1428,14 +1502,14 @@ export default function SubscriptionClient({
         >
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(520px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <h3 id="paynow-title" style={{ margin:0 }}>Confirm upgrade</h3>
+              <h3 id="paynow-title" style={{ margin:0 }}>{lang === "ro" ? "Confirma upgrade-ul" : "Confirm upgrade"}</h3>
               <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPayNowConfirmOpen(false)}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
             <div style={{ color:'var(--muted)' }}>
-              <p style={{ margin:0 }}>We will cancel your current subscription immediately and start <strong>{planToSchedule ? planLabel(planToSchedule) : 'the new plan'}</strong> now.</p>
-              <p style={{ margin:'4px 0 0', color:'var(--danger)', textDecoration:'underline' }}>No refunds or credits are provided for the remaining period.</p>
+              <p style={{ margin:0 }}>{lang === "ro" ? <>Vom anula imediat abonamentul curent si vom porni acum <strong>{planToSchedule ? planLabel(planToSchedule) : 'noul plan'}</strong>.</> : <>We will cancel your current subscription immediately and start <strong>{planToSchedule ? planLabel(planToSchedule) : 'the new plan'}</strong> now.</>}</p>
+              <p style={{ margin:'4px 0 0', color:'var(--danger)', textDecoration:'underline' }}>{lang === "ro" ? "Nu se acorda rambursari sau credite pentru perioada ramasa." : "No refunds or credits are provided for the remaining period."}</p>
             </div>
             <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
               <button
@@ -1469,7 +1543,7 @@ export default function SubscriptionClient({
                     setUpgradeBusy(false);
                   }
                 }}
-              >{upgradeBusy ? 'Processing…' : 'OK'}</button>
+              >{upgradeBusy ? (lang === "ro" ? 'Se proceseaza...' : 'Processing...') : 'OK'}</button>
             </div>
           </div>
         </div>
@@ -1486,17 +1560,17 @@ export default function SubscriptionClient({
         >
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <h3 id="downgrade-title" style={{ margin:0 }}>Plan change</h3>
+              <h3 id="downgrade-title" style={{ margin:0 }}>{lang === "ro" ? "Schimbare plan" : "Plan change"}</h3>
               <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setDowngradeConfirmOpen(false)}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
             <div style={{ color:'var(--muted)' }}>
-              <p style={{ margin:0 }}>You are about to downgrade to <strong>{planToSchedule ? planLabel(planToSchedule) : 'the selected plan'}</strong>.</p>
-              <p style={{ margin:'4px 0 0' }}>You’ll continue to enjoy <strong>{planLabel(currentPlan)}</strong> benefits until <strong>{validUntil ?? '—'}</strong>.</p>
+              <p style={{ margin:0 }}>{lang === "ro" ? <>Urmeaza sa faci downgrade la <strong>{planToSchedule ? planLabel(planToSchedule) : 'planul selectat'}</strong>.</> : <>You are about to downgrade to <strong>{planToSchedule ? planLabel(planToSchedule) : 'the selected plan'}</strong>.</>}</p>
+              <p style={{ margin:'4px 0 0' }}>{lang === "ro" ? <>Vei pastra beneficiile <strong>{planLabel(currentPlan)}</strong> pana la <strong>{validUntil ?? '—'}</strong>.</> : <>You’ll continue to enjoy <strong>{planLabel(currentPlan)}</strong> benefits until <strong>{validUntil ?? '—'}</strong>.</>}</p>
             </div>
             <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
-              <button className={`sb-cardglow ${styles.btn} `} style={{ color:'var(--text)',borderRadius:21, borderColor:"var(--primary)" }} onClick={async ()=>{ setDowngradeConfirmOpen(false); try { const r = await fetch('/api/billing/portal',{method:'POST'}); const j = await r.json(); if (!r.ok) throw new Error(j?.error||'Failed to open Stripe Portal'); const url = j?.url as string|undefined; if (url) window.location.assign(url);} catch(e:any){ alert(e?.message||'Could not open Stripe Portal.'); } }}>Downgrade</button>
+              <button className={`sb-cardglow ${styles.btn} `} style={{ color:'var(--text)',borderRadius:21, borderColor:"var(--primary)" }} onClick={async ()=>{ setDowngradeConfirmOpen(false); try { const r = await fetch('/api/billing/portal',{method:'POST'}); const j = await r.json(); if (!r.ok) throw new Error(j?.error||'Failed to open Stripe Portal'); const url = j?.url as string|undefined; if (url) window.location.assign(url);} catch(e:any){ alert(e?.message||(lang === "ro" ? 'Portalul Stripe nu a putut fi deschis.' : 'Could not open Stripe Portal.')); } }}>{lang === "ro" ? "Downgrade" : "Downgrade"}</button>
             </div>
           </div>
         </div>
@@ -1513,16 +1587,16 @@ export default function SubscriptionClient({
         >
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(520px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <h3 id="payresult-title" style={{ margin:0 }}>{payResultSuccess ? 'Upgrade successful' : 'Payment failed'}</h3>
+              <h3 id="payresult-title" style={{ margin:0 }}>{payResultSuccess ? (lang === "ro" ? 'Upgrade reusit' : 'Upgrade successful') : (lang === "ro" ? 'Plata a esuat' : 'Payment failed')}</h3>
               <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>{ setPayResultOpen(false); window.location.reload(); }}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
             <div style={{ color:'var(--muted)' }}>
               {payResultSuccess ? (
-                <p style={{ margin:0 }}>Congrats! You are now enjoying <strong>{payResultPlan || 'your new plan'}</strong> access.</p>
+                <p style={{ margin:0 }}>{lang === "ro" ? <>Felicitari! Acum ai acces la <strong>{payResultPlan || 'noul tau plan'}</strong>.</> : <>Congrats! You are now enjoying <strong>{payResultPlan || 'your new plan'}</strong> access.</>}</p>
               ) : (
-                <p style={{ margin:0 }}>Unfortunately, the payment could not be completed. Please use “Manage subscription” to update your payment method.</p>
+                <p style={{ margin:0 }}>{lang === "ro" ? "Din pacate, plata nu a putut fi finalizata. Foloseste „Gestioneaza abonamentul” pentru a actualiza metoda de plata." : "Unfortunately, the payment could not be completed. Please use “Manage subscription” to update your payment method."}</p>
               )}
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end' }}>
