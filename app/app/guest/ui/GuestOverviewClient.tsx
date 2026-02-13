@@ -1605,9 +1605,12 @@ function EditFormBookingModal({
           .limit(1);
         if (!r.error && (r.data?.length || 0) > 0) {
           const roomName = rooms.find(rm => String(rm.id) === String(roomId))?.name || '#Room';
-          const msg = `Cannot save: another form overlaps on room ${roomName}.`;
+          const msg =
+            lang === "ro"
+              ? `Nu se poate salva: exista deja un alt formular care se suprapune pe camera ${roomName}.`
+              : `Cannot save: another form overlaps on room ${roomName}.`;
           setError(msg);
-          setPopupTitle('Cannot save');
+          setPopupTitle(lang === "ro" ? 'Nu se poate salva' : 'Cannot save');
           setPopupMsg(msg);
           setSaving(false);
           return;
@@ -1637,15 +1640,18 @@ function EditFormBookingModal({
       const jj = await res.json().catch(()=>({}));
       if (!res.ok) {
         const roomName = rooms.find(rm => String(rm.id) === String(roomId || ''))?.name || '#Room';
-        let msg = jj?.error || 'Failed to save.';
+        let msg = jj?.error || (lang === "ro" ? 'Nu am putut salva.' : 'Failed to save.');
         if (res.status === 409) {
           const src = (jj?.conflict?.source || '').toString() || 'manual';
           const sd = jj?.conflict?.start_date || startDate;
           const ed = jj?.conflict?.end_date || endDate;
-          msg = `Cannot save: target room ${roomName} has an active reservation overlap (source: ${src}) from ${sd} to ${ed}.`;
+          msg =
+            lang === "ro"
+              ? `Nu se poate salva: camera ${roomName} are o suprapunere activa (sursa: ${src}) intre ${sd} si ${ed}.`
+              : `Cannot save: target room ${roomName} has an active reservation overlap (source: ${src}) from ${sd} to ${ed}.`;
         }
         setError(msg);
-        setPopupTitle('Cannot save');
+        setPopupTitle(lang === "ro" ? 'Nu se poate salva' : 'Cannot save');
         setPopupMsg(msg);
         setSaving(false);
         return;
