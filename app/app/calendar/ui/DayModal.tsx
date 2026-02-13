@@ -470,6 +470,7 @@ export default function DayModal({
           dateStr={day}
           propertyId={propertyId}
           room={openRoom}
+          lang={lang}
           onClose={handleRoomModalClose}
           onChanged={handleRoomModalChanged}
         />
@@ -480,6 +481,7 @@ export default function DayModal({
           dateStr={day}
           propertyId={propertyId}
           room={createRoom}
+          lang={lang}
           forceNew={true}
           defaultStart={{ date: day, time: CI }}
           defaultEnd={{ date: nextDate(day), time: null }}

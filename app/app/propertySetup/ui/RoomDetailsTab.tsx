@@ -4,10 +4,12 @@ type CheckDef = { id: string; label: string; default_value: boolean; sort_index:
 type TextDef  = { id: string; label: string; placeholder: string | null; sort_index: number };
 
 export default function RoomDetailsTab({
+  lang = "en",
   checks, texts,
   onAddCheck, onRenameCheck, onToggleCheckDefault, onDeleteCheck, onMoveCheck,
   onAddText, onRenameText, onPlaceholderText, onDeleteText, onMoveText
 }: {
+  lang?: "ro" | "en";
   checks: CheckDef[];
   texts: TextDef[];
   onAddCheck: () => void;
@@ -21,6 +23,37 @@ export default function RoomDetailsTab({
   onDeleteText: (id: string) => void;
   onMoveText: (id: string, dir: "up" | "down") => void;
 }) {
+  const t = {
+    checklistItem: lang === "ro" ? "Element checklist" : "Checklist Item",
+    aboutChecklistItems: lang === "ro" ? "Despre elementele checklist" : "About checklist items",
+    whatChecklistItems: lang === "ro" ? "Ce sunt elementele checklist?" : "What are checklist items?",
+    checklistInfo:
+      lang === "ro"
+        ? "Defineste preferinte da/nu pe care staff-ul le poate bifa pentru fiecare rezervare. Exemple: mic dejun, schimb zilnic de prosoape, pat suplimentar. Seteaza aici valoarea implicita; poate fi ajustata ulterior la fiecare rezervare."
+        : "Define yes/no preferences that staff can toggle per reservation. Examples: breakfast, daily towel change, extra bed. Set a default state here; the values can be adjusted later when managing each booking.",
+    noChecklist: lang === "ro" ? "Nu exista inca elemente checklist." : "No checklist item defined yet.",
+    defaultOn: lang === "ro" ? "implicit ON" : "default ON",
+    moveUp: lang === "ro" ? "Muta sus" : "Move up",
+    moveDown: lang === "ro" ? "Muta jos" : "Move down",
+    delete: lang === "ro" ? "Sterge" : "Delete",
+    notesTab: lang === "ro" ? "Tab note" : "Notes Tab",
+    aboutNotes: lang === "ro" ? "Despre tab-urile de note" : "About notes tabs",
+    whatNotes: lang === "ro" ? "Ce sunt tab-urile de note?" : "What are notes tabs?",
+    notesInfo:
+      lang === "ro"
+        ? "Zone private, vizibile doar pentru staff, atasate fiecarei rezervari. Le poti folosi pentru instructiuni interne sau comentarii (ex: note pentru curatenie, reminder pentru receptie). Oaspetii nu pot vedea aceste note."
+        : "Private, staff-only areas attached to each reservation. Use them to track internal instructions or comments (e.g., housekeeping notes, front desk reminders). Guests cannot see these notes.",
+    noNotes: lang === "ro" ? "Nu exista inca tab-uri de note." : "No notes tab defined yet.",
+    notesPlaceholder: lang === "ro" ? "ex: Note receptie" : "e.g. Front Desk Notes",
+    deleteItem: lang === "ro" ? "Sterge element" : "Delete item",
+    confirmDelete:
+      lang === "ro"
+        ? "Sigur vrei sa stergi „{label}”? Aceasta actiune este ireversibila."
+        : "Are you sure you want to delete “{label}”? This action is irreversible.",
+    close: lang === "ro" ? "Inchide" : "Close",
+    add: lang === "ro" ? "+ Adauga" : "+ Add",
+  } as const;
+
   const [confirmDel, setConfirmDel] = useState<null | { kind: 'check'|'text'; id: string; label: string }>(null);
   const [showChecksInfo, setShowChecksInfo] = useState<boolean>(false);
   const [showNotesInfo, setShowNotesInfo] = useState<boolean>(false);
@@ -30,13 +63,13 @@ export default function RoomDetailsTab({
       <section className="sb-card" style={{ padding: 12 }}>
         <header style={head}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <h3 style={{ margin: 0 }}>Checklist Item</h3>
+            <h3 style={{ margin: 0 }}>{t.checklistItem}</h3>
             <button
               type="button"
-              aria-label="About checklist items"
+              aria-label={t.aboutChecklistItems}
               aria-expanded={showChecksInfo ? true : undefined}
               onClick={() => setShowChecksInfo(v => !v)}
-              title="What are checklist items?"
+              title={t.whatChecklistItems}
               style={{
                 width: 22,
                 height: 22,
@@ -57,18 +90,17 @@ export default function RoomDetailsTab({
               i
             </button>
           </div>
-          <button onClick={onAddCheck} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">+ Add</button>
+          <button onClick={onAddCheck} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">{t.add}</button>
         </header>
         {showChecksInfo && (
           <div id="checks-info" className="sb-card" style={infoBox}>
-            <strong style={{ display: 'block', marginBottom: 6 }}>What are checklist items?</strong>
+            <strong style={{ display: 'block', marginBottom: 6 }}>{t.whatChecklistItems}</strong>
             <div style={{ color: 'var(--muted)' }}>
-              Define yes/no preferences that staff can toggle per reservation. Examples: breakfast, daily towel change, extra bed.
-              Set a default state here; the values can be adjusted later when managing each booking.
+              {t.checklistInfo}
             </div>
           </div>
         )}
-        {checks.length === 0 && <p style={{ color: "var(--muted)" }}>No checklist item defined yet.</p>}
+        {checks.length === 0 && <p style={{ color: "var(--muted)" }}>{t.noChecklist}</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...checks].sort((a, b) => a.sort_index - b.sort_index).map((c, idx) => (
             <li key={c.id} style={rowBase} className="rd-row" data-kind="check">
@@ -84,12 +116,12 @@ export default function RoomDetailsTab({
 
               <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input type="checkbox" defaultChecked={c.default_value} onChange={(e) => onToggleCheckDefault(c.id, e.currentTarget.checked)} />
-                default ON
+                {t.defaultOn}
               </label>
               <div className="rd-actions" style={{ display: "flex", gap: 6 }}>
-                <button onClick={() => onMoveCheck(c.id, "up")} disabled={idx === 0} className="sb-btn" title="Move up">↑</button>
-                <button onClick={() => onMoveCheck(c.id, "down")} disabled={idx === checks.length - 1} className="sb-btn" title="Move down">↓</button>
-                <button onClick={() => setConfirmDel({ kind: 'check', id: c.id, label: c.label })} className="sb-btn">Delete</button>
+                <button onClick={() => onMoveCheck(c.id, "up")} disabled={idx === 0} className="sb-btn" title={t.moveUp}>↑</button>
+                <button onClick={() => onMoveCheck(c.id, "down")} disabled={idx === checks.length - 1} className="sb-btn" title={t.moveDown}>↓</button>
+                <button onClick={() => setConfirmDel({ kind: 'check', id: c.id, label: c.label })} className="sb-btn">{t.delete}</button>
               </div>
             </li>
           ))}
@@ -100,13 +132,13 @@ export default function RoomDetailsTab({
       <section className="sb-card" style={{ padding: 12 }}>
         <header style={head}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <h3 style={{ margin: 0 }}>Notes Tab</h3>
+            <h3 style={{ margin: 0 }}>{t.notesTab}</h3>
             <button
               type="button"
-              aria-label="About notes tabs"
+              aria-label={t.aboutNotes}
               aria-expanded={showNotesInfo ? true : undefined}
               onClick={() => setShowNotesInfo(v => !v)}
-              title="What are notes tabs?"
+              title={t.whatNotes}
               style={{
                 width: 22,
                 height: 22,
@@ -127,17 +159,17 @@ export default function RoomDetailsTab({
               i
             </button>
           </div>
-          <button onClick={onAddText} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">+ Add</button>
+          <button onClick={onAddText} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">{t.add}</button>
         </header>
         {showNotesInfo && (
           <div id="notes-info" className="sb-card" style={infoBox}>
-            <strong style={{ display: 'block', marginBottom: 6 }}>What are notes tabs?</strong>
+            <strong style={{ display: 'block', marginBottom: 6 }}>{t.whatNotes}</strong>
             <div style={{ color: 'var(--muted)' }}>
-              Private, staff‑only areas attached to each reservation. Use them to track internal instructions or comments (e.g., housekeeping notes, front desk reminders). Guests cannot see these notes.
+              {t.notesInfo}
             </div>
           </div>
         )}
-        {texts.length === 0 && <p style={{ color: "var(--muted)" }}>No notes tab defined yet.</p>}
+        {texts.length === 0 && <p style={{ color: "var(--muted)" }}>{t.noNotes}</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {[...texts].sort((a, b) => a.sort_index - b.sort_index).map((t, idx) => (
             <li key={t.id} style={rowBase} className="rd-row" data-kind="text">
@@ -151,16 +183,16 @@ export default function RoomDetailsTab({
                 style={textInput} />
               <input
                 defaultValue={t.placeholder || ""}
-                placeholder="e.g. Front Desk Notes"
+                placeholder={t.notesPlaceholder}
                 onBlur={(e) => {
                   const v = e.currentTarget.value;
                   if (v !== (t.placeholder || "")) onPlaceholderText(t.id, v);
                 } }
                 style={textInput} />
               <div className="rd-actions" style={{ display: "flex", gap: 6 }}>
-                <button onClick={() => onMoveText(t.id, "up")} disabled={idx === 0} className="sb-btn" title="Move up">↑</button>
-                <button onClick={() => onMoveText(t.id, "down")} disabled={idx === texts.length - 1} className="sb-btn" title="Move down">↓</button>
-                <button onClick={() => setConfirmDel({ kind: 'text', id: t.id, label: t.label })} className="sb-btn">Delete</button>
+                <button onClick={() => onMoveText(t.id, "up")} disabled={idx === 0} className="sb-btn" title={t.moveUp}>↑</button>
+                <button onClick={() => onMoveText(t.id, "down")} disabled={idx === texts.length - 1} className="sb-btn" title={t.moveDown}>↓</button>
+                <button onClick={() => setConfirmDel({ kind: 'text', id: t.id, label: t.label })} className="sb-btn">{t.delete}</button>
               </div>
             </li>
           ))}
@@ -172,12 +204,12 @@ export default function RoomDetailsTab({
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 120, display: 'grid', placeItems: 'center', padding: 12 }}>
           <div onClick={(e) => e.stopPropagation()} className="sb-card" style={{ width: 'min(520px,100%)', padding: 16, border: '1px solid var(--border)', borderRadius: 12, background: 'var(--panel)', color: 'var(--text)' }}>
             <div style={{ display: 'grid', gap: 8 }}>
-              <strong>Delete item</strong>
+              <strong>{t.deleteItem}</strong>
               <div style={{ color: 'var(--muted)' }}>
-                Are you sure you want to delete “{confirmDel.label}”? This action is irreversible.
+                {t.confirmDelete.replace("{label}", confirmDel.label)}
               </div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 6 }}>
-                <button className="sb-btn" onClick={() => setConfirmDel(null)}>Close</button>
+                <button className="sb-btn" onClick={() => setConfirmDel(null)}>{t.close}</button>
                 <button
                   className="sb-btn sb-btn--primary"
                   onClick={() => {
@@ -186,7 +218,7 @@ export default function RoomDetailsTab({
                   } }
                   style={{ background: 'var(--danger)', color: '#fff', border: '1px solid var(--danger)' }}
                 >
-                  Delete
+                  {t.delete}
                 </button>
               </div>
             </div>

@@ -1041,6 +1041,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
               }
               roomDetails={
                 <RoomDetailsTab
+                  lang={uiLang}
                   checks={checks}
                   texts={texts}
                   onAddCheck={async () => {

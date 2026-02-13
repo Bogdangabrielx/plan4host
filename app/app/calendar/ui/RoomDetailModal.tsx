@@ -38,6 +38,7 @@ type BookingDoc = {
   path: string;
   url: string | null; // signed URL
 };
+type Lang = "en" | "ro";
 
 /* ───── Helpers ───── */
 
@@ -72,6 +73,7 @@ export default function RoomDetailModal({
   forceNew = false,
   defaultStart,
   defaultEnd,
+  lang = "en",
   onClose,
   onChanged,
 }: {
@@ -81,6 +83,7 @@ export default function RoomDetailModal({
   forceNew?: boolean;
   defaultStart?: { date: string; time: string | null };
   defaultEnd?: { date: string; time: string | null };
+  lang?: Lang;
   onClose: () => void;
   onChanged: () => Promise<void> | void;
 }) {
@@ -164,6 +167,60 @@ export default function RoomDetailModal({
 
   const CI = property?.check_in_time || "14:00";
   const CO = property?.check_out_time || "11:00";
+  const t = {
+    loading: lang === "ro" ? "Se incarca…" : "Loading…",
+    saving: lang === "ro" ? "Se salveaza…" : "Saving…",
+    idle: lang === "ro" ? "Inactiv" : "Idle",
+    saved: lang === "ro" ? "Salvat" : "Saved",
+    error: lang === "ro" ? "Eroare" : "Error",
+    reservation: lang === "ro" ? "Rezervare" : "Reservation",
+    close: lang === "ro" ? "Inchide" : "Close",
+    start: lang === "ro" ? "Inceput (data si ora)" : "Start (date & time)",
+    end: lang === "ro" ? "Final (data si ora)" : "End (date & time)",
+    guestDetails: lang === "ro" ? "Detalii oaspete" : "Guest details",
+    firstName: lang === "ro" ? "Prenume" : "First name",
+    lastName: lang === "ro" ? "Nume" : "Last name",
+    phone: lang === "ro" ? "Telefon" : "Phone",
+    address: lang === "ro" ? "Adresa" : "Address",
+    city: lang === "ro" ? "Oras" : "City",
+    country: lang === "ro" ? "Tara" : "Country",
+    guestDoc: lang === "ro" ? "Document identitate oaspete" : "Guest ID document",
+    docType: lang === "ro" ? "Tip document" : "Document type",
+    number: lang === "ro" ? "Numar" : "Number",
+    series: lang === "ro" ? "Serie" : "Series",
+    nationality: lang === "ro" ? "Nationalitate" : "Nationality",
+    file: lang === "ro" ? "Fisier" : "File",
+    viewDocument: lang === "ro" ? "Vezi document" : "View document",
+    noFile: lang === "ro" ? "Nu exista fisier disponibil" : "No file available",
+    idPreview: lang === "ro" ? "Preview act" : "ID preview",
+    noImagePreview: lang === "ro" ? "Nu exista preview imagine" : "No image preview",
+    signature: lang === "ro" ? "Semnatura" : "Signature",
+    noSignature: lang === "ro" ? "Semnatura lipsa" : "No signature provided",
+    docReadonly:
+      lang === "ro"
+        ? "Datele documentului sunt doar pentru citire si provin din check-in-ul online al oaspetelui."
+        : "Document data is read-only and comes from the guest’s online check-in.",
+    companions: lang === "ro" ? "Insotitori" : "Companions",
+    birthDate: lang === "ro" ? "Data nasterii" : "Birth date",
+    citizenship: lang === "ro" ? "Cetatenie" : "Citizenship",
+    residence: lang === "ro" ? "Resedinta" : "Residence",
+    minorGuest: lang === "ro" ? "Oaspete minor" : "Minor guest",
+    guardian: lang === "ro" ? "Tutore" : "Guardian",
+    document: lang === "ro" ? "Document" : "Document",
+    roomDetails: lang === "ro" ? "Detalii camera" : "Room details",
+    confirmReservation: lang === "ro" ? "Confirma rezervarea" : "Confirm reservation",
+    saveDetails: lang === "ro" ? "Salveaza detalii" : "Save details",
+    saveDatesTimes: lang === "ro" ? "Salveaza datele si orele" : "Save dates & times",
+    confirmRelease: lang === "ro" ? "Confirma eliberarea" : "Confirm release",
+    cancelReservation: lang === "ro" ? "Anuleaza rezervarea" : "Cancel reservation",
+    cancel: lang === "ro" ? "Renunta" : "Cancel",
+    confirm: lang === "ro" ? "Confirma" : "Confirm",
+    creating: lang === "ro" ? "Se creeaza…" : "Creating…",
+    updatingDetails: lang === "ro" ? "Se actualizeaza detaliile…" : "Updating details…",
+    savingDates: lang === "ro" ? "Se salveaza datele si orele…" : "Saving dates & times…",
+    extending: lang === "ro" ? "Se extinde…" : "Extending…",
+    releasing: lang === "ro" ? "Se elibereaza…" : "Releasing…",
+  } as const;
 
   // API: contact
   async function fetchContact(bookingId: string): Promise<BookingContact | null> {
@@ -363,8 +420,8 @@ export default function RoomDetailModal({
       prevPillRef.current = pill;
       initPillActiveRef.current = true;
     }
-    setPill("Loading…");
-  }, [initializing, pill, setPill]);
+    setPill(t.loading);
+  }, [initializing, pill, setPill, t.loading]);
 
   // When bootstrapping completes, restore previous pill (and also on unmount if needed).
   useEffect(() => {
@@ -423,26 +480,30 @@ export default function RoomDetailModal({
   /* ───── Save flows ───── */
 
   async function saveCreated() {
-    if (!on) { setStatus("Error"); setStatusHint("Turn reservation ON first."); return; }
-    setSaving("creating"); setStatus("Saving..."); setStatusHint("Creating…");
+    if (!on) { setStatus("Error"); setStatusHint(lang === "ro" ? "Activeaza rezervarea mai intai." : "Turn reservation ON first."); return; }
+    setSaving("creating"); setStatus("Saving..."); setStatusHint(t.creating);
 
     const s = toDateTime(startDate, startTime, CI);
     const e = toDateTime(endDate, endTime, CO);
-    if (!(s < e)) { setStatus("Error"); setStatusHint("End must be after Start."); setSaving(false); return; }
+    if (!(s < e)) { setStatus("Error"); setStatusHint(lang === "ro" ? "Finalul trebuie sa fie dupa inceput." : "End must be after Start."); setSaving(false); return; }
 
     for (const ob of others) {
       const os = toDateTime(ob.start_date, ob.start_time, CI);
       const oe = toDateTime(ob.end_date, ob.end_time, CO);
       if (overlaps(s, e, os, oe)) {
         setStatus("Error");
-        setStatusHint(`Overlaps ${ob.start_date} ${ob.start_time ?? ""} → ${ob.end_date} ${ob.end_time ?? ""}`);
+        setStatusHint(
+          lang === "ro"
+            ? `Se suprapune ${ob.start_date} ${ob.start_time ?? ""} → ${ob.end_date} ${ob.end_time ?? ""}`
+            : `Overlaps ${ob.start_date} ${ob.start_time ?? ""} → ${ob.end_date} ${ob.end_time ?? ""}`
+        );
         setSaving(false);
         return;
       }
     }
 
     const prevPill = pill;
-    setPill("Saving…");
+    setPill(t.saving);
 
     const ins = await supabase.from("bookings").insert({
       property_id: PID,
@@ -463,8 +524,8 @@ export default function RoomDetailModal({
       setStatus("Error");
       setStatusHint(
         isOverlap
-          ? `Overlaps an existing confirmed reservation on Room ${room.name}.`
-          : (msg || "Failed to create.")
+          ? (lang === "ro" ? `Se suprapune cu o rezervare confirmata in camera ${room.name}.` : `Overlaps an existing confirmed reservation on Room ${room.name}.`)
+          : (msg || (lang === "ro" ? "Crearea a esuat." : "Failed to create."))
       );
       setSaving(false);
       setPill(prevPill);
@@ -487,7 +548,7 @@ export default function RoomDetailModal({
     if (checkRows.length) await supabase.from("booking_check_values").upsert(checkRows);
     if (textRows.length)  await supabase.from("booking_text_values").upsert(textRows);
 
-    setSaving(false); setStatus("Saved"); setStatusHint("Reservation created.");
+    setSaving(false); setStatus("Saved"); setStatusHint(lang === "ro" ? "Rezervare creata." : "Reservation created.");
     try {
       await fetch('/api/push/broadcast', {
         method: 'POST',
@@ -495,7 +556,7 @@ export default function RoomDetailModal({
         body: JSON.stringify({ property_id: PID, title: 'New reservation', body: `From ${startDate} to ${endDate}` })
       });
     } catch { /* ignore push errors */ }
-    setPill(overlayMessageNode("Reservation confirmed"));
+      setPill(overlayMessageNode(lang === "ro" ? "Rezervare confirmata" : "Reservation confirmed"));
     await wait(2000);
     setPill(prevPill);
     await onChanged();
@@ -503,9 +564,9 @@ export default function RoomDetailModal({
   }
 
   async function saveDetails() {
-    if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
+    if (!active) { setStatus("Error"); setStatusHint(lang === "ro" ? "Nu exista rezervare activa." : "No active reservation."); return; }
     if (!anyDetailsDirty) return;
-    setSaving("updating"); setStatus("Saving..."); setStatusHint("Updating details…");
+    setSaving("updating"); setStatus("Saving..."); setStatusHint(t.updatingDetails);
 
     if (guestDirty) {
       const upd = await supabase.from("bookings").update({
@@ -513,7 +574,7 @@ export default function RoomDetailModal({
         guest_last_name:  guestLast  || null,
       }).eq("id", active.id);
       if (upd.error) {
-        setStatus("Error"); setStatusHint(upd.error.message || "Failed to update guest name.");
+        setStatus("Error"); setStatusHint(upd.error.message || (lang === "ro" ? "Actualizarea numelui a esuat." : "Failed to update guest name."));
         setSaving(false); return;
       }
     }
@@ -536,20 +597,20 @@ export default function RoomDetailModal({
       setDetailsDirty(false);
     }
 
-    setSaving(false); setStatus("Saved"); setStatusHint("Details updated.");
+    setSaving(false); setStatus("Saved"); setStatusHint(lang === "ro" ? "Detalii actualizate." : "Details updated.");
     await onChanged(); onClose();
   }
 
   async function saveTimes() {
-    if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
-    if (!on)     { setStatus("Error"); setStatusHint("Turn reservation ON to change times."); return; }
+    if (!active) { setStatus("Error"); setStatusHint(lang === "ro" ? "Nu exista rezervare activa." : "No active reservation."); return; }
+    if (!on)     { setStatus("Error"); setStatusHint(lang === "ro" ? "Activeaza rezervarea pentru a modifica orele." : "Turn reservation ON to change times."); return; }
     if (!timesDirty) return;
 
-    setSaving("times"); setStatus("Saving..."); setStatusHint("Saving dates & times…");
+    setSaving("times"); setStatus("Saving..."); setStatusHint(t.savingDates);
 
     const s = toDateTime(startDate, startTime, CI);
     const e = toDateTime(endDate, endTime, CO);
-    if (!(s < e)) { setStatus("Error"); setStatusHint("End must be after Start."); setSaving(false); return; }
+    if (!(s < e)) { setStatus("Error"); setStatusHint(lang === "ro" ? "Finalul trebuie sa fie dupa inceput." : "End must be after Start."); setSaving(false); return; }
 
     for (const ob of others) {
       if (ob.id === active.id) continue;
@@ -557,7 +618,11 @@ export default function RoomDetailModal({
       const oe = toDateTime(ob.end_date, ob.end_time, CO);
       if (overlaps(s, e, os, oe)) {
         setStatus("Error");
-        setStatusHint(`Overlaps ${ob.start_date} ${ob.start_time ?? ""} → ${ob.end_date} ${ob.end_time ?? ""}`);
+        setStatusHint(
+          lang === "ro"
+            ? `Se suprapune ${ob.start_date} ${ob.start_time ?? ""} → ${ob.end_date} ${ob.end_time ?? ""}`
+            : `Overlaps ${ob.start_date} ${ob.start_time ?? ""} → ${ob.end_date} ${ob.end_time ?? ""}`
+        );
         setSaving(false);
         return;
       }
@@ -576,8 +641,8 @@ export default function RoomDetailModal({
       setStatus("Error");
       setStatusHint(
         isOverlap
-          ? `Overlaps an existing confirmed reservation on Room ${room.name}.`
-          : (msg || "Failed to save times.")
+          ? (lang === "ro" ? `Se suprapune cu o rezervare confirmata in camera ${room.name}.` : `Overlaps an existing confirmed reservation on Room ${room.name}.`)
+          : (msg || (lang === "ro" ? "Salvarea orelor a esuat." : "Failed to save times."))
       );
       setSaving(false); return;
     }
@@ -598,16 +663,16 @@ export default function RoomDetailModal({
       }
     } catch { /* best-effort mirror */ }
 
-    setSaving(false); setStatus("Saved"); setStatusHint("Dates & times updated.");
+    setSaving(false); setStatus("Saved"); setStatusHint(lang === "ro" ? "Date si ore actualizate." : "Dates & times updated.");
     await onChanged(); onClose();
   }
 
   async function extendUntil() {
-    if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
-    if (!on)     { setStatus("Error"); setStatusHint("Use 'Confirm release' when OFF."); return; }
+    if (!active) { setStatus("Error"); setStatusHint(lang === "ro" ? "Nu exista rezervare activa." : "No active reservation."); return; }
+    if (!on)     { setStatus("Error"); setStatusHint(lang === "ro" ? "Foloseste 'Confirma eliberarea' cand e OFF." : "Use 'Confirm release' when OFF."); return; }
     if (!canExtend) return;
 
-    setSaving("extending"); setStatus("Saving..."); setStatusHint("Extending…");
+    setSaving("extending"); setStatus("Saving..."); setStatusHint(t.extending);
 
     const res = await fetch(`/api/bookings/${active.id}`, {
       method: "PATCH",
@@ -617,33 +682,33 @@ export default function RoomDetailModal({
 
     if (!res.ok) {
       const txt = await res.text().catch(() => "");
-      setStatus("Error"); setStatusHint(txt || "Failed to extend.");
+      setStatus("Error"); setStatusHint(txt || (lang === "ro" ? "Extinderea a esuat." : "Failed to extend."));
       setSaving(false); return;
     }
 
-    setSaving(false); setStatus("Saved"); setStatusHint("Extended.");
+    setSaving(false); setStatus("Saved"); setStatusHint(lang === "ro" ? "Extins." : "Extended.");
     await onChanged(); onClose();
   }
 
   async function releaseBooking() {
-    if (!active) { setStatus("Error"); setStatusHint("No active reservation."); return; }
-    setSaving("releasing"); setStatus("Saving..."); setStatusHint("Releasing…");
+    if (!active) { setStatus("Error"); setStatusHint(lang === "ro" ? "Nu exista rezervare activa." : "No active reservation."); return; }
+    setSaving("releasing"); setStatus("Saving..."); setStatusHint(t.releasing);
     const prevPill = pill;
-    setPill("Saving…");
+    setPill(t.saving);
 
     try {
       const res = await fetch(`/api/bookings/${active.id}`, { method: "DELETE" });
       const j = await res.json().catch(() => ({}));
       if (!res.ok || j?.error) throw new Error(j?.error || `HTTP ${res.status}`);
-      setSaving(false); setStatus("Saved"); setStatusHint("Released.");
-      setPill(overlayMessageNode("Reservation released"));
+      setSaving(false); setStatus("Saved"); setStatusHint(lang === "ro" ? "Eliberat." : "Released.");
+      setPill(overlayMessageNode(lang === "ro" ? "Rezervare eliberata" : "Reservation released"));
       await wait(2000);
       setPill(prevPill);
       await onChanged();
       onClose();
     } catch (e: any) {
       setStatus("Error");
-      setStatusHint(e?.message || "Failed to release.");
+      setStatusHint(e?.message || (lang === "ro" ? "Eliberarea a esuat." : "Failed to release."));
       setSaving(false);
       setPill(prevPill);
     }
@@ -759,7 +824,7 @@ export default function RoomDetailModal({
             boxShadow: "0 1px 0 var(--border)",
           }}
         >
-            <strong>{room.name} — {dateStr} — Reservation</strong>
+            <strong>{room.name} — {dateStr} — {t.reservation}</strong>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span
                 style={{
@@ -778,13 +843,13 @@ export default function RoomDetailModal({
                   fontWeight: 700,
                 }}
               >
-                {status}
+                {status === "Idle" ? t.idle : status === "Saving..." ? t.saving : status === "Saved" ? t.saved : status === "Error" ? t.error : status}
               </span>
               {statusHint && <small style={{ color: "var(--muted)" }}>{statusHint}</small>}
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close"
+                aria-label={t.close}
                 style={{
                   width: 28,
                   height: 28,
@@ -816,7 +881,7 @@ export default function RoomDetailModal({
           {/* Reservation toggle + dates */}
           <div style={{ display: "grid", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <label style={{ fontWeight: 800, fontSize: 14, letterSpacing: 0.2 }}>Reservation</label>
+            <label style={{ fontWeight: 800, fontSize: 14, letterSpacing: 0.2 }}>{t.reservation}</label>
             <button
               onClick={() => { userTouchedToggleRef.current = true; setOn(v => !v); setStatus("Idle"); setStatusHint(""); }}
               style={{
@@ -837,7 +902,7 @@ export default function RoomDetailModal({
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
             {/* Start */}
             <div style={{ display: "grid", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Start (date & time)</label>
+              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.start}</label>
               <div style={{ display: "flex", gap: 10 }}>
                 <input
                   type="date"
@@ -876,7 +941,7 @@ export default function RoomDetailModal({
 
             {/* End */}
             <div style={{ display: "grid", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>End (date & time)</label>
+              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.end}</label>
               <div style={{ display: "flex", gap: 10 }}>
                 <input
                   type="date"
@@ -944,7 +1009,7 @@ export default function RoomDetailModal({
                   justifyContent: "space-between",
                 }}
               >
-                <span style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Guest details</span>
+                <span style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.guestDetails}</span>
                 <span aria-hidden style={{ color: "var(--muted)", fontWeight: 800 }}>
                   {showGuest ? "▾" : "▸"}
                 </span>
@@ -970,7 +1035,7 @@ export default function RoomDetailModal({
                       alignItems: "center",
                     }}
                   >
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>First name</div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.firstName}</div>
                     <input
                       type="text"
                       value={guestFirst}
@@ -988,7 +1053,7 @@ export default function RoomDetailModal({
                       }}
                     />
 
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Last name</div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.lastName}</div>
                     <input
                       type="text"
                       value={guestLast}
@@ -1024,7 +1089,7 @@ export default function RoomDetailModal({
                       }}
                     />
 
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Phone</div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.phone}</div>
                     <input
                       type="tel"
                       value={guestPhone}
@@ -1042,7 +1107,7 @@ export default function RoomDetailModal({
                       }}
                     />
 
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Address</div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.address}</div>
                     <input
                       type="text"
                       value={guestAddr}
@@ -1060,7 +1125,7 @@ export default function RoomDetailModal({
                       }}
                     />
 
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>City</div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.city}</div>
                     <input
                       type="text"
                       value={guestCity}
@@ -1078,7 +1143,7 @@ export default function RoomDetailModal({
                       }}
                     />
 
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Country</div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.country}</div>
                     <input
                       type="text"
                       value={guestCountry}
@@ -1099,7 +1164,7 @@ export default function RoomDetailModal({
 
                   {/* Document (read-only, from check-in) */}
                   <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
-                    <strong style={{ letterSpacing: 0.3 }}>Guest ID document</strong>
+                    <strong style={{ letterSpacing: 0.3 }}>{t.guestDoc}</strong>
                     <div
                       style={{
                         display: "grid",
@@ -1109,27 +1174,27 @@ export default function RoomDetailModal({
                         alignItems: "center",
                       }}
                     >
-                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Document type</div>
+                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.docType}</div>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>
                         {fmtDocType(primaryDoc?.doc_type) || "—"}
                       </div>
 
-                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Number</div>
+                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.number}</div>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>
                         {primaryDoc?.doc_number || "—"}
                       </div>
 
-                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Series</div>
+                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.series}</div>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>
                         {primaryDoc?.doc_series || "—"}
                       </div>
 
-                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Nationality</div>
+                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.nationality}</div>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>
                         {primaryDoc?.doc_nationality || "—"}
                       </div>
 
-                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>File</div>
+                      <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.file}</div>
                       <div style={{ fontSize: 13, fontWeight: 600 }}>
                         {primaryDoc?.url ? (
                           <a
@@ -1138,10 +1203,10 @@ export default function RoomDetailModal({
                             rel="noopener noreferrer"
                             style={{ textDecoration: "underline" }}
                           >
-                            View document
+                            {t.viewDocument}
                           </a>
                         ) : (
-                          <span style={{ color: "var(--muted)" }}>No file available</span>
+                          <span style={{ color: "var(--muted)" }}>{t.noFile}</span>
                         )}
                       </div>
                     </div>
@@ -1149,25 +1214,25 @@ export default function RoomDetailModal({
                     {/* Inline previews: ID image (if image) and Signature side by side */}
                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginTop: 6 }}>
                       <div style={{ display: 'grid', gap: 6 }}>
-                        <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>ID preview</label>
+                        <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>{t.idPreview}</label>
                         {primaryDoc?.url && (primaryDoc?.mime_type || '').startsWith('image/') ? (
-                          <img src={primaryDoc.url} alt="ID document" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
+                          <img src={primaryDoc.url} alt={t.guestDoc} style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
                         ) : (
-                          <small style={{ color: 'var(--muted)' }}>No image preview</small>
+                          <small style={{ color: 'var(--muted)' }}>{t.noImagePreview}</small>
                         )}
                       </div>
                       <div style={{ display: 'grid', gap: 6 }}>
-                        <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>Signature</label>
+                        <label style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 800 }}>{t.signature}</label>
                         {signatureDoc?.url ? (
-                          <img src={signatureDoc.url} alt="Signature" style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
+                          <img src={signatureDoc.url} alt={t.signature} style={{ width: 160, height: 110, objectFit: 'contain', objectPosition: 'center', borderRadius: 8, border: '1px solid var(--border)', background: '#fff' }} />
                         ) : (
-                          <small style={{ color: 'var(--muted)' }}>No signature provided</small>
+                          <small style={{ color: 'var(--muted)' }}>{t.noSignature}</small>
                         )}
                       </div>
                     </div>
 
                     <small style={{ color: "var(--muted)" }}>
-                      Document data is read-only and comes from the guest’s online check-in.
+                      {t.docReadonly}
                     </small>
                   </div>
                 </div>
@@ -1205,7 +1270,7 @@ export default function RoomDetailModal({
                   justifyContent: "space-between",
                 }}
               >
-                <span style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Companions</span>
+                <span style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.companions}</span>
                 <span aria-hidden style={{ color: "var(--muted)", fontWeight: 800 }}>
                   {companionsOpen ? "▾" : "▸"}
                 </span>
@@ -1230,7 +1295,7 @@ export default function RoomDetailModal({
                         <div style={{ fontWeight: 800 }}>{name}</div>
                         {c.birth_date && (
                           <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                            Birth date:{" "}
+                            {t.birthDate}:{" "}
                             <span style={{ color: "var(--text)" }}>{c.birth_date}</span>
                           </div>
                         )}
@@ -1238,14 +1303,14 @@ export default function RoomDetailModal({
                           <div style={{ fontSize: 12, color: "var(--muted)" }}>
                             {c.citizenship && (
                               <>
-                                Citizenship:{" "}
+                                {t.citizenship}:{" "}
                                 <span style={{ color: "var(--text)" }}>{c.citizenship}</span>
                               </>
                             )}
                             {c.citizenship && c.residence_country && <span> • </span>}
                             {c.residence_country && (
                               <>
-                                Residence:{" "}
+                                {t.residence}:{" "}
                                 <span style={{ color: "var(--text)" }}>
                                   {c.residence_country}
                                 </span>
@@ -1255,11 +1320,11 @@ export default function RoomDetailModal({
                         )}
                         {c.is_minor ? (
                           <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                            Minor guest
+                            {t.minorGuest}
                             {c.guardian_name && (
                               <>
                                 {" "}
-                                — Guardian:{" "}
+                                {" — "}{t.guardian}:{" "}
                                 <span style={{ color: "var(--text)" }}>
                                   {c.guardian_name}
                                 </span>
@@ -1273,12 +1338,12 @@ export default function RoomDetailModal({
                               {c.doc_type === "passport" && "Passport"}
                               {!c.doc_type ||
                               (c.doc_type !== "id_card" && c.doc_type !== "passport")
-                                ? "Document"
+                                ? t.document
                                 : ""}
                               {c.doc_series && (
                                 <>
                                   {" "}
-                                  series{" "}
+                                  {lang === "ro" ? " serie " : " series "}
                                   <span style={{ color: "var(--text)" }}>
                                     {c.doc_series}
                                   </span>
@@ -1286,7 +1351,7 @@ export default function RoomDetailModal({
                               )}
                               {c.doc_number && (
                                 <>
-                                  {c.doc_series ? " • number " : " number "}
+                                  {c.doc_series ? (lang === "ro" ? " • numar " : " • number ") : (lang === "ro" ? " numar " : " number ")}
                                   <span style={{ color: "var(--text)" }}>
                                     {c.doc_number}
                                   </span>
@@ -1306,7 +1371,7 @@ export default function RoomDetailModal({
           {/* Custom detail fields */}
           {(checkDefs.length > 0 || textDefs.length > 0) && (
             <div style={{ display: "grid", gap: 10, marginTop: 6 }}>
-              <strong style={{ letterSpacing: 0.3 }}>Room details</strong>
+              <strong style={{ letterSpacing: 0.3 }}>{t.roomDetails}</strong>
 
               {checkDefs.length > 0 && (
                 <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
@@ -1362,7 +1427,7 @@ export default function RoomDetailModal({
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 6 }}>
             {!active && on && (
               <button onClick={saveCreated} style={primaryBtn} disabled={initializing || saving !== false}>
-                Confirm reservation
+                {t.confirmReservation}
               </button>
             )}
 
@@ -1370,13 +1435,13 @@ export default function RoomDetailModal({
               <>
                 {anyDetailsDirty && (
                   <button onClick={saveDetails} style={baseBtn} disabled={initializing || (saving !== false && saving !== "updating")}>
-                    Save details
+                    {t.saveDetails}
                   </button>
                 )}
 
                 {on && timesDirty && (
-                  <button onClick={saveTimes} style={baseBtn} disabled={initializing || (saving !== false && saving !== "times")} title="Save updated dates & times">
-                    Save dates & times
+                  <button onClick={saveTimes} style={baseBtn} disabled={initializing || (saving !== false && saving !== "times")} title={t.saveDatesTimes}>
+                    {t.saveDatesTimes}
                   </button>
                 )}
 
@@ -1384,13 +1449,13 @@ export default function RoomDetailModal({
 
                 {!on && active && (
                   <button onClick={() => setReleaseConfirmOpen(true)} style={dangerBtn} disabled={initializing || (saving !== false && saving !== "releasing")}>
-                    Confirm release
+                    {t.confirmRelease}
                   </button>
                 )}
               </>
             )}
 
-            <button onClick={onClose} style={baseBtn}>Close</button>
+            <button onClick={onClose} style={baseBtn}>{t.close}</button>
           </div>
           {/* Extra spacer at bottom so action buttons can be scrolled above bottom nav / keyboard */}
           <div style={{ height: 64 }} aria-hidden />
@@ -1410,21 +1475,23 @@ export default function RoomDetailModal({
             style={{ width:'min(520px,100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}
           >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <strong>Cancel reservation</strong>
+              <strong>{t.cancelReservation}</strong>
               <button className="sb-btn" onClick={()=>setReleaseConfirmOpen(false)}>✕</button>
             </div>
             <div style={{ color:'var(--muted)' }}>
-              You are about to cancel this reservation. This will free the room for the selected dates. This action cannot be undone.
+              {lang === "ro"
+                ? "Urmeaza sa anulezi aceasta rezervare. Camera va deveni libera pentru datele selectate. Actiunea nu poate fi anulata."
+                : "You are about to cancel this reservation. This will free the room for the selected dates. This action cannot be undone."}
             </div>
             <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-              <button className="sb-btn" onClick={()=>setReleaseConfirmOpen(false)} disabled={saving !== false}>Cancel</button>
+              <button className="sb-btn" onClick={()=>setReleaseConfirmOpen(false)} disabled={saving !== false}>{t.cancel}</button>
               <button
                 className="sb-btn sb-btn--primary"
                 onClick={async ()=>{ setReleaseConfirmOpen(false); await releaseBooking(); }}
                 disabled={saving !== false}
                 style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}
               >
-                Confirm
+                {t.confirm}
               </button>
             </div>
           </div>
