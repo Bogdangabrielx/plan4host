@@ -302,7 +302,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     email: uiLang === "ro" ? "Email" : "Email",
     phone: uiLang === "ro" ? "Telefon" : "Phone",
     address: uiLang === "ro" ? "Adresa" : "Address",
-    overlayPosition: uiLang === "ro" ? "Pozitie overlay pe banner" : "Overlay position on banner",
+    overlayPosition: uiLang === "ro" ? "Pozitie pe banner" : "Overlay position on banner",
     select: uiLang === "ro" ? "- selecteaza -" : "- select -",
     top: uiLang === "ro" ? "sus" : "top",
     center: uiLang === "ro" ? "centru" : "center",
@@ -988,7 +988,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     e.preventDefault();
     if (!prop) return;
     // Require overlay position selection
-    if (!prop.contact_overlay_position) { alert(uiLang === "ro" ? "Selecteaza pozitia overlay-ului pe banner." : "Please select the overlay position for the property banner."); return; }
+    if (!prop.contact_overlay_position) { alert(uiLang === "ro" ? "Selecteaza pozitia pe banner." : "Please select the overlay position for the property banner."); return; }
     setStatus('Saving…');
     const { error } = await supabase
       .from('properties')
@@ -1575,7 +1575,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                        style={FIELD}
 	                      />
 	                      <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-	                        Optional — share only what you want guests to see.
+	                        {uiLang === "ro"
+                            ? "Optional — partajeaza doar ce vrei sa vada oaspetii."
+                            : "Optional — share only what you want guests to see."}
 	                      </div>
 	                    </div>
 	                  </div>
@@ -2959,7 +2961,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         <option value="down">{t.down}</option>
                       </select>
                       <Info text={uiLang === "ro"
-                        ? "Aceste date de contact apar peste banner ca un card glass. Alege pozitia: sus, centru sau jos."
+                        ? "Aceste date de contact apar pe banner, ca un card transparent. Alege pozitia: sus, centru sau jos."
                         : "These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom."} />
                     </div>
                   </div>
@@ -2988,7 +2990,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       <option value="down">{t.down}</option>
                     </select>
                     <Info text={uiLang === "ro"
-                      ? "Aceste date de contact apar peste banner ca un card glass. Alege pozitia: sus, centru sau jos."
+                      ? "Aceste date de contact apar pe banner, ca un card transparent. Alege pozitia: sus, centru sau jos."
                       : "These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom."} />
                   </div>
                   <div>

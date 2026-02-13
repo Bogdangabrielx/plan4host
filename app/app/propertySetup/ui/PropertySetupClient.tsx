@@ -348,7 +348,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
       setUnitWizardStep("reward");
       setShowRoomsGuide(isSinglePropertyAccount);
     } catch (e: any) {
-      setUnitWizardError(e?.message || "Could not create units.");
+      setUnitWizardError(e?.message || (uiLang === "ro" ? "Nu am putut crea unitatile." : "Could not create units."));
       setUnitWizardStep("unitCount");
       setShowRoomsGuide(isSinglePropertyAccount);
     } finally {
@@ -398,7 +398,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
       if (isSinglePropertyAccount) u.searchParams.set("onboarding", "1");
       window.location.href = `${u.pathname}${u.search}`;
     } catch (e: any) {
-      setUnitRenameError(e?.message || "Could not save unit names.");
+      setUnitRenameError(e?.message || (uiLang === "ro" ? "Nu am putut salva numele unitatilor." : "Could not save unit names."));
     } finally {
       setUnitRenameSaving(false);
     }
@@ -536,6 +536,53 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     roomsTab: uiLang === "ro" ? "Camere" : "Rooms",
     detailsTab: uiLang === "ro" ? "Detalii rezervare" : "Reservation details",
     cleaningTab: uiLang === "ro" ? "Task-uri curatenie" : "Cleaning tasks",
+    wizardNameUnits: uiLang === "ro" ? "Denumeste unitatile" : "Name your units",
+    wizardUnitsReady: uiLang === "ro" ? "Unitati pregatite" : "Units ready",
+    wizardAddUnits: uiLang === "ro" ? "Adauga unitati" : "Add units",
+    wizardHostTypeDesc:
+      uiLang === "ro"
+        ? "Astfel disponibilitatea ramane corecta in toate rezervarile."
+        : "This ensures your availability stays accurate across all bookings.",
+    wizardUnitCountDesc:
+      uiLang === "ro"
+        ? "Le cream automat ca sa poti incepe imediat."
+        : "We’ll create them automatically so you can start right away.",
+    wizardRenameDesc: uiLang === "ro" ? "Le poti schimba oricand." : "You can change these anytime.",
+    wizardRewardDesc:
+      uiLang === "ro"
+        ? "Acum poti gestiona disponibilitatea pe fiecare unitate fara suprapuneri."
+        : "You can now manage availability per unit without overlaps.",
+    singleUnit: uiLang === "ro" ? "Unitate unica" : "Single unit",
+    singleUnitDesc:
+      uiLang === "ro"
+        ? "Apartament, cabana sau intreaga proprietate inchiriata ca o singura unitate."
+        : "Apartment, cabin, or entire place rented as one unit.",
+    useSingleUnit: uiLang === "ro" ? "Foloseste unitate unica" : "Use single unit",
+    multipleUnits: uiLang === "ro" ? "Unitati multiple" : "Multiple units",
+    multipleUnitsDesc:
+      uiLang === "ro"
+        ? "Pensiune sau hotel cu unitati separate."
+        : "Guesthouse or hotel with separate units.",
+    setupUnits: uiLang === "ro" ? "Configureaza unitatile" : "Set up units",
+    numberOfUnits: uiLang === "ro" ? "Numar de unitati" : "Number of units",
+    unitsExample: uiLang === "ro" ? "ex. 3" : "e.g. 3",
+    renameLater: uiLang === "ro" ? "Poti redenumi unitatile si seta tipurile de camera mai tarziu." : "You can rename units and set room types later.",
+    pleaseEnterTwoPlus: uiLang === "ro" ? "Te rugam introdu 2 sau mai mult." : "Please enter 2 or more.",
+    createUnits: uiLang === "ro" ? "Creeaza unitati" : "Create units",
+    takesFewSeconds: uiLang === "ro" ? "Dureaza cateva secunde." : "Takes a few seconds.",
+    calendarReady: uiLang === "ro" ? "Calendar pregatit" : "Calendar ready",
+    syncAirbnbBooking: uiLang === "ro" ? "Sincronizeaza cu Airbnb sau Booking" : "Sync with Airbnb or Booking",
+    syncHint:
+      uiLang === "ro"
+        ? "Pentru automatizarea disponibilitatii si evitarea rezervarilor duble."
+        : "To automate availability and avoid double bookings.",
+    editUnitDetails: uiLang === "ro" ? "Editeaza detaliile unitatilor" : "Edit unit details",
+    unitLabel: uiLang === "ro" ? "Unitatea" : "Unit",
+    unitPlaceholder: uiLang === "ro" ? "ex. Unitatea" : "e.g. Unit",
+    save: uiLang === "ro" ? "Salveaza" : "Save",
+    back: uiLang === "ro" ? "Inapoi" : "Back",
+    settingUpUnits: uiLang === "ro" ? "Se configureaza unitatile…" : "Setting up your units…",
+    almostDone: uiLang === "ro" ? "Aproape gata…" : "We are almost done…",
   } as const;
 
   return (
@@ -587,19 +634,19 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                     }}
                   >
 	                    {unitWizardStep === 'rename'
-	                      ? 'Name your units'
+	                      ? t.wizardNameUnits
 	                      : unitWizardStep === 'reward'
-	                        ? 'Units ready'
-	                        : 'Add units'}
+	                        ? t.wizardUnitsReady
+	                        : t.wizardAddUnits}
 	                  </div>
 	                  <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
 	                    {unitWizardStep === 'hostType'
-	                      ? 'This ensures your availability stays accurate across all bookings.'
+	                      ? t.wizardHostTypeDesc
 	                      : unitWizardStep === 'unitCount'
-	                        ? 'We’ll create them automatically so you can start right away.'
+	                        ? t.wizardUnitCountDesc
 	                        : unitWizardStep === 'rename'
-	                          ? 'You can change these anytime.'
-	                          : 'You can now manage availability per unit without overlaps.'}
+	                          ? t.wizardRenameDesc
+	                          : t.wizardRewardDesc}
 	                  </div>
                 </div>
                 <button
@@ -631,9 +678,9 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                         <div style={{ gridArea: 'icon', width: 44, height: 44, display: 'grid', placeItems: 'center' }}>
                           <MaskedSvgIcon src="/svg_singleunit_demo.svg" size={26} zoom={0.95} />
                         </div>
-		                    <div style={{ gridArea: 'title', alignSelf: 'center', fontWeight: 800 }}>Single unit</div>
+		                    <div style={{ gridArea: 'title', alignSelf: 'center', fontWeight: 800 }}>{t.singleUnit}</div>
 		                    <div style={{ gridArea: 'desc', alignSelf: 'start', color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
-		                      Apartment, cabin, or entire place rented as one unit.
+		                      {t.singleUnitDesc}
 		                    </div>
 		                    <div style={{ gridArea: 'cta', alignSelf: 'center', justifySelf: 'end', display: 'flex' }}>
 		                      <button
@@ -641,7 +688,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 		                        style={{ width: "100%", background: "var(--primary)", justifyContent: "center" }}
 		                        onClick={() => void createUnits(1)}
 		                      >
-		                        Use single unit
+		                        {t.useSingleUnit}
 		                      </button>
 		                    </div>
 		                  </div>
@@ -663,9 +710,9 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                         <div style={{ gridArea: 'icon', width: 44, height: 44, display: 'grid', placeItems: 'center' }}>
                           <MaskedSvgIcon src="/svg_multipleunits_demo.svg" size={34} zoom={0.9} />
                         </div>
-		                    <div style={{ gridArea: 'title', alignSelf: 'center', fontWeight: 800 }}>Multiple units</div>
+		                    <div style={{ gridArea: 'title', alignSelf: 'center', fontWeight: 800 }}>{t.multipleUnits}</div>
 		                    <div style={{ gridArea: 'desc', alignSelf: 'start', color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
-		                      Guesthouse or hotel with separate units.
+		                      {t.multipleUnitsDesc}
 	                    </div>
 	                    <div style={{ gridArea: 'cta', alignSelf: 'center', justifySelf: 'end', display: 'flex' }}>
 	                      <button
@@ -673,7 +720,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                        style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
 	                        onClick={() => setUnitWizardStep('unitCount')}
 	                      >
-	                        Set up units
+	                        {t.setupUnits}
 	                      </button>
                     </div>
                   </div>
@@ -683,12 +730,12 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
               {unitWizardStep === 'unitCount' && (
                 <div style={{ display: 'grid', gap: 12 }}>
                   <div style={{ display: 'grid', gap: 6 }}>
-                    <label style={{ display: 'block' }}>Number of units</label>
+                    <label style={{ display: 'block' }}>{t.numberOfUnits}</label>
                     <input
                       type="number"
                       min={2}
                       inputMode="numeric"
-                      placeholder="e.g. 3"
+                      placeholder={t.unitsExample}
                       value={unitCountRaw}
                       onChange={(e) => setUnitCountRaw(e.currentTarget.value)}
                       style={{
@@ -702,7 +749,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                       }}
                     />
                     <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
-                      You can rename units and set room types later.
+                      {t.renameLater}
                     </div>
                   </div>
 
@@ -712,14 +759,14 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                      style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center", color: "#fff" }}
 	                      onClick={() => {
 	                        const n = Math.max(0, Math.floor(Number(unitCountRaw || 0)));
-	                        if (n < 2) { setUnitWizardError('Please enter 2 or more.'); return; }
+	                        if (n < 2) { setUnitWizardError(t.pleaseEnterTwoPlus); return; }
 	                        void createUnits(n);
 	                      }}
 	                    >
-	                      Create units
+	                      {t.createUnits}
 	                    </button>
                     <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)', textAlign: 'center' }}>
-                      Takes a few seconds.
+                      {t.takesFewSeconds}
                     </div>
                     {unitWizardError && (
                       <div style={{ color: 'var(--danger)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)', textAlign: 'center' }}>
@@ -733,7 +780,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
               {unitWizardStep === 'reward' && (
                 <div style={{ display: 'grid', gap: 12 }}>
 	                  <div style={{ display: 'grid', gap: 8 }}>
-	                    {(createdUnits.length ? createdUnits : ['Unit 1']).map((u) => (
+		                    {(createdUnits.length ? createdUnits : [`${t.unitLabel} 1`]).map((u) => (
 	                      <div
 	                        key={u}
 	                        style={{
@@ -759,7 +806,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                          <span style={{ fontWeight: 800 }}>{u}</span>
 	                        </div>
 		                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-		                          <span style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)' }}>Calendar ready</span>
+		                          <span style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)' }}>{t.calendarReady}</span>
 		                          <span
 		                            aria-hidden
 		                            style={{
@@ -794,10 +841,10 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                      window.location.href = `${u.pathname}${u.search}`;
 	                    }}
 	                  >
-	                    Sync with Airbnb or Booking
+	                    {t.syncAirbnbBooking}
 	                  </button>
                   <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)', textAlign: 'center' }}>
-                    To automate availability and avoid double bookings.
+                    {t.syncHint}
                   </div>
 
 	                  <button
@@ -829,7 +876,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 		                      });
 		                    }}
 		                  >
-		                    Edit unit details
+		                    {t.editUnitDetails}
 		                  </button>
 		                </div>
 		              )}
@@ -862,7 +909,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                              style={{ width: 18, height: 18, objectFit: "contain", display: "block", flex: "0 0 auto" }}
 	                            />
 	                            <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", color: "var(--muted)" }}>
-	                              Unit {r.sort_index + 1}
+	                              {t.unitLabel} {r.sort_index + 1}
 	                            </span>
 	                          </div>
 	                          <input
@@ -871,7 +918,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                              const v = e.currentTarget.value;
 	                              setUnitRenameDrafts((prev) => ({ ...prev, [r.id]: v }));
 	                            }}
-	                            placeholder={`e.g. Unit ${r.sort_index + 1}`}
+	                            placeholder={`${t.unitPlaceholder} ${r.sort_index + 1}`}
 	                            style={{
 	                              width: "100%",
 	                              padding: 10,
@@ -899,7 +946,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                      disabled={unitRenameSaving}
 	                      onClick={() => void saveUnitNamesAndContinue()}
 	                    >
-	                      Save
+	                      {t.save}
 	                    </button>
 	                  )}
 
@@ -920,7 +967,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                    }}
 	                    onClick={() => setUnitWizardStep("reward")}
 	                  >
-	                    Back
+	                    {t.back}
 	                  </button>
 	                </div>
 	              )}
@@ -930,15 +977,15 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 
         {/* Units loading overlay (between create and reward) */}
         {unitWizardLoading && (
-          <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label="Setting up your units…" style={{ zIndex: 241 }}>
+          <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label={t.settingUpUnits} style={{ zIndex: 241 }}>
             <div style={{ display: 'grid', justifyItems: 'center', gap: 12, padding: 12 }}>
-              <LoadingPill title="Setting up your units…" />
+              <LoadingPill title={t.settingUpUnits} />
               <div style={{ display: 'grid', gap: 6, textAlign: 'center' }}>
                 <div style={{ color: 'var(--text)', fontSize: 'var(--fs-b)', lineHeight: 'var(--lh-b)', fontWeight: 700 }}>
-                  Setting up your units…
+                  {t.settingUpUnits}
                 </div>
                 <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)' }}>
-                  {unitWizardLoadingStage === 0 ? 'Setting up your units…' : 'We are almost done…'}
+                  {unitWizardLoadingStage === 0 ? t.settingUpUnits : t.almostDone}
                 </div>
               </div>
             </div>
