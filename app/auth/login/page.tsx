@@ -9,6 +9,7 @@ export const revalidate = 0;
 export default async function LoginPage() {
   const cookieStore = cookies();
   const theme = (cookieStore.get("app_theme")?.value as "light" | "dark") ?? "light";
+  const initialLang = (cookieStore.get("app_lang")?.value as "en" | "ro") === "ro" ? "ro" : "en";
 
   // If already authenticated (incl. Google), skip login and go to the app
   try {
@@ -21,7 +22,7 @@ export default async function LoginPage() {
 
   return (
     <main style={{ display: "grid", placeItems: "center", minHeight: "100dvh", padding: 16 }}>
-      <LoginClient initialTheme={theme} />
+      <LoginClient initialTheme={theme} initialLang={initialLang} />
     </main>
   );
 }

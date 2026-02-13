@@ -5,8 +5,15 @@ import ThemeToggle from "@/app/app/ui/ThemeToggle";
 
 type Theme = "light" | "dark";
 type Mode = "login" | "signup";
+type Lang = "en" | "ro";
 
-export default function LoginClient({ initialTheme = "light" }: { initialTheme?: Theme }) {
+export default function LoginClient({
+  initialTheme = "light",
+  initialLang = "en",
+}: {
+  initialTheme?: Theme;
+  initialLang?: Lang;
+}) {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState<string>("");
   const [pass, setPass] = useState<string>("");
@@ -16,6 +23,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   const [failCount, setFailCount] = useState<number>(0);
   const [desiredPlan, setDesiredPlan] = useState<"basic"|"standard"|"premium"|null>(null);
   const [nextParam, setNextParam] = useState<string | null>(null);
+  const [lang, setLang] = useState<Lang>(initialLang);
 
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [mounted, setMounted] = useState(false);
@@ -38,6 +46,91 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   const safeJson = async (res: Response) => {
     try { return await res.json(); } catch { return {}; }
   };
+  const tr = {
+    en: {
+      welcome: "Welcome to Plan4Host",
+      signIn: "Sign in",
+      createAccount: "Create account",
+      signingIn: "Signing in...",
+      creating: "Creating...",
+      error: "Error",
+      idle: "Idle",
+      signInWithGoogle: "Sign in with Google",
+      createWithGoogle: "Create account with Google",
+      or: "or",
+      email: "Email",
+      password: "Password",
+      choosePassword: "Choose a password",
+      hidePassword: "Hide password",
+      showPassword: "Show password",
+      resetPassword: "Reset password",
+      enterEmail: "Please enter your email.",
+      enterValidEmail: "Please enter a valid email address.",
+      enterPassword: "Please enter your password.",
+      invalidCredentials: "Invalid credentials.",
+      accountCreateFailed: "Could not create account.",
+      networkError: "Network error. Please try again.",
+      confirmationSent: "We sent a confirmation email from office@plan4host.com. Please confirm to continue.",
+      forgotPassword: "Forgot your password?",
+      noAccount: "Don't have an account?",
+      createOne: "Create one",
+      alreadyAccount: "Already have an account?",
+      home: "Home",
+      backToHomepage: "Back to homepage",
+      resetTitle: "Reset password",
+      resetSent: "We sent a reset link to your email. Please check your inbox.",
+      resetSendFailed: "Failed to send reset email.",
+      unexpectedError: "Unexpected error.",
+      sending: "Sending...",
+      resendIn: "Resend in",
+      sendResetLink: "Send reset link",
+      resetLegend: "You'll receive a secure link to set a new password. For security, setting the password requires verification via email.",
+      placeholderEmail: "you@example.com",
+      placeholderResetEmail: "name@example.com",
+    },
+    ro: {
+      welcome: "Bine ai venit in Plan4Host",
+      signIn: "Autentificare",
+      createAccount: "Creeaza cont",
+      signingIn: "Se autentifica...",
+      creating: "Se creeaza...",
+      error: "Eroare",
+      idle: "Idle",
+      signInWithGoogle: "Autentificare cu Google",
+      createWithGoogle: "Creeaza cont cu Google",
+      or: "sau",
+      email: "Email",
+      password: "Parola",
+      choosePassword: "Alege o parola",
+      hidePassword: "Ascunde parola",
+      showPassword: "Arata parola",
+      resetPassword: "Reseteaza parola",
+      enterEmail: "Te rugam sa introduci emailul.",
+      enterValidEmail: "Te rugam sa introduci o adresa de email valida.",
+      enterPassword: "Te rugam sa introduci parola.",
+      invalidCredentials: "Credentiale invalide.",
+      accountCreateFailed: "Contul nu a putut fi creat.",
+      networkError: "Eroare de retea. Incearca din nou.",
+      confirmationSent: "Am trimis emailul de confirmare de la office@plan4host.com. Confirma pentru a continua.",
+      forgotPassword: "Ai uitat parola?",
+      noAccount: "Nu ai cont?",
+      createOne: "Creeaza unul",
+      alreadyAccount: "Ai deja cont?",
+      home: "Acasa",
+      backToHomepage: "Inapoi la pagina principala",
+      resetTitle: "Reseteaza parola",
+      resetSent: "Am trimis un link de resetare pe email. Verifica inboxul.",
+      resetSendFailed: "Trimiterea emailului de resetare a esuat.",
+      unexpectedError: "Eroare neasteptata.",
+      sending: "Se trimite...",
+      resendIn: "Retrimite in",
+      sendResetLink: "Trimite link de resetare",
+      resetLegend: "Vei primi un link securizat pentru setarea unei parole noi. Pentru siguranta, setarea parolei necesita verificare prin email.",
+      placeholderEmail: "tu@example.com",
+      placeholderResetEmail: "nume@example.com",
+    },
+  } as const;
+  const t = tr[lang];
 
   useEffect(() => {
     setMounted(true);
@@ -48,6 +141,10 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
 
     document.documentElement.setAttribute("data-theme", current);
     setTheme(current);
+    try {
+      const savedLang = localStorage.getItem("app_lang");
+      if (savedLang === "ro" || savedLang === "en") setLang(savedLang);
+    } catch {}
 
     function onThemeChange(e: Event) {
       const detail = (e as CustomEvent).detail as { theme?: Theme } | undefined;
@@ -99,7 +196,16 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     if (p === "basic" || p === "standard" || p === "premium") setDesiredPlan(p as any);
     const nx = u.searchParams.get("next");
     if (nx && /^\//.test(nx)) setNextParam(nx);
+    const hl = (u.searchParams.get("hl") || "").toLowerCase();
+    if (hl === "ro" || hl === "en") setLang(hl);
   }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("app_lang", lang);
+      document.cookie = `app_lang=${lang}; path=/; max-age=${60 * 60 * 24 * 365}`;
+    } catch {}
+  }, [lang]);
 
   // —— Reset cooldown: persist + live countdown ——
   const RESET_LS_KEY = "p4h:reset:until";
@@ -145,17 +251,17 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
     const emailTrim = asStr(email).trim();
     const passTrim  = asStr(pass);
     if (!emailTrim) {
-      setErr("Please enter your email.");
+      setErr(t.enterEmail);
       setStatus("Error");
       return;
     }
     if (!isEmail(emailTrim)) {
-      setErr("Please enter a valid email address.");
+      setErr(t.enterValidEmail);
       setStatus("Error");
       return;
     }
     if (!passTrim) {
-      setErr("Please enter your password.");
+      setErr(t.enterPassword);
       setStatus("Error");
       return;
     }
@@ -179,7 +285,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
         if (mode === "signup" && (j as any)?.requiresConfirmation) {
           setStatus("Idle");
           setErr("");
-          alert("We sent a confirmation email from office@plan4host.com. Please confirm to continue.");
+          alert(t.confirmationSent);
           // After confirming sign-up email notice, switch back to Sign in tab
           try {
             const u = new URL(window.location.href);
@@ -211,13 +317,13 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
       const message =
         asStr((j as any)?.error) ||
         asStr((j as any)?.message) ||
-        (mode === "login" ? "Invalid credentials." : "Could not create account.");
+        (mode === "login" ? t.invalidCredentials : t.accountCreateFailed);
       setErr(message);
       setStatus("Error");
       if (mode === "login") setFailCount((c) => Math.min(99, c + 1));
     } catch (ex: any) {
       // Eroare de rețea / CORS / timeouts
-      setErr(asStr(ex?.message) || "Network error. Please try again.");
+      setErr(asStr(ex?.message) || t.networkError);
       setStatus("Error");
       if (mode === "login") setFailCount((c) => Math.min(99, c + 1));
     }
@@ -226,8 +332,8 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   async function requestReset() {
     setResetMsg("");
     const emailTrim = asStr(resetEmail || email).trim();
-    if (!emailTrim) { setResetMsg("Please enter your email."); return; }
-    if (!isEmail(emailTrim)) { setResetMsg("Please enter a valid email address."); return; }
+    if (!emailTrim) { setResetMsg(t.enterEmail); return; }
+    if (!isEmail(emailTrim)) { setResetMsg(t.enterValidEmail); return; }
     setResetBusy(true);
     try {
       const res = await fetch('/api/auth/reset/request', {
@@ -238,14 +344,14 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
         const j = await safeJson(res);
         const retry = (j?.retry_after ?? j?.retryAfter ?? j?.cooldown ?? 0) as number;
         if (retry && retry > 0) startResetCountdown(retry);
-        setResetMsg(j?.error || 'Failed to send reset email.');
+        setResetMsg(j?.error || t.resetSendFailed);
         return;
       }
-      setResetMsg('We sent a reset link to your email. Please check your inbox.');
+      setResetMsg(t.resetSent);
       // 30s cooldown
       startResetCountdown(30);
     } catch (e:any) {
-      setResetMsg(e?.message || 'Unexpected error.');
+      setResetMsg(e?.message || t.unexpectedError);
     } finally { setResetBusy(false); }
   }
 
@@ -267,20 +373,40 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
   }
 
   const pill =
-    status === "Loading" ? (mode === "login" ? "Signing in…" : "Creating…")
-    : status === "Error" ? "Error"
-    : "Idle";
+    status === "Loading" ? (mode === "login" ? t.signingIn : t.creating)
+    : status === "Error" ? t.error
+    : t.idle;
 
   return (
     <>
       <div style={outerWrap}>
-        <h1 style={heroTitle}>Welcome to Plan4Host</h1>
+        <h1 style={heroTitle}>{t.welcome}</h1>
          
         <div  style={wrap(mounted ? theme : "dark")} >
           <div  style={headRow}>
-            <h1  style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? "Sign in" : "Create account"}</h1>
+            <h1  style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? t.signIn : t.createAccount}</h1>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               <span style={pillStyle(pill)}>{pill}</span>
+              <div style={langToggleWrap}>
+                <button
+                  type="button"
+                  onClick={() => setLang("en")}
+                  aria-label="Switch language to English"
+                  title="English"
+                  style={langBtn(lang === "en")}
+                >
+                  <img src="/eng.png" alt="English" width={16} height={16} style={{ display: "block", borderRadius: 999 }} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLang("ro")}
+                  aria-label="Schimba limba in romana"
+                  title="Romana"
+                  style={langBtn(lang === "ro")}
+                >
+                  <img src="/ro.png" alt="Romana" width={16} height={16} style={{ display: "block", borderRadius: 999 }} />
+                </button>
+              </div>
               <div style={animateTheme ? { animation: "themeFloat 2.2s ease-in-out 1" } : undefined}>
                 <ThemeToggle size="md" />
               </div>
@@ -301,30 +427,30 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
               style={{ display: "block" }}
             />
             <span style={{ fontSize: 16, fontWeight: 800 }}>
-              {mode === "login" ? "Sign in with Google" : "Create account with Google"}
+              {mode === "login" ? t.signInWithGoogle : t.createWithGoogle}
             </span>
           </button>
 
           <div style={dividerRow}>
             <span style={dividerLine} />
-            <small style={{ color: "var(--muted)" }}>or</small>
+            <small style={{ color: "var(--muted)" }}>{t.or}</small>
             <span style={dividerLine} />
           </div>
 
           <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
             <div style={{ display: "grid", gap: 6 }}>
-              <label style={lbl}>Email</label>
+              <label style={lbl}>{t.email}</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e)=>setEmail(asStr(e.currentTarget.value))}
-                placeholder="you@example.com"
+                placeholder={t.placeholderEmail}
                 style={input}
                 required
               />
             </div>
             <div style={{ display: "grid", gap: 6 }}>
-              <label style={lbl}>{mode === "login" ? "Password" : "Choose a password"}</label>
+              <label style={lbl}>{mode === "login" ? t.password : t.choosePassword}</label>
               <div style={{ position: 'relative' }}>
                 <input
                   type={showPwd ? "text" : "password"}
@@ -337,8 +463,8 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                 <button
                   type="button"
                   onClick={() => setShowPwd(v => !v)}
-                  aria-label={showPwd ? 'Hide password' : 'Show password'}
-                  title={showPwd ? 'Hide password' : 'Show password'}
+                  aria-label={showPwd ? t.hidePassword : t.showPassword}
+                  title={showPwd ? t.hidePassword : t.showPassword}
                   style={{
                     position: 'absolute',
                     right: 6,
@@ -368,7 +494,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
               {mode === 'login' && (
                 <div>
                   <a href="#" onClick={(e)=>{ e.preventDefault(); setResetOpen(true); setResetEmail(email); setResetMsg(''); }} style={{ color:'var(--primary)', fontSize:9,fontWeight: 600, textDecoration:'none' }}>
-                    Reset password
+                    {t.resetPassword}
                   </a>
                 </div>
               )}
@@ -381,7 +507,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
             disabled={status==="Loading"}
             style={primaryBtn}
           >
-            {mode === "login" ? "Sign in" : "Create account"}
+            {mode === "login" ? t.signIn : t.createAccount}
           </button>
 
           {mode === "login" && failCount >= 3 && (
@@ -391,7 +517,7 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                   href="/auth/reset"
                   style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}
                 >
-                  Forgot your password?
+                  {t.forgotPassword}
                 </a>
               </small>
             </div>
@@ -401,32 +527,32 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
               <small style={{ color: "var(--muted)" }}>
                 {mode === "login" ? (
                   <>
-                    Don’t have an account?{" "}
+                    {t.noAccount}{" "}
                     <a
                       href="#"
                       onClick={(e) => { e.preventDefault(); setMode("signup"); setErr(""); setFailCount(0); }}
                       style={{ color: "var(--primary)", fontWeight: 700, textDecoration: 'none' }}
                     >
-                      Create one
+                      {t.createOne}
                     </a>
                     .
                   </>
                 ) : (
                   <>
-                    Already have an account?{" "}
+                    {t.alreadyAccount}{" "}
                     <a
                       href="#"
                       onClick={(e) => { e.preventDefault(); setMode("login"); setErr(""); setFailCount(0); }}
                       style={{ color: "var(--primary)", fontWeight: 700, textDecoration: 'none' }}
                     >
-                      Sign in
+                      {t.signIn}
                     </a>
                     .
                   </>
                 )}
               </small>
-              <a href="/" className="sb-cardglow" style={{ color: 'var(--muted)', textDecoration: 'none', fontWeight: 600, fontSize: 11, borderRadius: 21, padding: "3px 5px"  }} title="Back to homepage">
-                Home
+              <a href="/" className="sb-cardglow" style={{ color: 'var(--muted)', textDecoration: 'none', fontWeight: 600, fontSize: 11, borderRadius: 21, padding: "3px 5px"  }} title={t.backToHomepage}>
+                {t.home}
               </a>
             </div>
           </form>
@@ -438,18 +564,18 @@ export default function LoginClient({ initialTheme = "light" }: { initialTheme?:
                    paddingTop:'calc(var(--safe-top) + 12px)', paddingBottom:'calc(var(--safe-bottom) + 12px)'}}>
           <div onClick={(e)=>e.stopPropagation()} style={{ width:'min(420px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-              <strong>Reset password</strong>
+              <strong>{t.resetTitle}</strong>
               <button onClick={()=>setResetOpen(false)} style={{ border:0, background:'transparent', cursor:'pointer', color:'var(--muted)' }}>✕</button>
             </div>
             <div style={{ display:'grid', gap:10 }}>
-              <label style={{ fontSize:12, color:'var(--muted)' }}>Email</label>
-              <input type="email" value={resetEmail} onChange={(e)=>setResetEmail(e.currentTarget.value)} placeholder="name@example.com" style={input} />
+              <label style={{ fontSize:12, color:'var(--muted)' }}>{t.email}</label>
+              <input type="email" value={resetEmail} onChange={(e)=>setResetEmail(e.currentTarget.value)} placeholder={t.placeholderResetEmail} style={input} />
               {resetMsg && <div style={{ color:'var(--text)', fontSize: 13 }}>{resetMsg}</div>}
               <button onClick={requestReset} disabled={resetBusy || resetCooldown>0} style={primaryBtn}>
-                {resetBusy ? 'Sending…' : (resetCooldown>0 ? `Resend in ${resetCooldown}s` : 'Send reset link')}
+                {resetBusy ? t.sending : (resetCooldown>0 ? `${t.resendIn} ${resetCooldown}s` : t.sendResetLink)}
               </button>
               <small style={{ color:'var(--muted)' }}>
-                You’ll receive a secure link to set a new password. For security, setting the password requires verification via email.
+                {t.resetLegend}
               </small>
             </div>
           </div>
@@ -501,6 +627,28 @@ const primaryBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10
 const oauthBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, flexWrap: 'wrap', textAlign: 'center' };
 const dividerRow: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 8 };
 const dividerLine: React.CSSProperties = { height: 1, background: "var(--border)", display: "block" };
+const langToggleWrap: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  padding: 4,
+  borderRadius: 999,
+  border: "1px solid var(--border)",
+  background: "var(--card)",
+};
+function langBtn(active: boolean): React.CSSProperties {
+  return {
+    width: 26,
+    height: 26,
+    borderRadius: 999,
+    border: active ? "1px solid var(--primary)" : "1px solid transparent",
+    background: active ? "color-mix(in srgb, var(--primary) 18%, var(--card))" : "transparent",
+    display: "grid",
+    placeItems: "center",
+    cursor: "pointer",
+    padding: 0,
+  };
+}
 function pillStyle(pill: string): React.CSSProperties {
   const isError = /error/i.test(pill);
   const isBusy = /(sign|load|creat)/i.test(pill);
