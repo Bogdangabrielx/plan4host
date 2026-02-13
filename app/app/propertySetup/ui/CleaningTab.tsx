@@ -5,44 +5,60 @@ type TaskDef = { id: string; label: string; sort_index: number };
 import { useState } from 'react';
 
 export default function CleaningTab({
+  lang = "en",
   tasks,
   onAdd, onRename, onDelete, onMove
 }: {
+  lang?: "ro" | "en";
   tasks: TaskDef[];
   onAdd: () => void;
   onRename: (id: string, label: string) => void;
   onDelete: (id: string) => void;
   onMove: (id: string, dir: "up" | "down") => void;
 }) {
+  const t = {
+    cleaningTasks: lang === "ro" ? "Task-uri curatenie" : "Cleaning tasks",
+    addTask: lang === "ro" ? "+ Adauga task" : "+ Add task",
+    noTasks: lang === "ro" ? "Nu exista task-uri de curatenie inca." : "No cleaning tasks set up yet.",
+    moveUp: lang === "ro" ? "Muta sus" : "Move up",
+    moveDown: lang === "ro" ? "Muta jos" : "Move down",
+    delete: lang === "ro" ? "Sterge" : "Delete",
+    deleteTask: lang === "ro" ? "Sterge task-ul de curatenie" : "Delete cleaning task",
+    deleteConfirm:
+      lang === "ro"
+        ? "Sigur vrei sa stergi „{label}”? Aceasta actiune este ireversibila."
+        : "Are you sure you want to delete “{label}”? This action is irreversible.",
+    close: lang === "ro" ? "Inchide" : "Close",
+  } as const;
   const [confirmDel, setConfirmDel] = useState<null | { id: string; label: string }>(null);
   return (
     <section className="sb-card ps-cleaning" style={{ display: "grid", gap: 12, padding: 12 }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h3 style={{ margin: 0 }}>Cleaning tasks</h3>
-        <button onClick={onAdd} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">+ Add task</button>
+        <h3 style={{ margin: 0 }}>{t.cleaningTasks}</h3>
+        <button onClick={onAdd} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">{t.addTask}</button>
       </header>
 
       {tasks.length === 0 && (
-        <p style={{ color: "var(--muted)" }}>No cleaning tasks set up yet.</p>
+        <p style={{ color: "var(--muted)" }}>{t.noTasks}</p>
       )}
 
       <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
-        {[...tasks].sort((a,b) => a.sort_index - b.sort_index).map((t, idx) => (
-          <li key={t.id} className="ct-row">
+        {[...tasks].sort((a,b) => a.sort_index - b.sort_index).map((task, idx) => (
+          <li key={task.id} className="ct-row">
             <input
-              defaultValue={t.label}
+              defaultValue={task.label}
               onBlur={(e) => {
                 const v = e.currentTarget.value.trim();
-                if (!v || v === t.label) { e.currentTarget.value = t.label; return; }
-                onRename(t.id, v);
+                if (!v || v === task.label) { e.currentTarget.value = task.label; return; }
+                onRename(task.id, v);
               }}
               className="ct-input"
               style={textInput}
             />
             <div className="ct-actions">
-              <button onClick={() => onMove(t.id, "up")}   disabled={idx === 0}                   className="sb-btn" title="Move up">↑</button>
-              <button onClick={() => onMove(t.id, "down")} disabled={idx === tasks.length - 1}    className="sb-btn" title="Move down">↓</button>
-              <button onClick={() => setConfirmDel({ id: t.id, label: t.label })} className="sb-btn">Delete</button>
+              <button onClick={() => onMove(task.id, "up")}   disabled={idx === 0}                className="sb-btn" title={t.moveUp}>↑</button>
+              <button onClick={() => onMove(task.id, "down")} disabled={idx === tasks.length - 1} className="sb-btn" title={t.moveDown}>↓</button>
+              <button onClick={() => setConfirmDel({ id: task.id, label: task.label })} className="sb-btn">{t.delete}</button>
             </div>
           </li>
         ))}
@@ -53,13 +69,13 @@ export default function CleaningTab({
           style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
           <div onClick={(e)=>e.stopPropagation()} className="sb-card sb-cardglow" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
             <div style={{ display:'grid', gap:8 }}>
-              <strong>Delete cleaning task</strong>
+              <strong>{t.deleteTask}</strong>
               <div style={{ color:'var(--muted)' }}>
-                Are you sure you want to delete “{confirmDel.label}”? This action is irreversible.
+                {t.deleteConfirm.replace("{label}", confirmDel.label)}
               </div>
               <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
-                <button className="sb-btn" onClick={()=>setConfirmDel(null)}>Close</button>
-                <button className="sb-btn sb-btn--primary" onClick={()=>{ const id=confirmDel.id; setConfirmDel(null); onDelete(id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>Delete</button>
+                <button className="sb-btn" onClick={()=>setConfirmDel(null)}>{t.close}</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ const id=confirmDel.id; setConfirmDel(null); onDelete(id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>{t.delete}</button>
               </div>
             </div>
           </div>

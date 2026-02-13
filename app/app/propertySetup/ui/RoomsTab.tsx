@@ -6,6 +6,7 @@ type Room = { id: string; name: string; sort_index: number; room_type_id: string
 type RoomType = { id: string; name: string };
 
 export default function RoomsTab({
+  lang = "en",
   rooms,
   roomTypes,
   onAddRoom,
@@ -19,6 +20,7 @@ export default function RoomsTab({
   plan,
   roomTypesGuideTick,
 }: {
+  lang?: "ro" | "en";
   rooms: Room[];
   roomTypes: RoomType[];
   onAddRoom: () => void | Promise<void>;
@@ -32,6 +34,37 @@ export default function RoomsTab({
   plan?: 'basic' | 'standard' | 'premium' | null;
   roomTypesGuideTick?: number;
 }) {
+  const tr = {
+    roomTypes: lang === "ro" ? "Tipuri de camera" : "Room types",
+    noRoomTypes: lang === "ro" ? "Nu ai inca tipuri de camera." : "You don’t have any room types yet.",
+    roomTypesHelp:
+      lang === "ro"
+        ? "Foloseste aceasta sectiune doar daca proprietatea are mai multe tipuri de camere (ex: Dubla, Studio, Suite Deluxe)."
+        : "Use this section only if your property has multiple room types (e.g. Double Room, Studio, Deluxe Suite).",
+    addRoomTypePlaceholder: lang === "ro" ? "Adauga un tip de camera (ex: Dubla)" : "Add a room type (e.g., Double)",
+    add: lang === "ro" ? "Adauga" : "Add",
+    rooms: lang === "ro" ? "Camere" : "Rooms",
+    addRoom: lang === "ro" ? "Adauga camera" : "Add room",
+    noRooms: lang === "ro" ? "Nu ai inca nicio camera definita." : "You don’t have any rooms defined yet.",
+    noRoomsHelp:
+      lang === "ro"
+        ? "Ca sa folosesti Plan4Host corect, ai nevoie de cel putin o camera. Camerele sunt necesare pentru:"
+        : "To use Plan4Host properly you need at least one room. Rooms are required in order to:",
+    noRoomsBullet1: lang === "ro" ? "inregistrarea si gestionarea rezervarilor" : "record and manage bookings",
+    noRoomsBullet2: lang === "ro" ? "sincronizarea calendarelor (iCal) cu OTA-uri" : "sync calendars (iCal) with OTAs",
+    noRoomsBullet3: lang === "ro" ? "trimiterea mesajelor automate catre oaspeti" : "send automatic messages to guests",
+    noRoomsCta: lang === "ro" ? "Apasa „Adauga camera” pentru a crea prima camera." : "Click “Add room” to create your first room.",
+    roomType: lang === "ro" ? "Tip camera" : "Room type",
+    none: lang === "ro" ? "— Niciunul —" : "— None —",
+    delete: lang === "ro" ? "Sterge" : "Delete",
+    deleteRoom: lang === "ro" ? "Sterge camera" : "Delete room",
+    deleteConfirm:
+      lang === "ro"
+        ? "Sigur vrei sa stergi „{name}”? Aceasta actiune este ireversibila."
+        : "Are you sure you want to delete “{name}”? This action is irreversible.",
+    close: lang === "ro" ? "Inchide" : "Close",
+    roomNamePlaceholder: lang === "ro" ? "Nume camera" : "Room name",
+  } as const;
   const [newType, setNewType] = useState("");
   const [confirmRoomDel, setConfirmRoomDel] = useState<null | { id: string; name: string }>(null);
   const [roomTypesOpen, setRoomTypesOpen] = useState<boolean>(false);
@@ -74,7 +107,7 @@ export default function RoomsTab({
             cursor: "pointer",
           }}
         >
-          <strong>Room types</strong>
+          <strong>{tr.roomTypes}</strong>
           <span style={{ fontSize: 12, color: "var(--muted)" }}>
             {roomTypesOpen ? "▲" : "▼"}
           </span>
@@ -85,17 +118,17 @@ export default function RoomsTab({
             <div style={{ color: "var(--muted)", fontSize: 13, marginBottom: 8 }}>
               {roomTypes.length === 0 && (
                 <div style={{ fontWeight: 700, marginBottom: 2 }}>
-                  You don’t have any room types yet.
+                  {tr.noRoomTypes}
                 </div>
               )}
               <div>
-                Use this section only if your property has multiple room types (e.g. Double Room, Studio, Deluxe Suite).
+                {tr.roomTypesHelp}
               </div>
             </div>
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
               <input
-                placeholder="Add a room type (e.g., Double)"
+                placeholder={tr.addRoomTypePlaceholder}
                 value={newType}
                 onChange={(e) => setNewType((e.target as HTMLInputElement).value)}
                 style={{
@@ -120,7 +153,7 @@ export default function RoomsTab({
                   }}
                   className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                 >
-                  Add
+                  {tr.add}
                 </button>
               )}
             </div>
@@ -130,7 +163,7 @@ export default function RoomsTab({
             ) : (
               <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
                 {roomTypes.map((t) => (
-                  <TypeRow key={t.id} type={t} onRename={onRenameType} onDelete={onDeleteType} />
+                  <TypeRow key={t.id} lang={lang} type={t} onRename={onRenameType} onDelete={onDeleteType} />
                 ))}
               </ul>
             )}
@@ -141,25 +174,25 @@ export default function RoomsTab({
       {/* Section 2: Rooms + type assignment */}
       <section className="sb-card" style={{ padding: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
-          <strong>Rooms</strong>
-          <button onClick={onAddRoom} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">Add room</button>
+          <strong>{tr.rooms}</strong>
+          <button onClick={onAddRoom} className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink">{tr.addRoom}</button>
         </div>
 
         {roomsSorted.length === 0 ? (
           <div style={{ color: "var(--muted)", fontSize: 13 }}>
             <div style={{ color: "var(--danger)" }}>
-              You don’t have any rooms defined yet.
+              {tr.noRooms}
             </div>
             <div style={{ marginTop: 4 }}>
-              To use Plan4Host properly you need at least one room. Rooms are required in order to:
+              {tr.noRoomsHelp}
             </div>
             <ul style={{ marginTop: 4, paddingLeft: 18 }}>
-              <li>record and manage bookings</li>
-              <li>sync calendars (iCal) with OTAs</li>
-              <li>send automatic messages to guests</li>
+              <li>{tr.noRoomsBullet1}</li>
+              <li>{tr.noRoomsBullet2}</li>
+              <li>{tr.noRoomsBullet3}</li>
             </ul>
             <div style={{ marginTop: 6 }}>
-              Click “Add room” to create your first room.
+              {tr.noRoomsCta}
             </div>
           </div>
         ) : (
@@ -179,20 +212,20 @@ export default function RoomsTab({
               >
                 {/* Row 1: NAME (full width) */}
                 <div style={{ gridArea: "name", minWidth: 0 }}>
-                  <RoomNameField room={r} onRenameRoom={onRenameRoom} />
+                  <RoomNameField room={r} onRenameRoom={onRenameRoom} placeholder={tr.roomNamePlaceholder} />
                 </div>
 
                 {/* Row 2 (left): TYPE (only if there are room types defined) */}
                 {roomTypes.length > 0 && (
                   <div style={typeArea}>
-                    <label style={smallLabel}>Room type</label>
+                    <label style={smallLabel}>{tr.roomType}</label>
                     <select
                       value={r.room_type_id ?? ""}
                       onChange={(e) => onAssignType(r.id, e.currentTarget.value || null)}
                       className="sb-select"
                       style={{ fontFamily: 'inherit', fontSize: 13 }}
                     >
-                      <option value="">— None —</option>
+                      <option value="">{tr.none}</option>
                       {roomTypes.map((t) => (
                         <option key={t.id} value={t.id}>
                           {t.name}
@@ -223,7 +256,7 @@ export default function RoomsTab({
                     onClick={() => setConfirmRoomDel({ id: r.id, name: r.name })}
                     className="sb-btn"
                   >
-                    Delete
+                    {tr.delete}
                   </button>
                 </div>
               </li>
@@ -237,13 +270,13 @@ export default function RoomsTab({
           style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
             <div style={{ display:'grid', gap:8 }}>
-              <strong>Delete room</strong>
+              <strong>{tr.deleteRoom}</strong>
               <div style={{ color:'var(--muted)' }}>
-                Are you sure you want to delete “{confirmRoomDel.name}”? This action is irreversible. 
+                {tr.deleteConfirm.replace("{name}", confirmRoomDel.name)}
               </div>
               <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
-                <button className="sb-btn" onClick={()=>setConfirmRoomDel(null)}>Close</button>
-                <button className="sb-btn sb-btn--primary" onClick={()=>{ const id=confirmRoomDel.id; setConfirmRoomDel(null); onDeleteRoom(id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>Delete</button>
+                <button className="sb-btn" onClick={()=>setConfirmRoomDel(null)}>{tr.close}</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ const id=confirmRoomDel.id; setConfirmRoomDel(null); onDeleteRoom(id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>{tr.delete}</button>
               </div>
             </div>
           </div>
@@ -253,7 +286,7 @@ export default function RoomsTab({
   );
 }
 
-function RoomNameField({ room, onRenameRoom }: { room: Room; onRenameRoom: (roomId: string, name: string) => void | Promise<void> }) {
+function RoomNameField({ room, onRenameRoom, placeholder }: { room: Room; onRenameRoom: (roomId: string, name: string) => void | Promise<void>; placeholder: string }) {
   const [name, setName] = useState<string>(room.name);
 
   // Re-sync when parent updates the room
@@ -269,21 +302,35 @@ function RoomNameField({ room, onRenameRoom }: { room: Room; onRenameRoom: (room
       value={name}
       onChange={(e) => setName((e.target as HTMLInputElement).value)}
       onBlur={commit}
-      placeholder="Room name"
+      placeholder={placeholder}
       style={input}
     />
   );
 }
 
 function TypeRow({
+  lang = "en",
   type,
   onRename,
   onDelete,
 }: {
+  lang?: "ro" | "en";
   type: RoomType;
   onRename: (id: string, name: string) => void | Promise<void>;
   onDelete: (id: string) => void | Promise<void>;
 }) {
+  const tr = {
+    save: lang === "ro" ? "Salveaza" : "Save",
+    cancel: lang === "ro" ? "Anuleaza" : "Cancel",
+    rename: lang === "ro" ? "Redenumeste" : "Rename",
+    delete: lang === "ro" ? "Sterge" : "Delete",
+    deleteRoomType: lang === "ro" ? "Sterge tipul de camera" : "Delete room type",
+    deleteConfirm:
+      lang === "ro"
+        ? "Sigur vrei sa stergi „{name}”? Aceasta actiune este ireversibila."
+        : "Are you sure you want to delete “{name}”? This action is irreversible.",
+    close: lang === "ro" ? "Inchide" : "Close",
+  } as const;
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(type.name);
   const [confirmDel, setConfirmDel] = useState(false);
@@ -310,7 +357,7 @@ function TypeRow({
                 }}
                 className="sb-btn sb-btn--primary"
               >
-                Save
+                {tr.save}
               </button>
               <button
                 onClick={() => {
@@ -319,15 +366,15 @@ function TypeRow({
                 }}
                 className="sb-btn"
               >
-                Cancel
+                {tr.cancel}
               </button>
             </>
           ) : (
             <button onClick={() => setEditing(true)} className="sb-btn">
-              Rename
+              {tr.rename}
             </button>
           )}
-          <button onClick={() => setConfirmDel(true)} className="sb-btn">Delete</button>
+          <button onClick={() => setConfirmDel(true)} className="sb-btn">{tr.delete}</button>
         </div>
       </div>
 
@@ -336,14 +383,13 @@ function TypeRow({
           style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
             <div style={{ display:'grid', gap:8 }}>
-              <strong>Delete room type</strong>
+              <strong>{tr.deleteRoomType}</strong>
               <div style={{ color:'var(--muted)' }}>
-                Are you sure you want to delete “{type.name}”? 
-                This action is irreversible.
+                {tr.deleteConfirm.replace("{name}", type.name)}
               </div>
               <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
-                <button className="sb-btn" onClick={()=>setConfirmDel(false)}>Close</button>
-                <button className="sb-btn sb-btn--primary" onClick={()=>{ setConfirmDel(false); onDelete(type.id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>Delete</button>
+                <button className="sb-btn" onClick={()=>setConfirmDel(false)}>{tr.close}</button>
+                <button className="sb-btn sb-btn--primary" onClick={()=>{ setConfirmDel(false); onDelete(type.id); }} style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}>{tr.delete}</button>
               </div>
             </div>
           </div>

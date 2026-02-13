@@ -1025,6 +1025,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
               settings={<SettingsTab property={selected} lang={uiLang} onChange={(k, v) => saveTime(k, v)} />}
               rooms={
                 <RoomsTab
+                  lang={uiLang}
                   rooms={rooms}
                   roomTypes={roomTypes}
                   onAddRoom={addRoom}
@@ -1155,6 +1156,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                   <div style={{ color: "var(--muted)" }}>Loading plan…</div>
                 ) : hasStandardOrBetter ? (
                   <CleaningTab
+                    lang={uiLang}
                     tasks={tasks.map(t => ({ id: t.id, label: t.label, sort_index: t.sort_index }))}
                     onAdd={async () => {
                       if (!canWrite || !selected) return;

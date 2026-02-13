@@ -24,14 +24,14 @@ export default function RoomDetailsTab({
   onMoveText: (id: string, dir: "up" | "down") => void;
 }) {
   const t = {
-    checklistItem: lang === "ro" ? "Element checklist" : "Checklist Item",
-    aboutChecklistItems: lang === "ro" ? "Despre elementele checklist" : "About checklist items",
-    whatChecklistItems: lang === "ro" ? "Ce sunt elementele checklist?" : "What are checklist items?",
+    checklistItem: lang === "ro" ? "Item de verificare" : "Checklist Item",
+    aboutChecklistItems: lang === "ro" ? "Despre item-urile de verificare" : "About checklist items",
+    whatChecklistItems: lang === "ro" ? "Ce sunt item-urile de verificare?" : "What are checklist items?",
     checklistInfo:
       lang === "ro"
         ? "Defineste preferinte da/nu pe care staff-ul le poate bifa pentru fiecare rezervare. Exemple: mic dejun, schimb zilnic de prosoape, pat suplimentar. Seteaza aici valoarea implicita; poate fi ajustata ulterior la fiecare rezervare."
         : "Define yes/no preferences that staff can toggle per reservation. Examples: breakfast, daily towel change, extra bed. Set a default state here; the values can be adjusted later when managing each booking.",
-    noChecklist: lang === "ro" ? "Nu exista inca elemente checklist." : "No checklist item defined yet.",
+    noChecklist: lang === "ro" ? "Nu exista inca item-uri de verificare." : "No checklist item defined yet.",
     defaultOn: lang === "ro" ? "implicit ON" : "default ON",
     moveUp: lang === "ro" ? "Muta sus" : "Move up",
     moveDown: lang === "ro" ? "Muta jos" : "Move down",
