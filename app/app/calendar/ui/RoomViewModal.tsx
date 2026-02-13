@@ -32,21 +32,27 @@ type TypeIntegration = {
   is_active: boolean | null;
   color?: string | null;
 };
+type Lang = "en" | "ro";
 
 function pad(n: number) { return String(n).padStart(2, "0"); }
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate(); }
 function firstWeekday(y: number, m: number) { const js = new Date(y, m, 1).getDay(); return (js + 6) % 7; }
 function ymd(d: Date) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
-const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const monthNamesByLang: Record<Lang, string[]> = {
+  en: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+  ro: ["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"],
+};
 
 export default function RoomViewModal({
   propertyId,
+  lang = "en",
   initialYear,
   initialMonth,
   canEdit,
   onClose,
 }: {
   propertyId: string;
+  lang?: Lang;
   initialYear: number;
   initialMonth: number; // 0..11
   canEdit: boolean;
@@ -252,13 +258,13 @@ export default function RoomViewModal({
       >
         {/* Header */}
         <div style={{ position: "sticky", top: 0, zIndex: 2, background: "var(--panel)", borderTopLeftRadius: RADIUS, borderTopRightRadius: RADIUS, borderBottom: "1px solid var(--border)", padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <strong>Room view — {monthNames[month]} {year}</strong>
+          <strong>{lang === "ro" ? "Camere" : "Room view"} — {monthNamesByLang[lang][month]} {year}</strong>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <button className="sb-btn sb-cardglow sb-btn--icon" aria-label="Prev month" onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}>◀</button>
-            <button className="sb-btn  sb-cardglow sb-btn--icon" aria-label="Next month" onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}>▶</button>
+            <button className="sb-btn sb-cardglow sb-btn--icon" aria-label={lang === "ro" ? "Luna anterioara" : "Prev month"} onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}>◀</button>
+            <button className="sb-btn  sb-cardglow sb-btn--icon" aria-label={lang === "ro" ? "Luna urmatoare" : "Next month"} onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}>▶</button>
             <button
               className="sb-btn sb-cardglow sb-btn--icon"
-              aria-label="Close room view"
+              aria-label={lang === "ro" ? "Inchide camerele" : "Close room view"}
               onClick={onClose}
               style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
             >
@@ -270,19 +276,20 @@ export default function RoomViewModal({
         {/* Content */}
         <div style={{ padding: 12 }}>
           {loading === "Error" && (
-            <div style={{ color: "var(--muted)" }}>Failed to load rooms or bookings.</div>
+            <div style={{ color: "var(--muted)" }}>{lang === "ro" ? "Nu am putut incarca camerele sau rezervarile." : "Failed to load rooms or bookings."}</div>
           )}
           {loading === "Loading" && (
-            <div style={{ color: "var(--muted)", marginBottom: 8 }}>Loading…</div>
+            <div style={{ color: "var(--muted)", marginBottom: 8 }}>{lang === "ro" ? "Se incarca…" : "Loading…"}</div>
           )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
             {rooms.map((r) => (
               <div key={r.id} className="sb-card sb-cardglow" style={{ padding: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                   <strong style={{ fontSize: 14 }}>{r.name}</strong>
-                  <small style={{ color: "var(--muted)" }}>{monthNames[month]} {year}</small>
+                  <small style={{ color: "var(--muted)" }}>{monthNamesByLang[lang][month]} {year}</small>
                 </div>
                 <MiniMonthRoom
+                  lang={lang}
                   year={year}
                   month={month}
                   room={r}
@@ -308,7 +315,8 @@ export default function RoomViewModal({
   );
 }
 
-function MiniMonthRoom({ year, month, room, colors, onDayClick }: {
+function MiniMonthRoom({ lang, year, month, room, colors, onDayClick }: {
+  lang: Lang;
   year: number; month: number; room: Room; colors: Map<string,string>;
   onDayClick: (room: Room, dateStr: string) => void;
 }) {
@@ -335,7 +343,7 @@ function MiniMonthRoom({ year, month, room, colors, onDayClick }: {
           <div
             key={i}
             onClick={clickable ? () => onDayClick(room, c.dateStr!) : undefined}
-            title={c.dateStr ? (hasColor ? "Reserved" : "Available") : undefined}
+            title={c.dateStr ? (hasColor ? (lang === "ro" ? "Rezervat" : "Reserved") : (lang === "ro" ? "Disponibil" : "Available")) : undefined}
             style={{
               position: "relative",
               height: 28,

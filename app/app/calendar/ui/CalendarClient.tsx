@@ -28,8 +28,15 @@ type Booking = {
   status: string;
 };
 
-const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const weekdayShort = ["Mo","Tu","We","Th","Fr","Sa","Su"];
+type Lang = "en" | "ro";
+const monthNamesByLang: Record<Lang, string[]> = {
+  en: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+  ro: ["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"],
+};
+const weekdayShortByLang: Record<Lang, string[]> = {
+  en: ["Mo","Tu","We","Th","Fr","Sa","Su"],
+  ro: ["Lu","Ma","Mi","Jo","Vi","Sa","Du"],
+};
 
 function pad(n: number) { return String(n).padStart(2, "0"); }
 function ymd(d: Date)   { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
@@ -49,6 +56,7 @@ export default function CalendarClient({
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
+  const [lang, setLang] = useState<Lang>("en");
   const [properties] = useState<Property[]>(initialProperties);
   const isSinglePropertyAccount = properties.length === 1;
   const { propertyId, setPropertyId, ready: propertyReady } = usePersistentPropertyState(properties);
@@ -118,6 +126,28 @@ export default function CalendarClient({
   const [showNoRoomsPopup, setShowNoRoomsPopup] = useState<boolean>(false);
 
   // Detect small screens
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): Lang => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setLang(readLang());
+    const onStorage = () => setLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   useEffect(() => {
     const detect = () => setIsSmall(typeof window !== "undefined" ? window.innerWidth < 480 : false);
     detect();
@@ -214,13 +244,13 @@ export default function CalendarClient({
   // Header pill (show Read-only when idle)
   useEffect(() => {
     const label =
-      !propertyReady       ? "Loading…" :
-      loading === "Loading" ? "Syncing…" :
-      loading === "Error"   ? "Error"    :
-      me === null           ? "Loading…" :
-                              "Idle";
+      !propertyReady       ? (lang === "ro" ? "Se incarca…" : "Loading…") :
+      loading === "Loading" ? (lang === "ro" ? "Se sincronizeaza…" : "Syncing…") :
+      loading === "Error"   ? (lang === "ro" ? "Eroare" : "Error")    :
+      me === null           ? (lang === "ro" ? "Se incarca…" : "Loading…") :
+                              (lang === "ro" ? "Inactiv" : "Idle");
     setPill(label);
-  }, [loading, me, propertyReady, setPill]);
+  }, [loading, me, propertyReady, setPill, lang]);
 
   // Occupancy map
   const occupancyMap = useMemo(() => {
@@ -294,7 +324,7 @@ export default function CalendarClient({
 
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
-      <PlanHeaderBadge title="Calendar" slot="under-title" />
+      <PlanHeaderBadge title={lang === "ro" ? "Calendar" : "Calendar"} slot="under-title" />
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 12 }}>
       {/* Toolbar */}
       <div className="sb-toolbar" style={{ gap: isSmall ? 12 : 20, flexWrap: 'wrap', marginBottom: 12 }}>
@@ -371,27 +401,27 @@ export default function CalendarClient({
             marginLeft: 0,
           }}
         >
-          <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Previous month"
+          <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label={lang === "ro" ? "Luna anterioara" : "Previous month"}
             onClick={() => setMonth(m => { const nm = m - 1; if (nm < 0) { setYear(y => y - 1); return 11; } return nm; })}
           >◀</button>
 
           <button type="button" className="sb-btn sb-cardglow sb-btn--ghost" onClick={openDatePicker}
-            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 45, textAlign: 'center' }} aria-label="Pick date">
-            {monthNames[month]} {year}
+            style={{ fontWeight: 900, fontSize: isSmall ? 16 : 18, paddingInline: 16, height: 45, textAlign: 'center' }} aria-label={lang === "ro" ? "Alege data" : "Pick date"}>
+            {monthNamesByLang[lang][month]} {year}
           </button>
 
-          <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label="Next month"
+          <button type="button" className="sb-btn sb-cardglow sb-btn--icon" aria-label={lang === "ro" ? "Luna urmatoare" : "Next month"}
             onClick={() => setMonth(m => { const nm = m + 1; if (nm > 11) { setYear(y => y + 1); return 0; } return nm; })}
           >▶</button>
         </div>
 
         {/* Mode row: Year / Room view (wraps below on small screens) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: isSmall ? '100%' : undefined, justifyContent: isSmall ? 'center' : undefined }}>
-          <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label="Open year overview">
-            Year
+          <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label={lang === "ro" ? "Deschide anul" : "Open year overview"}>
+            {lang === "ro" ? "An" : "Year"}
           </button>
-          <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label="Open room overview">
-            Room view
+          <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label={lang === "ro" ? "Deschide camerele" : "Open room overview"}>
+            {lang === "ro" ? "Camere" : "Room view"}
           </button>
         </div>
         <div style={{ flex: 1 }} />
@@ -399,6 +429,7 @@ export default function CalendarClient({
 
       {/* 🟢 MonthView în .modalCard cu trigger de mobil */}
       <MonthView
+        lang={lang}
         year={year}
         month={month}
         roomsCount={rooms.length}
@@ -414,6 +445,7 @@ export default function CalendarClient({
         <DayModal
           dateStr={openDate}
           propertyId={propertyId}
+          lang={lang}
           canEdit={canEdit}        /* <-- gating passed to modal */
           onClose={() => setOpenDate(null)}
         />
@@ -469,12 +501,12 @@ export default function CalendarClient({
                 gap: 10,
               }}
             >
-              <strong style={{ fontSize: 16 }}>Pick a month — {year}</strong>
+              <strong style={{ fontSize: 16 }}>{lang === "ro" ? "Alege luna" : "Pick a month"} — {year}</strong>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   type="button"
                   className="sb-btn sb-cardglow sb-btn--icon"
-                  aria-label="Previous year"
+                  aria-label={lang === "ro" ? "Anul anterior" : "Previous year"}
                   onClick={() => setYear((y) => y - 1)}
                 >
                   ◀
@@ -482,7 +514,7 @@ export default function CalendarClient({
                 <button
                   type="button"
                   className="sb-btn sb-cardglow sb-btn--icon"
-                  aria-label="Next year"
+                  aria-label={lang === "ro" ? "Anul urmator" : "Next year"}
                   onClick={() => setYear((y) => y + 1)}
                 >
                   ▶
@@ -490,7 +522,7 @@ export default function CalendarClient({
                 <button
                   type="button"
                   className="sb-btn sb-cardglow sb-btn--icon"
-                  aria-label="Close year overview"
+                  aria-label={lang === "ro" ? "Inchide anul" : "Close year overview"}
                   onClick={() => setShowYear(false)}
                   style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
                 >
@@ -500,6 +532,7 @@ export default function CalendarClient({
             </div>
             <div style={{ padding: 16, position: "relative", zIndex: 1 }}>
             <YearView
+              lang={lang}
               year={year}
               roomsCount={rooms.length}
               occupancyMap={occupancyMap}
@@ -516,6 +549,7 @@ export default function CalendarClient({
       {showRoomView && (
         <RoomViewModal
           propertyId={propertyId}
+          lang={lang}
           initialYear={year}
           initialMonth={month}
           canEdit={canEdit}
@@ -571,10 +605,12 @@ export default function CalendarClient({
             }}
           >
             <div style={{ fontWeight: 700, fontSize: 15 }}>
-              This property has no rooms yet
+              {lang === "ro" ? "Aceasta proprietate nu are inca camere" : "This property has no rooms yet"}
             </div>
             <div style={{ fontSize: 13, color: "var(--muted)" }}>
-              To use the calendar, please add at least one room for this property. We’ll open Property Setup on the Rooms tab.
+              {lang === "ro"
+                ? "Pentru a folosi calendarul, adauga cel putin o camera pentru aceasta proprietate. Deschidem Property Setup la tab-ul Rooms."
+                : "To use the calendar, please add at least one room for this property. We’ll open Property Setup on the Rooms tab."}
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <button
@@ -607,6 +643,7 @@ export default function CalendarClient({
 /* ================== YEAR VIEW ================== */
 
 function YearView({
+  lang,
   year,
   roomsCount,
   occupancyMap,
@@ -614,6 +651,7 @@ function YearView({
   onMonthTitleClick,
   onDayClick
 }: {
+  lang: Lang;
   year: number;
   roomsCount: number;
   occupancyMap: Map<string, Set<string>>;
@@ -640,12 +678,13 @@ function YearView({
                 borderRadius: 8,
               }}
             >
-              {monthNames[m]}
+              {monthNamesByLang[lang][m]}
             </button>
             <small style={{color: "var(--muted)" }}>{year}</small>
           </div>
 
           <MiniMonth
+            lang={lang}
             year={year}
             month={m}
             roomsCount={roomsCount}
@@ -659,8 +698,9 @@ function YearView({
 }
 
 function MiniMonth({
-  year, month, roomsCount, occupancyMap, onDayClick
+  lang, year, month, roomsCount, occupancyMap, onDayClick
 }: {
+  lang: Lang;
   year: number; month: number; roomsCount: number;
   occupancyMap: Map<string, Set<string>>;
   onDayClick: (dateStr: string) => void;
@@ -688,7 +728,7 @@ function MiniMonth({
           <div
             key={i}
             onClick={clickable ? () => onDayClick(c.dateStr!) : undefined}
-            title={c.dateStr ? tooltipFor(c.dateStr, roomsCount, occupancyMap) : undefined}
+            title={c.dateStr ? tooltipFor(c.dateStr, roomsCount, occupancyMap, lang) : undefined}
             style={{
               position: "relative",
               height: 26,
@@ -725,16 +765,17 @@ function MiniMonth({
   );
 }
 
-function tooltipFor(dateStr: string, roomsCount: number, map: Map<string, Set<string>>) {
+function tooltipFor(dateStr: string, roomsCount: number, map: Map<string, Set<string>>, lang: Lang) {
   const occ = map.get(dateStr)?.size ?? 0;
-  return `${occ}/${roomsCount} rooms occupied`;
+  return lang === "ro" ? `${occ}/${roomsCount} camere ocupate` : `${occ}/${roomsCount} rooms occupied`;
 }
 
 /* ================== MONTH VIEW ================== */
 
 function MonthView({
-  year, month, roomsCount, occupancyMap, highlightDate, isSmall, onDayClick, animate
+  lang, year, month, roomsCount, occupancyMap, highlightDate, isSmall, onDayClick, animate
 }: {
+  lang: Lang;
   year: number; month: number; roomsCount: number;
   occupancyMap: Map<string, Set<string>>;
   highlightDate: string | null;
@@ -764,7 +805,7 @@ function MonthView({
     <section className="modalCard cal-smoobu sb-cardglow" data-animate={animate ? "true" : undefined} style={{ padding: 12 }}>
       {/* headers */}
       <div className="cal-weekdays" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
-        {weekdayShort.map((w) => (
+        {weekdayShortByLang[lang].map((w) => (
           <div key={w} style={{ textAlign: "center", color: "var(--muted)", fontSize: isSmall ? 11 : 12 }}>{w}</div>
         ))}
       </div>
@@ -778,7 +819,7 @@ function MonthView({
               className="cal-day"
               key={i}
               onClick={clickable ? () => onDayClick(c.dateStr!) : undefined}
-              title={c.dateStr ? tooltipFor(c.dateStr, roomsCount, occupancyMap) : undefined}
+              title={c.dateStr ? tooltipFor(c.dateStr, roomsCount, occupancyMap, lang) : undefined}
               style={{
                 position: "relative",
                 height: isSmall ? 66 : 88,
@@ -840,11 +881,11 @@ function MonthView({
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 10, color: "var(--muted)", fontSize: 12, flexWrap: "wrap" }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <span style={{ width: 14, height: 6, background: "var(--primary)", borderRadius: 4, display: "inline-block", opacity: .22 }} />
-          Occupancy
+          {lang === "ro" ? "Ocupare" : "Occupancy"}
         </span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <span style={{ width: 6, height: 6, background: "var(--primary)", borderRadius: 999, display: "inline-block" }} />
-          Today
+          {lang === "ro" ? "Astazi" : "Today"}
         </span>
       </div>
     </section>

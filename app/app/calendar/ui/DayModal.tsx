@@ -24,6 +24,7 @@ export type Booking = {
 
 type Room = { id: string; name: string; property_id: string };
 type Property = { id: string; check_in_time: string | null; check_out_time: string | null };
+type Lang = "en" | "ro";
 
 function nextDate(dateStr: string): string {
   const [y, m, d] = dateStr.split("-").map((n) => parseInt(n, 10));
@@ -47,10 +48,12 @@ function prevDate(dateStr: string): string {
 export default function DayModal({
   dateStr,
   propertyId,
+  lang = "en",
   onClose,
 }: {
   dateStr: string;
   propertyId: string;
+  lang?: Lang;
   onClose: () => void;
 }) {
   const supabase = createClient();
@@ -73,9 +76,9 @@ export default function DayModal({
 
   // While DayModal is loading, trigger the global glass loading overlay.
   useEffect(() => {
-    if (loading === "loading") setPill("Loading…");
+    if (loading === "loading") setPill(lang === "ro" ? "Se incarca…" : "Loading…");
     else setPill(prevPillRef.current);
-  }, [loading, setPill]);
+  }, [loading, setPill, lang]);
 
   // Restore header pill on unmount.
   useEffect(() => {
@@ -86,7 +89,7 @@ export default function DayModal({
 
   const refresh = useCallback(async () => {
     setLoading("loading");
-    setStatusHint("Loading rooms and bookings…");
+    setStatusHint(lang === "ro" ? "Se incarca camerele si rezervarile…" : "Loading rooms and bookings…");
 
     const [rProp, rRooms, rToday, rFuture] = await Promise.all([
       supabase
@@ -126,7 +129,7 @@ export default function DayModal({
           rRooms.error?.message ||
           rToday.error?.message ||
           rFuture.error?.message ||
-          "Failed to load data."
+          (lang === "ro" ? "Nu am putut incarca datele." : "Failed to load data.")
       );
       return;
     }
@@ -137,7 +140,7 @@ export default function DayModal({
     setFutureBookings(rFuture.data ?? []);
     setLoading("idle");
     setStatusHint("");
-  }, [supabase, propertyId, day]);
+  }, [supabase, propertyId, day, lang]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -170,13 +173,13 @@ export default function DayModal({
 
   function formatReservedUntil(b: Booking) {
     const dt = b.end_date + (b.end_time ? ` ${b.end_time}` : "");
-    return `Reserved until ${dt.trim()}`;
+    return lang === "ro" ? `Rezervat pana la ${dt.trim()}` : `Reserved until ${dt.trim()}`;
   }
   function formatAvailableUntil(roomId: string) {
     const nxt = nextStartByRoom.get(roomId);
-    if (!nxt) return "Available (no upcoming bookings)";
+    if (!nxt) return lang === "ro" ? "Disponibil (fara rezervari viitoare)" : "Available (no upcoming bookings)";
     const dt = nxt.start_date + (nxt.start_time ? ` ${nxt.start_time}` : "");
-    return `Available until ${dt.trim()}`;
+    return lang === "ro" ? `Disponibil pana la ${dt.trim()}` : `Available until ${dt.trim()}`;
   }
   function guestFullName(b?: Booking | null) {
     if (!b) return "";
@@ -268,11 +271,11 @@ export default function DayModal({
           }}
         >
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <button className="sb-btn sb-cardglow sb-btn--icon" type="button" aria-label="Previous day" onClick={() => setDay((d)=> prevDate(d))}>◀</button>
+            <button className="sb-btn sb-cardglow sb-btn--icon" type="button" aria-label={lang === "ro" ? "Ziua anterioara" : "Previous day"} onClick={() => setDay((d)=> prevDate(d))}>◀</button>
             <strong style={{ letterSpacing: 0.2, fontSize: 16 }}>
               {day} 
             </strong>
-            <button className="sb-btn sb-cardglow sb-btn--icon" type="button" aria-label="Next day" onClick={() => setDay((d)=> nextDate(d))}>▶</button>
+            <button className="sb-btn sb-cardglow sb-btn--icon" type="button" aria-label={lang === "ro" ? "Ziua urmatoare" : "Next day"} onClick={() => setDay((d)=> nextDate(d))}>▶</button>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -287,7 +290,7 @@ export default function DayModal({
                   fontWeight: 800,
                 }}
               >
-                Loading…
+                {lang === "ro" ? "Se incarca…" : "Loading…"}
               </span>
             )}
             {loading === "error" && (
@@ -301,15 +304,15 @@ export default function DayModal({
                   fontWeight: 800,
                 }}
               >
-                Error
+                {lang === "ro" ? "Eroare" : "Error"}
               </span>
             )}
             {statusHint && <small style={{ color: "var(--muted)" }}>{statusHint}</small>}
             <button
               className="sb-btn sb-cardglow sb-btn--icon"
               type="button"
-              aria-label="Refresh"
-              title="Refresh"
+              aria-label={lang === "ro" ? "Reincarca" : "Refresh"}
+              title={lang === "ro" ? "Reincarca" : "Refresh"}
               onClick={refresh}
             >
               <svg
@@ -338,8 +341,8 @@ export default function DayModal({
             <button
               className="sb-btn sb-cardglow sb-btn--icon"
               type="button"
-              aria-label="Close"
-              title="Close"
+              aria-label={lang === "ro" ? "Inchide" : "Close"}
+              title={lang === "ro" ? "Inchide" : "Close"}
               onClick={onClose}
               style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
             >
@@ -382,7 +385,7 @@ export default function DayModal({
                     gridTemplateRows: "auto 1fr auto",
                     userSelect: "none",
                   }}
-                  title="Open reservation"
+                  title={lang === "ro" ? "Deschide rezervarea" : "Open reservation"}
                 >
                   {isReserved && (
                     <div
@@ -410,7 +413,7 @@ export default function DayModal({
                         color: "#fff",
                       }}
                     >
-                      {isReserved ? "Reserved" : "Available"}
+                      {isReserved ? (lang === "ro" ? "Rezervat" : "Reserved") : (lang === "ro" ? "Disponibil" : "Available")}
                     </span>
                   </div>
 
@@ -422,7 +425,7 @@ export default function DayModal({
                     )}
                     {isReserved && !fullName && (
                       <div style={{ fontWeight: 700, fontSize: 13, color: "var(--muted)" }}>
-                        (Guest name not set)
+                        {lang === "ro" ? "(Nume oaspete necompletat)" : "(Guest name not set)"}
                       </div>
                     )}
                   </div>
@@ -447,13 +450,13 @@ export default function DayModal({
                           fontWeight: 900,
                           cursor: "pointer",
                         }}
-                        title={`Add reservation starting today ${CI}`}
+                        title={lang === "ro" ? `Adauga rezervare incepand de azi ${CI}` : `Add reservation starting today ${CI}`}
                       >
-                        Add reservation
+                        {lang === "ro" ? "Adauga rezervare" : "Add reservation"}
                       </button>
                     )}
 
-                    <small style={{ color: "var(--muted)" }}>Open ▸</small>
+                    <small style={{ color: "var(--muted)" }}>{lang === "ro" ? "Deschide ▸" : "Open ▸"}</small>
                   </div>
                 </div>
               );
