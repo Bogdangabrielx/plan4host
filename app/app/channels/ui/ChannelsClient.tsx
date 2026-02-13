@@ -26,9 +26,10 @@ type TypeIntegration = {
   color?: string | null;
   logo_url?: string | null;
 };
+type Lang = "en" | "ro";
 
 /** Mic buton reutilizabil pentru copiere cu feedback */
-function CopyUrlButton({ url }: { url: string }) {
+function CopyUrlButton({ url, lang }: { url: string; lang: Lang }) {
   const [copied, setCopied] = useState(false);
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
@@ -58,7 +59,7 @@ function CopyUrlButton({ url }: { url: string }) {
       {!copied && (
         <img src={isDark ? '/copy_fordark.png' : '/copy_forlight.png'} alt="" width={14} height={14} style={{ opacity:.95 }} />
       )}
-      <span>{copied ? "Copied!" : "Copy link"}</span>
+      <span>{copied ? (lang === "ro" ? "Copiat!" : "Copied!") : (lang === "ro" ? "Copiaza link" : "Copy link")}</span>
     </button>
   );
 }
@@ -84,9 +85,22 @@ function providerBuiltinLogo(provider?: string | null): string | null {
 
 type HintVariant = "muted" | "warning" | "danger" | "success" | "info";
 
+function localizeHint(text: string, lang: Lang) {
+  if (lang === "en") return text;
+  if (text === "Ready") return "Gata";
+  if (text === "Premium only") return "Doar Premium";
+  if (text === "No active feeds") return "Nu exista feed-uri active";
+  if (text === "Synced just now") return "Sincronizat acum";
+  if (text === "Try again") return "Incearca din nou";
+  if (/^Wait /.test(text)) return text.replace(/^Wait /, "Asteapta ");
+  if (/^Hourly limit — next in /.test(text)) return text.replace(/^Hourly limit — next in /, "Limita orara — urmatorul in ");
+  return text;
+}
+
 export default function ChannelsClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
   const { setPill } = useHeader();
+  const [lang, setLang] = useState<Lang>("en");
   const [status, setStatus] = useState<"Idle" | "Loading" | "Saving…" | "Error">("Idle");
   // Responsive: mobil (telefon)
 
@@ -100,6 +114,28 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     if (typeof window === 'undefined') return false;
     return window.matchMedia?.('(max-width: 560px), (pointer: coarse)')?.matches ?? false;
   });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): Lang => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setLang(readLang());
+    const onStorage = () => setLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   useEffect(() => {
     const mq = window.matchMedia?.('(max-width: 560px), (pointer: coarse)');
     const on = (e: MediaQueryListEvent) => setIsSmall(e.matches);
@@ -406,18 +442,18 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     setCalendarOnboardingDidSync(false);
     const url = (calendarOnboardingUrl || "").trim();
     if (!url) {
-      setCalendarOnboardingError("Please paste your iCal link.");
+      setCalendarOnboardingError(lang === "ro" ? "Te rugam sa lipesti linkul iCal." : "Please paste your iCal link.");
       return false;
     }
     if (!propertyId) {
-      setCalendarOnboardingError("No property selected.");
+      setCalendarOnboardingError(lang === "ro" ? "Nu este selectata nicio proprietate." : "No property selected.");
       return false;
     }
     // Choose a default target: prefer type if present, else first room.
     const typeId = types[0]?.id || null;
     const roomId = rooms[0]?.id || null;
     if (!typeId && !roomId) {
-      setCalendarOnboardingError("Please add a unit first.");
+      setCalendarOnboardingError(lang === "ro" ? "Adauga mai intai o unitate." : "Please add a unit first.");
       return false;
     }
 
@@ -434,7 +470,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         ? await addIntegration(typeId, calendarOnboardingProvider, url)
         : await addRoomIntegration(roomId as string, calendarOnboardingProvider, url);
 
-      if (!newId) throw new Error("Could not save calendar link.");
+      if (!newId) throw new Error(lang === "ro" ? "Nu am putut salva linkul calendarului." : "Could not save calendar link.");
 
       try {
         window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
@@ -466,7 +502,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       setCalendarOnboardingOpen(true);
       return true;
     } catch (e: any) {
-      setCalendarOnboardingError(e?.message || "Could not import calendar.");
+      setCalendarOnboardingError(e?.message || (lang === "ro" ? "Nu am putut importa calendarul." : "Could not import calendar."));
       return false;
     } finally {
       setCalendarOnboardingLoading(false);
@@ -632,9 +668,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   }
 
   const pillLabel =
-    !propertyReady ? "Loading…" :
-    status === "Error" ? "Error" :
-    status === "Loading" || status === "Saving…" ? "Syncing…" : "Idle";
+    !propertyReady ? (lang === "ro" ? "Se incarca…" : "Loading…") :
+    status === "Error" ? (lang === "ro" ? "Eroare" : "Error") :
+    status === "Loading" || status === "Saving…" ? (lang === "ro" ? "Se sincronizeaza…" : "Syncing…") : (lang === "ro" ? "Inactiv" : "Idle");
 
   const activeCount = integrations.filter(i => !!i.is_active).length;
 
@@ -646,7 +682,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
-      <PlanHeaderBadge title="Sync Calendars" slot="under-title" />
+      <PlanHeaderBadge title={lang === "ro" ? "Sincronizare calendare" : "Sync Calendars"} slot="under-title" />
 
       {/* Onboarding — Calendar connection wizard */}
       {calendarOnboardingOpen && (
@@ -692,14 +728,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   }}
                 >
                   {calendarOnboardingStep === "intro"
-                    ? "Avoid Double Bookings"
+                    ? (lang === "ro" ? "Evita suprapunerile" : "Avoid Double Bookings")
                     : calendarOnboardingStep === "provider"
-                      ? "Where do you receive bookings?"
+                      ? (lang === "ro" ? "De unde primesti rezervari?" : "Where do you receive bookings?")
                       : calendarOnboardingStep === "paste"
-                        ? "Paste your booking calendar link"
+                        ? (lang === "ro" ? "Lipește linkul calendarului" : "Paste your booking calendar link")
                         : calendarOnboardingStep === "reward"
-                          ? "Your bookings are now synced"
-                          : "Optional: export your Plan4Host calendar"}
+                          ? (lang === "ro" ? "Rezervarile sunt sincronizate" : "Your bookings are now synced")
+                          : (lang === "ro" ? "Optional: exporta calendarul Plan4Host" : "Optional: export your Plan4Host calendar")}
                 </div>
                 <div
                   style={{
@@ -709,18 +745,18 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   }}
                 >
                   {calendarOnboardingStep === "intro"
-                    ? "Connect one booking calendar to keep availability updated automatically."
+                    ? (lang === "ro" ? "Conecteaza un calendar de rezervari ca disponibilitatea sa fie actualizata automat." : "Connect one booking calendar to keep availability updated automatically.")
                     : calendarOnboardingStep === "provider"
-                      ? "Choose one platform to connect first."
+                      ? (lang === "ro" ? "Alege prima platforma pe care o conectezi." : "Choose one platform to connect first.")
                       : calendarOnboardingStep === "paste"
-                        ? "Copy the iCal link from your booking platform and paste it below."
+                        ? (lang === "ro" ? "Copiaza linkul iCal din platforma de rezervari si lipeste-l mai jos." : "Copy the iCal link from your booking platform and paste it below.")
                         : calendarOnboardingStep === "reward"
-                          ? "Bookings are synced. Guest details will appear once they complete your check-in form."
-                          : "This blocks dates on other platforms when things change."}
+                          ? (lang === "ro" ? "Rezervarile sunt sincronizate. Datele oaspetilor apar dupa completarea formularului de check-in." : "Bookings are synced. Guest details will appear once they complete your check-in form.")
+                          : (lang === "ro" ? "Asta blocheaza datele pe celelalte platforme cand apar modificari." : "This blocks dates on other platforms when things change.")}
                 </div>
               </div>
               <button
-                aria-label="Close"
+                aria-label={lang === "ro" ? "Inchide" : "Close"}
                 className="sb-btn sb-cardglow sb-btn--icon"
                 style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
                 onClick={() => setCalendarOnboardingOpen(false)}
@@ -732,16 +768,16 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             {calendarOnboardingStep === "intro" && (
               <div style={{ display: "grid", gap: 12 }}>
                 <div style={{ color: "var(--muted)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
-                  To get started, you only need to connect one calendar.
+                  {lang === "ro" ? "Ca sa incepi, trebuie sa conectezi un singur calendar." : "To get started, you only need to connect one calendar."}
                   <br />
-                  We’ll keep it updated automatically for you.
+                  {lang === "ro" ? "Il vom mentine actualizat automat pentru tine." : "We’ll keep it updated automatically for you."}
                 </div>
                 <button
                   className="sb-btn sb-btn--primary sb-cardglow"
                   style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
                   onClick={() => setCalendarOnboardingStep("provider")}
                 >
-                  Start sync
+                  {lang === "ro" ? "Incepe sincronizarea" : "Start sync"}
                 </button>
               </div>
             )}
@@ -755,7 +791,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                       { key: "Booking", label: "Booking", logo: "/booking.png" },
                       { key: "Trivago", label: "Trivago", logo: "/trivago.png" },
                       { key: "Expedia", label: "Expedia", logo: "/expedia.png" },
-                      { key: "Other", label: "Other platforms", logo: null as string | null, disabled: true },
+                      { key: "Other", label: lang === "ro" ? "Alte platforme" : "Other platforms", logo: null as string | null, disabled: true },
 	                    ].map((p) => {
 	                      const active = calendarOnboardingProvider === p.key;
                         const disabled = !!(p as any).disabled;
@@ -797,7 +833,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 	                    })}
                   </div>
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                    Any platform that provides an iCal link works.
+                    {lang === "ro" ? "Functioneaza orice platforma care ofera link iCal." : "Any platform that provides an iCal link works."}
                   </div>
                 </div>
                 <button
@@ -805,7 +841,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
                   onClick={() => setCalendarOnboardingStep("paste")}
                 >
-                  I have my iCal link
+                  {lang === "ro" ? "Am linkul iCal" : "I have my iCal link"}
                 </button>
                 <button
                   type="button"
@@ -826,7 +862,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     window.location.href = `/app/checkinEditor?onboarding=contacts&highlight=contacts`;
                   }}
                 >
-                  I’ll add it later
+                  {lang === "ro" ? "Il adaug mai tarziu" : "I’ll add it later"}
                 </button>
               </div>
             )}
@@ -834,11 +870,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             {calendarOnboardingStep === "paste" && (
               <div style={{ display: "grid", gap: 12 }}>
                 <div style={{ display: "grid", gap: 6 }}>
-                  <label style={{ display: "block" }}>iCal link</label>
+                  <label style={{ display: "block" }}>{lang === "ro" ? "Link iCal" : "iCal link"}</label>
                   <input
                     value={calendarOnboardingUrl}
                     onChange={(e) => setCalendarOnboardingUrl(e.currentTarget.value)}
-                    placeholder="Paste iCal link here"
+                    placeholder={lang === "ro" ? "Lipește linkul iCal aici" : "Paste iCal link here"}
                     style={{
                       width: "100%",
                       padding: 10,
@@ -850,7 +886,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     }}
                   />
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                    We’ll import your reservations and keep them in sync.
+                    {lang === "ro" ? "Importam rezervarile si le mentinem sincronizate." : "We’ll import your reservations and keep them in sync."}
                   </div>
                 </div>
                 <button
@@ -858,7 +894,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
                   onClick={() => void onboardingImportCalendar()}
                 >
-                  Import calendar
+                  {lang === "ro" ? "Importa calendarul" : "Import calendar"}
                 </button>
                 {calendarOnboardingError && (
                   <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
@@ -891,7 +927,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                       ✓
                     </span>
                     <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 600, color: "var(--text)" }}>
-                      Existing bookings imported
+                      {lang === "ro" ? "Rezervarile existente au fost importate" : "Existing bookings imported"}
                     </span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
@@ -914,16 +950,16 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                       ✓
                     </span>
                     <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 600, color: "var(--text)" }}>
-                      Availability updated
+                      {lang === "ro" ? "Disponibilitate actualizata" : "Availability updated"}
                     </span>
                   </div>
                 </div>
                 <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                  We’ll keep this calendar updated for you.
+                  {lang === "ro" ? "Vom mentine acest calendar actualizat pentru tine." : "We’ll keep this calendar updated for you."}
                 </div>
                 {!calendarOnboardingDidSync && (
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                    Import can take a moment — your calendar is already connected.
+                    {lang === "ro" ? "Importul poate dura putin — calendarul este deja conectat." : "Import can take a moment — your calendar is already connected."}
                   </div>
                 )}
                 <button
@@ -931,7 +967,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
                   onClick={() => setCalendarOnboardingStep("export")}
                 >
-                  Continue
+                  {lang === "ro" ? "Continua" : "Continue"}
                 </button>
               </div>
             )}
@@ -944,7 +980,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   onClick={async () => {
                     const exportUrl = types[0]?.id ? typeIcsUrl(types[0].id) : rooms[0]?.id ? roomIcsUrl(rooms[0].id) : "";
                     if (!exportUrl) return;
-                    try { await navigator.clipboard.writeText(exportUrl); } catch { prompt("Copy export link:", exportUrl); }
+                    try { await navigator.clipboard.writeText(exportUrl); } catch { prompt(lang === "ro" ? "Copiaza linkul de export:" : "Copy export link:", exportUrl); }
                     setCalendarExportCopyState("copied");
                     if (calendarExportCopyTimerRef.current) window.clearTimeout(calendarExportCopyTimerRef.current);
                     calendarExportCopyTimerRef.current = window.setTimeout(() => {
@@ -954,13 +990,13 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   }}
                 >
                   {calendarExportCopyState === "idle"
-                    ? "Copy export link"
+                    ? (lang === "ro" ? "Copiaza linkul de export" : "Copy export link")
                     : calendarExportCopyState === "copied"
-                      ? "Copied"
-                      : "Use it on your booking platform"}
+                      ? (lang === "ro" ? "Copiat" : "Copied")
+                      : (lang === "ro" ? "Foloseste-l in platforma ta de rezervari" : "Use it on your booking platform")}
                 </button>
                 <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-                  You can add this anytime from Calendar settings.
+                  {lang === "ro" ? "Il poti adauga oricand din setarile Calendar." : "You can add this anytime from Calendar settings."}
                 </div>
                 <button
                   className="sb-btn sb-btn--primary sb-cardglow"
@@ -970,7 +1006,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     window.location.href = `/app/checkinEditor?onboarding=contacts&highlight=contacts&calendar=1`;
                   }}
                 >
-                  Continue
+                  {lang === "ro" ? "Continua" : "Continue"}
                 </button>
               </div>
             )}
@@ -979,15 +1015,17 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       )}
 
       {calendarOnboardingLoading && (
-        <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label="Importing your reservations…" style={{ zIndex: 241 }}>
+        <div className={overlayStyles.overlay} role="status" aria-live="polite" aria-label={lang === "ro" ? "Importam rezervarile…" : "Importing your reservations…"} style={{ zIndex: 241 }}>
           <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
-            <LoadingPill title="Importing your reservations…" />
+            <LoadingPill title={lang === "ro" ? "Importam rezervarile…" : "Importing your reservations…"} />
             <div style={{ display: "grid", gap: 6, textAlign: "center" }}>
               <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", fontWeight: 700 }}>
-                Importing your reservations…
+                {lang === "ro" ? "Importam rezervarile…" : "Importing your reservations…"}
               </div>
               <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                {calendarOnboardingLoadingStage === 0 ? "Importing your reservations…" : "Preparing your availability…"}
+                {calendarOnboardingLoadingStage === 0
+                  ? (lang === "ro" ? "Importam rezervarile…" : "Importing your reservations…")
+                  : (lang === "ro" ? "Pregatim disponibilitatea…" : "Preparing your availability…")}
               </div>
             </div>
           </div>
@@ -1065,13 +1103,13 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       {/* Card cu acțiuni */}
       <section className="sb-cardglow" style={{ padding: 16, marginTop: 0, borderRadius: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <h3 style={{ margin: 0 }}>Calendar Integrations</h3>
+          <h3 style={{ margin: 0 }}>{lang === "ro" ? "Integrari calendare" : "Calendar Integrations"}</h3>
           <button
             className="sb-btn sb-cardglow sb-btn--icon"
             type="button"
-            aria-label={calendarInfoOpen ? "Hide info" : "Show info"}
+            aria-label={calendarInfoOpen ? (lang === "ro" ? "Ascunde informatiile" : "Hide info") : (lang === "ro" ? "Arata informatiile" : "Show info")}
             aria-expanded={calendarInfoOpen}
-            title={calendarInfoOpen ? "Hide info" : "Show info"}
+            title={calendarInfoOpen ? (lang === "ro" ? "Ascunde informatiile" : "Hide info") : (lang === "ro" ? "Arata informatiile" : "Show info")}
             onClick={() => {
               calendarInfoTouchedRef.current = true;
               setCalendarInfoOpen(v => !v);
@@ -1092,7 +1130,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         </div>
         {!timezone && (
           <p style={{ fontSize:8, color: "var(--danger)", marginTop: 0 }}>
-            Set Country (timezone) in Dashboard to produce valid .ics files.
+            {lang === "ro" ? "Seteaza Tara (fus orar) in Dashboard pentru a genera fisiere .ics valide." : "Set Country (timezone) in Dashboard to produce valid .ics files."}
           </p>
         )}
 
@@ -1111,10 +1149,10 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           >
 	            <div style={{ display: "grid", gap: 6 }}>
 	              <p style={{ margin: 0, fontSize: 13, color: "var(--text)" }}>
-	                Sync iCal calendars from other platforms to avoid overbooking.
+	                {lang === "ro" ? "Sincronizeaza calendarele iCal din alte platforme pentru a evita suprarezervarile." : "Sync iCal calendars from other platforms to avoid overbooking."}
 	              </p>
 	              <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
-	                You can import calendars from Airbnb, Booking, Trivago… and many more (any platform that provides an iCal/ICS link).
+	                {lang === "ro" ? "Poti importa calendare din Airbnb, Booking, Trivago… si multe altele (orice platforma care ofera link iCal/ICS)." : "You can import calendars from Airbnb, Booking, Trivago… and many more (any platform that provides an iCal/ICS link)."}
 	              </p>
 	            </div>
 	            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
@@ -1161,11 +1199,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 	                  fontWeight: 700,
 	                }}
 	              >
-	                …many more
+	                {lang === "ro" ? "…si multe altele" : "…many more"}
 	              </span>
 	            </div>
 	            <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
-	              Add an iCal link for each room (or room type), then enable “Sync now”.
+	              {lang === "ro" ? "Adauga un link iCal pentru fiecare camera (sau tip de camera), apoi activeaza „Sincronizeaza acum”." : "Add an iCal link for each room (or room type), then enable “Sync now”."}
 	            </p>
           </div>
         )}
@@ -1184,18 +1222,22 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               disabled={activeCount === 0 || status === "Saving…"}
               title={
                 isPremium === false
-                  ? "Premium only"
+                  ? (lang === "ro" ? "Doar Premium" : "Premium only")
                   : activeCount === 0
-                  ? "No active feeds found"
-                  : "Sync all active imports now"
+                  ? (lang === "ro" ? "Nu exista feed-uri active" : "No active feeds found")
+                  : (lang === "ro" ? "Sincronizeaza acum toate importurile active" : "Sync all active imports now")
               }
             >
-              {syncBtnText}
+              {syncBtnText === "Sync now"
+                ? (lang === "ro" ? "Sincronizeaza acum" : "Sync now")
+                : syncBtnText === "Premium only"
+                  ? (lang === "ro" ? "Doar Premium" : "Premium only")
+                  : syncBtnText}
             </button>
 
             {/* PILLAȘ persistent lângă butonul global */}
             {hintText ? (
-              <span className="sb-badge">{hintText}</span>
+              <span className="sb-badge">{localizeHint(hintText, lang)}</span>
             ) : null}
           </div>
 
@@ -1215,8 +1257,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 className="sb-card"
                 style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
               >
-                <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Room Types</h4>
-                <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per type</small>
+              <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>{lang === "ro" ? "Tipuri de camere" : "Room Types"}</h4>
+                <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>{lang === "ro" ? "Export .ics per tip" : "Export .ics per type"}</small>
                 <button
                   className="sb-btn"
                   style={{
@@ -1231,7 +1273,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   }}
                   disabled={!canWrite}
                   onClick={() => { if (!canWrite) return; if (!types.length) return; setShowTypesModal(true); }}
-                  title="Export · Room Types"
+                  title={lang === "ro" ? "Export · Tipuri de camere" : "Export · Room Types"}
                 >
                   Export iCal
                 </button>
@@ -1243,8 +1285,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 className="sb-card"
                 style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
               >
-                <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Import · Room Types</h4>
-                <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics per room type</small>
+                <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>{lang === "ro" ? "Import · Tipuri de camere" : "Import · Room Types"}</h4>
+                <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>{lang === "ro" ? "Import .ics per tip de camera" : "Import .ics per room type"}</small>
                 <button
                   className="sb-btn"
                   style={{
@@ -1259,7 +1301,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   }}
                   disabled={!canWrite}
                   onClick={() => { if (!canWrite) return; setShowImportModal(true); }}
-                  title="Import feeds per room type"
+                  title={lang === "ro" ? "Import feed-uri per tip de camera" : "Import feeds per room type"}
                 >
                   Import iCal
                 </button>
@@ -1270,8 +1312,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               className="sb-card"
               style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
             >
-              <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Rooms</h4>
-              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Export .ics per room</small>
+              <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>{lang === "ro" ? "Camere" : "Rooms"}</h4>
+              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>{lang === "ro" ? "Export .ics per camera" : "Export .ics per room"}</small>
               <button
                 className="sb-btn"
                 style={{
@@ -1286,7 +1328,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 }}
                 disabled={!canWrite}
                 onClick={() => { if (!canWrite) return; setShowRoomsModal(true); }}
-                title="Export · Rooms"
+                title={lang === "ro" ? "Export · Camere" : "Export · Rooms"}
               >
                 Export iCal
               </button>
@@ -1296,8 +1338,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               className="sb-card"
               style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
             >
-              <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>Import · Rooms</h4>
-              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>Import .ics per room</small>
+              <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>{lang === "ro" ? "Import · Camere" : "Import · Rooms"}</h4>
+              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>{lang === "ro" ? "Import .ics per camera" : "Import .ics per room"}</small>
               <button
                 className="sb-btn"
                 style={{
@@ -1312,7 +1354,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 }}
                 disabled={!canWrite}
                 onClick={() => { if (!canWrite) return; setShowRoomImportModal(true); }}
-                title="Import feeds per room"
+                title={lang === "ro" ? "Import feed-uri per camera" : "Import feeds per room"}
               >
                 Import iCal
               </button>
@@ -1323,10 +1365,10 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
       {/* ======= MODAL A: EXPORT per ROOM ======= */}
       {showRoomsModal && (
-        <Modal title="Export · Rooms" onClose={() => { setShowRoomsModal(false); setActiveRoomId(null); }}>
+        <Modal title={lang === "ro" ? "Export · Camere" : "Export · Rooms"} closeLabel={lang === "ro" ? "Inchide" : "Close"} onClose={() => { setShowRoomsModal(false); setActiveRoomId(null); }}>
           <div style={tileGrid}>
             {rooms.length === 0 ? (
-              <p style={{ color: "var(--text)", gridColumn: "1 / -1", }}>No rooms in this property.</p>
+              <p style={{ color: "var(--text)", gridColumn: "1 / -1", }}>{lang === "ro" ? "Nu exista camere in aceasta proprietate." : "No rooms in this property."}</p>
             ) : rooms.map(r => (
               <button
                 key={r.id}
@@ -1336,7 +1378,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 title={r.name}
               >
                 <span style={tileTitle}>{r.name}</span>
-                <span style={tileSub}>Get link</span>
+                <span style={tileSub}>{lang === "ro" ? "Ia linkul" : "Get link"}</span>
               </button>
             ))}
           </div>
@@ -1345,13 +1387,15 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             const room = rooms.find(x => x.id === activeRoomId)!;
             const url = roomIcsUrl(activeRoomId);
             return (
-              <InnerModal title={room.name} onClose={() => setActiveRoomId(null)}>
+              <InnerModal title={room.name} closeLabel={lang === "ro" ? "Inchide" : "Close"} onClose={() => setActiveRoomId(null)}>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <CopyUrlButton url={url} />
-                  <a className="sb-btn" href={url} target="_blank" rel="noreferrer">Open</a>
+                  <CopyUrlButton url={url} lang={lang} />
+                  <a className="sb-btn" href={url} target="_blank" rel="noreferrer">{lang === "ro" ? "Deschide" : "Open"}</a>
                 </div>
                 <p style={{ fontSize: 12, color: "var(--muted)", margin: "8px 0 0" }}>
-                  *Paste into your listing if each room is listed separately on Booking.com, Airbnb, etc., or into your personal calendar (Google, Apple, Outlook).
+                  {lang === "ro"
+                    ? "*Lipeste-l in listing daca fiecare camera este listata separat pe Booking.com, Airbnb etc., sau in calendarul personal (Google, Apple, Outlook)."
+                    : "*Paste into your listing if each room is listed separately on Booking.com, Airbnb, etc., or into your personal calendar (Google, Apple, Outlook)."}
                 </p>
               </InnerModal>
             );
@@ -1361,10 +1405,10 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
       {/* ======= MODAL B: EXPORT per TYPE ======= */}
       {showTypesModal && types.length > 0 && (
-        <Modal title="Export · Room Types" onClose={() => { setShowTypesModal(false); setActiveTypeId(null); }}>
+        <Modal title={lang === "ro" ? "Export · Tipuri de camere" : "Export · Room Types"} closeLabel={lang === "ro" ? "Inchide" : "Close"} onClose={() => { setShowTypesModal(false); setActiveTypeId(null); }}>
           <div style={tileGrid}>
             {types.length === 0 ? (
-              <p style={{ color: "var(--text)", gridColumn: "1 / -1", }}>No room types defined.</p>
+              <p style={{ color: "var(--text)", gridColumn: "1 / -1", }}>{lang === "ro" ? "Nu exista tipuri de camere definite." : "No room types defined."}</p>
             ) : types.map(t => (
               <button
                 key={t.id}
@@ -1374,7 +1418,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 title={t.name}
               >
                 <span style={tileTitle}>{t.name}</span>
-                <span style={tileSub}>Get link</span>
+                <span style={tileSub}>{lang === "ro" ? "Ia linkul" : "Get link"}</span>
               </button>
             ))}
           </div>
@@ -1383,13 +1427,13 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             const t = types.find(x => x.id === activeTypeId)!;
             const url = typeIcsUrl(activeTypeId);
             return (
-              <InnerModal title={t.name} onClose={() => setActiveTypeId(null)}>
+              <InnerModal title={t.name} closeLabel={lang === "ro" ? "Inchide" : "Close"} onClose={() => setActiveTypeId(null)}>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <CopyUrlButton url={url} />
-                  <a className="sb-btn" href={url} target="_blank" rel="noreferrer">Open</a>
+                  <CopyUrlButton url={url} lang={lang} />
+                  <a className="sb-btn" href={url} target="_blank" rel="noreferrer">{lang === "ro" ? "Deschide" : "Open"}</a>
                 </div>
                 <p style={{ fontSize: 12, color: "var(--muted)", margin: "8px 0 0" }}>
-                  *Paste into your room-type calendar on Booking.com, Airbnb, etc.
+                  {lang === "ro" ? "*Lipeste-l in calendarul tipului de camera din Booking.com, Airbnb etc." : "*Paste into your room-type calendar on Booking.com, Airbnb, etc."}
                 </p>
               </InnerModal>
             );
@@ -1399,9 +1443,9 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
       {/* ======= MODAL C: IMPORT (pe TYPE) ======= */}
       {showImportModal && (
-        <Modal title="Import · Room Types" onClose={() => { setShowImportModal(false); setManageTypeId(null); }}>
+        <Modal title={lang === "ro" ? "Import · Tipuri de camere" : "Import · Room Types"} closeLabel={lang === "ro" ? "Inchide" : "Close"} onClose={() => { setShowImportModal(false); setManageTypeId(null); }}>
           {types.length === 0 ? (
-            <p style={{ color: "var(--text)", margin: 0 }}>No room types defined. Add room types in Property Setup to import per type.</p>
+            <p style={{ color: "var(--text)", margin: 0 }}>{lang === "ro" ? "Nu exista tipuri de camere. Adauga tipuri in Property Setup pentru import per tip." : "No room types defined. Add room types in Property Setup to import per type."}</p>
           ) : (
             <div style={tileGrid}>
               {types.map(t => (
@@ -1410,10 +1454,10 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   onClick={() => setManageTypeId(t.id)}
                   className="sb-card"
                   style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
-                  title={`Manage ${t.name}`}
+                  title={lang === "ro" ? `Administreaza ${t.name}` : `Manage ${t.name}`}
                 >
                   <span style={tileTitle}>{t.name}</span>
-                  <span style={tileSub}>Manage feeds</span>
+                  <span style={tileSub}>{lang === "ro" ? "Administreaza feed-uri" : "Manage feeds"}</span>
                 </button>
               ))}
             </div>
@@ -1422,6 +1466,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           {manageTypeId && (
             <ManageTypeModal
               timezone={timezone}
+              lang={lang}
               typeId={manageTypeId!}
               integrations={integrations.filter(i => i.room_type_id === manageTypeId)}
               onClose={() => setManageTypeId(null)}
@@ -1436,19 +1481,19 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
       {/* ======= MODAL D: IMPORT per ROOM ======= */}
       {showRoomImportModal && (
-        <Modal title="Import · Rooms" onClose={() => { setShowRoomImportModal(false); setManageRoomId(null); }}>
+        <Modal title={lang === "ro" ? "Import · Camere" : "Import · Rooms"} closeLabel={lang === "ro" ? "Inchide" : "Close"} onClose={() => { setShowRoomImportModal(false); setManageRoomId(null); }}>
           <div style={{ display: 'grid', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <p style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>
-                Import iCal feeds directly per room. Prefer per‑type imports when rooms belong to a Room Type.
+                {lang === "ro" ? "Importa feed-uri iCal direct pe camera. Pentru camerele dintr-un tip, prefera importul per tip." : "Import iCal feeds directly per room. Prefer per‑type imports when rooms belong to a Room Type."}
               </p>
               <button
                 type="button"
                 className="sb-btn sb-btn--ghost sb-btn--small"
                 onClick={() => setRoomImportInfo(v => !v)}
-                aria-label="Info"
+                aria-label={lang === "ro" ? "Info" : "Info"}
                 data-legend="keep"
-                title="Info"
+                title={lang === "ro" ? "Info" : "Info"}
                 style={{
                   width: 22,
                   height: 22,
@@ -1468,12 +1513,12 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             </div>
             {roomImportInfo && (
               <div data-legend="keep" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, padding: 10, color: 'var(--text)' }}>
-                Use this mode mainly for rooms that are not linked to a Room Type, or special cases. For standard setups, prefer per‑type imports for better auto‑assignment.
+                {lang === "ro" ? "Foloseste acest mod pentru camere nelegate de un tip de camera sau cazuri speciale. Pentru configurari standard, prefera importul per tip pentru auto-asignare mai buna." : "Use this mode mainly for rooms that are not linked to a Room Type, or special cases. For standard setups, prefer per‑type imports for better auto‑assignment."}
               </div>
             )}
 
             {rooms.length === 0 ? (
-              <p style={{ color: "var(--text)", margin: 0 }}>No rooms in this property.</p>
+              <p style={{ color: "var(--text)", margin: 0 }}>{lang === "ro" ? "Nu exista camere in aceasta proprietate." : "No rooms in this property."}</p>
             ) : (
               <div style={tileGrid}>
                 {rooms.map(r => (
@@ -1482,10 +1527,10 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     onClick={() => setManageRoomId(r.id)}
                     className="sb-card"
                     style={{ ...tile, boxShadow: "0 3px 12px rgba(0,0,0,.12)" }}
-                    title={`Manage ${r.name}`}
+                    title={lang === "ro" ? `Administreaza ${r.name}` : `Manage ${r.name}`}
                   >
                     <span style={tileTitle}>{r.name}</span>
-                    <span style={tileSub}>Manage feeds</span>
+                    <span style={tileSub}>{lang === "ro" ? "Administreaza feed-uri" : "Manage feeds"}</span>
                   </button>
                 ))}
               </div>
@@ -1497,6 +1542,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             return (
               <ManageRoomModal
                 room={r}
+                lang={lang}
                 integrations={integrations.filter(i => i.room_id === manageRoomId)}
                 onClose={() => setManageRoomId(null)}
                 onAdd={(provider, url) => addRoomIntegration(manageRoomId!, provider, url)}
@@ -1515,8 +1561,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
 
 /* ======= UI helpers & components ======= */
 
-function Modal({ title, children, onClose }:{
-  title: string; children: React.ReactNode; onClose: () => void;
+function Modal({ title, children, onClose, closeLabel = "Close" }:{
+  title: string; children: React.ReactNode; onClose: () => void; closeLabel?: string;
 }) {
   return (
     <div
@@ -1532,8 +1578,8 @@ function Modal({ title, children, onClose }:{
           <button
             className="sb-btn sb-cardglow sb-btn--icon"
             type="button"
-            aria-label="Close"
-            title="Close"
+            aria-label={closeLabel}
+            title={closeLabel}
             onClick={onClose}
             style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
           >
@@ -1546,8 +1592,8 @@ function Modal({ title, children, onClose }:{
   );
 }
 
-function InnerModal({ title, children, onClose }:{
-  title: string; children: React.ReactNode; onClose: () => void;
+function InnerModal({ title, children, onClose, closeLabel = "Close" }:{
+  title: string; children: React.ReactNode; onClose: () => void; closeLabel?: string;
 }) {
   return (
     <div
@@ -1563,8 +1609,8 @@ function InnerModal({ title, children, onClose }:{
           <button
             className="sb-btn sb-cardglow sb-btn--icon"
             type="button"
-            aria-label="Close"
-            title="Close"
+            aria-label={closeLabel}
+            title={closeLabel}
             onClick={onClose}
             style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
           >
@@ -1578,10 +1624,11 @@ function InnerModal({ title, children, onClose }:{
 }
 
 function ManageTypeModal({
-  timezone, typeId, integrations, onClose, onAdd, onDelete, onToggle, onUpdate
+  timezone, typeId, lang, integrations, onClose, onAdd, onDelete, onToggle, onUpdate
 }:{
   timezone: string | null;
   typeId: string;
+  lang: Lang;
   integrations: { id: string; provider: string | null; url: string; is_active: boolean | null; last_sync: string | null; color?: string | null; logo_url?: string | null; }[];
   onClose: () => void;
   onAdd: (provider: string, url: string) => Promise<string | null>;
@@ -1703,7 +1750,7 @@ function ManageTypeModal({
         saveLogo(target, dataUrl);
       }
     } catch (e:any) {
-      alert(e?.message || "Upload failed. PNG 512×512 required.");
+      alert(e?.message || (lang === "ro" ? "Upload esuat. PNG 512×512 necesar." : "Upload failed. PNG 512×512 required."));
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
       logoTargetIntegrationIdRef.current = null;
@@ -1738,22 +1785,22 @@ function ManageTypeModal({
   }
 
   return (
-    <InnerModal title="Manage imports for room type" onClose={onClose}>
+    <InnerModal title={lang === "ro" ? "Administreaza importurile pe tip de camera" : "Manage imports for room type"} closeLabel={lang === "ro" ? "Inchide" : "Close"} onClose={onClose}>
       <p style={{ color: "var(--muted)", marginTop: 0 }}>
-        Times interpreted in <strong>{timezone || "—"}</strong>.
+        {lang === "ro" ? "Orele sunt interpretate in " : "Times interpreted in "}<strong>{timezone || "—"}</strong>.
       </p>
 
       <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, marginBottom: 12 }}>
         <div style={{ display: "grid", gap: 8 }}>
           <div style={{ display: "grid", gap: 6 }}>
-            <label style={label}>Select provider</label>
+            <label style={label}>{lang === "ro" ? "Alege providerul" : "Select provider"}</label>
             <select
               className="sb-select"
               value={provider}
               onChange={(e) => { setProvider((e.target as HTMLSelectElement).value); setUrl(""); setCustomProvider(""); setPickerFor(null); }}
               style={{ fontFamily: 'inherit' }}
             >
-              <option value="">- Select -</option>
+              <option value="">{lang === "ro" ? "- Alege -" : "- Select -"}</option>
               <option>Booking</option>
               <option>Airbnb</option>
               <option>Expedia</option>
@@ -1791,7 +1838,7 @@ function ManageTypeModal({
                     style={{ borderRadius: 6, border: "1px solid var(--border)" }}
                   />
                 ) : (
-                  <span className="sb-badge" title="No logo yet">No logo</span>
+                  <span className="sb-badge" title={lang === "ro" ? "Fara logo momentan" : "No logo yet"}>{lang === "ro" ? "Fara logo" : "No logo"}</span>
                 )}
                 <a
                   href="#upload-logo"
@@ -1802,7 +1849,7 @@ function ManageTypeModal({
                   }}
                   style={{ fontSize: 11 ,color: "var(--primary)", textDecoration: "none", cursor: "pointer" }}
                 >
-                  Upload PNG (512×512)
+                  {lang === "ro" ? "Incarca PNG (512×512)" : "Upload PNG (512×512)"}
                 </a>
                 <input
                   ref={fileInputRef}
@@ -1819,12 +1866,12 @@ function ManageTypeModal({
           {/* color selector for current provider (hidden until provider selected) */}
           {provider && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <label style={label}>Color</label>
+            <label style={label}>{lang === "ro" ? "Culoare" : "Color"}</label>
             <button
               type="button"
               data-picker="keep"
               onClick={() => setPickerFor('new')}
-              title="Choose color"
+              title={lang === "ro" ? "Alege culoarea" : "Choose color"}
               style={{ width: 20, height: 20, borderRadius: 999, border: '1px solid var(--border)',
                       background: colorMap[norm(provider === 'Other' ? customProvider || 'other' : provider)] || defaultColor(provider) }}
             />
@@ -1836,7 +1883,7 @@ function ManageTypeModal({
                   'rgba(251,146,60,0.81)','rgba(244,114,182,0.81)'
                 ].map((c,i)=>(
                   <button key={i} onClick={()=>{ saveColor(provider==='Other'? (customProvider||'other') : provider, c); setPickerFor(null); }}
-                    title="Pick color" style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
+                    title={lang === "ro" ? "Selecteaza culoarea" : "Pick color"} style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
                 ))}
               </div>
             )}
@@ -1845,15 +1892,15 @@ function ManageTypeModal({
 
           {provider === 'Other' && (
             <div style={{ display: "grid", gap: 6 }}>
-              <label style={label}>Custom provider name</label>
-              <input style={input} value={customProvider} onChange={(e) => setCustomProvider((e.target as HTMLInputElement).value)} placeholder="e.g., Vrbo, Agoda" />
+              <label style={label}>{lang === "ro" ? "Nume provider personalizat" : "Custom provider name"}</label>
+              <input style={input} value={customProvider} onChange={(e) => setCustomProvider((e.target as HTMLInputElement).value)} placeholder={lang === "ro" ? "ex: Vrbo, Agoda" : "e.g., Vrbo, Agoda"} />
             </div>
           )}
 
           {/* URL field (hidden until provider selected) */}
           {provider && (
             <div style={{ display: "grid", gap: 6 }}>
-              <label style={label}>iCal URL</label>
+              <label style={label}>{lang === "ro" ? "URL iCal" : "iCal URL"}</label>
               <input
                 style={input}
                 value={url}
@@ -1900,7 +1947,7 @@ function ManageTypeModal({
               }}
                 disabled={(provider === 'Other' && !customProvider.trim())}
               >
-                Add feed
+                {lang === "ro" ? "Adauga feed" : "Add feed"}
               </button>
             </div>
           )}
@@ -1908,7 +1955,7 @@ function ManageTypeModal({
       </div>
 
       {integrations.length === 0 ? (
-        <p style={{ color: "var(--muted)" }}>No feeds added yet.</p>
+        <p style={{ color: "var(--muted)" }}>{lang === "ro" ? "Nu exista feed-uri adaugate." : "No feeds added yet."}</p>
       ) : (
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {integrations.map(ii => {
@@ -1926,13 +1973,13 @@ function ManageTypeModal({
                     ) : (
                       <span title="Provider color" style={{ width: 14, height: 14, borderRadius: 999, border: '1px solid var(--border)', display:'inline-block', background: (ii.color || colorMap[np] || defaultColor(ii.provider)) }} />
                     )}
-                    <strong>{ii.provider || "Unknown"}</strong>
+                    <strong>{ii.provider || (lang === "ro" ? "Necunoscut" : "Unknown")}</strong>
                   </div>
                   <small style={{ color: "var(--muted)", wordBreak: "break-all" }}>{ii.url}</small>
-                  {ii.last_sync && <small style={{ color: "var(--muted)" }}>Last sync: {new Date(ii.last_sync).toLocaleString()}</small>}
+                  {ii.last_sync && <small style={{ color: "var(--muted)" }}>{lang === "ro" ? "Ultima sincronizare:" : "Last sync:"} {new Date(ii.last_sync).toLocaleString()}</small>}
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                  <button className="sb-btn" data-picker="keep" onClick={()=> setPickerFor(ii.id)}>Color</button>
+                  <button className="sb-btn" data-picker="keep" onClick={()=> setPickerFor(ii.id)}>{lang === "ro" ? "Culoare" : "Color"}</button>
                   {pickerFor === ii.id && (
                     <div data-picker="keep" onMouseLeave={() => setPickerFor(null)} style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
                       {[
@@ -1941,7 +1988,7 @@ function ManageTypeModal({
                         'rgba(251,146,60,0.81)','rgba(244,114,182,0.81)'
                       ].map((c,i)=>(
                         <button key={i} onClick={async ()=>{ saveColor(ii.provider || 'other', c); await persistColor(ii.id, c); setPickerFor(null); }}
-                          title="Pick color" style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
+                          title={lang === "ro" ? "Selecteaza culoarea" : "Pick color"} style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
                       ))}
                     </div>
                   )}
@@ -1951,7 +1998,7 @@ function ManageTypeModal({
                       <button
                         className="sb-btn"
                         onClick={() => triggerLogoPick(ii.provider || "other", ii.id)}
-                        title="Upload logo (PNG 512×512)"
+                        title={lang === "ro" ? "Incarca logo (PNG 512×512)" : "Upload logo (PNG 512×512)"}
                       >
                         Logo
                       </button>
@@ -1967,9 +2014,9 @@ function ManageTypeModal({
                   )}
 
                   <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontSize: 12 }}>
-                    <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> active
+                    <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> {lang === "ro" ? "activ" : "active"}
                   </label>
-                  <button className="sb-btn" onClick={() => setConfirmDel({ id: ii.id, provider: ii.provider || "Unknown" })}>Delete</button>
+                  <button className="sb-btn" onClick={() => setConfirmDel({ id: ii.id, provider: ii.provider || (lang === "ro" ? "Necunoscut" : "Unknown") })}>{lang === "ro" ? "Sterge" : "Delete"}</button>
                 </div>
               </li>
             );
@@ -1982,18 +2029,18 @@ function ManageTypeModal({
           style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
             <div style={{ display:'grid', gap:8 }}>
-              <strong>Delete iCal feed</strong>
+              <strong>{lang === "ro" ? "Sterge feed-ul iCal" : "Delete iCal feed"}</strong>
               <div style={{ color:'var(--muted)' }}>
-                You are about to delete the iCal link for <strong>{confirmDel.provider || 'Unknown'}</strong>. This action is irreversible.
+                {lang === "ro" ? "Urmeaza sa stergi linkul iCal pentru " : "You are about to delete the iCal link for "}<strong>{confirmDel.provider || (lang === "ro" ? "Necunoscut" : "Unknown")}</strong>{lang === "ro" ? ". Aceasta actiune este ireversibila." : ". This action is irreversible."}
               </div>
               <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
-                <button className="sb-btn" onClick={() => setConfirmDel(null)}>Cancel</button>
+                <button className="sb-btn" onClick={() => setConfirmDel(null)}>{lang === "ro" ? "Anuleaza" : "Cancel"}</button>
                 <button
                   className="sb-btn sb-btn--primary"
                   onClick={() => { const id = confirmDel.id; setConfirmDel(null); onDelete(id); }}
                   style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}
                 >
-                  Delete
+                  {lang === "ro" ? "Sterge" : "Delete"}
                 </button>
               </div>
             </div>
@@ -2005,9 +2052,10 @@ function ManageTypeModal({
 }
 
 function ManageRoomModal({
-  room, integrations, onClose, onAdd, onDelete, onToggle, onUpdate
+  room, lang, integrations, onClose, onAdd, onDelete, onToggle, onUpdate
 }:{
   room: { id: string; name: string };
+  lang: Lang;
   integrations: { id: string; provider: string | null; url: string; is_active: boolean | null; last_sync: string | null; color?: string | null; logo_url?: string | null; }[];
   onClose: () => void;
   onAdd: (provider: string, url: string) => Promise<string | null>;
@@ -2125,7 +2173,7 @@ function ManageRoomModal({
         saveLogo(target, dataUrl);
       }
     } catch (e:any) {
-      alert(e?.message || "Upload failed. PNG 512×512 required.");
+      alert(e?.message || (lang === "ro" ? "Upload esuat. PNG 512×512 necesar." : "Upload failed. PNG 512×512 required."));
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
       logoTargetIntegrationIdRef.current = null;
@@ -2150,18 +2198,18 @@ function ManageRoomModal({
   }
 
   return (
-    <InnerModal title={`Manage imports for room: ${room.name}`} onClose={onClose}>
+    <InnerModal title={`${lang === "ro" ? "Administreaza importurile pentru camera:" : "Manage imports for room:"} ${room.name}`} closeLabel={lang === "ro" ? "Inchide" : "Close"} onClose={onClose}>
       <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, marginBottom: 12 }}>
         <div style={{ display: "grid", gap: 8 }}>
           <div style={{ display: "grid", gap: 6 }}>
-            <label style={label}>Select provider</label>
+            <label style={label}>{lang === "ro" ? "Alege providerul" : "Select provider"}</label>
             <select
               className="sb-select"
               value={provider}
               onChange={(e) => { setProvider((e.target as HTMLSelectElement).value); setUrl(""); setCustomProvider(""); setPickerFor(null); }}
               style={{ fontFamily: 'inherit' }}
             >
-              <option value="">- Select -</option>
+              <option value="">{lang === "ro" ? "- Alege -" : "- Select -"}</option>
               <option>Booking</option>
               <option>Airbnb</option>
               <option>Expedia</option>
@@ -2199,14 +2247,14 @@ function ManageRoomModal({
                     style={{ borderRadius: 6, border: "1px solid var(--border)" }}
                   />
                 ) : (
-                  <span className="sb-badge" title="No logo yet">No logo</span>
+                  <span className="sb-badge" title={lang === "ro" ? "Fara logo momentan" : "No logo yet"}>{lang === "ro" ? "Fara logo" : "No logo"}</span>
                 )}
                 <a
                   href="#upload-logo"
                   onClick={(e) => { e.preventDefault(); const targ = (customProvider || "other").trim() || "other"; triggerLogoPick(targ); }}
                   style={{ fontSize:6 ,color: "var(--primary)", textDecoration: "underline", cursor: "pointer" }}
                 >
-                  Upload PNG (512×512)
+                  {lang === "ro" ? "Incarca PNG (512×512)" : "Upload PNG (512×512)"}
                 </a>
                 <input ref={fileInputRef} type="file" accept="image/png" hidden onChange={(e) => onPickLogo(e.currentTarget.files)} />
               </span>
@@ -2217,8 +2265,8 @@ function ManageRoomModal({
           {/* color selector (hidden until provider selected) */}
           {provider && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <label style={label}>Color</label>
-            <button type="button" data-picker="keep" onClick={() => setPickerFor('new')} title="Choose color" style={{ width: 20, height: 20, borderRadius: 999, border: '1px solid var(--border)', background: colorMap[norm(provider === 'Other' ? customProvider || 'other' : provider)] || defaultColor(provider) }} />
+            <label style={label}>{lang === "ro" ? "Culoare" : "Color"}</label>
+            <button type="button" data-picker="keep" onClick={() => setPickerFor('new')} title={lang === "ro" ? "Alege culoarea" : "Choose color"} style={{ width: 20, height: 20, borderRadius: 999, border: '1px solid var(--border)', background: colorMap[norm(provider === 'Other' ? customProvider || 'other' : provider)] || defaultColor(provider) }} />
             {pickerFor === 'new' && (
               <div data-picker="keep" onMouseLeave={() => setPickerFor(null)} style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
                 {[
@@ -2227,7 +2275,7 @@ function ManageRoomModal({
                   'rgba(251,146,60,0.81)','rgba(244,114,182,0.81)'
                 ].map((c,i)=>(
                   <button key={i} onClick={async ()=>{ saveColor(provider==='Other'? (customProvider||'other') : provider, c); setPickerFor(null); }}
-                    title="Pick color" style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
+                    title={lang === "ro" ? "Selecteaza culoarea" : "Pick color"} style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
                 ))}
               </div>
             )}
@@ -2236,19 +2284,19 @@ function ManageRoomModal({
 
           {provider === 'Other' && (
             <div style={{ display: "grid", gap: 6 }}>
-              <label style={label}>Custom provider name</label>
+              <label style={label}>{lang === "ro" ? "Nume provider personalizat" : "Custom provider name"}</label>
               <input
                 style={input}
                 value={customProvider}
                 onChange={(e) => setCustomProvider((e.target as HTMLInputElement).value)}
-                placeholder="e.g., Vrbo, Agoda"
+                placeholder={lang === "ro" ? "ex: Vrbo, Agoda" : "e.g., Vrbo, Agoda"}
               />
             </div>
           )}
 
           {provider && (
             <div style={{ display: "grid", gap: 6 }}>
-              <label style={label}>iCal URL</label>
+              <label style={label}>{lang === "ro" ? "URL iCal" : "iCal URL"}</label>
               <input style={input} value={url} onChange={(e) => setUrl((e.target as HTMLInputElement).value)} placeholder="https://.../calendar.ics" />
             </div>
           )}
@@ -2275,14 +2323,14 @@ function ManageRoomModal({
                 }
               }
               setUrl(""); setCustomProvider("");
-            }} disabled={(provider === 'Other' && !customProvider.trim())}>Add feed</button>
+            }} disabled={(provider === 'Other' && !customProvider.trim())}>{lang === "ro" ? "Adauga feed" : "Add feed"}</button>
             </div>
           )}
         </div>
       </div>
 
       {integrations.length === 0 ? (
-        <p style={{ color: "var(--muted)" }}>No feeds added yet.</p>
+        <p style={{ color: "var(--muted)" }}>{lang === "ro" ? "Nu exista feed-uri adaugate." : "No feeds added yet."}</p>
       ) : (
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
           {integrations.map(ii => {
@@ -2299,13 +2347,13 @@ function ManageRoomModal({
                     ) : (
                       <span title="Provider color" style={{ width: 14, height: 14, borderRadius: 999, border: '1px solid var(--border)', display:'inline-block', background: (ii.color || colorMap[np] || defaultColor(ii.provider)) }} />
                     )}
-                    <strong>{ii.provider || "Unknown"}</strong>
+                    <strong>{ii.provider || (lang === "ro" ? "Necunoscut" : "Unknown")}</strong>
                   </div>
                   <small style={{ color: "var(--muted)", wordBreak: "break-all" }}>{ii.url}</small>
-                  {ii.last_sync && <small style={{ color: "var(--muted)" }}>Last sync: {new Date(ii.last_sync).toLocaleString()}</small>}
+                  {ii.last_sync && <small style={{ color: "var(--muted)" }}>{lang === "ro" ? "Ultima sincronizare:" : "Last sync:"} {new Date(ii.last_sync).toLocaleString()}</small>}
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                  <button className="sb-btn" data-picker="keep" onClick={()=> setPickerFor(ii.id)}>Color</button>
+                  <button className="sb-btn" data-picker="keep" onClick={()=> setPickerFor(ii.id)}>{lang === "ro" ? "Culoare" : "Color"}</button>
                   {pickerFor === ii.id && (
                     <div data-picker="keep" onMouseLeave={() => setPickerFor(null)} style={{ display:'grid', gridTemplateColumns: 'repeat(8, 20px)', gap: 6 }}>
                       {[
@@ -2314,22 +2362,22 @@ function ManageRoomModal({
                         'rgba(251,146,60,0.81)','rgba(244,114,182,0.81)'
                       ].map((c,i)=>(
                         <button key={i} onClick={async ()=>{ saveColor(ii.provider || 'other', c); await persistColor(ii.id, c); setPickerFor(null); }}
-                          title="Pick color" style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
+                          title={lang === "ro" ? "Selecteaza culoarea" : "Pick color"} style={{ width:20,height:20,borderRadius:999,border:'1px solid var(--border)',background:c }} />
                       ))}
                     </div>
                   )}
 
                   {showLogoButton && (
                     <>
-                      <button className="sb-btn" onClick={() => triggerLogoPick(ii.provider || "other", ii.id)} title="Upload logo (PNG 512×512)">Logo</button>
+                      <button className="sb-btn" onClick={() => triggerLogoPick(ii.provider || "other", ii.id)} title={lang === "ro" ? "Incarca logo (PNG 512×512)" : "Upload logo (PNG 512×512)"}>Logo</button>
                       <input ref={fileInputRef} type="file" accept="image/png" hidden onChange={(e) => onPickLogo(e.currentTarget.files)} />
                     </>
                   )}
 
                   <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontSize: 12 }}>
-                    <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> active
+                    <input type="checkbox" checked={!!ii.is_active} onChange={() => onToggle(ii)} /> {lang === "ro" ? "activ" : "active"}
                   </label>
-                  <button className="sb-btn" onClick={() => setConfirmDel({ id: ii.id, provider: ii.provider || "Unknown" })}>Delete</button>
+                  <button className="sb-btn" onClick={() => setConfirmDel({ id: ii.id, provider: ii.provider || (lang === "ro" ? "Necunoscut" : "Unknown") })}>{lang === "ro" ? "Sterge" : "Delete"}</button>
                 </div>
               </li>
             );
@@ -2342,18 +2390,18 @@ function ManageRoomModal({
           style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:120, display:'grid', placeItems:'center', padding:12 }}>
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px,100%)', padding:16, border:'1px solid var(--border)', borderRadius:12, background:'var(--panel)', color:'var(--text)' }}>
             <div style={{ display:'grid', gap:8 }}>
-              <strong>Delete iCal feed</strong>
+              <strong>{lang === "ro" ? "Sterge feed-ul iCal" : "Delete iCal feed"}</strong>
               <div style={{ color:'var(--muted)' }}>
-                You are about to delete the iCal link for <strong>{confirmDel.provider || 'Unknown'}</strong>. This action is irreversible.
+                {lang === "ro" ? "Urmeaza sa stergi linkul iCal pentru " : "You are about to delete the iCal link for "}<strong>{confirmDel.provider || (lang === "ro" ? "Necunoscut" : "Unknown")}</strong>{lang === "ro" ? ". Aceasta actiune este ireversibila." : ". This action is irreversible."}
               </div>
               <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:6 }}>
-                <button className="sb-btn" onClick={() => setConfirmDel(null)}>Cancel</button>
+                <button className="sb-btn" onClick={() => setConfirmDel(null)}>{lang === "ro" ? "Anuleaza" : "Cancel"}</button>
                 <button
                   className="sb-btn sb-btn--primary"
                   onClick={() => { const id = confirmDel.id; setConfirmDel(null); onDelete(id); }}
                   style={{ background:'var(--danger)', color:'#fff', border:'1px solid var(--danger)' }}
                 >
-                  Delete
+                  {lang === "ro" ? "Sterge" : "Delete"}
                 </button>
               </div>
             </div>
