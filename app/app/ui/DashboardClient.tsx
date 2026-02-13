@@ -9,6 +9,8 @@ import PlanHeaderBadge from "../_components/PlanHeaderBadge";
 import LoadingPill from "../_components/LoadingPill";
 import overlayStyles from "../_components/AppLoadingOverlay.module.css";
 
+type Lang = "en" | "ro";
+
 type Property = {
   id: string;
   name: string;
@@ -54,6 +56,7 @@ export default function DashboardClient({
   const { setTitle, setPill } = useHeader();
 
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
+  const [lang, setLang] = useState<Lang>("en");
   const [name, setName] = useState("");
   const [country, setCountry] = useState<string>("");
   const [isSmall, setIsSmall] = useState<boolean>(() => {
@@ -87,6 +90,113 @@ export default function DashboardClient({
   const firstPropertyLoadingTimerRef = useRef<number | null>(null);
   const firstPropertyLoadingIntervalRef = useRef<number | null>(null);
   const [firstPropertyError, setFirstPropertyError] = useState<string | null>(null);
+  const tr = {
+    en: {
+      dashboard: "Dashboard",
+      saving: "Saving…",
+      error: "Error",
+      synced: "Synced",
+      idle: "Idle",
+      preparingGuestExperience: "Preparing your guest experience…",
+      loadingLine1: "This is what your guests will see before arrival.",
+      loadingLine2: "Creating guest check-in link…",
+      loadingLine3: "Final touches…",
+      couldNotCreateProperty: "Could not create property.",
+      copyThisLink: "Copy this link:",
+      onlyPdfAllowed: "Only PDF files are allowed.",
+      uploadFailed: "Upload failed.",
+      newProperty: "New Property",
+      propertyNameRequired: "Property Name*",
+      propertyNamePlaceholder: "e.g. BOA aFrame",
+      countryLocationRequired: "Country Location*",
+      selectOption: "— select —",
+      save: "Save",
+      yourProperties: "Your Properties",
+      noPropertiesYet: "No properties yet.",
+      rename: "Rename",
+      setup: "Setup",
+      delete: "Delete",
+      propertyNamePlaceholderShort: "Property name",
+      addProperty: "Add property",
+      addPhoto: "Add photo",
+      close: "Close",
+      takesLessThan30s: "Takes less than 30 seconds.",
+      propertyName: "Property name",
+      guestsWillSee: "Guests will see this. Change anytime.",
+      country: "Country",
+      personalizeGuestInfo: "Helps personalize guest info.",
+      continue: "Continue",
+      propertyPhotoOptional: "Property photo (optional)",
+      changePhoto: "Change photo",
+      addPhotoButton: "Add photo",
+      optionalSkip: "Optional — you can skip this for now.",
+      createAndViewGuestLink: "Create & view guest link",
+      skipPhoto: "Skip photo",
+      checkinAutomated: "CHECK-IN AUTOMATED",
+      guestsCanNowSubmit: "Your guests can now submit their ID and required details before arrival — no more manual collection in chat.",
+      viewGuestLink: "View guest link",
+      copied: "Copied",
+      copyLink: "Copy link",
+      continueSetup: "Continue setup",
+      deletePropertyQuestion: "Delete property?",
+      deletePropertyWarning1: "This will permanently delete",
+      deletePropertyWarning2: "Related rooms, bookings, and integrations may be removed.",
+      cancel: "Cancel",
+    },
+    ro: {
+      dashboard: "Control",
+      saving: "Se salveaza…",
+      error: "Eroare",
+      synced: "Sincronizat",
+      idle: "Idle",
+      preparingGuestExperience: "Pregatim experienta oaspetelui…",
+      loadingLine1: "Asta este experienta pe care o vor vedea oaspetii inainte de sosire.",
+      loadingLine2: "Se creeaza linkul de check-in…",
+      loadingLine3: "Ultimele ajustari…",
+      couldNotCreateProperty: "Proprietatea nu a putut fi creata.",
+      copyThisLink: "Copiaza acest link:",
+      onlyPdfAllowed: "Sunt permise doar fisiere PDF.",
+      uploadFailed: "Incarcarea a esuat.",
+      newProperty: "Proprietate noua",
+      propertyNameRequired: "Nume proprietate*",
+      propertyNamePlaceholder: "ex: BOA aFrame",
+      countryLocationRequired: "Locatie tara*",
+      selectOption: "— selecteaza —",
+      save: "Salveaza",
+      yourProperties: "Proprietatile tale",
+      noPropertiesYet: "Nu exista proprietati inca.",
+      rename: "Redenumeste",
+      setup: "Setari",
+      delete: "Sterge",
+      propertyNamePlaceholderShort: "Nume proprietate",
+      addProperty: "Adauga proprietate",
+      addPhoto: "Adauga foto",
+      close: "Inchide",
+      takesLessThan30s: "Dureaza mai putin de 30 de secunde.",
+      propertyName: "Nume proprietate",
+      guestsWillSee: "Oaspetii vor vedea asta. Poti schimba oricand.",
+      country: "Tara",
+      personalizeGuestInfo: "Ajuta la personalizarea informatiilor pentru oaspeti.",
+      continue: "Continua",
+      propertyPhotoOptional: "Poza proprietatii (optional)",
+      changePhoto: "Schimba poza",
+      addPhotoButton: "Adauga poza",
+      optionalSkip: "Optional — poti sari acest pas acum.",
+      createAndViewGuestLink: "Creeaza si vezi linkul de oaspete",
+      skipPhoto: "Sari peste poza",
+      checkinAutomated: "CHECK-IN AUTOMATIZAT",
+      guestsCanNowSubmit: "Oaspetii pot trimite acum datele si actul de identitate inainte de sosire, fara colectare manuala in chat.",
+      viewGuestLink: "Vezi linkul pentru oaspete",
+      copied: "Copiat",
+      copyLink: "Copiaza link",
+      continueSetup: "Continua setarea",
+      deletePropertyQuestion: "Stergi proprietatea?",
+      deletePropertyWarning1: "Aceasta actiune va sterge permanent",
+      deletePropertyWarning2: "Camerele, rezervarile si integrarile asociate pot fi eliminate.",
+      cancel: "Anuleaza",
+    },
+  } as const;
+  const t = tr[lang];
 
   // Copied! state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -106,6 +216,28 @@ export default function DashboardClient({
   // Theme-aware assets (light/dark)
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): Lang => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setLang(readLang());
+    const onStorage = () => setLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  useEffect(() => {
     const el = document.documentElement;
     const detect = () => {
       const t = el.getAttribute('data-theme');
@@ -123,8 +255,8 @@ export default function DashboardClient({
   }, []);
 
   useEffect(() => {
-    setTitle("Dashboard");
-  }, [setTitle]);
+    setTitle(t.dashboard);
+  }, [setTitle, t.dashboard]);
 
   const pillLockRef = useRef(false);
   const overlayMessageNode = (text: string) => <span data-p4h-overlay="message">{text}</span>;
@@ -132,8 +264,8 @@ export default function DashboardClient({
 
   useEffect(() => {
     if (pillLockRef.current) return;
-    setPill(status === "Saving…" ? "Saving…" : status === "Error" ? "Error" : status === "Synced" ? "Synced" : "Idle");
-  }, [status, setPill]);
+    setPill(status === "Saving…" ? t.saving : status === "Error" ? t.error : status === "Synced" ? t.synced : t.idle);
+  }, [status, setPill, t.saving, t.error, t.synced, t.idle]);
 
   // Refresh client-side: INCLUDE regulation_* (fix pentru „PDF dispare după refresh”)
   useEffect(() => {
@@ -184,11 +316,11 @@ export default function DashboardClient({
     return c?.tz || "Europe/Bucharest";
   }
 
-  const FIRST_PROPERTY_LOADING_TITLE = "Preparing your guest experience…";
+  const FIRST_PROPERTY_LOADING_TITLE = t.preparingGuestExperience;
   const FIRST_PROPERTY_LOADING_DETAILS = [
-    "This is what your guests will see before arrival.",
-    "Creating guest check-in link…",
-    "Final touches…",
+    t.loadingLine1,
+    t.loadingLine2,
+    t.loadingLine3,
   ];
 
   async function createFirstProperty() {
@@ -224,12 +356,12 @@ export default function DashboardClient({
 
       if (!res.ok) {
         const j = await res.json().catch(() => ({} as any));
-        throw new Error(j?.error || "Could not create property.");
+        throw new Error(j?.error || t.couldNotCreateProperty);
       }
 
       const j = await res.json().catch(() => ({} as any));
       const createdId: string | undefined = j?.property?.id;
-      if (!createdId) throw new Error("Could not create property.");
+      if (!createdId) throw new Error(t.couldNotCreateProperty);
 
       // Best-effort: upload optional photo selected in step 2
       if (firstPropertyPhoto) {
@@ -265,7 +397,7 @@ export default function DashboardClient({
         window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
       } catch {}
     } catch (e: any) {
-      setFirstPropertyError(e?.message || "Could not create property.");
+      setFirstPropertyError(e?.message || t.couldNotCreateProperty);
       // Reopen step 2 so user can retry quickly
       setShowFirstPropertyGuide(true);
       setFirstPropertyStep(2);
@@ -316,7 +448,7 @@ export default function DashboardClient({
       setCountry("");
       // Use the same overlay UX as the rest of the app: dots while saving, then "Saved" briefly.
       pillLockRef.current = true;
-      setPill(overlayMessageNode("Saved"));
+      setPill(overlayMessageNode(t.synced));
       await wait(1000);
       pillLockRef.current = false;
       setStatus("Idle");
@@ -374,14 +506,14 @@ export default function DashboardClient({
       timerRef.current = window.setTimeout(() => setCopiedId(null), 2000);
     } catch {
       // Fallback când Clipboard API e blocat (Safari incognito, etc.)
-      prompt("Copy this link:", link);
+      prompt(t.copyThisLink, link);
     }
   }
 
   async function uploadRegulationPdf(propertyId: string, file: File) {
     if (!file) return;
     if (file.type !== "application/pdf") {
-      alert("Only PDF files are allowed.");
+      alert(t.onlyPdfAllowed);
       return;
     }
     setStatus("Saving…");
@@ -392,7 +524,7 @@ export default function DashboardClient({
       const res = await fetch("/api/property/regulation/upload", { method: "POST", body: fd });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        alert(j?.error || "Upload failed.");
+        alert(j?.error || t.uploadFailed);
         setStatus("Error");
         return;
       }
@@ -527,7 +659,7 @@ export default function DashboardClient({
 
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
-      <PlanHeaderBadge title="Dashboard" slot="under-title" />
+      <PlanHeaderBadge title={t.dashboard} slot="under-title" />
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 16 }}>
 
       {/* 2-column desktop row: New Property + Your Properties */}
@@ -541,15 +673,15 @@ export default function DashboardClient({
       >
       {/* Add property */}
       <section className="sb-cardglow" ref={addCardRef} style={card}>
-        <h2 style={{ marginTop: 0 }}>New Property</h2>
+        <h2 style={{ marginTop: 0 }}>{t.newProperty}</h2>
 
         <div style={{ display: "grid", gap: 12 }}>
           <div style={FIELD_WRAPPER}>
-            <label style={{ display: "block", marginBottom: 6 }}>Property Name*</label>
+            <label style={{ display: "block", marginBottom: 6 }}>{t.propertyNameRequired}</label>
             <input
               value={name}
               onChange={(e) => setName(e.currentTarget.value)}
-              placeholder="e.g. BOA aFrame"
+              placeholder={t.propertyNamePlaceholder}
               ref={nameInputRef}
               style={{
                 ...FIELD_STYLE,
@@ -561,9 +693,9 @@ export default function DashboardClient({
           </div>
 
           <div style={FIELD_WRAPPER}>
-            <label style={{ display: "block", marginBottom: 6 }}>Country Location*</label>
+            <label style={{ display: "block", marginBottom: 6 }}>{t.countryLocationRequired}</label>
             <select value={country} onChange={(e) => setCountry(e.currentTarget.value)} style={FIELD_STYLE}>
-              <option value="">— select —</option>
+              <option value="">{t.selectOption}</option>
               {TZ_COUNTRIES.slice()
                 .sort((a, b) => {
                   if (a.code === 'RO') return -1;
@@ -592,7 +724,7 @@ export default function DashboardClient({
 	              className="sb-btn sb-btn--primary sb-cardglow"
 	              style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center", color: "#fff" }}
 	            >
-	              Save
+	              {t.save}
 	            </button>
 	          </div>
          
@@ -611,10 +743,10 @@ export default function DashboardClient({
           overflow: isDesktop ? "hidden" : undefined,
         }}
       >
-        <h2 style={{ marginTop: 0 }}>Your Properties</h2>
+        <h2 style={{ marginTop: 0 }}>{t.yourProperties}</h2>
 
         {list.length === 0 ? (
-          <p style={{ color: "var(--muted)" }}>No properties yet.</p>
+          <p style={{ color: "var(--muted)" }}>{t.noPropertiesYet}</p>
         ) : (
           <ul
             style={{
@@ -672,7 +804,7 @@ export default function DashboardClient({
                           padding: 8,
                           fontWeight: "var(--fw-medium)",
                         }}
-                        placeholder="Property name"
+                        placeholder={t.propertyNamePlaceholderShort}
                       />
                     ) : (
                       <strong>{p.name}</strong>
@@ -702,7 +834,7 @@ export default function DashboardClient({
                           cursor: "pointer",
                         }}
                       >
-                        Rename
+                        {t.rename}
                       </button>
                     )}
                     <button
@@ -718,7 +850,7 @@ export default function DashboardClient({
                         cursor: "pointer",
                       }}
                     >
-                      Setup
+                      {t.setup}
                     </button>
 
                     <button
@@ -734,7 +866,7 @@ export default function DashboardClient({
                         cursor: "pointer",
                       }}
                     >
-                      Delete
+                      {t.delete}
                     </button>
                   </div>
 
@@ -793,11 +925,11 @@ export default function DashboardClient({
 		                    color: "color-mix(in srgb, var(--text) 86%, transparent)",
 		                  }}
 		                >
-		                  {firstPropertyStep === 1 ? "Add property" : "Add photo"}
+		                  {firstPropertyStep === 1 ? t.addProperty : t.addPhoto}
 		                </div>
 		              </div>
 		              <button
-		                aria-label="Close"
+		                aria-label={t.close}
 		                className="sb-btn sb-cardglow sb-btn--icon"
 		                style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
 		                onClick={() => {
@@ -813,25 +945,25 @@ export default function DashboardClient({
 		            {firstPropertyStep === 1 ? (
 		              <div style={{ display: "grid", gap: 12 }}>
 		                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-		                  Takes less than 30 seconds.
+		                  {t.takesLessThan30s}
 		                </div>
 		                <div style={{ display: "grid", gap: 6 }}>
-		                  <label style={{ display: "block" }}>Property name</label>
+		                  <label style={{ display: "block" }}>{t.propertyName}</label>
 		                  <input
 		                    value={name}
 	                    onChange={(e) => setName(e.currentTarget.value)}
-	                    placeholder="e.g. BOA aFrame"
+	                    placeholder={t.propertyNamePlaceholder}
 	                    style={FIELD_STYLE}
 	                  />
 		                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-		                    Guests will see this. Change anytime.
+		                    {t.guestsWillSee}
 		                  </div>
 		                </div>
 
 	                <div style={{ display: "grid", gap: 6 }}>
-	                  <label style={{ display: "block" }}>Country</label>
+	                  <label style={{ display: "block" }}>{t.country}</label>
 	                  <select value={country} onChange={(e) => setCountry(e.currentTarget.value)} style={FIELD_STYLE}>
-	                    <option value="">— select —</option>
+	                    <option value="">{t.selectOption}</option>
 	                    {TZ_COUNTRIES.slice()
 	                      .sort((a, b) => {
 	                        if (a.code === "RO") return -1;
@@ -845,7 +977,7 @@ export default function DashboardClient({
 	                      ))}
 	                  </select>
 		                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-		                    Helps personalize guest info.
+		                    {t.personalizeGuestInfo}
 		                  </div>
 		                </div>
 
@@ -862,14 +994,14 @@ export default function DashboardClient({
 		                    }}
 		                    onClick={() => setFirstPropertyStep(2)}
 		                  >
-		                    Continue
+		                    {t.continue}
 		                  </button>
 		                </div>
 		              </div>
 	            ) : (
 	              <div style={{ display: "grid", gap: 12 }}>
 		                <div style={{ display: "grid", gap: 6 }}>
-		                  <label style={{ display: "block" }}>Property photo (optional)</label>
+		                  <label style={{ display: "block" }}>{t.propertyPhotoOptional}</label>
 	                  <input
 	                    ref={firstPropertyPhotoInputRef}
 	                    type="file"
@@ -934,10 +1066,10 @@ export default function DashboardClient({
 			                        />
 			                      </svg>
 			                    </span>
-			                    {firstPropertyPhoto ? "Change photo" : "Add photo"}
+			                    {firstPropertyPhoto ? t.changePhoto : t.addPhotoButton}
 			                  </button>
 		                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-		                    {firstPropertyPhoto ? firstPropertyPhoto.name : "Optional — you can skip this for now."}
+		                    {firstPropertyPhoto ? firstPropertyPhoto.name : t.optionalSkip}
 		                  </div>
 		                </div>
 
@@ -961,7 +1093,7 @@ export default function DashboardClient({
 			                      createFirstProperty();
 			                    }}
 			                  >
-			                    Create & view guest link
+			                    {t.createAndViewGuestLink}
 			                  </button>
 			                  {!firstPropertyPhoto && (
 			                    <button
@@ -975,7 +1107,7 @@ export default function DashboardClient({
 			                        createFirstProperty();
 			                      }}
 			                    >
-			                      Skip photo
+			                      {t.skipPhoto}
 			                    </button>
 			                  )}
 			                  {firstPropertyError && (
@@ -1059,7 +1191,7 @@ export default function DashboardClient({
 	                      color: "color-mix(in srgb, var(--text) 86%, transparent)",
 	                    }}
 	                  >
-	                    CHECK-IN AUTOMATED
+	                    {t.checkinAutomated}
 	                  </div>
 	                </div>
 		                <button
@@ -1072,7 +1204,7 @@ export default function DashboardClient({
 		                </button>
 		              </div>
 		              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-		                Your guests can now submit their ID and required details before arrival — no more manual collection in chat.
+		                {t.guestsCanNowSubmit}
 		              </div>
 
 		              <div style={{ display: "grid", gap: 10 }}>
@@ -1087,7 +1219,7 @@ export default function DashboardClient({
 	                    }
 	                  }}
 	                >
-	                  View guest link
+	                  {t.viewGuestLink}
 	                </button>
 	                <button
 	                  className="sb-btn"
@@ -1098,11 +1230,11 @@ export default function DashboardClient({
 	                      setFirstPropertyCopied(true);
 	                      window.setTimeout(() => setFirstPropertyCopied(false), 1000);
 	                    } catch {
-	                      prompt("Copy this link:", firstPropertyResult.link);
+	                      prompt(t.copyThisLink, firstPropertyResult.link);
 	                    }
 	                  }}
 	                >
-	                  {firstPropertyCopied ? "Copied" : "Copy link"}
+	                  {firstPropertyCopied ? t.copied : t.copyLink}
 	                </button>
 			                <button
 			                  className="sb-btn sb-btn--ghost sb-cardglow"
@@ -1117,7 +1249,7 @@ export default function DashboardClient({
 		                    window.location.href = `/app/propertySetup?property=${encodeURIComponent(firstPropertyResult.propertyId)}&guide=rooms`;
 		                  }}
 		                >
-		                  Continue setup
+		                  {t.continueSetup}
 		                </button>
 		                <a
 		                  href={firstPropertyResult.link}
@@ -1170,12 +1302,12 @@ export default function DashboardClient({
                 boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
               }}
             >
-	              <h3 style={{ marginTop: 0 }}>Delete property?</h3>
+	              <h3 style={{ marginTop: 0 }}>{t.deletePropertyQuestion}</h3>
 	              <p style={{ color: "var(--muted)" }}>
-	                This will permanently delete <strong>{toDelete.name}</strong>.
+	                {t.deletePropertyWarning1} <strong>{toDelete.name}</strong>.
 	              </p>
 	              <p style={{ color: "var(--muted)" }}>
-	                Related rooms, bookings, and integrations may be removed.
+	                {t.deletePropertyWarning2}
 	              </p>
 	              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12 }}>
 	                <button
@@ -1191,7 +1323,7 @@ export default function DashboardClient({
 	                    cursor: "pointer",
 	                  }}
 	                >
-	                  Cancel
+	                  {t.cancel}
 	                </button>
 	                <button
 	                  onClick={confirmDelete}
@@ -1206,7 +1338,7 @@ export default function DashboardClient({
 	                    cursor: "pointer",
 	                  }}
 	                >
-	                  Delete
+	                  {t.delete}
 	                </button>
 	              </div>
             </div>
