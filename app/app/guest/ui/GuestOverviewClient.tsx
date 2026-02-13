@@ -296,10 +296,10 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     seeQr: lang === "ro" ? "Vezi codul QR" : "See QR code",
     allowAccess: lang === "ro" ? "Permite accesul" : "Allow access",
     noGuestsMatch: lang === "ro" ? "Niciun oaspete nu corespunde cautarii." : "No guests match your search.",
-    empty1: lang === "ro" ? "🟢 Nicio cazare inceputa inca." : "🟢 No check-ins yet.",
+    empty1: lang === "ro" ? "🟢 Niciun formular de check-in completat inca." : "🟢 No check-ins yet.",
     empty2:
       lang === "ro"
-        ? "Formularele completate de oaspeti vor aparea aici pentru confirmare."
+        ? "Formularele completate de oaspeti vor aparea aici pentru a fi confirmate."
         : "Guest submissions will appear here for confirmation.",
     emptyTip:
       lang === "ro"
