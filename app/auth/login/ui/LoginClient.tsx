@@ -384,29 +384,29 @@ export default function LoginClient({
          
         <div  style={wrap(mounted ? theme : "dark")} >
           <div  style={headRow}>
-            <h1  style={{ margin: 0, fontSize: 18 }}>{mode === "login" ? t.signIn : t.createAccount}</h1>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <div style={langToggleWrap}>
+              <button
+                type="button"
+                onClick={() => setLang("en")}
+                aria-label="Switch language to English"
+                title="English"
+                style={langBtn(lang === "en")}
+              >
+                <img src="/eng.png" alt="English" width={16} height={16} style={{ display: "block", borderRadius: 999 }} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang("ro")}
+                aria-label="Schimba limba in romana"
+                title="Romana"
+                style={langBtn(lang === "ro")}
+              >
+                <img src="/ro.png" alt="Romana" width={16} height={16} style={{ display: "block", borderRadius: 999 }} />
+              </button>
+            </div>
+            <h1 style={headTitle}>{mode === "login" ? t.signIn : t.createAccount}</h1>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", justifySelf: "end" }}>
               <span style={pillStyle(pill)}>{pill}</span>
-              <div style={langToggleWrap}>
-                <button
-                  type="button"
-                  onClick={() => setLang("en")}
-                  aria-label="Switch language to English"
-                  title="English"
-                  style={langBtn(lang === "en")}
-                >
-                  <img src="/eng.png" alt="English" width={16} height={16} style={{ display: "block", borderRadius: 999 }} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLang("ro")}
-                  aria-label="Schimba limba in romana"
-                  title="Romana"
-                  style={langBtn(lang === "ro")}
-                >
-                  <img src="/ro.png" alt="Romana" width={16} height={16} style={{ display: "block", borderRadius: 999 }} />
-                </button>
-              </div>
               <div style={animateTheme ? { animation: "themeFloat 2.2s ease-in-out 1" } : undefined}>
                 <ThemeToggle size="md" />
               </div>
@@ -620,7 +620,18 @@ function wrap(theme: Theme): React.CSSProperties {
     boxShadow: theme === "light" ? "0 2px 40px rgba(2, 6, 23, 0.23)" : "0 2px 20px rgba(113, 120, 152, 0.25)",
   };
 }
-const headRow: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: 'wrap', marginBottom: 10 };
+const headRow: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "auto 1fr auto",
+  alignItems: "center",
+  gap: 10,
+  marginBottom: 10,
+};
+const headTitle: React.CSSProperties = {
+  margin: 0,
+  fontSize: 18,
+  textAlign: "center",
+};
 const input: React.CSSProperties = { padding: "10px 12px", background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, width: '100%' };
 const lbl: React.CSSProperties = { fontSize: 12, color: "var(--muted)" };
 const primaryBtn: React.CSSProperties = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--primary)", color: "#0c111b", fontWeight: 800, cursor: "pointer" };
