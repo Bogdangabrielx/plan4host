@@ -21,6 +21,7 @@ type Property = {
   regulation_pdf_url?: string | null;
 };
 type Room = { id: string; name: string; property_id: string; room_type_id?: string | null };
+type Lang = "en" | "ro";
 
 type OverviewRow = {
   id: string | null;               // booking id
@@ -64,12 +65,16 @@ function fullName(item: OverviewRow): string {
   return [f, l].filter(Boolean).join(" ").trim() || "—";
 }
 
-/** UI labels for statuses */
-const STATUS_LABEL: Record<OverviewRow["status"], string> = {
-  green: "Confirmed booking",
-  yellow: "Awaiting room",
-  red: "Mismatched booking",
-};
+function statusLabel(kind: OverviewRow["status"], lang: Lang): string {
+  if (lang === "ro") {
+    if (kind === "green") return "Rezervare confirmata";
+    if (kind === "yellow") return "Asteapta camera";
+    return "Rezervare necorelata";
+  }
+  if (kind === "green") return "Confirmed booking";
+  if (kind === "yellow") return "Awaiting room";
+  return "Mismatched booking";
+}
 
 /** Solid badge colors (same on light/dark) */
 const STATUS_COLOR: Record<OverviewRow["status"], string> = {
@@ -78,9 +83,9 @@ const STATUS_COLOR: Record<OverviewRow["status"], string> = {
   red: "#ED4337",
 };
 
-function statusTooltip(row: OverviewRow): string | undefined {
+function statusTooltip(row: OverviewRow, lang: Lang): string | undefined {
   const s = row.status === "green" && !row.room_id ? "yellow" : row.status;
-  if (s === "yellow") return "Select a room to confirm.";
+  if (s === "yellow") return lang === "ro" ? "Selecteaza o camera pentru confirmare." : "Select a room to confirm.";
   return undefined;
 }
 
@@ -211,6 +216,7 @@ function useTap(handler: () => void) {
 export default function GuestOverviewClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = createClient();
   const { setPill } = useHeader();
+  const [lang, setLang] = useState<Lang>("en");
 
   // Theme-aware icons (for light/dark)
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -243,6 +249,72 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
   }, [isDark]);
   const iconStyle: React.CSSProperties = { width: 16, height: 16, flex: "0 0 auto", opacity: 0.95 };
   const lineWrap: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, minWidth: 0 };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): Lang => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setLang(readLang());
+    const onStorage = () => setLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const t = {
+    title: lang === "ro" ? "Oaspeti" : "Guest Overview",
+    iosHint:
+      lang === "ro"
+        ? "Pe iPhone, instaleaza aplicatia pentru notificari: Share → Add to Home Screen."
+        : "On iPhone, install the app to enable notifications: Share → Add to Home Screen.",
+    gotIt: lang === "ro" ? "Am inteles" : "Got it",
+    searchPlaceholder: lang === "ro" ? "Cauta nume oaspete…" : "Search guest name…",
+    searchAria: lang === "ro" ? "Cauta nume oaspete" : "Search guest name",
+    clearSearch: lang === "ro" ? "Sterge cautarea" : "Clear search",
+    showPast: lang === "ro" ? "Arata rezervari trecute" : "Show past reservations",
+    hidePast: lang === "ro" ? "Ascunde rezervari trecute" : "Hide past reservations",
+    showPastShort: lang === "ro" ? "Arata trecute" : "Show past",
+    hidePastShort: lang === "ro" ? "Ascunde trecute" : "Hide past",
+    room: lang === "ro" ? "Camera" : "Room",
+    type: lang === "ro" ? "Tip" : "Type",
+    unknownGuest: lang === "ro" ? "Oaspete necunoscut" : "Unknown guest",
+    openReservation: lang === "ro" ? "Deschide rezervarea" : "Open reservation",
+    noRoomAssigned: lang === "ro" ? "Nicio camera alocata" : "No room assigned yet",
+    modifyBooking: lang === "ro" ? "Modifica rezervarea" : "Modify booking",
+    confirmBooking: lang === "ro" ? "Confirma rezervarea" : "Confirm booking",
+    seeQr: lang === "ro" ? "Vezi codul QR" : "See QR code",
+    allowAccess: lang === "ro" ? "Permite accesul" : "Allow access",
+    noGuestsMatch: lang === "ro" ? "Niciun oaspete nu corespunde cautarii." : "No guests match your search.",
+    empty1: lang === "ro" ? "🟢 Nicio cazare inceputa inca." : "🟢 No check-ins yet.",
+    empty2:
+      lang === "ro"
+        ? "Formularele completate de oaspeti vor aparea aici pentru confirmare."
+        : "Guest submissions will appear here for confirmation.",
+    emptyTip:
+      lang === "ro"
+        ? "Tip: Adauga linkul de check-in in mesajele automate de pe Airbnb, Booking sau alte platforme ca sa activezi fluxul complet."
+        : "Tip: Add your check-in link to your automatic messages on Airbnb, Booking, or other platforms to activate the full flow.",
+    qrCode: lang === "ro" ? "Cod QR" : "QR code",
+    close: lang === "ro" ? "Inchide" : "Close",
+    allowGuestAccess: lang === "ro" ? "Permite accesul oaspetelui" : "Allow guest access",
+    allowGuestAccessText:
+      lang === "ro"
+        ? "Daca permiti accesul acum, rezervarea va fi marcata ca inceputa, iar oaspetele va vedea codurile si instructiunile programate in mesajele automate."
+        : "If you allow access now, this booking will be treated as started and the guest will be able to see any access codes and instructions that you have scheduled in automatic messages.",
+    allowAccessNow: lang === "ro" ? "Permite accesul acum" : "Allow access now",
+    applying: lang === "ro" ? "Se aplica…" : "Applying…",
+  } as const;
 
   // Responsive (small/mobile)
   const isSmall = useIsSmall();
@@ -516,9 +588,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
     if (typeof window !== "undefined") window.location.href = `/app/calendar?date=${item.start_date}`;
   }
   function openReservation(item: OverviewRow, propertyId: string) {
-    if (!item.room_id) { alert("This booking has no assigned room yet."); return; }
+    if (!item.room_id) { alert(lang === "ro" ? "Aceasta rezervare nu are camera alocata inca." : "This booking has no assigned room yet."); return; }
     const room = roomById.get(String(item.room_id));
-    if (!room) { alert("Room not found locally. Try refreshing."); return; }
+    if (!room) { alert(lang === "ro" ? "Camera nu a fost gasita local. Incearca un refresh." : "Room not found locally. Try refreshing."); return; }
     setModal({
       propertyId,
       dateStr: item.start_date,
@@ -601,7 +673,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
-      <PlanHeaderBadge title="Guest Overview" slot="under-title" />
+      <PlanHeaderBadge title={t.title} slot="under-title" />
 
       <div style={containerStyle}>
         {/* Controls (sb-toolbar as in Calendar) */}
@@ -672,13 +744,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         {showIosHint && (
           <div className="sb-card" style={{ padding: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
             <div style={{ color: 'var(--muted)', fontSize: 13 }}>
-              On iPhone, install the app to enable notifications: <strong>Share</strong> → <strong>Add to Home Screen</strong>.
+              {t.iosHint}
             </div>
             <button
               className="sb-btn sb-btn--small"
               onClick={() => { try { localStorage.setItem('p4h:iosPwaHint:dismissed', '1'); } catch {}; setShowIosHint(false); }}
             >
-              Got it
+              {t.gotIt}
             </button>
           </div>
         )}
@@ -696,8 +768,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               onChange={(e) => setQuery(e.currentTarget.value)}
               onFocus={() => { try { window.dispatchEvent(new Event('p4h:nav:hide')); } catch {} }}
               onBlur={() => { try { window.dispatchEvent(new Event('p4h:nav:show')); } catch {} }}
-              placeholder="Search guest name…"
-              aria-label="Search guest name"
+              placeholder={t.searchPlaceholder}
+              aria-label={t.searchAria}
               style={{
                 width: "100%",
                 padding: "10px 12px 10px 36px",
@@ -714,7 +786,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             {query && (
               <button
                 type="button"
-                aria-label="Clear search"
+                aria-label={t.clearSearch}
                 {...useTap(() => { setQuery(""); searchRef.current?.focus(); })}
                 style={{
                   position: "absolute",
@@ -742,11 +814,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
         <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 12, flexWrap: "wrap" }}>
           {(["green","yellow"] as const).map((k) => (
             <div key={k} style={{ position: "relative" }} data-legend="keep">
-              <span style={badgeStyle(k)}>{STATUS_LABEL[k]}</span>
+              <span style={badgeStyle(k)}>{statusLabel(k, lang)}</span>
               <button
                 type="button"
                 {...useTap(() => setLegendInfo(legendInfo === k ? null : k))}
-                aria-label={`What is ${STATUS_LABEL[k]}?`}
+                aria-label={`What is ${statusLabel(k, lang)}?`}
                 style={{
                   marginLeft: 6, width: 24, height: 24, borderRadius: 50,
                   border: "1px solid var(--border)", background: "transparent",
@@ -761,11 +833,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               {legendInfo === k && (
                 isSmall ? (
                   <div data-legend="keep" style={{ marginTop: 6, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 8, padding: 8 }}>
-                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Confirmed booking — no action required.</div>}
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>{lang === "ro" ? "Rezervare confirmata — nu necesita actiune." : "Confirmed booking — no action required."}</div>}
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
-                        <strong>Awaiting room</strong>
-                        <span>Select a room to confirm.</span>
+                        <strong>{statusLabel("yellow", lang)}</strong>
+                        <span>{lang === "ro" ? "Selecteaza o camera pentru confirmare." : "Select a room to confirm."}</span>
                       </div>
                     )}
                   </div>
@@ -787,11 +859,11 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       maxWidth: "min(320px, calc(100vw - 32px))",
                     }}
                   >
-                    <div style={{ fontWeight: 800, marginBottom: 4 }}>{STATUS_LABEL[k]}</div>
-                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>Confirmed booking — no action required.</div>}
+                    <div style={{ fontWeight: 800, marginBottom: 4 }}>{statusLabel(k, lang)}</div>
+                    {k === "green" && <div style={{ fontSize: 12, color: "var(--muted)" }}>{lang === "ro" ? "Rezervare confirmata — nu necesita actiune." : "Confirmed booking — no action required."}</div>}
                     {k === "yellow" && (
                       <div style={{ fontSize: 12, color: "var(--muted)", display: "grid", gap: 2 }}>
-                        <span>Select a room to confirm.</span>
+                        <span>{lang === "ro" ? "Selecteaza o camera pentru confirmare." : "Select a room to confirm."}</span>
                       </div>
                     )}
                   </div>
@@ -810,21 +882,21 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               gap: 6,
               padding: isSmall ? '6px 10px' : undefined,
             }}
-            title={showPast ? 'Hide past reservations' : 'Show past reservations'}
-            aria-label={showPast ? 'Hide past reservations' : 'Show past reservations'}
+            title={showPast ? t.hidePast : t.showPast}
+            aria-label={showPast ? t.hidePast : t.showPast}
           >
             <svg aria-hidden width={16} height={16} viewBox="0 0 24 24" fill="none" style={{ display:'block' }}>
               <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
               <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            {!isSmall && (showPast ? 'Hide past' : 'Show past')}
+            {!isSmall && (showPast ? t.hidePastShort : t.showPastShort)}
           </button>
         </div>
 
         {/* Rows */}
         <div style={{ display: "grid", gap: 10 }}>
           {visibleRows.map((it) => {
-            const rawName = fullName(it) || "Unknown guest";
+            const rawName = fullName(it) || t.unknownGuest;
             const kind: OverviewRow["status"] = it.status === "green" && !it.room_id ? "yellow" : it.status;
 
             const roomLabel = it._room_label ?? "—";
@@ -879,9 +951,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     {isSmall && (
                       <span
                         style={{ ...badgeStyle(kind), marginBottom: 2, justifySelf: "start", width: "max-content" }}
-                        title={statusTooltip(it)}
+                        title={statusTooltip(it, lang)}
                       >
-                        {STATUS_LABEL[kind]}
+                        {statusLabel(kind, lang)}
                       </span>
                     )}
                     {/* OTA badge will be rendered under the dates (see below) */}
@@ -898,8 +970,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     <div style={lineWrap}>
                       <Image src={iconSrc("room")} alt="" width={16} height={16} style={iconStyle} />
                       <div style={{ color: "var(--muted)", minWidth: 0, overflowWrap: "anywhere" }}>
-                        Room: {roomLabel}
-                        {typeName && typeName !== "—" ? ` — Type: ${typeName}` : ""}
+                        {t.room}: {roomLabel}
+                        {typeName && typeName !== "—" ? ` — ${t.type}: ${typeName}` : ""}
                       </div>
                     </div>
 
@@ -914,8 +986,8 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 
                   {!isSmall && (
                     <div style={{ justifySelf: "end", display: "grid", gap: 6, justifyItems: "end" }}>
-                      <span style={badgeStyle(kind)} title={statusTooltip(it)}>
-                        {STATUS_LABEL[kind]}
+                      <span style={badgeStyle(kind)} title={statusTooltip(it, lang)}>
+                        {statusLabel(kind, lang)}
                       </span>
                       {(() => { const meta = otaMetaForRow(it, kind); return meta ? (
                         <OtaBadge provider={meta.provider} color={meta.color} logo={meta.logo} />
@@ -960,9 +1032,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                           opacity: it.room_id && roomById.has(String(it.room_id)) ? 1 : 0.6,
                           cursor: it.room_id && roomById.has(String(it.room_id)) ? "pointer" : "not-allowed",
                         }}
-                        title={it.room_id ? "Open reservation" : "No room assigned yet"}
+                        title={it.room_id ? t.openReservation : t.noRoomAssigned}
                       >
-                        Open reservation
+                        {t.openReservation}
                       </button>
                     </>
                   )}
@@ -984,9 +1056,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         cursor: "pointer",
                         width: isSmall ? "100%" : undefined,
                       }}
-                      title={kind === 'green' ? "Modify booking" : "Confirm booking"}
+                      title={kind === 'green' ? t.modifyBooking : t.confirmBooking}
                     >
-                      {kind === 'green' ? 'Modify booking' : 'Confirm booking'}
+                      {kind === 'green' ? t.modifyBooking : t.confirmBooking}
                     </button>
                   )}
 
@@ -1010,9 +1082,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       cursor: "pointer",
                       width: isSmall ? "100%" : undefined,
                     }}
-                    title="See QR code"
+                    title={t.seeQr}
                   >
-                    See QR code
+                    {t.seeQr}
                   </button>
 
                   {/* Allow access (info popup only, for now) */}
@@ -1037,7 +1109,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                         setAccessPopup({ formId: String(it.id), guestName: rawName });
                       }}
                     >
-                      Allow access
+                      {t.allowAccess}
                     </button>
                   )}
                 </div>
@@ -1057,13 +1129,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               }}
             >
               {query ? (
-                "No guests match your search."
+                t.noGuestsMatch
               ) : (
                 <div>
-                  <div>🟢 No check-ins yet.</div>
-                  <div>Guest submissions will appear here for confirmation.</div>
+                  <div>{t.empty1}</div>
+                  <div>{t.empty2}</div>
                   <div style={{ fontSize: 12, fontStyle: "italic", marginTop: 6 }}>
-                    Tip: Add your check-in link to your automatic messages on Airbnb, Booking, or other platforms to activate the full flow.
+                    {t.emptyTip}
                   </div>
                 </div>
               )}
@@ -1091,6 +1163,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
           <EditFormBookingModal 
             propertyId={editModal.propertyId}
             bookingId={editModal.bookingId}
+            lang={lang}
             onClose={() => setEditModal(null)} 
             onSaved={() => { /* keep modal open after save */ refresh(); }}
             confirmOnSave={!!editModal.confirmOnSave}
@@ -1103,12 +1176,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                    paddingTop:'calc(var(--safe-top) + 12px)', paddingBottom:'calc(var(--safe-bottom) + 12px)'}}>
           <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={{ width:'min(420px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:10 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <strong>QR code</strong>
+              <strong>{t.qrCode}</strong>
               <button
                 className="sb-btn sb-cardglow sb-btn--icon"
                 type="button"
-                aria-label="Close"
-                title="Close"
+                aria-label={t.close}
+                title={t.close}
                 onClick={()=>setQrModal(null)}
                 style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
               >
@@ -1163,12 +1236,12 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             }}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <strong>Allow guest access</strong>
+              <strong>{t.allowGuestAccess}</strong>
               <button
                 className="sb-btn sb-cardglow sb-btn--icon"
                 type="button"
-                aria-label="Close"
-                title="Close"
+                aria-label={t.close}
+                title={t.close}
                 onClick={() => setAccessPopup(null)}
                 disabled={accessBusy}
                 style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
@@ -1177,8 +1250,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
               </button>
             </div>
             <div style={{ fontSize: 13, color: "var(--muted)" }}>
-              If you allow access now, this booking will be treated as started and the guest will be able to see any
-              access codes and instructions that you have scheduled in automatic messages.
+              {t.allowGuestAccessText}
             </div>
             <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
               <button
@@ -1199,13 +1271,13 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                       });
                       const data = await res.json().catch(() => ({}));
                       if (!res.ok || !data?.ok) {
-                        alert(data?.error || "Could not set the start time for this booking.");
+                        alert(data?.error || (lang === "ro" ? "Nu am putut seta ora de start pentru aceasta rezervare." : "Could not set the start time for this booking."));
                       } else {
-                        setAccessFeedback(`The reservation for ${guestName} is now active.`);
+                        setAccessFeedback(lang === "ro" ? `Rezervarea pentru ${guestName} este acum activa.` : `The reservation for ${guestName} is now active.`);
                         await refresh();
                       }
                     } catch {
-                      alert("An error occurred while setting the start time.");
+                      alert(lang === "ro" ? "A aparut o eroare la setarea orei de start." : "An error occurred while setting the start time.");
                     } finally {
                       setAccessBusy(false);
                       setAccessPopup(null);
@@ -1214,7 +1286,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 }}
                 disabled={accessBusy}
               >
-                {accessBusy ? "Applying…" : "Allow access now"}
+                {accessBusy ? t.applying : t.allowAccessNow}
               </button>
             </div>
           </div>
@@ -1258,7 +1330,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 className="sb-btn sb-cardglow"
                 onClick={() => setAccessFeedback(null)}
               >
-                Close
+                {t.close}
               </button>
             </div>
           </div>
@@ -1273,12 +1345,14 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
 function EditFormBookingModal({
   propertyId,
   bookingId,
+  lang = "en",
   onClose,
   onSaved,
   confirmOnSave,
 }: {
   propertyId: string;
   bookingId: string;
+  lang?: Lang;
   onClose: () => void;
   onSaved: () => void;
   confirmOnSave?: boolean;
@@ -1387,7 +1461,7 @@ function EditFormBookingModal({
 
         if (bRes.error) throw new Error(bRes.error.message);
         if (!bRes.data || String((bRes.data as any).property_id) !== String(propertyId)) {
-          throw new Error("Booking not found for this property.");
+          throw new Error(lang === "ro" ? "Rezervarea nu a fost gasita pentru aceasta proprietate." : "Booking not found for this property.");
         }
 
         const sd0 = bRes.data.start_date || "";
@@ -1423,13 +1497,13 @@ function EditFormBookingModal({
           setDocs(arr.map((x:any)=>({ id:String(x.id), doc_type: x.doc_type || null, mime_type: x.mime_type || null, url: x.url || null })));
         } catch { setDocs([]); }
       } catch (e: any) {
-        setError(e?.message || "Failed to load booking.");
+        setError(e?.message || (lang === "ro" ? "Nu am putut incarca rezervarea." : "Failed to load booking."));
       } finally {
         if (alive) setLoading(false);
       }
     })();
     return () => { alive = false; };
-  }, [supabase, propertyId, bookingId]);
+  }, [supabase, propertyId, bookingId, lang]);
 
   function valid(): boolean {
     if (!startDate || !endDate) return false;
@@ -1593,7 +1667,7 @@ function EditFormBookingModal({
         try { onClose(); } catch {}
       }
     } catch (e: any) {
-      setError(e?.message || "Failed to save changes.");
+      setError(e?.message || (lang === "ro" ? "Nu am putut salva modificarile." : "Failed to save changes."));
     } finally {
       setSaving(false);
     }
@@ -1626,14 +1700,14 @@ function EditFormBookingModal({
       if (r.error) throw new Error(r.error.message);
       const linked = r.data as { id?: string | null } | null;
       if (!linked || !linked.id) {
-        throw new Error('No linked booking found for this form.');
+        throw new Error(lang === "ro" ? "Nu exista rezervare legata de acest formular." : 'No linked booking found for this form.');
       }
 
       // 2) Call server API to delete booking (handles children + iCal suppression)
       const res = await fetch(`/api/bookings/${encodeURIComponent(String(linked.id))}`, { method: 'DELETE' });
       if (!res.ok) {
         const jj = await res.json().catch(() => ({} as any));
-        throw new Error(jj?.error || 'Failed to cancel booking.');
+        throw new Error(jj?.error || (lang === "ro" ? "Nu am putut anula rezervarea." : 'Failed to cancel booking.'));
       }
 
       // 3) Șterge formularul de check-in (va șterge și form_documents prin ON DELETE CASCADE)
@@ -1649,8 +1723,8 @@ function EditFormBookingModal({
       onSaved();
       onClose();
     } catch (e: any) {
-      setPopupTitle('Cannot cancel');
-      setPopupMsg(e?.message || 'Failed to cancel booking.');
+      setPopupTitle(lang === "ro" ? "Nu se poate anula" : 'Cannot cancel');
+      setPopupMsg(e?.message || (lang === "ro" ? "Nu am putut anula rezervarea." : 'Failed to cancel booking.'));
     } finally {
       setCancelBusy(false);
     }
@@ -1700,7 +1774,7 @@ function EditFormBookingModal({
             style={{ width: 'min(480px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}
           >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 8 }}>
-              <strong>{popupTitle || 'Notice'}</strong>
+              <strong>{popupTitle || (lang === "ro" ? "Notificare" : "Notice")}</strong>
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
               {popupMsg}
@@ -1720,18 +1794,18 @@ function EditFormBookingModal({
         >
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width: 'min(460px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 8 }}>
-              <strong>Modify reservation?</strong>
+              <strong>{lang === "ro" ? "Modifici rezervarea?" : "Modify reservation?"}</strong>
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
-              You are about to modify an existing reservation.<br/>
-              Do you want to continue?
+              {lang === "ro" ? "Urmeaza sa modifici o rezervare existenta." : "You are about to modify an existing reservation."}<br/>
+              {lang === "ro" ? "Vrei sa continui?" : "Do you want to continue?"}
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
               <button className="sb-btn" onClick={()=>setConfirmOpen(false)} disabled={confirmBusy}>
-                Close
+                {lang === "ro" ? "Inchide" : "Close"}
               </button>
               <button className="sb-btn sb-btn--primary" onClick={async ()=>{ setConfirmBusy(true); try { await performSave(); setConfirmOpen(false);} finally { setConfirmBusy(false);} }} disabled={confirmBusy}>
-                {confirmBusy ? 'Saving…' : 'Yes'}
+                {confirmBusy ? (lang === "ro" ? "Se salveaza…" : 'Saving…') : (lang === "ro" ? "Da" : "Yes")}
               </button>
             </div>
           </div>
@@ -1747,18 +1821,18 @@ function EditFormBookingModal({
         >
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width: 'min(460px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 8 }}>
-              <strong>Cancel booking?</strong>
+              <strong>{lang === "ro" ? "Anulezi rezervarea?" : "Cancel booking?"}</strong>
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
-              This action is irreversible. The reservation and all associated check-in form data will be deleted.<br/>
-              Do you want to continue?
+              {lang === "ro" ? "Actiunea este ireversibila. Rezervarea si toate datele din formularul de check-in vor fi sterse." : "This action is irreversible. The reservation and all associated check-in form data will be deleted."}<br/>
+              {lang === "ro" ? "Vrei sa continui?" : "Do you want to continue?"}
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
               <button
                 className="sb-btn sb-cardglow sb-btn--icon"
                 type="button"
-                aria-label="Close"
-                title="Close"
+                aria-label={lang === "ro" ? "Inchide" : "Close"}
+                title={lang === "ro" ? "Inchide" : "Close"}
                 onClick={()=>setCancelOpen(false)}
                 disabled={cancelBusy}
                 style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
@@ -1771,7 +1845,7 @@ function EditFormBookingModal({
                 disabled={cancelBusy}
                 style={{ borderColor:"var(--danger)", color:"var(--danger)" }}
               >
-                {cancelBusy ? 'Cancelling…' : 'Cancel booking'}
+                {cancelBusy ? (lang === "ro" ? "Se anuleaza…" : 'Cancelling…') : (lang === "ro" ? "Anuleaza rezervarea" : "Cancel booking")}
               </button>
             </div>
           </div>
@@ -1786,10 +1860,10 @@ function EditFormBookingModal({
         >
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width: 'min(460px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 8 }}>
-              <strong>Delete form?</strong>
+              <strong>{lang === "ro" ? "Stergi formularul?" : "Delete form?"}</strong>
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
-              Delete this form booking? This cannot be undone.
+              {lang === "ro" ? "Stergi acest formular de rezervare? Actiunea nu poate fi anulata." : "Delete this form booking? This cannot be undone."}
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
               <button
@@ -1797,7 +1871,7 @@ function EditFormBookingModal({
                 onClick={()=>{ if (deleteBusy) return; setDeleteOpen(false); try { onSaved(); } catch {} try { onClose(); } catch {} }}
                 disabled={deleteBusy}
               >
-                Cancel
+                {lang === "ro" ? "Anuleaza" : "Cancel"}
               </button>
               <button
                 className="sb-btn"
@@ -1812,15 +1886,15 @@ function EditFormBookingModal({
                     try { onSaved(); } catch {}
                     try { onClose(); } catch {}
                   } catch (e:any) {
-                    setPopupTitle('Cannot delete');
-                    setPopupMsg(e?.message || 'Failed to delete.');
+                    setPopupTitle(lang === "ro" ? "Nu se poate sterge" : 'Cannot delete');
+                    setPopupMsg(e?.message || (lang === "ro" ? "Nu am putut sterge." : 'Failed to delete.'));
                   } finally { setDeleteBusy(false); }
                 }}
                 disabled={deleteBusy}
                 style={{ borderColor:'var(--danger)', color:'var(--danger)' }}
-                title="Delete this form booking"
+                title={lang === "ro" ? "Sterge acest formular de rezervare" : "Delete this form booking"}
               >
-                {deleteBusy ? 'Deleting…' : 'Please delete'}
+                {deleteBusy ? (lang === "ro" ? "Se sterge…" : 'Deleting…') : (lang === "ro" ? "Sterge" : "Please delete")}
               </button>
             </div>
           </div>
@@ -1835,17 +1909,17 @@ function EditFormBookingModal({
         >
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width: 'min(520px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-              <strong>Send info email to guest?</strong>
+              <strong>{lang === "ro" ? "Trimitem email informativ oaspetelui?" : "Send info email to guest?"}</strong>
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
-              We will send an informational email including the assigned room to the guest.<br/>
-              Do you want to send this email to the guest?
+              {lang === "ro" ? "Vom trimite un email informativ oaspetelui, inclusiv camera alocata." : "We will send an informational email including the assigned room to the guest."}<br/>
+              {lang === "ro" ? "Vrei sa trimiti acest email?" : "Do you want to send this email to the guest?"}
               {sendMailError && (
                 <div style={{ color:'var(--danger)', marginTop:8 }}>{sendMailError}</div>
               )}
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
-              <button className="sb-btn" onClick={()=>{ if (sendMailBusy) return; setSendMailOpen(false); try { onSaved(); } catch {} try { onClose(); } catch {} }} disabled={sendMailBusy}>Skip this time</button>
+              <button className="sb-btn" onClick={()=>{ if (sendMailBusy) return; setSendMailOpen(false); try { onSaved(); } catch {} try { onClose(); } catch {} }} disabled={sendMailBusy}>{lang === "ro" ? "Sari de data asta" : "Skip this time"}</button>
               <button
                 className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                 disabled={sendMailBusy}
@@ -1853,7 +1927,7 @@ function EditFormBookingModal({
                 setSendMailBusy(true);
                 setSendMailError(null);
                 prevPillRef.current = pill;
-                setPill("Sending…");
+                setPill(lang === "ro" ? "Se trimite…" : "Sending…");
                 try {
                   // Ensure public link exists
                   try {
@@ -1870,24 +1944,24 @@ function EditFormBookingModal({
                   });
                   const jj = await r.json().catch(()=>({}));
                   if (r.ok && (jj?.ok || jj?.sent)) {
-                    setPill(overlayMessageNode("Sent"));
+                    setPill(overlayMessageNode(lang === "ro" ? "Trimis" : "Sent"));
                     await wait(1000);
                     setPill(prevPillRef.current);
                     setSendMailOpen(false);
                     try { onSaved(); } catch {}
                     try { onClose(); } catch {}
                   } else {
-                    setSendMailError('Email could not be sent. Please try again in 10 minutes.');
+                    setSendMailError(lang === "ro" ? "Emailul nu a putut fi trimis. Incearca din nou peste 10 minute." : 'Email could not be sent. Please try again in 10 minutes.');
                   }
                 } catch (er:any) {
-                  setSendMailError(er?.message || 'Failed to send.');
+                  setSendMailError(er?.message || (lang === "ro" ? "Nu am putut trimite." : 'Failed to send.'));
                 } finally {
                   try { setPill(prevPillRef.current); } catch {}
                   setSendMailBusy(false);
                 }
               }}
               >
-                {sendMailBusy ? 'Sending…' : 'Send'}
+                {sendMailBusy ? (lang === "ro" ? "Se trimite…" : 'Sending…') : (lang === "ro" ? "Trimite" : "Send")}
               </button>
             </div>
           </div>
@@ -1896,13 +1970,13 @@ function EditFormBookingModal({
       <div onClick={(e)=>e.stopPropagation()} className="sb-cardglow" style={card}>
         {/* Fixed header inside modal card */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:8 }}>
-          <strong>{confirmOnSave ? 'Modify booking' : 'Confirm booking'}</strong>
+          <strong>{confirmOnSave ? (lang === "ro" ? "Modifica rezervarea" : "Modify booking") : (lang === "ro" ? "Confirma rezervarea" : "Confirm booking")}</strong>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <button
               className="sb-btn sb-cardglow sb-btn--icon"
               type="button"
-              aria-label="Close"
-              title="Close"
+              aria-label={lang === "ro" ? "Inchide" : "Close"}
+              title={lang === "ro" ? "Inchide" : "Close"}
               onClick={onClose}
               disabled={saving || deleting}
               style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
@@ -1915,23 +1989,23 @@ function EditFormBookingModal({
         {/* Scrollable content */}
         <div style={{ overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
           {loading ? (
-            <div style={{ color:"var(--muted)" }}>Loading…</div>
+            <div style={{ color:"var(--muted)" }}>{lang === "ro" ? "Se incarca…" : "Loading…"}</div>
           ) : error ? (
             <div style={{ color:"var(--danger)" }}>{error}</div>
           ) : (
             <div style={{ display:"grid", gap:12 }}>
             {/* Read-only guest details */}
             <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)" }}>
-              <div style={{ fontSize:12, color:"var(--muted)", fontWeight:800, marginBottom:6 }}>Guest</div>
+              <div style={{ fontSize:12, color:"var(--muted)", fontWeight:800, marginBottom:6 }}>{lang === "ro" ? "Oaspete" : "Guest"}</div>
               <div style={{ display:"grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap:8 }}>
-                <div><strong>Name:</strong> {(guestFirst + " " + guestLast).trim() || "—"}</div>
+                <div><strong>{lang === "ro" ? "Nume:" : "Name:"}</strong> {(guestFirst + " " + guestLast).trim() || "—"}</div>
                 <div>
                   <strong>Email:</strong> {guestEmail ? (
                     <a href={`mailto:${guestEmail}`} style={{ color: 'var(--primary)', textDecoration: 'none', marginLeft: 6 }}>{guestEmail}</a>
                   ) : '—'}
                 </div>
                 <div>
-                  <strong>Phone:</strong> {guestPhone ? (()=>{
+                  <strong>{lang === "ro" ? "Telefon:" : "Phone:"}</strong> {guestPhone ? (()=>{
                     const digits = String(guestPhone).replace(/\D/g,'');
                     const waApp = digits ? `whatsapp://send?phone=${digits}` : '';
                     const waWeb = digits ? `https://wa.me/${digits}` : '';
@@ -1968,7 +2042,7 @@ function EditFormBookingModal({
                   display:'flex', alignItems:'center', justifyContent:'space-between'
                 }}
               >
-                <span style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Documents</span>
+                <span style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Documente" : "Documents"}</span>
                 <span aria-hidden style={{ color:'var(--muted)', fontWeight:800 }}>{docsOpen ? '▾' : '▸'}</span>
               </button>
               {docsOpen && (
@@ -1981,27 +2055,27 @@ function EditFormBookingModal({
                     return (
                       <>
                         <div>
-                          <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>ID Document</div>
+                          <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>{lang === "ro" ? "Document ID" : "ID Document"}</div>
                           {idDoc && idDoc.url ? (
                             (idDoc.mime_type || '').startsWith('image/') ? (
                               <img src={idDoc.url} alt="ID" style={{ width:160, height:110, objectFit:'contain', objectPosition:'center', borderRadius:8, border:'1px solid var(--border)', background:'#fff' }} />
                             ) : (
-                              <a href={idDoc.url} target="_blank" rel="noreferrer" className="sb-btn">View file</a>
+                              <a href={idDoc.url} target="_blank" rel="noreferrer" className="sb-btn">{lang === "ro" ? "Vezi fisierul" : "View file"}</a>
                             )
                           ) : (
-                            <div style={{ color:'var(--muted)' }}>No file</div>
+                            <div style={{ color:'var(--muted)' }}>{lang === "ro" ? "Fara fisier" : "No file"}</div>
                           )}
                         </div>
                         <div>
-                          <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>Signature</div>
+                          <div style={{ fontSize:12, color:'var(--muted)', fontWeight:800, marginBottom:6 }}>{lang === "ro" ? "Semnatura" : "Signature"}</div>
                           {sigDoc && sigDoc.url ? (
                             (sigDoc.mime_type || '').startsWith('image/') ? (
                               <img src={sigDoc.url} alt="Signature" style={{ width:160, height:110, objectFit:'contain', objectPosition:'center', borderRadius:8, border:'1px solid var(--border)', background:'#fff' }} />
                             ) : (
-                              <a href={sigDoc.url} target="_blank" rel="noreferrer" className="sb-btn">View file</a>
+                              <a href={sigDoc.url} target="_blank" rel="noreferrer" className="sb-btn">{lang === "ro" ? "Vezi fisierul" : "View file"}</a>
                             )
                           ) : (
-                            <div style={{ color:'var(--muted)' }}>No file</div>
+                            <div style={{ color:'var(--muted)' }}>{lang === "ro" ? "Fara fisier" : "No file"}</div>
                           )}
                         </div>
                       </>
@@ -2023,42 +2097,42 @@ function EditFormBookingModal({
                     display:'flex', alignItems:'center', justifyContent:'space-between'
                   }}
                 >
-                  <span style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Companions</span>
+                  <span style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Insotitori" : "Companions"}</span>
                   <span aria-hidden style={{ color:'var(--muted)', fontWeight:800 }}>{companionsOpen ? '▾' : '▸'}</span>
                 </button>
                 {companionsOpen && (
                   <div style={{ display:'grid', gap:8 }}>
                     {companions.map((c, idx) => {
-                      const name = [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || `Guest ${idx+2}`;
+                      const name = [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || `${lang === "ro" ? "Oaspete" : "Guest"} ${idx+2}`;
                       return (
                         <div key={idx} style={{ border:'1px solid var(--border)', borderRadius:8, padding:8, display:'grid', gap:4, background:'var(--card)' }}>
                           <div style={{ fontWeight:800 }}>{name}</div>
                           {c.birth_date && (
                             <div style={{ fontSize:12, color:'var(--muted)' }}>
-                              Birth date: <span style={{ color:'var(--text)' }}>{c.birth_date}</span>
+                              {lang === "ro" ? "Data nasterii" : "Birth date"}: <span style={{ color:'var(--text)' }}>{c.birth_date}</span>
                             </div>
                           )}
                           {(c.citizenship || c.residence_country) && (
                             <div style={{ fontSize:12, color:'var(--muted)' }}>
                               {c.citizenship && (
                                 <>
-                                  Citizenship: <span style={{ color:'var(--text)' }}>{c.citizenship}</span>
+                                  {lang === "ro" ? "Cetatenie" : "Citizenship"}: <span style={{ color:'var(--text)' }}>{c.citizenship}</span>
                                 </>
                               )}
                               {c.citizenship && c.residence_country && <span> • </span>}
                               {c.residence_country && (
                                 <>
-                                  Residence: <span style={{ color:'var(--text)' }}>{c.residence_country}</span>
+                                  {lang === "ro" ? "Resedinta" : "Residence"}: <span style={{ color:'var(--text)' }}>{c.residence_country}</span>
                                 </>
                               )}
                             </div>
                           )}
                           {c.is_minor ? (
                             <div style={{ fontSize:12, color:'var(--muted)' }}>
-                              Minor guest
+                              {lang === "ro" ? "Oaspete minor" : "Minor guest"}
                               {c.guardian_name && (
                                 <>
-                                  {' '}— Guardian:{' '}
+                                  {' '}— {lang === "ro" ? "Tutore" : "Guardian"}:{' '}
                                   <span style={{ color:'var(--text)' }}>{c.guardian_name}</span>
                                 </>
                               )}
@@ -2066,17 +2140,17 @@ function EditFormBookingModal({
                           ) : (
                             (c.doc_type || c.doc_number) && (
                               <div style={{ fontSize:12, color:'var(--muted)' }}>
-                                {c.doc_type === 'id_card' && 'ID card'}
-                                {c.doc_type === 'passport' && 'Passport'}
-                                {(!c.doc_type || (c.doc_type !== 'id_card' && c.doc_type !== 'passport')) && 'Document'}
+                                {c.doc_type === 'id_card' && (lang === "ro" ? 'Carte de identitate' : 'ID card')}
+                                {c.doc_type === 'passport' && (lang === "ro" ? 'Pasaport' : 'Passport')}
+                                {(!c.doc_type || (c.doc_type !== 'id_card' && c.doc_type !== 'passport')) && (lang === "ro" ? 'Document' : 'Document')}
                                 {c.doc_series && (
                                   <>
-                                    {' '}series <span style={{ color:'var(--text)' }}>{c.doc_series}</span>
+                                    {' '}{lang === "ro" ? "seria" : "series"} <span style={{ color:'var(--text)' }}>{c.doc_series}</span>
                                   </>
                                 )}
                                 {c.doc_number && (
                                   <>
-                                    {c.doc_series ? ' • number ' : ' number '}
+                                    {c.doc_series ? (lang === "ro" ? ' • numar ' : ' • number ') : (lang === "ro" ? ' numar ' : ' number ')}
                                     <span style={{ color:'var(--text)' }}>{c.doc_number}</span>
                                   </>
                                 )}
@@ -2094,7 +2168,7 @@ function EditFormBookingModal({
             {/* Editable fields */}
             <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)", display:"grid", gap:10 }}>
               <div style={{ display:"grid", gap:6 }}>
-                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Start date</label>
+                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Data inceput" : "Start date"}</label>
                 <input
                   type="date"
                   value={startDate}
@@ -2103,7 +2177,7 @@ function EditFormBookingModal({
                 />
               </div>
               <div style={{ display:"grid", gap:6 }}>
-                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>End date</label>
+                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Data sfarsit" : "End date"}</label>
                 <input
                   type="date"
                   value={endDate}
@@ -2113,15 +2187,15 @@ function EditFormBookingModal({
               </div>
 
               <div style={{ display:"grid", gap:6 }}>
-                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>Room name</label>
+                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Nume camera" : "Room name"}</label>
                 <select
                   value={roomId || ""}
                   onChange={(e)=>{
                     const next = String((e.target as HTMLSelectElement).value || '');
                     // Gating doar pentru "Confirm booking" (nu și pentru "Modify booking")
                     if (!confirmOnSave && next && !eligibleRooms.has(next)) {
-                      setPopupTitle('Room not available');
-                      setPopupMsg('No event exists yet for the selected room and dates.');
+                      setPopupTitle(lang === "ro" ? 'Camera indisponibila' : 'Room not available');
+                      setPopupMsg(lang === "ro" ? 'Nu exista inca un eveniment pentru camera si intervalul selectate.' : 'No event exists yet for the selected room and dates.');
                       return;
                     }
                     setRoomId(next);
@@ -2133,7 +2207,7 @@ function EditFormBookingModal({
                     const busy = formBusyRooms.has(String(r.id));
                     return (
                       <option key={r.id} value={r.id}>
-                        {r.name}{busy ? ' — booked' : ''}
+                        {r.name}{busy ? (lang === "ro" ? ' — ocupata' : ' — booked') : ''}
                       </option>
                     );
                   })}
@@ -2152,7 +2226,7 @@ function EditFormBookingModal({
                     onClick={onSave}
                     style={{ minHeight:44 }}
                   >
-                    {saving ? "Saving…" : (justSaved ? "Saved" : "Save changes")}
+                    {saving ? (lang === "ro" ? "Se salveaza…" : "Saving…") : (justSaved ? (lang === "ro" ? "Salvat" : "Saved") : (lang === "ro" ? "Salveaza modificarile" : "Save changes"))}
                   </button>
                 )}
               </div>
@@ -2164,9 +2238,9 @@ function EditFormBookingModal({
                     onClick={() => setCancelOpen(true)}
                     disabled={saving || deleting}
                     style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)" }}
-                    title="Cancel this booking"
+                    title={lang === "ro" ? "Anuleaza aceasta rezervare" : "Cancel this booking"}
                   >
-                    Cancel booking
+                    {lang === "ro" ? "Anuleaza rezervarea" : "Cancel booking"}
                   </button>
                 ) : (
                   <button
@@ -2175,16 +2249,16 @@ function EditFormBookingModal({
                     onClick={onDelete}
                     disabled={saving || deleting}
                     style={{ minHeight:44, borderColor:"var(--danger)", color:"var(--danger)" }}
-                    title="Delete this form booking"
+                    title={lang === "ro" ? "Sterge acest formular de rezervare" : "Delete this form booking"}
                   >
-                    {deleting ? "Deleting…" : "Delete form"}
+                    {deleting ? (lang === "ro" ? "Se sterge…" : "Deleting…") : (lang === "ro" ? "Sterge formularul" : "Delete form")}
                   </button>
                 )}
               </div>
             </div>
 
             {(!valid() && startDate && endDate && endDate < startDate) && (
-              <div style={{ color:"var(--danger)" }}>End date cannot be before start date.</div>
+              <div style={{ color:"var(--danger)" }}>{lang === "ro" ? "Data de sfarsit nu poate fi inaintea datei de inceput." : "End date cannot be before start date."}</div>
             )}
             <div style={{ height: 64 }} aria-hidden />
           </div>

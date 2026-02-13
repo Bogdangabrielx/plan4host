@@ -3,11 +3,14 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ensureScope } from "@/lib/auth/scopes";
 import GuestOverviewClient from "./ui/GuestOverviewClient";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function GuestOverviewPage() {
+  const cookieStore = cookies();
+  const lang = cookieStore.get("app_lang")?.value === "ro" ? "ro" : "en";
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
@@ -34,7 +37,7 @@ export default async function GuestOverviewPage() {
   if (properties.length === 0) redirect("/app");
 
   return (
-    <AppShell currentPath="/app/guest" title="Guest Overview">
+    <AppShell currentPath="/app/guest" title={lang === "ro" ? "Oaspeti" : "Guest Overview"}>
       <GuestOverviewClient initialProperties={properties} />
     </AppShell>
   );
