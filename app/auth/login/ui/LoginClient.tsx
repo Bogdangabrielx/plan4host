@@ -384,28 +384,30 @@ export default function LoginClient({
          
         <div  style={wrap(mounted ? theme : "dark")} >
           <div  style={headRow}>
-            <div style={langToggleWrap}>
-              <button
-                type="button"
-                onClick={() => setLang("en")}
-                aria-label="Switch language to English"
-                title="English"
-                style={langBtn(lang === "en")}
-              >
-                <img src="/eng.png" alt="English" width={16} height={16} style={{ display: "block", borderRadius: 999 }} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setLang("ro")}
-                aria-label="Schimba limba in romana"
-                title="Romana"
-                style={langBtn(lang === "ro")}
-              >
-                <img src="/ro.png" alt="Romana" width={16} height={16} style={{ display: "block", borderRadius: 999 }} />
-              </button>
+            <div style={headLeft}>
+              <div style={langToggleWrap}>
+                <button
+                  type="button"
+                  onClick={() => setLang("en")}
+                  aria-label="Switch language to English"
+                  title="English"
+                  style={langBtn(lang === "en")}
+                >
+                  <img src="/eng.png" alt="English" width={14} height={14} style={{ display: "block", borderRadius: 999 }} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLang("ro")}
+                  aria-label="Schimba limba in romana"
+                  title="Romana"
+                  style={langBtn(lang === "ro")}
+                >
+                  <img src="/ro.png" alt="Romana" width={14} height={14} style={{ display: "block", borderRadius: 999 }} />
+                </button>
+              </div>
             </div>
             <h1 style={headTitle}>{mode === "login" ? t.signIn : t.createAccount}</h1>
-            <div style={{ display: "flex", gap: 10, alignItems: "center", justifySelf: "end" }}>
+            <div style={headRight}>
               <span style={pillStyle(pill)}>{pill}</span>
               <div style={animateTheme ? { animation: "themeFloat 2.2s ease-in-out 1" } : undefined}>
                 <ThemeToggle size="md" />
@@ -621,16 +623,38 @@ function wrap(theme: Theme): React.CSSProperties {
   };
 }
 const headRow: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr auto 1fr",
+  position: "relative",
+  display: "flex",
   alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 36,
   gap: 10,
   marginBottom: 10,
 };
+const headLeft: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  minWidth: 0,
+};
+const headRight: React.CSSProperties = {
+  display: "flex",
+  gap: 10,
+  alignItems: "center",
+  justifyContent: "flex-end",
+  minWidth: 0,
+};
 const headTitle: React.CSSProperties = {
-  margin: 0,
+  position: "absolute",
+  left: "50%",
+  transform: "translateX(-50%)",
+  pointerEvents: "none",
+  maxWidth: "calc(100% - 180px)",
   fontSize: 18,
   textAlign: "center",
+  margin: 0,
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
 };
 const input: React.CSSProperties = { padding: "10px 12px", background: "var(--bg)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, width: '100%' };
 const lbl: React.CSSProperties = { fontSize: 12, color: "var(--muted)" };
@@ -641,16 +665,16 @@ const dividerLine: React.CSSProperties = { height: 1, background: "var(--border)
 const langToggleWrap: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
-  gap: 6,
-  padding: 4,
+  gap: 4,
+  padding: 3,
   borderRadius: 999,
   border: "1px solid var(--border)",
   background: "var(--card)",
 };
 function langBtn(active: boolean): React.CSSProperties {
   return {
-    width: 26,
-    height: 26,
+    width: 22,
+    height: 22,
     borderRadius: 999,
     border: active ? "1px solid var(--primary)" : "1px solid transparent",
     background: active ? "color-mix(in srgb, var(--primary) 18%, var(--card))" : "transparent",
