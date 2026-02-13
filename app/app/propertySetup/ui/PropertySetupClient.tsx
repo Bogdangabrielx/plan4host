@@ -58,6 +58,7 @@ function MaskedSvgIcon({
 
 export default function PropertySetupClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
+  const [uiLang, setUiLang] = useState<"ro" | "en">("en");
   const [status, setStatus] = useState<"Idle" | "Loading" | "Saving…" | "Synced" | "Error">("Idle");
   const loadSeqRef = useRef(0);
   const [isSmall, setIsSmall] = useState(false);
@@ -101,7 +102,30 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   const [propertyPhotos, setPropertyPhotos] = useState<Record<string, string | null>>({});
 
 	  const { setTitle, setPill } = useHeader();
-	  useEffect(() => { setTitle("Property Setup"); }, [setTitle]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): "ro" | "en" => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setUiLang(readLang());
+    const onStorage = () => setUiLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+	  useEffect(() => { setTitle(uiLang === "ro" ? "Setari proprietate" : "Property Setup"); }, [setTitle, uiLang]);
 
 	  useEffect(() => {
 	    const wasOpen = prevShowRoomsGuideRef.current;
@@ -505,11 +529,19 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   }
 
   const hasStandardOrBetter = plan === "standard" || plan === "premium";
+  const t = {
+    propertySetup: uiLang === "ro" ? "Setari proprietate" : "Property Setup",
+    selectProperty: uiLang === "ro" ? "Te rugam selecteaza o proprietate de mai sus." : "Please select a property above.",
+    settingsTab: uiLang === "ro" ? "Ore check-in/out" : "Check-in/out Time",
+    roomsTab: uiLang === "ro" ? "Camere" : "Rooms",
+    detailsTab: uiLang === "ro" ? "Detalii rezervare" : "Reservation details",
+    cleaningTab: uiLang === "ro" ? "Task-uri curatenie" : "Cleaning tasks",
+  } as const;
 
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
-        <PlanHeaderBadge title="Property Setup" slot="under-title" />
+        <PlanHeaderBadge title={t.propertySetup} slot="under-title" />
 
         {/* Step 2 — Units setup wizard (only when no rooms exist yet, plus reward screen) */}
         {showRoomsGuide && selected && (rooms.length === 0 || unitWizardStep === "reward" || unitWizardStep === "rename") && (
@@ -981,10 +1013,16 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
             }}
           >
             {!selected ? (
-              <p>Please select a property above.</p>
+              <p>{t.selectProperty}</p>
             ) : (
               <Tabs
-              settings={<SettingsTab property={selected} onChange={(k, v) => saveTime(k, v)} />}
+              labels={{
+                settings: t.settingsTab,
+                rooms: t.roomsTab,
+                roomdetails: t.detailsTab,
+                cleaning: t.cleaningTab,
+              }}
+              settings={<SettingsTab property={selected} lang={uiLang} onChange={(k, v) => saveTime(k, v)} />}
               rooms={
                 <RoomsTab
                   rooms={rooms}
@@ -1205,8 +1243,9 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
   );
 }
 
-function Tabs({ settings, rooms, roomDetails, cleaning, highlightRooms, onTabSelect, activateRooms }:{
+function Tabs({ settings, rooms, roomDetails, cleaning, labels, highlightRooms, onTabSelect, activateRooms }:{
   settings: React.ReactNode; rooms: React.ReactNode; roomDetails: React.ReactNode; cleaning: React.ReactNode;
+  labels: { settings: string; rooms: string; roomdetails: string; cleaning: string };
   highlightRooms?: boolean; onTabSelect?: (tab: 'settings'|'rooms'|'roomdetails'|'cleaning') => void; activateRooms?: number;
 }) {
   const [tab, setTab] = useState<"settings" | "rooms" | "roomdetails" | "cleaning">("settings");
@@ -1255,7 +1294,7 @@ function Tabs({ settings, rooms, roomDetails, cleaning, highlightRooms, onTabSel
   return (
     <div style={{ display: "grid", gap: 12}} className="psTabs">
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} className="psTabsBar">
-        <button onClick={() => { setTab("settings"); onTabSelect?.('settings'); }}    style={tabBtn(tab === "settings")} className="psTabBtn">Check-in/out Time</button>
+        <button onClick={() => { setTab("settings"); onTabSelect?.('settings'); }}    style={tabBtn(tab === "settings")} className="psTabBtn">{labels.settings}</button>
         <button
           onClick={() => { setTab("rooms"); onTabSelect?.('rooms'); }}
           style={{
@@ -1263,9 +1302,9 @@ function Tabs({ settings, rooms, roomDetails, cleaning, highlightRooms, onTabSel
             ...((hl || highlightRooms) && tab !== 'rooms' ? { border: '2px solid var(--primary)', boxShadow: '0 0 0 4px color-mix(in srgb, var(--primary) 25%, transparent)' } : null),
           }}
           className="psTabBtn"
-        >Rooms</button>
-        <button onClick={() => { setTab("roomdetails"); onTabSelect?.('roomdetails'); }} style={tabBtn(tab === "roomdetails")} className="psTabBtn">Reservation details</button>
-        <button onClick={() => { setTab("cleaning"); onTabSelect?.('cleaning'); }}    style={tabBtn(tab === "cleaning")} className="psTabBtn">Cleaning tasks</button>
+        >{labels.rooms}</button>
+        <button onClick={() => { setTab("roomdetails"); onTabSelect?.('roomdetails'); }} style={tabBtn(tab === "roomdetails")} className="psTabBtn">{labels.roomdetails}</button>
+        <button onClick={() => { setTab("cleaning"); onTabSelect?.('cleaning'); }}    style={tabBtn(tab === "cleaning")} className="psTabBtn">{labels.cleaning}</button>
       </div>
       <div>
         {tab === "settings"    && settings}

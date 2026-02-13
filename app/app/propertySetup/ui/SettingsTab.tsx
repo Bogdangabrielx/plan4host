@@ -11,9 +11,11 @@ import { useEffect, useState } from "react";
 
 export default function SettingsTab({
   property,
+  lang = "en",
   onChange,
 }: {
   property: Property;
+  lang?: "ro" | "en";
   onChange: (key: "check_in_time" | "check_out_time", value: string) => void;
 }) {
   const [ci, setCi] = useState<string>(property.check_in_time || "");
@@ -26,11 +28,15 @@ export default function SettingsTab({
   }, [property.id, property.check_in_time, property.check_out_time]);
 
   const isValid = (v: string) => /^\d{2}:\d{2}$/.test(v.trim());
+  const t = {
+    checkin: lang === "ro" ? "Check-in proprietate (HH:MM)" : "Property check-in (HH:MM)",
+    checkout: lang === "ro" ? "Check-out proprietate (HH:MM)" : "Property check-out (HH:MM)",
+  } as const;
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
       <div style={{ display: "grid", gap: 6 }}>
-        <label style={{ fontWeight: 600 }}>Property check-in (HH:MM)</label>
+        <label style={{ fontWeight: 600 }}>{t.checkin}</label>
         <input
           type="time"
           value={ci}
@@ -42,7 +48,7 @@ export default function SettingsTab({
       </div>
 
       <div style={{ display: "grid", gap: 6 }}>
-        <label style={{ fontWeight: 600 }}>Property check-out (HH:MM)</label>
+        <label style={{ fontWeight: 600 }}>{t.checkout}</label>
         <input
           type="time"
           value={co}

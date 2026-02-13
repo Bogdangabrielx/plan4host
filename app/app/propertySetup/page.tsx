@@ -3,6 +3,7 @@ import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ensureScope } from "@/lib/auth/scopes";
+import { cookies } from "next/headers";
 import propertySetupClient from "./ui/PropertySetupClient";
 import PropertySetupClient from "./ui/PropertySetupClient";
 
@@ -10,6 +11,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function propertySetupPage() {
+  const cookieStore = cookies();
+  const uiLang = cookieStore.get("app_lang")?.value === "ro" ? "ro" : "en";
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
@@ -31,7 +34,7 @@ export default async function propertySetupPage() {
   }));
 
   return (
-    <AppShell currentPath="/app/propertySetup" title="Property Setup">
+    <AppShell currentPath="/app/propertySetup" title={uiLang === "ro" ? "Setari proprietate" : "Property Setup"}>
       <PropertySetupClient initialProperties={properties} />
     </AppShell>
   );
