@@ -243,7 +243,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   >("intro");
   const [houseRulesCreateCtaFlip, setHouseRulesCreateCtaFlip] = useState<boolean>(false);
   const [houseRulesWizardLoading, setHouseRulesWizardLoading] = useState<boolean>(false);
-  const [houseRulesWizardLoadingText, setHouseRulesWizardLoadingText] = useState<string>(uiLang === "ro" ? "Se pregatesc regulile casei…" : "Preparing your house rules…");
+  const [houseRulesWizardLoadingText, setHouseRulesWizardLoadingText] = useState<string>(uiLang === "ro" ? "Se pregateste regulamentul intern…" : "Preparing your house rules…");
   const [houseRulesWizardError, setHouseRulesWizardError] = useState<string | null>(null);
   const [houseRulesWizardPreviewUrl, setHouseRulesWizardPreviewUrl] = useState<string | null>(null);
   const [houseRulesDraft, setHouseRulesDraft] = useState<HouseRulesDraft>({
@@ -293,7 +293,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     copyCheckinLink: uiLang === "ro" ? "Copiaza link-ul de check-in" : "Copy check-in link",
     copied: uiLang === "ro" ? "Copiat!" : "Copied!",
     chooseSourceBeforeCopy: uiLang === "ro" ? "Poti alege o sursa inainte de copiere." : "You can choose a source before copying.",
-    houseRulesPdf: uiLang === "ro" ? "PDF reguli casa" : "House Rules PDF",
+    houseRulesPdf: uiLang === "ro" ? "PDF regulament intern" : "House Rules PDF",
     noPdfUploaded: uiLang === "ro" ? "Nu exista PDF incarcat." : "No PDF uploaded.",
     uploadPdf: uiLang === "ro" ? "Incarca PDF" : "Upload PDF",
     replacePdf: uiLang === "ro" ? "Inlocuieste PDF" : "Replace PDF",
@@ -317,7 +317,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     selectCheckinSource: uiLang === "ro" ? "Selecteaza sursa check-in" : "Select Check-in Source",
     uploadNow: uiLang === "ro" ? "Incarca acum" : "Upload now",
     ok: "OK",
-    houseRulesRecommended: uiLang === "ro" ? "Reguli casa recomandate" : "House Rules recommended",
+    houseRulesRecommended: uiLang === "ro" ? "Regulament intern recomandat" : "House Rules recommended",
     uploadLater: uiLang === "ro" ? "Voi incarca mai tarziu" : "I will upload later",
   } as const;
 
@@ -522,7 +522,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     setHouseRulesWizardRequested(false);
     setHouseRulesWizardError(null);
     setHouseRulesWizardLoading(false);
-    setHouseRulesWizardLoadingText(uiLang === "ro" ? "Se pregatesc regulile casei…" : "Preparing your house rules…");
+    setHouseRulesWizardLoadingText(uiLang === "ro" ? "Se pregateste regulamentul intern…" : "Preparing your house rules…");
     setHouseRulesWizardPreviewUrl(prop.regulation_pdf_url || null);
     setHouseRulesWizardStep("intro");
     try {
@@ -1789,13 +1789,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     }}
                   >
                     {houseRulesWizardStep === "intro"
-                      ? (uiLang === "ro" ? "Reguli casa = limite clare" : "House rules = clear limits")
+                      ? (uiLang === "ro" ? "Regulament intern = limite clare" : "House rules = clear limits")
                       : houseRulesWizardStep === "choose"
-                        ? (uiLang === "ro" ? "Adauga regulile casei" : "Add house rules")
+                        ? (uiLang === "ro" ? "Adauga regulamentul intern" : "Add house rules")
                         : houseRulesWizardStep === "create"
-                          ? (uiLang === "ro" ? "Creeaza regulile casei" : "Create house rules")
+                          ? (uiLang === "ro" ? "Creeaza regulamentul intern" : "Create house rules")
                           : houseRulesWizardStep === "uploaded"
-                            ? (uiLang === "ro" ? "Regulile casei au fost incarcate" : "House rules uploaded")
+                            ? (uiLang === "ro" ? "Regulamentul intern a fost incarcat" : "House rules uploaded")
                             : (uiLang === "ro" ? "OASPETII TREBUIE SA LE CONFIRME INAINTE DE CHECK-IN" : "GUESTS MUST CONFIRM THESE BEFORE CHECK-IN")}
                   </div>
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
@@ -2176,7 +2176,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           style={{ minWidth: 220 }}
                           onClick={createAndUploadHouseRulesPdf}
                         >
-                          {uiLang === "ro" ? "Salveaza regulile casei" : "Save house rules"}
+                          {uiLang === "ro" ? "Salveaza regulamentul intern" : "Save house rules"}
                         </button>
                       </div>
                       {houseRulesWizardError && (
@@ -2365,7 +2365,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
                     openSourcePicker();
                   }}
-                  title={prop?.regulation_pdf_url ? t.copyCheckinLink : (uiLang === "ro" ? "Incarca mai intai PDF-ul cu reguli" : "Upload House Rules PDF first")}
+                  title={prop?.regulation_pdf_url ? t.copyCheckinLink : (uiLang === "ro" ? "Incarca mai intai PDF-ul cu regulamentul intern" : "Upload House Rules PDF first")}
                 >
                   {copied ? t.copied : t.copyCheckinLink}
                 </button>
@@ -2414,7 +2414,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     justifyContent: "space-between",
                   }}
                 >
-                  <strong>Use House Rules for guest assistant</strong>
+                  <strong>{uiLang === "ro" ? "Foloseste regulamentul intern pentru asistentul oaspetilor" : "Use House Rules for guest assistant"}</strong>
                   <button
                     type="button"
                     className="sb-btn sb-cardglow sb-btn--icon"
@@ -2427,10 +2427,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   </button>
                 </div>
                 <div style={{ fontSize: 13, color: "var(--muted)" }}>
-                  This text will be used as input for the guest AI assistant
-                  (arrival details, amenities, etc.). Review it, remove any
-                  sensitive information (door codes, passwords, private links),
-                  then confirm.
+                  {uiLang === "ro"
+                    ? "Acest text va fi folosit ca sursa pentru asistentul AI al oaspetilor (detalii de sosire, facilitati etc.). Verifica-l, elimina informatiile sensibile (coduri de acces, parole, linkuri private), apoi confirma."
+                    : "This text will be used as input for the guest AI assistant (arrival details, amenities, etc.). Review it, remove any sensitive information (door codes, passwords, private links), then confirm."}
                 </div>
                 <textarea
                   value={aiModalText}
@@ -2729,7 +2728,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   }}
                 >
                   <Info text={uiLang === "ro"
-                    ? "PDF (Reguli casa), ideal sub 5 MB. Recomandat A4 portret; textul sa ramana usor de citit."
+                    ? "PDF (Regulament intern), ideal sub 5 MB. Recomandat A4 portret; textul sa ramana usor de citit."
                     : PDF_INFO} />
                   <small style={{ color: "var(--muted)" }}>
                     Uploaded{" "}
@@ -2755,7 +2754,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   {t.uploadPdf}
                 </button>
                 <Info text={uiLang === "ro"
-                  ? "PDF (Reguli casa), ideal sub 5 MB. Recomandat A4 portret; textul sa ramana usor de citit."
+                  ? "PDF (Regulament intern), ideal sub 5 MB. Recomandat A4 portret; textul sa ramana usor de citit."
                   : PDF_INFO} />
               </div>
             )}
@@ -2775,12 +2774,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
                   <div>
                     {uiLang === "ro"
-                      ? "Ideal este sa incarci regulile casei, ca oaspetii sa le vada si sa le semneze la check-in, iar noi sa putem pregati textul folosit de asistentul AI pentru oaspeti.*"
+                      ? "Ideal este sa incarci regulamentul intern, ca oaspetii sa il vada si sa il semneze la check-in, iar noi sa putem pregati textul folosit de asistentul AI pentru oaspeti.*"
                       : "It’s best to upload your House Rules so guests see and sign them when they complete check-in and so we can prepare the text that the Guest AI assistant will use to support them.*"}
                   </div>
                   <small style={{ color:'var(--muted)' }}>
                     {uiLang === "ro"
-                      ? "Poti continua fara ele, dar oaspetii nu vor vedea regulile pana nu le incarci."
+                      ? "Poti continua fara el, dar oaspetii nu vor vedea regulamentul intern pana nu il incarci."
                       : "You can continue without it, but guests won’t see your rules until you upload them."}
                     <br />
                     {uiLang === "ro"

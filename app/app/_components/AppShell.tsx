@@ -113,7 +113,7 @@ function OnboardingChecklistFab() {
       if (id === "room") return "Adauga camera";
       if (id === "calendars") return "Sincronizare calendar";
       if (id === "links_contact") return "Link-uri si contact";
-      if (id === "house_rules") return "Reguli casa";
+      if (id === "house_rules") return "Regulament intern";
       if (id === "message_template") return "Template mesaj";
       return id;
     }
