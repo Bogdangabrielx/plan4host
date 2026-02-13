@@ -31,29 +31,6 @@ type MeInfo = {
 /* ---------------- Typography helpers ---------------- */
 const TITLE_FAMILY = "inherit";
 
-function getNodeText(node: ReactNode): string {
-  if (node == null || typeof node === "boolean") return "";
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(getNodeText).join("");
-  if (typeof node === "object" && "props" in (node as any)) {
-    const props = (node as any).props as { children?: ReactNode } | undefined;
-    return props?.children ? getNodeText(props.children) : "";
-  }
-  return "";
-}
-
-function hasOverlayMessage(node: ReactNode): boolean {
-  if (node == null || typeof node === "boolean") return false;
-  if (typeof node === "string" || typeof node === "number") return false;
-  if (Array.isArray(node)) return node.some(hasOverlayMessage);
-  if (typeof node === "object" && "props" in (node as any)) {
-    const props = (node as any).props as Record<string, unknown> | undefined;
-    if (props?.["data-p4h-overlay"] === "message") return true;
-    return props?.children ? hasOverlayMessage(props.children as ReactNode) : false;
-  }
-  return false;
-}
-
 function titleStyle(isSmall: boolean): React.CSSProperties {
   return {
     margin: 0,
@@ -583,16 +560,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	    );
 	  }
 
-  const pillEl = (() => {
-    if (!pill) return null;
-    if (hasOverlayMessage(pill)) return null; // overlay-only messages (e.g. "Saved")
-
-    const txt = getNodeText(pill).trim();
-    const hide = /^(idle|synced|read-only|syncing|saving|loading|sending)\b/i.test(txt);
-    if (hide) return null;
-    if (typeof pill !== "string") return pill;
-    return <span style={pillStyle(pill)}>{pill}</span>;
-  })();
+  // Hide header status pill completely (keep state updates for internal logic/overlays).
+  const pillEl = null;
 
   const renderedTitle = useMemo(() => {
     const baseTitle = typeof title === "string" ? translateTitle(title) : title;
@@ -1448,28 +1417,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 // Notifications UI moved to /app/notifications
 
 /* ---------------- Tiny style helpers ---------------- */
-function pillStyle(pill: React.ReactNode): React.CSSProperties {
-  const txt = typeof pill === "string" ? pill : "";
-  const isError = /error/i.test(txt);
-  const isBusy = /(sync|saving|loading|sign|creat)/i.test(txt);
-  const isIdle = /^\s*idle\s*$/i.test(txt);
-  const bg = isIdle ? "transparent" : (isError ? "var(--danger)" : isBusy ? "var(--primary)" : "var(--card)");
-  const col = isIdle ? "transparent" : (isError || isBusy ? "#0c111b" : "var(--muted)");
-  const borderCol = isIdle ? "transparent" : "var(--border)";
-  return {
-    padding: "4px 8px",
-    borderRadius: 999,
-    background: bg,
-    color: col,
-    border: `1px solid ${borderCol}`,
-    fontWeight: isError || isBusy ? "var(--fw-bold)" : "var(--fw-medium)",
-    fontSize: "var(--fs-s)",
-    lineHeight: "var(--lh-s)",
-    display: "inline-flex",
-    alignItems: "center",
-  };
-}
-
 const inboxDotStyle: React.CSSProperties = {
   minWidth: 18,
   height: 18,
