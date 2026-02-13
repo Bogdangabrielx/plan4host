@@ -2,10 +2,13 @@
 import { useEffect, useState } from "react";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 
+type Lang = "en" | "ro";
+
 export default function NotificationsClient() {
   const { setPill } = useHeader();
   const [loading, setLoading] = useState<boolean>(true);
-  const [status, setStatus] = useState<string>(""); // "Loading..." | "Done"
+  const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
+  const [lang, setLang] = useState<Lang>("en");
   const [active, setActive] = useState<boolean>(false);
   const [endpoint, setEndpoint] = useState<string | null>(null);
   const [isSmall, setIsSmall] = useState<boolean>(() => {
@@ -17,6 +20,39 @@ export default function NotificationsClient() {
   );
   const [fallbackActive, setFallbackActive] = useState<boolean>(false);
   const [fallbackFeed, setFallbackFeed] = useState<Array<{ ts: string; text: string }>>([]);
+  const tr = {
+    en: {
+      notifications: "Notifications",
+      pushNotSupported:
+        "Push API not supported in this browser. You can enable an in-app fallback that only works while this tab is open.",
+      turnOn: "Turn On",
+      turnOff: "Turn Off",
+      getInstantOne: "Get instant one",
+      loading: "Loading...",
+      fallbackOnly: "Fallback: in-app only while this tab is open",
+      fallbackActive: "Fallback active: in-app only while this tab is open.",
+      notificationsOn: "Your notifications are currently ON.",
+      notificationsOff: "Your notifications are currently OFF.",
+      fallbackListTitle: "In-app notifications (only while this tab is open):",
+      testNotification: "Test notification (in-app only while open)",
+    },
+    ro: {
+      notifications: "Notificari",
+      pushNotSupported:
+        "Push API nu este suportat in acest browser. Poti activa un fallback in aplicatie care functioneaza doar cat timp acest tab este deschis.",
+      turnOn: "Activeaza",
+      turnOff: "Dezactiveaza",
+      getInstantOne: "Trimite una instant",
+      loading: "Se incarca...",
+      fallbackOnly: "Fallback: doar in aplicatie cat timp acest tab este deschis",
+      fallbackActive: "Fallback activ: doar in aplicatie cat timp acest tab este deschis.",
+      notificationsOn: "Notificarile tale sunt in prezent ACTIVE.",
+      notificationsOff: "Notificarile tale sunt in prezent OPRITE.",
+      fallbackListTitle: "Notificari in aplicatie (doar cat timp acest tab este deschis):",
+      testNotification: "Notificare test (doar in aplicatie cat timp este deschis)",
+    },
+  } as const;
+  const t = tr[lang];
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -25,6 +61,28 @@ export default function NotificationsClient() {
     try { mq?.addEventListener("change", on); } catch { mq?.addListener?.(on as any); }
     setIsSmall(mq?.matches ?? false);
     return () => { try { mq?.removeEventListener("change", on); } catch { mq?.removeListener?.(on as any); } };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): Lang => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setLang(readLang());
+    const onStorage = () => setLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   useEffect(() => {
@@ -46,13 +104,13 @@ export default function NotificationsClient() {
       if (!cap) {
         setActive(false);
         setEndpoint(null);
-        setStatus('');
+        setStatus("idle");
         return;
       }
       if (!pushCapable) {
         setActive(false);
         setEndpoint(null);
-        setStatus('');
+        setStatus("idle");
         return;
       }
       let ep: string | null = null;
@@ -105,14 +163,14 @@ export default function NotificationsClient() {
   }
 
   async function turnOn() {
-    setStatus('Loading...');
+    setStatus("loading");
     setLoading(true);
     try {
       if (!pushCapable) {
         setFallbackActive(true);
         setActive(false);
         setLoading(false);
-        setStatus('Fallback: in-app only while this tab is open');
+        setStatus("done");
         return;
       }
       if (!('Notification' in window)) return finalize();
@@ -156,12 +214,12 @@ export default function NotificationsClient() {
   }
 
   async function turnOff() {
-    setStatus('Loading...');
+    setStatus("loading");
     setLoading(true);
     try {
       if (!pushCapable) {
         setFallbackActive(false);
-        setStatus('Done');
+        setStatus("done");
         return;
       }
       const reg = await navigator.serviceWorker.getRegistration();
@@ -186,19 +244,19 @@ export default function NotificationsClient() {
   }
 
   function finalize() {
-    setStatus('Done');
+    setStatus("done");
     setLoading(false);
   }
 
   async function sendTest() {
-    setStatus('Loading...');
+    setStatus("loading");
     setLoading(true);
     try {
       if (pushCapable && active) {
         await fetch('/api/push/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
       } else {
         const now = new Date().toISOString();
-        setFallbackFeed((prev) => [{ ts: now, text: 'Test notification (in-app only while open)' }, ...prev].slice(0, 5));
+        setFallbackFeed((prev) => [{ ts: now, text: t.testNotification }, ...prev].slice(0, 5));
       }
     } finally {
       finalize();
@@ -213,10 +271,10 @@ export default function NotificationsClient() {
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
         <div className="sb-cardglow" style={{ padding: 16, display: 'grid', gap: 12, borderRadius: 13 }}>
           <div style={{ display: 'grid', gap: 6 }}>
-            <strong>Notifications</strong>
+            <strong>{t.notifications}</strong>
             {!pushCapable && (
               <small style={{ color:'var(--muted)' }}>
-                Push API not supported in this browser. You can enable an in-app fallback that only works while this tab is open.
+                {t.pushNotSupported}
               </small>
             )}
           </div>
@@ -227,7 +285,7 @@ export default function NotificationsClient() {
               disabled={loading}
               style={{ color: 'var(--muted)', border: active ? '1px solid var(--primary)' as const : undefined }}
             >
-              Turn On
+              {t.turnOn}
             </button>
             <button
               className={offClass}
@@ -235,7 +293,7 @@ export default function NotificationsClient() {
               disabled={loading}
               style={{ color: 'var(--muted)', border: !active ? '1px solid var(--danger)' as const : undefined }}
             >
-              Turn Off
+              {t.turnOff}
             </button>
             {(active || fallbackActive) && (
               <button
@@ -244,21 +302,27 @@ export default function NotificationsClient() {
                 disabled={loading}
                 style={{ color: 'var(--muted)', background: "var(--panel)", border: 'var(--muted)' }}
               >
-                Get instant one
+                {t.getInstantOne}
               </button>
             )}
           </div>
           <div style={{ display: 'grid', gap: 4 }}>
             <small style={{ color:'var(--muted)' }}>
-              {status === 'Loading...' ? 'Loading...' : fallbackActive ? 'Fallback active: in-app only while this tab is open.' : `Your notifications are currently ${active ? 'ON' : 'OFF'}.`}
+              {status === "loading"
+                ? t.loading
+                : fallbackActive
+                  ? t.fallbackActive
+                  : active
+                    ? t.notificationsOn
+                    : t.notificationsOff}
             </small>
             {fallbackActive && fallbackFeed.length > 0 && (
               <div style={{ display:'grid', gap:6, padding:10, border:'1px dashed var(--border)', borderRadius:10, background:'color-mix(in srgb, var(--panel) 70%, transparent)' }}>
-                <small style={{ color:'var(--muted)' }}>In-app notifications (only while this tab is open):</small>
+                <small style={{ color:'var(--muted)' }}>{t.fallbackListTitle}</small>
                 <ul style={{ margin:0, paddingLeft:16, display:'grid', gap:4 }}>
                   {fallbackFeed.map((m, i) => (
                     <li key={`${m.ts}-${i}`} style={{ color:'var(--text)', fontSize:13 }}>
-                      {new Date(m.ts).toLocaleString()} — {m.text}
+                      {new Date(m.ts).toLocaleString()} - {m.text}
                     </li>
                   ))}
                 </ul>
