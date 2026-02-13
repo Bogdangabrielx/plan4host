@@ -298,6 +298,26 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   } as const;
   const t = tr[lang];
   const navLabel = (href: string, fallback: string) => t.labels[href] || fallback;
+  const translateTitle = (value: string): string => {
+    if (lang !== "ro") return value;
+    const key = value.trim().toLowerCase();
+    const map: Record<string, string> = {
+      "dashboard": "Control",
+      "calendar": "Calendar",
+      "property setup": "Setari proprietate",
+      "check-in editor": "Editor check-in",
+      "cleaning board": "Curatenie",
+      "sync calendars": "Sincronizare calendare",
+      "channels & ical": "Canale si iCal",
+      "automatic messages": "Mesaje automate",
+      "guest overview": "Oaspeti",
+      "notifications": "Notificari",
+      "subscription": "Abonament",
+      "team": "Echipa",
+      "qr generator": "Generator QR",
+    };
+    return map[key] || value;
+  };
 
   // Active property photo (desktop nav button)
   useEffect(() => {
@@ -575,9 +595,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   })();
 
   const renderedTitle = useMemo(() => {
-    if (isSmall && typeof title === "string") {
-      const t = title.trim();
-      if (/^automatic\s+welcome\s+message$/i.test(t)) {
+    const baseTitle = typeof title === "string" ? translateTitle(title) : title;
+    if (isSmall && typeof baseTitle === "string") {
+      const tTitle = baseTitle.trim();
+      if (/^automatic\s+welcome\s+message$/i.test(tTitle)) {
         return (
           <>
             <span>Automatic</span>Messages
@@ -585,8 +606,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         );
       }
     }
-    return title;
-  }, [title, isSmall]);
+    return baseTitle;
+  }, [title, isSmall, lang]);
 
   const noEllipsisTitle =
     !!currentPath && /^\/app\/(notifications|subscription)(\/|$)/.test(currentPath);

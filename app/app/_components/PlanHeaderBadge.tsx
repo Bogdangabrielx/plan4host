@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "./HeaderContext";
 
 type Plan = "basic" | "standard" | "premium" | null;
+type Lang = "en" | "ro";
 
 function planLabel(plan: Plan) {
   if (!plan) return "—";
@@ -31,6 +32,50 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
   const { setTitle, setRight } = useHeader();
   const [plan, setPlan] = useState<Plan>(null);
   const [isTiny, setIsTiny] = useState(false);
+  const [lang, setLang] = useState<Lang>("en");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): Lang => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setLang(readLang());
+    const onStorage = () => setLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const translatedTitle = useMemo(() => {
+    if (lang !== "ro") return title;
+    const key = title.trim().toLowerCase();
+    const map: Record<string, string> = {
+      "dashboard": "Control",
+      "calendar": "Calendar",
+      "property setup": "Setari proprietate",
+      "check-in editor": "Editor check-in",
+      "cleaning board": "Curatenie",
+      "sync calendars": "Sincronizare calendare",
+      "channels & ical": "Canale si iCal",
+      "automatic messages": "Mesaje automate",
+      "guest overview": "Oaspeti",
+      "notifications": "Notificari",
+      "subscription": "Abonament",
+      "team": "Echipa",
+      "qr generator": "Generator QR",
+    };
+    return map[key] || title;
+  }, [title, lang]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -55,9 +100,9 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
   // Setează titlul la mount și când se schimbă titlul
   useEffect(() => {
     if (slot !== 'under-title') {
-      setTitle(title);
+      setTitle(translatedTitle);
     }
-  }, [setTitle, title, slot]);
+  }, [setTitle, translatedTitle, slot]);
 
   // Citește planul activ din RPC (derivat din account_plan.plan_slug)
   useEffect(() => {
@@ -86,7 +131,7 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
     if (slot === 'under-title') {
       // Ensure header-right is cleared on pages that render badge under title
       setRight(null);
-      const isAutomaticMessages = /automatic\s+messages/i.test(title);
+      const isAutomaticMessages = /automatic\s+messages|mesaje\s+automate/i.test(translatedTitle);
       // Mută badge-ul sub titlu, în zona titlului din header
       const composed = (
         <span style={{ display: 'grid', gap: 8, justifyItems: 'center' }}>
@@ -103,14 +148,14 @@ export default function PlanHeaderBadge({ title, slot = "below" }: { title: stri
               letterSpacing: isAutomaticMessages ? "0.06em" : undefined,
             }}
           >
-            {title}
+            {translatedTitle}
           </span>
           {badge}
         </span>
       );
       setTitle(composed);
     }
-  }, [badge, isTiny, setRight, setTitle, slot, title]);
+  }, [badge, isTiny, setRight, setTitle, slot, translatedTitle]);
 
   if (slot === "header-right" || slot === 'under-title') return null;
   if (!plan) return null;
