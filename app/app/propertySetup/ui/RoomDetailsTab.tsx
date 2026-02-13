@@ -171,28 +171,28 @@ export default function RoomDetailsTab({
         )}
         {texts.length === 0 && <p style={{ color: "var(--muted)" }}>{t.noNotes}</p>}
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
-          {[...texts].sort((a, b) => a.sort_index - b.sort_index).map((t, idx) => (
-            <li key={t.id} style={rowBase} className="rd-row" data-kind="text">
+          {[...texts].sort((a, b) => a.sort_index - b.sort_index).map((txt, idx) => (
+            <li key={txt.id} style={rowBase} className="rd-row" data-kind="text">
               <input
-                defaultValue={t.label}
+                defaultValue={txt.label}
                 onBlur={(e) => {
                   const v = e.currentTarget.value.trim();
-                  if (v && v !== t.label) onRenameText(t.id, v);
-                  else e.currentTarget.value = t.label;
+                  if (v && v !== txt.label) onRenameText(txt.id, v);
+                  else e.currentTarget.value = txt.label;
                 } }
                 style={textInput} />
               <input
-                defaultValue={t.placeholder || ""}
+                defaultValue={txt.placeholder || ""}
                 placeholder={t.notesPlaceholder}
                 onBlur={(e) => {
                   const v = e.currentTarget.value;
-                  if (v !== (t.placeholder || "")) onPlaceholderText(t.id, v);
+                  if (v !== (txt.placeholder || "")) onPlaceholderText(txt.id, v);
                 } }
                 style={textInput} />
               <div className="rd-actions" style={{ display: "flex", gap: 6 }}>
-                <button onClick={() => onMoveText(t.id, "up")} disabled={idx === 0} className="sb-btn" title={t.moveUp}>↑</button>
-                <button onClick={() => onMoveText(t.id, "down")} disabled={idx === texts.length - 1} className="sb-btn" title={t.moveDown}>↓</button>
-                <button onClick={() => setConfirmDel({ kind: 'text', id: t.id, label: t.label })} className="sb-btn">{t.delete}</button>
+                <button onClick={() => onMoveText(txt.id, "up")} disabled={idx === 0} className="sb-btn" title={t.moveUp}>↑</button>
+                <button onClick={() => onMoveText(txt.id, "down")} disabled={idx === texts.length - 1} className="sb-btn" title={t.moveDown}>↓</button>
+                <button onClick={() => setConfirmDel({ kind: 'text', id: txt.id, label: txt.label })} className="sb-btn">{t.delete}</button>
               </div>
             </li>
           ))}

@@ -158,6 +158,7 @@ function splitPhoneToDialAndRest(full: string): { dial: string; rest: string } {
 export default function CheckinEditorClient({ initialProperties }: { initialProperties: Array<{ id: string; name: string }> }) {
   const supabase = useMemo(() => createClient(), []);
   const { setTitle, setPill } = useHeader();
+  const [uiLang, setUiLang] = useState<"ro" | "en">("en");
 
   const [properties] = useState(initialProperties);
   const isSinglePropertyAccount = properties.length === 1;
@@ -166,16 +167,38 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
   const [loading, setLoading] = useState(false);
   const loadSeqRef = useRef(0);
-  useEffect(() => { setTitle("Check-in Editor"); }, [setTitle]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): "ro" | "en" => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setUiLang(readLang());
+    const onStorage = () => setUiLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  useEffect(() => { setTitle(uiLang === "ro" ? "Editor check-in" : "Check-in Editor"); }, [setTitle, uiLang]);
   useEffect(() => {
     setPill(
-      status === "Saving…" ? "Saving…" :
-      !propertyReady       ? "Loading…" :
-      loading              ? "Loading…" :
-      status === "Synced"  ? "Synced"  :
-      status === "Error"   ? "Error"   : "Idle"
+      status === "Saving…" ? (uiLang === "ro" ? "Se salveaza…" : "Saving…") :
+      !propertyReady       ? (uiLang === "ro" ? "Se incarca…" : "Loading…") :
+      loading              ? (uiLang === "ro" ? "Se incarca…" : "Loading…") :
+      status === "Synced"  ? (uiLang === "ro" ? "Sincronizat" : "Synced")  :
+      status === "Error"   ? (uiLang === "ro" ? "Eroare" : "Error") : (uiLang === "ro" ? "Inactiv" : "Idle")
     );
-  }, [status, loading, propertyReady, setPill]);
+  }, [status, loading, propertyReady, setPill, uiLang]);
 
   const [prop, setProp] = useState<Property | null>(null);
   const [copied, setCopied] = useState(false);
@@ -197,7 +220,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [contactsWizardOpen, setContactsWizardOpen] = useState<boolean>(false);
   const [contactsWizardStep, setContactsWizardStep] = useState<"contacts" | "social" | "reward">("contacts");
   const [contactsWizardLoading, setContactsWizardLoading] = useState<boolean>(false);
-  const [contactsWizardLoadingText, setContactsWizardLoadingText] = useState<string>("Saving contact details…");
+  const [contactsWizardLoadingText, setContactsWizardLoadingText] = useState<string>(uiLang === "ro" ? "Se salveaza datele de contact…" : "Saving contact details…");
   const [contactsWizardError, setContactsWizardError] = useState<string | null>(null);
   const [contactsWizardSocialDrafts, setContactsWizardSocialDrafts] = useState<Record<SocialKey, string>>({
     facebook: "",
@@ -220,7 +243,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   >("intro");
   const [houseRulesCreateCtaFlip, setHouseRulesCreateCtaFlip] = useState<boolean>(false);
   const [houseRulesWizardLoading, setHouseRulesWizardLoading] = useState<boolean>(false);
-  const [houseRulesWizardLoadingText, setHouseRulesWizardLoadingText] = useState<string>("Preparing your house rules…");
+  const [houseRulesWizardLoadingText, setHouseRulesWizardLoadingText] = useState<string>(uiLang === "ro" ? "Se pregatesc regulile casei…" : "Preparing your house rules…");
   const [houseRulesWizardError, setHouseRulesWizardError] = useState<string | null>(null);
   const [houseRulesWizardPreviewUrl, setHouseRulesWizardPreviewUrl] = useState<string | null>(null);
   const [houseRulesDraft, setHouseRulesDraft] = useState<HouseRulesDraft>({
@@ -256,6 +279,47 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   const [aiStatusPhase, setAiStatusPhase] = useState<"idle" | "reading" | "success" | "failed">("idle");
   const [currentPlan, setCurrentPlan] = useState<"basic" | "standard" | "premium" | null>(null);
   const [aiPremiumPopupOpen, setAiPremiumPopupOpen] = useState(false);
+  const t = {
+    title: uiLang === "ro" ? "Editor check-in" : "Check-in Editor",
+    calendarConnected: uiLang === "ro" ? "Calendar conectat" : "Calendar connected",
+    availabilityManaged: uiLang === "ro" ? "Disponibilitatea este gestionata acum." : "Your availability is now managed.",
+    continue: uiLang === "ro" ? "Continua" : "Continue",
+    close: uiLang === "ro" ? "Inchide" : "Close",
+    back: uiLang === "ro" ? "Inapoi" : "Back",
+    save: uiLang === "ro" ? "Salveaza" : "Save",
+    next: uiLang === "ro" ? "Urmatorul" : "Next",
+    skipForNow: uiLang === "ro" ? "Sari peste momentan" : "Skip for now",
+    checkinLink: uiLang === "ro" ? "Link check-in" : "Check-in Link",
+    copyCheckinLink: uiLang === "ro" ? "Copiaza link-ul de check-in" : "Copy check-in link",
+    copied: uiLang === "ro" ? "Copiat!" : "Copied!",
+    chooseSourceBeforeCopy: uiLang === "ro" ? "Poti alege o sursa inainte de copiere." : "You can choose a source before copying.",
+    houseRulesPdf: uiLang === "ro" ? "PDF reguli casa" : "House Rules PDF",
+    noPdfUploaded: uiLang === "ro" ? "Nu exista PDF incarcat." : "No PDF uploaded.",
+    uploadPdf: uiLang === "ro" ? "Incarca PDF" : "Upload PDF",
+    replacePdf: uiLang === "ro" ? "Inlocuieste PDF" : "Replace PDF",
+    open: uiLang === "ro" ? "Deschide" : "Open",
+    propertyContact: uiLang === "ro" ? "Contact proprietate" : "Property Contact",
+    email: uiLang === "ro" ? "Email" : "Email",
+    phone: uiLang === "ro" ? "Telefon" : "Phone",
+    address: uiLang === "ro" ? "Adresa" : "Address",
+    overlayPosition: uiLang === "ro" ? "Pozitie overlay pe banner" : "Overlay position on banner",
+    select: uiLang === "ro" ? "- selecteaza -" : "- select -",
+    top: uiLang === "ro" ? "sus" : "top",
+    center: uiLang === "ro" ? "centru" : "center",
+    down: uiLang === "ro" ? "jos" : "down",
+    socialLinks: uiLang === "ro" ? "Link-uri sociale" : "Social Links",
+    presentationImage: uiLang === "ro" ? "Imagine prezentare" : "Presentation Image",
+    preview: uiLang === "ro" ? "Previzualizare" : "Preview",
+    replaceImage: uiLang === "ro" ? "Inlocuieste imaginea" : "Replace image",
+    uploadImage: uiLang === "ro" ? "Incarca imagine" : "Upload image",
+    noImageUploaded: uiLang === "ro" ? "Nu exista imagine incarcata." : "No image uploaded.",
+    uploaded: uiLang === "ro" ? "Incarcat" : "Uploaded",
+    selectCheckinSource: uiLang === "ro" ? "Selecteaza sursa check-in" : "Select Check-in Source",
+    uploadNow: uiLang === "ro" ? "Incarca acum" : "Upload now",
+    ok: "OK",
+    houseRulesRecommended: uiLang === "ro" ? "Reguli casa recomandate" : "House Rules recommended",
+    uploadLater: uiLang === "ro" ? "Voi incarca mai tarziu" : "I will upload later",
+  } as const;
 
   useEffect(() => {
     let mounted = true;
@@ -458,7 +522,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     setHouseRulesWizardRequested(false);
     setHouseRulesWizardError(null);
     setHouseRulesWizardLoading(false);
-    setHouseRulesWizardLoadingText("Preparing your house rules…");
+    setHouseRulesWizardLoadingText(uiLang === "ro" ? "Se pregatesc regulile casei…" : "Preparing your house rules…");
     setHouseRulesWizardPreviewUrl(prop.regulation_pdf_url || null);
     setHouseRulesWizardStep("intro");
     try {
@@ -627,7 +691,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     fd.append("file", file);
     const res = await fetch("/api/property/regulation/upload", { method: "POST", body: fd });
     const j = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(j?.error || "Upload failed");
+    if (!res.ok) throw new Error(j?.error || (uiLang === "ro" ? "Incarcarea a esuat" : "Upload failed"));
     return (j?.url || "").toString().trim();
   }
 
@@ -777,7 +841,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   async function saveContactsWizard() {
     if (!prop) return;
     setContactsWizardError(null);
-    setContactsWizardLoadingText("Saving contact details…");
+    setContactsWizardLoadingText(uiLang === "ro" ? "Se salveaza datele de contact…" : "Saving contact details…");
     setContactsWizardLoading(true);
     const start = Date.now();
     const minMs = 900;
@@ -815,7 +879,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   async function saveSocialWizard(draftsOverride?: Record<SocialKey, string>) {
     if (!prop) return;
     setContactsWizardError(null);
-    setContactsWizardLoadingText("Updating guest portal…");
+    setContactsWizardLoadingText(uiLang === "ro" ? "Se actualizeaza portalul oaspetelui…" : "Updating guest portal…");
     setContactsWizardLoading(true);
     const start = Date.now();
     const minMs = 900;
@@ -897,7 +961,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         fd.append('file', file);
         const res = await fetch('/api/property/regulation/upload', { method: 'POST', body: fd });
         const j = await res.json().catch(() => ({}));
-        if (!res.ok) { alert(j?.error || 'Upload failed'); setStatus('Error'); return; }
+        if (!res.ok) { alert(j?.error || (uiLang === "ro" ? "Incarcarea a esuat" : "Upload failed")); setStatus('Error'); return; }
         await refresh();
         try {
           window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
@@ -924,7 +988,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
     e.preventDefault();
     if (!prop) return;
     // Require overlay position selection
-    if (!prop.contact_overlay_position) { alert('Please select the overlay position for the property banner.'); return; }
+    if (!prop.contact_overlay_position) { alert(uiLang === "ro" ? "Selecteaza pozitia overlay-ului pe banner." : "Please select the overlay position for the property banner."); return; }
     setStatus('Saving…');
     const { error } = await supabase
       .from('properties')
@@ -1069,7 +1133,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         fd.append('file', file);
         const res = await fetch('/api/property/profile/upload', { method: 'POST', body: fd });
         const j = await res.json().catch(() => ({}));
-        if (!res.ok) { alert(j?.error || 'Upload failed'); setStatus('Error'); return; }
+        if (!res.ok) { alert(j?.error || (uiLang === "ro" ? "Incarcarea a esuat" : "Upload failed")); setStatus('Error'); return; }
         await refresh();
         try {
           window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
@@ -1131,7 +1195,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data?.ok) {
-        alert(data?.error || "Failed to save AI house rules.");
+        alert(data?.error || (uiLang === "ro" ? "Salvarea textului AI a esuat." : "Failed to save AI house rules."));
         setStatus("Error");
         return;
       }
@@ -1140,14 +1204,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
       setTimeout(() => setStatus("Idle"), 800);
       setAiModalOpen(false);
     } catch (e: any) {
-      alert(e?.message || "Failed to save AI house rules.");
+      alert(e?.message || (uiLang === "ro" ? "Salvarea textului AI a esuat." : "Failed to save AI house rules."));
       setStatus("Error");
     }
   }
 
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
-      <PlanHeaderBadge title="Check-in Editor" slot="under-title" />
+      <PlanHeaderBadge title={t.title} slot="under-title" />
       <div style={{ padding: isNarrow ? "10px 12px 16px" : "16px", display: "grid", gap: 16 }}>
         {/* Controls (same spacing pattern as Guest Overview) */}
         <div className="sb-toolbar" style={{ gap: isNarrow ? 12 : 20, flexWrap: "wrap", marginBottom: 12 }}>
@@ -1219,10 +1283,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             <span aria-hidden style={{ color: "var(--success)", fontWeight: 900 }}>✓</span>
             <div style={{ display: "grid", gap: 2 }}>
               <div style={{ fontWeight: 800, fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
-                Calendar connected
+                {t.calendarConnected}
               </div>
               <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                Your availability is now managed.
+                {t.availabilityManaged}
               </div>
             </div>
           </div>
@@ -1271,21 +1335,21 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     }}
                   >
                     {contactsWizardStep === "contacts"
-                      ? "Add your contact details"
+                      ? (uiLang === "ro" ? "Adauga datele de contact" : "Add your contact details")
                       : contactsWizardStep === "social"
-                        ? "Increase Direct Guest Contact (Optional)"
-                        : "Guests Can Now Reach You Directly"}
+                        ? (uiLang === "ro" ? "Creste contactul direct cu oaspetii (Optional)" : "Increase Direct Guest Contact (Optional)")
+                        : (uiLang === "ro" ? "Oaspetii te pot contacta direct acum" : "Guests Can Now Reach You Directly")}
                   </div>
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
                     {contactsWizardStep === "contacts"
-                      ? "This helps guests reach you directly without messaging you repeatedly on booking platforms."
+                      ? (uiLang === "ro" ? "Asta ajuta oaspetii sa te contacteze direct, fara mesaje repetate pe platforme." : "This helps guests reach you directly without messaging you repeatedly on booking platforms.")
                       : contactsWizardStep === "social"
-                        ? "Help guests find and contact you directly outside booking platforms. Build repeat stays and long-term visibility."
-                        : "Every booking now connects guests directly to you, creating a consistent communication channel for future stays."}
+                        ? (uiLang === "ro" ? "Ajuta oaspetii sa te gaseasca si sa te contacteze direct in afara platformelor de booking." : "Help guests find and contact you directly outside booking platforms. Build repeat stays and long-term visibility.")
+                        : (uiLang === "ro" ? "Fiecare rezervare poate conecta oaspetii direct cu tine pentru sejururi viitoare." : "Every booking now connects guests directly to you, creating a consistent communication channel for future stays.")}
                   </div>
                 </div>
 	                <button
-	                  aria-label="Close"
+	                  aria-label={t.close}
 	                  className="sb-btn sb-cardglow sb-btn--icon"
 	                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
 	                  onClick={() => {
@@ -1304,15 +1368,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               {contactsWizardStep === "contacts" && (
                 <div style={{ display: "grid", gap: 12 }}>
                   <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
-                    <div>This step is quick and optional.</div>
+                    <div>{uiLang === "ro" ? "Acest pas este rapid si optional." : "This step is quick and optional."}</div>
                     <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginTop: 6 }}>
-                      Add only what you want guests to see.
+                      {uiLang === "ro" ? "Adauga doar ce vrei sa vada oaspetii." : "Add only what you want guests to see."}
                     </div>
                   </div>
 
                   <div style={{ display: "grid", gap: 10 }}>
                     <div style={{ display: "grid", gap: 6 }}>
-                      <label>Email</label>
+                      <label>{t.email}</label>
                       <input
                         type="email"
                         value={prop.contact_email ?? ""}
@@ -1329,12 +1393,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     </div>
 
                     <div style={{ display: "grid", gap: 6 }}>
-                      <label>Phone</label>
+                      <label>{t.phone}</label>
                       <div ref={contactsWizardDialWrapRef} style={{ position: "relative" }}>
                         <button
                           type="button"
                           onClick={() => setContactsWizardDialOpen((v) => !v)}
-                          aria-label="Dial code"
+                          aria-label={uiLang === "ro" ? "Prefix telefon" : "Dial code"}
                           style={{
                             position: "absolute",
                             left: 8,
@@ -1420,7 +1484,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     </div>
 
                     <div style={{ display: "grid", gap: 6 }}>
-                      <label>Address</label>
+                      <label>{t.address}</label>
                       <input
                         value={prop.contact_address ?? ""}
                         onChange={(e) => {
@@ -1447,7 +1511,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
                     onClick={() => void saveContactsWizard()}
                   >
-                    Continue
+                    {t.continue}
                   </button>
                 </div>
               )}
@@ -1503,7 +1567,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                      <input
 	                        value={contactsWizardSocialInput}
 	                        onChange={(e) => setContactsWizardSocialInput(e.currentTarget.value)}
-	                        placeholder={CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex] === "location" ? "Paste Google Maps link" : "Paste URL"}
+	                        placeholder={
+                            CONTACTS_SOCIAL_KEYS[contactsWizardSocialIndex] === "location"
+                              ? (uiLang === "ro" ? "Lipeste link Google Maps" : "Paste Google Maps link")
+                              : (uiLang === "ro" ? "Lipeste URL" : "Paste URL")
+                          }
 	                        style={FIELD}
 	                      />
 	                      <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
@@ -1526,7 +1594,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                          style={{ width: "100%", minHeight: 44 }}
 	                          onClick={backSocialWizard}
 	                        >
-	                          Back
+	                          {t.back}
 	                        </button>
 	                      )}
 	                      <button
@@ -1534,7 +1602,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                        style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
 	                        onClick={() => void advanceSocialWizard(true)}
 	                      >
-	                        {contactsWizardSocialIndex >= CONTACTS_SOCIAL_KEYS.length - 1 ? "Save" : "Next"}
+	                        {contactsWizardSocialIndex >= CONTACTS_SOCIAL_KEYS.length - 1 ? t.save : t.next}
 	                      </button>
 	                    </div>
 	                    <button
@@ -1572,7 +1640,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                        textAlign: "center",
 	                      }}
 	                    >
-	                      Skip for now
+	                      {t.skipForNow}
 	                    </button>
 	                  </div>
 	                </div>
@@ -1601,7 +1669,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                        ✓
 	                      </span>
 	                      <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 600, color: "var(--text)" }}>
-	                        Shown in guest check-in portal
+	                        {uiLang === "ro" ? "Afisat in portalul de check-in al oaspetelui" : "Shown in guest check-in portal"}
 	                      </span>
 	                    </div>
 	                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
@@ -1648,7 +1716,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                      openHouseRulesWizard();
 	                    }}
 	                  >
-	                    Continue
+	                    {t.continue}
 	                  </button>
 
                   <a
@@ -1658,7 +1726,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     className="sb-btn sb-btn--primary sb-cardglow"
                     style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center", textDecoration: "none" }}
                   >
-                    View guest link
+                    {uiLang === "ro" ? "Vezi link-ul oaspetelui" : "View guest link"}
                   </a>
                 </div>
               )}
@@ -1713,29 +1781,29 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     }}
                   >
                     {houseRulesWizardStep === "intro"
-                      ? "House rules = clear limits"
+                      ? (uiLang === "ro" ? "Reguli casa = limite clare" : "House rules = clear limits")
                       : houseRulesWizardStep === "choose"
-                        ? "Add house rules"
+                        ? (uiLang === "ro" ? "Adauga regulile casei" : "Add house rules")
                         : houseRulesWizardStep === "create"
-                          ? "Create house rules"
+                          ? (uiLang === "ro" ? "Creeaza regulile casei" : "Create house rules")
                           : houseRulesWizardStep === "uploaded"
-                            ? "House rules uploaded"
-                            : "GUESTS MUST CONFIRM THESE BEFORE CHECK-IN"}
+                            ? (uiLang === "ro" ? "Regulile casei au fost incarcate" : "House rules uploaded")
+                            : (uiLang === "ro" ? "OASPETII TREBUIE SA LE CONFIRME INAINTE DE CHECK-IN" : "GUESTS MUST CONFIRM THESE BEFORE CHECK-IN")}
                   </div>
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
                     {houseRulesWizardStep === "intro"
-                      ? "Protect yourself before guests arrive."
+                      ? (uiLang === "ro" ? "Protejeaza-te inainte sa ajunga oaspetii." : "Protect yourself before guests arrive.")
                       : houseRulesWizardStep === "choose"
-                        ? "Choose the easiest option for you."
+                        ? (uiLang === "ro" ? "Alege optiunea cea mai simpla pentru tine." : "Choose the easiest option for you.")
                         : houseRulesWizardStep === "create"
-                          ? "Answer a few questions — we’ll do the rest."
+                          ? (uiLang === "ro" ? "Raspunde la cateva intrebari — noi facem restul." : "Answer a few questions — we’ll do the rest.")
                           : houseRulesWizardStep === "uploaded"
-                            ? "Guests will see them during check-in."
-                            : "Guests confirm these rules before arrival — setting clear expectations from the start."}
+                            ? (uiLang === "ro" ? "Oaspetii le vor vedea in timpul check-in-ului." : "Guests will see them during check-in.")
+                            : (uiLang === "ro" ? "Oaspetii confirma aceste reguli inainte de sosire — asteptari clare din start." : "Guests confirm these rules before arrival — setting clear expectations from the start.")}
                   </div>
                 </div>
 	                <button
-	                  aria-label="Close"
+	                  aria-label={t.close}
 	                  className="sb-btn sb-cardglow sb-btn--icon"
 	                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
 	                  onClick={() => {
@@ -1763,7 +1831,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       style={{ width: "min(520px, 100%)", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
                       onClick={() => setHouseRulesWizardStep("choose")}
                     >
-                      Continue
+                      {t.continue}
                     </button>
                   </div>
                 </div>
@@ -1809,14 +1877,16 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         input.click();
                       }}
                     >
-                      Upload a PDF
+                      {uiLang === "ro" ? "Incarca un PDF" : "Upload a PDF"}
                     </button>
 	                    <button
 	                      className="sb-btn sb-btn--primary sb-cardglow"
 	                      style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
 	                      onClick={() => setHouseRulesWizardStep("create")}
 	                    >
-	                      {houseRulesCreateCtaFlip ? "It takes 30 sec." : "Create them here"}
+	                      {houseRulesCreateCtaFlip
+                        ? (uiLang === "ro" ? "Dureaza 30 sec." : "It takes 30 sec.")
+                        : (uiLang === "ro" ? "Creeaza-le aici" : "Create them here")}
 	                    </button>
                     <button
                       className="sb-btn"
@@ -1826,7 +1896,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         window.location.href = "/app/reservationMessage";
                       }}
                     >
-                      I’ll add this later
+                      {uiLang === "ro" ? "Voi adauga mai tarziu" : "I’ll add this later"}
                     </button>
                   </div>
 
@@ -2090,7 +2160,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
                         <button className="sb-btn" type="button" onClick={() => setHouseRulesWizardStep("choose")}>
-                          Back
+                          {t.back}
                         </button>
                         <button
                           className="sb-btn sb-btn--primary"
@@ -2098,7 +2168,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           style={{ minWidth: 220 }}
                           onClick={createAndUploadHouseRulesPdf}
                         >
-                          Save house rules
+                          {uiLang === "ro" ? "Salveaza regulile casei" : "Save house rules"}
                         </button>
                       </div>
                       {houseRulesWizardError && (
@@ -2134,7 +2204,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                        ✓
 	                      </span>
 	                      <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 600, color: "var(--text)" }}>
-	                        Shown in guest check-in portal
+	                        {uiLang === "ro" ? "Afisat in portalul de check-in al oaspetelui" : "Shown in guest check-in portal"}
 	                      </span>
 	                    </div>
 	                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
@@ -2157,7 +2227,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                        ✓
 	                      </span>
 	                      <span style={{ fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", fontWeight: 600, color: "var(--text)" }}>
-	                        Protects you by setting expectations
+	                        {uiLang === "ro" ? "Te protejeaza prin setarea unor asteptari clare" : "Protects you by setting expectations"}
 	                      </span>
 	                    </div>
 	                  </div>
@@ -2191,7 +2261,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       className="sb-btn sb-cardglow"
                       style={{ width: "100%", justifyContent: "center", textDecoration: "none" }}
                     >
-                      Preview as guest
+                      {uiLang === "ro" ? "Previzualizeaza ca oaspete" : "Preview as guest"}
 	                    </a>
 	                    <button
 	                      className="sb-btn sb-btn--primary sb-cardglow"
@@ -2201,7 +2271,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                        window.location.href = "/app/reservationMessage";
 	                      }}
 	                    >
-	                      Continue
+	                      {t.continue}
 	                    </button>
 	                  </div>
 	                </div>
@@ -2273,7 +2343,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         <>
           {/* Check-in Link */}
           <section className="sb-cardglow" style={card}>
-            <h3 style={{ marginTop: 0 }}>Check-in Link</h3>
+            <h3 style={{ marginTop: 0 }}>{t.checkinLink}</h3>
             <div style={{ display: "grid", gap: 8, alignItems: "start" }}>
               <div>
                 <button
@@ -2287,12 +2357,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     if (!prop?.regulation_pdf_url) { setNoPdfOpen(true); return; }
                     openSourcePicker();
                   }}
-                  title={prop?.regulation_pdf_url ? 'Copy check-in link' : 'Upload House Rules PDF first'}
+                  title={prop?.regulation_pdf_url ? t.copyCheckinLink : (uiLang === "ro" ? "Incarca mai intai PDF-ul cu reguli" : "Upload House Rules PDF first")}
                 >
-                  {copied ? 'Copied!' : 'Copy check-in link'}
+                  {copied ? t.copied : t.copyCheckinLink}
                 </button>
               </div>
-              <small style={{ color: "var(--muted)" }}>You can choose a source before copying.</small>
+              <small style={{ color: "var(--muted)" }}>{t.chooseSourceBeforeCopy}</small>
             </div>
           </section>
 
@@ -2341,8 +2411,8 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     type="button"
                     className="sb-btn sb-cardglow sb-btn--icon"
                     onClick={() => setAiModalOpen(false)}
-                    aria-label="Close"
-                    title="Close"
+                    aria-label={t.close}
+                    title={t.close}
                     style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
                   >
                     ✕
@@ -2395,7 +2465,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       disabled={aiModalLoading}
                       style={AI_ACTION_STYLE}
                     >
-                      {aiModalLoading ? "Saving…" : "Use for AI"}
+                      {aiModalLoading ? (uiLang === "ro" ? "Se salveaza…" : "Saving…") : (uiLang === "ro" ? "Foloseste pentru AI" : "Use for AI")}
                     </button>
                   </div>
                 </div>
@@ -2439,17 +2509,17 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               >
                 <div style={{ fontWeight: 600 }}>
                   {aiStatusPhase === "reading"
-                    ? "Reading the file…"
+                    ? (uiLang === "ro" ? "Se citeste fisierul…" : "Reading the file…")
                     : aiStatusPhase === "success"
-                    ? "Text ready for your guest AI assistant"
-                    : "Add info for your guest AI assistant"}
+                    ? (uiLang === "ro" ? "Text pregatit pentru asistentul AI al oaspetilor" : "Text ready for your guest AI assistant")
+                    : (uiLang === "ro" ? "Adauga informatii pentru asistentul AI al oaspetilor" : "Add info for your guest AI assistant")}
                 </div>
                 <div style={{ fontSize: 13, color: "var(--muted)" }}>
                   {aiStatusPhase === "reading"
-                    ? "Please wait while we prepare the text that the guest AI assistant will use."
+                    ? (uiLang === "ro" ? "Te rugam asteapta cat pregatim textul folosit de asistentul AI al oaspetilor." : "Please wait while we prepare the text that the guest AI assistant will use.")
                     : aiStatusPhase === "success"
-                    ? "We prepared the text for your guest AI assistant. You can now review and edit it below, then save."
-                    : "Please type or paste the details you want the guest AI assistant to know (house rules, arrival instructions, amenities, recommendations, check‑out, etc.), then save."}
+                    ? (uiLang === "ro" ? "Am pregatit textul pentru asistentul AI al oaspetilor. Il poti revizui, edita si salva." : "We prepared the text for your guest AI assistant. You can now review and edit it below, then save.")
+                    : (uiLang === "ro" ? "Scrie sau lipeste detaliile pe care vrei sa le stie asistentul AI al oaspetilor (reguli, sosire, facilitati, recomandari, check-out etc.), apoi salveaza." : "Please type or paste the details you want the guest AI assistant to know (house rules, arrival instructions, amenities, recommendations, check‑out, etc.), then save.")}
                 </div>
                 {aiStatusPhase !== "reading" && (
                   <div
@@ -2469,7 +2539,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           setAiStatusPhase("idle");
                         }}
                       >
-                        Check &amp; edit
+                        {uiLang === "ro" ? "Verifica si editeaza" : "Check & edit"}
                       </button>
                     )}
                     {aiStatusPhase === "failed" && (
@@ -2535,7 +2605,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 }}
               >
                 <div style={{ fontWeight: 700, fontSize: 15 }}>
-                  Guest AI assistant is a Premium feature
+                  {uiLang === "ro" ? "Asistentul AI pentru oaspeti este o functie Premium" : "Guest AI assistant is a Premium feature"}
                 </div>
                 <div style={{ fontSize: 13, opacity: 0.95 }}>
                   To read and prepare House Rules text for the guest AI assistant, you need an active{" "}
@@ -2555,7 +2625,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     className="sb-btn"
                     onClick={() => setAiPremiumPopupOpen(false)}
                   >
-                    Close
+                    {t.close}
                   </button>
                   <a
                     href="/app/subscription?plan=premium&hl=1"
@@ -2567,7 +2637,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       fontWeight: 700,
                     }}
                   >
-                    View Premium plans
+                    {uiLang === "ro" ? "Vezi planurile Premium" : "View Premium plans"}
                   </a>
                 </div>
               </div>
@@ -2589,7 +2659,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 : null),
             }}
           >
-            <h3 style={{ marginTop: 0 }}>House Rules PDF</h3>
+            <h3 style={{ marginTop: 0 }}>{t.houseRulesPdf}</h3>
             {prop.regulation_pdf_url ? (
               <div style={{ display: "grid", gap: isNarrow ? 10 : 8 }}>
                 <div
@@ -2612,14 +2682,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       justifyContent: "center",
                     }}
                   >
-                    Open
+                    {t.open}
                   </a>
                   <button
                     className="sb-btn sb-cardglow"
                     onClick={triggerPdfUpload}
                     style={{ width: "100%", justifyContent: "center" }}
                   >
-                    Replace PDF
+                    {t.replacePdf}
                   </button>
                   <button
                     className="sb-btn"
@@ -2631,13 +2701,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       }
                       openAiHouseRulesModalFromPdf();
                     }}
-                    title="Read PDF text and prepare it as source for the guest AI assistant"
+                    title={uiLang === "ro" ? "Citeste textul PDF si pregateste-l pentru asistentul AI al oaspetelui" : "Read PDF text and prepare it as source for the guest AI assistant"}
                     style={{
                       ...AI_ACTION_STYLE,
                       width: "100%",
                     }}
                   >
-                    Read &amp; prepare text for AI
+                    {uiLang === "ro" ? "Citeste si pregateste textul pentru AI" : "Read & prepare text for AI"}
                   </button>
                 </div>
 
@@ -2650,7 +2720,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     justifyContent: isNarrow ? "space-between" : undefined,
                   }}
                 >
-                  <Info text={PDF_INFO} />
+                  <Info text={uiLang === "ro"
+                    ? "PDF (Reguli casa), ideal sub 5 MB. Recomandat A4 portret; textul sa ramana usor de citit."
+                    : PDF_INFO} />
                   <small style={{ color: "var(--muted)" }}>
                     Uploaded{" "}
                     {prop.regulation_pdf_uploaded_at
@@ -2661,7 +2733,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               </div>
             ) : (
               <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-                <span style={{ color:'var(--muted)' }}>No PDF uploaded.</span>
+                <span style={{ color:'var(--muted)' }}>{t.noPdfUploaded}</span>
                 <button
                   className="sb-btn"
                   onClick={() => { setHighlightUpload(false); triggerPdfUpload(); }}
@@ -2672,9 +2744,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     transition: 'box-shadow 160ms ease, border-color 160ms ease',
                   }}
                 >
-                  Upload PDF
+                  {t.uploadPdf}
                 </button>
-                <Info text={PDF_INFO} />
+                <Info text={uiLang === "ro"
+                  ? "PDF (Reguli casa), ideal sub 5 MB. Recomandat A4 portret; textul sa ramana usor de citit."
+                  : PDF_INFO} />
               </div>
             )}
           </section>
@@ -2688,16 +2762,22 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                        paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
               <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(560px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:12 }}>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                  <strong>House Rules recommended</strong>
+                  <strong>{t.houseRulesRecommended}</strong>
                 </div>
                 <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
                   <div>
-                    It’s best to upload your House Rules so guests see and sign them when they complete check-in and so
-                    we can prepare the text that the Guest AI assistant will use to support them.*
+                    {uiLang === "ro"
+                      ? "Ideal este sa incarci regulile casei, ca oaspetii sa le vada si sa le semneze la check-in, iar noi sa putem pregati textul folosit de asistentul AI pentru oaspeti.*"
+                      : "It’s best to upload your House Rules so guests see and sign them when they complete check-in and so we can prepare the text that the Guest AI assistant will use to support them.*"}
                   </div>
                   <small style={{ color:'var(--muted)' }}>
-                    You can continue without it, but guests won’t see your rules until you upload them.<br />
-                    * Guest AI assistant is available only on Premium plans.
+                    {uiLang === "ro"
+                      ? "Poti continua fara ele, dar oaspetii nu vor vedea regulile pana nu le incarci."
+                      : "You can continue without it, but guests won’t see your rules until you upload them."}
+                    <br />
+                    {uiLang === "ro"
+                      ? "* Asistentul AI pentru oaspeti este disponibil doar pe planul Premium."
+                      : "* Guest AI assistant is available only on Premium plans."}
                   </small>
                 </div>
                 <div style={{ display:'flex', justifyContent:'flex-end', gap:8, flexWrap:'wrap' }}>
@@ -2708,7 +2788,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       openSourcePicker();
                     }}
                   >
-                    I will upload later
+                    {t.uploadLater}
                   </button>
                   <button
                     className="sb-btn sb-btn--primary"
@@ -2722,7 +2802,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       setTimeout(() => { try { triggerPdfUpload(); } catch {} }, 60);
                     }}
                   >
-                    Upload now
+                    {t.uploadNow}
                   </button>
                 </div>
               </div>
@@ -2743,10 +2823,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 : null),
             }}
           >
-            <h3 style={{ marginTop: 0 }}>Property Contact</h3>
+            <h3 style={{ marginTop: 0 }}>{t.propertyContact}</h3>
             <form onSubmit={saveContacts} style={{ display:'grid', gap:12, maxWidth:560 }}>
               <div>
-                <label style={{ display:'block', marginBottom:6 }}>Email</label>
+                <label style={{ display:'block', marginBottom:6 }}>{t.email}</label>
                 <input
                   type="email"
                   value={prop.contact_email ?? ''}
@@ -2757,12 +2837,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 />
               </div>
 	              <div>
-	                <label style={{ display:'block', marginBottom:6 }}>Phone</label>
+	                <label style={{ display:'block', marginBottom:6 }}>{t.phone}</label>
 	                <div ref={dialWrapRef} style={{ position: "relative" }}>
 	                  <button
 	                    type="button"
 	                    onClick={() => setDialOpen((v) => !v)}
-	                    aria-label="Dial code"
+	                    aria-label={uiLang === "ro" ? "Prefix telefon" : "Dial code"}
 	                    style={{
 	                      position: "absolute",
 	                      left: 8,
@@ -2853,7 +2933,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                </div>
 	              </div>
               <div>
-                <label style={{ display:'block', marginBottom:6 }}>Address</label>
+                <label style={{ display:'block', marginBottom:6 }}>{t.address}</label>
                 <input
                   value={prop.contact_address ?? ''}
                   onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_address: v } : prev); }}
@@ -2866,19 +2946,21 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               {isNarrow ? (
                 <div style={{ display:'grid', gap:8 }}>
                   <div>
-                    <label style={{ display:'block', marginBottom:6 }}>Overlay position on banner</label>
+                    <label style={{ display:'block', marginBottom:6 }}>{t.overlayPosition}</label>
                     <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
                       <select
                         value={prop.contact_overlay_position ?? ''}
                         onChange={(e)=>{ const v = (e.currentTarget.value || '') as any; setProp(prev => prev ? { ...prev, contact_overlay_position: (v || null) } : prev); }}
                         style={{ ...FIELD, maxWidth: 520 }}
                       >
-                        <option value="">- select -</option>
-                        <option value="top">top</option>
-                        <option value="center">center</option>
-                        <option value="down">down</option>
+                        <option value="">{t.select}</option>
+                        <option value="top">{t.top}</option>
+                        <option value="center">{t.center}</option>
+                        <option value="down">{t.down}</option>
                       </select>
-                      <Info text={'These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom.'} />
+                      <Info text={uiLang === "ro"
+                        ? "Aceste date de contact apar peste banner ca un card glass. Alege pozitia: sus, centru sau jos."
+                        : "These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom."} />
                     </div>
                   </div>
                   <div>
@@ -2887,29 +2969,31 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       className={PRIMARY_ACTION_CLASS}
                       style={{ ...PRIMARY_ACTION_STYLE, width: "100%" }}
                     >
-                      Save
+                      {t.save}
                     </button>
                   </div>
                 </div>
               ) : (
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, flexWrap:'wrap' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                    <label style={{ display:'block', margin:0 }}>Overlay position on banner</label>
+                    <label style={{ display:'block', margin:0 }}>{t.overlayPosition}</label>
                     <select
                       value={prop.contact_overlay_position ?? ''}
                       onChange={(e)=>{ const v = (e.currentTarget.value || '') as any; setProp(prev => prev ? { ...prev, contact_overlay_position: (v || null) } : prev); }}
                       style={{ ...FIELD, maxWidth: 240 }}
                     >
-                      <option value="">- select -</option>
-                      <option value="top">top</option>
-                      <option value="center">center</option>
-                      <option value="down">down</option>
+                      <option value="">{t.select}</option>
+                      <option value="top">{t.top}</option>
+                      <option value="center">{t.center}</option>
+                      <option value="down">{t.down}</option>
                     </select>
-                    <Info text={'These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom.'} />
+                    <Info text={uiLang === "ro"
+                      ? "Aceste date de contact apar peste banner ca un card glass. Alege pozitia: sus, centru sau jos."
+                      : "These contact details are shown on top of your banner image as a glass card. Choose where to place it: at the top, centered, or near the bottom."} />
                   </div>
                   <div>
                     <button type="submit" className={PRIMARY_ACTION_CLASS} style={PRIMARY_ACTION_STYLE}>
-                      Save
+                      {t.save}
                     </button>
                   </div>
                 </div>
@@ -2917,7 +3001,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 
               {/* Social links quick editor */}
               {!(contactsWizardOpen || houseRulesWizardOpen) && (
-                <SocialLinksEditor prop={prop} setProp={setProp} supabase={supabase} setStatus={setStatus} />
+                <SocialLinksEditor prop={prop} setProp={setProp} supabase={supabase} setStatus={setStatus} lang={uiLang} />
               )}
             </form>
           </section>
@@ -2936,13 +3020,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 : null),
             }}
           >
-            <h3 style={{ marginTop: 0 }}>Presentation Image</h3>
+            <h3 style={{ marginTop: 0 }}>{t.presentationImage}</h3>
             <div style={{ display:'grid', gap:10 }}>
               {prop.presentation_image_url ? (
                 <div style={{ display:'grid', gap:8 }}>
                   <img src={prop.presentation_image_url} alt="Presentation" style={{ width: 420, maxWidth:'100%', height: 240, objectFit:'cover', borderRadius: 12, border:'1px solid var(--border)', background:'#fff' }} />
                   <small style={{ color:'var(--muted)' }}>
-                    Uploaded {prop.presentation_image_uploaded_at ? new Date(prop.presentation_image_uploaded_at).toLocaleString() : ''}
+                    {t.uploaded} {prop.presentation_image_uploaded_at ? new Date(prop.presentation_image_uploaded_at).toLocaleString() : ''}
                   </small>
                   <div
                     style={{
@@ -2960,7 +3044,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       className="sb-btn sb-cardglow"
                       style={{ width: "100%", justifyContent: "center" }}
                     >
-                      Preview
+                      {t.preview}
                     </a>
                     <button
                       className="sb-btn sb-cardglow"
@@ -2968,18 +3052,22 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       ref={imageUploadBtnRef}
                       style={{ width: "100%", justifyContent: "center" }}
                     >
-                      Replace image
+                      {t.replaceImage}
                     </button>
                   </div>
                   <div>
-                    <Info text={IMAGE_INFO} />
+                    <Info text={uiLang === "ro"
+                      ? "Recomandat: banner 3:1, minim 1200×400 (ideal 1800×600), JPG/WebP, sub ~500 KB."
+                      : IMAGE_INFO} />
                   </div>
                 </div>
               ) : (
                 <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-                  <span style={{ color:'var(--muted)' }}>No image uploaded.</span>
-                  <button className="sb-btn sb-cardglow" onClick={triggerImageUpload} ref={imageUploadBtnRef}>Upload image</button>
-                  <Info text={IMAGE_INFO} />
+                  <span style={{ color:'var(--muted)' }}>{t.noImageUploaded}</span>
+                  <button className="sb-btn sb-cardglow" onClick={triggerImageUpload} ref={imageUploadBtnRef}>{t.uploadImage}</button>
+                  <Info text={uiLang === "ro"
+                    ? "Recomandat: banner 3:1, minim 1200×400 (ideal 1800×600), JPG/WebP, sub ~500 KB."
+                    : IMAGE_INFO} />
                 </div>
               )}
             </div>
@@ -2992,12 +3080,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           style={{ position:'fixed', inset:0, zIndex: 260, background:'rgba(0,0,0,.55)', display:'grid', placeItems:'center', padding:12 }}>
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(520px, 100%)', padding:16 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-              <strong>Select Check‑in Source</strong>
+              <strong>{t.selectCheckinSource}</strong>
               <button
                 className="sb-btn sb-cardglow sb-btn--icon"
                 type="button"
-                aria-label="Close"
-                title="Close"
+                aria-label={t.close}
+                title={t.close}
                 onClick={()=>setShowSrc(false)}
                 style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
               >
@@ -3028,20 +3116,24 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                    paddingTop:'calc(var(--safe-top, 0px) + 12px)', paddingBottom:'calc(var(--safe-bottom, 0px) + 12px)' }}>
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width:'min(540px, 100%)', background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, display:'grid', gap:12, position:'relative' }}>
             <button
-              aria-label="Close"
+              aria-label={t.close}
               onClick={() => { setShowImagePrompt(false); setImagePromptDismissed(true); }}
               style={{ position:'absolute', top:12, right:12, width:28, height:28, borderRadius:999, border:'1px solid var(--border)', background:'var(--card)', cursor:'pointer', fontWeight: 700 }}
             >
               ×
             </button>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingRight:32 }}>
-              <strong>Upload a real photo of your property</strong>
+              <strong>{uiLang === "ro" ? "Incarca o poza reala a proprietatii tale" : "Upload a real photo of your property"}</strong>
             </div>
             <div style={{ color:'var(--text)', display:'grid', gap:8 }}>
-              <div>Your current photo is a generic placeholder. Upload your real property photo — it shows up in the personalized check-in form.</div>
+              <div>
+                {uiLang === "ro"
+                  ? "Poza curenta este una generica. Incarca poza reala a proprietatii — apare in formularul personalizat de check-in."
+                  : "Your current photo is a generic placeholder. Upload your real property photo — it shows up in the personalized check-in form."}
+              </div>
               <ul style={{ margin:0, paddingLeft:18, color:'var(--muted)', display:'grid', gap:6 }}>
-                <li>Guests see the photo while completing the check-in form.</li>
-                <li>With contact details filled in, guests can reach you easily from automated/scheduled messages.</li>
+                <li>{uiLang === "ro" ? "Oaspetii vad poza cand completeaza formularul de check-in." : "Guests see the photo while completing the check-in form."}</li>
+                <li>{uiLang === "ro" ? "Cu datele de contact completate, oaspetii te pot contacta usor din mesajele automate/programate." : "With contact details filled in, guests can reach you easily from automated/scheduled messages."}</li>
               </ul>
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:8, flexWrap:'wrap' }}>
@@ -3049,7 +3141,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 className="sb-btn"
                 onClick={() => { setShowImagePrompt(false); setImagePromptDismissed(true); }}
               >
-                Ok
+                {t.ok}
               </button>
               <button
                 className="sb-btn sb-btn--primary"
@@ -3063,7 +3155,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   setTimeout(() => { try { triggerImageUpload(); } catch {} }, 80);
                 }}
               >
-                Upload now
+                {t.uploadNow}
               </button>
             </div>
           </div>
@@ -3074,11 +3166,12 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   );
 }
 
-function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
+function SocialLinksEditor({ prop, setProp, supabase, setStatus, lang }: {
   prop: Property;
   setProp: React.Dispatch<React.SetStateAction<Property | null>>;
   supabase: ReturnType<typeof createClient>;
   setStatus: React.Dispatch<React.SetStateAction<"Idle" | "Saving…" | "Synced" | "Error">>;
+  lang: "ro" | "en";
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   type Key = 'facebook'|'instagram'|'tiktok'|'website'|'location';
@@ -3181,7 +3274,7 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
 
   return (
     <div ref={containerRef}>
-      <label style={{ display:'block', marginBottom:6 }}>Social Links</label>
+      <label style={{ display:'block', marginBottom:6 }}>{lang === "ro" ? "Link-uri sociale" : "Social Links"}</label>
       <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
         {(['facebook','instagram','tiktok','website','location'] as Key[]).map(k => (
           <button
@@ -3199,14 +3292,16 @@ function SocialLinksEditor({ prop, setProp, supabase, setStatus }: {
         <div style={{ marginTop:8 }}>
           <input
             autoFocus
-            placeholder={`Paste ${active} URL`}
+            placeholder={lang === "ro" ? `Lipeste URL ${active}` : `Paste ${active} URL`}
             value={draft}
             onChange={(e)=>setDraft(e.currentTarget.value)}
             onBlur={() => { void commitActive().catch(() => {}); }}
             style={FIELD}
           />
           <small style={{ color:'var(--muted)' }}>
-            Tip: Clear the field to remove the link. It saves automatically on click away.
+            {lang === "ro"
+              ? "Tip: Goleste campul pentru a elimina linkul. Se salveaza automat la click in afara."
+              : "Tip: Clear the field to remove the link. It saves automatically on click away."}
           </small>
         </div>
       )}
