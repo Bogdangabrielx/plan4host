@@ -16,18 +16,17 @@ type Props = {
 
 type OnboardingStep = {
   id: string;
-  label: string;
   iconSrc: string;
 };
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
-  { id: "property", label: "Add property", iconSrc: "/svg_dashboard.svg" },
-  { id: "picture", label: "Add photo", iconSrc: "/svg_addphoto_demo.svg" },
-  { id: "room", label: "Add room", iconSrc: "/svg_singleunit_demo.svg" },
-  { id: "calendars", label: "Calendar sync", iconSrc: "/svg_calendar.svg" },
-  { id: "links_contact", label: "Links and contact", iconSrc: "/svg_linkscontact_demo.svg" },
-  { id: "house_rules", label: "House rules", iconSrc: "/svg_paste_demo.svg" },
-  { id: "message_template", label: "Message template", iconSrc: "/svg_email_demo.svg" },
+  { id: "property", iconSrc: "/svg_dashboard.svg" },
+  { id: "picture", iconSrc: "/svg_addphoto_demo.svg" },
+  { id: "room", iconSrc: "/svg_singleunit_demo.svg" },
+  { id: "calendars", iconSrc: "/svg_calendar.svg" },
+  { id: "links_contact", iconSrc: "/svg_linkscontact_demo.svg" },
+  { id: "house_rules", iconSrc: "/svg_paste_demo.svg" },
+  { id: "message_template", iconSrc: "/svg_email_demo.svg" },
 ];
 
 function ActivityTracker() {
@@ -75,6 +74,7 @@ function ActivityTracker() {
 }
 
 function OnboardingChecklistFab() {
+  const [uiLang, setUiLang] = useState<"ro" | "en">("en");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
@@ -83,6 +83,49 @@ function OnboardingChecklistFab() {
 
   const total = ONBOARDING_STEPS.length;
   const completed = completedSteps.length + dismissedSteps.length;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): "ro" | "en" => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setUiLang(readLang());
+    const onStorage = () => setUiLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const stepLabel = (id: string) => {
+    if (uiLang === "ro") {
+      if (id === "property") return "Adauga proprietatea";
+      if (id === "picture") return "Adauga poza";
+      if (id === "room") return "Adauga camera";
+      if (id === "calendars") return "Sincronizare calendar";
+      if (id === "links_contact") return "Link-uri si contact";
+      if (id === "house_rules") return "Reguli casa";
+      if (id === "message_template") return "Template mesaj";
+      return id;
+    }
+    if (id === "property") return "Add property";
+    if (id === "picture") return "Add photo";
+    if (id === "room") return "Add room";
+    if (id === "calendars") return "Calendar sync";
+    if (id === "links_contact") return "Links and contact";
+    if (id === "house_rules") return "House rules";
+    if (id === "message_template") return "Message template";
+    return id;
+  };
 
   const track = (event: string, stepId?: string, meta?: Record<string, unknown>) => {
     try {
@@ -298,10 +341,10 @@ function OnboardingChecklistFab() {
 	          <div style={headerStyle}>
 	            <div style={{ display: "grid", gap: 2 }}>
 	              <span style={{ fontSize: "var(--fs-b)", fontWeight: "var(--fw-bold)" }}>
-	                Setup
+	                {uiLang === "ro" ? "Setare" : "Setup"}
 	              </span>
 	              <span style={{ fontSize: "var(--fs-s)", opacity: 0.9 }}>
-	                {completed}/{total} done
+	                {uiLang === "ro" ? `${completed}/${total} finalizate` : `${completed}/${total} done`}
 	              </span>
 	            </div>
             <button
@@ -319,7 +362,7 @@ function OnboardingChecklistFab() {
                 justifyContent: "center",
                 cursor: "pointer",
               }}
-              aria-label="Close checklist"
+              aria-label={uiLang === "ro" ? "Inchide checklist-ul" : "Close checklist"}
             >
               ×
             </button>
@@ -360,7 +403,7 @@ function OnboardingChecklistFab() {
                       maskSize: "100%",
                     }}
                   />
-	                <span style={{ fontSize: "var(--fs-s)", flex: 1 }}>{step.label}</span>
+	                <span style={{ fontSize: "var(--fs-s)", flex: 1 }}>{stepLabel(step.id)}</span>
                   {(() => {
                     const done = completedSteps.includes(step.id) || dismissedSteps.includes(step.id);
                     return (
@@ -406,7 +449,7 @@ function OnboardingChecklistFab() {
             return next;
           })
         }
-        aria-label="Open setup checklist"
+        aria-label={uiLang === "ro" ? "Deschide checklist-ul de setare" : "Open setup checklist"}
       >
 	        <div
 	          style={{
@@ -426,7 +469,7 @@ function OnboardingChecklistFab() {
               color: "#ffffff",
             }}
           >
-            Setup
+            {uiLang === "ro" ? "Setare" : "Setup"}
           </span>
           <span
             style={{

@@ -1384,11 +1384,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           const v = e.currentTarget.value;
                           setProp((prev) => (prev ? { ...prev, contact_email: v } : prev));
                         }}
-                        placeholder="example@hotel.com"
+                        placeholder={uiLang === "ro" ? "exemplu@hotel.com" : "example@hotel.com"}
                         style={FIELD}
                       />
                       <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                        Guests will see this in their portal and can contact you directly if needed.
+                        {uiLang === "ro"
+                          ? "Oaspetii vor vedea asta in portalul lor si te pot contacta direct la nevoie."
+                          : "Guests will see this in their portal and can contact you directly if needed."}
                       </div>
                     </div>
 
@@ -1479,7 +1481,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                         )}
                       </div>
                       <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                        Useful for urgent questions or arrival issues.
+                        {uiLang === "ro"
+                          ? "Util pentru intrebari urgente sau probleme la sosire."
+                          : "Useful for urgent questions or arrival issues."}
                       </div>
                     </div>
 
@@ -1491,11 +1495,13 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                           const v = e.currentTarget.value;
                           setProp((prev) => (prev ? { ...prev, contact_address: v } : prev));
                         }}
-                        placeholder="Street, city, optional details"
+                        placeholder={uiLang === "ro" ? "Strada, oras, detalii optionale" : "Street, city, optional details"}
                         style={FIELD}
                       />
                       <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-                        Shown only if you want guests to see the exact location.
+                        {uiLang === "ro"
+                          ? "Afisat doar daca vrei ca oaspetii sa vada locatia exacta."
+                          : "Shown only if you want guests to see the exact location."}
                       </div>
                     </div>
                   </div>
@@ -2834,9 +2840,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   value={prop.contact_email ?? ''}
                   onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_email: v } : prev); }}
                   onBlur={(e) => autoSaveContactField('email', e.currentTarget.value)}
-                  placeholder="example@hotel.com"
+                  placeholder={uiLang === "ro" ? "exemplu@hotel.com" : "example@hotel.com"}
                   style={FIELD}
                 />
+                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginTop: 6 }}>
+                  {uiLang === "ro"
+                    ? "Oaspetii vor vedea asta in portalul lor si te pot contacta direct la nevoie."
+                    : "Guests will see this in their portal and can contact you directly if needed."}
+                </div>
               </div>
 	              <div>
 	                <label style={{ display:'block', marginBottom:6 }}>{t.phone}</label>
@@ -2933,6 +2944,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                    </div>
 	                  )}
 	                </div>
+                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginTop: 6 }}>
+                    {uiLang === "ro"
+                      ? "Util pentru intrebari urgente sau probleme la sosire."
+                      : "Useful for urgent questions or arrival issues."}
+                  </div>
 	              </div>
               <div>
                 <label style={{ display:'block', marginBottom:6 }}>{t.address}</label>
@@ -2940,9 +2956,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   value={prop.contact_address ?? ''}
                   onChange={(e) => { const v = e.currentTarget.value; setProp(prev => prev ? { ...prev, contact_address: v } : prev); }}
                   onBlur={(e) => autoSaveContactField('address', e.currentTarget.value)}
-                  placeholder="Street, city, optional details"
+                  placeholder={uiLang === "ro" ? "Strada, oras, detalii optionale" : "Street, city, optional details"}
                   style={FIELD}
                 />
+                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginTop: 6 }}>
+                  {uiLang === "ro"
+                    ? "Afisat doar daca vrei ca oaspetii sa vada locatia exacta."
+                    : "Shown only if you want guests to see the exact location."}
+                </div>
               </div>
               {/* Overlay selector + Save: desktop on one row; mobile stacked with full-width Save */}
               {isNarrow ? (
