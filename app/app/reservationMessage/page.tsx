@@ -2,11 +2,14 @@ import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ReservationMessageClient from "./ui/ReservationMessageClient";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function ReservationMessagePage() {
+  const cookieStore = cookies();
+  const uiLang = cookieStore.get("app_lang")?.value === "ro" ? "ro" : "en";
   const supabase = createClient();
   const {
     data: { user },
@@ -48,7 +51,7 @@ export default async function ReservationMessagePage() {
   } catch {}
 
   return (
-    <AppShell currentPath="/app/reservationMessage" title="Automatic Messages">
+    <AppShell currentPath="/app/reservationMessage" title={uiLang === "ro" ? "Mesaje automate" : "Automatic Messages"}>
       <ReservationMessageClient initialProperties={properties} isAdmin={isAdmin} />
     </AppShell>
   );

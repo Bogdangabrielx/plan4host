@@ -239,6 +239,7 @@ export default function ReservationMessageClient({
     return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false;
   });
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
+  const [uiLang, setUiLang] = useState<"ro" | "en">("en");
   const [lang, setLang] = useState<'ro'|'en'>('ro');
   const [scheduler, setScheduler] = useState<TemplateState['schedule_kind']>('');
   const [templates, setTemplates] = useState<Array<{ id: string; title: string; status: "draft" | "published"; updated_at: string }>>([]);
@@ -278,6 +279,28 @@ export default function ReservationMessageClient({
   const onbOpenRef = useRef<boolean>(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): "ro" | "en" => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setUiLang(readLang());
+    const onStorage = () => setUiLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  useEffect(() => {
     onbOpenRef.current = onbOpen;
   }, [onbOpen]);
 
@@ -305,6 +328,68 @@ export default function ReservationMessageClient({
     setRecapCopied(true);
     window.setTimeout(() => setRecapCopied(false), 1000);
   }
+
+  const t = {
+    automaticMessages: uiLang === "ro" ? "Mesaje automate" : "Automatic Messages",
+    roomVariables: uiLang === "ro" ? "Variabile camera" : "Room variables",
+    valuesPerRoom: uiLang === "ro" ? "Valori (per camera)" : "Values (per room)",
+    createVariables: uiLang === "ro" ? "Creeaza variabile" : "Create Variables",
+    room: uiLang === "ro" ? "Camera" : "Room",
+    noVariablesDefined: uiLang === "ro" ? "Nu exista variabile definite" : "No variables defined",
+    createOneInTab: uiLang === "ro" ? "Creeaza una in tab-ul" : "Create one in the",
+    valueForRoom: uiLang === "ro" ? "Valoare pentru aceasta camera…" : "Value for this room…",
+    saveValues: uiLang === "ro" ? "Salveaza valorile" : "Save values",
+    addVariable: uiLang === "ro" ? "Adauga variabila" : "Add variable",
+    add: uiLang === "ro" ? "Adauga" : "Add",
+    adding: uiLang === "ro" ? "Se adauga…" : "Adding…",
+    keyAuto: uiLang === "ro" ? "Cheie (auto):" : "Key (auto):",
+    existingVariables: uiLang === "ro" ? "Variabile existente" : "Existing variables",
+    noVariablesYet: uiLang === "ro" ? "Nu exista variabile inca" : "No variables yet",
+    addFirstAbove: uiLang === "ro" ? "Adauga prima variabila mai sus." : "Add your first one above.",
+    key: uiLang === "ro" ? "Cheie:" : "Key:",
+    delete: uiLang === "ro" ? "Sterge" : "Delete",
+    templates: uiLang === "ro" ? "Template-uri" : "Templates",
+    addTemplate: uiLang === "ro" ? "Adauga template" : "Add template",
+    loading: uiLang === "ro" ? "Se incarca…" : "Loading…",
+    noTemplatesYet: uiLang === "ro" ? "Nu exista template-uri inca" : "No templates yet",
+    createFirstTemplateForProperty:
+      uiLang === "ro" ? "Creeaza primul template pentru aceasta proprietate." : "Create your first template for this property.",
+    createFirstTemplate: uiLang === "ro" ? "Creeaza primul template" : "Create your first template",
+    edit: uiLang === "ro" ? "Editeaza" : "Edit",
+    duplicate: uiLang === "ro" ? "Duplica" : "Duplicate",
+    message: uiLang === "ro" ? "Mesaj" : "Message",
+    schedulerRequired:
+      uiLang === "ro" ? "Programare (obligatoriu inainte de Publicare)" : "Scheduler (required before Publish)",
+    select: uiLang === "ro" ? "— selecteaza —" : "— select —",
+    oneHourBeforeReservation: uiLang === "ro" ? "Cu o ora inainte de rezervare" : "One hour before reservation",
+    onceGuestArrives: uiLang === "ro" ? "Cand oaspetele ajunge (ora check-in)" : "Once the guest arrives (check-in time)",
+    twelveBeforeCheckout: uiLang === "ro" ? "Cu 12 ore inainte de check-out" : "12 hours before check out",
+    reservationDetails: uiLang === "ro" ? "Detalii rezervare" : "Reservation details",
+    formatting: uiLang === "ro" ? "Formatare:" : "Formatting:",
+    variables: uiLang === "ro" ? "Variabile" : "Variables",
+    insert: uiLang === "ro" ? "Insereaza:" : "Insert:",
+    save: uiLang === "ro" ? "Salveaza" : "Save",
+    updated: uiLang === "ro" ? "Actualizat:" : "Updated:",
+    active: uiLang === "ro" ? "Activ" : "Active",
+    draft: uiLang === "ro" ? "Ciorna" : "Draft",
+    roomType: uiLang === "ro" ? "Tip camera" : "Room type",
+    saveStatusSaving: uiLang === "ro" ? "Se salveaza…" : "Saving…",
+    saveStatusSaved: uiLang === "ro" ? "Salvat" : "Saved",
+    saveStatusError: uiLang === "ro" ? "Eroare" : "Error",
+    valueForThisRoom: uiLang === "ro" ? "Valoare pentru aceasta camera…" : "Value for this room…",
+    variableKey: uiLang === "ro" ? "Cheie variabila" : "Variable key",
+    deleteVariable: uiLang === "ro" ? "Sterge variabila" : "Delete variable",
+    createInTabText:
+      uiLang === "ro" ? 'Creeaza una in tab-ul "Creeaza variabile".' : 'Create one in the "Create Variables" tab.',
+    titleLabel: uiLang === "ro" ? "Titlu" : "Title",
+    link: uiLang === "ro" ? "Link" : "Link",
+    yourMessage: uiLang === "ro" ? "Mesajul tau..." : "Your message...",
+    saveDefaultValuePrompt: uiLang === "ro" ? "Seteaza valoarea implicita" : "Set default value",
+    remove: uiLang === "ro" ? "Elimina" : "Remove",
+    makeActive: uiLang === "ro" ? "Activeaza" : "Make active",
+    choose: uiLang === "ro" ? "Alege" : "Choose",
+    close: uiLang === "ro" ? "Inchide" : "Close",
+  } as const;
 
   const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
 
@@ -574,7 +659,7 @@ export default function ReservationMessageClient({
   }
   function publish() {
     if (!propertyId) return;
-    if (!scheduler) { alert('Select a Scheduler before publishing.'); return; }
+    if (!scheduler) { alert(uiLang === "ro" ? "Selecteaza Programarea inainte de publicare." : "Select a Scheduler before publishing."); return; }
     const current = composeBlocks();
     const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
     const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
@@ -623,22 +708,22 @@ export default function ReservationMessageClient({
 
   async function onAddNew() {
     if (!propertyId) return;
-    const t = prompt("Message title");
-    if (!t) return;
+    const titleInput = prompt(uiLang === "ro" ? "Titlu mesaj" : "Message title");
+    if (!titleInput) return;
     try {
       const res = await fetch("/api/reservation-message/template", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ property_id: propertyId, title: t, status: "draft", blocks: [{ type: "heading", text: t }], fields: [] }),
+        body: JSON.stringify({ property_id: propertyId, title: titleInput, status: "draft", blocks: [{ type: "heading", text: titleInput }], fields: [] }),
       });
       const j = await res.json().catch(() => ({}));
-      if (!res.ok || !j?.template_id) throw new Error(j?.error || "Create failed");
+      if (!res.ok || !j?.template_id) throw new Error(j?.error || (uiLang === "ro" ? "Crearea a esuat" : "Create failed"));
       setActiveId(String(j.template_id));
       const rl = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(propertyId)}`, { cache: "no-store" });
       const jl = await rl.json().catch(() => ({}));
       const items = Array.isArray(jl?.items) ? jl.items : [];
       setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
-    } catch (e: any) { alert(e?.message || "Failed"); }
+    } catch (e: any) { alert(e?.message || (uiLang === "ro" ? "Actiunea a esuat" : "Failed")); }
   }
   async function onDuplicate(id: string, title: string) {
     try {
@@ -649,19 +734,19 @@ export default function ReservationMessageClient({
       const fields = (t.fields || []).map((f: any) => ({ key: f.key, label: f.label, default_value: f.default_value ?? null }));
       const res = await fetch("/api/reservation-message/template", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ property_id: t.property_id, title: `${title} (Copy)`, status: "draft", blocks, fields }),
+        body: JSON.stringify({ property_id: t.property_id, title: uiLang === "ro" ? `${title} (Copie)` : `${title} (Copy)`, status: "draft", blocks, fields }),
       });
       const jj = await res.json().catch(() => ({}));
-      if (!res.ok || !jj?.template_id) throw new Error(jj?.error || "Duplicate failed");
+      if (!res.ok || !jj?.template_id) throw new Error(jj?.error || (uiLang === "ro" ? "Duplicarea a esuat" : "Duplicate failed"));
       setActiveId(String(jj.template_id));
       const rl = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(t.property_id)}`, { cache: "no-store" });
       const jl = await rl.json().catch(() => ({}));
       const items = Array.isArray(jl?.items) ? jl.items : [];
       setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
-    } catch (e: any) { alert(e?.message || "Failed"); }
+    } catch (e: any) { alert(e?.message || (uiLang === "ro" ? "Actiunea a esuat" : "Failed")); }
   }
   async function onDelete(id: string) {
-    if (!confirm("Delete this message?")) return;
+    if (!confirm(uiLang === "ro" ? "Stergi acest mesaj?" : "Delete this message?")) return;
     try {
       const r = await fetch(`/api/reservation-message/template?id=${encodeURIComponent(id)}`, { method: "DELETE" });
       if (!r.ok) throw new Error(await r.text());
@@ -670,7 +755,7 @@ export default function ReservationMessageClient({
       const items = Array.isArray(jl?.items) ? jl.items : [];
       setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
       if (activeId === id) setActiveId(null);
-    } catch (e: any) { alert(e?.message || "Failed"); }
+    } catch (e: any) { alert(e?.message || (uiLang === "ro" ? "Actiunea a esuat" : "Failed")); }
   }
 
   /** --------- Editor helpers --------- */
@@ -688,7 +773,7 @@ export default function ReservationMessageClient({
   function applyLink() {
     const container = focusedInput === "body" ? bodyRef.current : (focusedInput === "title" ? titleRef.current : null);
     if (!container) return;
-    const url = prompt("Link URL (https://...)");
+    const url = prompt(uiLang === "ro" ? "URL link (https://...)" : "Link URL (https://...)");
     if (!url) return;
     const sel = window.getSelection();
     const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
@@ -696,7 +781,7 @@ export default function ReservationMessageClient({
     if (inside && sel && !sel.isCollapsed && sel.toString().trim()) {
       try { container.focus(); document.execCommand("createLink", false, url); } catch {}
     } else {
-      const text = prompt("Link text") || url;
+      const text = prompt(uiLang === "ro" ? "Text link" : "Link text") || url;
       insertAnchorAtCaret(container, url, text);
     }
   }
@@ -792,7 +877,7 @@ export default function ReservationMessageClient({
   }
 
   async function deleteDefinition(id: string) {
-    if (!confirm("Delete this variable for all rooms?")) return;
+    if (!confirm(uiLang === "ro" ? "Stergi aceasta variabila pentru toate camerele?" : "Delete this variable for all rooms?")) return;
     setRvError(null);
     try {
       const url = `/api/room-variables/definitions?id=${encodeURIComponent(id)}&property=${encodeURIComponent(propertyId || "")}`;
@@ -802,7 +887,7 @@ export default function ReservationMessageClient({
       setVarDefs((prev) => prev.filter((d) => d.id !== id));
       const def = varDefs.find((d) => d.id === id);
       if (def) setValuesByKey((prev) => { const n = { ...prev }; delete n[def.key]; return n; });
-    } catch (e: any) { setRvError(e?.message || "Delete failed"); }
+    } catch (e: any) { setRvError(e?.message || (uiLang === "ro" ? "Stergerea a esuat" : "Delete failed")); }
   }
 
   /** --------- Save Values per Room --------- */
@@ -909,7 +994,7 @@ export default function ReservationMessageClient({
   /** --------- Render --------- */
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
-      <PlanHeaderBadge title="Automatic Messages" slot="under-title" />
+      <PlanHeaderBadge title={t.automaticMessages} slot="under-title" />
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 12 }}>
 
       {/* Property selector (pill with avatar) — align like Calendar (sb-toolbar) */}
@@ -983,7 +1068,7 @@ export default function ReservationMessageClient({
             justifyContent: "space-between", alignItems: "center", borderRadius: 12, cursor: "pointer",
           }}
         >
-          <strong>Room variables</strong>
+          <strong>{t.roomVariables}</strong>
           <span style={{ opacity: 0.7 }}>{rvOpen ? "▲" : "▼"}</span>
         </button>
 
@@ -995,13 +1080,13 @@ export default function ReservationMessageClient({
                 style={{ ...btn, background: rvTab === "values" ? "var(--primary)" : "var(--card)", color: rvTab === "values" ? "#0c111b" : "var(--text)" }}
                 onClick={() => setRvTab("values")}
               >
-                Values (per room)
+                {t.valuesPerRoom}
               </button>
               <button
                 style={{ ...btn, background: rvTab === "defs" ? "var(--primary)" : "var(--card)", color: rvTab === "defs" ? "#0c111b" : "var(--text)" }}
                 onClick={() => setRvTab("defs")}
               >
-                Create Variables
+                {t.createVariables}
               </button>
 
               {/* status/erori compact */}
@@ -1016,7 +1101,7 @@ export default function ReservationMessageClient({
             {rvTab === "values" && (
               <div className="sb-card" style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 12, display: "grid", gap: 12 }}>
                 <div style={{ display: "grid", gap: 8 }}>
-                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Room</label>
+                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.room}</label>
                   <select
                     className="sb-select"
                     value={selectedRoomId || ""}
@@ -1029,8 +1114,8 @@ export default function ReservationMessageClient({
 
                 {varDefs.length === 0 ? (
                   <div className="sb-card" style={{ padding: 16, textAlign: "center", border: "1px dashed var(--border)", borderRadius: 10 }}>
-                    <div style={{ fontWeight: 700, marginBottom: 6 }}>No variables defined</div>
-                    <div style={{ color: "var(--muted)" }}>Create one in the <em>Create Variables</em> tab.</div>
+                    <div style={{ fontWeight: 700, marginBottom: 6 }}>{t.noVariablesDefined}</div>
+                    <div style={{ color: "var(--muted)" }}>{t.createInTabText}</div>
                   </div>
                 ) : (
                   <div style={{ display: "grid", gap: 10 }}>
@@ -1038,7 +1123,7 @@ export default function ReservationMessageClient({
                       <div key={d.id} style={{ display: "grid", gap: 6 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                           <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{d.label}</label>
-                          <span className="rm-token" aria-label="Variable key">{d.key}</span>
+                          <span className="rm-token" aria-label={t.variableKey}>{d.key}</span>
                         </div>
                         <input
                           value={valuesByKey[d.key] ?? ""}
@@ -1046,7 +1131,7 @@ export default function ReservationMessageClient({
                             const v = e.currentTarget.value;
                             setValuesByKey((prev) => ({ ...prev, [d.key]: v }));
                           }}
-                          placeholder="Value for this room…"
+                          placeholder={t.valueForThisRoom}
                           style={input}
                         />
                       </div>
@@ -1057,10 +1142,10 @@ export default function ReservationMessageClient({
                         onClick={saveValuesForRoom}
                         disabled={!isAdmin || !propertyId || !selectedRoomId || varDefs.length === 0}
                       >
-                        Save values
+                        {t.saveValues}
                       </button>
                       <small style={{ color: "var(--muted)", maxWidth: 160, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {savingRoomValues === "Saving…" ? "Saving…" : savingRoomValues === "Saved" ? "Saved" : savingRoomValues === "Error" ? "Error" : ""}
+                        {savingRoomValues === "Saving…" ? t.saveStatusSaving : savingRoomValues === "Saved" ? t.saveStatusSaved : savingRoomValues === "Error" ? t.saveStatusError : ""}
                       </small>
                     </div>
                   </div>
@@ -1072,7 +1157,7 @@ export default function ReservationMessageClient({
             {rvTab === "defs" && (
               <div className="sb-card" style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 12, display: "grid", gap: 12 }}>
                 <div style={{ display: "grid", gap: 6, maxWidth: 520 }}>
-                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Add variable</label>
+                  <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.addVariable}</label>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
                     <input
                       value={newVarName}
@@ -1087,12 +1172,12 @@ export default function ReservationMessageClient({
                       onClick={createDefinition}
                       disabled={!isAdmin || creatingVar || !newVarName.trim()}
                     >
-                      {creatingVar ? "Adding…" : "Add"}
+                      {creatingVar ? t.adding : t.add}
                     </button>
                   </div>
                   {newVarName.trim() && (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <small style={{ color: "var(--muted)" }}>Key (auto):</small>
+                      <small style={{ color: "var(--muted)" }}>{t.keyAuto}</small>
                       <span className="rm-token">{slugify(newVarName)}</span>
                     </div>
                   )}
@@ -1100,11 +1185,11 @@ export default function ReservationMessageClient({
                 </div>
 
                 <div style={{ display: "grid", gap: 8 }}>
-                  <strong>Existing variables</strong>
+                  <strong>{t.existingVariables}</strong>
                   {varDefs.length === 0 ? (
                     <div className="sb-card" style={{ padding: 16, textAlign: "center", border: "1px dashed var(--border)", borderRadius: 10 }}>
-                      <div style={{ fontWeight: 700, marginBottom: 6 }}>No variables yet</div>
-                      <div style={{ color: "var(--muted)" }}>Add your first one above.</div>
+                      <div style={{ fontWeight: 700, marginBottom: 6 }}>{t.noVariablesYet}</div>
+                      <div style={{ color: "var(--muted)" }}>{t.addFirstAbove}</div>
                     </div>
                   ) : (
                     <div style={{ display: "grid", gap: 6 }}>
@@ -1113,7 +1198,7 @@ export default function ReservationMessageClient({
                           <div style={{ display: "grid", gap: 4 }}>
                             <div style={{ fontWeight: 700 }}>{d.label}</div>
                             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                              <small style={{ color: "var(--muted)" }}>Key:</small>
+                              <small style={{ color: "var(--muted)" }}>{t.key}</small>
                               <span className="rm-token">{d.key}</span>
                             </div>
                           </div>
@@ -1122,9 +1207,9 @@ export default function ReservationMessageClient({
                               style={{ ...btn, borderColor: "var(--danger)" }}
                               onClick={() => deleteDefinition(d.id)}
                               disabled={!isAdmin}
-                              title="Delete variable"
+                              title={t.deleteVariable}
                             >
-                              Delete
+                              {t.delete}
                             </button>
                           </div>
                         </div>
@@ -1141,33 +1226,33 @@ export default function ReservationMessageClient({
 	      {/* Templates header + grid */}
 	      <section className="sb-card sb-cardglow" style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
-          <strong>Templates</strong>
+          <strong>{t.templates}</strong>
           <button className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink" onClick={onAddNew}>
-            Add template
+            {t.addTemplate}
           </button>
         </div>
         {loadingList ? (
-          <div style={{ color: "var(--muted)" }}>Loading…</div>
+          <div style={{ color: "var(--muted)" }}>{t.loading}</div>
         ) : templates.length === 0 ? (
           <div className="sb-card" style={{ padding: 16, textAlign: "center" }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>No templates yet</div>
-            <div style={{ color: "var(--muted)", marginBottom: 10 }}>Create your first template for this property.</div>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>{t.noTemplatesYet}</div>
+            <div style={{ color: "var(--muted)", marginBottom: 10 }}>{t.createFirstTemplateForProperty}</div>
             <button className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink" onClick={onAddNew}>
-              Create your first template
+              {t.createFirstTemplate}
             </button>
           </div>
         ) : (
           <>
             {/* Make cards wider so status pill never overflows */}
             <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
-              {templates.map((t) => (
+              {templates.map((tplItem) => (
                 <div
-                  key={t.id}
+                  key={tplItem.id}
                   className="sb-card"
                   onClick={() => {
                     // TOGGLE ON DESKTOP & MOBILE: clicking the same card closes it
-                    if (activeId === t.id) setActiveId(null);
-                    else setActiveId(t.id);
+                    if (activeId === tplItem.id) setActiveId(null);
+                    else setActiveId(tplItem.id);
                   }}
                   style={{ padding: 12, border: "1px solid var(--border)", borderRadius: 12, display: "grid", gap: 6, cursor: "pointer" }}
                   role="button"
@@ -1176,26 +1261,26 @@ export default function ReservationMessageClient({
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                     <strong
                       style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, flex: 1 }}
-                      dangerouslySetInnerHTML={{ __html: titleToChips(t.title || "(Untitled)") }}
+                      dangerouslySetInnerHTML={{ __html: titleToChips(tplItem.title || "(Untitled)") }}
                     />
                     <span
                       className="sb-badge"
                       style={{
                         display: "inline-block",
                         whiteSpace: "nowrap",
-                        background: t.status === "published" ? "var(--primary)" : "var(--card)",
-                        color: t.status === "published" ? "#0c111b" : "var(--muted)",
+                        background: tplItem.status === "published" ? "var(--primary)" : "var(--card)",
+                        color: tplItem.status === "published" ? "#0c111b" : "var(--muted)",
                         flex: '0 0 auto'
                       }}
                     >
-                      {t.status === 'published' ? 'Active' : (t.status || '').replace(/^./, c => c.toUpperCase())}
+                      {tplItem.status === "published" ? t.active : t.draft}
                     </span>
                   </div>
-                  <small style={{ color: "var(--muted)" }}>Updated: {new Date(t.updated_at).toLocaleString()}</small>
+                  <small style={{ color: "var(--muted)" }}>{t.updated} {new Date(tplItem.updated_at).toLocaleString()}</small>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); setActiveId(t.id); }}>Edit</button>
-                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); onDuplicate(t.id, t.title); }}>Duplicate</button>
-                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); onDelete(t.id); }}>Delete</button>
+                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); setActiveId(tplItem.id); }}>{t.edit}</button>
+                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); onDuplicate(tplItem.id, tplItem.title); }}>{t.duplicate}</button>
+                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); onDelete(tplItem.id); }}>{t.delete}</button>
                   </div>
                 </div>
               ))}
@@ -1213,7 +1298,7 @@ export default function ReservationMessageClient({
 	      {activeId && (
 	        <section className="sb-cardglow" style={card}>
 	          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-	            <h2 style={{ margin: 0 }}>Message</h2>
+	            <h2 style={{ margin: 0 }}>{t.message}</h2>
 	            <div style={{ display:'inline-flex', gap:8 }}>
               <button onClick={() => {
                 const cur = composeBlocks();
@@ -1248,39 +1333,39 @@ export default function ReservationMessageClient({
 
           {/* Scheduler selector */}
           <div style={{ display:'grid', gap:6, marginTop:10, maxWidth: 360 }}>
-            <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>Scheduler (required before Publish)</label>
+            <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>{t.schedulerRequired}</label>
             <select className="sb-select sb-cardglow"  value={scheduler || ''} onChange={(e)=>setScheduler(e.currentTarget.value as any)}>
-              <option value="">— select —</option>
-              <option value="hour_before_checkin">One hour before reservation</option>
-              <option value="on_arrival">Once the guest arrives (check-in time)</option>
-              <option value="hours_before_checkout">12 hours before check out</option>
+              <option value="">{t.select}</option>
+              <option value="hour_before_checkin">{t.oneHourBeforeReservation}</option>
+              <option value="on_arrival">{t.onceGuestArrives}</option>
+              <option value="hours_before_checkout">{t.twelveBeforeCheckout}</option>
             </select>
           </div>
 
           <div style={{ display: "grid", gap: 8 }}>
             <div>
-              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Title ({lang.toUpperCase()})</label>
+              <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.titleLabel} ({lang.toUpperCase()})</label>
               <ContentEditableStable
                 ref={titleRef}
                 onFocus={() => setFocusedInput("title")}
                 style={{ ...input, minHeight: 38, direction: "ltr", textAlign: "left" }}
-                placeholder="Reservation details"
+                placeholder={t.reservationDetails}
               />
             </div>
             <div>
               <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Message ({lang.toUpperCase()})</label>
               <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
-                <small style={{ color: "var(--muted)" }}>Formatting:</small>
+                <small style={{ color: "var(--muted)" }}>{t.formatting}</small>
                 <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyBold(); }} disabled={!isAdmin}><strong>B</strong></button>
                 <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyItalic(); }} disabled={!isAdmin}><span style={{ fontStyle: "italic" }}>I</span></button>
                 <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyUnderline(); }} disabled={!isAdmin}><span style={{ textDecoration: "underline" }}>U</span></button>
-                <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyLink(); }} disabled={!isAdmin}>Link</button>
+                <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyLink(); }} disabled={!isAdmin}>{t.link}</button>
               </div>
               <ContentEditableStable
                 ref={bodyRef}
                 onFocus={() => setFocusedInput("body")}
                 style={{ ...input, minHeight: 260, lineHeight: 1.5, whiteSpace: "pre-wrap", direction: "ltr", textAlign: "left" }}
-                placeholder="Your message..."
+                placeholder={t.yourMessage}
               />
               <style dangerouslySetInnerHTML={{ __html: `
                 [data-placeholder]:empty:before{ content: attr(data-placeholder); color: var(--muted); }
@@ -1288,14 +1373,14 @@ export default function ReservationMessageClient({
               `}}/>
               {/* Inline Variables bar (moved here) */}
               <div style={{ display: "grid", gap: 6, marginTop: 10 }}>
-                <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>Variables</label>
+                <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>{t.variables}</label>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                  <small style={{ color: "var(--muted)" }}>Insert:</small>
+                  <small style={{ color: "var(--muted)" }}>{t.insert}</small>
                   {BUILTIN_VARS.map((v) => (
                     <button key={v.key} style={btn} onClick={() => insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
                   ))}
                   {hasRoomTypes && (
-                    <button key="room_type" style={btn} onClick={() => insertVarIntoFocused(`{{room_type}}`)} title="Room type">room_type</button>
+                    <button key="room_type" style={btn} onClick={() => insertVarIntoFocused(`{{room_type}}`)} title={t.roomType}>room_type</button>
                   )}
                   {varDefs.map((v) => (
                     <button key={`global:${v.key}`} style={btn} onClick={() => insertVarIntoFocused(`{{${v.key}}}`)} title={v.label}>{v.key}</button>
@@ -1309,17 +1394,17 @@ export default function ReservationMessageClient({
                         onClick={() => {
                           try {
                             const cur = typeof f.defaultValue === "string" ? f.defaultValue : "";
-                            const ans = prompt("Setează valoarea implicită", cur);
+                            const ans = prompt(t.saveDefaultValuePrompt, cur);
                             if (ans !== null) {
                               setTpl((prev) => ({ ...prev, fields: prev.fields.map((x) => x.uid === f.uid ? { ...x, defaultValue: ans } : x) }));
                             }
                           } catch {}
                         }}
-                        title="Set default value"
+                        title={t.saveDefaultValuePrompt}
                       >
                         ✎
                       </button>
-                      <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={() => removeFieldByUid(f.uid)} title="Remove">×</button>
+                      <button style={{ ...btn, border: "1px solid var(--danger)" }} onClick={() => removeFieldByUid(f.uid)} title={t.remove}>×</button>
                     </span>
                   ))}
                   {/* Inline add variable removed per request */}
@@ -1335,7 +1420,7 @@ export default function ReservationMessageClient({
               onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); saveDraft(); }}
               disabled={!isAdmin}
             >
-              Save
+              {t.save}
             </button>
             <button
               className="sb-cardglow"
@@ -1343,7 +1428,7 @@ export default function ReservationMessageClient({
               onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); publish(); }}
               disabled={!isAdmin}
             >
-              Make active
+              {t.makeActive}
             </button>
 	          </div>
 	        </section>
@@ -1403,7 +1488,7 @@ export default function ReservationMessageClient({
 		                <div style={{ width: "100%", textAlign: "center" }}>
 		                  {onbStep === "pick" && (
 		                    <div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", fontWeight: 700, color: "var(--muted)" }}>
-		                      Automatic messages
+		                      {uiLang === "ro" ? "Mesaje automate" : "Automatic messages"}
 		                    </div>
 		                  )}
 		                </div>
@@ -1424,7 +1509,7 @@ export default function ReservationMessageClient({
                     alignItems: "center",
                     justifyContent: "center",
                   }}
-                  aria-label="Close"
+                  aria-label={t.close}
                 >
                   ×
                 </button>
@@ -1434,10 +1519,12 @@ export default function ReservationMessageClient({
 		                <div style={{ display: "grid", gap: 12 }}>
 		                  <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
 		                    <div style={{ fontWeight: 900, fontSize: 18, color: "var(--text)" }}>
-		                      Automate Your Guest Communication
+		                      {uiLang === "ro" ? "Automatizeaza comunicarea cu oaspetii" : "Automate Your Guest Communication"}
 		                    </div>
 		                    <div style={{ fontSize: 13, color: "var(--muted)" }}>
-		                      Send consistent check-in instructions automatically — no more manual messaging.
+		                      {uiLang === "ro"
+		                        ? "Trimite automat instructiuni de check-in clare — fara mesaje manuale."
+		                        : "Send consistent check-in instructions automatically — no more manual messaging."}
 		                    </div>
 		                  </div>
 
@@ -1447,10 +1534,10 @@ export default function ReservationMessageClient({
 		                      style={{ width: "100%", background: "var(--primary)", justifyContent: "center", color: "#fff" }}
 		                      onClick={() => void runTemplatePickerIntroLoading()}
 		                    >
-		                      Choose message template
+		                      {uiLang === "ro" ? "Alege template de mesaj" : "Choose message template"}
 		                    </button>
 		                    <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 12, lineHeight: 1.5 }}>
-		                      Created by us, in Romanian and English.
+		                      {uiLang === "ro" ? "Create de noi, in romana si engleza." : "Created by us, in Romanian and English."}
 		                    </div>
 		                  </div>
 		                </div>
@@ -1459,7 +1546,9 @@ export default function ReservationMessageClient({
 		              {onbStep === "pick" && (
 		                <div style={{ display: "grid", gap: 12 }}>
 		                  <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13 }}>
-		                    Choose a template to get started. You can customize it later.
+		                    {uiLang === "ro"
+		                      ? "Alege un template pentru inceput. Il poti personaliza ulterior."
+		                      : "Choose a template to get started. You can customize it later."}
 		                  </div>
 		                  <div
 	                    style={{
@@ -1471,8 +1560,8 @@ export default function ReservationMessageClient({
 	                      paddingRight: 4,
 	                    }}
 	                  >
-		                    {ONBOARDING_TEMPLATES.map((t) => {
-		                      const blocks = t.blocks_en.filter((b) => b.type !== "divider").slice(0, 3) as any[];
+		                    {ONBOARDING_TEMPLATES.map((template) => {
+		                      const blocks = template.blocks_en.filter((b) => b.type !== "divider").slice(0, 3) as any[];
 		                      const previewHtml = blocks
 	                        .map((b: any) => {
 	                          if (b.type === "heading") {
@@ -1488,7 +1577,7 @@ export default function ReservationMessageClient({
                         .join("");
 	                      return (
 	                        <div
-	                          key={t.key}
+	                          key={template.key}
 	                          className="sb-cardglow"
 	                          role="button"
 	                          tabIndex={0}
@@ -1504,13 +1593,13 @@ export default function ReservationMessageClient({
 	                            gap: 8,
 	                            cursor: "pointer",
 	                          }}
-	                          onClick={() => onboardingPickTemplate(t.key)}
+	                          onClick={() => onboardingPickTemplate(template.key)}
 	                          onKeyDown={(e) => {
-	                            if (e.key === "Enter" || e.key === " ") onboardingPickTemplate(t.key);
+	                            if (e.key === "Enter" || e.key === " ") onboardingPickTemplate(template.key);
 	                          }}
 	                        >
 	                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-	                            <div style={{ fontWeight: 800, color: "var(--text)", fontSize: 13 }}>{t.title}</div>
+	                            <div style={{ fontWeight: 800, color: "var(--text)", fontSize: 13 }}>{template.title}</div>
 	                            <button
 	                              type="button"
 	                              className="sb-btn sb-btn--primary sb-cardglow"
@@ -1524,10 +1613,10 @@ export default function ReservationMessageClient({
 	                              }}
 	                              onClick={(e) => {
 	                                e.stopPropagation();
-	                                onboardingPickTemplate(t.key);
+	                                onboardingPickTemplate(template.key);
 	                              }}
 	                            >
-	                              Choose
+	                              {t.choose}
 	                            </button>
 	                          </div>
 	                          <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
@@ -1545,9 +1634,13 @@ export default function ReservationMessageClient({
 	                <div style={{ display: "grid", gap: 12 }}>
 	                  <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
 	                    <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>
-	                      Your automatic message is ready
+	                      {uiLang === "ro" ? "Mesajul tau automat este gata" : "Your automatic message is ready"}
 	                    </div>
-	                    <div style={{ fontSize: 13, color: "var(--muted)" }}>This message will be sent automatically based on your schedule.</div>
+	                    <div style={{ fontSize: 13, color: "var(--muted)" }}>
+	                      {uiLang === "ro"
+	                        ? "Acest mesaj va fi trimis automat in functie de programarea aleasa."
+	                        : "This message will be sent automatically based on your schedule."}
+	                    </div>
 	                  </div>
 
 	                  <div style={{ display: "grid", gap: 10 }}>
@@ -1560,7 +1653,7 @@ export default function ReservationMessageClient({
                             setOnbPortalOpened(true);
                           }}
                         >
-                          See guest portal
+                          {uiLang === "ro" ? "Vezi portalul oaspetelui" : "See guest portal"}
                         </button>
                       )}
 
@@ -1570,16 +1663,16 @@ export default function ReservationMessageClient({
 	                        style={{ width: "100%", background:"var(--primary)", justifyContent: "center" }}
 	                        onClick={() => setOnbStep("recap")}
 	                      >
-	                        Continue
+	                        {uiLang === "ro" ? "Continua" : "Continue"}
 	                      </button>
 	                    ) : (
 	                      <div style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.5, textAlign: "center" }}>
-	                        Open the guest portal to continue.
+	                        {uiLang === "ro" ? "Deschide portalul oaspetelui pentru a continua." : "Open the guest portal to continue."}
 	                      </div>
 	                    )}
 
 	                    <div style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.5, textAlign: "center", marginTop: 2 }}>
-	                      You can customize this message anytime.
+	                      {uiLang === "ro" ? "Poti personaliza acest mesaj oricand." : "You can customize this message anytime."}
 	                    </div>
 	                  </div>
 	                </div>
@@ -1588,9 +1681,11 @@ export default function ReservationMessageClient({
 	                {onbStep === "recap" && (
 	                  <div style={{ display: "grid", gap: 12 }}>
 	                    <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
-	                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>🥇 YOUR SYSTEM IS READY — HERE’S HOW IT WORKS</div>
+	                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>
+	                        {uiLang === "ro" ? "🥇 SISTEMUL TAU ESTE GATA — ASA FUNCTIONEAZA" : "🥇 YOUR SYSTEM IS READY — HERE’S HOW IT WORKS"}
+	                      </div>
 	                      <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)" }}>
-	                        Invite → Check-in → Messages
+	                        {uiLang === "ro" ? "Invitatie → Check-in → Mesaje" : "Invite → Check-in → Messages"}
 	                      </div>
 	                    </div>
 
@@ -1606,12 +1701,14 @@ export default function ReservationMessageClient({
 	                    >
 	                      <div style={{ display: "grid", gap: 6 }}>
 	                        <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap", textAlign: "center" }}>
-	                          <span style={{ fontWeight: 750, color: "var(--text)", fontSize: 13, lineHeight: 1.5 }}>1️⃣ You send the</span>
+	                          <span style={{ fontWeight: 750, color: "var(--text)", fontSize: 13, lineHeight: 1.5 }}>
+	                            {uiLang === "ro" ? "1️⃣ Tu trimiti" : "1️⃣ You send the"}
+	                          </span>
 	                          <span style={{ fontWeight: 750, color: "var(--text)", fontSize: 13, lineHeight: 1.5, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 8 }}>
-	                            check-in link
+	                            {uiLang === "ro" ? "linkul de check-in" : "check-in link"}
 	                            <button
 	                              type="button"
-	                              aria-label="Copy check-in link"
+	                              aria-label={uiLang === "ro" ? "Copiaza linkul de check-in" : "Copy check-in link"}
 	                              onClick={() => void copyCheckinLink()}
 	                              className="sb-btn sb-btn--icon sb-cardglow"
 	                              style={{
@@ -1624,7 +1721,7 @@ export default function ReservationMessageClient({
 	                                background: "color-mix(in srgb, var(--card) 88%, transparent)",
 	                                cursor: "pointer",
 	                              }}
-	                              title={recapCopied ? "Copied" : "Copy check-in link"}
+	                              title={recapCopied ? (uiLang === "ro" ? "Copiat" : "Copied") : (uiLang === "ro" ? "Copiaza linkul de check-in" : "Copy check-in link")}
 	                            >
 	                              <span
 	                                aria-hidden
@@ -1647,7 +1744,9 @@ export default function ReservationMessageClient({
 	                          </span>
 	                        </div>
 	                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5, textAlign: "center" }}>
-	                          From your booking platform (Booking, Airbnb, WhatsApp, email).
+	                          {uiLang === "ro"
+	                            ? "Din platforma ta de rezervari (Booking, Airbnb, WhatsApp, email)."
+	                            : "From your booking platform (Booking, Airbnb, WhatsApp, email)."}
 	                        </div>
 	                      </div>
 
@@ -1655,12 +1754,16 @@ export default function ReservationMessageClient({
 
 	                      <div style={{ display: "grid", gap: 6 }}>
 	                        <div style={{ fontWeight: 750, color: "var(--text)", fontSize: 13, lineHeight: 1.5, textAlign: "center" }}>
-	                          2️⃣ The guest completes check-in
+	                          {uiLang === "ro" ? "2️⃣ Oaspetele completeaza check-in-ul" : "2️⃣ The guest completes check-in"}
 	                        </div>
 	                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5, textAlign: "center" }}>
-	                          They submit their details and accept your house rules.
+	                          {uiLang === "ro"
+	                            ? "Trimite datele si accepta regulile casei."
+	                            : "They submit their details and accept your house rules."}
 	                          <br />
-	                          You get notified and confirm the reservation inside Plan4Host.
+	                          {uiLang === "ro"
+	                            ? "Primesti notificare si confirmi rezervarea in Plan4Host."
+	                            : "You get notified and confirm the reservation inside Plan4Host."}
 	                        </div>
 	                      </div>
 
@@ -1668,12 +1771,16 @@ export default function ReservationMessageClient({
 
 	                      <div style={{ display: "grid", gap: 6 }}>
 	                        <div style={{ fontWeight: 750, color: "var(--text)", fontSize: 13, lineHeight: 1.5, textAlign: "center" }}>
-	                          3️⃣ Messages appear automatically
+	                          {uiLang === "ro" ? "3️⃣ Mesajele apar automat" : "3️⃣ Messages appear automatically"}
 	                        </div>
 	                        <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5, textAlign: "center" }}>
-	                          After confirmation, guests access their message portal.
+	                          {uiLang === "ro"
+	                            ? "Dupa confirmare, oaspetii acceseaza portalul lor de mesaje."
+	                            : "After confirmation, guests access their message portal."}
 	                          <br />
-	                          Your scheduled messages show up there at the right time.
+	                          {uiLang === "ro"
+	                            ? "Mesajele programate apar acolo la momentul potrivit."
+	                            : "Your scheduled messages show up there at the right time."}
 	                        </div>
 	                      </div>
 	                    </div>
@@ -1699,7 +1806,7 @@ export default function ReservationMessageClient({
 	                        }
 	                      }}
 	                    >
-	                      {onbCompletingAll ? "Completing…" : "Start managing bookings"}
+	                      {onbCompletingAll ? (uiLang === "ro" ? "Se finalizeaza…" : "Completing…") : (uiLang === "ro" ? "Incepe gestionarea rezervarilor" : "Start managing bookings")}
 	                    </button>
 	                  </div>
 	                )}
@@ -1707,20 +1814,22 @@ export default function ReservationMessageClient({
                 {onbStep === "final" && (
                   <div style={{ display: "grid", gap: 12 }}>
                     <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
-                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>YOUR AUTOMATED SYSTEM IS LIVE 🎉</div>
+                      <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text)" }}>
+                        {uiLang === "ro" ? "SISTEMUL TAU AUTOMAT ESTE ACTIV 🎉" : "YOUR AUTOMATED SYSTEM IS LIVE 🎉"}
+                      </div>
                       <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
-                        Your check-in and communication flow is now active.
+                        {uiLang === "ro" ? "Fluxul tau de check-in si comunicare este acum activ." : "Your check-in and communication flow is now active."}
                       </div>
                     </div>
 
 	                    <div style={{ display: "grid", gap: 10, color: "var(--muted)", fontSize: 13, lineHeight: 1.55 }}>
 	                      <div style={{ padding: "12px 12px", borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-	                        <div style={{ fontWeight: 800, color: "var(--text)", marginBottom: 6 }}>You can now:</div>
+	                        <div style={{ fontWeight: 800, color: "var(--text)", marginBottom: 6 }}>{uiLang === "ro" ? "Acum poti:" : "You can now:"}</div>
 	                        <div style={{ display: "grid", gap: 8 }}>
 	                          {[
-	                            "Share the check-in link",
-	                            "Receive completed check-ins",
-	                            "Messages are sent automatically at the right time",
+	                            ...(uiLang === "ro"
+	                              ? ["Trimite linkul de check-in", "Primesti check-in-uri completate", "Mesajele se trimit automat la momentul potrivit"]
+	                              : ["Share the check-in link", "Receive completed check-ins", "Messages are sent automatically at the right time"]),
 	                          ].map((label) => (
 	                            <div key={label} style={{ display: "grid", gridTemplateColumns: "20px 1fr", alignItems: "center", gap: 10 }}>
 	                              <span
@@ -1746,7 +1855,9 @@ export default function ReservationMessageClient({
 	                        </div>
 	                      </div>
                       <div style={{ textAlign: "center" }}>
-                        You can customize anything anytime: rooms, calendars, messages, schedules.
+                        {uiLang === "ro"
+                          ? "Poti personaliza oricand orice: camere, calendare, mesaje, programari."
+                          : "You can customize anything anytime: rooms, calendars, messages, schedules."}
                       </div>
                     </div>
 
@@ -1761,7 +1872,7 @@ export default function ReservationMessageClient({
                         window.location.href = target;
                       }}
                     >
-                      Go to guests
+                      {uiLang === "ro" ? "Mergi la oaspeti" : "Go to guests"}
                     </button>
                   </div>
                 )}
@@ -1775,23 +1886,29 @@ export default function ReservationMessageClient({
           className={overlayStyles.overlay}
           role="status"
           aria-live="polite"
-          aria-label={onbLoadingVariant === "templates" ? "Preparing templates…" : "Preparing your message…"}
+          aria-label={onbLoadingVariant === "templates"
+            ? (uiLang === "ro" ? "Se pregatesc template-urile…" : "Preparing templates…")
+            : (uiLang === "ro" ? "Se pregateste mesajul tau…" : "Preparing your message…")}
           style={{ zIndex: 262 }}
         >
           <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
-            <LoadingPill title={onbLoadingVariant === "templates" ? "Preparing templates…" : "Preparing your message…"} />
+            <LoadingPill title={onbLoadingVariant === "templates"
+              ? (uiLang === "ro" ? "Se pregatesc template-urile…" : "Preparing templates…")
+              : (uiLang === "ro" ? "Se pregateste mesajul tau…" : "Preparing your message…")} />
             <div style={{ display: "grid", gap: 6, textAlign: "center" }}>
               <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", fontWeight: 700 }}>
-                {onbLoadingVariant === "templates" ? "Preparing templates…" : "Preparing your message…"}
+                {onbLoadingVariant === "templates"
+                  ? (uiLang === "ro" ? "Se pregatesc template-urile…" : "Preparing templates…")
+                  : (uiLang === "ro" ? "Se pregateste mesajul tau…" : "Preparing your message…")}
               </div>
               <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
                 {onbLoadingVariant === "templates"
                   ? onbLoadingStage === 0
-                    ? "Crafting a selection for you…"
-                    : "Design is almost ready…"
+                    ? (uiLang === "ro" ? "Pregatim o selectie pentru tine…" : "Crafting a selection for you…")
+                    : (uiLang === "ro" ? "Designul e aproape gata…" : "Design is almost ready…")
                   : onbLoadingStage === 0
-                    ? "Creating your automatic message…"
-                    : "We are almost done…"}
+                    ? (uiLang === "ro" ? "Cream mesajul tau automat…" : "Creating your automatic message…")
+                    : (uiLang === "ro" ? "Mai avem putin…" : "We are almost done…")}
               </div>
             </div>
           </div>
@@ -1831,7 +1948,7 @@ export default function ReservationMessageClient({
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <strong>Room-specific details</strong>
+              <strong>{uiLang === "ro" ? "Detalii specifice camerei" : "Room-specific details"}</strong>
               <button
                 type="button"
                 className="sb-btn sb-btn--small"
@@ -1861,12 +1978,30 @@ export default function ReservationMessageClient({
                     />
                   </div>
                   <div style={{ fontSize: 13, color: "var(--text)" }}>
-                    <span style={{ fontWeight: 600 }}>Use Room variables</span> when you need different details per room (for example access code, door key, Wi‑Fi for a specific unit).
+                    {uiLang === "ro" ? (
+                      <>
+                        <span style={{ fontWeight: 600 }}>Foloseste Variabile camera</span> cand ai nevoie de detalii diferite per camera
+                        {" "} (de exemplu cod acces, cheie usa, Wi‑Fi pentru o anumita unitate).
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ fontWeight: 600 }}>Use Room variables</span> when you need different details per room (for example access code, door key, Wi‑Fi for a specific unit).
+                      </>
+                    )}
                   </div>
                 </div>
               <div style={{ fontSize: 13, color: "var(--muted)" }}>
-                You can create custom variables and then set different values per room;{" "}
-                <span style={{ fontWeight: 600 }}>automatic messages will pull the right value for each guest</span>.
+                {uiLang === "ro" ? (
+                  <>
+                    Poti crea variabile personalizate si apoi seta valori diferite per camera;{" "}
+                    <span style={{ fontWeight: 600 }}>mesajele automate vor folosi valoarea corecta pentru fiecare oaspete</span>.
+                  </>
+                ) : (
+                  <>
+                    You can create custom variables and then set different values per room;{" "}
+                    <span style={{ fontWeight: 600 }}>automatic messages will pull the right value for each guest</span>.
+                  </>
+                )}
               </div>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
