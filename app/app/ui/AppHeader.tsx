@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useHeader } from "../_components/HeaderContext";
 import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 
+type Lang = "en" | "ro";
+
 /* ---------------- Navigation model ---------------- */
 const NAV_BASE = [
   { href: "/app/dashboard", label: "Dashboard", emoji: "🏠", scope: "dashboard" },
@@ -109,6 +111,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   // Hide top header nav buttons when BottomNav is shown (<=640px)
   const [isMobileNav, setIsMobileNav] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [lang, setLang] = useState<Lang>("en");
   // const [showNotifMgr, setShowNotifMgr] = useState(false);
   const [activePropertyPhotoUrl, setActivePropertyPhotoUrl] = useState<string | null>(null);
   const [activePropertyId, setActivePropertyId] = useState<string | null>(null);
@@ -219,6 +222,82 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     window.addEventListener("themechange" as any, onThemeChange);
     return () => window.removeEventListener("themechange" as any, onThemeChange);
   }, []);
+
+  // UI language from login preference (localStorage/cookie)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): Lang => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setLang(readLang());
+    const onStorage = () => setLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const tr = {
+    en: {
+      navigation: "Navigation",
+      management: "Management",
+      recurring: "Recurring",
+      main: "Main",
+      operations: "Operations",
+      setup: "Setup",
+      account: "Account",
+      other: "Other",
+      labels: {
+        "/app/dashboard": "Dashboard",
+        "/app/calendar": "Calendar",
+        "/app/propertySetup": "Setup",
+        "/app/checkinEditor": "Check-in",
+        "/app/cleaning": "Cleaning",
+        "/app/channels": "Channels",
+        "/app/reservationMessage": "Messages",
+        "/app/guest": "Guests",
+        "/app/notifications": "Notifications",
+        "/app/team": "Team",
+        "/app/subscription": "Subscription",
+        "/auth/logout": "Logout",
+      } as Record<string, string>,
+    },
+    ro: {
+      navigation: "Navigare",
+      management: "Management",
+      recurring: "Recurent",
+      main: "Principal",
+      operations: "Operatiuni",
+      setup: "Setari",
+      account: "Cont",
+      other: "Altele",
+      labels: {
+        "/app/dashboard": "Control",
+        "/app/calendar": "Calendar",
+        "/app/propertySetup": "Setari",
+        "/app/checkinEditor": "Check-in",
+        "/app/cleaning": "Curatenie",
+        "/app/channels": "Canale",
+        "/app/reservationMessage": "Mesaje",
+        "/app/guest": "Oaspeti",
+        "/app/notifications": "Notificari",
+        "/app/team": "Echipa",
+        "/app/subscription": "Abonament",
+        "/auth/logout": "Delogare",
+      } as Record<string, string>,
+    },
+  } as const;
+  const t = tr[lang];
+  const navLabel = (href: string, fallback: string) => t.labels[href] || fallback;
 
   // Active property photo (desktop nav button)
   useEffect(() => {
@@ -566,11 +645,11 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     const other = items.filter((it) => !used.has(it.href));
 
     return [
-      { title: "Main", items: main },
-      { title: "Operations", items: operations },
-      { title: "Setup", items: setup },
-      { title: "Account", items: account },
-      { title: "Other", items: other },
+      { key: "main", items: main },
+      { key: "operations", items: operations },
+      { key: "setup", items: setup },
+      { key: "account", items: account },
+      { key: "other", items: other },
     ].filter((s) => s.items.length > 0);
   }, [navRight]);
 
@@ -997,7 +1076,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 alignItems: "center",
               }}
             >
-              <h2 style={drawerTitleStyle()}>Navigation</h2>
+              <h2 style={drawerTitleStyle()}>{t.navigation}</h2>
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close"
@@ -1027,7 +1106,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	              }}
 	            >
                 <div style={drawerSectionTitleStyle(!isMobileNav)}>
-                  {isMobileNav ? "Navigation" : "Recurring"}
+                  {isMobileNav ? t.navigation : t.recurring}
                 </div>
 		              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: isMobileNav ? 4 : 2 }}>
 		                {navLeft.filter((it) => !isMobileNav || it.href !== "/auth/logout").map((it) => {
@@ -1087,7 +1166,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                          <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
 	                        </span>
 	                        <span style={{ display: "flex", alignItems: "center", gap: 8, color: "currentColor" }}>
-	                          {it.label}
+	                          {navLabel(it.href, it.label)}
 	                          {isInbox && inboxCount > 0 && (
 	                            <span style={inboxDotStyle}>{inboxCount > 99 ? "99+" : inboxCount}</span>
 	                          )}
@@ -1131,7 +1210,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   <span aria-hidden style={{ width: 32, height: 28, display: "grid", placeItems: "center" }}>
                     <NavIcon href={logoutItem.href} emoji={logoutItem.emoji} size={22} />
                   </span>
-                  <span style={{ color: "currentColor" }}>{logoutItem.label}</span>
+                  <span style={{ color: "currentColor" }}>{navLabel(logoutItem.href, logoutItem.label)}</span>
                 </button>
               </div>
             ) : null}
@@ -1176,7 +1255,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 alignItems: "center",
               }}
             >
-              <h2 style={drawerTitleStyle()}>Management</h2>
+              <h2 style={drawerTitleStyle()}>{t.management}</h2>
               <button
                 onClick={() => setOpenRight(false)}
                 aria-label="Close"
@@ -1207,13 +1286,23 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	            >
                 {navSectionsRight.map((section, idx) => (
                   <div
-                    key={section.title}
+                    key={section.key}
                     style={{
                       marginBottom: isMobileNav ? 12 : 14,
                       borderTop: idx > 0 ? "1px solid var(--border)" : "none",
                     }}
                   >
-                    <div style={drawerSectionTitleStyle(!isMobileNav)}>{section.title}</div>
+                    <div style={drawerSectionTitleStyle(!isMobileNav)}>
+                      {section.key === "main"
+                        ? t.main
+                        : section.key === "operations"
+                          ? t.operations
+                          : section.key === "setup"
+                            ? t.setup
+                            : section.key === "account"
+                              ? t.account
+                              : t.other}
+                    </div>
                     <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: isMobileNav ? 4 : 2 }}>
                       {section.items.map((it) => {
 		                  const active = currentPath
@@ -1275,7 +1364,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                          <NavIcon href={it.href} emoji={it.emoji} size={ICON_SIZE} />
 	                        </span>
 	                        <span style={{ display: "flex", alignItems: "center", gap: 8, color: "currentColor" }}>
-	                          {it.label}
+	                          {navLabel(it.href, it.label)}
 	                          {isInbox && inboxCount > 0 && (
 	                            <span style={inboxDotStyle}>{inboxCount > 99 ? "99+" : inboxCount}</span>
 	                          )}
@@ -1324,7 +1413,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   <span aria-hidden style={{ width: 32, height: 28, display: "grid", placeItems: "center" }}>
                     <NavIcon href={logoutItem.href} emoji={logoutItem.emoji} size={22} />
                   </span>
-                  <span style={{ color: "currentColor" }}>{logoutItem.label}</span>
+                  <span style={{ color: "currentColor" }}>{navLabel(logoutItem.href, logoutItem.label)}</span>
                 </button>
               </div>
             ) : null}

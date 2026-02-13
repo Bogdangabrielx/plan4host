@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+type Lang = "en" | "ro";
+
 function BottomNavIcon({ src, active }: { src: string; active: boolean }) {
   const size = 26;
   const maskSizePx = 22; // visual normalization across different SVG viewBoxes
@@ -55,6 +57,7 @@ export default function BottomNav() {
   const [kbOpen, setKbOpen] = useState(false);
   const [forceHide, setForceHide] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [lang, setLang] = useState<Lang>("en");
   const navRef = useRef<HTMLElement | null>(null);
   const preloadedRef = useRef<Set<string>>(new Set());
 
@@ -106,6 +109,28 @@ export default function BottomNav() {
       window.removeEventListener("themechange" as any, onTheme);
       window.removeEventListener("popstate", onPop);
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): Lang => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setLang(readLang());
+    const onStorage = () => setLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   // Preload theme-specific nav icons to avoid flicker
@@ -233,10 +258,10 @@ export default function BottomNav() {
   }, [mounted, kbOpen]);
 
   const items = useMemo(() => ([
-    { href: "/app/calendar", label: "Calendar", icon: "/svg_calendar.svg" },
-    { href: "/app/cleaning", label: "Cleaning", icon: "/svg_cleaning.svg" },
-    { href: "/app/guest", label: "Guests", icon: "/svg_guests.svg" },
-  ]), [theme]);
+    { href: "/app/calendar", label: lang === "ro" ? "Calendar" : "Calendar", icon: "/svg_calendar.svg" },
+    { href: "/app/cleaning", label: lang === "ro" ? "Curatenie" : "Cleaning", icon: "/svg_cleaning.svg" },
+    { href: "/app/guest", label: lang === "ro" ? "Oaspeti" : "Guests", icon: "/svg_guests.svg" },
+  ]), [lang]);
 
   if (!mounted || !isMobile) return null;
 
