@@ -609,7 +609,7 @@ export default function CalendarClient({
             </div>
             <div style={{ fontSize: 13, color: "var(--muted)" }}>
               {lang === "ro"
-                ? "Pentru a folosi calendarul, adauga cel putin o camera pentru aceasta proprietate. Deschidem Property Setup la tab-ul Rooms."
+                ? "Pentru a folosi calendarul, adauga cel putin o camera pentru aceasta proprietate. Deschidem Setari, la meniul Camere."
                 : "To use the calendar, please add at least one room for this property. We’ll open Property Setup on the Rooms tab."}
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
