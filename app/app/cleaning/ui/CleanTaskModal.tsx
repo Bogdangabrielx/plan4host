@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
+type Lang = "en" | "ro";
 
 
 
@@ -39,6 +40,7 @@ export default function CleanTaskModal({
 }) {
   const supabase = useMemo(() => createClient(), []);
   const { pill, setPill } = useHeader();
+  const [lang, setLang] = useState<Lang>("en");
   const [saving, setSaving] = useState(false);
   const [local, setLocal] = useState<Record<string, boolean>>({});
   const locked = useMemo(() => tasks.length > 0 && tasks.every(t => !!progress?.[t.id]), [tasks, progress]);
@@ -46,6 +48,47 @@ export default function CleanTaskModal({
 
   const overlayMessageNode = (text: string) => <span data-p4h-overlay="message">{text}</span>;
   const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+  const t = {
+    en: {
+      saving: "Saving...",
+      saved: "Saved",
+      carryOverFrom: "carry-over from",
+      close: "Close",
+      noChecklist: "No cleaning checklist defined for this property.",
+      markCleaned: "Mark room as cleaned",
+    },
+    ro: {
+      saving: "Se salveaza...",
+      saved: "Salvat",
+      carryOverFrom: "ramas din",
+      close: "Inchide",
+      noChecklist: "Nu exista checklist de curatenie definit pentru aceasta proprietate.",
+      markCleaned: "Marcheaza camera ca fiind curatata",
+    },
+  } as const;
+  const i18n = t[lang];
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): Lang => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setLang(readLang());
+    const onStorage = () => setLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   // Actor email (for "Cleaned by <email>")
   const [actorEmail, setActorEmail] = useState<string | null>(null);
@@ -71,7 +114,7 @@ export default function CleanTaskModal({
 
     setSaving(true);
     prevPillRef.current = pill;
-    setPill("Saving…");
+    setPill(i18n.saving);
     const { error } = await supabase.from("cleaning_progress").upsert({
       property_id: propertyId,
       room_id: item.room.id,
@@ -81,7 +124,7 @@ export default function CleanTaskModal({
     });
     setSaving(false);
     if (!error) {
-      setPill(overlayMessageNode("Saved"));
+      setPill(overlayMessageNode(i18n.saved));
       await wait(1000);
     }
     setPill(prevPillRef.current);
@@ -106,7 +149,7 @@ export default function CleanTaskModal({
     if (locked) return;
     setSaving(true);
     prevPillRef.current = pill;
-    setPill("Saving…");
+    setPill(i18n.saving);
     // upsert pentru toate taskurile
     for (const t of tasks) {
       const { error } = await supabase.from("cleaning_progress").upsert({
@@ -122,7 +165,7 @@ export default function CleanTaskModal({
       }
     }
     setSaving(false);
-    setPill(overlayMessageNode("Saved"));
+    setPill(overlayMessageNode(i18n.saved));
     await wait(1000);
     setPill(prevPillRef.current);
     // update local & parent, apoi complete
@@ -170,7 +213,7 @@ export default function CleanTaskModal({
       <strong style={{ fontSize: 18 }}>{item.room.name}</strong>
       <small style={{ color: "var(--muted)" }}>
         {item.mode === "carry"
-          ? `carry-over • ${item.cleanDate}`
+          ? `${i18n.carryOverFrom} ${item.cleanDate}`
           : item.statusLine}
       </small>
     </div>
@@ -178,8 +221,8 @@ export default function CleanTaskModal({
 	    {/* dreapta: buton închidere */}
 	    <button
 	      onClick={onClose}
-	      aria-label="Close"
-	      title="Close"
+	      aria-label={i18n.close}
+	      title={i18n.close}
 	      className="sb-btn sb-cardglow sb-btn--icon"
 	      style={{ justifySelf: "end", fontSize: 18, fontWeight: 900, lineHeight: 1 }}
 	    >
@@ -192,7 +235,7 @@ export default function CleanTaskModal({
         {/* Body (scrolls independently) */}
         <div className="ct-body" style={{ padding: 14, display: "grid", gap: 10, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {tasks.length === 0 ? (
-            <p style={{ color: "var(--muted)",}}>No cleaning checklist defined for this property.</p>
+            <p style={{ color: "var(--muted)",}}>{i18n.noChecklist}</p>
           ) : (
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8, alignContent: 'start', alignItems: 'start' }}>
               {[...tasks].sort((a,b)=>a.sort_index-b.sort_index).map(t => {
@@ -220,7 +263,7 @@ export default function CleanTaskModal({
 	          <span aria-hidden />
 	          <div style={{ display: "flex", gap: 8 }}>
 	            {!locked && (
-	              <button onClick={markAllDone} disabled={saving} className="sb-btn sb-btn--primary">Mark room as cleaned</button>
+	              <button onClick={markAllDone} disabled={saving} className="sb-btn sb-btn--primary">{i18n.markCleaned}</button>
 	            )}
 	          </div>
 	        </div>

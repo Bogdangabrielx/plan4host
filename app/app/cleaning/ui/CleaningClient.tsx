@@ -8,6 +8,7 @@ import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 import CleanTaskModal from "./CleanTaskModal";
 import { usePersistentPropertyState } from "@/app/app/_components/PropertySelection";
+type Lang = "en" | "ro";
 
 /* ─── Types ─────────────────────────────────────────────────────────── */
 type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null };
@@ -100,6 +101,56 @@ function CircleProgress({
 export default function CleaningClient({ initialProperties }: { initialProperties: Property[] }) {
   const supabase = useMemo(() => createClient(), []);
   const { setTitle, setPill } = useHeader();
+  const [lang, setLang] = useState<Lang>("en");
+  const t = {
+    en: {
+      cleaningBoard: "Cleaning Board",
+      loading: "Loading...",
+      syncing: "Syncing...",
+      error: "Error",
+      idle: "Idle",
+      nextCi: "next CI",
+      tomorrow: "tomorrow",
+      noNextCi: "no next CI",
+      checkout: "checkout",
+      carryOverFrom: "carry-over from",
+      featurePlanHint: "This feature is available on Standard and Premium plans.",
+      upgradePlan: "Upgrade plan",
+      backToDashboard: "Back to dashboard",
+      previousDay: "Previous day",
+      nextDay: "Next day",
+      noChecklist: "No cleaning checklist defined. Configure tasks in",
+      propertySetupCleaningTasks: "Property Setup -> Cleaning tasks.",
+      noRooms: "No rooms to clean for this day.",
+      cleaned: "Cleaned",
+      openTasks: "Open cleaning tasks",
+      cleanedBy: "Cleaned by",
+    },
+    ro: {
+      cleaningBoard: "Curatenie",
+      loading: "Se incarca...",
+      syncing: "Se sincronizeaza...",
+      error: "Eroare",
+      idle: "Idle",
+      nextCi: "urmatorul check-in",
+      tomorrow: "maine",
+      noNextCi: "fara urmator check-in",
+      checkout: "checkout",
+      carryOverFrom: "ramas din",
+      featurePlanHint: "Aceasta functionalitate este disponibila pe planurile Standard si Premium.",
+      upgradePlan: "Upgrade plan",
+      backToDashboard: "Inapoi la control",
+      previousDay: "Ziua anterioara",
+      nextDay: "Ziua urmatoare",
+      noChecklist: "Nu exista checklist de curatenie definit. Configureaza task-urile in",
+      propertySetupCleaningTasks: "Setari proprietate -> Task-uri curatenie.",
+      noRooms: "Nu exista camere de curatat pentru aceasta zi.",
+      cleaned: "Curatat",
+      openTasks: "Deschide task-urile de curatenie",
+      cleanedBy: "Curatat de",
+    },
+  } as const;
+  const i18n = t[lang];
 
   const [status, setStatus] = useState<"Idle" | "Loading" | "Error">("Idle");
   const loadSeqRef = useRef(0);
@@ -211,13 +262,35 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   }, [propertyId, supabase, propertyPhotos, propertyReady]);
 
   /* Header title + pill */
-  useEffect(() => { setTitle("Cleaning Board"); }, [setTitle]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readLang = (): Lang => {
+      try {
+        const ls = localStorage.getItem("app_lang");
+        if (ls === "ro" || ls === "en") return ls;
+      } catch {}
+      try {
+        const ck = document.cookie
+          .split("; ")
+          .find((x) => x.startsWith("app_lang="))
+          ?.split("=")[1];
+        if (ck === "ro" || ck === "en") return ck;
+      } catch {}
+      return "en";
+    };
+    setLang(readLang());
+    const onStorage = () => setLang(readLang());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  useEffect(() => { setTitle(i18n.cleaningBoard); }, [setTitle, i18n.cleaningBoard]);
   useEffect(() => {
     setPill(
-      !propertyReady ? "Loading…" :
-      status === "Loading" ? "Syncing…" : status === "Error" ? "Error" : "Idle"
+      !propertyReady ? i18n.loading :
+      status === "Loading" ? i18n.syncing : status === "Error" ? i18n.error : i18n.idle
     );
-  }, [status, propertyReady, setPill]);
+  }, [status, propertyReady, setPill, i18n.loading, i18n.syncing, i18n.error, i18n.idle]);
 
   /* Load plan (effective, for current account membership) */
   useEffect(() => {
@@ -360,14 +433,14 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
         const next = nextStartByRoom.get(r.id) || null;
         const nextLabel = next
           ? (next.start_date === dateStr
-              ? `next CI ${next.start_time || CI}`
+              ? `${i18n.nextCi} ${next.start_time || CI}`
               : next.start_date === addDaysStr(dateStr, 1)
-                ? `next CI tomorrow ${next.start_time || CI}`
-                : `next CI ${next.start_date} ${next.start_time || CI}`)
-          : "no next CI";
+                ? `${i18n.nextCi} ${i18n.tomorrow} ${next.start_time || CI}`
+                : `${i18n.nextCi} ${next.start_date} ${next.start_time || CI}`)
+          : i18n.noNextCi;
 
         if (checkoutToday) {
-          const statusLine = `checkout ${checkoutToday.end_time || CO} • ${nextLabel}`;
+          const statusLine = `${i18n.checkout} ${checkoutToday.end_time || CO} - ${nextLabel}`;
 
           // prioritizare doar Premium
           let pr = 2;
@@ -400,7 +473,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               room: r,
               mode: "carry",
               cleanDate: carryCleanDate, // progress legat de ziua checkout-ului
-              statusLine: `carry-over from ${carryCleanDate}`,
+              statusLine: `${i18n.carryOverFrom} ${carryCleanDate}`,
               priority: 3,
               nextCheckin: null,
               nextCheckinKey: null
@@ -425,7 +498,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
       setItems(list);
       setStatus("Idle");
     })();
-  }, [propertyId, dateStr, supabase, initialProperties, hasPriority, hasCleaningBoard]);
+  }, [propertyId, dateStr, supabase, initialProperties, hasPriority, hasCleaningBoard, i18n.nextCi, i18n.tomorrow, i18n.noNextCi, i18n.checkout, i18n.carryOverFrom]);
 
   function sortedTasks(): TaskDef[] { return [...tasks].sort((a, b) => a.sort_index - b.sort_index); }
 
@@ -467,9 +540,9 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             padding: 16
           }}
         >
-          <h2 style={{ marginTop: 0 }}>Cleaning Board</h2>
+          <h2 style={{ marginTop: 0 }}>{i18n.cleaningBoard}</h2>
           <p style={{ color: "var(--muted)" }}>
-            This feature is available on <strong>Standard</strong> and <strong>Premium</strong> plans.
+            {i18n.featurePlanHint}
           </p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <a
@@ -484,7 +557,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                 textDecoration: "none"
               }}
             >
-              Upgrade plan
+              {i18n.upgradePlan}
             </a>
             <a
               href="/app/dashboard"
@@ -498,7 +571,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                 textDecoration: "none"
               }}
             >
-              Back to dashboard
+              {i18n.backToDashboard}
             </a>
           </div>
         </div>
@@ -509,7 +582,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
   /* ─── UI principal (scroll conținut, header/bottom fixe în AppShell) ─ */
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
-      <PlanHeaderBadge title="Cleaning Board" slot="under-title" />
+      <PlanHeaderBadge title={i18n.cleaningBoard} slot="under-title" />
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px" }}>
         <div
           data-scroll
@@ -589,7 +662,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             <button
               type="button"
               className="sb-btn sb-cardglow sb-btn--icon"
-              aria-label="Previous day"
+              aria-label={i18n.previousDay}
               onClick={() => setDateStr(addDaysStr(dateStr, -1))}
             >
               ◀
@@ -604,7 +677,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
             <button
               type="button"
               className="sb-btn sb-cardglow sb-btn--icon"
-              aria-label="Next day"
+              aria-label={i18n.nextDay}
               onClick={() => setDateStr(addDaysStr(dateStr, 1))}
             >
               ▶
@@ -614,7 +687,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
 
         {tdefs.length === 0 ? (
           <div style={{ color: "var(--muted)" }}>
-            No cleaning checklist defined. Configure tasks in{" "}
+            {i18n.noChecklist}{" "}
             <a
               href={(() => {
                 try {
@@ -627,12 +700,12 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
               })()}
               style={{ color: "var(--primary)" }}
             >
-              Property Setup → Cleaning tasks.
+              {i18n.propertySetupCleaningTasks}
             </a>
             .
           </div>
         ) : items.length === 0 ? (
-          <div style={{ color: "var(--muted)" }}>No rooms to clean for this day.</div>
+          <div style={{ color: "var(--muted)" }}>{i18n.noRooms}</div>
         ) : (
           <ul
             className="cleaning-grid"
@@ -671,7 +744,7 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                     gap: 6,
                     opacity: isCleaned ? 0.66 : 1,
                   }}
-                  title={isCleaned ? "Cleaned" : "Open cleaning tasks"}
+                  title={isCleaned ? i18n.cleaned : i18n.openTasks}
                 >
                   <div style={{ textAlign: "center", display: "grid", gap: 6 }}>
                     {/* Icon above room name, theme-aware */}
@@ -694,13 +767,13 @@ export default function CleaningClient({ initialProperties }: { initialPropertie
                     </strong>
 
                     <small style={{ color: "var(--muted)" }}>
-                      {it.mode === "carry" ? `carry-over • ${it.cleanDate}` : it.statusLine}
+                      {it.mode === "carry" ? `${i18n.carryOverFrom} ${it.cleanDate}` : it.statusLine}
                     </small>
 
                     <div style={{ display: 'grid', placeItems: 'center', gap: 4 }}>
                       <CircleProgress value={isCleaned ? total : doneCount} total={total} size={44} />
                       {isCleaned && cleanedBy ? (
-                        <small style={{ color: 'var(--muted)', fontSize: 11 }}>Cleaned by {cleanedBy}</small>
+                        <small style={{ color: 'var(--muted)', fontSize: 11 }}>{i18n.cleanedBy} {cleanedBy}</small>
                       ) : null}
                     </div>
                   </div>
