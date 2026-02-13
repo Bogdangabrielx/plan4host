@@ -622,7 +622,7 @@ function wrap(theme: Theme): React.CSSProperties {
 }
 const headRow: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "auto 1fr auto",
+  gridTemplateColumns: "1fr auto 1fr",
   alignItems: "center",
   gap: 10,
   marginBottom: 10,
