@@ -97,7 +97,7 @@ export async function POST(req: Request) {
         const bodyHtml = isRo
           ? `
           <div style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
-            <p style="margin:0 0 14px;">Salut,</p>
+            <p style="margin:0 0 14px;">Salutare,</p>
             <p style="margin:0 0 14px;">
               Ai adăugat proprietatea <strong>${escapeHtml(propName)}</strong> în Plan4Host — primul pas dintr-un sistem mai organizat.
             </p>
@@ -126,7 +126,7 @@ export async function POST(req: Request) {
         `
           : `
           <div style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
-            <p style="margin:0 0 14px;">Hi,</p>
+            <p style="margin:0 0 14px;">Hello,</p>
             <p style="margin:0 0 14px;">
               You’ve just added <strong>${escapeHtml(propName)}</strong> to Plan4Host — the first step toward a more organized flow.
             </p>
