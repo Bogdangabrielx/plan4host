@@ -178,8 +178,8 @@ export default function CookiePolicyPage() {
           <h2 className={s.h2}>6. Your choices</h2>
           <p className={s.p}>
             On your first visit, you may see a small banner. At this time we only use essential cookies.
-            Some UI preferences are stored in localStorage (see above) and are not used for tracking. If we
-            introduce non‑essential cookies in the future, we will ask for your consent and you will be able to
+            Some UI preferences (theme, language, etc.) are stored in localStorage (see above) and are not used for tracking. If we
+            introduce non-essential cookies in the future, we will ask for your consent and you will be able to
             manage your choices here.
           </p>
 

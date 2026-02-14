@@ -738,8 +738,8 @@ function CookieConsentLanding() {
 	          </div>
 	          <div>
 	            <h3 className={styles.cookieTitle}>We use cookies</h3>
-	            <div className={styles.cookieText}>
-	              Essential cookies keep the site working. Optionally, we can remember your <strong>theme</strong> (light/dark).
+              <div className={styles.cookieText}>
+              Essential cookies keep the site working. Optionally, we can remember your <strong>theme</strong> (light/dark) and <strong>language</strong>.
             </div>
           </div>
         </div>
@@ -788,10 +788,10 @@ function CookieConsentLanding() {
               </label>
 
               <label className={styles.cookieLabel}>
-                <div>
-                  <strong>Preferences</strong>
-                  <div className={styles.cookieMeta}>Remembers your theme (light/dark)</div>
-                </div>
+                  <div>
+                    <strong>Preferences</strong>
+                    <div className={styles.cookieMeta}>Remembers your theme (light/dark) and language</div>
+                  </div>
                 <input
                   type="checkbox"
                   checked={preferences}
