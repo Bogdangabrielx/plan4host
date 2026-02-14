@@ -92,8 +92,8 @@ export async function POST(req: Request) {
 	        const propertyId = String((data as any)?.id || "").trim();
 	        const guestCheckinUrl = `${base}/checkin?property=${encodeURIComponent(propertyId)}`;
         const subject = isRo
-          ? `Proprietatea "${propName}" este gata de următorul pas ✅`
-          : `Property "${propName}" is ready for the next step ✅`;
+          ? `Mai puțină muncă repetitivă. Mai mult focus pe rezervări.`
+          : `Less repetitive work. More focus on bookings.`;
         const bodyHtml = isRo
           ? `
           <div style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
@@ -115,6 +115,9 @@ export async function POST(req: Request) {
                  style="display:inline-block; padding:10px 14px; border-radius:999px; background:${EMAIL_SUCCESS}; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid ${EMAIL_SUCCESS};">
                 Vezi pagina prin care îți întâmpini oaspeții
               </a>
+            </p>
+            <p style="margin:0 0 16px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; font-size:11px;">
+              Lasa munca repetitiva in seama noastra si incepe sa atragi mai multe rezervari.
             </p>
             <p style="margin:0 0 10px;">Dacă ai întrebări sau vrei ajutor:</p>
             <ul style="margin:0 0 18px; padding-left:18px; color:#0f172a;">
@@ -144,6 +147,9 @@ export async function POST(req: Request) {
                  style="display:inline-block; padding:10px 14px; border-radius:999px; background:${EMAIL_SUCCESS}; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid ${EMAIL_SUCCESS};">
                 View the page where you welcome guests
               </a>
+            </p>
+            <p style="margin:0 0 16px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; font-size:11px;">
+              Leave repetitive work to us and start attracting more bookings.
             </p>
             <p style="margin:0 0 10px;">If you have questions or need help:</p>
             <ul style="margin:0 0 18px; padding-left:18px; color:#0f172a;">
