@@ -91,68 +91,68 @@ export async function POST(req: Request) {
 	        const base = appBase.replace(/\/+$/, "");
 	        const propertyId = String((data as any)?.id || "").trim();
 	        const guestCheckinUrl = `${base}/checkin?property=${encodeURIComponent(propertyId)}`;
-	        const subject = isRo
-	          ? `Un început grozav pentru ${propName} 🌿`
-	          : `A great start for ${propName} 🌿`;
-	        const bodyHtml = isRo
-	          ? `
-	          <div style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
-	            <p style="margin:0 0 14px;">Salut,</p>
-	            <p style="margin:0 0 14px;">
-	              Tocmai ai adăugat <strong>${escapeHtml(propName)}</strong> în Plan4Host — un prim pas foarte bun.
-	            </p>
-	            <p style="margin:0 0 14px; color:#334155;">
-	              Ce ai setat până acum este suficient ca să începi. Linkul de check-in este activ și poate fi trimis oaspeților.
-	            </p>
-	            <p style="margin:0 0 14px;">
-	              Dacă vrei să vezi primul rezultat, aruncă o privire la cum arată din perspectiva oaspetelui:
-	            </p>
-	            <p style="margin:0 0 16px;">
-	              <a href="${guestCheckinUrl}" target="_blank" rel="noopener"
-	                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:${EMAIL_SUCCESS}; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid ${EMAIL_SUCCESS};">
-	                Vezi check-in-ul pentru oaspeți
-	              </a>
-	            </p>
-	            <p style="margin:0 0 18px; color:#334155;">
-	              De obicei, asta clarifică ce ai putea personaliza în continuare — detalii camere, mesaje sau timing — când ai timp.
-	            </p>
-	            <p style="margin:0 0 10px;">Dacă ai întrebări sau vrei ajutor cu setările:</p>
-	            <ul style="margin:0 0 18px; padding-left:18px; color:#0f172a;">
-	              <li style="margin:0 0 6px;">WhatsApp: <a href="https://wa.me/40721759329" target="_blank" rel="noopener">+40 721 759 329</a></li>
-	              <li style="margin:0;">Email: <a href="mailto:office@plan4host.com">office@plan4host.com</a></li>
-	            </ul>
-	            <p style="margin:0; color:#334155;">—<br/>Echipa Plan4Host</p>
-	          </div>
-	        `
-	          : `
-	          <div style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
-	            <p style="margin:0 0 14px;">Hi,</p>
-	            <p style="margin:0 0 14px;">
-	              You’ve just added <strong>${escapeHtml(propName)}</strong> to Plan4Host — a solid first step.
-	            </p>
-	            <p style="margin:0 0 14px; color:#334155;">
-	              What you’ve set up so far is already enough to get started. The check-in link is live and ready to be shared with your guests.
-	            </p>
-	            <p style="margin:0 0 14px;">
-	              If you want to see the first result, take a quick look at how this appears from the guest’s side:
-	            </p>
-	            <p style="margin:0 0 16px;">
-	              <a href="${guestCheckinUrl}" target="_blank" rel="noopener"
-	                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:${EMAIL_SUCCESS}; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid ${EMAIL_SUCCESS};">
-	                View guest check-in
-	              </a>
-	            </p>
-	            <p style="margin:0 0 18px; color:#334155;">
-	              That view usually makes it clear what you might want to personalize next — room details, messages, or timing — whenever you feel like it.
-	            </p>
-	            <p style="margin:0 0 10px;">If you have questions or want help setting things up, we’re always close:</p>
-	            <ul style="margin:0 0 18px; padding-left:18px; color:#0f172a;">
-	              <li style="margin:0 0 6px;">WhatsApp: <a href="https://wa.me/40721759329" target="_blank" rel="noopener">+40 721 759 329</a></li>
-	              <li style="margin:0;">Email: <a href="mailto:office@plan4host.com">office@plan4host.com</a></li>
-	            </ul>
-	            <p style="margin:0; color:#334155;">—<br/>The Plan4Host team</p>
-	          </div>
-	        `;
+        const subject = isRo
+          ? `Proprietatea "${propName}" este gata de următorul pas ✅`
+          : `Property "${propName}" is ready for the next step ✅`;
+        const bodyHtml = isRo
+          ? `
+          <div style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
+            <p style="margin:0 0 14px;">Salut,</p>
+            <p style="margin:0 0 14px;">
+              Ai adăugat proprietatea <strong>${escapeHtml(propName)}</strong> în Plan4Host — primul pas dintr-un sistem mai organizat.
+            </p>
+            <p style="margin:0 0 14px; color:#334155;">
+              Linkul tău de check-in este deja generat — primul pas către un flux în care informațiile nu se mai pierd în mesaje pe <strong>WhatsApp</strong>.
+            </p>
+            <p style="margin:0 0 14px;">
+              Pe măsură ce continui configurarea (camere, regulament intern, mesaje), fiecare rezervare va urma un flux clar — fără improvizații sau mesaje repetitive.
+            </p>
+            <p style="margin:0 0 16px;">
+              Vrei să vezi cum prinde contur pagina prin care îți întâmpini oaspeții?
+            </p>
+            <p style="margin:0 0 16px;">
+              <a href="${guestCheckinUrl}" target="_blank" rel="noopener"
+                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:${EMAIL_SUCCESS}; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid ${EMAIL_SUCCESS};">
+                Vezi pagina prin care îți întâmpini oaspeții
+              </a>
+            </p>
+            <p style="margin:0 0 10px;">Dacă ai întrebări sau vrei ajutor:</p>
+            <ul style="margin:0 0 18px; padding-left:18px; color:#0f172a;">
+              <li style="margin:0 0 6px;">WhatsApp: <a href="https://wa.me/40721759329" target="_blank" rel="noopener">+40 721 759 329</a></li>
+              <li style="margin:0;">Email: <a href="mailto:office@plan4host.com">office@plan4host.com</a></li>
+            </ul>
+            <p style="margin:0; color:#334155;">—<br/>Echipa Plan4Host</p>
+          </div>
+        `
+          : `
+          <div style="font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
+            <p style="margin:0 0 14px;">Hi,</p>
+            <p style="margin:0 0 14px;">
+              You’ve just added <strong>${escapeHtml(propName)}</strong> to Plan4Host — the first step toward a more organized flow.
+            </p>
+            <p style="margin:0 0 14px; color:#334155;">
+              Your check-in link is already live — the first step toward a flow where guest details stop getting lost in WhatsApp.
+            </p>
+            <p style="margin:0 0 14px;">
+              As you keep configuring rooms, your regulations, and your messages, each reservation will follow a clear path — no improvisations, no repeated chats.
+            </p>
+            <p style="margin:0 0 16px;">
+              Want to see how the guest-facing page is shaping up?
+            </p>
+            <p style="margin:0 0 16px;">
+              <a href="${guestCheckinUrl}" target="_blank" rel="noopener"
+                 style="display:inline-block; padding:10px 14px; border-radius:999px; background:${EMAIL_SUCCESS}; color:#ffffff; font-weight:800; text-decoration:none; border:1px solid ${EMAIL_SUCCESS};">
+                View the page where you welcome guests
+              </a>
+            </p>
+            <p style="margin:0 0 10px;">If you have questions or need help:</p>
+            <ul style="margin:0 0 18px; padding-left:18px; color:#0f172a;">
+              <li style="margin:0 0 6px;">WhatsApp: <a href="https://wa.me/40721759329" target="_blank" rel="noopener">+40 721 759 329</a></li>
+              <li style="margin:0;">Email: <a href="mailto:office@plan4host.com">office@plan4host.com</a></li>
+            </ul>
+            <p style="margin:0; color:#334155;">—<br/>The Plan4Host team</p>
+          </div>
+        `;
 
         const html = wrapSimple(subject, bodyHtml);
         const transporter = createTransport({
