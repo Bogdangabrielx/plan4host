@@ -92,7 +92,7 @@ export default function UnifiedBookingCalendarSeoPage() {
 
         <div className={styles.heroVisual} aria-label="Unified calendar preview" data-p4h-reveal>
           <Image
-            src="/Landing_Mockups3.png"
+            src="/Hero_device2.png"
             alt="Plan4Host calendar preview"
             width={900}
             height={900}

@@ -111,7 +111,7 @@ export default function CheckInOnlineCazarePage() {
 
         <div className={styles.heroVisual} aria-label="Preview check-in" data-p4h-reveal>
           <Image
-            src="/Landing_Mockups3.png"
+            src="/Hero_device2.png"
             alt="Preview Plan4Host check-in"
             width={900}
             height={900}

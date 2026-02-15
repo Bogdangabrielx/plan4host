@@ -92,7 +92,7 @@ export default function CalendarRezervariUnificatSeoPage() {
 
         <div className={styles.heroVisual} aria-label="Preview calendar unificat" data-p4h-reveal>
           <Image
-            src="/Landing_Mockups3.png"
+            src="/Hero_device2.png"
             alt="Preview calendar Plan4Host"
             width={900}
             height={900}

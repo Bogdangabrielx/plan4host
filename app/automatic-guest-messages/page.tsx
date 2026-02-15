@@ -98,7 +98,7 @@ export default function AutomaticGuestMessagesSeoPage() {
 
         <div className={styles.heroVisual} aria-label="Guest portal preview" data-p4h-reveal>
           <Image
-            src="/Landing_Mockups2.png"
+            src="/Hero_device2.png"
             alt="Guest portal preview"
             width={900}
             height={900}

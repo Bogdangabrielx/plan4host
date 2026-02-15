@@ -111,7 +111,7 @@ export default function OnlineCheckInAccommodationPage() {
 
         <div className={styles.heroVisual} aria-label="Check-in preview" data-p4h-reveal>
           <Image
-            src="/Landing_Mockups3.png"
+            src="/Hero_device2.png"
             alt="Plan4Host check-in preview"
             width={900}
             height={900}
