@@ -56,7 +56,7 @@ export default function TermsOfServicePage() {
           <h2 className={s.h2}>3. Free Trial, Plans & Billing</h2>
           <ul className={s.list}>
             <li className={s.p}>
-              <strong>Free trial:</strong> New accounts typically receive a <strong>30-day</strong> <strong>Premium</strong> free trial. We may
+              <strong>Free trial:</strong> New accounts typically receive a <strong>90-day</strong> <strong>Premium</strong> free trial. We may
               modify or discontinue trial offers at any time.
             </li>
             <li className={s.p}>
