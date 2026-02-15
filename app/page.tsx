@@ -867,7 +867,7 @@ export default function HomePage() {
   useEffect(() => {
     const interval = window.setInterval(() => {
       setOfferLabelActive((prev) => !prev);
-    }, 3000);
+    }, 1800);
     return () => window.clearInterval(interval);
   }, []);
   const onFeaturesPointerDown = () => {

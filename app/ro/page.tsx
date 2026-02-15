@@ -722,6 +722,7 @@ export default function HomePageRO() {
   const [isPwa, setIsPwa] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [heroPill, setHeroPill] = useState<"mesaje" | "haos" | "control" | null>(null);
+  const [offerLabelActiveRo, setOfferLabelActiveRo] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
   const [navHeight, setNavHeight] = useState<number>(72);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -749,6 +750,12 @@ export default function HomePageRO() {
     }
     setFeaturesHover(true);
   };
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setOfferLabelActiveRo((prev) => !prev);
+    }, 1800);
+    return () => window.clearInterval(interval);
+  }, []);
   const year = new Date().getFullYear();
   const scrollToId = (id: string) => {
     try {
@@ -964,7 +971,12 @@ export default function HomePageRO() {
 		        </div>
         <div className={styles.actions}>
           <Link href="/auth/login" className={`sb-cardglow ${styles.btn} ${styles.btnOutline} ${styles.focusable}`}>Logare</Link>
-          <CtaLink href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}>Încearcă</CtaLink>
+          <CtaLink
+            href="/auth/login?mode=signup"
+            className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
+          >
+            {offerLabelActiveRo ? "90 de zile GRATIS" : "Încearcă"}
+          </CtaLink>
           <button
             type="button"
             className={`${styles.btn} ${styles.menuToggle} ${styles.focusable}`}
@@ -1115,9 +1127,12 @@ export default function HomePageRO() {
             >
               Vezi cum funcționează
             </button>
-            <Link href="/auth/login?mode=signup" className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}>
-              Începe gratuit
-            </Link>
+          <Link
+            href="/auth/login?mode=signup"
+            className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
+          >
+            {offerLabelActiveRo ? "90 de zile GRATIS" : "Începe gratuit"}
+          </Link>
           </div>
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview" data-p4h-reveal>
