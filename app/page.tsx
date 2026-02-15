@@ -829,6 +829,7 @@ export default function HomePage() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [tryModalOpen, setTryModalOpen] = useState(false);
   const [heroPill, setHeroPill] = useState<"messages" | "chaos" | "control" | null>(null);
+  const [offerLabelActive, setOfferLabelActive] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
   const [navHeight, setNavHeight] = useState<number>(72);
   const featuresVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -862,6 +863,13 @@ export default function HomePage() {
       if (!coarse) setFeaturesHover(false);
     }
   };
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setOfferLabelActive((prev) => !prev);
+    }, 3000);
+    return () => window.clearInterval(interval);
+  }, []);
   const onFeaturesPointerDown = () => {
     // Mobile/PWA: tap anywhere toggles playback; on play, show button briefly; on pause, keep button visible
     let coarse = false;
@@ -1136,7 +1144,7 @@ export default function HomePage() {
             href="/auth/login?mode=signup"
             className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
           >
-            Get started
+            {offerLabelActive ? "90 days FREE" : "Get started"}
           </CtaLink>
 
           <button
@@ -1290,11 +1298,11 @@ export default function HomePage() {
               See how it works
 	            </button>
 	            <Link
-                href="/auth/login?mode=signup"
-	              className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
-	            >
-	              Start free
-	            </Link>
+            href="/auth/login?mode=signup"
+            className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}
+          >
+            {offerLabelActive ? "90 days FREE" : "Start free"}
+          </Link>
           </div>
         </div>
 
