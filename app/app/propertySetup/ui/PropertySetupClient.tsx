@@ -537,12 +537,12 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     detailsTab: uiLang === "ro" ? "Detalii rezervare" : "Reservation details",
     cleaningTab: uiLang === "ro" ? "Task-uri curatenie" : "Cleaning tasks",
     wizardNameUnits: uiLang === "ro" ? "Denumeste unitatile" : "Name your units",
-    wizardUnitsReady: uiLang === "ro" ? "Unitati pregatite" : "Units ready",
-    wizardAddUnits: uiLang === "ro" ? "Adauga unitati" : "Add units",
+    wizardUnitsReady: uiLang === "ro" ? "Calendarul este gata. Urmează să apară rezervările tale." : "Calendar is ready. Your bookings will appear soon.",
+    wizardAddUnits: uiLang === "ro" ? "Cum este organizată proprietatea ta?" : "How is your property organized?",
     wizardHostTypeDesc:
       uiLang === "ro"
-        ? "Astfel disponibilitatea ramane corecta in toate rezervarile."
-        : "This ensures your availability stays accurate across all bookings.",
+        ? "Asta te ajută să păstrezi fiecare rezervare organizată și sub control. Proprietatea ta are o singură unitate sau mai multe?"
+        : "This helps keep every reservation organized and under control. Does your property have one unit or multiple?",
     wizardUnitCountDesc:
       uiLang === "ro"
         ? "Le cream automat ca sa poti incepe imediat."
@@ -550,8 +550,8 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     wizardRenameDesc: uiLang === "ro" ? "Le poti schimba oricand." : "You can change these anytime.",
     wizardRewardDesc:
       uiLang === "ro"
-        ? "Acum poti gestiona disponibilitatea pe fiecare unitate fara suprapuneri."
-        : "You can now manage availability per unit without overlaps.",
+        ? "Conectează Airbnb sau Booking pentru ca rezervările să apară automat aici."
+        : "Connect Airbnb or Booking so bookings show up here automatically.",
     singleUnit: uiLang === "ro" ? "Unitate unica" : "Single unit",
     singleUnitDesc:
       uiLang === "ro"
@@ -570,12 +570,12 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     pleaseEnterTwoPlus: uiLang === "ro" ? "Te rugam introdu 2 sau mai mult." : "Please enter 2 or more.",
     createUnits: uiLang === "ro" ? "Creeaza unitati" : "Create units",
     takesFewSeconds: uiLang === "ro" ? "Dureaza cateva secunde." : "Takes a few seconds.",
-    calendarReady: uiLang === "ro" ? "Calendar pregatit" : "Calendar ready",
-    syncAirbnbBooking: uiLang === "ro" ? "Sincronizeaza cu Airbnb sau Booking" : "Sync with Airbnb or Booking",
+    calendarReady: uiLang === "ro" ? "Pregătit pentru sincronizare" : "Ready for sync",
+    syncAirbnbBooking: uiLang === "ro" ? "Conectează Airbnb sau Booking" : "Connect Airbnb or Booking",
     syncHint:
       uiLang === "ro"
-        ? "Pentru automatizarea disponibilitatii si evitarea rezervarilor duble."
-        : "To automate availability and avoid double bookings.",
+        ? "După conectare, vei vedea toate rezervările într-un singur calendar."
+        : "After connecting, you’ll see every booking in one calendar.",
     editUnitDetails: uiLang === "ro" ? "Editeaza detaliile unitatilor" : "Edit unit details",
     unitLabel: uiLang === "ro" ? "Unitatea" : "Unit",
     unitPlaceholder: uiLang === "ro" ? "ex. Unitatea" : "e.g. Unit",
