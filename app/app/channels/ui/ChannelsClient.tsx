@@ -728,7 +728,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   }}
                 >
                   {calendarOnboardingStep === "intro"
-                    ? (lang === "ro" ? "Evita suprapunerile" : "Avoid Double Bookings")
+                    ? (lang === "ro" ? "O singură platformă pentru toate rezervările" : "One platform for all bookings")
                     : calendarOnboardingStep === "provider"
                       ? (lang === "ro" ? "De unde primesti rezervari?" : "Where do you receive bookings?")
                       : calendarOnboardingStep === "paste"

@@ -944,9 +944,9 @@ export default function DashboardClient({
 
 		            {firstPropertyStep === 1 ? (
 		              <div style={{ display: "grid", gap: 12 }}>
-		                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-		                  {t.takesLessThan30s}
-		                </div>
+                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                  <strong>{t.takesLessThan30s}</strong>
+                </div>
 		                <div style={{ display: "grid", gap: 6 }}>
 		                  <label style={{ display: "block" }}>{t.propertyName}</label>
 		                  <input
