@@ -745,7 +745,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   }}
                 >
                   {calendarOnboardingStep === "intro"
-                    ? (lang === "ro" ? "Conecteaza un calendar de rezervari ca disponibilitatea sa fie actualizata automat." : "Connect one booking calendar to keep availability updated automatically.")
+                    ? (lang === "ro" ? "Conectează Airbnb sau Booking pentru ca rezervările să apară automat în calendar." : "Connect Airbnb or Booking so reservations appear here automatically.")
                     : calendarOnboardingStep === "provider"
                       ? (lang === "ro" ? "Alege prima platforma pe care o conectezi." : "Choose one platform to connect first.")
                       : calendarOnboardingStep === "paste"
@@ -768,9 +768,17 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             {calendarOnboardingStep === "intro" && (
               <div style={{ display: "grid", gap: 12 }}>
                 <div style={{ color: "var(--muted)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)" }}>
-                  {lang === "ro" ? "Ca sa incepi, trebuie sa conectezi un singur calendar." : "To get started, you only need to connect one calendar."}
-                  <br />
-                  {lang === "ro" ? "Il vom mentine actualizat automat pentru tine." : "We’ll keep it updated automatically for you."}
+                  {lang === "ro" ? (
+                    <>
+                      Vei vedea toate rezervările într-un singur loc,{" "}
+                      <strong>fără să verifici fiecare platformă separat.</strong>
+                    </>
+                  ) : (
+                    <>
+                      You'll see every booking in one place,{" "}
+                      <strong>without checking each platform separately.</strong>
+                    </>
+                  )}
                 </div>
                 <button
                   className="sb-btn sb-btn--primary sb-cardglow"
