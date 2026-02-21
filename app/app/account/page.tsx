@@ -522,7 +522,7 @@ export default function AccountPage() {
                     </button>
                   )}
                 </div>
-                <p style={{ margin: "2px 0 0", color: "var(--text)", opacity: 0.88, fontSize: 16 }}>{t.propertyManager}</p>
+                <p style={{ margin: "2px 0 0", color: "var(--border)", opacity: 0.9, fontSize: 16 }}>{t.propertyManager}</p>
                 <div className="account-hero__badges">
                   <span
                     style={{
