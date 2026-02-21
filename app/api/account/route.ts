@@ -97,42 +97,61 @@ export async function PATCH(request: Request) {
       accountId = membership.account_id as string;
     }
 
-    const updates: Record<string, string | null> = {};
     const nameValue = typeof body.name !== "undefined" ? body.name?.trim() || null : undefined;
-    if (typeof nameValue !== "undefined") updates.name = nameValue;
-    if (typeof body.company !== "undefined") updates.company = body.company?.trim() || null;
-    if (typeof body.phone !== "undefined") updates.phone = body.phone?.trim() || null;
+    const companyValue = typeof body.company !== "undefined" ? body.company?.trim() || null : undefined;
+    const phoneValue = typeof body.phone !== "undefined" ? body.phone?.trim() || null : undefined;
 
-    if (!Object.keys(updates).length) {
-      return NextResponse.json({ ok: true, updated: false });
-    }
+    const accountErrors: any[] = [];
+    const accountWarnings: string[] = [];
 
-    // Fallback: dacă coloana se numește 'nane', reîncearcă mapând name -> nane.
-    const doUpdate = async (mapNameToNane: boolean) => {
-      const payload = { ...updates };
-      if (mapNameToNane && "name" in payload) {
-        payload.nane = payload.name;
-        delete payload.name;
+    // helper care încearcă update și ignoră coloanele inexistente (42703)
+    const saveField = async (field: string, value: string | null) => {
+      const { error } = await supabase.from("accounts").update({ [field]: value }).eq("id", accountId);
+      if (error?.code === "42703") {
+        accountWarnings.push(`Column ${field} missing`);
+        return;
       }
-      return supabase.from("accounts").update(payload).eq("id", accountId);
+      if (error) accountErrors.push(error);
     };
 
-    let { error } = await doUpdate(false);
-    if (error?.code === "42703") {
-      const retry = await doUpdate(true);
-      error = retry.error ?? null;
+    // nume: încearcă name, apoi nane
+    if (typeof nameValue !== "undefined") {
+      await saveField("name", nameValue);
+      if (accountWarnings.some((w) => w.includes("name"))) {
+        // încearcă fallback-ul nane
+        const { error } = await supabase.from("accounts").update({ nane: nameValue }).eq("id", accountId);
+        if (error?.code !== "42703" && error) accountErrors.push(error);
+      }
     }
-    if (error) {
-      console.error("PATCH /api/account update failed", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (typeof companyValue !== "undefined") {
+      await saveField("company", companyValue);
+    }
+    if (typeof phoneValue !== "undefined") {
+      await saveField("phone", phoneValue);
     }
 
     // Opțional: actualizează metadata pentru afișarea numelui
+    let authError: any = null;
     if (typeof nameValue !== "undefined") {
       const displayName = nameValue;
-      await supabase.auth.updateUser({
+      const { error } = await supabase.auth.updateUser({
         data: { full_name: displayName, display_name: displayName, name: displayName },
       });
+      if (error) authError = error;
+    }
+
+    // Dacă update-ul pe accounts a eșuat dar nu am schimbat company/phone, acceptăm succes parțial (nume în metadata).
+    const touchedCompanyOrPhone =
+      typeof body.company !== "undefined" || typeof body.phone !== "undefined";
+    const accountUpdateError = accountErrors[0] ?? null;
+    if (authError) {
+      return NextResponse.json({ error: authError.message }, { status: 500 });
+    }
+    if (accountUpdateError && touchedCompanyOrPhone) {
+      return NextResponse.json({ error: accountUpdateError.message }, { status: 500 });
+    }
+    if (accountUpdateError && typeof nameValue !== "undefined") {
+      return NextResponse.json({ ok: true, warning: "Name saved only in profile metadata." });
     }
 
     return NextResponse.json({ ok: true });
