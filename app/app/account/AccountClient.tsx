@@ -74,18 +74,21 @@ type Labels = (typeof translations)[Lang];
 function PillBridge({
   state,
   t,
+  skip,
 }: {
   state: "idle" | "saving" | "saved" | "error";
   t: Labels;
+  skip?: boolean;
 }) {
   const { setPill } = useHeader();
   useEffect(() => {
+    if (skip) return;
     if (state === "saving") setPill(<span>{t.saving}</span>);
     else if (state === "saved") setPill(<span data-p4h-overlay="message">{t.saved}</span>);
     else if (state === "error") setPill(<span data-p4h-overlay="message">{t.saveError}</span>);
     else setPill(null);
     return () => setPill(null);
-  }, [state, setPill, t]);
+  }, [state, setPill, t, skip]);
   return null;
 }
 
@@ -101,6 +104,10 @@ export default function AccountClient() {
   const [editingCompany, setEditingCompany] = useState(false);
   const [editingPhone, setEditingPhone] = useState(false);
   const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loadedProfile, setLoadedProfile] = useState(false);
+  const [loadedAccount, setLoadedAccount] = useState(false);
+  const { setPill } = useHeader();
 
   // Ascunde scrollbar-ul pe ecrane mari doar pe această pagină (desktop)
   useEffect(() => {
@@ -194,6 +201,7 @@ export default function AccountClient() {
         setDisplayName(null);
         setEditedName("");
       }
+      setLoadedProfile(true);
     })();
     return () => {
       mounted = false;
@@ -223,11 +231,22 @@ export default function AccountClient() {
           console.error("Nu am putut încărca datele de profil", err);
         }
       }
+      setLoadedAccount(true);
     })();
     return () => {
       cancelled = true;
     };
   }, [displayName]);
+
+  useEffect(() => {
+    if (loadedProfile && loadedAccount) {
+      setInitialLoading(false);
+      if (saving === "idle") setPill(null);
+    } else {
+      setInitialLoading(true);
+      setPill(<span>Loading…</span>);
+    }
+  }, [loadedProfile, loadedAccount, setPill, saving]);
 
   const statusLabel = translations[lang].activeAccount;
   const statusDetail = translations[lang].statusDetail;
@@ -343,7 +362,7 @@ export default function AccountClient() {
 
   return (
     <AppShell currentPath="/app/account" title={t.pageTitle}>
-      <PillBridge state={saving} t={t} />
+      <PillBridge state={saving} t={t} skip={initialLoading} />
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -522,7 +541,7 @@ export default function AccountClient() {
                     </button>
                   )}
                 </div>
-                <p style={{ margin: "2px 0 0", color: "var(--border)", opacity: 0.9, fontSize: 16 }}>{t.propertyManager}</p>
+                <p style={{ margin: "2px 0 0", color: "var(--muted)", opacity: 0.95, fontSize: 16 }}>{t.propertyManager}</p>
                 <div className="account-hero__badges">
                   <span
                     style={{
