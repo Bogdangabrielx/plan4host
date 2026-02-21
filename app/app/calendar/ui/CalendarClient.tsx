@@ -163,6 +163,16 @@ export default function CalendarClient({
     return () => window.removeEventListener("resize", detect);
   }, []);
 
+  // Ascunde scrollbar-ul pe ecrane mari doar pe această pagină (desktop)
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const main = document.getElementById("app-main");
+    if (main) main.setAttribute("data-calendar-nosb", "1");
+    return () => {
+      if (main) main.removeAttribute("data-calendar-nosb");
+    };
+  }, []);
+
   // Load presentation image for selected property (once per id)
   useEffect(() => {
     (async () => {
@@ -358,6 +368,21 @@ export default function CalendarClient({
 
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @media (min-width: 1024px) {
+              #app-main[data-calendar-nosb="1"]{
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+              #app-main[data-calendar-nosb="1"]::-webkit-scrollbar{
+                display: none;
+              }
+            }
+          `,
+        }}
+      />
       <PlanHeaderBadge title={lang === "ro" ? "Calendar" : "Calendar"} slot="under-title" />
       <div style={{ padding: isSmall ? "10px 12px 16px" : "16px", display: "grid", gap: 12 }}>
       {/* Toolbar */}
