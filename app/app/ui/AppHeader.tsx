@@ -958,24 +958,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                       onError={() => setActivePropertyPhotoUrl(null)}
                     />
                   ) : (
-	                    <span
-	                      aria-hidden
-	                      style={{
-	                        width: isSmall ? 32 : 38,
-	                        height: isSmall ? 32 : 38,
-	                        display: "block",
-	                        backgroundColor: "currentColor",
-	                        WebkitMaskImage: "url(/svg_more.svg)",
-	                        maskImage: "url(/svg_more.svg)",
-                        WebkitMaskRepeat: "no-repeat",
-                        maskRepeat: "no-repeat",
-	                        WebkitMaskPosition: "center",
-	                        maskPosition: "center",
-	                        WebkitMaskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
-	                        maskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
-	                        pointerEvents: "none",
-	                      }}
-	                    />
+                    <AvatarBadge size={isSmall ? 34 : 40} />
                   )
                 ) : (
                   <>≡</>
