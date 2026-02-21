@@ -302,6 +302,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         display: "grid",
         placeItems: "center",
         flexShrink: 0,
+        pointerEvents: "none", // nu bloca click-ul pe butonul părinte
       }}
     >
       {userAvatarUrl ? (
