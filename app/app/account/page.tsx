@@ -80,6 +80,21 @@ export default function AccountPage() {
   const [phone, setPhone] = useState("");
   const [editingCompany, setEditingCompany] = useState(false);
   const [editingPhone, setEditingPhone] = useState(false);
+  const updateAccount = async (payload: {
+    name?: string;
+    company?: string | null;
+    phone?: string | null;
+  }) => {
+    try {
+      await fetch("/api/account", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      console.error("Failed saving account info", error);
+    }
+  };
 
   useEffect(() => {
     const detect = () => {
@@ -148,11 +163,20 @@ export default function AccountPage() {
   }, [displayName, user]);
 
   const t = translations[lang];
-  const finishNameEdit = () => {
-    const normalized = (editedName.trim() || t.unknown);
+  const finishNameEdit = async () => {
+    const normalized = editedName.trim() || t.unknown;
     setDisplayName(normalized);
     setEditedName(normalized);
     setIsEditingName(false);
+    await updateAccount({ name: normalized === t.unknown ? "" : normalized });
+  };
+  const saveCompany = async () => {
+    setEditingCompany(false);
+    await updateAccount({ company: company.trim() || null });
+  };
+  const savePhone = async () => {
+    setEditingPhone(false);
+    await updateAccount({ phone: phone.trim() || null });
   };
   const memberSince = useMemo(() => {
     if (!user?.created_at) return t.unknown;
@@ -330,7 +354,7 @@ export default function AccountPage() {
               editingPhone,
               () => setEditingPhone(true),
               setPhone,
-              () => setEditingPhone(false)
+              savePhone
             )}
             {renderField(
               t.company,
@@ -339,7 +363,7 @@ export default function AccountPage() {
               editingCompany,
               () => setEditingCompany(true),
               setCompany,
-              () => setEditingCompany(false)
+              saveCompany
             )}
             <div
               style={{
