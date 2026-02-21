@@ -657,7 +657,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   }, [title, isSmall, lang]);
 
   const noEllipsisTitle =
-    !!currentPath && /^\/app\/(notifications|subscription)(\/|$)/.test(currentPath);
+    !!currentPath && /^\/app\/(notifications|subscription|account)(\/|$)/.test(currentPath);
 
   const shrinkInsteadOfEllipsisTitle =
     !!currentPath &&

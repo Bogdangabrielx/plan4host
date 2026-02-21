@@ -101,57 +101,26 @@ export async function PATCH(request: Request) {
     const companyValue = typeof body.company !== "undefined" ? body.company?.trim() || null : undefined;
     const phoneValue = typeof body.phone !== "undefined" ? body.phone?.trim() || null : undefined;
 
-    const accountErrors: any[] = [];
-    const accountWarnings: string[] = [];
+    const updates: Record<string, string | null> = {};
+    if (typeof nameValue !== "undefined") updates.name = nameValue;
+    if (typeof companyValue !== "undefined") updates.company = companyValue;
+    if (typeof phoneValue !== "undefined") updates.phone = phoneValue;
 
-    // helper care încearcă update și ignoră coloanele inexistente (42703)
-    const saveField = async (field: string, value: string | null) => {
-      const { error } = await supabase.from("accounts").update({ [field]: value }).eq("id", accountId);
-      if (error?.code === "42703") {
-        accountWarnings.push(`Column ${field} missing`);
-        return;
-      }
-      if (error) accountErrors.push(error);
-    };
-
-    // nume: încearcă name, apoi nane
-    if (typeof nameValue !== "undefined") {
-      await saveField("name", nameValue);
-      if (accountWarnings.some((w) => w.includes("name"))) {
-        // încearcă fallback-ul nane
-        const { error } = await supabase.from("accounts").update({ nane: nameValue }).eq("id", accountId);
-        if (error?.code !== "42703" && error) accountErrors.push(error);
-      }
-    }
-    if (typeof companyValue !== "undefined") {
-      await saveField("company", companyValue);
-    }
-    if (typeof phoneValue !== "undefined") {
-      await saveField("phone", phoneValue);
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ ok: true, updated: false });
     }
 
-    // Opțional: actualizează metadata pentru afișarea numelui
-    let authError: any = null;
-    if (typeof nameValue !== "undefined") {
-      const displayName = nameValue;
-      const { error } = await supabase.auth.updateUser({
-        data: { full_name: displayName, display_name: displayName, name: displayName },
-      });
-      if (error) authError = error;
+    // Încearcă update normal; dacă lipsește coloana name, folosește fallback nane.
+    let { error } = await supabase.from("accounts").update(updates).eq("id", accountId);
+    if (error?.code === "42703" && "name" in updates) {
+      const { name, ...rest } = updates;
+      const retryPayload = { ...rest, nane: name };
+      const retry = await supabase.from("accounts").update(retryPayload).eq("id", accountId);
+      error = retry.error ?? null;
     }
-
-    // Dacă update-ul pe accounts a eșuat dar nu am schimbat company/phone, acceptăm succes parțial (nume în metadata).
-    const touchedCompanyOrPhone =
-      typeof body.company !== "undefined" || typeof body.phone !== "undefined";
-    const accountUpdateError = accountErrors[0] ?? null;
-    if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 500 });
-    }
-    if (accountUpdateError && touchedCompanyOrPhone) {
-      return NextResponse.json({ error: accountUpdateError.message }, { status: 500 });
-    }
-    if (accountUpdateError && typeof nameValue !== "undefined") {
-      return NextResponse.json({ ok: true, warning: "Name saved only in profile metadata." });
+    if (error) {
+      console.error("PATCH /api/account update failed", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
