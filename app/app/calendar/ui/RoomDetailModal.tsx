@@ -771,7 +771,7 @@ export default function RoomDetailModal({
         zIndex: 250,
         background: "rgba(0,0,0,0.6)",
         display: "flex",
-        alignItems: "flex-start",
+        alignItems: isMobile ? "flex-start" : "center",
         justifyContent: "center",
         fontFamily: "inherit",
         paddingTop: "calc(var(--safe-top) + 12px)",
@@ -786,8 +786,10 @@ export default function RoomDetailModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "min(1000px, 100%)",
-          marginTop: "calc(var(--p4h-fixed-header-h, 56px) + 8px)",
-          maxHeight: "calc(100dvh - (var(--safe-top) + var(--p4h-fixed-header-h, 56px) + var(--safe-bottom) + 32px))",
+          marginTop: isMobile ? "calc(var(--p4h-fixed-header-h, 56px) + 8px)" : undefined,
+          maxHeight: isMobile
+            ? "calc(100dvh - (var(--safe-top) + var(--p4h-fixed-header-h, 56px) + var(--safe-bottom) + 32px))"
+            : "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 48px))",
           background: "var(--panel)",
           color: "var(--text)",
           border: "1px solid var(--border)",
@@ -880,9 +882,29 @@ export default function RoomDetailModal({
             WebkitOverflowScrolling: "touch",
             paddingTop: 0,
             paddingBottom: 0,
-            overscrollBehavior: "contain",
-          }}
-        >
+        overscrollBehavior: "contain",
+        scrollbarWidth: "thin",
+        scrollbarColor: "color-mix(in srgb, var(--text) 32%, transparent) transparent",
+      }}
+    >
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+                /* Custom scrollbar just for this modal content */
+                div[data-roomdetail-scroll]::-webkit-scrollbar{
+                  width: 8px;
+                }
+                div[data-roomdetail-scroll]::-webkit-scrollbar-track{
+                  background: transparent;
+                }
+                div[data-roomdetail-scroll]::-webkit-scrollbar-thumb{
+                  background: color-mix(in srgb, var(--text) 32%, transparent);
+                  border-radius: 999px;
+                }
+              `,
+            }}
+          />
+          <div data-roomdetail-scroll>
           {/* Reservation toggle + dates */}
           <div style={{ display: "grid", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -1464,7 +1486,9 @@ export default function RoomDetailModal({
           </div>
           {/* Extra spacer at bottom so action buttons can be scrolled above bottom nav / keyboard */}
           <div style={{ height: 64 }} aria-hidden />
-        </div>
+          </div>
+          {/* end data-roomdetail-scroll */}
+          </div>
         </div>
       </div>
       {releaseConfirmOpen && (
