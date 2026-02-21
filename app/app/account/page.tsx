@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useHeader } from "../_components/HeaderContext";
 import AppShell from "../_components/AppShell";
 
 const LANG_MAP = ["en", "ro"] as const;
@@ -71,7 +70,6 @@ const pencilSvg = (
 );
 
 export default function AccountPage() {
-  const { setTitle } = useHeader();
   const [lang, setLang] = useState<Lang>("en");
   const [user, setUser] = useState<any>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
@@ -117,10 +115,6 @@ export default function AccountPage() {
     window.addEventListener("storage", detect);
     return () => window.removeEventListener("storage", detect);
   }, [lang]);
-
-  useEffect(() => {
-    setTitle(translations[lang].pageTitle);
-  }, [lang, setTitle]);
 
   useEffect(() => {
     let mounted = true;
