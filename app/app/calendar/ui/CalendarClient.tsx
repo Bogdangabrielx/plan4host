@@ -331,6 +331,19 @@ export default function CalendarClient({
     () => bookings.filter((b) => b.property_id === currentPropertyId && b.end_date >= todayYmd).length,
     [bookings, currentPropertyId, todayYmd]
   );
+  const occupiedToday = useMemo(() => {
+    if (!currentPropertyId) return 0;
+    return bookings.filter(
+      (b) =>
+        b.property_id === currentPropertyId &&
+        b.start_date <= todayYmd &&
+        b.end_date >= todayYmd
+    ).length;
+  }, [bookings, currentPropertyId, todayYmd]);
+  const totalUnits = useMemo(
+    () => rooms.filter((r) => r.property_id === currentPropertyId).length,
+    [rooms, currentPropertyId]
+  );
   const openQuickCreateNow = () => {
     if (!currentPropertyId) return;
     if (!rooms.length) {
@@ -553,6 +566,13 @@ export default function CalendarClient({
           <span style={{ width: 6, height: 6, borderRadius: 999, background: "color-mix(in srgb, var(--text) 50%, transparent)" }} />
           {lang === "ro" ? "Viitoare" : "Upcoming"}:{" "}
           <span style={{ color: "var(--text)" }}>{upcomingBookings}</span>
+        </span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 6, height: 6, borderRadius: 999, background: "color-mix(in srgb, var(--success, #22c55e) 70%, transparent)" }} />
+          {lang === "ro" ? "Unități ocupate azi" : "Occupied today"}:{" "}
+          <span style={{ color: "var(--text)" }}>
+            {occupiedToday}/{totalUnits || "0"}
+          </span>
         </span>
       </div>
 
