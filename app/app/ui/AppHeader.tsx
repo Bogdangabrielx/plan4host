@@ -858,11 +858,11 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                  setOpen(false);
 	                }}
 	                style={{
-	                  width: isSmall ? 40 : 46,
-	                  height: isSmall ? 40 : 46,
+	                  width: isSmall ? 46 : 48,
+	                  height: isSmall ? 46 : 48,
 	                  borderRadius: 999,
-	                  border: "1px solid var(--border)",
-	                  background: "var(--card)",
+	                  border: isSmall ? "none" : "1px solid var(--border)",
+	                  background: isSmall ? "transparent" : "var(--card)",
 	                  color: openRight ? "var(--primary)" : "var(--text)",
 	                  display: "grid",
 	                  placeItems: "center",
@@ -879,7 +879,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                       placeItems: "center",
                     }}
                   >
-                    <AvatarBadge size={isSmall ? 30 : 34} />
+                    <AvatarBadge size={isSmall ? 34 : 36} />
                   </div>
                 ) : (
                   <>⋯</>
