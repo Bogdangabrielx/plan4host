@@ -547,12 +547,13 @@ export default function CalendarClient({
       {/* Summary row: totals */}
       <div
         style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: isSmall ? 8 : 10,
-          padding: isSmall ? "2px 4px" : "2px 6px",
-          marginTop: -2,
+          display: "grid",
+          gridTemplateColumns: isSmall ? "repeat(3, minmax(0, 1fr))" : "repeat(3, minmax(0, 1fr))",
+          gap: isSmall ? 6 : 10,
+          padding: isSmall ? "0 4px" : "0 6px",
+          marginTop: isSmall ? 0 : -4,
           marginBottom: 10,
+          alignItems: "center",
         }}
       >
         {[
@@ -579,18 +580,19 @@ export default function CalendarClient({
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 8,
-              borderRadius: 999,
-              padding: "8px 12px",
-              background: "color-mix(in srgb, var(--card) 88%, transparent)",
-              border: "1px solid color-mix(in srgb, var(--border) 55%, transparent)",
-              boxShadow: "0 6px 12px rgba(0,0,0,0.10)",
+              gap: isSmall ? 6 : 8,
+              borderRadius: isSmall ? 0 : 14,
+              padding: isSmall ? "0 2px" : "10px 12px",
+              background: isSmall ? "transparent" : "color-mix(in srgb, var(--card) 92%, transparent)",
+              border: isSmall ? "none" : "1px solid color-mix(in srgb, var(--border) 65%, transparent)",
+              boxShadow: isSmall ? "none" : "0 10px 18px rgba(0,0,0,0.12)",
+              minHeight: isSmall ? "auto" : 44,
             }}
           >
             <span style={{ width: 8, height: 8, borderRadius: 999, background: item.dot, flexShrink: 0 }} />
             <div style={{ display: "grid", lineHeight: 1.2 }}>
-              <span style={{ color: "var(--muted)", fontSize: 11, fontWeight: 700 }}>{item.label}</span>
-              <span style={{ color: "var(--text)", fontSize: 15, fontWeight: 800 }}>{item.value}</span>
+              <span style={{ color: "var(--muted)", fontSize: isSmall ? 11 : 12, fontWeight: 700, letterSpacing: 0.1 }}>{item.label}</span>
+              <span style={{ color: "var(--text)", fontSize: isSmall ? 14 : 16, fontWeight: 800 }}>{item.value}</span>
             </div>
           </div>
         ))}
