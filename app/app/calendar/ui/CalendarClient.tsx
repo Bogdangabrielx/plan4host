@@ -118,6 +118,7 @@ export default function CalendarClient({
   const [loading, setLoading]   = useState<"Idle"|"Loading"|"Error">("Idle");
   const [hasLoadedRooms, setHasLoadedRooms] = useState<boolean>(false);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [pendingQuickCreate, setPendingQuickCreate] = useState(false);
   const [roomPickerOpen, setRoomPickerOpen] = useState(false);
   const [roomPickerRooms, setRoomPickerRooms] = useState<Room[]>([]);
 
@@ -313,11 +314,9 @@ export default function CalendarClient({
   function refreshData() {
     setRefreshToken((x) => x + 1);
   }
-  function startQuickCreate() {
-    if (!propertyReady) return;
+  const openQuickCreateNow = () => {
     const currentPropertyId = propertyId || (properties[0]?.id ?? null);
     if (!currentPropertyId) return;
-    if (!hasLoadedRooms || loading === "Loading") return;
     if (!rooms.length) {
       setShowNoRoomsPopup(true);
       return;
@@ -335,7 +334,25 @@ export default function CalendarClient({
     const room = propertyRooms[0];
     const baseDate = highlightDate ?? ymd(today);
     setCreateTarget({ room, date: baseDate });
+  };
+
+  function startQuickCreate() {
+    if (!propertyReady) return;
+    const currentPropertyId = propertyId || (properties[0]?.id ?? null);
+    if (!currentPropertyId) return;
+    if (!hasLoadedRooms || loading === "Loading") {
+      setPendingQuickCreate(true);
+      return;
+    }
+    openQuickCreateNow();
   }
+
+  useEffect(() => {
+    if (pendingQuickCreate && hasLoadedRooms && loading === "Idle") {
+      setPendingQuickCreate(false);
+      openQuickCreateNow();
+    }
+  }, [pendingQuickCreate, hasLoadedRooms, loading]);
 
   // Auto focus input în popover
   useEffect(() => {
