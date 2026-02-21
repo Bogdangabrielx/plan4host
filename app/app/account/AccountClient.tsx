@@ -484,7 +484,7 @@ export default function AccountClient() {
             style={{
               minHeight: "100vh",
               background:
-                "radial-gradient(circle at 20% 20%, rgba(79,70,229,0.12), transparent 22%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12), transparent 20%), var(--panel)",
+                "var(--bg), var(--panel)",
               color: "var(--text)",
             }}
           >
