@@ -168,7 +168,18 @@ export async function PATCH(request: Request) {
       );
     }
 
-    return NextResponse.json({ ok: true, updated: touched > 0 });
+    // Sync numele și în auth.users (display_name) pentru UX consistent.
+    let authWarning: string | null = null;
+    if (typeof nameValue !== "undefined") {
+      const { error: authErr } = await supabase.auth.updateUser({
+        data: { full_name: nameValue, display_name: nameValue, name: nameValue },
+      });
+      if (authErr) {
+        authWarning = authErr.message ?? "Could not update auth profile name";
+      }
+    }
+
+    return NextResponse.json({ ok: true, updated: touched > 0, warning: authWarning });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unexpected error" }, { status: 500 });
   }
