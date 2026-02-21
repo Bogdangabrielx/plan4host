@@ -356,16 +356,78 @@ export default function AccountPage() {
                 display: none;
               }
             }
+            .account-hero{
+              display:flex;
+              flex-direction:column;
+              gap:18px;
+              align-items:center;
+              position:relative;
+              z-index:1;
+            }
+            .account-hero__avatar{
+              width:110px;
+              height:110px;
+              border-radius:999px;
+              background: var(--card);
+              display:grid;
+              place-items:center;
+              font-size:34px;
+              font-weight:800;
+              color:#111827;
+              border:2.5px solid #fff;
+              box-shadow:0 16px 36px rgba(0,0,0,0.22);
+              overflow:hidden;
+              flex-shrink:0;
+            }
+            .account-hero__content{
+              display:flex;
+              flex-direction:column;
+              gap:10px;
+              align-items:center;
+              text-align:center;
+            }
+            .account-hero__header{
+              display:flex;
+              align-items:center;
+              gap:12px;
+              flex-wrap:wrap;
+              justify-content:center;
+            }
+            .account-hero__badges{
+              display:flex;
+              gap:10px;
+              margin-top:4px;
+              flex-wrap:wrap;
+              justify-content:center;
+            }
+            @media (min-width: 768px){
+              .account-hero{
+                flex-direction:row;
+                align-items:center;
+                gap:22px;
+              }
+              .account-hero__content{
+                align-items:flex-start;
+                text-align:left;
+              }
+              .account-hero__header{
+                justify-content:flex-start;
+              }
+              .account-hero__badges{
+                justify-content:flex-start;
+              }
+            }
           `,
         }}
       />
       <div
         style={{
           minHeight: "100vh",
-          background: "radial-gradient(circle at 20% 20%, rgba(79,70,229,0.12), transparent 22%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12), transparent 20%), var(--panel)",
-      color: "var(--text)",
-    }}
-  >
+          background:
+            "radial-gradient(circle at 20% 20%, rgba(79,70,229,0.12), transparent 22%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12), transparent 20%), var(--panel)",
+          color: "var(--text)",
+        }}
+      >
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 16px 72px" }}>
           <div
             style={{
@@ -390,115 +452,104 @@ export default function AccountPage() {
                 pointerEvents: "none",
               }}
             />
-            <div
-              style={{
-                width: 110,
-                height: 110,
-                borderRadius: 999,
-                background: avatarUrl ? "var(--card)" : "linear-gradient(135deg, #25d366, #128c7e)",
-                display: "grid",
-                placeItems: "center",
-                fontSize: 34,
-                fontWeight: 800,
-                color: avatarUrl ? "#111827" : "#ffffff",
-                border: "2.5px solid #fff",
-                position: "absolute",
-                top: "50%",
-                transform: "translateY(-50%)",
-                left: 28,
-                boxShadow: "0 16px 36px rgba(0,0,0,0.22)",
-                overflow: "hidden",
-              }}
-            >
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt=""
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                />
-              ) : (
-                initials
-              )}
-            </div>
-            <div style={{ marginLeft: 150, position: "relative", zIndex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                {isEditingName ? (
-                  <input
-                    value={editedName}
-                    onChange={(e) => setEditedName(e.currentTarget.value)}
-                    onBlur={finishNameEdit}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") finishNameEdit();
-                    }}
-                    autoFocus
-                    style={{
-                      fontSize: 30,
-                      fontWeight: 800,
-                      border: "none",
-                      width: "100%",
-                      maxWidth: 420,
-                      background: "rgba(255,255,255,0.14)",
-                      color: "#fff",
-                      padding: "6px 10px",
-                      borderRadius: 10,
-                    }}
+            <div className="account-hero">
+              <div
+                className="account-hero__avatar"
+                style={{
+                  background: avatarUrl ? "var(--card)" : "linear-gradient(135deg, #25d366, #128c7e)",
+                  color: avatarUrl ? "#111827" : "#ffffff",
+                }}
+              >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt=""
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
                 ) : (
-                  <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: -0.3 }}>{displayName || t.unknown}</h1>
-                )}
-              {!isEditingName && (
-                <button
-                  type="button"
-                  aria-label="Edit name"
-                  onClick={() => setIsEditingName(true)}
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    borderRadius: 8,
-                    width: 32,
-                    height: 32,
-                    display: "grid",
-                    placeItems: "center",
-                    color: "var(--text)",
-                    cursor: "pointer",
-                    transition: "transform .12s ease",
-                  }}
-                  onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.96)")}
-                  onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                  onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                >
-                    {pencilSvg}
-                  </button>
+                  initials
                 )}
               </div>
-              <p style={{ margin: "10px 0 0", color: "var(--text)", opacity: 0.88, fontSize: 16 }}>{t.propertyManager}</p>
-              <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
-                <span
-                  style={{
-                    padding: "6px 10px",
-                    borderRadius: 999,
-                    background: "color-mix(in srgb, var(--text) 14%, transparent)",
-                    color: "var(--text)",
-                    fontWeight: 700,
-                    fontSize: 12,
-                    letterSpacing: 0.5,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {statusLabel}
-                </span>
-                <span
-                  style={{
-                    padding: "6px 10px",
-                    borderRadius: 999,
-                    background: "color-mix(in srgb, var(--text) 10%, transparent)",
-                    color: "var(--text)",
-                    fontSize: 12,
-                    letterSpacing: 0.4,
-                  }}
-                >
-                  {statusDetail}
-                </span>
+              <div className="account-hero__content">
+                <div className="account-hero__header">
+                  {isEditingName ? (
+                    <input
+                      value={editedName}
+                      onChange={(e) => setEditedName(e.currentTarget.value)}
+                      onBlur={finishNameEdit}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") finishNameEdit();
+                      }}
+                      autoFocus
+                      style={{
+                        fontSize: 30,
+                        fontWeight: 800,
+                        border: "none",
+                        width: "100%",
+                        maxWidth: 420,
+                        background: "rgba(255,255,255,0.14)",
+                        color: "#fff",
+                        padding: "6px 10px",
+                        borderRadius: 10,
+                      }}
+                    />
+                  ) : (
+                    <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: -0.3 }}>{displayName || t.unknown}</h1>
+                  )}
+                  {!isEditingName && (
+                    <button
+                      type="button"
+                      aria-label="Edit name"
+                      onClick={() => setIsEditingName(true)}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        borderRadius: 8,
+                        width: 32,
+                        height: 32,
+                        display: "grid",
+                        placeItems: "center",
+                        color: "var(--text)",
+                        cursor: "pointer",
+                        transition: "transform .12s ease",
+                      }}
+                      onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.96)")}
+                      onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                      onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                    >
+                      {pencilSvg}
+                    </button>
+                  )}
+                </div>
+                <p style={{ margin: "2px 0 0", color: "var(--text)", opacity: 0.88, fontSize: 16 }}>{t.propertyManager}</p>
+                <div className="account-hero__badges">
+                  <span
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 999,
+                      background: "color-mix(in srgb, var(--text) 14%, transparent)",
+                      color: "var(--text)",
+                      fontWeight: 700,
+                      fontSize: 12,
+                      letterSpacing: 0.5,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {statusLabel}
+                  </span>
+                  <span
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 999,
+                      background: "color-mix(in srgb, var(--text) 10%, transparent)",
+                      color: "var(--text)",
+                      fontSize: 12,
+                      letterSpacing: 0.4,
+                    }}
+                  >
+                    {statusDetail}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
