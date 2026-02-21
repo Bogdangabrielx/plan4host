@@ -162,7 +162,10 @@ export default function AccountPage() {
     (async () => {
       try {
         const res = await fetch("/api/account", { cache: "no-store" });
-        if (!res.ok || cancelled) return;
+        if (!res.ok || cancelled) {
+          console.error("GET /api/account failed", res.status);
+          return;
+        }
         const j = await res.json();
         if (cancelled) return;
         if (typeof j.phone === "string") setPhone(j.phone);

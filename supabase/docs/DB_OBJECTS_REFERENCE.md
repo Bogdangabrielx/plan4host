@@ -1,6 +1,6 @@
 # Plan4Host — Referință Obiecte DB (funcții, RLS, triggere, RPC, tabele)
 
-Ultima actualizare: 2025‑10‑15
+Ultima actualizare: 2026‑02‑21
 
 Acest document descrie obiectele principale din schema `public` (și `auth` acolo unde e cazul), modelul de izolare pe tenant, regulile de acces (RLS) și fluxurile de onboarding/trial. Este un companion practic pentru debugging și evoluții ulterioare.
 
@@ -41,7 +41,7 @@ Acest document descrie obiectele principale din schema `public` (și `auth` acol
     - Funcție wrapper pentru trigger, apelează `snapshot_rm_for_booking(NEW.id)` și `RETURN NEW`.
 
 ## 2) Tabele cheie
-- `accounts(id, plan, valid_until, trial_ends_at, created_at, …)`
+- `accounts(id, name, company, phone, plan, valid_until, trial_ends_at, created_at, …)`
 - `account_users(account_id, user_id, role, scopes[], disabled, created_at)`
 - `billing_plans(slug, sync_interval_minutes, allow_sync_now, features, …)`
 - Inventar: `properties(admin_id, name, …)`, `rooms(property_id, …)`, `room_types(property_id, …)`
@@ -117,6 +117,8 @@ select * from public.properties limit 5;
 ```
 
 ## 7) Changelog (scurt)
+- 2026‑02‑21
+  - Profil cont: câmpurile `accounts.name`, `accounts.company`, `accounts.phone` folosite de `/api/account` și pagina `/app/account`.
 - 2025‑10‑15
   - Freeze schelet mesaje la confirmare cameră: coloană `reservation_messages.snapshot_items`, funcție `snapshot_rm_for_booking`, trigger `trg_snapshot_rm_for_booking`.
   - API public `/r/[token]` randare din snapshot (blocuri sursă cu tokeni) + variabile dinamice; vizibilitatea calculată din programarea înghețată.

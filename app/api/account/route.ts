@@ -17,17 +17,36 @@ export async function GET() {
     const uid = auth?.user?.id;
     if (!uid) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-    const { data, error } = await supabase
-      .from("accounts")
-      .select("name, company, phone")
-      .eq("id", uid)
-      .maybeSingle();
+    // Unele baze pot avea coloana scrisă greșit ca "nane" (legacy). Suportăm ambele.
+    const trySelect = async () => {
+      const primary = await supabase
+        .from("accounts")
+        .select("name, company, phone")
+        .eq("id", uid)
+        .maybeSingle();
+      if (!primary.error) return { data: primary.data, column: "name" as const };
+      if (primary.error.code === "42703") {
+        const alt = await supabase
+          .from("accounts")
+          .select("nane, company, phone")
+          .eq("id", uid)
+          .maybeSingle();
+        if (!alt.error) return { data: alt.data, column: "nane" as const };
+        return { error: alt.error };
+      }
+      return { error: primary.error };
+    };
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const sel = await trySelect();
+    if ("error" in sel) {
+      console.error("GET /api/account select failed", sel.error);
+      return NextResponse.json({ error: sel.error.message }, { status: 500 });
+    }
+    const data = sel.data as any;
 
     return NextResponse.json({
       ok: true,
-      name: data?.name ?? null,
+      name: sel.column === "name" ? data?.name ?? null : data?.nane ?? null,
       company: data?.company ?? null,
       phone: data?.phone ?? null,
     });
@@ -48,7 +67,8 @@ export async function PATCH(request: Request) {
     const body = (await request.json().catch(() => ({}))) as Payload;
 
     const updates: Record<string, string | null> = {};
-    if (typeof body.name !== "undefined") updates.name = body.name?.trim() || null;
+    const nameValue = typeof body.name !== "undefined" ? body.name?.trim() || null : undefined;
+    if (typeof nameValue !== "undefined") updates.name = nameValue;
     if (typeof body.company !== "undefined") updates.company = body.company?.trim() || null;
     if (typeof body.phone !== "undefined") updates.phone = body.phone?.trim() || null;
 
@@ -56,14 +76,29 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ ok: true, updated: false });
     }
 
-    const { error } = await supabase.from("accounts").update(updates).eq("id", uid);
+    // Fallback: dacă coloana se numește 'nane', reîncearcă mapând name -> nane.
+    const doUpdate = async (mapNameToNane: boolean) => {
+      const payload = { ...updates };
+      if (mapNameToNane && "name" in payload) {
+        payload.nane = payload.name;
+        delete payload.name;
+      }
+      return supabase.from("accounts").update(payload).eq("id", uid);
+    };
+
+    let { error } = await doUpdate(false);
+    if (error?.code === "42703") {
+      const retry = await doUpdate(true);
+      error = retry.error ?? null;
+    }
     if (error) {
+      console.error("PATCH /api/account update failed", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Opțional: actualizează metadata pentru afișarea numelui
-    if (typeof body.name !== "undefined") {
-      const displayName = body.name?.trim() || null;
+    if (typeof nameValue !== "undefined") {
+      const displayName = nameValue;
       await supabase.auth.updateUser({
         data: { full_name: displayName, display_name: displayName, name: displayName },
       });
