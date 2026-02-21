@@ -2,6 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getServiceSupabase } from "@/lib/supabase/service";
 
 type Payload = {
   name?: string | null;
@@ -115,8 +116,9 @@ export async function PATCH(request: Request) {
     }
 
     // helper: update un câmp; dacă coloana lipsește (42703) ignorăm și contăm ca 0 rânduri
+    const svc = getServiceSupabase();
     const updateField = async (field: string, value: string | null) => {
-      const { error } = await supabase
+      const { error } = await svc
         .from("accounts")
         .update({ [field]: value })
         .eq("id", accountId);
@@ -153,14 +155,20 @@ export async function PATCH(request: Request) {
     }
 
     if (errors.length) {
-      const first = errors[0];
+      const first = errors[0] as any;
       console.error("PATCH /api/account update failed", first);
-      return NextResponse.json({ error: first.message ?? "Update failed" }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: first.message ?? "Update failed",
+          code: first.code ?? null,
+          details: first.details ?? null,
+          hint: first.hint ?? null,
+        },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ ok: true, updated: touched > 0 });
-
-    return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unexpected error" }, { status: 500 });
   }

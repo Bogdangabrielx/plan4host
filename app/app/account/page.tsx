@@ -113,7 +113,11 @@ export default function AccountPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error(`Status ${res.status}`);
+      if (!res.ok) {
+        const msg = await res.json().catch(() => ({}));
+        const reason = (msg && (msg.error || msg.details)) || `Status ${res.status}`;
+        throw new Error(reason as string);
+      }
       setSaving("saved");
       setPill(<span data-p4h-overlay="message">{labels.saved}</span>);
       setTimeout(() => setSaving((s) => (s === "saved" ? "idle" : s)), 1400);
