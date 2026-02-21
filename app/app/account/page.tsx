@@ -3,8 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import AppShell from "../_components/AppShell";
-import LoadingPill from "../_components/LoadingPill";
-import { useHeader } from "../_components/HeaderContext";
 
 const LANG_MAP = ["en", "ro"] as const;
 type Lang = (typeof LANG_MAP)[number];
@@ -69,18 +67,6 @@ const pencilSvg = (
     }}
   />
 );
-
-function PillSync({ state, t }: { state: "idle" | "saving" | "saved" | "error"; t: (typeof translations)["en"] }) {
-  const { setPill } = useHeader();
-  useEffect(() => {
-    if (state === "saving") setPill(<span>{t.saving}</span>);
-    else if (state === "saved") setPill(<span data-p4h-overlay="message">{t.saved}</span>);
-    else if (state === "error") setPill(<span data-p4h-overlay="message">{t.saveError}</span>);
-    else setPill(null);
-    return () => setPill(null);
-  }, [state, setPill, t]);
-  return null;
-}
 
 export default function AccountPage() {
   const [lang, setLang] = useState<Lang>("en");
@@ -336,7 +322,6 @@ export default function AccountPage() {
 
   return (
     <AppShell currentPath="/app/account" title={t.pageTitle}>
-      <PillSync state={saving} t={t} />
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -360,43 +345,6 @@ export default function AccountPage() {
     }}
   >
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 16px 72px" }}>
-          {saving !== "idle" && (
-            <div style={{ position: "sticky", top: 12, display: "flex", justifyContent: "flex-end", marginBottom: 12, zIndex: 2 }}>
-              {saving === "saving" ? (
-                <LoadingPill variant="compact" title={t.saving} />
-              ) : saving === "saved" ? (
-                <span
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 999,
-                    background: "color-mix(in srgb, var(--success, #22c55e) 18%, var(--card))",
-                    border: "1px solid color-mix(in srgb, var(--success, #22c55e) 40%, var(--border))",
-                    color: "var(--text)",
-                    fontWeight: 700,
-                    fontSize: 12,
-                    letterSpacing: 0.4,
-                  }}
-                >
-                  {t.saved}
-                </span>
-              ) : (
-                <span
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 999,
-                    background: "color-mix(in srgb, var(--danger, #ef4444) 16%, var(--card))",
-                    border: "1px solid color-mix(in srgb, var(--danger, #ef4444) 40%, var(--border))",
-                    color: "var(--text)",
-                    fontWeight: 700,
-                    fontSize: 12,
-                    letterSpacing: 0.4,
-                  }}
-                >
-                  {t.saveError}
-                </span>
-              )}
-            </div>
-          )}
           <div
             style={{
               borderRadius: 28,
