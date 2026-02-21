@@ -563,7 +563,7 @@ export default function CalendarClient({
             dot: "var(--primary)",
           },
           {
-            label: lang === "ro" ? "Viitoare" : "Upcoming",
+            label: lang === "ro" ? "Rezervări viitoare" : "Upcoming bookings",
             value: upcomingBookings,
             dot: "color-mix(in srgb, var(--text) 55%, transparent)",
           },
