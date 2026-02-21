@@ -549,10 +549,10 @@ export default function CalendarClient({
         style={{
           display: "grid",
           gridTemplateColumns: isSmall ? "1fr" : "repeat(3, minmax(0, 1fr))",
-          gap: 10,
-          padding: isSmall ? "0 2px" : "0 4px",
-          marginTop: -4,
-          marginBottom: 8,
+          gap: isSmall ? 8 : 12,
+          padding: isSmall ? "0 4px" : "0 6px",
+          marginTop: 0,
+          marginBottom: 10,
         }}
       >
         {[
@@ -580,17 +580,17 @@ export default function CalendarClient({
               display: "flex",
               alignItems: "center",
               gap: 10,
-              borderRadius: 14,
-              padding: "12px 14px",
-              background: "color-mix(in srgb, var(--card) 92%, transparent)",
-              border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
-              boxShadow: "0 12px 22px rgba(0,0,0,0.12)",
+              borderRadius: 16,
+              padding: isSmall ? "12px 14px" : "12px 16px",
+              background: "color-mix(in srgb, var(--card) 96%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--border) 65%, transparent)",
+              boxShadow: "0 10px 18px rgba(0,0,0,0.14)",
             }}
           >
             <span style={{ width: 8, height: 8, borderRadius: 999, background: item.dot, flexShrink: 0 }} />
             <div style={{ display: "grid", lineHeight: 1.2 }}>
-              <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 700 }}>{item.label}</span>
-              <span style={{ color: "var(--text)", fontSize: 17, fontWeight: 800 }}>{item.value}</span>
+              <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 700, letterSpacing: 0.1 }}>{item.label}</span>
+              <span style={{ color: "var(--text)", fontSize: 18, fontWeight: 800 }}>{item.value}</span>
             </div>
           </div>
         ))}
