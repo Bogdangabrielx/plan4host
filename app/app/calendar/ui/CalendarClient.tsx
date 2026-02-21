@@ -344,15 +344,21 @@ export default function CalendarClient({
   };
 
   function startQuickCreate() {
-    // Asigură că avem o proprietate selectată; dacă lipsește, selectăm prima.
-    if (!propertyId && properties[0]?.id) {
-      setPropertyId(properties[0].id);
+    // Asigură că avem o proprietate selectată; dacă lipsește, setează prima și reîncearcă după load.
+    if (!propertyId) {
+      if (properties[0]?.id) {
+        setPropertyId(properties[0].id);
+        setPendingQuickCreate(true);
+        refreshData();
+      }
+      return;
     }
     const currentPropertyId = propertyId || properties[0]?.id || null;
     if (!currentPropertyId) return;
-    // Dacă încă nu s-au încărcat camerele/datele, memorăm intenția.
+    // Dacă încă nu s-au încărcat camerele/datele, memorăm intenția și forțăm un refresh.
     if (!hasLoadedRooms || loading === "Loading") {
       setPendingQuickCreate(true);
+      refreshData();
       return;
     }
     openQuickCreateNow();
