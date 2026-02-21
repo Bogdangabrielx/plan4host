@@ -1333,7 +1333,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                     type="button"
                     onClick={() => {
                       setOpenRight(false);
-                      router.push("/app/account");
+                      // Folosește navigare hard pentru consistență cu restul item‑urilor din drawer
+                      // (evită cazurile când router-ul Next nu este încă hidratat pe mobil/PWA)
+                      hardNavigate("/app/account");
                     }}
                     style={{
                       background: "transparent",
