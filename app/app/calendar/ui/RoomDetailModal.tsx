@@ -777,6 +777,8 @@ export default function RoomDetailModal({
         paddingBottom: "calc(var(--safe-bottom) + 12px)",
         paddingLeft: "12px",
         paddingRight: "12px",
+        overflow: "hidden",
+        overscrollBehavior: "contain",
       }}
     >
       <div
@@ -876,6 +878,7 @@ export default function RoomDetailModal({
             WebkitOverflowScrolling: "touch",
             paddingTop: 0,
             paddingBottom: 0,
+            overscrollBehavior: "contain",
           }}
         >
           {/* Reservation toggle + dates */}
