@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useHeader } from "../_components/HeaderContext";
 import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 
@@ -280,6 +280,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     },
   } as const;
   const t = tr[lang];
+  const router = useRouter();
   const navLabel = (href: string, fallback: string) => t.labels[href] || fallback;
   const accountButtonLabel = t.accountMenuLabel;
   const accountButtonEmail = userEmail ?? t.accountEmailUnknown;
@@ -1328,9 +1329,12 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             >
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <AvatarBadge size={46} />
-                  <Link
-                    href="/app/account"
-                    onClick={() => setOpenRight(false)}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenRight(false);
+                      router.push("/app/account");
+                    }}
                     style={{
                       background: "transparent",
                       border: "none",
@@ -1341,12 +1345,11 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                       padding: 0,
                       font: "inherit",
                       cursor: "pointer",
-                      textDecoration: "none",
                     }}
                   >
                     <span style={{ fontSize: "var(--fs-s)", fontWeight: "var(--fw-bold)" }}>{accountButtonLabel}</span>
                     <span style={{ fontSize: "var(--fs-ss)", color: "var(--muted)" }}>{accountButtonEmail}</span>
-                  </Link>
+                  </button>
                 </div>
               <button
                 onClick={() => setOpenRight(false)}
