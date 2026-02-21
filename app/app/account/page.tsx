@@ -81,6 +81,16 @@ export default function AccountPage() {
   const [editingCompany, setEditingCompany] = useState(false);
   const [editingPhone, setEditingPhone] = useState(false);
   const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  // Ascunde scrollbar-ul pe ecrane mari doar pe această pagină (desktop)
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const main = document.getElementById("app-main");
+    if (main) main.setAttribute("data-account-nosb", "1");
+    return () => {
+      if (main) main.removeAttribute("data-account-nosb");
+    };
+  }, []);
   const updateAccount = async (payload: {
     name?: string;
     company?: string | null;
@@ -305,6 +315,21 @@ export default function AccountPage() {
 
   return (
     <AppShell currentPath="/app/account" title={t.pageTitle}>
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @media (min-width: 1024px) {
+              #app-main[data-account-nosb="1"]{
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+              #app-main[data-account-nosb="1"]::-webkit-scrollbar{
+                display: none;
+              }
+            }
+          `,
+        }}
+      />
       <div
         style={{
           minHeight: "100vh",
@@ -384,7 +409,7 @@ export default function AccountPage() {
                 fontSize: 34,
                 fontWeight: 800,
                 color: avatarUrl ? "#111827" : "#ffffff",
-                border: "5px solid #fff",
+                border: "1.5px solid #fff",
                 position: "absolute",
                 top: "50%",
                 transform: "translateY(-50%)",
