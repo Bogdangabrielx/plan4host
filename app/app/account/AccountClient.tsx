@@ -382,9 +382,10 @@ export default function AccountClient() {
           <LoadingPill title={t.saving} />
         </div>
       ) : (
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
+        <>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
             @media (min-width: 1024px) {
               #app-main[data-account-nosb="1"]{
                 scrollbar-width: none;
@@ -456,196 +457,197 @@ export default function AccountClient() {
               }
             }
           `,
-        }}
-      />
-      <div
-        style={{
-          minHeight: "100vh",
-          background:
-            "radial-gradient(circle at 20% 20%, rgba(79,70,229,0.12), transparent 22%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12), transparent 20%), var(--panel)",
-          color: "var(--text)",
-        }}
-      >
-        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 16px 72px" }}>
+            }}
+          />
           <div
             style={{
-              borderRadius: 28,
-              overflow: "visible",
-              background: "var(--panel)",
-              padding: "28px 28px 40px",
+              minHeight: "100vh",
+              background:
+                "radial-gradient(circle at 20% 20%, rgba(79,70,229,0.12), transparent 22%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12), transparent 20%), var(--panel)",
               color: "var(--text)",
-              position: "relative",
-              marginBottom: 28,
-              boxShadow: "0 20px 36px rgba(0,0,0,0.26)",
-              border: "1px solid color-mix(in srgb, var(--border) 90%, transparent)",
             }}
           >
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                backgroundImage:
-                  "radial-gradient(circle at 20% 20%, rgba(79,70,229,0.16), transparent 32%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12), transparent 28%)",
-                opacity: 0.5,
-                pointerEvents: "none",
-              }}
-            />
-            <div className="account-hero">
-              <div
-                className="account-hero__avatar"
-                style={{
-                  background: avatarUrl ? "var(--card)" : "linear-gradient(135deg, #25d366, #128c7e)",
-                  color: avatarUrl ? "#111827" : "#ffffff",
-                }}
-              >
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt=""
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                  />
-                ) : (
-                  initials
-                )}
-              </div>
-              <div className="account-hero__content">
-                <div className="account-hero__header">
-                  {isEditingName ? (
-                    <input
-                      value={editedName}
-                      onChange={(e) => setEditedName(e.currentTarget.value)}
-                      onBlur={finishNameEdit}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") finishNameEdit();
-                    }}
-                    autoFocus
-                    style={{
-                      fontSize: 30,
-                      fontWeight: 800,
-                      border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
-                      width: "100%",
-                      maxWidth: 420,
-                      background: "color-mix(in srgb, var(--panel) 92%, transparent)",
-                      color: "var(--text)",
-                      caretColor: "var(--text)",
-                      padding: "6px 10px",
-                      borderRadius: 10,
-                    }}
-                  />
-                  ) : (
-                    <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: -0.3 }}>{displayName || t.unknown}</h1>
-                  )}
-                  {!isEditingName && (
-                    <button
-                      type="button"
-                      aria-label="Edit name"
-                      onClick={() => setIsEditingName(true)}
-                      style={{
-                        border: "none",
-                        background: "transparent",
-                        borderRadius: 8,
-                        width: 32,
-                        height: 32,
-                        display: "grid",
-                        placeItems: "center",
-                        color: "var(--text)",
-                        cursor: "pointer",
-                        transition: "transform .12s ease",
-                      }}
-                      onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.96)")}
-                      onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                      onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                    >
-                      {pencilSvg}
-                    </button>
-                  )}
-                </div>
-                <p style={{ margin: "2px 0 0", color: "var(--muted)", opacity: 0.95, fontSize: 16 }}>{t.propertyManager}</p>
-                <div className="account-hero__badges">
-                  <span
-                    style={{
-                      padding: "6px 10px",
-                      borderRadius: 999,
-                      background: "color-mix(in srgb, var(--text) 14%, transparent)",
-                      color: "var(--text)",
-                      fontWeight: 700,
-                      fontSize: 12,
-                      letterSpacing: 0.5,
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {statusLabel}
-                  </span>
-                  <span
-                    style={{
-                      padding: "6px 10px",
-                      borderRadius: 999,
-                      background: "color-mix(in srgb, var(--text) 10%, transparent)",
-                      color: "var(--text)",
-                      fontSize: 12,
-                      letterSpacing: 0.4,
-                    }}
-                  >
-                    {statusDetail}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <section style={{ display: "grid", gap: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
-              <div style={{ fontSize: 24, fontWeight: 800 }}>{t.accountInformation}</div>
-              <span style={{ color: "var(--muted)", fontSize: 13 }}>{memberSince !== t.unknown ? `${t.memberSince}: ${memberSince}` : t.memberSince}</span>
-            </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 14,
-              }}
-            >
-              {renderField(
-                t.emailAddress,
-                user?.email ?? translations[lang].unknown,
-                "example@domain.com",
-                false,
-                () => {},
-                () => {},
-                () => {},
-                false
-              )}
-              {renderField(t.phoneNumber, phone || null, t.phonePlaceholder, editingPhone, () => setEditingPhone(true), setPhone, savePhone)}
-              {renderField(t.company, company || null, t.companyPlaceholder, editingCompany, () => setEditingCompany(true), setCompany, saveCompany)}
+            <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 16px 72px" }}>
               <div
                 style={{
-                  padding: 18,
-                  borderRadius: 14,
-                  background: "linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, transparent) 0%, var(--card) 100%)",
-                  border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
-                  boxShadow: "0 14px 32px rgba(15, 23, 42, 0.08)",
-                  display: "grid",
-                  gap: 6,
+                  borderRadius: 28,
+                  overflow: "visible",
+                  background: "var(--panel)",
+                  padding: "28px 28px 40px",
+                  color: "var(--text)",
+                  position: "relative",
+                  marginBottom: 28,
+                  boxShadow: "0 20px 36px rgba(0,0,0,0.26)",
+                  border: "1px solid color-mix(in srgb, var(--border) 90%, transparent)",
                 }}
               >
                 <div
                   style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    color: "var(--muted)",
-                    display: "flex",
-                    justifyContent: "space-between",
+                    position: "absolute",
+                    inset: 0,
+                    backgroundImage:
+                      "radial-gradient(circle at 20% 20%, rgba(79,70,229,0.16), transparent 32%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12), transparent 28%)",
+                    opacity: 0.5,
+                    pointerEvents: "none",
+                  }}
+                />
+                <div className="account-hero">
+                  <div
+                    className="account-hero__avatar"
+                    style={{
+                      background: avatarUrl ? "var(--card)" : "linear-gradient(135deg, #25d366, #128c7e)",
+                      color: avatarUrl ? "#111827" : "#ffffff",
+                    }}
+                  >
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt=""
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                      />
+                    ) : (
+                      initials
+                    )}
+                  </div>
+                  <div className="account-hero__content">
+                    <div className="account-hero__header">
+                      {isEditingName ? (
+                        <input
+                          value={editedName}
+                          onChange={(e) => setEditedName(e.currentTarget.value)}
+                          onBlur={finishNameEdit}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") finishNameEdit();
+                          }}
+                          autoFocus
+                          style={{
+                            fontSize: 30,
+                            fontWeight: 800,
+                            border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+                            width: "100%",
+                            maxWidth: 420,
+                            background: "color-mix(in srgb, var(--panel) 92%, transparent)",
+                            color: "var(--text)",
+                            caretColor: "var(--text)",
+                            padding: "6px 10px",
+                            borderRadius: 10,
+                          }}
+                        />
+                      ) : (
+                        <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: -0.3 }}>{displayName || t.unknown}</h1>
+                      )}
+                      {!isEditingName && (
+                        <button
+                          type="button"
+                          aria-label="Edit name"
+                          onClick={() => setIsEditingName(true)}
+                          style={{
+                            border: "none",
+                            background: "transparent",
+                            borderRadius: 8,
+                            width: 32,
+                            height: 32,
+                            display: "grid",
+                            placeItems: "center",
+                            color: "var(--text)",
+                            cursor: "pointer",
+                            transition: "transform .12s ease",
+                          }}
+                          onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.96)")}
+                          onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                          onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                        >
+                          {pencilSvg}
+                        </button>
+                      )}
+                    </div>
+                    <p style={{ margin: "2px 0 0", color: "var(--muted)", opacity: 0.95, fontSize: 16 }}>{t.propertyManager}</p>
+                    <div className="account-hero__badges">
+                      <span
+                        style={{
+                          padding: "6px 10px",
+                          borderRadius: 999,
+                          background: "color-mix(in srgb, var(--text) 14%, transparent)",
+                          color: "var(--text)",
+                          fontWeight: 700,
+                          fontSize: 12,
+                          letterSpacing: 0.5,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {statusLabel}
+                      </span>
+                      <span
+                        style={{
+                          padding: "6px 10px",
+                          borderRadius: 999,
+                          background: "color-mix(in srgb, var(--text) 10%, transparent)",
+                          color: "var(--text)",
+                          fontSize: 12,
+                          letterSpacing: 0.4,
+                        }}
+                      >
+                        {statusDetail}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <section style={{ display: "grid", gap: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+                  <div style={{ fontSize: 24, fontWeight: 800 }}>{t.accountInformation}</div>
+                  <span style={{ color: "var(--muted)", fontSize: 13 }}>{memberSince !== t.unknown ? `${t.memberSince}: ${memberSince}` : t.memberSince}</span>
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                    gap: 14,
                   }}
                 >
-                  <span>{t.memberSince}</span>
+                  {renderField(
+                    t.emailAddress,
+                    user?.email ?? translations[lang].unknown,
+                    "example@domain.com",
+                    false,
+                    () => {},
+                    () => {},
+                    () => {},
+                    false
+                  )}
+                  {renderField(t.phoneNumber, phone || null, t.phonePlaceholder, editingPhone, () => setEditingPhone(true), setPhone, savePhone)}
+                  {renderField(t.company, company || null, t.companyPlaceholder, editingCompany, () => setEditingCompany(true), setCompany, saveCompany)}
+                  <div
+                    style={{
+                      padding: 18,
+                      borderRadius: 14,
+                      background: "linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, transparent) 0%, var(--card) 100%)",
+                      border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+                      boxShadow: "0 14px 32px rgba(15, 23, 42, 0.08)",
+                      display: "grid",
+                      gap: 6,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        color: "var(--muted)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span>{t.memberSince}</span>
+                    </div>
+                    <div style={{ fontSize: "var(--fs-b)", fontWeight: 700 }}>{memberSince}</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: "var(--fs-b)", fontWeight: 700 }}>{memberSince}</div>
-              </div>
+              </section>
             </div>
-          </section>
-        </div>
-      </div>
+          </div>
+        </>
       )}
     </AppShell>
   );
