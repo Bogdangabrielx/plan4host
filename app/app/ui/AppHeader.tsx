@@ -965,8 +965,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                        height: isSmall ? 32 : 38,
 	                        display: "block",
 	                        backgroundColor: "currentColor",
-	                        WebkitMaskImage: "url(/svg_navigation.svg)",
-	                        maskImage: "url(/svg_navigation.svg)",
+	                        WebkitMaskImage: "url(/svg_more.svg)",
+	                        maskImage: "url(/svg_more.svg)",
                         WebkitMaskRepeat: "no-repeat",
                         maskRepeat: "no-repeat",
 	                        WebkitMaskPosition: "center",
@@ -1147,27 +1147,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 alignItems: "center",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span
-                  aria-hidden
-                  style={{
-                    width: 28,
-                    height: 28,
-                    display: "block",
-                    backgroundColor: "currentColor",
-                    WebkitMaskImage: "url(/svg_more.svg)",
-                    maskImage: "url(/svg_more.svg)",
-                    WebkitMaskRepeat: "no-repeat",
-                    maskRepeat: "no-repeat",
-                    WebkitMaskPosition: "center",
-                    maskPosition: "center",
-                    WebkitMaskSize: "20px 20px",
-                    maskSize: "20px 20px",
-                    opacity: 0.9,
-                  }}
-                />
-                <h2 style={drawerTitleStyle()}>{t.navigation}</h2>
-              </div>
+              <h2 style={drawerTitleStyle()}>{t.navigation}</h2>
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close"
