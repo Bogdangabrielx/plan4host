@@ -303,6 +303,9 @@ export default function AccountPage() {
             fontSize: "var(--fs-s)",
             fontFamily: "inherit",
             background: "var(--panel)",
+            color: "var(--text)",
+            caretColor: "var(--text)",
+            outline: "none",
           }}
         />
       ) : (
