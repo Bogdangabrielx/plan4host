@@ -340,6 +340,8 @@ export default function CalendarClient({
         b.end_date >= todayYmd
     ).length;
   }, [bookings, currentPropertyId, todayYmd]);
+  const isCurrentMonth =
+    today.getFullYear() === year && today.getMonth() === month;
   const totalUnits = useMemo(
     () => rooms.filter((r) => r.property_id === currentPropertyId).length,
     [rooms, currentPropertyId]
@@ -545,35 +547,53 @@ export default function CalendarClient({
       {/* Summary row: totals */}
       <div
         style={{
-          display: "flex",
-          gap: 16,
-          flexWrap: "wrap",
-          alignItems: "center",
+          display: "grid",
+          gridTemplateColumns: isSmall ? "1fr" : "repeat(3, minmax(0, 1fr))",
+          gap: 10,
           padding: isSmall ? "0 2px" : "0 4px",
-          marginTop: -6,
-          marginBottom: 6,
-          color: "var(--muted)",
-          fontWeight: 700,
-          fontSize: 13,
+          marginTop: -4,
+          marginBottom: 8,
         }}
       >
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 6, height: 6, borderRadius: 999, background: "var(--primary)" }} />
-          {lang === "ro" ? "Rezervări totale" : "Total bookings"}:{" "}
-          <span style={{ color: "var(--text)" }}>{totalBookings}</span>
-        </span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 6, height: 6, borderRadius: 999, background: "color-mix(in srgb, var(--text) 50%, transparent)" }} />
-          {lang === "ro" ? "Viitoare" : "Upcoming"}:{" "}
-          <span style={{ color: "var(--text)" }}>{upcomingBookings}</span>
-        </span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 6, height: 6, borderRadius: 999, background: "color-mix(in srgb, var(--success, #22c55e) 70%, transparent)" }} />
-          {lang === "ro" ? "Unități ocupate azi" : "Occupied today"}:{" "}
-          <span style={{ color: "var(--text)" }}>
-            {occupiedToday}/{totalUnits || "0"}
-          </span>
-        </span>
+        {[
+          {
+            label: lang === "ro" ? "Rezervări totale" : "Total bookings",
+            value: totalBookings,
+            dot: "var(--primary)",
+          },
+          {
+            label: lang === "ro" ? "Viitoare" : "Upcoming",
+            value: upcomingBookings,
+            dot: "color-mix(in srgb, var(--text) 55%, transparent)",
+          },
+          ...(isCurrentMonth
+            ? [{
+                label: lang === "ro" ? "Unități ocupate azi" : "Occupied today",
+                value: `${occupiedToday}/${totalUnits || "0"}`,
+                dot: "color-mix(in srgb, var(--success, #22c55e) 70%, transparent)",
+              }]
+            : []),
+        ].map((item) => (
+          <div
+            key={item.label}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              borderRadius: 14,
+              padding: "12px 14px",
+              background: "color-mix(in srgb, var(--card) 92%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+              boxShadow: "0 12px 22px rgba(0,0,0,0.12)",
+            }}
+          >
+            <span style={{ width: 8, height: 8, borderRadius: 999, background: item.dot, flexShrink: 0 }} />
+            <div style={{ display: "grid", lineHeight: 1.2 }}>
+              <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 700 }}>{item.label}</span>
+              <span style={{ color: "var(--text)", fontSize: 17, fontWeight: 800 }}>{item.value}</span>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* 🟢 MonthView în .modalCard cu trigger de mobil */}
@@ -629,7 +649,7 @@ export default function CalendarClient({
               display: "block",
               width: 22,
               height: 22,
-              backgroundColor: "currentColor",
+              backgroundColor: "var(--text)",
               WebkitMaskImage: "url(/svg_add_icon.svg)",
               maskImage: "url(/svg_add_icon.svg)",
               WebkitMaskRepeat: "no-repeat",
