@@ -560,8 +560,6 @@ export default function CalendarClient({
             border: "1px solid var(--border)",
             background: "var(--panel)",
             color: "var(--text)",
-            fontSize: 34,
-            fontWeight: 800,
             display: "grid",
             placeItems: "center",
             boxShadow: "0 18px 36px rgba(0,0,0,0.28)",
@@ -569,7 +567,23 @@ export default function CalendarClient({
             zIndex: 235,
           }}
         >
-          +
+          <span
+            aria-hidden
+            style={{
+              display: "block",
+              width: 22,
+              height: 22,
+              backgroundColor: "currentColor",
+              WebkitMaskImage: "url(/svg_add_icon.svg)",
+              maskImage: "url(/svg_add_icon.svg)",
+              WebkitMaskRepeat: "no-repeat",
+              maskRepeat: "no-repeat",
+              WebkitMaskPosition: "center",
+              maskPosition: "center",
+              WebkitMaskSize: "18px 18px",
+              maskSize: "18px 18px",
+            }}
+          />
         </button>
       )}
 
