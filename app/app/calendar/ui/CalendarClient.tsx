@@ -321,8 +321,17 @@ export default function CalendarClient({
   function refreshData() {
     setRefreshToken((x) => x + 1);
   }
+  const currentPropertyId = propertyId || properties[0]?.id || null;
+  const totalBookings = useMemo(
+    () => bookings.filter((b) => b.property_id === currentPropertyId).length,
+    [bookings, currentPropertyId]
+  );
+  const todayYmd = ymd(today);
+  const upcomingBookings = useMemo(
+    () => bookings.filter((b) => b.property_id === currentPropertyId && b.end_date >= todayYmd).length,
+    [bookings, currentPropertyId, todayYmd]
+  );
   const openQuickCreateNow = () => {
-    const currentPropertyId = propertyId || (properties[0]?.id ?? null);
     if (!currentPropertyId) return;
     if (!rooms.length) {
       setShowNoRoomsPopup(true);
@@ -518,6 +527,33 @@ export default function CalendarClient({
           </button>
         </div>
         <div style={{ flex: 1 }} />
+      </div>
+
+      {/* Summary row: totals */}
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          flexWrap: "wrap",
+          alignItems: "center",
+          padding: isSmall ? "0 2px" : "0 4px",
+          marginTop: -6,
+          marginBottom: 6,
+          color: "var(--muted)",
+          fontWeight: 700,
+          fontSize: 13,
+        }}
+      >
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 6, height: 6, borderRadius: 999, background: "var(--primary)" }} />
+          {lang === "ro" ? "Rezervări totale" : "Total bookings"}:{" "}
+          <span style={{ color: "var(--text)" }}>{totalBookings}</span>
+        </span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 6, height: 6, borderRadius: 999, background: "color-mix(in srgb, var(--text) 50%, transparent)" }} />
+          {lang === "ro" ? "Viitoare" : "Upcoming"}:{" "}
+          <span style={{ color: "var(--text)" }}>{upcomingBookings}</span>
+        </span>
       </div>
 
       {/* 🟢 MonthView în .modalCard cu trigger de mobil */}
