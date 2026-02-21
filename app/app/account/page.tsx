@@ -156,6 +156,32 @@ export default function AccountPage() {
     };
   }, [lang]);
 
+  // Încarcă număr de telefon/companie din profilul de facturare (dacă există)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/account", { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        const j = await res.json();
+        if (cancelled) return;
+        if (typeof j.phone === "string") setPhone(j.phone);
+        if (typeof j.company === "string") setCompany(j.company);
+        if (!displayName && typeof j.name === "string" && j.name.trim()) {
+          setDisplayName(j.name);
+          setEditedName(j.name);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Nu am putut încărca datele de profil", err);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [displayName]);
+
   const statusLabel = translations[lang].activeAccount;
   const statusDetail = translations[lang].statusDetail;
 
