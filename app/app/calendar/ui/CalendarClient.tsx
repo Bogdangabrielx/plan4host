@@ -547,11 +547,11 @@ export default function CalendarClient({
       {/* Summary row: totals */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: isSmall ? "1fr" : "repeat(3, minmax(0, 1fr))",
-          gap: isSmall ? 8 : 12,
-          padding: isSmall ? "0 4px" : "0 6px",
-          marginTop: 0,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: isSmall ? 8 : 10,
+          padding: isSmall ? "2px 4px" : "2px 6px",
+          marginTop: -2,
           marginBottom: 10,
         }}
       >
@@ -577,20 +577,20 @@ export default function CalendarClient({
           <div
             key={item.label}
             style={{
-              display: "flex",
+              display: "inline-flex",
               alignItems: "center",
-              gap: 10,
-              borderRadius: 16,
-              padding: isSmall ? "12px 14px" : "12px 16px",
-              background: "color-mix(in srgb, var(--card) 96%, transparent)",
-              border: "1px solid color-mix(in srgb, var(--border) 65%, transparent)",
-              boxShadow: "0 10px 18px rgba(0,0,0,0.14)",
+              gap: 8,
+              borderRadius: 999,
+              padding: "8px 12px",
+              background: "color-mix(in srgb, var(--card) 88%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--border) 55%, transparent)",
+              boxShadow: "0 6px 12px rgba(0,0,0,0.10)",
             }}
           >
             <span style={{ width: 8, height: 8, borderRadius: 999, background: item.dot, flexShrink: 0 }} />
             <div style={{ display: "grid", lineHeight: 1.2 }}>
-              <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 700, letterSpacing: 0.1 }}>{item.label}</span>
-              <span style={{ color: "var(--text)", fontSize: 18, fontWeight: 800 }}>{item.value}</span>
+              <span style={{ color: "var(--muted)", fontSize: 11, fontWeight: 700 }}>{item.label}</span>
+              <span style={{ color: "var(--text)", fontSize: 15, fontWeight: 800 }}>{item.value}</span>
             </div>
           </div>
         ))}
