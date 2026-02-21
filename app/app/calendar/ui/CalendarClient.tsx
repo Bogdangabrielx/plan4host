@@ -622,44 +622,70 @@ export default function CalendarClient({
         />
       )}
 
-      {/* Floating quick-add reservation button */}
+      {/* Floating quick-add reservation button + label */}
       {canEdit && propertyReady && (
-        <button
-          type="button"
-          aria-label={lang === "ro" ? "Adaugă rezervare" : "Add reservation"}
-          onClick={startQuickCreate}
+        <div
           style={{
             position: "fixed",
             right: 18,
             bottom: "calc(var(--nav-h) + var(--safe-bottom, 0px) + 16px)",
-            width: 62,
-            height: 62,
-            borderRadius: 999,
-            border: "1px solid var(--border)",
-            background: "var(--panel)",
-            color: "var(--text)",
-            display: "grid",
-            placeItems: "center",
-            boxShadow: "0 18px 36px rgba(0,0,0,0.28)",
-            cursor: "pointer",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 6,
             zIndex: 235,
+            pointerEvents: "none",
           }}
         >
-          <svg
-            aria-hidden
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--text)"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+          <span
+            style={{
+              pointerEvents: "none",
+              fontSize: 12,
+              fontWeight: 800,
+              color: "var(--text)",
+              textShadow: "0 2px 6px rgba(0,0,0,0.35)",
+            }}
           >
-            <line x1="12" y1="4" x2="12" y2="20" />
-            <line x1="4" y1="12" x2="20" y2="12" />
-          </svg>
-        </button>
+            {lang === "ro" ? "Rezervare nouă" : "New booking"}
+          </span>
+          <button
+            type="button"
+            aria-label={lang === "ro" ? "Adaugă rezervare" : "Add reservation"}
+            onClick={startQuickCreate}
+            style={{
+              pointerEvents: "auto",
+              width: 62,
+              height: 62,
+              borderRadius: 999,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
+              color: "var(--text)",
+              display: "grid",
+              placeItems: "center",
+              boxShadow: "0 18px 36px rgba(0,0,0,0.28)",
+              cursor: "pointer",
+              transition: "transform .12s ease",
+            }}
+            onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.96)")}
+            onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          >
+            <svg
+              aria-hidden
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--text)"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="12" y1="4" x2="12" y2="20" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+            </svg>
+          </button>
+        </div>
       )}
 
       {/* Year overlay */}

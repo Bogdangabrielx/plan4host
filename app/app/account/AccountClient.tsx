@@ -110,9 +110,28 @@ export default function AccountClient() {
   useEffect(() => {
     if (typeof document === "undefined") return;
     const main = document.getElementById("app-main");
+    const prevOverflow = main?.style.overflow || "";
+    const prevHeight = main?.style.height || "";
     if (main) main.setAttribute("data-account-nosb", "1");
+    const applyDesktopLock = () => {
+      if (!main) return;
+      if (window.innerWidth >= 1024) {
+        main.style.overflow = "hidden";
+        main.style.height = "100dvh";
+      } else {
+        main.style.overflow = prevOverflow || "auto";
+        main.style.height = prevHeight || "";
+      }
+    };
+    applyDesktopLock();
+    window.addEventListener("resize", applyDesktopLock);
     return () => {
-      if (main) main.removeAttribute("data-account-nosb");
+      window.removeEventListener("resize", applyDesktopLock);
+      if (main) {
+        main.removeAttribute("data-account-nosb");
+        main.style.overflow = prevOverflow;
+        main.style.height = prevHeight;
+      }
     };
   }, []);
 
@@ -391,6 +410,7 @@ export default function AccountClient() {
                 scrollbar-width: none;
                 -ms-overflow-style: none;
                 overflow: hidden;
+                height: 100dvh;
               }
               #app-main[data-account-nosb="1"]::-webkit-scrollbar{
                 display: none;
