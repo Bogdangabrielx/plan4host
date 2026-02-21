@@ -491,7 +491,7 @@ export default function CalendarClient({
           style={{
             position: "fixed",
             right: 18,
-            bottom: "calc(18px + var(--safe-bottom, 0px))",
+            bottom: "calc(var(--nav-h) + var(--safe-bottom, 0px) + 16px)",
             width: 62,
             height: 62,
             borderRadius: 999,
