@@ -123,10 +123,10 @@ export default function AccountPage() {
   }, [lang, setTitle]);
 
   useEffect(() => {
-    const sb = createClient();
     let mounted = true;
     (async () => {
       try {
+        const sb = createClient();
         const { data } = await sb.auth.getUser();
         if (!mounted) return;
         const profile = data.user;
@@ -143,8 +143,10 @@ export default function AccountPage() {
         const finalName = candidate || fallback || translations[lang].unknown;
         setDisplayName(finalName);
         setEditedName(finalName);
-      } catch {
+      } catch (err) {
         if (!mounted) return;
+        console.error("Nu am putut încărca profilul utilizatorului", err);
+        setUser(null);
         setDisplayName(null);
         setEditedName("");
       }
