@@ -14,6 +14,10 @@ const DayModal: any = dynamic(
   () => import("./DayModal").then((m: any) => m.default ?? m.DayModal ?? (() => null)),
   { ssr: false }
 );
+const RoomDetailModal: any = dynamic(
+  () => import("./RoomDetailModal").then((m: any) => m.default ?? m.RoomDetailModal ?? (() => null)),
+  { ssr: false }
+);
 
 type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null };
 type Room = { id: string; name: string; property_id: string };
@@ -113,9 +117,11 @@ export default function CalendarClient({
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading]   = useState<"Idle"|"Loading"|"Error">("Idle");
   const [hasLoadedRooms, setHasLoadedRooms] = useState<boolean>(false);
+  const [refreshToken, setRefreshToken] = useState(0);
 
   // Day modal (only Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
+  const [createTarget, setCreateTarget] = useState<{ room: Room; date: string } | null>(null);
   
 
   // Year overlay + month picker
@@ -230,7 +236,7 @@ export default function CalendarClient({
         setHasLoadedRooms(true);
       }
     })();
-  }, [propertyId, view, year, month, supabase]);
+  }, [propertyId, view, year, month, supabase, refreshToken]);
   // If the selected property has no rooms yet, guide the user with a custom popup
   useEffect(() => {
     if (!propertyId) return;
@@ -291,6 +297,19 @@ export default function CalendarClient({
       setHighlightDate(null);
     }
     setShowDatePicker(false);
+  }
+  function refreshData() {
+    setRefreshToken((x) => x + 1);
+  }
+  function startQuickCreate() {
+    if (!propertyReady || !propertyId) return;
+    if (!rooms.length) {
+      setShowNoRoomsPopup(true);
+      return;
+    }
+    const room = rooms.find((r) => r.property_id === propertyId) ?? rooms[0];
+    const baseDate = highlightDate ?? ymd(today);
+    setCreateTarget({ room, date: baseDate });
   }
 
   // Auto focus input în popover
@@ -451,6 +470,35 @@ export default function CalendarClient({
         />
       )}
 
+      {/* Floating quick-add reservation button */}
+      {canEdit && propertyReady && (
+        <button
+          type="button"
+          aria-label={lang === "ro" ? "Adaugă rezervare" : "Add reservation"}
+          onClick={startQuickCreate}
+          style={{
+            position: "fixed",
+            right: 18,
+            bottom: "calc(18px + var(--safe-bottom, 0px))",
+            width: 60,
+            height: 60,
+            borderRadius: 999,
+            border: "none",
+            background: "linear-gradient(135deg, #3b82f6, #22c55e)",
+            color: "#0c111b",
+            fontSize: 32,
+            fontWeight: 800,
+            display: "grid",
+            placeItems: "center",
+            boxShadow: "0 18px 36px rgba(0,0,0,0.28)",
+            cursor: "pointer",
+            zIndex: 235,
+          }}
+        >
+          +
+        </button>
+      )}
+
       {/* Year overlay */}
       {showYear && (
         <div
@@ -554,6 +602,27 @@ export default function CalendarClient({
           initialMonth={month}
           canEdit={canEdit}
           onClose={() => setShowRoomView(false)}
+        />
+      )}
+      {createTarget && propertyId && (
+        <RoomDetailModal
+          dateStr={createTarget.date}
+          propertyId={propertyId}
+          room={createTarget.room}
+          lang={lang}
+          forceNew
+          defaultStart={{
+            date: createTarget.date,
+            time: (properties.find((p) => p.id === propertyId)?.check_in_time) || null,
+          }}
+          defaultEnd={{
+            date: addDaysStr(createTarget.date, 1),
+            time: (properties.find((p) => p.id === propertyId)?.check_out_time) || null,
+          }}
+          onClose={() => setCreateTarget(null)}
+          onChanged={() => {
+            refreshData();
+          }}
         />
       )}
 
