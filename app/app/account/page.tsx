@@ -382,22 +382,22 @@ export default function AccountPage() {
             style={{
               borderRadius: 28,
               overflow: "visible",
-              background:
-                "linear-gradient(140deg, rgba(15,23,42,0.92) 0%, rgba(30,41,59,0.9) 55%, rgba(79,70,229,0.55) 85%, rgba(14,165,233,0.6) 100%)",
+              background: "var(--panel)",
               padding: "28px 28px 40px",
               color: "#fff",
               position: "relative",
               marginBottom: 28,
-              boxShadow: "0 24px 48px rgba(14,165,233,0.25)",
-              border: "1px solid color-mix(in srgb, #0ea5e9 35%, transparent)",
+              boxShadow: "0 20px 36px rgba(0,0,0,0.26)",
+              border: "1px solid color-mix(in srgb, var(--border) 90%, transparent)",
             }}
           >
             <div
               style={{
                 position: "absolute",
                 inset: 0,
-                backgroundImage: "radial-gradient(circle at 30% 20%, rgba(255,255,255,0.16) 0, transparent 30%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.12) 0, transparent 32%)",
-                opacity: 0.6,
+                backgroundImage:
+                  "radial-gradient(circle at 20% 20%, rgba(79,70,229,0.16), transparent 32%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12), transparent 28%)",
+                opacity: 0.5,
                 pointerEvents: "none",
               }}
             />
