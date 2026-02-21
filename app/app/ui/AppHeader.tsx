@@ -96,6 +96,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const [navBtnPressed, setNavBtnPressed] = useState(false);
   const [mgmtBtnHover, setMgmtBtnHover] = useState(false);
   const [mgmtBtnPressed, setMgmtBtnPressed] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
 
   // Theme
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -233,6 +235,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       setup: "Setup",
       account: "Account",
       other: "Other",
+      accountMenuLabel: "My account",
+      accountEmailUnknown: "Unknown email",
       labels: {
         "/app/dashboard": "Dashboard",
         "/app/calendar": "Calendar",
@@ -257,6 +261,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       setup: "Setari",
       account: "Cont",
       other: "Altele",
+      accountMenuLabel: "Contul meu",
+      accountEmailUnknown: "Email necunoscut",
       labels: {
         "/app/dashboard": "Control",
         "/app/calendar": "Calendar",
@@ -275,6 +281,13 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   } as const;
   const t = tr[lang];
   const navLabel = (href: string, fallback: string) => t.labels[href] || fallback;
+  const accountButtonLabel = t.accountMenuLabel;
+  const accountButtonEmail = userEmail ?? t.accountEmailUnknown;
+  const placeholderInitials = (() => {
+    if (!userEmail) return "MY";
+    const localPart = userEmail.split("@")[0] || "";
+    return localPart.substring(0, 2).toUpperCase() || "MY";
+  })();
   const translateTitle = (value: string): string => {
     if (lang !== "ro") return value;
     const key = value.trim().toLowerCase();
@@ -356,6 +369,34 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       cancelled = true;
     };
   }, [activePropertyId, mounted]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const sb = createSupabaseClient();
+    (async () => {
+      try {
+        const { data } = await sb.auth.getUser();
+        if (!cancelled) {
+          setUserEmail(data.user?.email ?? null);
+          const metadata = data.user?.user_metadata as Record<string, any> | undefined;
+          const avatar =
+            metadata?.avatar_url ||
+            metadata?.picture ||
+            metadata?.provider_avatar ||
+            null;
+          setUserAvatarUrl(avatar);
+        }
+      } catch {
+        if (!cancelled) {
+          setUserEmail(null);
+          setUserAvatarUrl(null);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   // Preload theme-specific nav icons to reduce flicker
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -965,15 +1006,17 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   setOpen(false);
                 }}
                 onPointerEnter={() => setMgmtBtnHover(true)}
-                onPointerLeave={() => { setMgmtBtnHover(false); setMgmtBtnPressed(false); }}
+                onPointerLeave={() => {
+                  setMgmtBtnHover(false);
+                  setMgmtBtnPressed(false);
+                }}
                 onPointerDown={() => setMgmtBtnPressed(true)}
                 onPointerUp={() => setMgmtBtnPressed(false)}
                 onPointerCancel={() => setMgmtBtnPressed(false)}
-                aria-label="Open management menu"
+                aria-label={`${accountButtonLabel} menu`}
                 style={{
-                  width: isSmall ? 40 : 46,
-                  height: isSmall ? 40 : 46,
-                  padding: 0,
+                  minWidth: isSmall ? 100 : 150,
+                  padding: isSmall ? "6px 10px" : "8px 16px",
                   borderRadius: 999,
                   border: "1px solid",
                   borderColor: openRight
@@ -987,6 +1030,8 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   cursor: "pointer",
                   display: "grid",
                   placeItems: "center",
+                  gap: 2,
+                  textAlign: "center",
                   boxShadow: mgmtBtnPressed
                     ? "0 6px 16px rgba(0,0,0,0.14), inset 0 0 0 2px rgba(0,0,0,0.28)"
                     : (mgmtBtnHover || openRight)
@@ -1000,28 +1045,59 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   transition: "transform .12s ease, box-shadow .15s ease, border-color .15s ease",
                 }}
               >
-                {mounted ? (
-                  <span
-                    aria-hidden
-                    style={{
-                      width: isSmall ? 32 : 38,
-                      height: isSmall ? 32 : 38,
-                      display: "block",
-                      backgroundColor: "currentColor",
-                      WebkitMaskImage: "url(/svg_more.svg)",
-                      maskImage: "url(/svg_more.svg)",
-                      WebkitMaskRepeat: "no-repeat",
-                      maskRepeat: "no-repeat",
-                      WebkitMaskPosition: "center",
-                      maskPosition: "center",
-                      WebkitMaskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
-                      maskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
-                      pointerEvents: "none",
-                    }}
-                  />
-                ) : (
-                  <>⋯</>
-                )}
+                <span
+                  style={{
+                    width: isSmall ? 32 : 36,
+                    height: isSmall ? 32 : 36,
+                    borderRadius: 999,
+                    overflow: "hidden",
+                    background:
+                      userAvatarUrl
+                        ? "var(--card)"
+                        : "linear-gradient(135deg, #25d366, #128c7e)",
+                    display: "grid",
+                    placeItems: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {userAvatarUrl ? (
+                    <img
+                      src={userAvatarUrl}
+                      alt=""
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    />
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        color: "#fff",
+                        fontWeight: 700,
+                        letterSpacing: "0.08em",
+                        fontSize: isSmall ? 12 : 14,
+                      }}
+                    >
+                      {placeholderInitials}
+                    </span>
+                  )}
+                </span>
+                <span
+                  style={{
+                    fontSize: "var(--fs-s)",
+                    fontWeight: "var(--fw-bold)",
+                    textTransform: "none",
+                  }}
+                >
+                  {accountButtonLabel}
+                </span>
+                <span
+                  style={{
+                    fontSize: "var(--fs-ss)",
+                    lineHeight: "var(--lh-s)",
+                    color: "var(--muted)",
+                  }}
+                >
+                  {accountButtonEmail}
+                </span>
               </button>
             </div>
           </>
