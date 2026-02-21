@@ -412,7 +412,7 @@ export default function AccountPage() {
                 fontSize: 34,
                 fontWeight: 800,
                 color: avatarUrl ? "#111827" : "#ffffff",
-                border: "1.5px solid #fff",
+                border: "2.5px solid #fff",
                 position: "absolute",
                 top: "50%",
                 transform: "translateY(-50%)",
