@@ -337,9 +337,16 @@ export default function CalendarClient({
   };
 
   function startQuickCreate() {
-    if (!propertyReady) return;
-    const currentPropertyId = propertyId || (properties[0]?.id ?? null);
+    // Asigură că avem o proprietate selectată; dacă lipsește, selectăm prima.
+    if (!propertyId && properties[0]?.id) {
+      setPropertyId(properties[0].id);
+    }
+    const currentPropertyId = propertyId || properties[0]?.id || null;
     if (!currentPropertyId) return;
+    if (!propertyReady) {
+      setPendingQuickCreate(true);
+      return;
+    }
     if (!hasLoadedRooms || loading === "Loading") {
       setPendingQuickCreate(true);
       return;
@@ -348,11 +355,11 @@ export default function CalendarClient({
   }
 
   useEffect(() => {
-    if (pendingQuickCreate && hasLoadedRooms && loading === "Idle") {
+    if (pendingQuickCreate && propertyReady && propertyId && hasLoadedRooms && loading === "Idle") {
       setPendingQuickCreate(false);
       openQuickCreateNow();
     }
-  }, [pendingQuickCreate, hasLoadedRooms, loading]);
+  }, [pendingQuickCreate, hasLoadedRooms, loading, propertyReady, propertyId]);
 
   // Auto focus input în popover
   useEffect(() => {
