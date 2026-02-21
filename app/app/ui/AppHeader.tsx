@@ -1049,10 +1049,11 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 onPointerDown={() => setMgmtBtnPressed(true)}
                 onPointerUp={() => setMgmtBtnPressed(false)}
                 onPointerCancel={() => setMgmtBtnPressed(false)}
-                aria-label={`${accountButtonLabel} menu`}
+                aria-label="Open management menu"
                 style={{
-                  minWidth: isSmall ? 100 : 150,
-                  padding: isSmall ? "6px 10px" : "8px 16px",
+                  width: isSmall ? 40 : 46,
+                  height: isSmall ? 40 : 46,
+                  padding: 0,
                   borderRadius: 999,
                   border: "1px solid",
                   borderColor: openRight
@@ -1066,8 +1067,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   cursor: "pointer",
                   display: "grid",
                   placeItems: "center",
-                  gap: 2,
-                  textAlign: "center",
                   boxShadow: mgmtBtnPressed
                     ? "0 6px 16px rgba(0,0,0,0.14), inset 0 0 0 2px rgba(0,0,0,0.28)"
                     : (mgmtBtnHover || openRight)
@@ -1081,25 +1080,28 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   transition: "transform .12s ease, box-shadow .15s ease, border-color .15s ease",
                 }}
               >
-                <AvatarBadge size={isSmall ? 32 : 36} />
-                <span
-                  style={{
-                    fontSize: "var(--fs-s)",
-                    fontWeight: "var(--fw-bold)",
-                    textTransform: "none",
-                  }}
-                >
-                  {accountButtonLabel}
-                </span>
-                <span
-                  style={{
-                    fontSize: "var(--fs-ss)",
-                    lineHeight: "var(--lh-s)",
-                    color: "var(--muted)",
-                  }}
-                >
-                  {accountButtonEmail}
-                </span>
+                {mounted ? (
+                  <span
+                    aria-hidden
+                    style={{
+                      width: isSmall ? 32 : 38,
+                      height: isSmall ? 32 : 38,
+                      display: "block",
+                      backgroundColor: "currentColor",
+                      WebkitMaskImage: "url(/svg_more.svg)",
+                      maskImage: "url(/svg_more.svg)",
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                      WebkitMaskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
+                      maskSize: `${isSmall ? 24 : 28}px ${isSmall ? 24 : 28}px`,
+                      pointerEvents: "none",
+                    }}
+                  />
+                ) : (
+                  <>⋯</>
+                )}
               </button>
             </div>
           </>
