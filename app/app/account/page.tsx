@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import AppShell from "../_components/AppShell";
+import { useHeader } from "../_components/HeaderContext";
 
 const LANG_MAP = ["en", "ro"] as const;
 type Lang = (typeof LANG_MAP)[number];
@@ -67,6 +68,26 @@ const pencilSvg = (
     }}
   />
 );
+
+type Labels = (typeof translations)[Lang];
+
+function PillBridge({
+  state,
+  t,
+}: {
+  state: "idle" | "saving" | "saved" | "error";
+  t: Labels;
+}) {
+  const { setPill } = useHeader();
+  useEffect(() => {
+    if (state === "saving") setPill(<span>{t.saving}</span>);
+    else if (state === "saved") setPill(<span data-p4h-overlay="message">{t.saved}</span>);
+    else if (state === "error") setPill(<span data-p4h-overlay="message">{t.saveError}</span>);
+    else setPill(null);
+    return () => setPill(null);
+  }, [state, setPill, t]);
+  return null;
+}
 
 export default function AccountPage() {
   const [lang, setLang] = useState<Lang>("en");
@@ -322,6 +343,7 @@ export default function AccountPage() {
 
   return (
     <AppShell currentPath="/app/account" title={t.pageTitle}>
+      <PillBridge state={saving} t={t} />
       <style
         dangerouslySetInnerHTML={{
           __html: `
