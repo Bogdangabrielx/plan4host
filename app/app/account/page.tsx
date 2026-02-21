@@ -72,6 +72,7 @@ const pencilSvg = (
 export default function AccountPage() {
   const [lang, setLang] = useState<Lang>("en");
   const [user, setUser] = useState<any>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState("");
@@ -133,6 +134,12 @@ export default function AccountPage() {
           metadata.given_name ||
           metadata.preferred_username ||
           null;
+        const avatar =
+          metadata?.avatar_url ||
+          metadata?.picture ||
+          metadata?.provider_avatar ||
+          null;
+        setAvatarUrl(avatar || null);
         const fallback = profile?.email?.split("@")[0] || null;
         const finalName = candidate || fallback || translations[lang].unknown;
         setDisplayName(finalName);
@@ -227,21 +234,37 @@ export default function AccountPage() {
     <div
       style={{
         padding: 18,
-        borderRadius: 12,
-        background: "var(--card)",
-        boxShadow: "0 12px 24px rgba(15, 23, 42, 0.08)",
+        borderRadius: 14,
+        background: "linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, transparent) 0%, var(--card) 100%)",
+        border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+        boxShadow: "0 14px 32px rgba(15, 23, 42, 0.08)",
         display: "grid",
-        gap: 6,
+        gap: 8,
+        transition: "transform .12s ease, box-shadow .16s ease",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700, textTransform: "uppercase", color: "var(--muted)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.08, color: "var(--muted)" }}>
         <span>{label}</span>
         {allowEdit && (
           <button
             type="button"
             aria-label={`Edit ${label}`}
             onClick={onEdit}
-            style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--text)" }}
+            style={{
+              border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+              background: "color-mix(in srgb, var(--card) 90%, transparent)",
+              cursor: "pointer",
+              color: "var(--text)",
+              borderRadius: 10,
+              width: 32,
+              height: 32,
+              display: "grid",
+              placeItems: "center",
+              transition: "background .12s ease, transform .1s ease",
+            }}
+            onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.96)")}
+            onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
           >
             {pencilSvg}
           </button>
@@ -256,15 +279,16 @@ export default function AccountPage() {
           placeholder={placeholder}
           style={{
             width: "100%",
-            padding: "8px 10px",
-            borderRadius: 8,
-            border: "1px solid var(--border)",
+            padding: "10px 12px",
+            borderRadius: 10,
+            border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
             fontSize: "var(--fs-s)",
             fontFamily: "inherit",
+            background: "var(--panel)",
           }}
         />
       ) : (
-        <div style={{ fontSize: "var(--fs-b)", fontWeight: 600, minHeight: 24 }}>
+        <div style={{ fontSize: "var(--fs-b)", fontWeight: 600, minHeight: 24, color: value ? "var(--text)" : "var(--muted)" }}>
           {value || placeholder}
         </div>
       )}
@@ -273,169 +297,198 @@ export default function AccountPage() {
 
   return (
     <AppShell currentPath="/app/account" title={t.pageTitle}>
-      <div style={{ minHeight: "100vh", background: "var(--panel)", color: "var(--text)" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto", padding: "32px 16px 64px" }}>
-        <div
-          style={{
-            borderRadius: 26,
-            overflow: "hidden",
-            background: "linear-gradient(135deg, #1c64f2, #4f46e5)",
-            padding: "32px 32px 48px",
-            color: "#fff",
-            position: "relative",
-            marginBottom: 32,
-          }}
-        >
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "radial-gradient(circle at 20% 20%, rgba(79,70,229,0.12), transparent 22%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12), transparent 20%), var(--panel)",
+          color: "var(--text)",
+        }}
+      >
+        <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 16px 72px" }}>
           <div
             style={{
-              width: 100,
-              height: 100,
-              borderRadius: 999,
-              background: "#fcd34d",
-              display: "grid",
-              placeItems: "center",
-              fontSize: 32,
-              fontWeight: 700,
-              color: "#111827",
-              border: "4px solid #fff",
-              position: "absolute",
-              top: -50,
-              left: 32,
+              borderRadius: 28,
+              overflow: "hidden",
+              background: "linear-gradient(120deg, #0ea5e9, #6366f1)",
+              padding: "28px 28px 40px",
+              color: "#fff",
+              position: "relative",
+              marginBottom: 28,
+              boxShadow: "0 24px 48px rgba(59,130,246,0.35)",
             }}
           >
-            {initials}
-          </div>
-          <div style={{ marginLeft: 140 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              {isEditingName ? (
-                <input
-                  value={editedName}
-                  onChange={(e) => setEditedName(e.currentTarget.value)}
-                  onBlur={finishNameEdit}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      finishNameEdit();
-                    }
-                  }}
-                  autoFocus
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 700,
-                    border: "none",
-                    width: "100%",
-                    background: "transparent",
-                    color: "#fff",
-                  }}
-                />
-              ) : (
-                <h1 style={{ margin: 0, fontSize: 32, fontWeight: 700 }}>{displayName || t.unknown}</h1>
-              )}
-              {!isEditingName && (
-                <button
-                  type="button"
-                  aria-label="Edit name"
-                  onClick={() => setIsEditingName(true)}
-                  style={{
-                    border: "none",
-                    background: "rgba(255,255,255,0.15)",
-                    borderRadius: 8,
-                    width: 36,
-                    height: 36,
-                    display: "grid",
-                    placeItems: "center",
-                    color: "#fff",
-                    cursor: "pointer",
-                  }}
-                >
-                  {pencilSvg}
-                </button>
-              )}
-            </div>
-            <p style={{ margin: "8px 0 0", color: "rgba(255,255,255,0.85)" }}>{t.propertyManager}</p>
-          </div>
-        </div>
-
-        <section style={{ display: "grid", gap: 16 }}>
-          <div style={{ fontSize: 24, fontWeight: 700 }}>{t.accountInformation}</div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: 16,
-            }}
-          >
-            {renderField(
-              t.emailAddress,
-              user?.email ?? translations[lang].unknown,
-              "example@domain.com",
-              false,
-              () => {},
-              () => {},
-              () => {},
-              false
-            )}
-            {renderField(
-              t.phoneNumber,
-              phone || null,
-              t.phonePlaceholder,
-              editingPhone,
-              () => setEditingPhone(true),
-              setPhone,
-              savePhone
-            )}
-            {renderField(
-              t.company,
-              company || null,
-              t.companyPlaceholder,
-              editingCompany,
-              () => setEditingCompany(true),
-              setCompany,
-              saveCompany
-            )}
             <div
               style={{
-                padding: 18,
-                borderRadius: 12,
-                background: "var(--card)",
-                boxShadow: "0 12px 24px rgba(15, 23, 42, 0.08)",
+                position: "absolute",
+                inset: 0,
+                backgroundImage: "radial-gradient(circle at 30% 20%, rgba(255,255,255,0.16) 0, transparent 30%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.12) 0, transparent 32%)",
+                opacity: 0.6,
+                pointerEvents: "none",
+              }}
+            />
+            <div
+              style={{
+                width: 110,
+                height: 110,
+                borderRadius: 999,
+                background: avatarUrl ? "var(--card)" : "#fcd34d",
                 display: "grid",
-                gap: 6,
+                placeItems: "center",
+                fontSize: 34,
+                fontWeight: 800,
+                color: "#111827",
+                border: "5px solid #fff",
+                position: "absolute",
+                top: -55,
+                left: 28,
+                boxShadow: "0 16px 36px rgba(0,0,0,0.22)",
+                overflow: "hidden",
               }}
             >
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  color: "var(--muted)",
-                  display: "flex",
-                  justifyContent: "space-between",
-                }}
-              >
-                <span>{t.memberSince}</span>
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                />
+              ) : (
+                initials
+              )}
+            </div>
+            <div style={{ marginLeft: 150, position: "relative", zIndex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                {isEditingName ? (
+                  <input
+                    value={editedName}
+                    onChange={(e) => setEditedName(e.currentTarget.value)}
+                    onBlur={finishNameEdit}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") finishNameEdit();
+                    }}
+                    autoFocus
+                    style={{
+                      fontSize: 30,
+                      fontWeight: 800,
+                      border: "none",
+                      width: "100%",
+                      maxWidth: 420,
+                      background: "rgba(255,255,255,0.14)",
+                      color: "#fff",
+                      padding: "6px 10px",
+                      borderRadius: 10,
+                    }}
+                  />
+                ) : (
+                  <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: -0.3 }}>{displayName || t.unknown}</h1>
+                )}
+                {!isEditingName && (
+                  <button
+                    type="button"
+                    aria-label="Edit name"
+                    onClick={() => setIsEditingName(true)}
+                    style={{
+                      border: "1px solid rgba(255,255,255,0.35)",
+                      background: "rgba(255,255,255,0.18)",
+                      borderRadius: 10,
+                      width: 38,
+                      height: 38,
+                      display: "grid",
+                      placeItems: "center",
+                      color: "#fff",
+                      cursor: "pointer",
+                      transition: "transform .12s ease, background .12s ease",
+                    }}
+                    onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.96)")}
+                    onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                    onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                  >
+                    {pencilSvg}
+                  </button>
+                )}
               </div>
-              <div style={{ fontSize: "var(--fs-b)", fontWeight: 600 }}>{memberSince}</div>
+              <p style={{ margin: "10px 0 0", color: "rgba(255,255,255,0.88)", fontSize: 16 }}>{t.propertyManager}</p>
+              <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
+                <span
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    background: "rgba(255,255,255,0.18)",
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {statusLabel}
+                </span>
+                <span
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    background: "rgba(255,255,255,0.12)",
+                    color: "rgba(255,255,255,0.9)",
+                    fontSize: 12,
+                    letterSpacing: 0.4,
+                  }}
+                >
+                  {statusDetail}
+                </span>
+              </div>
             </div>
           </div>
-        </section>
 
-        <section style={{ marginTop: 32, display: "grid", gap: 12 }}>
-          <div style={{ fontSize: 24, fontWeight: 700 }}>{t.accountStatus}</div>
-          <div
-            style={{
-              borderRadius: 14,
-              padding: "18px 20px",
-              background: "rgba(16, 185, 129, 0.08)",
-              border: "1px solid rgba(16, 185, 129, 0.4)",
-              display: "grid",
-              gap: 4,
-              color: "#047857",
-            }}
-          >
-            <span style={{ fontWeight: 700 }}>{statusLabel}</span>
-            <span style={{ fontSize: "var(--fs-s)" }}>{statusDetail}</span>
-          </div>
-        </section>
+          <section style={{ display: "grid", gap: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+              <div style={{ fontSize: 24, fontWeight: 800 }}>{t.accountInformation}</div>
+              <span style={{ color: "var(--muted)", fontSize: 13 }}>{memberSince !== t.unknown ? `${t.memberSince}: ${memberSince}` : t.memberSince}</span>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: 14,
+              }}
+            >
+              {renderField(
+                t.emailAddress,
+                user?.email ?? translations[lang].unknown,
+                "example@domain.com",
+                false,
+                () => {},
+                () => {},
+                () => {},
+                false
+              )}
+              {renderField(t.phoneNumber, phone || null, t.phonePlaceholder, editingPhone, () => setEditingPhone(true), setPhone, savePhone)}
+              {renderField(t.company, company || null, t.companyPlaceholder, editingCompany, () => setEditingCompany(true), setCompany, saveCompany)}
+              <div
+                style={{
+                  padding: 18,
+                  borderRadius: 14,
+                  background: "linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, transparent) 0%, var(--card) 100%)",
+                  border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+                  boxShadow: "0 14px 32px rgba(15, 23, 42, 0.08)",
+                  display: "grid",
+                  gap: 6,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    color: "var(--muted)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span>{t.memberSince}</span>
+                </div>
+                <div style={{ fontSize: "var(--fs-b)", fontWeight: 700 }}>{memberSince}</div>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </AppShell>
