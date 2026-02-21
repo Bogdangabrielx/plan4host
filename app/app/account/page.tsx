@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import AppShell from "../_components/AppShell";
+import LoadingPill from "../_components/LoadingPill";
 
 const LANG_MAP = ["en", "ro"] as const;
 type Lang = (typeof LANG_MAP)[number];
@@ -10,6 +11,9 @@ type Lang = (typeof LANG_MAP)[number];
 const translations = {
   en: {
     pageTitle: "My Account",
+    saving: "Saving…",
+    saved: "Saved",
+    saveError: "Save failed",
     propertyManager: "Property Manager",
     accountInformation: "Account Information",
     emailAddress: "Email Address",
@@ -26,6 +30,9 @@ const translations = {
   },
   ro: {
     pageTitle: "Contul meu",
+    saving: "Se salvează…",
+    saved: "Salvat",
+    saveError: "Eroare la salvare",
     propertyManager: "Manager Proprietate",
     accountInformation: "Informații cont",
     emailAddress: "Adresă de email",
@@ -80,19 +87,27 @@ export default function AccountPage() {
   const [phone, setPhone] = useState("");
   const [editingCompany, setEditingCompany] = useState(false);
   const [editingPhone, setEditingPhone] = useState(false);
+  const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const updateAccount = async (payload: {
     name?: string;
     company?: string | null;
     phone?: string | null;
   }) => {
+    if (!Object.keys(payload).length) return;
+    setSaving("saving");
     try {
-      await fetch("/api/account", {
+      const res = await fetch("/api/account", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+      setSaving("saved");
+      setTimeout(() => setSaving((s) => (s === "saved" ? "idle" : s)), 1400);
     } catch (error) {
       console.error("Failed saving account info", error);
+      setSaving("error");
+      setTimeout(() => setSaving("idle"), 1800);
     }
   };
 
@@ -301,10 +316,47 @@ export default function AccountPage() {
         style={{
           minHeight: "100vh",
           background: "radial-gradient(circle at 20% 20%, rgba(79,70,229,0.12), transparent 22%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12), transparent 20%), var(--panel)",
-          color: "var(--text)",
-        }}
-      >
+      color: "var(--text)",
+    }}
+  >
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 16px 72px" }}>
+          {saving !== "idle" && (
+            <div style={{ position: "sticky", top: 12, display: "flex", justifyContent: "flex-end", marginBottom: 12, zIndex: 2 }}>
+              {saving === "saving" ? (
+                <LoadingPill variant="compact" title={t.saving} />
+              ) : saving === "saved" ? (
+                <span
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 999,
+                    background: "color-mix(in srgb, var(--success, #22c55e) 18%, var(--card))",
+                    border: "1px solid color-mix(in srgb, var(--success, #22c55e) 40%, var(--border))",
+                    color: "var(--text)",
+                    fontWeight: 700,
+                    fontSize: 12,
+                    letterSpacing: 0.4,
+                  }}
+                >
+                  {t.saved}
+                </span>
+              ) : (
+                <span
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 999,
+                    background: "color-mix(in srgb, var(--danger, #ef4444) 16%, var(--card))",
+                    border: "1px solid color-mix(in srgb, var(--danger, #ef4444) 40%, var(--border))",
+                    color: "var(--text)",
+                    fontWeight: 700,
+                    fontSize: 12,
+                    letterSpacing: 0.4,
+                  }}
+                >
+                  {t.saveError}
+                </span>
+              )}
+            </div>
+          )}
           <div
             style={{
               borderRadius: 28,
