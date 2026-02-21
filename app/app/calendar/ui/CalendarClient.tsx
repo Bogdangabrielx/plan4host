@@ -322,15 +322,9 @@ export default function CalendarClient({
     setRefreshToken((x) => x + 1);
   }
   const currentPropertyId = propertyId || properties[0]?.id || null;
-  const totalBookings = useMemo(
-    () => bookings.filter((b) => b.property_id === currentPropertyId).length,
-    [bookings, currentPropertyId]
-  );
   const todayYmd = ymd(today);
-  const upcomingBookings = useMemo(
-    () => bookings.filter((b) => b.property_id === currentPropertyId && b.end_date >= todayYmd).length,
-    [bookings, currentPropertyId, todayYmd]
-  );
+  const [totalBookingsAll, setTotalBookingsAll] = useState<number>(0);
+  const [upcomingBookingsAll, setUpcomingBookingsAll] = useState<number>(0);
   const occupiedToday = useMemo(() => {
     if (!currentPropertyId) return 0;
     return bookings.filter(
@@ -344,6 +338,33 @@ export default function CalendarClient({
     () => rooms.filter((r) => r.property_id === currentPropertyId).length,
     [rooms, currentPropertyId]
   );
+  // Fetch global counts for property (not limited to current view)
+  useEffect(() => {
+    if (!currentPropertyId) return;
+    (async () => {
+      try {
+        const { count: total } = await supabase
+          .from("bookings")
+          .select("id", { count: "exact", head: true })
+          .eq("property_id", currentPropertyId)
+          .neq("status", "cancelled");
+        setTotalBookingsAll(total || 0);
+      } catch {
+        setTotalBookingsAll(0);
+      }
+      try {
+        const { count: upcoming } = await supabase
+          .from("bookings")
+          .select("id", { count: "exact", head: true })
+          .eq("property_id", currentPropertyId)
+          .neq("status", "cancelled")
+          .gte("end_date", todayYmd);
+        setUpcomingBookingsAll(upcoming || 0);
+      } catch {
+        setUpcomingBookingsAll(0);
+      }
+    })();
+  }, [currentPropertyId, supabase, todayYmd, refreshToken]);
   const openQuickCreateNow = () => {
     if (!currentPropertyId) return;
     if (!rooms.length) {
@@ -560,12 +581,12 @@ export default function CalendarClient({
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <span style={{ width: 6, height: 6, borderRadius: 999, background: "var(--primary)" }} />
           {lang === "ro" ? "Rezervări totale" : "Total bookings"}:{" "}
-          <span style={{ color: "var(--text)" }}>{totalBookings}</span>
+          <span style={{ color: "var(--text)" }}>{totalBookingsAll}</span>
         </span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <span style={{ width: 6, height: 6, borderRadius: 999, background: "color-mix(in srgb, var(--text) 50%, transparent)" }} />
           {lang === "ro" ? "Viitoare" : "Upcoming"}:{" "}
-          <span style={{ color: "var(--text)" }}>{upcomingBookings}</span>
+          <span style={{ color: "var(--text)" }}>{upcomingBookingsAll}</span>
         </span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <span style={{ width: 6, height: 6, borderRadius: 999, background: "color-mix(in srgb, var(--success, #22c55e) 70%, transparent)" }} />
