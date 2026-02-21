@@ -383,13 +383,14 @@ export default function AccountClient() {
         </div>
       ) : (
         <>
-          <style
-            dangerouslySetInnerHTML={{
-              __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
             @media (min-width: 1024px) {
               #app-main[data-account-nosb="1"]{
                 scrollbar-width: none;
                 -ms-overflow-style: none;
+                overflow: hidden;
               }
               #app-main[data-account-nosb="1"]::-webkit-scrollbar{
                 display: none;
