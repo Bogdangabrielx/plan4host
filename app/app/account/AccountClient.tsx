@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import AppShell from "../_components/AppShell";
 import { useHeader } from "../_components/HeaderContext";
+import LoadingPill from "../_components/LoadingPill";
 
 const LANG_MAP = ["en", "ro"] as const;
 type Lang = (typeof LANG_MAP)[number];
@@ -74,21 +75,18 @@ type Labels = (typeof translations)[Lang];
 function PillBridge({
   state,
   t,
-  skip,
 }: {
   state: "idle" | "saving" | "saved" | "error";
   t: Labels;
-  skip?: boolean;
 }) {
   const { setPill } = useHeader();
   useEffect(() => {
-    if (skip) return;
     if (state === "saving") setPill(<span>{t.saving}</span>);
     else if (state === "saved") setPill(<span data-p4h-overlay="message">{t.saved}</span>);
     else if (state === "error") setPill(<span data-p4h-overlay="message">{t.saveError}</span>);
     else setPill(null);
     return () => setPill(null);
-  }, [state, setPill, t, skip]);
+  }, [state, setPill, t]);
   return null;
 }
 
@@ -107,7 +105,6 @@ export default function AccountClient() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadedProfile, setLoadedProfile] = useState(false);
   const [loadedAccount, setLoadedAccount] = useState(false);
-  const { setPill } = useHeader();
 
   // Ascunde scrollbar-ul pe ecrane mari doar pe această pagină (desktop)
   useEffect(() => {
@@ -241,12 +238,10 @@ export default function AccountClient() {
   useEffect(() => {
     if (loadedProfile && loadedAccount) {
       setInitialLoading(false);
-      if (saving === "idle") setPill(null);
     } else {
       setInitialLoading(true);
-      setPill(<span>Loading…</span>);
     }
-  }, [loadedProfile, loadedAccount, setPill, saving]);
+  }, [loadedProfile, loadedAccount]);
 
   const statusLabel = translations[lang].activeAccount;
   const statusDetail = translations[lang].statusDetail;
@@ -350,10 +345,22 @@ export default function AccountClient() {
             color: "var(--text)",
             caretColor: "var(--text)",
             outline: "none",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         />
       ) : (
-        <div style={{ fontSize: "var(--fs-b)", fontWeight: 600, minHeight: 24, color: value ? "var(--text)" : "var(--muted)" }}>
+        <div
+          style={{
+            fontSize: "var(--fs-b)",
+            fontWeight: 600,
+            minHeight: 24,
+            color: value ? "var(--text)" : "var(--muted)",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            wordBreak: "break-word",
+          }}
+        >
           {value || placeholder}
         </div>
       )}
@@ -362,7 +369,19 @@ export default function AccountClient() {
 
   return (
     <AppShell currentPath="/app/account" title={t.pageTitle}>
-      <PillBridge state={saving} t={t} skip={initialLoading} />
+      <PillBridge state={saving} t={t} />
+      {initialLoading ? (
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "grid",
+            placeItems: "center",
+            padding: 24,
+          }}
+        >
+          <LoadingPill title={t.saving} />
+        </div>
+      ) : (
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -627,6 +646,7 @@ export default function AccountClient() {
           </section>
         </div>
       </div>
+      )}
     </AppShell>
   );
 }
