@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "../_components/HeaderContext";
+import AppShell from "../_components/AppShell";
 
 const LANG_MAP = ["en", "ro"] as const;
 type Lang = (typeof LANG_MAP)[number];
@@ -246,8 +247,9 @@ export default function AccountPage() {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--panel)", color: "var(--text)" }}>
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "32px 16px 64px" }}>
+    <AppShell currentPath="/app/account" title={t.pageTitle}>
+      <div style={{ minHeight: "100vh", background: "var(--panel)", color: "var(--text)" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto", padding: "32px 16px 64px" }}>
         <div
           style={{
             borderRadius: 26,
@@ -409,7 +411,8 @@ export default function AccountPage() {
             <span style={{ fontSize: "var(--fs-s)" }}>{statusDetail}</span>
           </div>
         </section>
+        </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
