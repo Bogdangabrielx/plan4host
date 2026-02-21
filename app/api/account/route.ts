@@ -17,19 +17,31 @@ export async function GET() {
     const uid = auth?.user?.id;
     if (!uid) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
+    // Rezolvă account_id: titular (accounts.id = user.id) sau membership în account_users
+    let accountId = uid;
+    const { data: membership, error: memErr } = await supabase
+      .from("account_users")
+      .select("account_id, role, disabled")
+      .eq("user_id", uid)
+      .order("created_at", { ascending: true })
+      .maybeSingle();
+    if (!memErr && membership?.account_id) {
+      accountId = membership.account_id as string;
+    }
+
     // Unele baze pot avea coloana scrisă greșit ca "nane" (legacy). Suportăm ambele.
     const trySelect = async () => {
       const primary = await supabase
         .from("accounts")
         .select("name, company, phone")
-        .eq("id", uid)
+        .eq("id", accountId)
         .maybeSingle();
       if (!primary.error) return { data: primary.data, column: "name" as const };
       if (primary.error.code === "42703") {
         const alt = await supabase
           .from("accounts")
           .select("nane, company, phone")
-          .eq("id", uid)
+          .eq("id", accountId)
           .maybeSingle();
         if (!alt.error) return { data: alt.data, column: "nane" as const };
         return { error: alt.error };
@@ -67,6 +79,24 @@ export async function PATCH(request: Request) {
 
     const body = (await request.json().catch(() => ({}))) as Payload;
 
+    // Rezolvă account_id: titular sau membership. Doar admin poate edita dacă e membru.
+    let accountId = uid;
+    const { data: membership, error: memErr } = await supabase
+      .from("account_users")
+      .select("account_id, role, disabled")
+      .eq("user_id", uid)
+      .order("created_at", { ascending: true })
+      .maybeSingle();
+    if (!memErr && membership?.account_id) {
+      if (membership.disabled) {
+        return NextResponse.json({ error: "User disabled" }, { status: 403 });
+      }
+      if (membership.role !== "admin") {
+        return NextResponse.json({ error: "Only account admins can edit profile." }, { status: 403 });
+      }
+      accountId = membership.account_id as string;
+    }
+
     const updates: Record<string, string | null> = {};
     const nameValue = typeof body.name !== "undefined" ? body.name?.trim() || null : undefined;
     if (typeof nameValue !== "undefined") updates.name = nameValue;
@@ -84,7 +114,7 @@ export async function PATCH(request: Request) {
         payload.nane = payload.name;
         delete payload.name;
       }
-      return supabase.from("accounts").update(payload).eq("id", uid);
+      return supabase.from("accounts").update(payload).eq("id", accountId);
     };
 
     let { error } = await doUpdate(false);
