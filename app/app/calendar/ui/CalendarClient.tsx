@@ -118,6 +118,8 @@ export default function CalendarClient({
   const [loading, setLoading]   = useState<"Idle"|"Loading"|"Error">("Idle");
   const [hasLoadedRooms, setHasLoadedRooms] = useState<boolean>(false);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [roomPickerOpen, setRoomPickerOpen] = useState(false);
+  const [roomPickerRooms, setRoomPickerRooms] = useState<Room[]>([]);
 
   // Day modal (only Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
@@ -307,7 +309,17 @@ export default function CalendarClient({
       setShowNoRoomsPopup(true);
       return;
     }
-    const room = rooms.find((r) => r.property_id === propertyId) ?? rooms[0];
+    const propertyRooms = rooms.filter((r) => r.property_id === propertyId);
+    if (!propertyRooms.length) {
+      setShowNoRoomsPopup(true);
+      return;
+    }
+    if (propertyRooms.length > 1) {
+      setRoomPickerRooms(propertyRooms);
+      setRoomPickerOpen(true);
+      return;
+    }
+    const room = propertyRooms[0];
     const baseDate = highlightDate ?? ymd(today);
     setCreateTarget({ room, date: baseDate });
   }
@@ -480,13 +492,13 @@ export default function CalendarClient({
             position: "fixed",
             right: 18,
             bottom: "calc(18px + var(--safe-bottom, 0px))",
-            width: 60,
-            height: 60,
+            width: 62,
+            height: 62,
             borderRadius: 999,
-            border: "none",
-            background: "linear-gradient(135deg, #3b82f6, #22c55e)",
-            color: "#0c111b",
-            fontSize: 32,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
+            color: "var(--text)",
+            fontSize: 34,
             fontWeight: 800,
             display: "grid",
             placeItems: "center",
@@ -624,6 +636,66 @@ export default function CalendarClient({
             refreshData();
           }}
         />
+      )}
+      {roomPickerOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setRoomPickerOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 240,
+            background: "rgba(0,0,0,0.55)",
+            display: "grid",
+            placeItems: "center",
+            padding: 12,
+            paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+            paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sb-cardglow"
+            style={{
+              width: "min(420px, 100%)",
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 14,
+              padding: 14,
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <div style={{ fontWeight: 800, fontSize: 16 }}>
+              {lang === "ro" ? "Alege camera pentru rezervare" : "Pick a room to create booking"}
+            </div>
+            <div style={{ display: "grid", gap: 8 }}>
+              {roomPickerRooms.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  className="sb-btn sb-cardglow"
+                  style={{ justifyContent: "flex-start" }}
+                  onClick={() => {
+                    const baseDate = highlightDate ?? ymd(today);
+                    setCreateTarget({ room: r, date: baseDate });
+                    setRoomPickerOpen(false);
+                  }}
+                >
+                  {r.name}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="sb-btn sb-btn--ghost"
+              onClick={() => setRoomPickerOpen(false)}
+            >
+              {lang === "ro" ? "Anulează" : "Cancel"}
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Popover date picker */}
