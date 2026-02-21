@@ -1147,7 +1147,27 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 alignItems: "center",
               }}
             >
-              <h2 style={drawerTitleStyle()}>{t.navigation}</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span
+                  aria-hidden
+                  style={{
+                    width: 28,
+                    height: 28,
+                    display: "block",
+                    backgroundColor: "currentColor",
+                    WebkitMaskImage: "url(/svg_more.svg)",
+                    maskImage: "url(/svg_more.svg)",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                    WebkitMaskSize: "20px 20px",
+                    maskSize: "20px 20px",
+                    opacity: 0.9,
+                  }}
+                />
+                <h2 style={drawerTitleStyle()}>{t.navigation}</h2>
+              </div>
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close"
