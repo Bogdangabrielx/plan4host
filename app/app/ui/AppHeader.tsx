@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { useHeader } from "../_components/HeaderContext";
 import { createClient as createSupabaseClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 type Lang = "en" | "ro";
 
@@ -99,8 +99,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const [mgmtBtnPressed, setMgmtBtnPressed] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
-  const router = useRouter();
-
   // Theme
   const [theme, setTheme] = useState<"light" | "dark">("dark");
 
@@ -326,10 +324,6 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
       )}
     </span>
   );
-  const goToAccountPage = () => {
-    setOpenRight(false);
-    router.push("/app/account");
-  };
   const translateTitle = (value: string): string => {
     if (lang !== "ro") return value;
     const key = value.trim().toLowerCase();
@@ -1334,9 +1328,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             >
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <AvatarBadge size={46} />
-                  <button
-                    type="button"
-                    onClick={goToAccountPage}
+                  <Link
+                    href="/app/account"
+                    onClick={() => setOpenRight(false)}
                     style={{
                       background: "transparent",
                       border: "none",
@@ -1347,11 +1341,12 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                       padding: 0,
                       font: "inherit",
                       cursor: "pointer",
+                      textDecoration: "none",
                     }}
                   >
                     <span style={{ fontSize: "var(--fs-s)", fontWeight: "var(--fw-bold)" }}>{accountButtonLabel}</span>
                     <span style={{ fontSize: "var(--fs-ss)", color: "var(--muted)" }}>{accountButtonEmail}</span>
-                  </button>
+                  </Link>
                 </div>
               <button
                 onClick={() => setOpenRight(false)}
