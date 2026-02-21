@@ -870,7 +870,21 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                  transition: "color .15s ease, transform .12s ease",
 	                }}
 	              >
-                {mounted ? <AvatarBadge size={isSmall ? 34 : 40} /> : <>⋯</>}
+                {mounted ? (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <AvatarBadge size={isSmall ? 32 : 36} />
+                  </div>
+                ) : (
+                  <>⋯</>
+                )}
               </button>
             </div>
 	          </>
