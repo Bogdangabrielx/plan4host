@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useHeader } from "../_components/HeaderContext";
 import AppShell from "../_components/AppShell";
 import LoadingPill from "../_components/LoadingPill";
 
@@ -70,6 +71,7 @@ const pencilSvg = (
 );
 
 export default function AccountPage() {
+  const { setPill } = useHeader();
   const [lang, setLang] = useState<Lang>("en");
   const [user, setUser] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -91,13 +93,20 @@ export default function AccountPage() {
       if (main) main.removeAttribute("data-account-nosb");
     };
   }, []);
+
+  // Curăță pill-ul din header la demontare
+  useEffect(() => {
+    return () => setPill(null);
+  }, [setPill]);
   const updateAccount = async (payload: {
     name?: string;
     company?: string | null;
     phone?: string | null;
   }) => {
+    const labels = translations[lang];
     if (!Object.keys(payload).length) return;
     setSaving("saving");
+    setPill(<span>{labels.saving}</span>);
     try {
       const res = await fetch("/api/account", {
         method: "PATCH",
@@ -106,11 +115,15 @@ export default function AccountPage() {
       });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       setSaving("saved");
+      setPill(<span data-p4h-overlay="message">{labels.saved}</span>);
       setTimeout(() => setSaving((s) => (s === "saved" ? "idle" : s)), 1400);
+      setTimeout(() => setPill(null), 1400);
     } catch (error) {
       console.error("Failed saving account info", error);
       setSaving("error");
+      setPill(<span data-p4h-overlay="message">{labels.saveError}</span>);
       setTimeout(() => setSaving("idle"), 1800);
+      setTimeout(() => setPill(null), 1800);
     }
   };
 
