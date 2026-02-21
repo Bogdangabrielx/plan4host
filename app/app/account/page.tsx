@@ -477,22 +477,23 @@ export default function AccountPage() {
                       value={editedName}
                       onChange={(e) => setEditedName(e.currentTarget.value)}
                       onBlur={finishNameEdit}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") finishNameEdit();
-                      }}
-                      autoFocus
-                      style={{
-                        fontSize: 30,
-                        fontWeight: 800,
-                        border: "none",
-                        width: "100%",
-                        maxWidth: 420,
-                        background: "rgba(255,255,255,0.14)",
-                        color: "#fff",
-                        padding: "6px 10px",
-                        borderRadius: 10,
-                      }}
-                    />
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") finishNameEdit();
+                    }}
+                    autoFocus
+                    style={{
+                      fontSize: 30,
+                      fontWeight: 800,
+                      border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+                      width: "100%",
+                      maxWidth: 420,
+                      background: "color-mix(in srgb, var(--panel) 92%, transparent)",
+                      color: "var(--text)",
+                      caretColor: "var(--text)",
+                      padding: "6px 10px",
+                      borderRadius: 10,
+                    }}
+                  />
                   ) : (
                     <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: -0.3 }}>{displayName || t.unknown}</h1>
                   )}
