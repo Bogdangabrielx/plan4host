@@ -304,12 +304,15 @@ export default function CalendarClient({
     setRefreshToken((x) => x + 1);
   }
   function startQuickCreate() {
-    if (!propertyReady || !propertyId) return;
+    if (!propertyReady) return;
+    const currentPropertyId = propertyId || (properties[0]?.id ?? null);
+    if (!currentPropertyId) return;
+    if (!hasLoadedRooms || loading === "Loading") return;
     if (!rooms.length) {
       setShowNoRoomsPopup(true);
       return;
     }
-    const propertyRooms = rooms.filter((r) => r.property_id === propertyId);
+    const propertyRooms = rooms.filter((r) => r.property_id === currentPropertyId);
     if (!propertyRooms.length) {
       setShowNoRoomsPopup(true);
       return;
