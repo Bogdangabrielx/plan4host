@@ -643,23 +643,20 @@ export default function CalendarClient({
             zIndex: 235,
           }}
         >
-          <span
+          <svg
             aria-hidden
-            style={{
-              display: "block",
-              width: 22,
-              height: 22,
-              backgroundColor: "var(--text)",
-              WebkitMaskImage: "url(/svg_add_icon.svg)",
-              maskImage: "url(/svg_add_icon.svg)",
-              WebkitMaskRepeat: "no-repeat",
-              maskRepeat: "no-repeat",
-              WebkitMaskPosition: "center",
-              maskPosition: "center",
-              WebkitMaskSize: "18px 18px",
-              maskSize: "18px 18px",
-            }}
-          />
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--text)"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="12" y1="4" x2="12" y2="20" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+          </svg>
         </button>
       )}
 
