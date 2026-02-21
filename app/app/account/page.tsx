@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useHeader } from "../_components/HeaderContext";
 import AppShell from "../_components/AppShell";
 import LoadingPill from "../_components/LoadingPill";
+import { useHeader } from "../_components/HeaderContext";
 
 const LANG_MAP = ["en", "ro"] as const;
 type Lang = (typeof LANG_MAP)[number];
@@ -70,8 +70,19 @@ const pencilSvg = (
   />
 );
 
-export default function AccountPage() {
+function PillSync({ state, t }: { state: "idle" | "saving" | "saved" | "error"; t: (typeof translations)["en"] }) {
   const { setPill } = useHeader();
+  useEffect(() => {
+    if (state === "saving") setPill(<span>{t.saving}</span>);
+    else if (state === "saved") setPill(<span data-p4h-overlay="message">{t.saved}</span>);
+    else if (state === "error") setPill(<span data-p4h-overlay="message">{t.saveError}</span>);
+    else setPill(null);
+    return () => setPill(null);
+  }, [state, setPill, t]);
+  return null;
+}
+
+export default function AccountPage() {
   const [lang, setLang] = useState<Lang>("en");
   const [user, setUser] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -94,19 +105,13 @@ export default function AccountPage() {
     };
   }, []);
 
-  // Curăță pill-ul din header la demontare
-  useEffect(() => {
-    return () => setPill(null);
-  }, [setPill]);
   const updateAccount = async (payload: {
     name?: string;
     company?: string | null;
     phone?: string | null;
   }) => {
-    const labels = translations[lang];
     if (!Object.keys(payload).length) return;
     setSaving("saving");
-    setPill(<span>{labels.saving}</span>);
     try {
       const res = await fetch("/api/account", {
         method: "PATCH",
@@ -119,15 +124,11 @@ export default function AccountPage() {
         throw new Error(reason as string);
       }
       setSaving("saved");
-      setPill(<span data-p4h-overlay="message">{labels.saved}</span>);
       setTimeout(() => setSaving((s) => (s === "saved" ? "idle" : s)), 1400);
-      setTimeout(() => setPill(null), 1400);
     } catch (error) {
       console.error("Failed saving account info", error);
       setSaving("error");
-      setPill(<span data-p4h-overlay="message">{labels.saveError}</span>);
       setTimeout(() => setSaving("idle"), 1800);
-      setTimeout(() => setPill(null), 1800);
     }
   };
 
@@ -335,6 +336,7 @@ export default function AccountPage() {
 
   return (
     <AppShell currentPath="/app/account" title={t.pageTitle}>
+      <PillSync state={saving} t={t} />
       <style
         dangerouslySetInnerHTML={{
           __html: `
