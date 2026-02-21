@@ -286,8 +286,44 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const placeholderInitials = (() => {
     if (!userEmail) return "MY";
     const localPart = userEmail.split("@")[0] || "";
-    return localPart.substring(0, 2).toUpperCase() || "MY";
+    return (localPart.substring(0, 2) || "MY").toUpperCase();
   })();
+  const AvatarBadge = ({ size }: { size: number }) => (
+    <span
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 999,
+        overflow: "hidden",
+        background: userAvatarUrl
+          ? "var(--card)"
+          : "linear-gradient(135deg, #25d366, #128c7e)",
+        display: "grid",
+        placeItems: "center",
+        flexShrink: 0,
+      }}
+    >
+      {userAvatarUrl ? (
+        <img
+          src={userAvatarUrl}
+          alt=""
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+      ) : (
+        <span
+          aria-hidden="true"
+          style={{
+            color: "#fff",
+            fontWeight: 700,
+            letterSpacing: "0.08em",
+            fontSize: size * 0.35,
+          }}
+        >
+          {placeholderInitials}
+        </span>
+      )}
+    </span>
+  );
   const translateTitle = (value: string): string => {
     if (lang !== "ro") return value;
     const key = value.trim().toLowerCase();
@@ -1045,41 +1081,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                   transition: "transform .12s ease, box-shadow .15s ease, border-color .15s ease",
                 }}
               >
-                <span
-                  style={{
-                    width: isSmall ? 32 : 36,
-                    height: isSmall ? 32 : 36,
-                    borderRadius: 999,
-                    overflow: "hidden",
-                    background:
-                      userAvatarUrl
-                        ? "var(--card)"
-                        : "linear-gradient(135deg, #25d366, #128c7e)",
-                    display: "grid",
-                    placeItems: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  {userAvatarUrl ? (
-                    <img
-                      src={userAvatarUrl}
-                      alt=""
-                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                    />
-                  ) : (
-                    <span
-                      aria-hidden="true"
-                      style={{
-                        color: "#fff",
-                        fontWeight: 700,
-                        letterSpacing: "0.08em",
-                        fontSize: isSmall ? 12 : 14,
-                      }}
-                    >
-                      {placeholderInitials}
-                    </span>
-                  )}
-                </span>
+                <AvatarBadge size={isSmall ? 32 : 36} />
                 <span
                   style={{
                     fontSize: "var(--fs-s)",
@@ -1319,27 +1321,34 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
+                gap: 12,
               }}
             >
-              <h2 style={drawerTitleStyle()}>{t.management}</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <AvatarBadge size={46} />
+                <div style={{ display: "grid", gap: 2 }}>
+                  <span style={{ fontSize: "var(--fs-s)", fontWeight: "var(--fw-bold)" }}>{accountButtonLabel}</span>
+                  <span style={{ fontSize: "var(--fs-ss)", color: "var(--muted)" }}>{accountButtonEmail}</span>
+                </div>
+              </div>
               <button
                 onClick={() => setOpenRight(false)}
                 aria-label="Close"
-	                style={{
-	                  width: 36,
-	                  height: 36,
-	                  borderRadius: 999,
-	                  border: "1px solid var(--border)",
-	                  background: "var(--card)",
-	                  color: "var(--text)",
-	                  fontWeight: "var(--fw-medium)",
-	                  cursor: "pointer",
-	                  display: "grid",
-	                  placeItems: "center",
-	                }}
-	              >
-	                ✕
-	              </button>
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 999,
+                  border: "1px solid var(--border)",
+                  background: "var(--card)",
+                  color: "var(--text)",
+                  fontWeight: "var(--fw-medium)",
+                  cursor: "pointer",
+                  display: "grid",
+                  placeItems: "center",
+                }}
+              >
+                ✕
+              </button>
             </div>
 
 	            <nav
