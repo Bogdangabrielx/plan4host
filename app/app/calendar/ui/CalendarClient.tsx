@@ -197,6 +197,13 @@ export default function CalendarClient({
     if (isSmall && view !== "month") setView("month");
   }, [isSmall, view]);
 
+  // Asigură că există o proprietate selectată (prima disponibilă) imediat ce state-ul e gata
+  useEffect(() => {
+    if (propertyReady && !propertyId && properties.length > 0) {
+      setPropertyId(properties[0].id);
+    }
+  }, [propertyReady, propertyId, properties, setPropertyId]);
+
   // Repoziționează dacă se schimbă initialDate (navigare cu alt query)
   useEffect(() => {
     if (initialDate && isYMD(initialDate)) {
