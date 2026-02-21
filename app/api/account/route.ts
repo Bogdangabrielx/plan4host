@@ -39,8 +39,9 @@ export async function GET() {
 
     const sel = await trySelect();
     if ("error" in sel) {
-      console.error("GET /api/account select failed", sel.error);
-      return NextResponse.json({ error: sel.error.message }, { status: 500 });
+      const err = sel.error ?? ({ message: "Select failed (unknown error)" } as any);
+      console.error("GET /api/account select failed", err);
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
     const data = sel.data as any;
 
