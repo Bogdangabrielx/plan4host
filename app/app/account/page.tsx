@@ -354,12 +354,14 @@ export default function AccountPage() {
             style={{
               borderRadius: 28,
               overflow: "visible",
-              background: "linear-gradient(120deg, #0ea5e9, #6366f1)",
+              background:
+                "linear-gradient(140deg, rgba(15,23,42,0.92) 0%, rgba(30,41,59,0.9) 55%, rgba(79,70,229,0.55) 85%, rgba(14,165,233,0.6) 100%)",
               padding: "28px 28px 40px",
               color: "#fff",
               position: "relative",
               marginBottom: 28,
-              boxShadow: "0 24px 48px rgba(59,130,246,0.35)",
+              boxShadow: "0 24px 48px rgba(14,165,233,0.25)",
+              border: "1px solid color-mix(in srgb, #0ea5e9 35%, transparent)",
             }}
           >
             <div
