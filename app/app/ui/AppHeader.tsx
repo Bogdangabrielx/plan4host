@@ -870,30 +870,9 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
 	                  transition: "color .15s ease, transform .12s ease",
 	                }}
 	              >
-	                {mounted ? (
-	                  <span
-	                    aria-hidden
-	                    style={{
-	                      width: isSmall ? 26 : 30,
-	                      height: isSmall ? 26 : 30,
-	                      display: "block",
-	                      backgroundColor: "currentColor",
-	                      WebkitMaskImage: "url(/svg_more.svg)",
-	                      maskImage: "url(/svg_more.svg)",
-	                      WebkitMaskRepeat: "no-repeat",
-	                      maskRepeat: "no-repeat",
-	                      WebkitMaskPosition: "center",
-	                      maskPosition: "center",
-	                      WebkitMaskSize: `${isSmall ? 22 : 26}px ${isSmall ? 22 : 26}px`,
-	                      maskSize: `${isSmall ? 22 : 26}px ${isSmall ? 22 : 26}px`,
-	                      pointerEvents: "none",
-	                    }}
-	                  />
-	                ) : (
-	                  <>⋯</>
-	                )}
-	              </button>
-	            </div>
+                {mounted ? <AvatarBadge size={isSmall ? 34 : 40} /> : <>⋯</>}
+              </button>
+            </div>
 	          </>
 		        ) : (
 	          <>
