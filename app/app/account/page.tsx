@@ -373,7 +373,7 @@ export default function AccountPage() {
               overflow: "visible",
               background: "var(--panel)",
               padding: "28px 28px 40px",
-              color: "#fff",
+              color: "var(--text)",
               position: "relative",
               marginBottom: 28,
               boxShadow: "0 20px 36px rgba(0,0,0,0.26)",
@@ -452,14 +452,14 @@ export default function AccountPage() {
                     aria-label="Edit name"
                     onClick={() => setIsEditingName(true)}
                     style={{
-                      border: "1px solid rgba(255,255,255,0.35)",
-                      background: "rgba(255,255,255,0.18)",
+                      border: "1px solid color-mix(in srgb, var(--text) 35%, transparent)",
+                      background: "color-mix(in srgb, var(--text) 14%, transparent)",
                       borderRadius: 10,
                       width: 38,
                       height: 38,
                       display: "grid",
                       placeItems: "center",
-                      color: "#fff",
+                      color: "var(--text)",
                       cursor: "pointer",
                       transition: "transform .12s ease, background .12s ease",
                     }}
@@ -471,14 +471,14 @@ export default function AccountPage() {
                   </button>
                 )}
               </div>
-              <p style={{ margin: "10px 0 0", color: "rgba(255,255,255,0.88)", fontSize: 16 }}>{t.propertyManager}</p>
+              <p style={{ margin: "10px 0 0", color: "var(--text)", opacity: 0.88, fontSize: 16 }}>{t.propertyManager}</p>
               <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
                 <span
                   style={{
                     padding: "6px 10px",
                     borderRadius: 999,
-                    background: "rgba(255,255,255,0.18)",
-                    color: "#fff",
+                    background: "color-mix(in srgb, var(--text) 14%, transparent)",
+                    color: "var(--text)",
                     fontWeight: 700,
                     fontSize: 12,
                     letterSpacing: 0.5,
@@ -491,8 +491,8 @@ export default function AccountPage() {
                   style={{
                     padding: "6px 10px",
                     borderRadius: 999,
-                    background: "rgba(255,255,255,0.12)",
-                    color: "rgba(255,255,255,0.9)",
+                    background: "color-mix(in srgb, var(--text) 10%, transparent)",
+                    color: "var(--text)",
                     fontSize: 12,
                     letterSpacing: 0.4,
                   }}
