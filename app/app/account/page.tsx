@@ -294,16 +294,16 @@ export default function AccountPage() {
             aria-label={`Edit ${label}`}
             onClick={onEdit}
             style={{
-              border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
-              background: "color-mix(in srgb, var(--card) 90%, transparent)",
+              border: "none",
+              background: "transparent",
               cursor: "pointer",
               color: "var(--text)",
-              borderRadius: 10,
-              width: 32,
-              height: 32,
+              borderRadius: 8,
+              width: 28,
+              height: 28,
               display: "grid",
               placeItems: "center",
-              transition: "background .12s ease, transform .1s ease",
+              transition: "transform .1s ease",
             }}
             onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.96)")}
             onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
@@ -446,27 +446,27 @@ export default function AccountPage() {
                 ) : (
                   <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: -0.3 }}>{displayName || t.unknown}</h1>
                 )}
-                {!isEditingName && (
-                  <button
-                    type="button"
-                    aria-label="Edit name"
-                    onClick={() => setIsEditingName(true)}
-                    style={{
-                      border: "1px solid color-mix(in srgb, var(--text) 35%, transparent)",
-                      background: "color-mix(in srgb, var(--text) 14%, transparent)",
-                      borderRadius: 10,
-                      width: 38,
-                      height: 38,
-                      display: "grid",
-                      placeItems: "center",
-                      color: "var(--text)",
-                      cursor: "pointer",
-                      transition: "transform .12s ease, background .12s ease",
-                    }}
-                    onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.96)")}
-                    onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                    onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                  >
+              {!isEditingName && (
+                <button
+                  type="button"
+                  aria-label="Edit name"
+                  onClick={() => setIsEditingName(true)}
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    borderRadius: 8,
+                    width: 32,
+                    height: 32,
+                    display: "grid",
+                    placeItems: "center",
+                    color: "var(--text)",
+                    cursor: "pointer",
+                    transition: "transform .12s ease",
+                  }}
+                  onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.96)")}
+                  onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                  onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                >
                     {pencilSvg}
                   </button>
                 )}

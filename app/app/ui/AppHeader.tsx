@@ -875,12 +875,11 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
                     style={{
                       width: "100%",
                       height: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      display: "grid",
+                      placeItems: "center",
                     }}
                   >
-                    <AvatarBadge size={isSmall ? 32 : 36} />
+                    <AvatarBadge size={isSmall ? 30 : 34} />
                   </div>
                 ) : (
                   <>⋯</>
