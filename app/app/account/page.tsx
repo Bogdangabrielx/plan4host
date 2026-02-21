@@ -50,30 +50,23 @@ const translations = {
 } as const;
 
 const pencilSvg = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path
-      d="M4 21h16"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      opacity="0.4"
-    />
-    <path
-      d="M6 19l11-11 4 4-11 11h-4v-4z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M14.5 5.5l4 4"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
+  <span
+    aria-hidden
+    style={{
+      display: "block",
+      width: 16,
+      height: 16,
+      backgroundColor: "currentColor",
+      WebkitMaskImage: "url(/svg_edit_icon.svg)",
+      maskImage: "url(/svg_edit_icon.svg)",
+      WebkitMaskRepeat: "no-repeat",
+      maskRepeat: "no-repeat",
+      WebkitMaskPosition: "center",
+      maskPosition: "center",
+      WebkitMaskSize: "16px 16px",
+      maskSize: "16px 16px",
+    }}
+  />
 );
 
 export default function AccountPage() {
@@ -360,7 +353,7 @@ export default function AccountPage() {
           <div
             style={{
               borderRadius: 28,
-              overflow: "hidden",
+              overflow: "visible",
               background: "linear-gradient(120deg, #0ea5e9, #6366f1)",
               padding: "28px 28px 40px",
               color: "#fff",
@@ -391,7 +384,8 @@ export default function AccountPage() {
                 color: "#111827",
                 border: "5px solid #fff",
                 position: "absolute",
-                top: -55,
+                top: "50%",
+                transform: "translateY(-50%)",
                 left: 28,
                 boxShadow: "0 16px 36px rgba(0,0,0,0.22)",
                 overflow: "hidden",
