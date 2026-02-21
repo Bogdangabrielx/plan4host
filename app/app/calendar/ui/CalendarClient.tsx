@@ -569,7 +569,7 @@ export default function CalendarClient({
           },
           ...(isCurrentMonth
             ? [{
-                label: lang === "ro" ? "Unități ocupate azi" : "Occupied today",
+                label: lang === "ro" ? "Ocupate azi" : "Occupied today",
                 value: `${occupiedToday}/${totalUnits || "0"}`,
                 dot: "color-mix(in srgb, var(--success, #22c55e) 70%, transparent)",
               }]
