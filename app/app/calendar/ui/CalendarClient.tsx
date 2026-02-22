@@ -1264,14 +1264,29 @@ function TimelineView({
   const monthFirst = `${year}-${pad(month + 1)}-01`;
   const monthLast = `${year}-${pad(month + 1)}-${pad(dim)}`;
 
-  // Bigger, more readable Timeline (fills width when possible; scrolls when needed).
-  const labelW = isSmall ? 132 : 220;
-  const baseCellW = isSmall ? 26 : 34;
-  const rowH = isSmall ? 42 : 48;
-  const minGridW = dim * baseCellW;
+  // Weekly grid (no horizontal scroll): month split into weeks, repeated per unit.
+  const cellH = isSmall ? 44 : 52;
 
   const days: string[] = [];
   for (let d = 1; d <= dim; d++) days.push(`${year}-${pad(month + 1)}-${pad(d)}`);
+
+  const weeks = useMemo(() => {
+    const startOffset = firstWeekday(year, month); // Mon=0..Sun=6
+    const totalCells = startOffset + dim;
+    const weekCount = Math.ceil(totalCells / 7);
+    const out: Array<Array<string | null>> = [];
+    for (let w = 0; w < weekCount; w++) {
+      const row: Array<string | null> = [];
+      for (let i = 0; i < 7; i++) {
+        const cellIndex = w * 7 + i;
+        const dayNum = cellIndex - startOffset + 1;
+        if (dayNum < 1 || dayNum > dim) row.push(null);
+        else row.push(`${year}-${pad(month + 1)}-${pad(dayNum)}`);
+      }
+      out.push(row);
+    }
+    return out;
+  }, [year, month, dim]);
 
   // bits: 1 = AM occupied, 2 = PM occupied, 4 = full-day marker (middle of stay)
   const occByRoom = useMemo(() => {
@@ -1307,6 +1322,7 @@ function TimelineView({
   const border = "color-mix(in srgb, var(--border) 86%, transparent)";
   const diag = "color-mix(in srgb, var(--border) 92%, transparent)";
   const bg = "var(--card)";
+  const empty = "color-mix(in srgb, var(--panel) 65%, transparent)";
 
   function dayIndex(dateStr: string): number {
     const n = parseInt(dateStr.slice(8, 10), 10);
@@ -1333,57 +1349,82 @@ function TimelineView({
 
   return (
     <section className="modalCard sb-cardglow" style={{ padding: isSmall ? 10 : 14 }}>
-      <div style={{ overflowX: "auto", overflowY: "hidden", WebkitOverflowScrolling: "touch" }}>
-        <div style={{ minWidth: labelW + minGridW, width: "100%" }}>
-          {/* rows (no separate header; day numbers are drawn inside the first row, on the separators) */}
-          <div style={{ display: "grid", gap: isSmall ? 8 : 10 }}>
-            {rooms.map((r, rowIdx) => {
-              const occ = occByRoom.get(r.id) ?? Array(dim).fill(0);
-              const showDayNumbers = rowIdx === 0;
-              return (
-                <div key={r.id} style={{ display: "grid", gridTemplateColumns: `${labelW}px 1fr`, gap: 0 }}>
+      {/* weekday header (like the classic month grid) */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
+          gap: 0,
+          paddingInline: 6,
+          marginBottom: 8,
+          color: "var(--muted)",
+          fontWeight: 800,
+          fontSize: 12,
+        }}
+      >
+        {weekdayShortByLang[lang].map((w) => (
+          <div key={w} style={{ textAlign: "center" }}>{w}</div>
+        ))}
+      </div>
+
+      {/* one timeline grid per unit (month split by weeks) */}
+      <div style={{ display: "grid", gap: isSmall ? 10 : 12 }}>
+        {rooms.map((r) => {
+          const occ = occByRoom.get(r.id) ?? Array(dim).fill(0);
+          return (
+            <div
+              key={r.id}
+              style={{
+                border: `1px solid ${border}`,
+                borderRadius: 14,
+                background: "color-mix(in srgb, var(--card) 92%, transparent)",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  padding: "10px 12px",
+                  borderBottom: `1px solid ${border}`,
+                  fontWeight: 900,
+                  color: "var(--text)",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+                title={r.name}
+              >
+                {r.name}
+              </div>
+              <div style={{ padding: 10, display: "grid", gap: 8 }}>
+                {weeks.map((week, wIdx) => (
                   <div
+                    key={wIdx}
                     style={{
-                      position: "sticky",
-                      left: 0,
-                      zIndex: 2,
-                      background: "var(--panel)",
+                      display: "grid",
+                      gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
                       border: `1px solid ${border}`,
-                      borderRight: "none",
                       borderRadius: 12,
-                      borderTopRightRadius: 0,
-                      borderBottomRightRadius: 0,
-                      height: rowH,
-                      display: "flex",
-                      alignItems: "center",
-                      paddingInline: 12,
-                      fontWeight: 800,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                    title={r.name}
-                  >
-                    {r.name}
-                  </div>
-                  <div
-                    style={{
-                      height: rowH,
-                      border: `1px solid ${border}`,
-                      borderLeft: "none",
-                      borderRadius: 12,
-                      borderTopLeftRadius: 0,
-                      borderBottomLeftRadius: 0,
                       overflow: "hidden",
                       background: "var(--card)",
-                      display: "grid",
-                      gridTemplateColumns: `repeat(${dim}, minmax(${baseCellW}px, 1fr))`,
                     }}
                   >
-                    {days.map((ds, idx) => {
+                    {week.map((ds, i) => {
+                      if (!ds) {
+                        return (
+                          <div
+                            key={`e-${wIdx}-${i}`}
+                            style={{
+                              height: cellH,
+                              borderRight: i === 6 ? "none" : `1px solid ${border}`,
+                              background: empty,
+                            }}
+                          />
+                        );
+                      }
+                      const idx = dayIndex(ds);
                       const bits = occ[idx] ?? 0;
                       const bgFill = cellBackground(bits);
-                      const dayNum = idx + 1;
+                      const dayNum = parseInt(ds.slice(8, 10), 10);
                       return (
                         <button
                           key={ds}
@@ -1392,43 +1433,40 @@ function TimelineView({
                           title={ds}
                           style={{
                             position: "relative",
-                            height: "100%",
+                            height: cellH,
                             padding: 0,
                             border: 0,
                             background: bgFill ?? "transparent",
-                            borderRight: idx === dim - 1 ? "none" : `1px solid ${border}`,
+                            borderRight: i === 6 ? "none" : `1px solid ${border}`,
                             cursor: "pointer",
                           }}
                         >
-                          {showDayNumbers ? (
-                            <span
-                              aria-hidden="true"
-                              style={{
-                                position: "absolute",
-                                top: 6,
-                                right: 0,
-                                transform: "translateX(50%)",
-                                fontSize: 11,
-                                fontWeight: 800,
-                                color: "var(--muted)",
-                                opacity: 0.75,
-                                pointerEvents: "none",
-                                lineHeight: 1,
-                                textShadow: "0 1px 0 rgba(0,0,0,0.35)",
-                              }}
-                            >
-                              {dayNum}
-                            </span>
-                          ) : null}
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              position: "absolute",
+                              top: 7,
+                              left: 8,
+                              fontSize: 12,
+                              fontWeight: 900,
+                              color: "var(--muted)",
+                              opacity: 0.8,
+                              pointerEvents: "none",
+                              lineHeight: 1,
+                              textShadow: "0 1px 0 rgba(0,0,0,0.35)",
+                            }}
+                          >
+                            {dayNum}
+                          </span>
                         </button>
                       );
                     })}
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 10, color: "var(--muted)", fontSize: 12, flexWrap: "wrap" }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
