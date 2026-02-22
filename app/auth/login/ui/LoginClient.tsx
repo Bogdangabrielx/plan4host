@@ -380,18 +380,23 @@ export default function LoginClient({
   return (
     <>
       <div style={outerWrap}>
-        <div style={logoWrap} aria-hidden>
-          <div style={logoRing}>
-            <img
-              src="/p4h_logo_rotund.png"
-              alt=""
-              width={44}
-              height={44}
-              style={{ display: "block", borderRadius: 999 }}
-            />
+        <div style={quoteWrap}>
+          <div style={quoteText}>
+            <span style={{ display: "block" }}>
+              “My wish is that this platform helps your business grow —
+            </span>
+            <span style={{ display: "block" }}>
+              and gives you back what money can’t buy: your time.”
+            </span>
+          </div>
+          <div style={quoteAuthorWrap}>
+            <img src="/founder.jpg" alt="" width={34} height={34} style={quoteAuthorAvatar} />
+            <div style={quoteAuthorText}>
+              <span style={{ display: "block" }}>— Bogdan E.</span>
+              <span style={{ display: "block" }}>Founder of Plan4Host</span>
+            </div>
           </div>
         </div>
-        <h1 style={heroTitle}>{t.welcome}</h1>
          
         <div  style={wrap(mounted ? theme : "dark")} >
           <div  style={headRow}>
@@ -615,26 +620,39 @@ const outerWrap: React.CSSProperties = {
   display: "grid",
   gap: 12,
 };
-const heroTitle: React.CSSProperties = {
+const quoteWrap: React.CSSProperties = {
   margin: 0,
   textAlign: "center",
-  fontSize: 24,
-  fontWeight: 900,
-  color: "var(--text)",
-};
-const logoWrap: React.CSSProperties = {
   display: "grid",
-  placeItems: "center",
-  marginBottom: 2,
+  gap: 6,
 };
-const logoRing: React.CSSProperties = {
-  width: 56,
-  height: 56,
+const quoteText: React.CSSProperties = {
+  fontSize: 15,
+  fontWeight: 850,
+  color: "var(--text)",
+  lineHeight: 1.25,
+};
+const quoteAuthorWrap: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 10,
+};
+const quoteAuthorAvatar: React.CSSProperties = {
+  width: 34,
+  height: 34,
   borderRadius: 999,
+  objectFit: "cover",
   border: "1px solid var(--border)",
   background: "color-mix(in srgb, var(--card) 70%, transparent)",
-  display: "grid",
-  placeItems: "center",
+  flex: "0 0 auto",
+};
+const quoteAuthorText: React.CSSProperties = {
+  fontSize: 12,
+  fontWeight: 750,
+  color: "var(--muted)",
+  lineHeight: 1.15,
+  textAlign: "left",
 };
 const authFooter: React.CSSProperties = {
   marginTop: 12,
