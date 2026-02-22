@@ -92,8 +92,8 @@ export default function LoginClient({
     },
     ro: {
       welcome: "Bine ai venit in Plan4Host",
-      quoteLine1: "Dorinta mea este ca aceasta platforma sa-ti ajute afacerea sa creasca —",
-      quoteLine2: "si sa-ti ofere inapoi ce banii nu pot cumpara: timpul tau.",
+      quoteLine1: "Îmi doresc ca această platformă să îți dezvolte afacerea — ",
+      quoteLine2: "și să îți redea ceea ce banii nu pot cumpăra: timpul tău.",
       signIn: "Autentificare",
       createAccount: "Creeaza cont",
       signingIn: "Se autentifica...",
@@ -396,7 +396,7 @@ export default function LoginClient({
           <div style={quoteAuthorWrap}>
             <img src="/founder.jpg" alt="" width={34} height={34} style={quoteAuthorAvatar} />
             <div style={quoteAuthorText}>
-              <span style={{ display: "block" }}>— Bogdan E.</span>
+              <span style={{ display: "block" }}>Bogdan E.</span>
               <span style={{ display: "block" }}>{lang === "ro" ? "Fondator Plan4Host" : "Founder of Plan4Host"}</span>
             </div>
           </div>
@@ -629,9 +629,10 @@ const quoteWrap: React.CSSProperties = {
   textAlign: "center",
   display: "grid",
   gap: 6,
-  /* Allow the quote to be wider than the auth card to keep it on exactly 2 lines. */
-  width: "min(760px, calc(100vw - 24px))",
-  marginLeft: "50%",
+  /* Allow the quote to be wider than the auth card, but keep it centered. */
+  width: "min(920px, calc(100vw - 24px))",
+  position: "relative",
+  left: "50%",
   transform: "translateX(-50%)",
 };
 const quoteText: React.CSSProperties = {
@@ -639,6 +640,7 @@ const quoteText: React.CSSProperties = {
   fontWeight: 850,
   color: "var(--text)",
   lineHeight: 1.25,
+  fontStyle: "italic",
 };
 const quoteAuthorWrap: React.CSSProperties = {
   display: "inline-flex",
