@@ -595,12 +595,12 @@ export default function CalendarClient({
             }}
           >
             <MaskedSvgIcon
-              src={monthDisplay === "timeline" ? "/svg_timeline.svg" : "/svg_grid.svg"}
+              src={monthDisplay === "timeline" ? "/svg_grid.svg" : "/svg_timeline.svg"}
               size={18}
               zoom={0.95}
               color="var(--text)"
             />
-            {monthDisplay === "timeline" ? "Timeline" : "Grid"}
+            {monthDisplay === "timeline" ? "Grid" : "Timeline"}
           </button>
         </div>
         <div style={{ flex: 1 }} />
