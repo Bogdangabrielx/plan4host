@@ -801,6 +801,16 @@ const [country, setCountry] = useState<string>("");
     return () => ro.disconnect();
   }, [isDesktop]);
 
+  const firstWizardOpen = showFirstPropertyGuide && list.length === 0 && firstPropertyStep > 0;
+  useEffect(() => {
+    if (!firstWizardOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [firstWizardOpen]);
+
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
       <PlanHeaderBadge title={t.dashboard} slot="under-title" />
@@ -1024,7 +1034,7 @@ const [country, setCountry] = useState<string>("");
       </div>
 
 		      {/* First property wizard (3 steps) */}
-		      {showFirstPropertyGuide && list.length === 0 && firstPropertyStep > 0 && (
+		      {firstWizardOpen && (
         <div
           role="dialog"
           aria-modal="true"
@@ -1041,9 +1051,11 @@ const [country, setCountry] = useState<string>("");
             alignItems: "flex-start",
             justifyContent: "center",
             padding: 12,
-            paddingTop: "calc(var(--safe-top, 0px) + 32px)",
-            paddingBottom: "calc(var(--safe-bottom, 0px) + 72px)",
-            overflowY: "auto",
+            paddingTop:
+              "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 12px)",
+            paddingBottom: "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)",
+            overflow: "hidden",
+            overscrollBehavior: "contain",
           }}
         >
           <div
@@ -1051,7 +1063,8 @@ const [country, setCountry] = useState<string>("");
             className="sb-card"
             style={{
               width: "min(520px, 100%)",
-              maxHeight: "calc(100vh - var(--safe-top, 0px) - var(--safe-bottom, 0px) - 64px)",
+              maxHeight:
+                "calc(100dvh - (var(--safe-top, 0px) + var(--app-header-h, 64px) + var(--safe-bottom, 0px) + var(--nav-h, 0px) + 24px))",
               background: "var(--panel)",
               border: "1px solid var(--border)",
               borderRadius: 14,
@@ -1091,7 +1104,18 @@ const [country, setCountry] = useState<string>("");
               </button>
             </div>
 
-            <div style={{ display: "grid", gap: 12, overflowY: "auto", paddingRight: 4, maxHeight: "100%" }}>
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+                overflowY: "auto",
+                paddingRight: 4,
+                paddingBottom: 12,
+                maxHeight: "100%",
+                overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
             {firstPropertyStep === 1 ? (
               <div style={{ display: "grid", gap: 12 }}>
                 <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
