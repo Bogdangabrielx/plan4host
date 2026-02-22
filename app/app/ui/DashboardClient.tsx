@@ -61,6 +61,7 @@ export default function DashboardClient({
 const [country, setCountry] = useState<string>("");
   const [propertyType, setPropertyType] = useState<string>("");
   const [unitMode, setUnitMode] = useState<"single" | "multi">("single");
+  const [unitCount, setUnitCount] = useState<string>("2");
   const [isSmall, setIsSmall] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia?.("(max-width: 480px)")?.matches ?? false;
@@ -85,7 +86,7 @@ const [country, setCountry] = useState<string>("");
   const [firstPropertyStep, setFirstPropertyStep] = useState<0 | 1 | 2>(0);
   const [firstPropertyPhoto, setFirstPropertyPhoto] = useState<File | null>(null);
   const firstPropertyPhotoInputRef = useRef<HTMLInputElement | null>(null);
-  const [firstPropertyResult, setFirstPropertyResult] = useState<{ propertyId: string; link: string } | null>(null);
+  const [firstPropertyResult, setFirstPropertyResult] = useState<{ propertyId: string; link: string; units?: string[] } | null>(null);
   const [firstPropertyCopied, setFirstPropertyCopied] = useState<boolean>(false);
   const [firstPropertyLoading, setFirstPropertyLoading] = useState(false);
   const [firstPropertyLoadingIdx, setFirstPropertyLoadingIdx] = useState(0);
@@ -132,6 +133,8 @@ const [country, setCountry] = useState<string>("");
       unitMode: "Units",
       unitSingle: "Single unit",
       unitMulti: "Multiple units",
+      unitsExample: "e.g. 3",
+      numberOfUnits: "Number of units",
       continue: "Activate the property",
       propertyPhotoOptional: "This image appears on the page your guests fill out before arrival.",
       changePhoto: "Change photo",
@@ -145,6 +148,8 @@ const [country, setCountry] = useState<string>("");
       copied: "Copied",
       copyLink: "Copy the link",
       continueSetup: "Continue configuring",
+      goToChannels: "Connect channels",
+      connectBookings: "Connect booking platforms",
       deletePropertyQuestion: "Delete property?",
       deletePropertyWarning1: "This will permanently delete",
       deletePropertyWarning2: "Related rooms, bookings, and integrations may be removed.",
@@ -189,6 +194,8 @@ const [country, setCountry] = useState<string>("");
       unitMode: "Unități",
       unitSingle: "Unitate unică",
       unitMulti: "Mai multe unități",
+      unitsExample: "ex. 3",
+      numberOfUnits: "Număr de unități",
       continue: "Activează proprietatea",
       propertyPhotoOptional: "Această imagine apare în pagina pe care oaspeții o completează înainte de sosire.",
       changePhoto: "Schimba poza",
@@ -202,6 +209,8 @@ const [country, setCountry] = useState<string>("");
       copied: "Copiat",
       copyLink: "Copiază linkul",
       continueSetup: "Continuă configurarea",
+      goToChannels: "Conectează canalele",
+      connectBookings: "Conectează platformele de rezervări",
       deletePropertyQuestion: "Stergi proprietatea?",
       deletePropertyWarning1: "Aceasta actiune va sterge permanent",
       deletePropertyWarning2: "Camerele, rezervarile si integrarile asociate pot fi eliminate.",
@@ -376,15 +385,16 @@ const [country, setCountry] = useState<string>("");
       if (!createdId) throw new Error(t.couldNotCreateProperty);
 
       // Create default rooms based on unitMode selection (only for onboarding wizard)
+      let createdUnits: string[] = [];
       try {
-        const roomRows =
-          unitMode === "multi"
-            ? [
-                { property_id: createdId, name: "Unit 1", sort_index: 0 },
-                { property_id: createdId, name: "Unit 2", sort_index: 1 },
-              ]
-            : [{ property_id: createdId, name: "Unit 1", sort_index: 0 }];
+        const count = unitMode === "multi" ? Math.max(2, parseInt(unitCount || "2", 10) || 2) : 1;
+        const roomRows = Array.from({ length: count }, (_, i) => ({
+          property_id: createdId,
+          name: `Unit ${i + 1}`,
+          sort_index: i,
+        }));
         await supabase.from("rooms").insert(roomRows as any);
+        createdUnits = roomRows.map((r) => r.name);
       } catch (e) {
         console.error("Failed to create default rooms", e);
       }
@@ -414,13 +424,14 @@ const [country, setCountry] = useState<string>("");
       if (remaining) await wait(remaining);
 
       const link = buildPropertyCheckinLink({ id: createdId } as Property);
-      setFirstPropertyResult({ propertyId: createdId, link });
+      setFirstPropertyResult({ propertyId: createdId, link, units: createdUnits });
       setFirstPropertyCopied(false);
       setFirstPropertyPhoto(null);
       setName("");
       setCountry("");
       setPropertyType("");
       setUnitMode("single");
+      setUnitCount("2");
       try {
         window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
       } catch {}
@@ -1056,6 +1067,23 @@ const [country, setCountry] = useState<string>("");
                         </button>
                       ))}
                     </div>
+                    {unitMode === "multi" && (
+                      <div style={{ marginTop: 6, display: "grid", gap: 6 }}>
+                        <label style={{ display: "block" }}>{t.numberOfUnits}</label>
+                        <input
+                          type="number"
+                          min={2}
+                          inputMode="numeric"
+                          value={unitCount}
+                          onChange={(e) => setUnitCount(e.currentTarget.value)}
+                          style={{ ...FIELD_STYLE, maxWidth: 140 }}
+                          placeholder="2"
+                        />
+                        <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                          {t.unitsExample}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1311,29 +1339,34 @@ const [country, setCountry] = useState<string>("");
 	                      prompt(t.copyThisLink, firstPropertyResult.link);
 	                    }
 	                  }}
-	                >
-	                  {firstPropertyCopied ? t.copied : t.copyLink}
-	                </button>
-			                <button
-			                  className="sb-btn sb-btn--ghost sb-cardglow"
-			                  style={{
-			                    justifyContent: "center",
-			                    border: "1px solid var(--primary)",
-			                    background: "transparent",
-			                    color: "var(--text)",
-		                    borderRadius: 999,
-		                  }}
-		                  onClick={() => {
-		                    window.location.href = `/app/propertySetup?property=${encodeURIComponent(firstPropertyResult.propertyId)}&guide=rooms`;
-		                  }}
-		                >
-		                  {t.continueSetup}
-		                </button>
-		                <a
-		                  href={firstPropertyResult.link}
-		                  target="_blank"
-		                  rel="noopener noreferrer"
-		                  style={{
+                >
+                  {firstPropertyCopied ? t.copied : t.copyLink}
+                </button>
+                <div style={{ display: "grid", gap: 8 }}>
+                <a
+                  className="sb-btn sb-cardglow"
+                  style={{
+                    width: "100%",
+                    minHeight: 44,
+                    borderRadius: 999,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "var(--fw-medium)",
+                    border: "1px solid var(--primary)",
+                    background: "transparent",
+                    color: "var(--text)",
+                  }}
+                  href="/app/channels"
+                >
+                  {t.connectBookings}
+                </a>
+              </div>
+                <a
+                  href={firstPropertyResult.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
 		                    color: "var(--primary)",
 		                    fontSize: "var(--fs-s)",
 		                    lineHeight: "var(--lh-s)",
