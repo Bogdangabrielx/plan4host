@@ -154,7 +154,7 @@ export default function CalendarClient({
   const initDt = new Date(`${safeInitialDate}T00:00:00`);
 
   const [view, setView]   = useState<"year" | "month">("month");
-  const [monthDisplay, setMonthDisplay] = useState<"grid" | "timeline">("grid");
+  const [monthDisplay, setMonthDisplay] = useState<"grid" | "timeline">("timeline");
   const [year, setYear]   = useState<number>(initDt.getFullYear());
   const [month, setMonth] = useState<number>(initDt.getMonth()); // 0..11
   const [highlightDate, setHighlightDate] = useState<string | null>(safeInitialDate);
