@@ -380,6 +380,17 @@ export default function LoginClient({
   return (
     <>
       <div style={outerWrap}>
+        <div style={logoWrap} aria-hidden>
+          <div style={logoRing}>
+            <img
+              src="/p4h_logo_round.png"
+              alt=""
+              width={44}
+              height={44}
+              style={{ display: "block", borderRadius: 999 }}
+            />
+          </div>
+        </div>
         <h1 style={heroTitle}>{t.welcome}</h1>
          
         <div  style={wrap(mounted ? theme : "dark")} >
@@ -583,6 +594,7 @@ export default function LoginClient({
           </div>
         </div>
       )}
+      <div style={authFooter}>Bucharest · RO</div>
       </div>
       <style jsx>{`
         @keyframes themeFloat {
@@ -609,6 +621,28 @@ const heroTitle: React.CSSProperties = {
   fontSize: 24,
   fontWeight: 900,
   color: "var(--text)",
+};
+const logoWrap: React.CSSProperties = {
+  display: "grid",
+  placeItems: "center",
+  marginBottom: 2,
+};
+const logoRing: React.CSSProperties = {
+  width: 56,
+  height: 56,
+  borderRadius: 999,
+  border: "1px solid var(--border)",
+  background: "color-mix(in srgb, var(--card) 70%, transparent)",
+  display: "grid",
+  placeItems: "center",
+};
+const authFooter: React.CSSProperties = {
+  marginTop: 12,
+  textAlign: "center",
+  color: "var(--muted)",
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: 0.4,
 };
 
 function wrap(theme: Theme): React.CSSProperties {
