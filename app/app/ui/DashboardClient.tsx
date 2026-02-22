@@ -190,7 +190,7 @@ const [country, setCountry] = useState<string>("");
       createAndViewGuestLink: "View your guest check-in page",
       skipPhoto: "Continue without a photo",
       checkinAutomated: "You’ve personalized the check-in form",
-      guestsCanNowSubmit: "Send this link as an automated message on booking platforms so Plan4Host can tell you who is coming. To see when those reservations land on the calendar, keep following the remaining steps to the end.",
+      guestsCanNowSubmit: "Copy and send this link as an automated message on booking platforms so Plan4Host can tell you who is coming. To see when those reservations land on the calendar, keep following the remaining steps to the end.",
       viewGuestLink: "View the check-in form",
       copied: "Copied",
       copyLink: "Copy the link",
@@ -258,7 +258,7 @@ const [country, setCountry] = useState<string>("");
       createAndViewGuestLink: "Vezi pagina ta de check-in pentru oaspeți",
       skipPhoto: "Continua fără fotografie",
       checkinAutomated: "Ai personalizat fișa de cazare",
-      guestsCanNowSubmit: "Trimite acest link ca mesaj automat în platformele de booking, astfel încât Plan4Host să te poată anunța cine urmează să sosească. Pentru a vedea în calendar când sunt rezervările tale, urmează pașii următori până la final.",
+      guestsCanNowSubmit: "Copiază și trimite acest link ca mesaj automat în platformele de booking, astfel încât Plan4Host să te poată anunța cine urmează să sosească. Pentru a vedea în calendar când sunt rezervările tale, urmează pașii următori până la final.",
       viewGuestLink: "Vezi fișa de cazare",
       copied: "Copiat",
       copyLink: "Copiază linkul",
@@ -1554,9 +1554,11 @@ const [country, setCountry] = useState<string>("");
                               {firstPropertyUnitsEditing ? (
                                 <input
                                   value={draft}
-                                  onChange={(e) =>
-                                    setFirstPropertyUnitDrafts((prev) => ({ ...prev, [u.id]: e.currentTarget.value }))
-                                  }
+                                  onChange={(e) => {
+                                    // Avoid reading from `e.currentTarget` in a queued state updater.
+                                    const v = e.currentTarget.value;
+                                    setFirstPropertyUnitDrafts((prev) => ({ ...prev, [u.id]: v }));
+                                  }}
                                   style={{
                                     padding: 8,
                                     minWidth: 140,
