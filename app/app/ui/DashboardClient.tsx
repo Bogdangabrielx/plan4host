@@ -1044,18 +1044,20 @@ const [country, setCountry] = useState<string>("");
 	            paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
 	          }}
 	        >
-	          <div
-	            onClick={(e) => e.stopPropagation()}
-	            className="sb-card"
-	            style={{
-	              width: "min(520px, 100%)",
-	              background: "var(--panel)",
-	              border: "1px solid var(--border)",
-	              borderRadius: 14,
-	              padding: 16,
-	              display: "grid",
-	              gap: 12,
-	            }}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sb-card"
+            style={{
+              width: "min(520px, 100%)",
+              maxHeight: isSmall ? "90vh" : "85vh",
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 14,
+              padding: 16,
+              display: "grid",
+              gridTemplateRows: "auto 1fr",
+              gap: 12,
+            }}
 		          >
 		            <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
 		              <div aria-hidden />
@@ -1087,8 +1089,9 @@ const [country, setCountry] = useState<string>("");
               </button>
             </div>
 
-		            {firstPropertyStep === 1 ? (
-		              <div style={{ display: "grid", gap: 12 }}>
+            <div style={{ display: "grid", gap: 12, overflowY: "auto", paddingRight: 4, maxHeight: "100%" }}>
+            {firstPropertyStep === 1 ? (
+              <div style={{ display: "grid", gap: 12 }}>
                 <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
                   <strong>{t.takesLessThan30s}</strong>
                 </div>
@@ -1250,9 +1253,9 @@ const [country, setCountry] = useState<string>("");
                     {t.continue}
                   </button>
                 </div>
-		              </div>
-	            ) : (
-	              <div style={{ display: "grid", gap: 12 }}>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: 12 }}>
 		                <div style={{ display: "grid", gap: 6 }}>
                   <label style={{ display: "block" }}>{t.propertyPhotoOptional}</label>
                   <input
@@ -1365,35 +1368,36 @@ const [country, setCountry] = useState<string>("");
                       {t.createAndViewGuestLink}
                     </button>
                   )}
-                  {!firstPropertyPhoto && !firstPropertySkippedPhoto && (
-                    <button
-                      className="sb-btn"
-                      style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
-                      disabled={!name || !country || firstPropertyLoading}
+                    {!firstPropertyPhoto && !firstPropertySkippedPhoto && (
+                      <button
+                        className="sb-btn"
+                        style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
+                        disabled={!name || !country || firstPropertyLoading}
                       onClick={() => {
                         setFirstPropertyPhoto(null);
                         setFirstPropertySkippedPhoto(true);
                       }}
-                    >
-                      {t.skipPhoto}
-                    </button>
-                  )}
-                  {firstPropertyError && (
-                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-                      {firstPropertyError}
-                    </div>
-                  )}
+                      >
+                        {t.skipPhoto}
+                      </button>
+                    )}
+                    {firstPropertyError && (
+                      <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                        {firstPropertyError}
+                      </div>
+                    )}
+                  </div>
                 </div>
-		              </div>
-	            )}
-		          </div>
-		        </div>
-		      )}
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
-	      {/* First property loading (between step 2 and feedback) */}
-	      {firstPropertyLoading && (
-	        <div
-	          className={overlayStyles.overlay}
+      {/* First property loading (between step 2 and feedback) */}
+      {firstPropertyLoading && (
+        <div
+          className={overlayStyles.overlay}
 	          role="status"
 	          aria-live="polite"
 	          aria-label={FIRST_PROPERTY_LOADING_TITLE}
