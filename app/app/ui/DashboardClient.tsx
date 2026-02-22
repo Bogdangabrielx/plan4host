@@ -58,7 +58,9 @@ export default function DashboardClient({
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
   const [lang, setLang] = useState<Lang>("en");
   const [name, setName] = useState("");
-  const [country, setCountry] = useState<string>("");
+const [country, setCountry] = useState<string>("");
+  const [propertyType, setPropertyType] = useState<string>("");
+  const [unitMode, setUnitMode] = useState<"single" | "multi">("single");
   const [isSmall, setIsSmall] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia?.("(max-width: 480px)")?.matches ?? false;
@@ -125,6 +127,11 @@ export default function DashboardClient({
       guestsWillSee: "All your bookings and guests will appear under this name.",
       country: "Country",
       personalizeGuestInfo: "Allows automatically sending the correct information to guests.",
+      propertyType: "Type",
+      propertyTypePlaceholder: "Select type",
+      unitMode: "Units",
+      unitSingle: "Single unit",
+      unitMulti: "Multiple units",
       continue: "Activate the property",
       propertyPhotoOptional: "This image appears on the page your guests fill out before arrival.",
       changePhoto: "Change photo",
@@ -177,6 +184,11 @@ export default function DashboardClient({
       guestsWillSee: "Sub acest nume vor apărea toate rezervările și oaspeții tăi.",
       country: "Tara",
       personalizeGuestInfo: "Permite trimiterea automată a informațiilor corecte către oaspeți.",
+      propertyType: "Tip",
+      propertyTypePlaceholder: "Selectează tipul",
+      unitMode: "Unități",
+      unitSingle: "Unitate unică",
+      unitMulti: "Mai multe unități",
       continue: "Activează proprietatea",
       propertyPhotoOptional: "Această imagine apare în pagina pe care oaspeții o completează înainte de sosire.",
       changePhoto: "Schimba poza",
@@ -324,7 +336,7 @@ export default function DashboardClient({
   ];
 
   async function createFirstProperty() {
-    if (!name || !country) return;
+    if (!name || !country || !propertyType) return;
     setFirstPropertyError(null);
     setFirstPropertyLoadingIdx(0);
     setFirstPropertyLoading(true);
@@ -363,6 +375,20 @@ export default function DashboardClient({
       const createdId: string | undefined = j?.property?.id;
       if (!createdId) throw new Error(t.couldNotCreateProperty);
 
+      // Create default rooms based on unitMode selection (only for onboarding wizard)
+      try {
+        const roomRows =
+          unitMode === "multi"
+            ? [
+                { property_id: createdId, name: "Unit 1", sort_index: 0 },
+                { property_id: createdId, name: "Unit 2", sort_index: 1 },
+              ]
+            : [{ property_id: createdId, name: "Unit 1", sort_index: 0 }];
+        await supabase.from("rooms").insert(roomRows as any);
+      } catch (e) {
+        console.error("Failed to create default rooms", e);
+      }
+
       // Best-effort: upload optional photo selected in step 2
       if (firstPropertyPhoto) {
         try {
@@ -393,6 +419,8 @@ export default function DashboardClient({
       setFirstPropertyPhoto(null);
       setName("");
       setCountry("");
+      setPropertyType("");
+      setUnitMode("single");
       try {
         window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
       } catch {}
@@ -960,36 +988,86 @@ export default function DashboardClient({
 		                  </div>
 		                </div>
 
-	                <div style={{ display: "grid", gap: 6 }}>
-	                  <label style={{ display: "block" }}>{t.country}</label>
-	                  <select value={country} onChange={(e) => setCountry(e.currentTarget.value)} style={FIELD_STYLE}>
-	                    <option value="">{t.selectOption}</option>
-	                    {TZ_COUNTRIES.slice()
-	                      .sort((a, b) => {
-	                        if (a.code === "RO") return -1;
-	                        if (b.code === "RO") return 1;
-	                        return a.name.localeCompare(b.name);
-	                      })
-	                      .map((c) => (
-	                        <option key={c.code} value={c.code}>
-	                          {countryLabel(c.code)}
-	                        </option>
-	                      ))}
-	                  </select>
-		                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-		                    {t.personalizeGuestInfo}
-		                  </div>
-		                </div>
+                <div style={{ display: "grid", gap: 6 }}>
+                  <label style={{ display: "block" }}>{t.country}</label>
+                  <select value={country} onChange={(e) => setCountry(e.currentTarget.value)} style={FIELD_STYLE}>
+                    <option value="">{t.selectOption}</option>
+                    {TZ_COUNTRIES.slice()
+                      .sort((a, b) => {
+                        if (a.code === "RO") return -1;
+                        if (b.code === "RO") return 1;
+                        return a.name.localeCompare(b.name);
+                      })
+                      .map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {countryLabel(c.code)}
+                        </option>
+                      ))}
+                  </select>
+                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                    {t.personalizeGuestInfo}
+                  </div>
+                </div>
 
-		                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-		                  <button
-		                    className="sb-btn sb-cardglow"
-		                    disabled={!name || !country}
-		                    style={{
-		                      border: "1px solid var(--primary)",
-		                      background: "transparent",
-		                      color: "var(--text)",
-		                      borderRadius: 999,
+                {country && (
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={{ display: "block" }}>{t.propertyType}</label>
+                    <select
+                      value={propertyType}
+                      onChange={(e) => setPropertyType(e.currentTarget.value)}
+                      style={FIELD_STYLE}
+                    >
+                      <option value="">{t.propertyTypePlaceholder}</option>
+                      {["apartment","cabin","studio","house","guesthouse","villa","other"].map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt === "apartment" ? "Apartment"
+                            : opt === "cabin" ? "Cabin"
+                            : opt === "studio" ? "Studio"
+                            : opt === "house" ? "House"
+                            : opt === "guesthouse" ? "Guesthouse"
+                            : opt === "villa" ? "Villa"
+                            : "Other"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {propertyType && (
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={{ display: "block" }}>{t.unitMode}</label>
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      {(["single", "multi"] as const).map((mode) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => setUnitMode(mode)}
+                          style={{
+                            padding: "10px 14px",
+                            borderRadius: 12,
+                            border: unitMode === mode ? "2px solid var(--primary)" : "1px solid var(--border)",
+                            background: unitMode === mode ? "color-mix(in srgb, var(--primary) 16%, transparent)" : "var(--card)",
+                            color: "var(--text)",
+                            fontWeight: 800,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {mode === "single" ? t.unitSingle : t.unitMulti}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <button
+                    className="sb-btn sb-cardglow"
+                    disabled={!name || !country || !propertyType}
+                    style={{
+                      border: "1px solid var(--primary)",
+                      background: "transparent",
+                      color: "var(--text)",
+                      borderRadius: 999,
 		                      fontWeight: "var(--fw-medium)",
 		                    }}
 		                    onClick={() => setFirstPropertyStep(2)}
