@@ -1423,8 +1423,8 @@ function TimelineView({
   const manualColor = "#6CCC4C";
   const overlayOpacity = 0.22;
   const border = "color-mix(in srgb, var(--border) 86%, transparent)";
-  // Diagonal divider should be invisible (use fills only).
-  const diag = "var(--text)";
+  // Diagonal divider line (should follow the same "/" direction as the half-day fill).
+  const diag = "var(--card)";
   const bg = "var(--card)";
   const empty = "color-mix(in srgb, var(--panel) 65%, transparent)";
 
@@ -1505,6 +1505,7 @@ function TimelineView({
   ]);
 
   // Use SVG for diagonal divider: looks smoother than CSS gradients (less "pixelated").
+  // Direction: "/" (bottom-left -> top-right) to match the AM/PM triangle fill.
   function DiagonalDivider({ gap }: { gap: boolean }) {
     const strokeW = isSmall ? 1.6 : 1.7;
     return (
@@ -1524,9 +1525,9 @@ function TimelineView({
           <>
             <line
               x1="0"
-              y1="0"
+              y1="100"
               x2="46"
-              y2="46"
+              y2="54"
               stroke={diag}
               strokeWidth={strokeW}
               strokeLinecap="round"
@@ -1536,9 +1537,9 @@ function TimelineView({
             />
             <line
               x1="54"
-              y1="54"
+              y1="46"
               x2="100"
-              y2="100"
+              y2="0"
               stroke={diag}
               strokeWidth={strokeW}
               strokeLinecap="round"
@@ -1550,9 +1551,9 @@ function TimelineView({
         ) : (
           <line
             x1="0"
-            y1="0"
+            y1="100"
             x2="100"
-            y2="100"
+            y2="0"
             stroke={diag}
             strokeWidth={strokeW}
             strokeLinecap="round"
