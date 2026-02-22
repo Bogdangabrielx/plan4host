@@ -641,10 +641,11 @@ const quoteText: React.CSSProperties = {
   fontStyle: "italic",
 };
 const quoteAuthorWrap: React.CSSProperties = {
-  display: "inline-flex",
+  display: "flex",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-start",
   gap: 10,
+  width: "100%",
 };
 const quoteAuthorAvatar: React.CSSProperties = {
   width: 34,
