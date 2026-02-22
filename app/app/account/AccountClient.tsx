@@ -28,6 +28,10 @@ const translations = {
     companyPlaceholder: "Add company",
     phonePlaceholder: "Add phone number",
     unknown: "Unknown",
+    deleteAccount: "Delete account",
+    deleteAccountPrompt:
+      "Type delete to confirm account deletion. This removes ALL your data.",
+    deleteAccountFailed: "Could not delete account.",
   },
   ro: {
     pageTitle: "Contul meu",
@@ -47,6 +51,10 @@ const translations = {
     companyPlaceholder: "Adaugă companie",
     phonePlaceholder: "Adaugă număr de telefon",
     unknown: "Necunoscut",
+    deleteAccount: "Șterge contul",
+    deleteAccountPrompt:
+      "Scrie delete pentru a confirma ștergerea contului. Această acțiune șterge TOATE datele.",
+    deleteAccountFailed: "Contul nu a putut fi șters.",
   },
 } as const;
 
@@ -665,6 +673,36 @@ export default function AccountClient() {
                     <div style={{ fontSize: "var(--fs-b)", fontWeight: 700 }}>{memberSince}</div>
                   </div>
                 </div>
+              </section>
+
+              {/* Danger zone */}
+              <section style={{ marginTop: 22 }}>
+                <button
+                  type="button"
+                  className="sb-btn sb-cardglow"
+                  aria-label={lang === "ro" ? "Șterge contul definitiv" : "Delete account permanently"}
+                  onClick={async () => {
+                    const conf = prompt(t.deleteAccountPrompt);
+                    if ((conf || "").trim().toLowerCase() !== "delete") return;
+                    try {
+                      const res = await fetch("/api/account/delete", { method: "POST" });
+                      if (!res.ok) throw new Error(await res.text());
+                      window.location.assign("/auth/logout");
+                    } catch (e: any) {
+                      alert(e?.message || t.deleteAccountFailed);
+                    }
+                  }}
+                  style={{
+                    width: "100%",
+                    justifyContent: "center",
+                    background: "transparent",
+                    border: "1px solid var(--danger, #ef4444)",
+                    color: "var(--danger, #ef4444)",
+                    fontWeight: 800,
+                  }}
+                >
+                  {t.deleteAccount}
+                </button>
               </section>
             </div>
           </div>
