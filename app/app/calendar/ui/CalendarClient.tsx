@@ -1504,8 +1504,66 @@ function TimelineView({
     integColorByTypeId,
   ]);
 
-  const diagLine = `linear-gradient(to bottom right, transparent 0 calc(50% - 1px), ${diag} calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px) 100%)`;
-  const diagGap = `linear-gradient(to bottom right, transparent 0 calc(50% - 3px), ${diag} calc(50% - 3px) calc(50% - 2px), ${bg} calc(50% - 2px) calc(50% + 2px), ${diag} calc(50% + 2px) calc(50% + 3px), transparent calc(50% + 3px) 100%)`;
+  // Use SVG for diagonal divider: looks smoother than CSS gradients (less "pixelated").
+  function DiagonalDivider({ gap }: { gap: boolean }) {
+    const strokeW = isSmall ? 1.6 : 1.7;
+    return (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+        }}
+      >
+        {gap ? (
+          <>
+            <line
+              x1="0"
+              y1="0"
+              x2="46"
+              y2="46"
+              stroke={diag}
+              strokeWidth={strokeW}
+              strokeLinecap="round"
+              shapeRendering="geometricPrecision"
+              vectorEffect="non-scaling-stroke"
+              opacity={0.92}
+            />
+            <line
+              x1="54"
+              y1="54"
+              x2="100"
+              y2="100"
+              stroke={diag}
+              strokeWidth={strokeW}
+              strokeLinecap="round"
+              shapeRendering="geometricPrecision"
+              vectorEffect="non-scaling-stroke"
+              opacity={0.92}
+            />
+          </>
+        ) : (
+          <line
+            x1="0"
+            y1="0"
+            x2="100"
+            y2="100"
+            stroke={diag}
+            strokeWidth={strokeW}
+            strokeLinecap="round"
+            shapeRendering="geometricPrecision"
+            vectorEffect="non-scaling-stroke"
+            opacity={0.92}
+          />
+        )}
+      </svg>
+    );
+  }
 
   return (
     <section className="modalCard sb-cardglow" style={{ padding: isSmall ? 10 : 14 }}>
@@ -1547,6 +1605,8 @@ function TimelineView({
                   borderBottom: `1px solid ${border}`,
                   fontWeight: 900,
                   color: "var(--text)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.22em",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -1648,15 +1708,7 @@ function TimelineView({
                             />
                           ) : null}
                           {!isFull && (hasAM || hasPM) ? (
-                            <span
-                              aria-hidden="true"
-                              style={{
-                                position: "absolute",
-                                inset: 0,
-                                background: showGap ? diagGap : diagLine,
-                                pointerEvents: "none",
-                              }}
-                            />
+                            <DiagonalDivider gap={showGap} />
                           ) : null}
 
                           <span
