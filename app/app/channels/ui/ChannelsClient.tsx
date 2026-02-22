@@ -84,6 +84,7 @@ function providerBuiltinLogo(provider?: string | null): string | null {
 }
 
 type HintVariant = "muted" | "warning" | "danger" | "success" | "info";
+type FeedTargetValue = `room:${string}` | `type:${string}`;
 
 function localizeHint(text: string, lang: Lang) {
   if (lang === "en") return text;
@@ -180,6 +181,13 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [showTypesModal, setShowTypesModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showRoomImportModal, setShowRoomImportModal] = useState(false);
+
+  // Unified "Add iCal feed" (can target either a unit/room or a room type)
+  const [addFeedOpen, setAddFeedOpen] = useState(false);
+  const [addTarget, setAddTarget] = useState<FeedTargetValue | "">("");
+  const [addProvider, setAddProvider] = useState<string>("Airbnb");
+  const [addCustomProvider, setAddCustomProvider] = useState<string>("");
+  const [addUrl, setAddUrl] = useState<string>("");
 
   // inner modals (detaliu element)
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
@@ -571,7 +579,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       .from("ical_type_integrations")
       .update({ is_active: next })
       .eq("id", integration.id)
-      .select("id,property_id,room_type_id,provider,url,is_active,last_sync")
+      // Keep all identifying fields so we don't "lose" room_id / presentation metadata in local state.
+      .select("id,property_id,room_type_id,room_id,provider,url,is_active,last_sync,color,logo_url")
       .single();
     if (!error && data) setIntegrations(prev => prev.map(x => x.id === integration.id ? (data as TypeIntegration) : x));
     setStatus(error ? "Error" : "Idle");
@@ -1243,133 +1252,223 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   : syncBtnText}
             </button>
 
+            <button
+              className="sb-btn sb-cardglow"
+              style={{
+                background: "transparent",
+                color: "var(--text)",
+                border: "1px solid var(--border)",
+                opacity: (!canWrite || !propertyReady || !propertyId) ? 0.55 : 1,
+              }}
+              disabled={!canWrite || !propertyReady || !propertyId}
+              onClick={() => {
+                // Default target: first room, else first type
+                const firstRoom = rooms[0]?.id ? (`room:${rooms[0].id}` as const) : null;
+                const firstType = types[0]?.id ? (`type:${types[0].id}` as const) : null;
+                setAddTarget((firstRoom || firstType || "") as any);
+                setAddProvider("Airbnb");
+                setAddCustomProvider("");
+                setAddUrl("");
+                setAddFeedOpen(true);
+              }}
+              title={lang === "ro" ? "Adauga un feed iCal" : "Add an iCal feed"}
+            >
+              {lang === "ro" ? "Adauga feed iCal" : "Add iCal feed"}
+            </button>
+
             {/* PILLAȘ persistent lângă butonul global */}
             {hintText ? (
               <span className="sb-badge">{localizeHint(hintText, lang)}</span>
             ) : null}
           </div>
 
-          {/* Cards pentru Export/Import */}
-          <div
-            style={{
-              display: 'grid',
-              gap: isSmall ? 10 : 6,
-              // Avoid overlap on "in-between" desktop widths: cards have a natural maxWidth,
-              // so we let the grid wrap instead of forcing 3 tight columns.
-              gridTemplateColumns: isSmall ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))',
-              justifyItems: 'stretch',
-            }}
-          >
-            {types.length > 0 && (
-              <div
-                className="sb-card"
-                style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
-              >
-              <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>{lang === "ro" ? "Tipuri de camere" : "Room Types"}</h4>
-                <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>{lang === "ro" ? "Export .ics per tip" : "Export .ics per type"}</small>
-                <button
-                  className="sb-btn"
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: isSmall ? 29 : 10,
-                    border: '1px solid var(--border)',
-                    background: 'var(--card)',
-                    color: 'var(--text)',
-                    fontWeight: 800,
-                    justifySelf: isSmall ? 'stretch' : 'stretch',
-                  }}
-                  disabled={!canWrite}
-                  onClick={() => { if (!canWrite) return; if (!types.length) return; setShowTypesModal(true); }}
-                  title={lang === "ro" ? "Export · Tipuri de camere" : "Export · Room Types"}
-                >
-                  Export iCal
-                </button>
-              </div>
-            )}
-
-            {types.length > 0 && (
-              <div
-                className="sb-card"
-                style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
-              >
-                <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>{lang === "ro" ? "Import · Tipuri de camere" : "Import · Room Types"}</h4>
-                <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>{lang === "ro" ? "Import .ics per tip de camera" : "Import .ics per room type"}</small>
-                <button
-                  className="sb-btn"
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: isSmall ? 29 : 10,
-                    border: '1px solid var(--border)',
-                    background: 'var(--card)',
-                    color: 'var(--text)',
-                    fontWeight: 800,
-                    justifySelf: isSmall ? 'stretch' : 'stretch',
-                  }}
-                  disabled={!canWrite}
-                  onClick={() => { if (!canWrite) return; setShowImportModal(true); }}
-                  title={lang === "ro" ? "Import feed-uri per tip de camera" : "Import feeds per room type"}
-                >
-                  Import iCal
-                </button>
-              </div>
-            )}
-
+          {/* Per-target cards: Units + Types (structure only; uses our UI styles) */}
+          <div style={{ display: "grid", gap: 14 }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+              <h4 style={{ margin: 0, fontWeight: 900 }}>{lang === "ro" ? "Unitati" : "Units"}</h4>
+              <small style={{ color: "var(--muted)" }}>
+                {lang === "ro" ? "Feed-uri iCal per unitate" : "iCal feeds per unit"}
+              </small>
+            </div>
             <div
-              className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
+              style={{
+                display: "grid",
+                gap: isSmall ? 10 : 8,
+                gridTemplateColumns: isSmall ? "1fr" : "repeat(auto-fit, minmax(320px, 1fr))",
+                alignItems: "start",
+              }}
             >
-              <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>{lang === "ro" ? "Camere" : "Rooms"}</h4>
-              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>{lang === "ro" ? "Export .ics per camera" : "Export .ics per room"}</small>
-              <button
-                className="sb-btn"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: isSmall ? 29 : 10,
-                  border: '1px solid var(--border)',
-                  background: 'var(--card)',
-                  color: 'var(--text)',
-                  fontWeight: 800,
-                  justifySelf: isSmall ? 'stretch' : 'stretch',
-                }}
-                disabled={!canWrite}
-                onClick={() => { if (!canWrite) return; setShowRoomsModal(true); }}
-                title={lang === "ro" ? "Export · Camere" : "Export · Rooms"}
-              >
-                Export iCal
-              </button>
+              {rooms.length === 0 ? (
+                <div className="sb-card" style={{ padding: 12 }}>
+                  <p style={{ margin: 0, color: "var(--muted)" }}>
+                    {lang === "ro" ? "Nu exista unitati in aceasta proprietate." : "No units in this property."}
+                  </p>
+                </div>
+              ) : (
+                rooms.map((r) => (
+                  <TargetFeedCard
+                    key={r.id}
+                    kind="room"
+                    title={r.name}
+                    exportUrl={roomIcsUrl(r.id)}
+                    feeds={integrations.filter((i) => i.room_id === r.id)}
+                    canWrite={canWrite}
+                    lang={lang}
+                    onToggle={toggleActive}
+                    onDelete={deleteIntegration}
+                  />
+                ))
+              )}
             </div>
 
-            <div
-              className="sb-card"
-              style={{ display: 'grid', gap: 10, padding: 12, width: '100%', maxWidth: 360, justifySelf: 'stretch' }}
-            >
-              <h4 style={{ margin: 0, textAlign: isSmall ? "left" : "left", fontFamily: "inherit", fontWeight: 800, fontSize: 14 }}>{lang === "ro" ? "Import · Camere" : "Import · Rooms"}</h4>
-              <small style={{ color: 'var(--muted)', margin: 0, fontSize: 12 }}>{lang === "ro" ? "Import .ics per camera" : "Import .ics per room"}</small>
-              <button
-                className="sb-btn"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: isSmall ? 29 : 10,
-                  border: '1px solid var(--border)',
-                  background: 'var(--card)',
-                  color: 'var(--text)',
-                  fontWeight: 800,
-                  justifySelf: isSmall ? 'stretch' : 'stretch',
-                }}
-                disabled={!canWrite}
-                onClick={() => { if (!canWrite) return; setShowRoomImportModal(true); }}
-                title={lang === "ro" ? "Import feed-uri per camera" : "Import feeds per room"}
-              >
-                Import iCal
-              </button>
-            </div>
+            {types.length > 0 && (
+              <>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginTop: 6 }}>
+                  <h4 style={{ margin: 0, fontWeight: 900 }}>{lang === "ro" ? "Tipuri" : "Types"}</h4>
+                  <small style={{ color: "var(--muted)" }}>
+                    {lang === "ro" ? "Feed-uri iCal per tip" : "iCal feeds per type"}
+                  </small>
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gap: isSmall ? 10 : 8,
+                    gridTemplateColumns: isSmall ? "1fr" : "repeat(auto-fit, minmax(320px, 1fr))",
+                    alignItems: "start",
+                  }}
+                >
+                  {types.map((t) => (
+                    <TargetFeedCard
+                      key={t.id}
+                      kind="type"
+                      title={t.name}
+                      exportUrl={typeIcsUrl(t.id)}
+                      feeds={integrations.filter((i) => i.room_type_id === t.id)}
+                      canWrite={canWrite}
+                      lang={lang}
+                      onToggle={toggleActive}
+                      onDelete={deleteIntegration}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
+
+      {/* Unified Add Feed modal (select target -> platform -> iCal URL) */}
+      {addFeedOpen && (
+        <Modal
+          title={lang === "ro" ? "Adauga feed iCal" : "Add iCal feed"}
+          closeLabel={lang === "ro" ? "Inchide" : "Close"}
+          onClose={() => setAddFeedOpen(false)}
+        >
+          <div style={{ display: "grid", gap: 12 }}>
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={{ fontWeight: 800 }}>{lang === "ro" ? "Unitate / Tip" : "Unit / Type"}</label>
+              <select
+                className="sb-select"
+                value={addTarget}
+                onChange={(e) => setAddTarget((e.currentTarget.value || "") as any)}
+                style={{ width: "100%", minHeight: 44 }}
+              >
+                <option value="">{lang === "ro" ? "Selecteaza..." : "Select..."}</option>
+                <optgroup label={lang === "ro" ? "Unitati" : "Units"}>
+                  {rooms.map((r) => (
+                    <option key={r.id} value={`room:${r.id}` as const}>{r.name}</option>
+                  ))}
+                </optgroup>
+                <optgroup label={lang === "ro" ? "Tipuri" : "Types"}>
+                  {types.map((t) => (
+                    <option key={t.id} value={`type:${t.id}` as const}>{t.name}</option>
+                  ))}
+                </optgroup>
+              </select>
+            </div>
+
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={{ fontWeight: 800 }}>{lang === "ro" ? "Platforma" : "Platform"}</label>
+              <select
+                className="sb-select"
+                value={addProvider}
+                onChange={(e) => { setAddProvider(e.currentTarget.value); setAddCustomProvider(""); }}
+                style={{ width: "100%", minHeight: 44 }}
+              >
+                {["Airbnb", "Booking.com", "Expedia", "Trivago", "lastminute.com", "Travelminit", "Other"].map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+              {addProvider === "Other" && (
+                <input
+                  value={addCustomProvider}
+                  onChange={(e) => setAddCustomProvider(e.currentTarget.value)}
+                  placeholder={lang === "ro" ? "Numele platformei" : "Platform name"}
+                  style={{
+                    width: "100%",
+                    padding: 10,
+                    background: "var(--card)",
+                    color: "var(--text)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 10,
+                    fontFamily: "inherit",
+                  }}
+                />
+              )}
+            </div>
+
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={{ fontWeight: 800 }}>{lang === "ro" ? "Link iCal" : "iCal URL"}</label>
+              <input
+                value={addUrl}
+                onChange={(e) => setAddUrl(e.currentTarget.value)}
+                placeholder="https://..."
+                style={{
+                  width: "100%",
+                  padding: 10,
+                  background: "var(--card)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 10,
+                  fontFamily: "inherit",
+                }}
+              />
+              <div style={{ color: "var(--muted)", fontSize: 12 }}>
+                {lang === "ro" ? "Lipeste linkul iCal din platforma de rezervari." : "Paste the iCal link from your booking platform."}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap", marginTop: 4 }}>
+              <button className="sb-btn" type="button" onClick={() => setAddFeedOpen(false)}>
+                {lang === "ro" ? "Renunta" : "Cancel"}
+              </button>
+              <button
+                className="sb-btn sb-btn--primary sb-cardglow"
+                style={{ background: "var(--primary)", minHeight: 44 }}
+                disabled={
+                  !canWrite ||
+                  !addTarget ||
+                  !(addUrl || "").trim() ||
+                  (addProvider === "Other" && !(addCustomProvider || "").trim())
+                }
+                onClick={async () => {
+                  const providerName = addProvider === "Other" ? addCustomProvider.trim() : addProvider;
+                  const target = addTarget;
+                  if (!target || !providerName || !addUrl.trim()) return;
+                  const [kind, id] = target.split(":");
+                  const ok =
+                    kind === "room"
+                      ? await addRoomIntegration(id, providerName, addUrl)
+                      : await addIntegration(id, providerName, addUrl);
+                  if (ok) setAddFeedOpen(false);
+                }}
+              >
+                {lang === "ro" ? "Adauga feed" : "Add feed"}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* ======= MODAL A: EXPORT per ROOM ======= */}
       {showRoomsModal && (
@@ -1626,6 +1725,141 @@ function InnerModal({ title, children, onClose, closeLabel = "Close" }:{
           </button>
         </div>
         {children}
+      </div>
+    </div>
+  );
+}
+
+function TargetFeedCard({
+  kind,
+  title,
+  exportUrl,
+  feeds,
+  canWrite,
+  lang,
+  onToggle,
+  onDelete,
+}: {
+  kind: "room" | "type";
+  title: string;
+  exportUrl: string;
+  feeds: TypeIntegration[];
+  canWrite: boolean;
+  lang: Lang;
+  onToggle: (ii: TypeIntegration) => void;
+  onDelete: (id: string) => void;
+}) {
+  const hasFeeds = feeds.length > 0;
+  return (
+    <div
+      className="sb-card sb-cardglow"
+      style={{
+        padding: 12,
+        borderRadius: 16,
+        display: "grid",
+        gap: 10,
+        background: "var(--panel)",
+        border: "1px solid var(--border)",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</div>
+          <div style={{ color: "var(--muted)", fontSize: 12 }}>
+            {kind === "room" ? (lang === "ro" ? "Unitate" : "Unit") : (lang === "ro" ? "Tip" : "Type")} ·{" "}
+            {hasFeeds ? `${feeds.length} ${(lang === "ro" ? "feed-uri" : "feeds")}` : (lang === "ro" ? "fara feed" : "no feeds")}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gap: 8 }}>
+        {hasFeeds ? (
+          feeds.map((f) => {
+            const provider = f.provider || (lang === "ro" ? "Necunoscut" : "Unknown");
+            const active = !!f.is_active;
+            return (
+              <div
+                key={f.id}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto",
+                  gap: 10,
+                  alignItems: "center",
+                  padding: "10px 10px",
+                  borderRadius: 14,
+                  border: "1px solid var(--border)",
+                  background: "color-mix(in srgb, var(--card) 86%, transparent)",
+                }}
+              >
+                <div style={{ minWidth: 0, display: "grid", gap: 4 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flexWrap: "wrap" }}>
+                    <span style={{ fontWeight: 900 }}>{provider}</span>
+                    <span style={{ color: active ? "var(--success)" : "var(--muted)", fontSize: 12, fontWeight: 800 }}>
+                      {active ? (lang === "ro" ? "Activ" : "Active") : (lang === "ro" ? "Inactiv" : "Inactive")}
+                    </span>
+                  </div>
+                  <div style={{ color: "var(--muted)", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {f.url}
+                  </div>
+                  {f.last_sync ? (
+                    <div style={{ color: "var(--muted)", fontSize: 11 }}>
+                      {lang === "ro" ? "Ultima sincronizare: " : "Last synced: "}
+                      {new Date(f.last_sync).toLocaleString()}
+                    </div>
+                  ) : null}
+                </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <button
+                    className="sb-btn sb-btn--icon"
+                    type="button"
+                    disabled={!canWrite}
+                    onClick={() => onToggle(f)}
+                    title={lang === "ro" ? "Activeaza / dezactiveaza" : "Toggle active"}
+                    style={{ width: 36, height: 36, borderRadius: 999, opacity: canWrite ? 1 : 0.55 }}
+                  >
+                    {active ? "⏻" : "⭘"}
+                  </button>
+                  <button
+                    className="sb-btn sb-btn--icon"
+                    type="button"
+                    disabled={!canWrite}
+                    onClick={() => onDelete(f.id)}
+                    title={lang === "ro" ? "Sterge feed" : "Delete feed"}
+                    style={{ width: 36, height: 36, borderRadius: 999, opacity: canWrite ? 1 : 0.55 }}
+                  >
+                    🗑
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div style={{ color: "var(--muted)", fontSize: 12 }}>
+            {lang === "ro" ? "Adauga un feed iCal ca sa importi rezervarile." : "Add an iCal feed to import bookings."}
+          </div>
+        )}
+      </div>
+
+      <div style={{ borderTop: "1px solid var(--border)", paddingTop: 10, display: "grid", gap: 8 }}>
+        <div style={{ fontWeight: 900, fontSize: 13 }}>
+          {lang === "ro" ? "Export (Plan4Host → platforme)" : "Export (Plan4Host → platforms)"}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center" }}>
+          <input
+            readOnly
+            value={exportUrl}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              background: "var(--card)",
+              color: "var(--text)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              fontFamily: "inherit",
+            }}
+          />
+          <CopyUrlButton url={exportUrl} lang={lang} />
+        </div>
       </div>
     </div>
   );
