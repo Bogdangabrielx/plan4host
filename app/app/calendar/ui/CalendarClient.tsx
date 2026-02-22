@@ -173,6 +173,7 @@ export default function CalendarClient({
   // Day modal (only Month view)
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [createTarget, setCreateTarget] = useState<{ room: Room; date: string } | null>(null);
+  const [roomDetailTarget, setRoomDetailTarget] = useState<{ room: Room; date: string } | null>(null);
   
 
   // Year overlay + month picker
@@ -700,7 +701,12 @@ export default function CalendarClient({
           rooms={rooms}
           bookings={bookings}
           integrations={integrations}
-          onDayClick={(dateStr) => setOpenDate(dateStr)}
+          onCellClick={(room, dateStr) => {
+            // Timeline knows the unit already -> open RoomDetailModal directly.
+            setOpenDate(null);
+            setCreateTarget(null);
+            setRoomDetailTarget({ room, date: dateStr });
+          }}
         />
       ) : (
         // 🟢 MonthView în .modalCard cu trigger de mobil
@@ -914,6 +920,18 @@ export default function CalendarClient({
             time: (properties.find((p) => p.id === propertyId)?.check_out_time) || null,
           }}
           onClose={() => setCreateTarget(null)}
+          onChanged={() => {
+            refreshData();
+          }}
+        />
+      )}
+      {roomDetailTarget && propertyId && (
+        <RoomDetailModal
+          dateStr={roomDetailTarget.date}
+          propertyId={propertyId}
+          room={roomDetailTarget.room}
+          lang={lang}
+          onClose={() => setRoomDetailTarget(null)}
           onChanged={() => {
             refreshData();
           }}
@@ -1325,7 +1343,7 @@ function TimelineView({
   rooms,
   bookings,
   integrations,
-  onDayClick,
+  onCellClick,
 }: {
   lang: Lang;
   year: number;
@@ -1334,7 +1352,7 @@ function TimelineView({
   rooms: Room[];
   bookings: Booking[];
   integrations: TypeIntegration[];
-  onDayClick: (dateStr: string) => void;
+  onCellClick: (room: Room, dateStr: string) => void;
 }) {
   const dim = daysInMonth(year, month);
   const monthFirst = `${year}-${pad(month + 1)}-01`;
@@ -1662,7 +1680,7 @@ function TimelineView({
                         <button
                           key={ds}
                           type="button"
-                          onClick={() => onDayClick(ds)}
+                          onClick={() => onCellClick(r, ds)}
                           title={ds}
                           style={{
                             position: "relative",
