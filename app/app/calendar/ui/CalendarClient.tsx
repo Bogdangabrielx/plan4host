@@ -1264,110 +1264,84 @@ function TimelineView({
   const monthFirst = `${year}-${pad(month + 1)}-01`;
   const monthLast = `${year}-${pad(month + 1)}-${pad(dim)}`;
 
-  const labelW = isSmall ? 120 : 180;
-  const cellW = isSmall ? 18 : 22;
-  const rowH = isSmall ? 32 : 36;
-  const gridW = dim * cellW;
+  // Bigger, more readable Timeline (fills width when possible; scrolls when needed).
+  const labelW = isSmall ? 132 : 220;
+  const baseCellW = isSmall ? 26 : 34;
+  const rowH = isSmall ? 42 : 48;
+  const minGridW = dim * baseCellW;
 
   const days: string[] = [];
   for (let d = 1; d <= dim; d++) days.push(`${year}-${pad(month + 1)}-${pad(d)}`);
 
-  const bookingsByRoom = useMemo(() => {
-    const map = new Map<string, Booking[]>();
+  // bits: 1 = AM occupied, 2 = PM occupied, 4 = full-day marker (middle of stay)
+  const occByRoom = useMemo(() => {
+    const map = new Map<string, number[]>();
+    for (const r of rooms) map.set(r.id, Array(dim).fill(0));
     for (const b of bookings) {
       if (!b.room_id) continue;
-      if (!map.has(b.room_id)) map.set(b.room_id, []);
-      map.get(b.room_id)!.push(b);
-    }
-    for (const [rid, list] of map) {
-      list.sort((a, b) => (a.start_date < b.start_date ? -1 : a.start_date > b.start_date ? 1 : 0));
-      map.set(rid, list);
+      const arr = map.get(b.room_id);
+      if (!arr) continue;
+      if (b.end_date < monthFirst || b.start_date > monthLast) continue;
+      const start = b.start_date < monthFirst ? monthFirst : b.start_date;
+      const end = b.end_date > monthLast ? monthLast : b.end_date;
+      const startIdx = dayIndex(start);
+      const endIdx = dayIndex(end);
+      for (let i = startIdx; i <= endIdx; i++) {
+        if (startIdx === endIdx) {
+          arr[i] |= 1 | 2 | 4;
+        } else if (i === startIdx) {
+          arr[i] |= 2; // check-in day: PM
+        } else if (i === endIdx) {
+          arr[i] |= 1; // check-out day: AM
+        } else {
+          arr[i] |= 1 | 2 | 4; // full days inside stay
+        }
+      }
     }
     return map;
-  }, [bookings]);
+  }, [bookings, dim, monthFirst, monthLast, rooms]);
 
-  const fill = "color-mix(in srgb, var(--success, #22c55e) 72%, var(--card))";
-  const border = "color-mix(in srgb, var(--border) 72%, transparent)";
+  // Slightly more transparent green (requested).
+  const fill = "color-mix(in srgb, var(--success, #22c55e) 44%, transparent)";
+  // Make day separators visible even over filled cells (Timeline requirement).
+  const border = "color-mix(in srgb, var(--border) 86%, transparent)";
+  const diag = "color-mix(in srgb, var(--border) 92%, transparent)";
+  const bg = "var(--card)";
 
   function dayIndex(dateStr: string): number {
     const n = parseInt(dateStr.slice(8, 10), 10);
     return Math.max(0, Math.min(dim - 1, n - 1));
   }
 
-  function clipPathFor(widthPx: number, clipLeft: boolean, clipRight: boolean): string {
-    if (widthPx <= 0) return "inset(0)";
-    const maxSlant = Math.max(0, Math.floor(widthPx / 2) - 1);
-    const slant = Math.max(6, Math.min(Math.round(cellW * 0.45), maxSlant));
-    if (clipLeft && clipRight) return "polygon(0 0, 100% 0, 100% 100%, 0 100%)";
-    if (clipLeft) return `polygon(0 0, 100% 0, calc(100% - ${slant}px) 100%, 0 100%)`; // end '\\'
-    if (clipRight) return `polygon(${slant}px 0, 100% 0, 100% 100%, 0 100%)`;        // start '/'
-    return `polygon(${slant}px 0, 100% 0, calc(100% - ${slant}px) 100%, 0 100%)`;     // '/ ... \\'
+  function cellBackground(bits: number): string | undefined {
+    const am = (bits & 1) !== 0;
+    const pm = (bits & 2) !== 0;
+    const full = (bits & 4) !== 0;
+    if (!am && !pm) return undefined;
+    if (full) return fill;
+    // Diagonal is "\\" (top-left -> bottom-right). AM = top-left, PM = bottom-right.
+    if (am && pm) {
+      // turnover day: show a small diagonal gap so two bookings are obvious
+      return `linear-gradient(to bottom right, ${fill} 0 calc(50% - 3px), ${diag} calc(50% - 3px) calc(50% - 2px), ${bg} calc(50% - 2px) calc(50% + 2px), ${diag} calc(50% + 2px) calc(50% + 3px), ${fill} calc(50% + 3px) 100%)`;
+    }
+    if (am) {
+      return `linear-gradient(to bottom right, ${fill} 0 calc(50% - 1px), ${diag} calc(50% - 1px) calc(50% + 1px), ${bg} calc(50% + 1px) 100%)`;
+    }
+    // pm only
+    return `linear-gradient(to bottom right, ${bg} 0 calc(50% - 1px), ${diag} calc(50% - 1px) calc(50% + 1px), ${fill} calc(50% + 1px) 100%)`;
   }
 
   return (
-    <section className="modalCard sb-cardglow" style={{ padding: 12 }}>
+    <section className="modalCard sb-cardglow" style={{ padding: isSmall ? 10 : 14 }}>
       <div style={{ overflowX: "auto", overflowY: "hidden", WebkitOverflowScrolling: "touch" }}>
-        <div style={{ minWidth: labelW + gridW }}>
-          {/* header (day numbers) */}
-          <div style={{ display: "grid", gridTemplateColumns: `${labelW}px ${gridW}px`, gap: 0, marginBottom: 6 }}>
-            <div
-              style={{
-                position: "sticky",
-                left: 0,
-                zIndex: 3,
-                background: "var(--panel)",
-                border: `1px solid ${border}`,
-                borderRight: "none",
-                borderRadius: 10,
-                borderTopRightRadius: 0,
-                borderBottomRightRadius: 0,
-                height: rowH,
-                display: "flex",
-                alignItems: "center",
-                paddingInline: 10,
-                fontWeight: 800,
-                color: "var(--muted)",
-              }}
-            >
-              {lang === "ro" ? "Unități" : "Units"}
-            </div>
-            <div
-              style={{
-                border: `1px solid ${border}`,
-                borderLeft: "none",
-                borderRadius: 10,
-                borderTopLeftRadius: 0,
-                borderBottomLeftRadius: 0,
-                height: rowH,
-                display: "grid",
-                gridTemplateColumns: `repeat(${dim}, ${cellW}px)`,
-                alignItems: "center",
-                background: "var(--panel)",
-              }}
-            >
-              {days.map((ds) => (
-                <div
-                  key={ds}
-                  style={{
-                    textAlign: "center",
-                    fontSize: 11,
-                    fontWeight: 800,
-                    color: "var(--muted)",
-                    lineHeight: 1,
-                  }}
-                >
-                  {parseInt(ds.slice(8, 10), 10)}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* rows */}
-          <div style={{ display: "grid", gap: 6 }}>
-            {rooms.map((r) => {
-              const roomBookings = bookingsByRoom.get(r.id) ?? [];
+        <div style={{ minWidth: labelW + minGridW, width: "100%" }}>
+          {/* rows (no separate header; day numbers are drawn inside the first row, on the separators) */}
+          <div style={{ display: "grid", gap: isSmall ? 8 : 10 }}>
+            {rooms.map((r, rowIdx) => {
+              const occ = occByRoom.get(r.id) ?? Array(dim).fill(0);
+              const showDayNumbers = rowIdx === 0;
               return (
-                <div key={r.id} style={{ display: "grid", gridTemplateColumns: `${labelW}px ${gridW}px`, gap: 0 }}>
+                <div key={r.id} style={{ display: "grid", gridTemplateColumns: `${labelW}px 1fr`, gap: 0 }}>
                   <div
                     style={{
                       position: "sticky",
@@ -1376,13 +1350,13 @@ function TimelineView({
                       background: "var(--panel)",
                       border: `1px solid ${border}`,
                       borderRight: "none",
-                      borderRadius: 10,
+                      borderRadius: 12,
                       borderTopRightRadius: 0,
                       borderBottomRightRadius: 0,
                       height: rowH,
                       display: "flex",
                       alignItems: "center",
-                      paddingInline: 10,
+                      paddingInline: 12,
                       fontWeight: 800,
                       whiteSpace: "nowrap",
                       overflow: "hidden",
@@ -1394,78 +1368,61 @@ function TimelineView({
                   </div>
                   <div
                     style={{
-                      position: "relative",
                       height: rowH,
                       border: `1px solid ${border}`,
                       borderLeft: "none",
-                      borderRadius: 10,
+                      borderRadius: 12,
                       borderTopLeftRadius: 0,
                       borderBottomLeftRadius: 0,
                       overflow: "hidden",
                       background: "var(--card)",
+                      display: "grid",
+                      gridTemplateColumns: `repeat(${dim}, minmax(${baseCellW}px, 1fr))`,
                     }}
                   >
-                    {/* day hit targets */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        display: "grid",
-                        gridTemplateColumns: `repeat(${dim}, ${cellW}px)`,
-                        zIndex: 1,
-                      }}
-                    >
-                      {days.map((ds) => (
+                    {days.map((ds, idx) => {
+                      const bits = occ[idx] ?? 0;
+                      const bgFill = cellBackground(bits);
+                      const dayNum = idx + 1;
+                      return (
                         <button
                           key={ds}
                           type="button"
                           onClick={() => onDayClick(ds)}
                           title={ds}
                           style={{
-                            width: cellW,
+                            position: "relative",
                             height: "100%",
                             padding: 0,
                             border: 0,
-                            background: "transparent",
-                            borderRight: `1px solid ${border}`,
+                            background: bgFill ?? "transparent",
+                            borderRight: idx === dim - 1 ? "none" : `1px solid ${border}`,
                             cursor: "pointer",
                           }}
-                        />
-                      ))}
-                    </div>
-
-                    {/* booking bars */}
-                    <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none" }}>
-                      {roomBookings.map((b) => {
-                        const start = b.start_date < monthFirst ? monthFirst : b.start_date;
-                        const end = b.end_date > monthLast ? monthLast : b.end_date;
-                        const startIdx = dayIndex(start);
-                        const endIdx = dayIndex(end);
-                        if (endIdx < startIdx) return null;
-                        const left = startIdx * cellW;
-                        const width = (endIdx - startIdx + 1) * cellW;
-                        const clipLeft = b.start_date < monthFirst;
-                        const clipRight = b.end_date > monthLast;
-                        return (
-                          <div
-                            key={b.id}
-                            aria-hidden="true"
-                            style={{
-                              position: "absolute",
-                              left,
-                              top: 4,
-                              height: rowH - 8,
-                              width,
-                              background: fill,
-                              border: `1px solid color-mix(in srgb, var(--success, #22c55e) 55%, var(--border))`,
-                              borderRadius: 8,
-                              clipPath: clipPathFor(width, clipLeft, clipRight),
-                              opacity: 0.95,
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
+                        >
+                          {showDayNumbers ? (
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                position: "absolute",
+                                top: 6,
+                                right: 0,
+                                transform: "translateX(50%)",
+                                fontSize: 11,
+                                fontWeight: 800,
+                                color: "var(--muted)",
+                                opacity: 0.75,
+                                pointerEvents: "none",
+                                lineHeight: 1,
+                                textShadow: "0 1px 0 rgba(0,0,0,0.35)",
+                              }}
+                            >
+                              {dayNum}
+                            </span>
+                          ) : null}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               );
@@ -1476,7 +1433,7 @@ function TimelineView({
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 10, color: "var(--muted)", fontSize: 12, flexWrap: "wrap" }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <span style={{ width: 18, height: 10, background: fill, borderRadius: 6, display: "inline-block" }} />
-          {lang === "ro" ? "Rezervat (check-in / check-out pe diagonală)" : "Booked (diagonal check-in / check-out)"}
+          {lang === "ro" ? "Rezervat (diagonal pentru check-in/out)" : "Booked (diagonal check-in/out)"}
         </span>
       </div>
     </section>
