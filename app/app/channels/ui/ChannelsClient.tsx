@@ -1460,7 +1460,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                         alt=""
                         width={28}
                         height={28}
-                        style={{ width: 28, height: 28, borderRadius: 8, border: "1px solid var(--border)", objectFit: "cover" }}
+                        style={{ width: 28, height: 28, borderRadius: 999, objectFit: "cover" }}
                       />
                     ) : (
                       <span className="sb-badge">{lang === "ro" ? "PNG necesar" : "PNG required"}</span>
@@ -1488,11 +1488,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                         style={{
                           width: 28,
                           height: 28,
-                          borderRadius: 8,
-                          border: "1px solid var(--border)",
+                          borderRadius: 999,
                           objectFit: "contain",
-                          padding: 4,
-                          background: "var(--card)",
                         }}
                       />
                     ) : (
@@ -1920,6 +1917,52 @@ function TargetFeedCard({
   onDelete: (id: string) => void;
 }) {
   const hasFeeds = feeds.length > 0;
+
+  function PowerIcon({ active }: { active: boolean }) {
+    return (
+      <svg
+        aria-hidden="true"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        style={{ display: "block" }}
+      >
+        <path d="M12 2v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path
+          d="M6.1 5.7a10 10 0 1 0 11.8 0"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+
+  function ActiveCheck() {
+    return (
+      <span
+        aria-hidden
+        style={{
+          width: 16,
+          height: 16,
+          borderRadius: 999,
+          border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
+          background: "color-mix(in srgb, var(--success) 18%, transparent)",
+          display: "grid",
+          placeItems: "center",
+          color: "var(--success)",
+          fontWeight: 900,
+          fontSize: 11,
+          lineHeight: 1,
+          flex: "0 0 auto",
+        }}
+      >
+        ✓
+      </span>
+    );
+  }
+
   return (
     <div
       className="sb-card sb-cardglow"
@@ -1988,16 +2031,23 @@ function TargetFeedCard({
                         style={{
                           width: 18,
                           height: 18,
-                          borderRadius: 6,
+                          borderRadius: 999,
                           objectFit: "contain",
-                          border: "1px solid var(--border)",
-                          background: "var(--card)",
-                          padding: 2,
                         }}
                       />
                     ) : null}
                     <span style={{ fontWeight: 900 }}>{provider}</span>
-                    <span style={{ color: active ? "var(--success)" : "var(--muted)", fontSize: 12, fontWeight: 800 }}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        color: active ? "var(--success)" : "var(--muted)",
+                        fontSize: 12,
+                        fontWeight: 800,
+                      }}
+                    >
+                      {active ? <ActiveCheck /> : null}
                       {active ? (lang === "ro" ? "Activ" : "Active") : (lang === "ro" ? "Inactiv" : "Inactive")}
                     </span>
                   </div>
@@ -2018,9 +2068,15 @@ function TargetFeedCard({
                     disabled={!canWrite}
                     onClick={() => onToggle(f)}
                     title={lang === "ro" ? "Activeaza / dezactiveaza" : "Toggle active"}
-                    style={{ width: 36, height: 36, borderRadius: 999, opacity: canWrite ? 1 : 0.55 }}
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 999,
+                      opacity: canWrite ? 1 : 0.55,
+                      color: active ? "var(--success)" : "var(--muted)",
+                    }}
                   >
-                    {active ? "⏻" : "⭘"}
+                    <PowerIcon active={active} />
                   </button>
                   <button
                     className="sb-btn sb-btn--icon"
@@ -2265,7 +2321,7 @@ function ManageTypeModal({
                 {(() => {
                   const src = logoSrcFor(provider);
                   return src ? (
-                    <img src={src} alt="" width={24} height={24} style={{ borderRadius: 6, }} />
+                    <img src={src} alt="" width={24} height={24} style={{ borderRadius: 999 }} />
                   ) : (
                     <span style={{ fontSize: 12, color: "var(--muted)" }}>Preset</span>
                   );
@@ -2280,7 +2336,7 @@ function ManageTypeModal({
                     alt=""
                     width={24}
                     height={24}
-                    style={{ borderRadius: 6, border: "1px solid var(--border)" }}
+                    style={{ borderRadius: 999 }}
                   />
                 ) : (
                   <span className="sb-badge" title={lang === "ro" ? "Fara logo momentan" : "No logo yet"}>{lang === "ro" ? "Fara logo" : "No logo"}</span>
@@ -2674,7 +2730,7 @@ function ManageRoomModal({
                 {(() => {
                   const src = logoSrcFor(provider);
                   return src ? (
-                    <img src={src} alt="" width={24} height={24} style={{ borderRadius: 6, }} />
+                    <img src={src} alt="" width={24} height={24} style={{ borderRadius: 999 }} />
                   ) : (
                     <span style={{ fontSize: 12, color: "var(--muted)" }}>Preset</span>
                   );
@@ -2689,7 +2745,7 @@ function ManageRoomModal({
                     alt=""
                     width={24}
                     height={24}
-                    style={{ borderRadius: 6, border: "1px solid var(--border)" }}
+                    style={{ borderRadius: 999 }}
                   />
                 ) : (
                   <span className="sb-badge" title={lang === "ro" ? "Fara logo momentan" : "No logo yet"}>{lang === "ro" ? "Fara logo" : "No logo"}</span>
