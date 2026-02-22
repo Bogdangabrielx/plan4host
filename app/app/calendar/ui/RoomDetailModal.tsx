@@ -749,11 +749,6 @@ export default function RoomDetailModal({
     letterSpacing: -0.3,
     lineHeight: 1.05,
   };
-  const headerSub: React.CSSProperties = {
-    fontSize: 13,
-    fontWeight: 700,
-    color: "var(--muted)",
-  };
   const pillStyle = (kind: "idle" | "saving" | "saved" | "error") =>
     ({
       fontSize: 12,
@@ -861,7 +856,6 @@ export default function RoomDetailModal({
           <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
             <div style={headerKicker}>{property?.name || (lang === "ro" ? "Proprietate" : "Property")}</div>
             <div style={headerTitle}>{room.name}</div>
-            <div style={headerSub}>{fmtYmd(dateStr, lang)}</div>
           </div>
 
           <div style={{ display: "grid", justifyItems: "end", gap: 8 }}>
@@ -1504,7 +1498,7 @@ export default function RoomDetailModal({
             display: "flex",
             gap: 10,
             flexWrap: "wrap",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             alignItems: "center",
           }}
         >
@@ -1561,10 +1555,6 @@ export default function RoomDetailModal({
               </>
             )}
           </div>
-
-          <button onClick={onClose} className="sb-btn sb-btn--ghost">
-            {t.close}
-          </button>
         </div>
       </div>
       {releaseConfirmOpen && (
