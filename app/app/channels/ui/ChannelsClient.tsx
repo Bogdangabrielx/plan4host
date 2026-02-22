@@ -2088,6 +2088,8 @@ function TargetFeedCard({
   }
 
   function ActiveCheck() {
+    // Status checkmark shown for both active and inactive; color follows status text.
+    // (User preference: keep the same icon, but make it muted when inactive.)
     return (
       <span
         aria-hidden
@@ -2100,6 +2102,35 @@ function TargetFeedCard({
           display: "grid",
           placeItems: "center",
           color: "var(--success)",
+          fontWeight: 900,
+          fontSize: 11,
+          lineHeight: 1,
+          flex: "0 0 auto",
+        }}
+      >
+        ✓
+      </span>
+    );
+  }
+
+  function StatusCheck({ active }: { active: boolean }) {
+    const col = active ? "var(--success)" : "var(--muted)";
+    return (
+      <span
+        aria-hidden
+        style={{
+          width: 16,
+          height: 16,
+          borderRadius: 999,
+          border: active
+            ? "1px solid color-mix(in srgb, var(--success) 80%, transparent)"
+            : "1px solid color-mix(in srgb, var(--muted) 55%, transparent)",
+          background: active
+            ? "color-mix(in srgb, var(--success) 18%, transparent)"
+            : "color-mix(in srgb, var(--muted) 14%, transparent)",
+          display: "grid",
+          placeItems: "center",
+          color: col,
           fontWeight: 900,
           fontSize: 11,
           lineHeight: 1,
@@ -2210,7 +2241,7 @@ function TargetFeedCard({
                         fontWeight: 800,
                       }}
                     >
-                      {active ? <ActiveCheck /> : null}
+                      <StatusCheck active={active} />
                       {active ? (lang === "ro" ? "Activ" : "Active") : (lang === "ro" ? "Inactiv" : "Inactive")}
                     </span>
                   </div>
