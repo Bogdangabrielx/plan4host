@@ -206,6 +206,12 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [addOtherLogoFile, setAddOtherLogoFile] = useState<File | null>(null);
   const [addOtherLogoPreview, setAddOtherLogoPreview] = useState<string>("");
 
+  const [editFeed, setEditFeed] = useState<TypeIntegration | null>(null);
+  const [editUrl, setEditUrl] = useState<string>("");
+  const [editColor, setEditColor] = useState<string>("");
+  const [editSaving, setEditSaving] = useState<boolean>(false);
+  const [editError, setEditError] = useState<string>("");
+
   useEffect(() => {
     if (!addOtherLogoFile) { setAddOtherLogoPreview(""); return; }
     const url = URL.createObjectURL(addOtherLogoFile);
@@ -1342,6 +1348,12 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     lang={lang}
                     onToggle={toggleActive}
                     onDelete={deleteIntegration}
+                    onEdit={(f) => {
+                      setEditFeed(f);
+                      setEditUrl(f.url || "");
+                      setEditColor(f.color || providerDefaultColor(f.provider));
+                      setEditError("");
+                    }}
                   />
                 ))
               )}
@@ -1374,6 +1386,12 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                       lang={lang}
                       onToggle={toggleActive}
                       onDelete={deleteIntegration}
+                      onEdit={(f) => {
+                        setEditFeed(f);
+                        setEditUrl(f.url || "");
+                        setEditColor(f.color || providerDefaultColor(f.provider));
+                        setEditError("");
+                      }}
                     />
                   ))}
                 </div>
@@ -1635,6 +1653,134 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Edit an existing feed (color + URL) */}
+      {editFeed && (
+        <InnerModal
+          title={lang === "ro" ? "Editeaza feed iCal" : "Edit iCal feed"}
+          closeLabel={lang === "ro" ? "Inchide" : "Close"}
+          onClose={() => {
+            if (editSaving) return;
+            setEditFeed(null);
+          }}
+        >
+          <div style={{ display: "grid", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <strong style={{ fontSize: 13 }}>
+                {editFeed.provider || (lang === "ro" ? "Necunoscut" : "Unknown")}
+              </strong>
+              <span
+                aria-hidden
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: 999,
+                  border: "1px solid var(--border)",
+                  background: editColor || "transparent",
+                  display: "inline-block",
+                }}
+                title={editColor || ""}
+              />
+            </div>
+
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={{ fontWeight: 800 }}>{lang === "ro" ? "Link iCal" : "iCal URL"}</label>
+              <input
+                value={editUrl}
+                onChange={(e) => setEditUrl(e.currentTarget.value)}
+                placeholder="https://..."
+                style={{
+                  width: "100%",
+                  padding: 10,
+                  background: "var(--card)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 10,
+                  fontFamily: "inherit",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "grid", gap: 8 }}>
+              <div style={{ fontWeight: 800 }}>{lang === "ro" ? "Culoare" : "Color"}</div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                {[
+                  "rgba(30,144,255,0.81)",
+                  "rgba(255,90,95,0.81)",
+                  "rgba(254,203,46,0.81)",
+                  "rgba(34,197,94,0.81)",
+                  "rgba(139,92,246,0.81)",
+                  "rgba(13,148,136,0.81)",
+                  "rgba(148,163,184,0.81)",
+                  "rgba(251,146,60,0.81)",
+                  "rgba(244,114,182,0.81)",
+                ].map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="sb-btn sb-btn--icon"
+                    onClick={() => setEditColor(c)}
+                    title={c}
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 999,
+                      padding: 0,
+                      border: c === editColor ? "1px solid var(--primary)" : "1px solid var(--border)",
+                      background: c,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {editError ? (
+              <div style={{ color: "var(--danger)", fontSize: 12 }}>
+                {editError}
+              </div>
+            ) : null}
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
+              <button className="sb-btn" type="button" disabled={editSaving} onClick={() => setEditFeed(null)}>
+                {lang === "ro" ? "Renunta" : "Cancel"}
+              </button>
+              <button
+                className="sb-btn sb-btn--primary sb-cardglow"
+                style={{ background: "var(--primary)", minHeight: 44 }}
+                disabled={editSaving || !editUrl.trim() || !editColor}
+                onClick={async () => {
+                  if (!editFeed) return;
+                  const nextUrl = editUrl.trim();
+                  const nextColor = editColor;
+                  if (!nextUrl || !nextColor) return;
+                  setEditSaving(true);
+                  setEditError("");
+                  try {
+                    const { data, error } = await supabase
+                      .from("ical_type_integrations")
+                      .update({ url: nextUrl, color: nextColor })
+                      .eq("id", editFeed.id)
+                      .select("id,property_id,room_type_id,room_id,provider,url,is_active,last_sync,color,logo_url")
+                      .single();
+                    if (error || !data) {
+                      setEditError(lang === "ro" ? "Nu am putut salva." : "Could not save.");
+                      return;
+                    }
+                    setIntegrations((prev) => prev.map((x) => (x.id === (data as any).id ? (data as any) : x)));
+                    setEditFeed(null);
+                  } catch (e: any) {
+                    setEditError(e?.message || (lang === "ro" ? "Eroare la salvare." : "Save failed."));
+                  } finally {
+                    setEditSaving(false);
+                  }
+                }}
+              >
+                {editSaving ? (lang === "ro" ? "Se salveaza..." : "Saving...") : (lang === "ro" ? "Salveaza" : "Save")}
+              </button>
+            </div>
+          </div>
+        </InnerModal>
       )}
 
       {/* ======= MODAL A: EXPORT per ROOM ======= */}
@@ -1906,6 +2052,7 @@ function TargetFeedCard({
   lang,
   onToggle,
   onDelete,
+  onEdit,
 }: {
   kind: "room" | "type";
   title: string;
@@ -1915,6 +2062,7 @@ function TargetFeedCard({
   lang: Lang;
   onToggle: (ii: TypeIntegration) => void;
   onDelete: (id: string) => void;
+  onEdit: (ii: TypeIntegration) => void;
 }) {
   const hasFeeds = feeds.length > 0;
 
@@ -2077,6 +2225,41 @@ function TargetFeedCard({
                     }}
                   >
                     <PowerIcon active={active} />
+                  </button>
+                  <button
+                    className="sb-btn sb-btn--icon"
+                    type="button"
+                    disabled={!canWrite}
+                    onClick={() => onEdit(f)}
+                    title={lang === "ro" ? "Editeaza feed" : "Edit feed"}
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 999,
+                      opacity: canWrite ? 1 : 0.55,
+                      color: "var(--text)",
+                      display: "grid",
+                      placeItems: "center",
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 16,
+                        height: 16,
+                        backgroundColor: "currentColor",
+                        WebkitMaskImage: "url(/svg_edit_ical.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        WebkitMaskSize: "contain",
+                        WebkitMaskPosition: "center",
+                        maskImage: "url(/svg_edit_ical.svg)",
+                        maskRepeat: "no-repeat",
+                        maskSize: "contain",
+                        maskPosition: "center",
+                        display: "block",
+                        opacity: 0.95,
+                      }}
+                    />
                   </button>
                   <button
                     className="sb-btn sb-btn--icon"
