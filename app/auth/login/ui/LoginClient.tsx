@@ -384,8 +384,8 @@ export default function LoginClient({
   return (
     <>
       <div style={outerWrap}>
-        <div style={quoteWrap}>
-          <div style={quoteText}>
+        <div style={quoteWrap} className="p4h-quoteWrap">
+          <div style={quoteText} className="p4h-quoteText">
             <span style={{ display: "block", whiteSpace: "nowrap" }}>
               “{t.quoteLine1}
             </span>
@@ -393,7 +393,7 @@ export default function LoginClient({
               {t.quoteLine2}”
             </span>
           </div>
-          <div style={quoteAuthorWrap}>
+          <div style={quoteAuthorWrap} className="p4h-quoteAuthorWrap">
             <img src="/founder.jpg" alt="" width={34} height={34} style={quoteAuthorAvatar} />
             <div style={quoteAuthorText}>
               <span style={{ display: "block" }}>Bogdan E.</span>
@@ -611,6 +611,17 @@ export default function LoginClient({
           30% { transform: translate(8px,-6px) scale(1.1); }
           60% { transform: translate(-6px,6px) scale(1.05); }
           100% { transform: translate(0,0) scale(1); }
+        }
+
+        /* Desktop: keep the phone layout as-is, but anchor the quote to the auth card column. */
+        @media (min-width: 900px) {
+          .p4h-quoteWrap {
+            width: min(640px, calc(100vw - 24px)) !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
         }
       `}</style>
     </>
