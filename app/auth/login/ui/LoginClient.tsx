@@ -49,13 +49,6 @@ export default function LoginClient({
   const tr = {
     en: {
       welcome: "Welcome to Plan4Host",
-      tagline: "All reservations. One calendar. Less manual work.",
-      benefit1Title: "Calendar sync",
-      benefit1Desc: "Import reservations from Airbnb & Booking.",
-      benefit2Title: "Guest check-in",
-      benefit2Desc: "Collect details before arrival.",
-      benefit3Title: "Automations",
-      benefit3Desc: "Templates and auto-messages that save time.",
       signIn: "Sign in",
       createAccount: "Create account",
       signingIn: "Signing in...",
@@ -97,13 +90,6 @@ export default function LoginClient({
     },
     ro: {
       welcome: "Bine ai venit in Plan4Host",
-      tagline: "Toate rezervarile. Un singur calendar. Mai putina munca manuala.",
-      benefit1Title: "Sincronizare calendar",
-      benefit1Desc: "Importa rezervari din Airbnb si Booking.",
-      benefit2Title: "Check-in oaspeti",
-      benefit2Desc: "Colecteaza detalii inainte de sosire.",
-      benefit3Title: "Automatizari",
-      benefit3Desc: "Sabloane si mesaje automate care economisesc timp.",
       signIn: "Autentificare",
       createAccount: "Creeaza cont",
       signingIn: "Se autentifica...",
@@ -393,54 +379,10 @@ export default function LoginClient({
 
   return (
     <>
-      <div className="p4hAuthGrid">
-        <div className="sb-card sb-card--fx p4hAuthBrand" style={brandCard} data-authbrand>
-          <div style={brandTopRow}>
-            <img
-              src={mounted ? (theme === "light" ? "/logo_forlight.png" : "/logo_fordark.png") : "/logo_fordark.png"}
-              alt="Plan4Host"
-              width={160}
-              height={42}
-              style={{ display: "block", height: 42, width: "auto" }}
-            />
-            <span style={brandBadge}>{lang === "ro" ? "Sigur & rapid" : "Secure & fast"}</span>
-          </div>
-          <h1 style={brandTitle}>{t.welcome}</h1>
-          <p style={brandTagline} data-tagline>{t.tagline}</p>
-
-          <div style={benefitsWrap} data-benefits>
-            <div style={benefitRow}>
-              <span style={benefitDot} aria-hidden />
-              <div style={{ display: "grid", gap: 2 }}>
-                <div style={benefitTitle}>{t.benefit1Title}</div>
-                <div style={benefitDesc}>{t.benefit1Desc}</div>
-              </div>
-            </div>
-            <div style={benefitRow}>
-              <span style={benefitDot} aria-hidden />
-              <div style={{ display: "grid", gap: 2 }}>
-                <div style={benefitTitle}>{t.benefit2Title}</div>
-                <div style={benefitDesc}>{t.benefit2Desc}</div>
-              </div>
-            </div>
-            <div style={benefitRow}>
-              <span style={benefitDot} aria-hidden />
-              <div style={{ display: "grid", gap: 2 }}>
-                <div style={benefitTitle}>{t.benefit3Title}</div>
-                <div style={benefitDesc}>{t.benefit3Desc}</div>
-              </div>
-            </div>
-          </div>
-
-          <div style={brandFooter}>
-            {lang === "ro"
-              ? "Autentificare securizata + confirmare prin email."
-              : "Secure auth + email confirmation."}
-          </div>
-        </div>
-
-        <div style={outerWrap}>
-          <div style={wrap(mounted ? theme : "dark")}>
+      <div style={outerWrap}>
+        <h1 style={heroTitle}>{t.welcome}</h1>
+         
+        <div  style={wrap(mounted ? theme : "dark")} >
           <div  style={headRow}>
             <div style={headLeft}>
               <div style={langToggleWrap}>
@@ -641,7 +583,6 @@ export default function LoginClient({
           </div>
         </div>
       )}
-        </div>
       </div>
       <style jsx>{`
         @keyframes themeFloat {
@@ -650,22 +591,6 @@ export default function LoginClient({
           60% { transform: translate(-6px,6px) scale(1.05); }
           100% { transform: translate(0,0) scale(1); }
         }
-        .p4hAuthGrid{
-          width: min(980px, 100%);
-          margin: 0 auto;
-          display: grid;
-          grid-template-columns: 1fr min(420px, 100%);
-          gap: 18px;
-          align-items: center;
-        }
-        @media (max-width: 920px){
-          .p4hAuthGrid{ grid-template-columns: 1fr; align-items: start; }
-          .p4hAuthBrand{ order: -1; }
-        }
-        @media (max-width: 520px){
-          .p4hAuthBrand{ padding: 14px !important; }
-          .p4hAuthBrand [data-benefits]{ display: none; }
-        }
       `}</style>
     </>
   );
@@ -673,90 +598,22 @@ export default function LoginClient({
 
 /* —— styles —— */
 const outerWrap: React.CSSProperties = {
-  width: 'min(420px, 100%)',
+  width: 'min(380px, 100%)',
   margin: "0 auto",
   display: "grid",
   gap: 12,
 };
-const brandCard: React.CSSProperties = {
-  border: "1px solid var(--border)",
-  padding: 18,
-  display: "grid",
-  gap: 10,
-};
-const brandTopRow: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 10,
-};
-const brandBadge: React.CSSProperties = {
-  padding: "6px 10px",
-  borderRadius: 999,
-  border: "1px solid var(--border)",
-  background: "color-mix(in srgb, var(--card) 70%, transparent)",
-  color: "var(--muted)",
-  fontSize: 12,
-  fontWeight: 800,
-  whiteSpace: "nowrap",
-};
-const brandTitle: React.CSSProperties = {
+const heroTitle: React.CSSProperties = {
   margin: 0,
-  fontSize: 28,
-  fontWeight: 950,
-  letterSpacing: -0.5,
-  lineHeight: 1.05,
+  textAlign: "center",
+  fontSize: 24,
+  fontWeight: 900,
   color: "var(--text)",
-};
-const brandTagline: React.CSSProperties = {
-  margin: 0,
-  color: "var(--muted)",
-  fontSize: 14,
-  fontWeight: 700,
-  lineHeight: 1.35,
-};
-const benefitsWrap: React.CSSProperties = {
-  display: "grid",
-  gap: 10,
-  marginTop: 4,
-};
-const benefitRow: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "10px 1fr",
-  gap: 10,
-  alignItems: "start",
-};
-const benefitDot: React.CSSProperties = {
-  width: 10,
-  height: 10,
-  borderRadius: 999,
-  background: "color-mix(in srgb, var(--primary) 60%, transparent)",
-  boxShadow: "0 0 0 4px color-mix(in srgb, var(--primary) 14%, transparent)",
-  marginTop: 4,
-};
-const benefitTitle: React.CSSProperties = {
-  fontSize: 13,
-  fontWeight: 950,
-  color: "var(--text)",
-};
-const benefitDesc: React.CSSProperties = {
-  fontSize: 13,
-  fontWeight: 650,
-  color: "var(--muted)",
-};
-const brandFooter: React.CSSProperties = {
-  marginTop: 6,
-  paddingTop: 10,
-  borderTop: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
-  fontSize: 12,
-  fontWeight: 650,
-  lineHeight: 1.35,
-  color: "var(--muted)",
 };
 
 function wrap(theme: Theme): React.CSSProperties {
   return {
-    width: 'min(420px, 100%)',
+    width: 'min(380px, 100%)',
     background: "var(--panel)",
     border: "1px solid var(--border)",
     borderRadius: 12,
