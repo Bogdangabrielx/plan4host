@@ -1423,8 +1423,8 @@ function TimelineView({
   const manualColor = "#6CCC4C";
   const overlayOpacity = 0.22;
   const border = "color-mix(in srgb, var(--border) 86%, transparent)";
-  // Diagonal line must match text color (not muted/border).
-  const diag = "var(--text)";
+  // Diagonal divider should be invisible (use fills only).
+  const diag = "transparent";
   const bg = "var(--card)";
   const empty = "color-mix(in srgb, var(--panel) 65%, transparent)";
 
@@ -1504,9 +1504,10 @@ function TimelineView({
     integColorByTypeId,
   ]);
 
-  // Use SVG for diagonal divider: looks smoother than CSS gradients (less "pixelated").
+  // Use SVG for diagonal separator on turnover days: a subtle background "gap" is smoother than CSS gradients.
+  // Diagonal direction is "\" (top-left -> bottom-right).
   function DiagonalDivider({ gap }: { gap: boolean }) {
-    const strokeW = isSmall ? 1.6 : 1.7;
+    const gapW = isSmall ? 6 : 7; // thickness of the background band (in viewBox units)
     return (
       <svg
         aria-hidden="true"
@@ -1521,46 +1522,14 @@ function TimelineView({
         }}
       >
         {gap ? (
-          <>
-            <line
-              x1="0"
-              y1="0"
-              x2="46"
-              y2="46"
-              stroke={diag}
-              strokeWidth={strokeW}
-              strokeLinecap="round"
-              shapeRendering="geometricPrecision"
-              vectorEffect="non-scaling-stroke"
-              opacity={0.92}
-            />
-            <line
-              x1="54"
-              y1="54"
-              x2="100"
-              y2="100"
-              stroke={diag}
-              strokeWidth={strokeW}
-              strokeLinecap="round"
-              shapeRendering="geometricPrecision"
-              vectorEffect="non-scaling-stroke"
-              opacity={0.92}
-            />
-          </>
-        ) : (
-          <line
-            x1="0"
-            y1="0"
-            x2="100"
-            y2="100"
-            stroke={diag}
-            strokeWidth={strokeW}
-            strokeLinecap="round"
+          <polygon
+            // band around the diagonal, filled with card background to create separation
+            points={`0,${gapW} ${gapW},0 100,${100-gapW} ${100-gapW},100`}
+            fill={bg}
+            opacity={0.95}
             shapeRendering="geometricPrecision"
-            vectorEffect="non-scaling-stroke"
-            opacity={0.92}
           />
-        )}
+        ) : null}
       </svg>
     );
   }
@@ -1689,7 +1658,8 @@ function TimelineView({
                                 inset: 0,
                                 background: amColor,
                                 opacity: overlayOpacity,
-                                clipPath: "polygon(0 0, 100% 0, 0 100%)",
+                                // AM = top half (diagonal "\")
+                                clipPath: "polygon(0 0, 100% 0, 100% 100%)",
                                 pointerEvents: "none",
                               }}
                             />
@@ -1702,14 +1672,13 @@ function TimelineView({
                                 inset: 0,
                                 background: pmColor,
                                 opacity: overlayOpacity,
-                                clipPath: "polygon(100% 0, 100% 100%, 0 100%)",
+                                // PM = bottom half (diagonal "\")
+                                clipPath: "polygon(0 0, 0 100%, 100% 100%)",
                                 pointerEvents: "none",
                               }}
                             />
                           ) : null}
-                          {!isFull && (hasAM || hasPM) ? (
-                            <DiagonalDivider gap={showGap} />
-                          ) : null}
+                          {!isFull && showGap ? <DiagonalDivider gap /> : null}
 
                           <span
                             aria-hidden="true"
