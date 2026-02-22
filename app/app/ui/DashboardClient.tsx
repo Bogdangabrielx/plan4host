@@ -1041,8 +1041,8 @@ const [country, setCountry] = useState<string>("");
             alignItems: "flex-start",
             justifyContent: "center",
             padding: 12,
-            paddingTop: "calc(var(--safe-top, 0px) + 72px)",
-            paddingBottom: "calc(var(--safe-bottom, 0px) + 96px)",
+            paddingTop: "calc(var(--safe-top, 0px) + 32px)",
+            paddingBottom: "calc(var(--safe-bottom, 0px) + 72px)",
             overflowY: "auto",
           }}
         >
@@ -1051,7 +1051,7 @@ const [country, setCountry] = useState<string>("");
             className="sb-card"
             style={{
               width: "min(520px, 100%)",
-              maxHeight: isSmall ? "90vh" : "85vh",
+              maxHeight: "calc(100vh - var(--safe-top, 0px) - var(--safe-bottom, 0px) - 64px)",
               background: "var(--panel)",
               border: "1px solid var(--border)",
               borderRadius: 14,
