@@ -574,7 +574,8 @@ const [country, setCountry] = useState<string>("");
     setFirstPropertyUnitSaving(true);
     try {
       for (const u of firstPropertyUnits) {
-        const next = (firstPropertyUnitDrafts[u.id] ?? u.name ?? "").toString().trim() || u.name;
+        const raw = firstPropertyUnitDrafts[u.id] ?? u.name ?? "";
+        const next = String(raw).trim() || u.name;
         if (next === u.name) continue;
         const { error } = await supabase.from("rooms").update({ name: next }).eq("id", u.id);
         if (error) throw error;
@@ -1518,7 +1519,8 @@ const [country, setCountry] = useState<string>("");
                       .slice()
                       .sort((a, b) => (a.sort_index ?? 0) - (b.sort_index ?? 0))
                       .map((u) => {
-                        const draft = (firstPropertyUnitDrafts[u.id] ?? u.name ?? "") as string;
+                        const rawDraft = firstPropertyUnitDrafts[u.id];
+                        const draft = typeof rawDraft === "string" ? rawDraft : (u.name ?? "");
                         return (
                           <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", justifyContent: "space-between" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
