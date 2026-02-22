@@ -86,6 +86,20 @@ function providerBuiltinLogo(provider?: string | null): string | null {
 type HintVariant = "muted" | "warning" | "danger" | "success" | "info";
 type FeedTargetValue = `room:${string}` | `type:${string}`;
 
+function normProvider(p?: string | null) {
+  return (p || "").toLowerCase().trim();
+}
+function providerDefaultColor(provider?: string | null): string {
+  const s = normProvider(provider);
+  if (s.includes("airbnb")) return "rgba(255, 90, 96, 0.81)";
+  if (s.includes("booking")) return "rgba(30, 143, 255, 0.9)";
+  if (s.includes("expedia")) return "rgba(254, 203, 46, 0.81)";
+  if (s.includes("trivago")) return "rgba(62, 173, 215, 0.81)";
+  if (s.includes("lastminute")) return "rgba(212, 147, 186, 0.81)";
+  if (s.includes("travelminit")) return "rgba(164, 87, 159, 0.86)";
+  return "rgba(139, 92, 246, 0.81)";
+}
+
 function localizeHint(text: string, lang: Lang) {
   if (lang === "en") return text;
   if (text === "Ready") return "Gata";
@@ -188,6 +202,16 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [addProvider, setAddProvider] = useState<string>("Airbnb");
   const [addCustomProvider, setAddCustomProvider] = useState<string>("");
   const [addUrl, setAddUrl] = useState<string>("");
+  const [addOtherColor, setAddOtherColor] = useState<string>("");
+  const [addOtherLogoFile, setAddOtherLogoFile] = useState<File | null>(null);
+  const [addOtherLogoPreview, setAddOtherLogoPreview] = useState<string>("");
+
+  useEffect(() => {
+    if (!addOtherLogoFile) { setAddOtherLogoPreview(""); return; }
+    const url = URL.createObjectURL(addOtherLogoFile);
+    setAddOtherLogoPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [addOtherLogoFile]);
 
   // inner modals (detaliu element)
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
@@ -520,13 +544,13 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   }
 
   /* Integrations CRUD (Import per TYPE) */
-  async function addIntegration(roomTypeId: string, provider: string, url: string): Promise<string | null> {
+  async function addIntegration(roomTypeId: string, provider: string, url: string, opts?: { color?: string | null }): Promise<string | null> {
     if (!canWrite) return null;
     if (!propertyId || !roomTypeId || !url.trim()) return null;
     setStatus("Saving…");
     const { data, error } = await supabase
       .from("ical_type_integrations")
-      .insert({ property_id: propertyId, room_type_id: roomTypeId, provider: provider || null, url: url.trim(), is_active: true })
+      .insert({ property_id: propertyId, room_type_id: roomTypeId, provider: provider || null, url: url.trim(), is_active: true, color: opts?.color ?? null })
       .select("id,property_id,room_type_id,room_id,provider,url,is_active,last_sync,color,logo_url")
       .single();
     if (!error && data) {
@@ -554,13 +578,13 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   }
 
   // Add integration per ROOM (for properties without types)
-  async function addRoomIntegration(roomId: string, provider: string, url: string): Promise<string | null> {
+  async function addRoomIntegration(roomId: string, provider: string, url: string, opts?: { color?: string | null }): Promise<string | null> {
     if (!canWrite) return null;
     if (!propertyId || !roomId || !url.trim()) return null;
     setStatus("Saving…");
     const { data, error } = await supabase
       .from("ical_type_integrations")
-      .insert({ property_id: propertyId, room_id: roomId, provider: provider || null, url: url.trim(), is_active: true })
+      .insert({ property_id: propertyId, room_id: roomId, provider: provider || null, url: url.trim(), is_active: true, color: opts?.color ?? null })
       .select("id,property_id,room_type_id,room_id,provider,url,is_active,last_sync,color,logo_url")
       .single();
     if (!error && data) {
@@ -1269,6 +1293,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                 setAddProvider("Airbnb");
                 setAddCustomProvider("");
                 setAddUrl("");
+                setAddOtherColor("");
+                setAddOtherLogoFile(null);
                 setAddFeedOpen(true);
               }}
               title={lang === "ro" ? "Adauga un feed iCal" : "Add an iCal feed"}
@@ -1392,7 +1418,13 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <select
                 className="sb-select"
                 value={addProvider}
-                onChange={(e) => { setAddProvider(e.currentTarget.value); setAddCustomProvider(""); }}
+                onChange={(e) => {
+                  const next = e.currentTarget.value;
+                  setAddProvider(next);
+                  setAddCustomProvider("");
+                  setAddOtherLogoFile(null);
+                  setAddOtherColor("");
+                }}
                 style={{ width: "100%", minHeight: 44 }}
               >
                 {["Airbnb", "Booking.com", "Expedia", "Trivago", "lastminute.com", "Travelminit", "Other"].map((p) => (
@@ -1415,6 +1447,126 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   }}
                 />
               )}
+            </div>
+
+            <div style={{ display: "grid", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <div style={{ fontWeight: 800 }}>{lang === "ro" ? "Logo" : "Logo"}</div>
+                {addProvider === "Other" ? (
+                  <>
+                    {addOtherLogoPreview ? (
+                      <img
+                        src={addOtherLogoPreview}
+                        alt=""
+                        width={28}
+                        height={28}
+                        style={{ width: 28, height: 28, borderRadius: 8, border: "1px solid var(--border)", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <span className="sb-badge">{lang === "ro" ? "PNG necesar" : "PNG required"}</span>
+                    )}
+                    <label className="sb-btn sb-btn--ghost sb-btn--small" style={{ cursor: "pointer" }}>
+                      {lang === "ro" ? "Incarca PNG" : "Upload PNG"}
+                      <input
+                        type="file"
+                        accept="image/png"
+                        hidden
+                        onChange={(e) => setAddOtherLogoFile(e.currentTarget.files?.[0] || null)}
+                      />
+                    </label>
+                    <small style={{ color: "var(--muted)" }}>{lang === "ro" ? "Recomandat 512×512" : "Recommended 512×512"}</small>
+                  </>
+                ) : (
+                  (() => {
+                    const src = providerBuiltinLogo(addProvider);
+                    return src ? (
+                      <img
+                        src={src}
+                        alt=""
+                        width={28}
+                        height={28}
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: 8,
+                          border: "1px solid var(--border)",
+                          objectFit: "contain",
+                          padding: 4,
+                          background: "var(--card)",
+                        }}
+                      />
+                    ) : (
+                      <span className="sb-badge">{lang === "ro" ? "Preset" : "Preset"}</span>
+                    );
+                  })()
+                )}
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ fontWeight: 800 }}>{lang === "ro" ? "Culoare" : "Color"}</div>
+                {addProvider === "Other" ? (
+                  <>
+                    <span
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: 999,
+                        border: "1px solid var(--border)",
+                        background: addOtherColor || "transparent",
+                        display: "inline-block",
+                      }}
+                      title={addOtherColor || ""}
+                    />
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {[
+                        "rgba(30,144,255,0.81)",
+                        "rgba(255,90,95,0.81)",
+                        "rgba(254,203,46,0.81)",
+                        "rgba(34,197,94,0.81)",
+                        "rgba(139,92,246,0.81)",
+                        "rgba(13,148,136,0.81)",
+                        "rgba(148,163,184,0.81)",
+                        "rgba(251,146,60,0.81)",
+                        "rgba(244,114,182,0.81)",
+                      ].map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          className="sb-btn sb-btn--icon"
+                          onClick={() => setAddOtherColor(c)}
+                          title={c}
+                          style={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: 999,
+                            padding: 0,
+                            border: c === addOtherColor ? "1px solid var(--primary)" : "1px solid var(--border)",
+                            background: c,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    {!addOtherColor ? (
+                      <small style={{ color: "var(--muted)" }}>{lang === "ro" ? "Selecteaza o culoare" : "Select a color"}</small>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    <span
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: 999,
+                        border: "1px solid var(--border)",
+                        background: providerDefaultColor(addProvider),
+                        display: "inline-block",
+                      }}
+                      title={providerDefaultColor(addProvider)}
+                    />
+                    <small style={{ color: "var(--muted)" }}>{lang === "ro" ? "Automat" : "Auto"}</small>
+                  </>
+                )}
+              </div>
             </div>
 
             <div style={{ display: "grid", gap: 6 }}>
@@ -1449,18 +1601,36 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   !canWrite ||
                   !addTarget ||
                   !(addUrl || "").trim() ||
-                  (addProvider === "Other" && !(addCustomProvider || "").trim())
+                  (addProvider === "Other" && (!(addCustomProvider || "").trim() || !addOtherLogoFile || !addOtherColor))
                 }
                 onClick={async () => {
                   const providerName = addProvider === "Other" ? addCustomProvider.trim() : addProvider;
                   const target = addTarget;
                   if (!target || !providerName || !addUrl.trim()) return;
                   const [kind, id] = target.split(":");
-                  const ok =
+                  const color = addProvider === "Other" ? addOtherColor : providerDefaultColor(providerName);
+                  const newId =
                     kind === "room"
-                      ? await addRoomIntegration(id, providerName, addUrl)
-                      : await addIntegration(id, providerName, addUrl);
-                  if (ok) setAddFeedOpen(false);
+                      ? await addRoomIntegration(id, providerName, addUrl, { color })
+                      : await addIntegration(id, providerName, addUrl, { color });
+                  if (!newId) return;
+
+                  if (addProvider === "Other" && addOtherLogoFile) {
+                    try {
+                      const fd = new FormData();
+                      fd.append("integrationId", newId);
+                      fd.append("file", addOtherLogoFile);
+                      const res = await fetch("/api/ical/logo/upload", { method: "POST", body: fd });
+                      const j = await res.json().catch(() => ({} as any));
+                      if (res.ok && j?.url) {
+                        setIntegrations((prev) =>
+                          prev.map((x) => (x.id === newId ? ({ ...x, logo_url: j.url } as any) : x))
+                        );
+                      }
+                    } catch { /* ignore */ }
+                  }
+
+                  setAddFeedOpen(false);
                 }}
               >
                 {lang === "ro" ? "Adauga feed" : "Add feed"}
@@ -1777,6 +1947,9 @@ function TargetFeedCard({
           feeds.map((f) => {
             const provider = f.provider || (lang === "ro" ? "Necunoscut" : "Unknown");
             const active = !!f.is_active;
+            const swatch = (f.color || providerDefaultColor(f.provider)) as string;
+            const builtinLogo = providerBuiltinLogo(f.provider);
+            const logoSrc = (f.logo_url || builtinLogo || "") as string;
             return (
               <div
                 key={f.id}
@@ -1793,6 +1966,36 @@ function TargetFeedCard({
               >
                 <div style={{ minWidth: 0, display: "grid", gap: 4 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flexWrap: "wrap" }}>
+                    <span
+                      aria-hidden
+                      title={swatch || ""}
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 999,
+                        border: "1px solid var(--border)",
+                        background: swatch || "transparent",
+                        display: "inline-block",
+                        flex: "0 0 auto",
+                      }}
+                    />
+                    {logoSrc ? (
+                      <img
+                        src={logoSrc}
+                        alt=""
+                        width={18}
+                        height={18}
+                        style={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: 6,
+                          objectFit: "contain",
+                          border: "1px solid var(--border)",
+                          background: "var(--card)",
+                          padding: 2,
+                        }}
+                      />
+                    ) : null}
                     <span style={{ fontWeight: 900 }}>{provider}</span>
                     <span style={{ color: active ? "var(--success)" : "var(--muted)", fontSize: 12, fontWeight: 800 }}>
                       {active ? (lang === "ro" ? "Activ" : "Active") : (lang === "ro" ? "Inactiv" : "Inactive")}
