@@ -383,7 +383,7 @@ export default function LoginClient({
         <div style={logoWrap} aria-hidden>
           <div style={logoRing}>
             <img
-              src="/p4h_logo_round.png"
+              src="/p4h_logo_rotund.png"
               alt=""
               width={44}
               height={44}
