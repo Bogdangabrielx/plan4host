@@ -212,6 +212,10 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [editSaving, setEditSaving] = useState<boolean>(false);
   const [editError, setEditError] = useState<string>("");
 
+  const [confirmDeleteFeed, setConfirmDeleteFeed] = useState<TypeIntegration | null>(null);
+  const [confirmDeleteBusy, setConfirmDeleteBusy] = useState<boolean>(false);
+  const [confirmDeleteError, setConfirmDeleteError] = useState<string>("");
+
   useEffect(() => {
     if (!addOtherLogoFile) { setAddOtherLogoPreview(""); return; }
     const url = URL.createObjectURL(addOtherLogoFile);
@@ -567,8 +571,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     setStatus("Error");
     return null;
   }
-  async function deleteIntegration(id: string) {
-    if (!canWrite) return;
+  async function deleteIntegration(id: string): Promise<boolean> {
+    if (!canWrite) return false;
     setStatus("Saving…");
     // Best-effort: delete associated logo from Storage (if present)
     try {
@@ -581,6 +585,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     const { error } = await supabase.from("ical_type_integrations").delete().eq("id", id);
     if (!error) setIntegrations(prev => prev.filter(x => x.id !== id));
     setStatus(error ? "Error" : "Idle");
+    return !error;
   }
 
   // Add integration per ROOM (for properties without types)
@@ -1356,7 +1361,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     canWrite={canWrite}
                     lang={lang}
                     onToggle={toggleActive}
-                    onDelete={deleteIntegration}
+                    onDelete={(f) => { setConfirmDeleteFeed(f); setConfirmDeleteError(""); }}
                     onEdit={(f) => {
                       setEditFeed(f);
                       setEditUrl(f.url || "");
@@ -1394,7 +1399,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                       canWrite={canWrite}
                       lang={lang}
                       onToggle={toggleActive}
-                      onDelete={deleteIntegration}
+                      onDelete={(f) => { setConfirmDeleteFeed(f); setConfirmDeleteError(""); }}
                       onEdit={(f) => {
                         setEditFeed(f);
                         setEditUrl(f.url || "");
@@ -1792,6 +1797,108 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
         </InnerModal>
       )}
 
+      {/* Confirm delete feed */}
+      {confirmDeleteFeed && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => { if (!confirmDeleteBusy) setConfirmDeleteFeed(null); }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 260,
+            background: "rgba(0,0,0,0.62)",
+            display: "grid",
+            placeItems: "center",
+            padding: 12,
+            paddingTop: "calc(var(--safe-top, 0px) + 12px)",
+            paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sb-card sb-cardglow"
+            style={{
+              width: "min(520px, 100%)",
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 16,
+              padding: 14,
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <div style={{ display: "grid", gap: 4 }}>
+              <div style={{ fontWeight: 900, fontSize: 14 }}>
+                {lang === "ro" ? "Esti sigur ca vrei sa stergi feed-ul?" : "Are you sure you want to delete this feed?"}
+              </div>
+              <div style={{ color: "var(--muted)", fontSize: 12 }}>
+                {(confirmDeleteFeed.provider || (lang === "ro" ? "Necunoscut" : "Unknown"))}
+              </div>
+            </div>
+
+            {confirmDeleteError ? (
+              <div style={{ color: "var(--danger)", fontSize: 12 }}>
+                {confirmDeleteError}
+              </div>
+            ) : null}
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap", marginTop: 4 }}>
+              <button
+                type="button"
+                className="sb-btn"
+                disabled={confirmDeleteBusy}
+                onClick={() => setConfirmDeleteFeed(null)}
+                style={{
+                  borderRadius: 999,
+                  border: "1px solid color-mix(in srgb, var(--success) 80%, var(--border))",
+                  background: "transparent",
+                  color: "var(--success)",
+                  fontWeight: 900,
+                  padding: "10px 14px",
+                  minHeight: 42,
+                }}
+              >
+                {lang === "ro" ? "Nu" : "No"}
+              </button>
+              <button
+                type="button"
+                className="sb-btn"
+                disabled={confirmDeleteBusy}
+                onClick={async () => {
+                  if (!confirmDeleteFeed) return;
+                  setConfirmDeleteBusy(true);
+                  setConfirmDeleteError("");
+                  try {
+                    const ok = await deleteIntegration(confirmDeleteFeed.id);
+                    if (!ok) {
+                      setConfirmDeleteError(lang === "ro" ? "Nu am putut sterge. Incearca din nou." : "Could not delete. Please try again.");
+                      return;
+                    }
+                    setConfirmDeleteFeed(null);
+                  } catch (e: any) {
+                    setConfirmDeleteError(e?.message || (lang === "ro" ? "Eroare la stergere." : "Delete failed."));
+                  } finally {
+                    setConfirmDeleteBusy(false);
+                  }
+                }}
+                style={{
+                  borderRadius: 999,
+                  border: "1px solid color-mix(in srgb, var(--danger) 75%, var(--border))",
+                  background: "transparent",
+                  color: "var(--danger)",
+                  fontWeight: 900,
+                  padding: "10px 14px",
+                  minHeight: 42,
+                }}
+              >
+                {lang === "ro" ? "Da, sterge" : "Yes, delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ======= MODAL A: EXPORT per ROOM ======= */}
       {showRoomsModal && (
         <Modal title={lang === "ro" ? "Export · Camere" : "Export · Rooms"} closeLabel={lang === "ro" ? "Inchide" : "Close"} onClose={() => { setShowRoomsModal(false); setActiveRoomId(null); }}>
@@ -2070,7 +2177,7 @@ function TargetFeedCard({
   canWrite: boolean;
   lang: Lang;
   onToggle: (ii: TypeIntegration) => void;
-  onDelete: (id: string) => void;
+  onDelete: (ii: TypeIntegration) => void;
   onEdit: (ii: TypeIntegration) => void;
 }) {
   const hasFeeds = feeds.length > 0;
@@ -2320,7 +2427,7 @@ function TargetFeedCard({
                     className="sb-btn sb-btn--icon"
                     type="button"
                     disabled={!canWrite}
-                    onClick={() => onDelete(f.id)}
+                    onClick={() => onDelete(f)}
                     title={lang === "ro" ? "Sterge feed" : "Delete feed"}
                     style={{ width: 36, height: 36, borderRadius: 999, opacity: canWrite ? 1 : 0.55 }}
                   >
