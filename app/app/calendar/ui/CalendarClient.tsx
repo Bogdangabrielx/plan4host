@@ -1465,27 +1465,34 @@ function TimelineView({
       if (b.end_date < monthFirst || b.start_date > monthLast) continue;
 
       const color = colorForBooking(b);
-      const start = b.start_date < monthFirst ? monthFirst : b.start_date;
-      const end = b.end_date > monthLast ? monthLast : b.end_date;
-      const startIdx = dayIndex(start);
-      const endIdx = dayIndex(end);
+      // Clamp the loop to the visible month, but keep AM/PM logic based on the real booking edges.
+      // This prevents month-boundary "cut" artifacts (e.g. a booking continuing into next month
+      // should not look like it checks out on the last day of this month).
+      const visStart = b.start_date < monthFirst ? monthFirst : b.start_date;
+      const visEnd = b.end_date > monthLast ? monthLast : b.end_date;
+      const startIdx = dayIndex(visStart);
+      const endIdx = dayIndex(visEnd);
 
       for (let i = startIdx; i <= endIdx; i++) {
+        const ds = `${year}-${pad(month + 1)}-${pad(i + 1)}`;
         const cell = arr[i] || (arr[i] = { full: false });
         if (cell.full) continue; // keep first "full" assignment
 
-        if (startIdx === endIdx) {
+        if (b.start_date === b.end_date) {
           cell.full = true;
           cell.color = color;
           continue;
         }
 
-        if (i === startIdx) {
-          if (!cell.pm) cell.pm = color; // check-in day: PM
-        } else if (i === endIdx) {
-          if (!cell.am) cell.am = color; // check-out day: AM
+        if (ds === b.start_date) {
+          // check-in day: PM
+          if (!cell.pm) cell.pm = color;
+        } else if (ds === b.end_date) {
+          // check-out day: AM
+          if (!cell.am) cell.am = color;
         } else {
-          cell.full = true; // inside stay
+          // middle day of stay (including month-boundary continuation days)
+          cell.full = true;
           cell.color = color;
         }
       }
