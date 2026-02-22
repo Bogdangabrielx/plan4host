@@ -603,8 +603,11 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   }
   async function toggleActive(integration: TypeIntegration) {
     if (!canWrite) return;
+    const prevActive = !!integration.is_active;
+    const next = !prevActive;
+    // Optimistic UI so the toggle feels responsive on mobile.
+    setIntegrations((prev) => prev.map((x) => (x.id === integration.id ? ({ ...x, is_active: next } as any) : x)));
     setStatus("Saving…");
-    const next = !integration.is_active;
     const { error, data } = await supabase
       .from("ical_type_integrations")
       .update({ is_active: next })
@@ -612,8 +615,14 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
       // Keep all identifying fields so we don't "lose" room_id / presentation metadata in local state.
       .select("id,property_id,room_type_id,room_id,provider,url,is_active,last_sync,color,logo_url")
       .single();
-    if (!error && data) setIntegrations(prev => prev.map(x => x.id === integration.id ? (data as TypeIntegration) : x));
-    setStatus(error ? "Error" : "Idle");
+    if (error || !data) {
+      // Revert optimistic update.
+      setIntegrations((prev) => prev.map((x) => (x.id === integration.id ? ({ ...x, is_active: prevActive } as any) : x)));
+      setStatus("Error");
+      return;
+    }
+    setIntegrations((prev) => prev.map((x) => (x.id === integration.id ? (data as TypeIntegration) : x)));
+    setStatus("Idle");
   }
 
   /* Global Sync Now — ALL */
