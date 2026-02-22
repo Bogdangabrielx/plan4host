@@ -316,10 +316,9 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
     unitWizardLoadingTimerRef.current = window.setTimeout(() => setUnitWizardLoadingStage(1), 950);
 
 	    try {
-	      const singleUnitName = (selected.name || "").toString().trim() || "Unit 1";
 	      const rows = Array.from({ length: count }, (_, i) => ({
 	        property_id: selected.id,
-	        name: count === 1 ? singleUnitName : `Unit ${i + 1}`,
+	        name: `Unit ${i + 1}`,
 	        sort_index: i,
 	      }));
 
