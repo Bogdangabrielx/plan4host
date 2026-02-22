@@ -1255,7 +1255,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
           </div>
         )}
 
-        <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "grid", gap: 12, marginTop: isSmall ? 14 : 16 }}>
           {/* GLOBAL: Sync Now — ALL */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             <button
