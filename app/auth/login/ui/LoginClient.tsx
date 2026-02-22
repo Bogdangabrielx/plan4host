@@ -631,9 +631,7 @@ const quoteWrap: React.CSSProperties = {
   gap: 6,
   /* Allow the quote to be wider than the auth card, but keep it centered. */
   width: "min(920px, calc(100vw - 24px))",
-  position: "relative",
-  left: "50%",
-  transform: "translateX(-50%)",
+  justifySelf: "center",
 };
 const quoteText: React.CSSProperties = {
   fontSize: 15,
