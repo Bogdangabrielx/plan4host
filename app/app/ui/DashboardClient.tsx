@@ -1660,6 +1660,9 @@ const [country, setCountry] = useState<string>("");
                 >
                   {firstPropertyCopied ? t.copied : t.copyLink}
                 </button>
+                <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                  {t.guestsCanNowSubmit}
+                </div>
                 <a
                   href={firstPropertyResult.link}
                   target="_blank"
