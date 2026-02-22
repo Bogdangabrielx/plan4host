@@ -629,11 +629,17 @@ const quoteWrap: React.CSSProperties = {
   textAlign: "center",
   display: "grid",
   gap: 6,
-  /* Allow the quote to be wider than the auth card, but keep it centered. */
-  width: "min(920px, calc(100vw - 24px))",
-  justifySelf: "center",
+  /* Let the quote "bleed" outside the auth card, but stay centered in the viewport. */
+  width: "100vw",
+  marginLeft: "calc(50% - 50vw)",
+  marginRight: "calc(50% - 50vw)",
+  paddingLeft: 12,
+  paddingRight: 12,
+  boxSizing: "border-box",
+  justifyItems: "center",
 };
 const quoteText: React.CSSProperties = {
+  width: "min(920px, 100%)",
   fontSize: 15,
   fontWeight: 850,
   color: "var(--text)",
@@ -645,7 +651,7 @@ const quoteAuthorWrap: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "flex-start",
   gap: 10,
-  width: "100%",
+  width: "min(920px, 100%)",
 };
 const quoteAuthorAvatar: React.CSSProperties = {
   width: 34,
