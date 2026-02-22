@@ -596,7 +596,7 @@ export default function CalendarClient({
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: isSmall ? '100%' : undefined, justifyContent: isSmall ? 'center' : undefined }}>
           <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label={lang === "ro" ? "Deschide anul" : "Open year overview"}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <MaskedSvgIcon src="/svg_yearview.svg" size={18} zoom={0.95} color="var(--text)" />
+              <MaskedSvgIcon src="/svg_yearview.svg" size={isSmall ? 20 : 22} zoom={1} color="var(--text)" />
               {lang === "ro" ? "An" : "Year"}
             </span>
           </button>
@@ -607,7 +607,7 @@ export default function CalendarClient({
             aria-label={lang === "ro" ? "Deschide camerele" : "Open room overview"}
             style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
           >
-            <MaskedSvgIcon src="/svg_roomview.svg" size={18} zoom={0.95} color="var(--text)" />
+            <MaskedSvgIcon src="/svg_roomview.svg" size={isSmall ? 20 : 22} zoom={1} color="var(--text)" />
             {lang === "ro" ? "Camere" : "Room view"}
           </button>
           <button
@@ -627,8 +627,8 @@ export default function CalendarClient({
           >
             <MaskedSvgIcon
               src={monthDisplay === "timeline" ? "/svg_grid.svg" : "/svg_timeline.svg"}
-              size={18}
-              zoom={0.95}
+              size={isSmall ? 20 : 22}
+              zoom={1}
               color="var(--text)"
             />
             {monthDisplay === "timeline" ? "Grid" : "Timeline"}
