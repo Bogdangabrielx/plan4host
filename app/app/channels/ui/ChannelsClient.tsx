@@ -216,6 +216,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
   const [confirmDeleteBusy, setConfirmDeleteBusy] = useState<boolean>(false);
   const [confirmDeleteError, setConfirmDeleteError] = useState<string>("");
 
+  const [feedToggleOverlay, setFeedToggleOverlay] = useState<boolean>(false);
+
   useEffect(() => {
     if (!addOtherLogoFile) { setAddOtherLogoPreview(""); return; }
     const url = URL.createObjectURL(addOtherLogoFile);
@@ -613,21 +615,43 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
     // Optimistic UI so the toggle feels responsive on mobile.
     setIntegrations((prev) => prev.map((x) => (x.id === integration.id ? ({ ...x, is_active: next } as any) : x)));
     setStatus("Saving…");
-    const { error, data } = await supabase
-      .from("ical_type_integrations")
-      .update({ is_active: next })
-      .eq("id", integration.id)
-      // Keep all identifying fields so we don't "lose" room_id / presentation metadata in local state.
-      .select("id,property_id,room_type_id,room_id,provider,url,is_active,last_sync,color,logo_url")
-      .single();
-    if (error || !data) {
-      // Revert optimistic update.
+    setFeedToggleOverlay(true);
+    try {
+      const { error, data } = await supabase
+        .from("ical_type_integrations")
+        .update({ is_active: next })
+        .eq("id", integration.id)
+        // Keep all identifying fields so we don't "lose" room_id / presentation metadata in local state.
+        .select("id,property_id,room_type_id,room_id,provider,url,is_active,last_sync,color,logo_url")
+        .maybeSingle();
+
+      if (error) {
+        console.error("toggleActive failed", { id: integration.id, next, error });
+        // Revert optimistic update.
+        setIntegrations((prev) => prev.map((x) => (x.id === integration.id ? ({ ...x, is_active: prevActive } as any) : x)));
+        setHintText("Try again");
+        setHintVariant("danger");
+        setStatus("Error");
+        return;
+      }
+
+      // If RLS hides representation, keep optimistic state and just return.
+      if (!data) {
+        setStatus("Idle");
+        return;
+      }
+
+      setIntegrations((prev) => prev.map((x) => (x.id === integration.id ? (data as TypeIntegration) : x)));
+      setStatus("Idle");
+    } catch (e: any) {
+      console.error("toggleActive crashed", e);
       setIntegrations((prev) => prev.map((x) => (x.id === integration.id ? ({ ...x, is_active: prevActive } as any) : x)));
+      setHintText("Try again");
+      setHintVariant("danger");
       setStatus("Error");
-      return;
+    } finally {
+      setFeedToggleOverlay(false);
     }
-    setIntegrations((prev) => prev.map((x) => (x.id === integration.id ? (data as TypeIntegration) : x)));
-    setStatus("Idle");
   }
 
   /* Global Sync Now — ALL */
@@ -1088,6 +1112,23 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                   ? (lang === "ro" ? "Importam rezervarile…" : "Importing your reservations…")
                   : (lang === "ro" ? "Pregatim disponibilitatea…" : "Preparing your availability…")}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {feedToggleOverlay && (
+        <div
+          className={overlayStyles.overlay}
+          role="status"
+          aria-live="polite"
+          aria-label={lang === "ro" ? "Se salveaza…" : "Saving…"}
+          style={{ zIndex: 242 }}
+        >
+          <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
+            <LoadingPill title={lang === "ro" ? "Se salveaza…" : "Saving…"} />
+            <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+              {lang === "ro" ? "Actualizam feed-ul…" : "Updating feed…"}
             </div>
           </div>
         </div>
