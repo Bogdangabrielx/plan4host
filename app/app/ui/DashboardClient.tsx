@@ -1025,25 +1025,27 @@ const [country, setCountry] = useState<string>("");
 
 		      {/* First property wizard (3 steps) */}
 		      {showFirstPropertyGuide && list.length === 0 && firstPropertyStep > 0 && (
-		        <div
-		          role="dialog"
-		          aria-modal="true"
-	          onClick={(e) => {
-	            // Require explicit close button
-	            e.stopPropagation();
-	          }}
-	          style={{
-	            position: "fixed",
-	            inset: 0,
-	            zIndex: 240,
-	            background: "rgba(0,0,0,0.55)",
-	            display: "grid",
-	            placeItems: "center",
-	            padding: 12,
-	            paddingTop: "calc(var(--safe-top, 0px) + 12px)",
-	            paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
-	          }}
-	        >
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            // Require explicit close button
+            e.stopPropagation();
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 240,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            padding: 12,
+            paddingTop: "calc(var(--safe-top, 0px) + 72px)",
+            paddingBottom: "calc(var(--safe-bottom, 0px) + 96px)",
+            overflowY: "auto",
+          }}
+        >
           <div
             onClick={(e) => e.stopPropagation()}
             className="sb-card"
