@@ -612,17 +612,6 @@ export default function LoginClient({
           60% { transform: translate(-6px,6px) scale(1.05); }
           100% { transform: translate(0,0) scale(1); }
         }
-
-        /* Desktop: keep the phone layout as-is, but anchor the quote to the auth card column. */
-        @media (min-width: 900px) {
-          .p4h-quoteWrap {
-            width: min(640px, calc(100vw - 24px)) !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-          }
-        }
       `}</style>
     </>
   );
@@ -650,7 +639,8 @@ const quoteWrap: React.CSSProperties = {
   justifyItems: "center",
 };
 const quoteText: React.CSSProperties = {
-  width: "min(920px, 100%)",
+  width: "100%",
+  maxWidth: 560,
   fontSize: 15,
   fontWeight: 850,
   color: "var(--text)",
@@ -663,7 +653,8 @@ const quoteAuthorWrap: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "flex-start",
   gap: 10,
-  width: "min(920px, 100%)",
+  width: "100%",
+  maxWidth: 560,
 };
 const quoteAuthorAvatar: React.CSSProperties = {
   width: 34,
