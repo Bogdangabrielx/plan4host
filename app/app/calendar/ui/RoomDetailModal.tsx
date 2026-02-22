@@ -64,6 +64,20 @@ function fmtDocType(t: string | null | undefined) {
   return t === "id_card" ? "ID card" : t === "passport" ? "Passport" : t.replace(/_/g, " ");
 }
 
+function fmtYmd(ymd: string, lang: Lang) {
+  try {
+    const d = new Date(`${ymd}T00:00:00`);
+    return d.toLocaleDateString(lang === "ro" ? "ro-RO" : "en-US", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
+  } catch {
+    return ymd;
+  }
+}
+
 /* ───── Component ───── */
 
 export default function RoomDetailModal({
@@ -722,43 +736,49 @@ export default function RoomDetailModal({
   }, [onClose]);
 
   /* ───── UI ───── */
-
-  const baseBtn: React.CSSProperties = {
-    padding: "10px 14px",
-    borderRadius: 10,
-    border: "1px solid var(--border)",
-    background: "var(--card)",
-    color: "var(--text)",
+  const headerKicker: React.CSSProperties = {
+    fontSize: 11,
     fontWeight: 900,
-    cursor: "pointer",
+    letterSpacing: 1.6,
+    textTransform: "uppercase",
+    color: "var(--muted)",
   };
-  const baseBtnGuest: React.CSSProperties = {
-    padding: "8px 14px",
-    borderRadius: 10,
-    border: "1px solid var(--border)",
-    background: "var(--primary)",
-    color: "#0c111b",
-    fontWeight: 900,
-    cursor: "pointer",
+  const headerTitle: React.CSSProperties = {
+    fontSize: isMobile ? 22 : 26,
+    fontWeight: 950,
+    letterSpacing: -0.3,
+    lineHeight: 1.05,
   };
-  const primaryBtn: React.CSSProperties = {
-    padding: "10px 14px",
-    borderRadius: 10,
-    border: "1px solid var(--primary)",
-    background: "var(--primary)",
-    color: "#0c111b",
-    fontWeight: 900,
-    cursor: "pointer",
+  const headerSub: React.CSSProperties = {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "var(--muted)",
   };
-  const dangerBtn: React.CSSProperties = {
-    padding: "10px 14px",
-    borderRadius: 10,
-    border: "1px solid var(--danger)",
-    background: "transparent",
-    color: "var(--text)",
-    fontWeight: 900,
-    cursor: "pointer",
-  };
+  const pillStyle = (kind: "idle" | "saving" | "saved" | "error") =>
+    ({
+      fontSize: 12,
+      padding: "6px 10px",
+      borderRadius: 999,
+      border: "1px solid transparent",
+      fontWeight: 900,
+      whiteSpace: "nowrap",
+      background:
+        kind === "idle"
+          ? "transparent"
+          : kind === "saving"
+            ? "color-mix(in srgb, var(--primary) 16%, transparent)"
+            : kind === "saved"
+              ? "color-mix(in srgb, var(--success, #22c55e) 18%, transparent)"
+              : "color-mix(in srgb, var(--danger) 18%, transparent)",
+      color:
+        kind === "idle"
+          ? "var(--muted)"
+          : kind === "saving"
+            ? "var(--text)"
+            : kind === "saved"
+              ? "var(--text)"
+              : "var(--text)",
+    }) as const;
 
   return (
     <div
@@ -769,164 +789,182 @@ export default function RoomDetailModal({
         position: "fixed",
         inset: 0,
         zIndex: 250,
-        background: "rgba(0,0,0,0.6)",
+        background: "rgba(0,0,0,0.64)",
         display: "flex",
-        alignItems: isMobile ? "flex-start" : "center",
+        alignItems: "flex-start",
         justifyContent: "center",
         fontFamily: "inherit",
-        paddingTop: "calc(var(--safe-top) + 12px)",
+        /* Always keep the modal below the fixed app header (desktop + mobile). */
+        paddingTop: "calc(var(--safe-top) + var(--p4h-fixed-header-h, 56px) + 12px)",
         paddingBottom: "calc(var(--safe-bottom) + 12px)",
         paddingLeft: "12px",
         paddingRight: "12px",
         overflow: "hidden",
         overscrollBehavior: "contain",
       }}
-    >
+      >
+        <style
+        // Keep styles scoped to this modal without relying on build-time CSS tooling.
+        dangerouslySetInnerHTML={{
+          __html: `
+            [data-roomdetail-scroll]{
+              overscroll-behavior: contain;
+              -webkit-overflow-scrolling: touch;
+              scrollbar-width: thin;
+              scrollbar-color: color-mix(in srgb, var(--text) 28%, transparent) transparent;
+            }
+            [data-roomdetail-scroll]::-webkit-scrollbar{ width: 8px; }
+            [data-roomdetail-scroll]::-webkit-scrollbar-track{ background: transparent; }
+            [data-roomdetail-scroll]::-webkit-scrollbar-thumb{
+              background: color-mix(in srgb, var(--text) 28%, transparent);
+              border-radius: 999px;
+            }
+            @media (min-width: 720px){
+              /* Hide scrollbars on large screens (keep scrolling enabled). */
+              [data-roomdetail-scroll]{ scrollbar-width: none; }
+              [data-roomdetail-scroll]::-webkit-scrollbar{ width: 0; height: 0; }
+            }
+          `,
+        }}
+      />
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "min(1000px, 100%)",
-          marginTop: isMobile ? "calc(var(--p4h-fixed-header-h, 56px) + 8px)" : undefined,
-          maxHeight: isMobile
-            ? "calc(100dvh - (var(--safe-top) + var(--p4h-fixed-header-h, 56px) + var(--safe-bottom) + 32px))"
-            : "calc(100dvh - (var(--safe-top) + var(--safe-bottom) + 48px))",
-          background: "var(--panel)",
+          maxHeight:
+            "calc(100dvh - (var(--safe-top) + var(--p4h-fixed-header-h, 56px) + var(--safe-bottom) + 28px))",
+          background:
+            "radial-gradient(120% 160% at 18% 0%, color-mix(in srgb, var(--card) 18%, transparent), transparent 62%), var(--panel)",
           color: "var(--text)",
           border: "1px solid var(--border)",
-          borderRadius: 12,
-          padding: 16,
-          paddingTop: 0,
+          borderRadius: 16,
+          boxShadow: "0 18px 60px rgba(0,0,0,0.45)",
           display: "grid",
-          gridTemplateRows: "auto 1fr",
+          gridTemplateRows: "auto minmax(0, 1fr) auto",
+          overflow: "hidden",
         }}
       >
-        {/* ── Sticky TOP painter (full-width mask above header) ── */}
-        <div
-          aria-hidden
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 2,
-            height: 16,
-            background: "var(--panel)",
-          }}
-        />
-
-        {/* Header + status (sticky while scrolling) */}
         <div
           style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 3,
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "space-between",
-            gap: 8,
-            flexWrap: "nowrap",
-            background: "var(--panel)",
-            paddingTop: 8,
-            paddingBottom: 8,
-            marginBottom: 12,
-            boxShadow: "0 1px 0 var(--border)",
+            gap: 14,
+            padding: isMobile ? "14px 14px 12px" : "16px 18px 14px",
+            borderBottom: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+            background:
+              "linear-gradient(180deg, color-mix(in srgb, var(--panel) 92%, transparent), color-mix(in srgb, var(--panel) 78%, transparent))",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
           }}
         >
-            <strong>{room.name} — {dateStr} — {t.reservation}</strong>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
+            <div style={headerKicker}>{property?.name || (lang === "ro" ? "Proprietate" : "Property")}</div>
+            <div style={headerTitle}>{room.name}</div>
+            <div style={headerSub}>{fmtYmd(dateStr, lang)}</div>
+          </div>
+
+          <div style={{ display: "grid", justifyItems: "end", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
               <span
                 style={{
-                  fontSize: 12,
-                  padding: "4px 8px",
-                  borderRadius: 999,
-                  background:
-                    status === "Idle"      ? "transparent"      :
-                    status === "Saving..." ? "var(--primary)"   :
-                    status === "Error"     ? "var(--danger)"    :
-                    status === "Saved"     ? "var(--success, #22c55e)" : "#2a2f3a",
-                  color:
-                    status === "Idle"      ? "transparent"      :
-                    status === "Saving..." ? "#0c111b"          : "#fff",
-                  border: status === "Idle" ? "1px solid transparent" : undefined,
-                  fontWeight: 700,
+                  ...pillStyle("idle"),
+                  border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+                  background: on
+                    ? "color-mix(in srgb, var(--primary) 18%, transparent)"
+                    : "color-mix(in srgb, var(--card) 40%, transparent)",
+                  color: "var(--text)",
                 }}
               >
-                {status === "Idle" ? t.idle : status === "Saving..." ? t.saving : status === "Saved" ? t.saved : status === "Error" ? t.error : status}
+                {on ? (lang === "ro" ? "Rezervat" : "Reserved") : (lang === "ro" ? "Liber" : "Available")}
               </span>
-              {statusHint && <small style={{ color: "var(--muted)" }}>{statusHint}</small>}
+
+              {status !== "Idle" && (
+                <span
+                  style={pillStyle(
+                    status === "Saving..." ? "saving" : status === "Saved" ? "saved" : status === "Error" ? "error" : "idle"
+                  )}
+                >
+                  {status === "Saving..." ? t.saving : status === "Saved" ? t.saved : status === "Error" ? t.error : status}
+                </span>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  userTouchedToggleRef.current = true;
+                  setOn((v) => !v);
+                  setStatus("Idle");
+                  setStatusHint("");
+                }}
+                className="sb-btn sb-btn--small"
+                style={{
+                  border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+                  background: on ? "color-mix(in srgb, var(--primary) 20%, transparent)" : "color-mix(in srgb, var(--card) 70%, transparent)",
+                  color: "var(--text)",
+                  fontWeight: 900,
+                }}
+              >
+                {t.reservation}: {on ? "ON" : "OFF"}
+              </button>
+
               <button
                 type="button"
                 onClick={onClose}
                 aria-label={t.close}
+                className="sb-btn sb-btn--icon sb-btn--ghost"
                 style={{
-                  width: 28,
-                  height: 28,
+                  width: 40,
+                  height: 40,
                   borderRadius: 999,
-                  border: "1px solid var(--border)",
-                  background: "var(--card)",
-                  color: "var(--text)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 900,
-                  cursor: "pointer",
+                  border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+                  background: "transparent",
+                  fontWeight: 950,
                 }}
               >
                 ×
               </button>
             </div>
+            {statusHint && (
+              <div
+                style={{
+                  maxWidth: isMobile ? "100%" : 520,
+                  textAlign: "right",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "var(--muted)",
+                  lineHeight: 1.25,
+                }}
+              >
+                {statusHint}
+              </div>
+            )}
           </div>
+        </div>
 
-        {/* Scrollable content below fixed header */}
+        {/* Scrollable content */}
         <div
+          data-roomdetail-scroll
           style={{
+            padding: isMobile ? 14 : 18,
             overflowY: "auto",
-            WebkitOverflowScrolling: "touch",
-            paddingTop: 0,
-            paddingBottom: 0,
-        overscrollBehavior: "contain",
-        scrollbarWidth: "thin",
-        scrollbarColor: "color-mix(in srgb, var(--text) 32%, transparent) transparent",
-      }}
-    >
-          <style
-            dangerouslySetInnerHTML={{
-              __html: `
-                /* Custom scrollbar just for this modal content */
-                div[data-roomdetail-scroll]::-webkit-scrollbar{
-                  width: 8px;
-                }
-                div[data-roomdetail-scroll]::-webkit-scrollbar-track{
-                  background: transparent;
-                }
-                div[data-roomdetail-scroll]::-webkit-scrollbar-thumb{
-                  background: color-mix(in srgb, var(--text) 32%, transparent);
-                  border-radius: 999px;
-                }
-              `,
-            }}
-          />
-          <div data-roomdetail-scroll>
+          }}
+        >
           {/* Reservation toggle + dates */}
           <div style={{ display: "grid", gap: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <label style={{ fontWeight: 800, fontSize: 14, letterSpacing: 0.2 }}>{t.reservation}</label>
-            <button
-              onClick={() => { userTouchedToggleRef.current = true; setOn(v => !v); setStatus("Idle"); setStatusHint(""); }}
-              style={{
-                padding: "8px 12px",
-                borderRadius: 10,
-                border: "1px solid var(--border)",
-                background: on ? "var(--primary)" : "var(--card)",
-                color: on ? "#0c111b" : "var(--text)",
-                cursor: "pointer",
-                fontWeight: 900,
-              }}
-            >
-              {on ? "ON" : "OFF"}
-            </button>
-          </div>
-
           {/* Dates row */}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+          <div
+            className="sb-card"
+            style={{
+              padding: 14,
+              border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+              borderRadius: 14,
+              background: "color-mix(in srgb, var(--card) 52%, transparent)",
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
             {/* Start */}
             <div style={{ display: "grid", gap: 6 }}>
               <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.start}</label>
@@ -1005,6 +1043,7 @@ export default function RoomDetailModal({
               </div>
             </div>
           </div>
+          </div>
 
           {/* Guest details (collapsible card) */}
           {on && (
@@ -1013,9 +1052,9 @@ export default function RoomDetailModal({
               style={{
                 marginTop: 6,
                 padding: 12,
-                border: "1px solid var(--primary)",
-                borderRadius: 10,
-                background: "var(--panel)",
+                border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+                borderRadius: 14,
+                background: "color-mix(in srgb, var(--panel) 92%, transparent)",
                 display: "grid",
                 gap: 10,
               }}
@@ -1045,10 +1084,10 @@ export default function RoomDetailModal({
               {showGuest && (
                 <div
                   style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: 8,
-                    padding: 8,
-                    background: "var(--card)",
+                    border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+                    borderRadius: 12,
+                    padding: 10,
+                    background: "color-mix(in srgb, var(--card) 65%, transparent)",
                     display: "grid",
                     gap: 10,
                   }}
@@ -1450,10 +1489,33 @@ export default function RoomDetailModal({
             </div>
           )}
 
-          {/* Actions */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 6 }}>
+          {/* Extra spacer so the last section doesn't sit flush against the footer. */}
+          <div style={{ height: 10 }} aria-hidden />
+          </div>
+        </div>
+
+        {/* Sticky footer actions (always reachable; avoids "scroll under header" on mobile) */}
+        <div
+          style={{
+            padding: isMobile ? "12px 14px calc(var(--safe-bottom) + 12px)" : "14px 18px 14px",
+            borderTop: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
+            background:
+              "linear-gradient(180deg, color-mix(in srgb, var(--panel) 82%, transparent), color-mix(in srgb, var(--panel) 92%, transparent))",
+            display: "flex",
+            gap: 10,
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             {!active && on && (
-              <button onClick={saveCreated} style={primaryBtn} disabled={initializing || saving !== false}>
+              <button
+                onClick={saveCreated}
+                className="sb-btn sb-btn--primary"
+                disabled={initializing || saving !== false}
+                style={{ borderRadius: 999 }}
+              >
                 {t.confirmReservation}
               </button>
             )}
@@ -1461,34 +1523,48 @@ export default function RoomDetailModal({
             {active && (
               <>
                 {anyDetailsDirty && (
-                  <button onClick={saveDetails} style={baseBtn} disabled={initializing || (saving !== false && saving !== "updating")}>
+                  <button
+                    onClick={saveDetails}
+                    className="sb-btn"
+                    disabled={initializing || (saving !== false && saving !== "updating")}
+                  >
                     {t.saveDetails}
                   </button>
                 )}
 
                 {on && timesDirty && (
-                  <button onClick={saveTimes} style={baseBtn} disabled={initializing || (saving !== false && saving !== "times")} title={t.saveDatesTimes}>
+                  <button
+                    onClick={saveTimes}
+                    className="sb-btn"
+                    disabled={initializing || (saving !== false && saving !== "times")}
+                    title={t.saveDatesTimes}
+                  >
                     {t.saveDatesTimes}
                   </button>
                 )}
 
-                {/* Extend until — removed from UI by request */}
-
                 {!on && active && (
-                  <button onClick={() => setReleaseConfirmOpen(true)} style={dangerBtn} disabled={initializing || (saving !== false && saving !== "releasing")}>
+                  <button
+                    onClick={() => setReleaseConfirmOpen(true)}
+                    className="sb-btn"
+                    disabled={initializing || (saving !== false && saving !== "releasing")}
+                    style={{
+                      border: "1px solid var(--danger)",
+                      background: "transparent",
+                      color: "var(--text)",
+                      fontWeight: 900,
+                    }}
+                  >
                     {t.confirmRelease}
                   </button>
                 )}
               </>
             )}
+          </div>
 
-            <button onClick={onClose} style={baseBtn}>{t.close}</button>
-          </div>
-          {/* Extra spacer at bottom so action buttons can be scrolled above bottom nav / keyboard */}
-          <div style={{ height: 64 }} aria-hidden />
-          </div>
-          {/* end data-roomdetail-scroll */}
-          </div>
+          <button onClick={onClose} className="sb-btn sb-btn--ghost">
+            {t.close}
+          </button>
         </div>
       </div>
       {releaseConfirmOpen && (
