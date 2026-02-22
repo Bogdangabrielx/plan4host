@@ -630,7 +630,8 @@ export default function LoginClient({
 
 /* —— styles —— */
 const outerWrap: React.CSSProperties = {
-  width: 'min(380px, 100%)',
+  // Slightly wider on large phones so the auth card doesn't look "shrunk".
+  width: "min(420px, 100%)",
   margin: "0 auto",
   display: "grid",
   gap: 12,
@@ -691,7 +692,7 @@ const authFooter: React.CSSProperties = {
 
 function wrap(theme: Theme): React.CSSProperties {
   return {
-    width: 'min(380px, 100%)',
+    width: "min(420px, 100%)",
     background: "var(--panel)",
     border: "1px solid var(--border)",
     borderRadius: 12,
