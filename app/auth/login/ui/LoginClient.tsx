@@ -386,10 +386,10 @@ export default function LoginClient({
       <div style={outerWrap}>
         <div style={quoteWrap}>
           <div style={quoteText}>
-            <span style={{ display: "block" }}>
+            <span style={{ display: "block", whiteSpace: "nowrap" }}>
               “{t.quoteLine1}
             </span>
-            <span style={{ display: "block" }}>
+            <span style={{ display: "block", whiteSpace: "nowrap" }}>
               {t.quoteLine2}”
             </span>
           </div>
@@ -629,6 +629,10 @@ const quoteWrap: React.CSSProperties = {
   textAlign: "center",
   display: "grid",
   gap: 6,
+  /* Allow the quote to be wider than the auth card to keep it on exactly 2 lines. */
+  width: "min(760px, calc(100vw - 24px))",
+  marginLeft: "50%",
+  transform: "translateX(-50%)",
 };
 const quoteText: React.CSSProperties = {
   fontSize: 15,
