@@ -743,17 +743,16 @@ export default function CalendarClient({
             pointerEvents: "none",
           }}
         >
-          <span
-            style={{
-              pointerEvents: "none",
-              fontSize: 12,
-              fontWeight: 800,
-              color: "var(--text)",
-              textShadow: "0 2px 6px rgba(0,0,0,0.35)",
-            }}
-          >
-            {lang === "ro" ? "Rezervare nouă" : "New booking"}
-          </span>
+	          <span
+	            style={{
+	              pointerEvents: "none",
+	              fontSize: 12,
+	              fontWeight: 800,
+	              color: "var(--text)",
+	            }}
+	          >
+	            {lang === "ro" ? "Rezervare nouă" : "New booking"}
+	          </span>
           <button
             type="button"
             aria-label={lang === "ro" ? "Adaugă rezervare" : "Add reservation"}
