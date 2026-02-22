@@ -1044,26 +1044,24 @@ const [country, setCountry] = useState<string>("");
 	            paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
 	          }}
 	        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="sb-card"
-            style={{
-              width: "min(520px, 100%)",
-              maxHeight: isSmall ? "90vh" : "85vh",
-              background: "var(--panel)",
-              border: "1px solid var(--border)",
-              borderRadius: 14,
-              padding: 16,
-              display: "grid",
-              gridTemplateRows: "auto 1fr",
-              gap: 12,
-            }}
-          >
-            <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
-              <div aria-hidden />
-              <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6 }}>
-                <div
-                  style={{
+	          <div
+	            onClick={(e) => e.stopPropagation()}
+	            className="sb-card"
+	            style={{
+	              width: "min(520px, 100%)",
+	              background: "var(--panel)",
+	              border: "1px solid var(--border)",
+	              borderRadius: 14,
+	              padding: 16,
+	              display: "grid",
+	              gap: 12,
+	            }}
+		          >
+		            <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
+		              <div aria-hidden />
+		              <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6 }}>
+		                <div
+		                  style={{
 		                    fontSize: 13,
 		                    fontWeight: 800,
 		                    textTransform: "uppercase",
@@ -1089,9 +1087,8 @@ const [country, setCountry] = useState<string>("");
               </button>
             </div>
 
-            <div style={{ display: "grid", gap: 12, overflowY: "auto", paddingRight: 4, maxHeight: "100%" }}>
-            {firstPropertyStep === 1 ? (
-              <div style={{ display: "grid", gap: 12 }}>
+		            {firstPropertyStep === 1 ? (
+		              <div style={{ display: "grid", gap: 12 }}>
                 <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
                   <strong>{t.takesLessThan30s}</strong>
                 </div>
@@ -1256,8 +1253,8 @@ const [country, setCountry] = useState<string>("");
 		              </div>
 	            ) : (
 	              <div style={{ display: "grid", gap: 12 }}>
-                        <div style={{ display: "grid", gap: 6 }}>
-                          <label style={{ display: "block" }}>{t.propertyPhotoOptional}</label>
+		                <div style={{ display: "grid", gap: 6 }}>
+                  <label style={{ display: "block" }}>{t.propertyPhotoOptional}</label>
                   <input
                     ref={firstPropertyPhotoInputRef}
                     type="file"
@@ -1385,11 +1382,10 @@ const [country, setCountry] = useState<string>("");
                     <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
                       {firstPropertyError}
                     </div>
-            )}
-            </div>
-          </div>
-        </div>
-      )}
+                  )}
+                </div>
+		              </div>
+	            )}
 		          </div>
 		        </div>
 		      )}
