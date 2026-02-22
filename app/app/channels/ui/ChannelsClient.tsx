@@ -2156,40 +2156,55 @@ function TargetFeedCard({
                 }}
               >
                 <div style={{ minWidth: 0, display: "grid", gap: 4 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flexWrap: "wrap" }}>
-                    <span
-                      aria-hidden
-                      title={swatch || ""}
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 999,
-                        border: "1px solid var(--border)",
-                        background: swatch || "transparent",
-                        display: "inline-block",
-                        flex: "0 0 auto",
-                      }}
-                    />
-                    {logoSrc ? (
-                      <img
-                        src={logoSrc}
-                        alt=""
-                        width={18}
-                        height={18}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flex: "1 1 auto" }}>
+                      <span
+                        aria-hidden
+                        title={swatch || ""}
                         style={{
-                          width: 18,
-                          height: 18,
+                          width: 10,
+                          height: 10,
                           borderRadius: 999,
-                          objectFit: "contain",
+                          border: "1px solid var(--border)",
+                          background: swatch || "transparent",
+                          display: "inline-block",
+                          flex: "0 0 auto",
                         }}
                       />
-                    ) : null}
-                    <span style={{ fontWeight: 900 }}>{provider}</span>
+                      {logoSrc ? (
+                        <img
+                          src={logoSrc}
+                          alt=""
+                          width={18}
+                          height={18}
+                          style={{
+                            width: 18,
+                            height: 18,
+                            borderRadius: 999,
+                            objectFit: "contain",
+                            flex: "0 0 auto",
+                          }}
+                        />
+                      ) : null}
+                      <span
+                        style={{
+                          fontWeight: 900,
+                          minWidth: 0,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {provider}
+                      </span>
+                    </div>
                     <span
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
                         gap: 6,
+                        flex: "0 0 auto",
+                        whiteSpace: "nowrap",
                         color: active ? "var(--success)" : "var(--muted)",
                         fontSize: 12,
                         fontWeight: 800,
