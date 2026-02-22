@@ -626,7 +626,6 @@ const outerWrap: React.CSSProperties = {
 };
 const quoteWrap: React.CSSProperties = {
   margin: 0,
-  textAlign: "center",
   display: "grid",
   gap: 6,
   /* Let the quote "bleed" outside the auth card, but stay centered in the viewport. */
@@ -645,6 +644,7 @@ const quoteText: React.CSSProperties = {
   color: "var(--text)",
   lineHeight: 1.25,
   fontStyle: "italic",
+  textAlign: "left",
 };
 const quoteAuthorWrap: React.CSSProperties = {
   display: "flex",
