@@ -2382,103 +2382,92 @@ function TargetFeedCard({
                   {f.url}
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div
+                <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "flex-end" }}>
+                  <button
+                    className="sb-btn sb-btn--icon"
+                    type="button"
+                    disabled={!canWrite}
+                    onClick={() => onToggle(f)}
+                    title={lang === "ro" ? "Activeaza / dezactiveaza" : "Toggle active"}
                     style={{
-                      flex: "1 1 auto",
-                      minWidth: 0,
-                      color: "var(--muted)",
-                      fontSize: 11,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
+                      width: 44,
+                      height: 44,
+                      borderRadius: 999,
+                      opacity: canWrite ? 1 : 0.55,
+                      color: active ? "var(--success)" : "var(--muted)",
+                      display: "grid",
+                      placeItems: "center",
+                      padding: 0,
+                      touchAction: "manipulation",
                     }}
-                    title={f.last_sync ? new Date(f.last_sync).toLocaleString() : ""}
                   >
-                    {f.last_sync
-                      ? `${lang === "ro" ? "Ultima sincronizare: " : "Last synced: "}${new Date(f.last_sync).toLocaleString()}`
-                      : ""}
-                  </div>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "flex-end", flex: "0 0 auto" }}>
-                    <button
-                      className="sb-btn sb-btn--icon"
-                      type="button"
-                      disabled={!canWrite}
-                      onClick={() => onToggle(f)}
-                      title={lang === "ro" ? "Activeaza / dezactiveaza" : "Toggle active"}
+                    <PowerIcon active={active} />
+                  </button>
+                  <button
+                    className="sb-btn sb-btn--icon"
+                    type="button"
+                    disabled={!canWrite}
+                    onClick={() => onEdit(f)}
+                    title={lang === "ro" ? "Editeaza feed" : "Edit feed"}
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 999,
+                      opacity: canWrite ? 1 : 0.55,
+                      color: "var(--text)",
+                      display: "grid",
+                      placeItems: "center",
+                      padding: 0,
+                      touchAction: "manipulation",
+                    }}
+                  >
+                    <span
+                      aria-hidden
                       style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 999,
-                        opacity: canWrite ? 1 : 0.55,
-                        color: active ? "var(--success)" : "var(--muted)",
-                        display: "grid",
-                        placeItems: "center",
-                        padding: 0,
-                        touchAction: "manipulation",
+                        width: 16,
+                        height: 16,
+                        backgroundColor: "currentColor",
+                        WebkitMaskImage: "url(/svg_edit_ical.svg)",
+                        WebkitMaskRepeat: "no-repeat",
+                        WebkitMaskSize: "contain",
+                        WebkitMaskPosition: "center",
+                        maskImage: "url(/svg_edit_ical.svg)",
+                        maskRepeat: "no-repeat",
+                        maskSize: "contain",
+                        maskPosition: "center",
+                        display: "block",
+                        opacity: 0.95,
+                        pointerEvents: "none",
                       }}
-                    >
-                      <PowerIcon active={active} />
-                    </button>
-                    <button
-                      className="sb-btn sb-btn--icon"
-                      type="button"
-                      disabled={!canWrite}
-                      onClick={() => onEdit(f)}
-                      title={lang === "ro" ? "Editeaza feed" : "Edit feed"}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 999,
-                        opacity: canWrite ? 1 : 0.55,
-                        color: "var(--text)",
-                        display: "grid",
-                        placeItems: "center",
-                        padding: 0,
-                        touchAction: "manipulation",
-                      }}
-                    >
-                      <span
-                        aria-hidden
-                        style={{
-                          width: 16,
-                          height: 16,
-                          backgroundColor: "currentColor",
-                          WebkitMaskImage: "url(/svg_edit_ical.svg)",
-                          WebkitMaskRepeat: "no-repeat",
-                          WebkitMaskSize: "contain",
-                          WebkitMaskPosition: "center",
-                          maskImage: "url(/svg_edit_ical.svg)",
-                          maskRepeat: "no-repeat",
-                          maskSize: "contain",
-                          maskPosition: "center",
-                          display: "block",
-                          opacity: 0.95,
-                          pointerEvents: "none",
-                        }}
-                      />
-                    </button>
-                    <button
-                      className="sb-btn sb-btn--icon"
-                      type="button"
-                      disabled={!canWrite}
-                      onClick={() => onDelete(f)}
-                      title={lang === "ro" ? "Sterge feed" : "Delete feed"}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 999,
-                        opacity: canWrite ? 1 : 0.55,
-                        display: "grid",
-                        placeItems: "center",
-                        padding: 0,
-                        touchAction: "manipulation",
-                      }}
-                    >
-                      🗑
-                    </button>
-                  </div>
+                    />
+                  </button>
+                  <button
+                    className="sb-btn sb-btn--icon"
+                    type="button"
+                    disabled={!canWrite}
+                    onClick={() => onDelete(f)}
+                    title={lang === "ro" ? "Sterge feed" : "Delete feed"}
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 999,
+                      opacity: canWrite ? 1 : 0.55,
+                      display: "grid",
+                      placeItems: "center",
+                      padding: 0,
+                      touchAction: "manipulation",
+                    }}
+                  >
+                    🗑
+                  </button>
                 </div>
+
+                {f.last_sync ? (
+                  <div style={{ color: "var(--muted)", fontSize: 11 }}>
+                    {lang === "ro" ? "Ultima sincronizare: " : "Last synced: "}
+                    {new Date(f.last_sync).toLocaleString()}
+                  </div>
+                ) : null}
               </div>
             );
           })
