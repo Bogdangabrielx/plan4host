@@ -21,7 +21,19 @@ export default async function LoginPage() {
   } catch {}
 
   return (
-    <main style={{ display: "grid", placeItems: "center", minHeight: "100dvh", padding: 16 }}>
+    <main
+      style={{
+        display: "grid",
+        placeItems: "center",
+        minHeight: "100dvh",
+        // On very small phones (e.g. 330px wide), 16px padding shrinks the auth card too much.
+        // Use responsive padding that still caps at 16px on larger screens.
+        paddingTop: "calc(clamp(8px, 2vw, 16px) + env(safe-area-inset-top))",
+        paddingBottom: "calc(clamp(8px, 2vw, 16px) + env(safe-area-inset-bottom))",
+        paddingLeft: "calc(clamp(8px, 2vw, 16px) + env(safe-area-inset-left))",
+        paddingRight: "calc(clamp(8px, 2vw, 16px) + env(safe-area-inset-right))",
+      }}
+    >
       <LoginClient initialTheme={theme} initialLang={initialLang} />
     </main>
   );
