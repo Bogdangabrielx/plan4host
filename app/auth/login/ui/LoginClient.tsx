@@ -644,7 +644,7 @@ const quoteText: React.CSSProperties = {
   color: "var(--text)",
   lineHeight: 1.25,
   fontStyle: "italic",
-  textAlign: "center",
+  textAlign: "left",
 };
 const quoteAuthorWrap: React.CSSProperties = {
   display: "flex",
@@ -667,7 +667,7 @@ const quoteAuthorText: React.CSSProperties = {
   fontWeight: 750,
   color: "var(--muted)",
   lineHeight: 1.15,
-  textAlign: "center",
+  textAlign: "left",
 };
 const authFooter: React.CSSProperties = {
   marginTop: 12,
