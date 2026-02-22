@@ -843,9 +843,6 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
 	                  >
 	                    {t.syncAirbnbBooking}
 	                  </button>
-                  <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-s)', lineHeight: 'var(--lh-s)', textAlign: 'center' }}>
-                    {t.syncHint}
-                  </div>
 
 	                  <button
 	                    className="sb-btn"
