@@ -19,6 +19,40 @@ const RoomDetailModal: any = dynamic(
   { ssr: false }
 );
 
+function MaskedSvgIcon({
+  src,
+  size = 18,
+  zoom = 1,
+  color = "var(--text)",
+}: {
+  src: string;
+  size?: number;
+  zoom?: number;
+  color?: string;
+}) {
+  const zoomPct = `${Math.round(zoom * 100)}%`;
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        width: size,
+        height: size,
+        display: "block",
+        flex: "0 0 auto",
+        backgroundColor: color,
+        WebkitMaskImage: `url(${src})`,
+        maskImage: `url(${src})`,
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+        WebkitMaskSize: zoomPct,
+        maskSize: zoomPct,
+      }}
+    />
+  );
+}
+
 type Property = { id: string; name: string; check_in_time: string | null; check_out_time: string | null };
 type Room = { id: string; name: string; property_id: string };
 type Booking = {
@@ -551,12 +585,21 @@ export default function CalendarClient({
             onClick={() => setMonthDisplay((m) => (m === "grid" ? "timeline" : "grid"))}
             aria-label={lang === "ro" ? "Schimba afisarea" : "Toggle display"}
             style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
               borderColor:
                 monthDisplay === "timeline"
                   ? "color-mix(in srgb, var(--primary) 60%, var(--border))"
                   : undefined,
             }}
           >
+            <MaskedSvgIcon
+              src={monthDisplay === "timeline" ? "/svg_timeline.svg" : "/svg_grid.svg"}
+              size={18}
+              zoom={0.95}
+              color="var(--text)"
+            />
             {monthDisplay === "timeline" ? "Timeline" : "Grid"}
           </button>
         </div>
