@@ -59,11 +59,23 @@ type Booking = {
   id: string;
   property_id: string;
   room_id: string | null;
+  room_type_id?: string | null;
   start_date: string;
   end_date: string;
   start_time: string | null;
   end_time: string | null;
   status: string;
+  source?: string | null;
+  ota_integration_id?: string | null;
+};
+type TypeIntegration = {
+  id: string;
+  property_id: string;
+  room_type_id: string | null;
+  room_id?: string | null;
+  provider: string | null;
+  is_active: boolean | null;
+  color?: string | null;
 };
 
 type Lang = "en" | "ro";
@@ -150,6 +162,7 @@ export default function CalendarClient({
   // Data
   const [rooms, setRooms]       = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [integrations, setIntegrations] = useState<TypeIntegration[]>([]);
   const [loading, setLoading]   = useState<"Idle"|"Loading"|"Error">("Idle");
   const [hasLoadedRooms, setHasLoadedRooms] = useState<boolean>(false);
   const [refreshToken, setRefreshToken] = useState(0);
@@ -270,27 +283,34 @@ export default function CalendarClient({
 
     (async () => {
       setLoading("Loading");
-      const [r1, r2] = await Promise.all([
+      const [r1, r2, r3] = await Promise.all([
         supabase.from("rooms")
           .select("id,name,property_id")
           .eq("property_id", propertyId)
           .order("sort_index", { ascending: true })
           .order("created_at", { ascending: true }),
         supabase.from("bookings")
-          .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status")
+          .select("id,property_id,room_id,room_type_id,start_date,end_date,start_time,end_time,status,source,ota_integration_id")
           .eq("property_id", propertyId)
           .neq("status","cancelled")
           // Include bookings that overlap the window (not only those fully inside it).
           .lte("start_date", to)
           .gte("end_date", from)
           .order("start_date", { ascending: true }),
+        // Optional (used for provider colors, same logic as Room view). Tolerate RLS errors.
+        supabase
+          .from("ical_type_integrations")
+          .select("id,property_id,room_type_id,room_id,provider,is_active,color")
+          .eq("property_id", propertyId)
+          .order("created_at", { ascending: true }),
       ]);
       if (seq !== loadSeqRef.current) return;
       if (r1.error || r2.error) {
-        setRooms([]); setBookings([]); setLoading("Error"); setHasLoadedRooms(true);
+        setRooms([]); setBookings([]); setIntegrations([]); setLoading("Error"); setHasLoadedRooms(true);
       } else {
         setRooms((r1.data ?? []) as Room[]);
         setBookings((r2.data ?? []) as Booking[]);
+        if (!r3?.error) setIntegrations((r3.data ?? []) as TypeIntegration[]);
         setLoading("Idle");
         setHasLoadedRooms(true);
       }
@@ -522,6 +542,7 @@ export default function CalendarClient({
               setShowNoRoomsPopup(false);
               setRooms([]);
               setBookings([]);
+              setIntegrations([]);
               setHasLoadedRooms(false);
               setLoading("Loading");
               setPropertyId(next);
@@ -574,9 +595,19 @@ export default function CalendarClient({
         {/* Mode row: Year / Room view (wraps below on small screens) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: isSmall ? '100%' : undefined, justifyContent: isSmall ? 'center' : undefined }}>
           <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowYear(true)} aria-label={lang === "ro" ? "Deschide anul" : "Open year overview"}>
-            {lang === "ro" ? "An" : "Year"}
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <MaskedSvgIcon src="/svg_yearview.svg" size={18} zoom={0.95} color="var(--text)" />
+              {lang === "ro" ? "An" : "Year"}
+            </span>
           </button>
-          <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label={lang === "ro" ? "Deschide camerele" : "Open room overview"}>
+          <button
+            type="button"
+            className="sb-btn  sb-btn--ghost sb-btn--small"
+            onClick={() => setShowRoomView(true)}
+            aria-label={lang === "ro" ? "Deschide camerele" : "Open room overview"}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+          >
+            <MaskedSvgIcon src="/svg_roomview.svg" size={18} zoom={0.95} color="var(--text)" />
             {lang === "ro" ? "Camere" : "Room view"}
           </button>
           <button
@@ -668,6 +699,7 @@ export default function CalendarClient({
           isSmall={isSmall}
           rooms={rooms}
           bookings={bookings}
+          integrations={integrations}
           onDayClick={(dateStr) => setOpenDate(dateStr)}
         />
       ) : (
@@ -1293,6 +1325,7 @@ function TimelineView({
   isSmall,
   rooms,
   bookings,
+  integrations,
   onDayClick,
 }: {
   lang: Lang;
@@ -1301,6 +1334,7 @@ function TimelineView({
   isSmall: boolean;
   rooms: Room[];
   bookings: Booking[];
+  integrations: TypeIntegration[];
   onDayClick: (dateStr: string) => void;
 }) {
   const dim = daysInMonth(year, month);
@@ -1331,37 +1365,63 @@ function TimelineView({
     return out;
   }, [year, month, dim]);
 
-  // bits: 1 = AM occupied, 2 = PM occupied, 4 = full-day marker (middle of stay)
-  const occByRoom = useMemo(() => {
-    const map = new Map<string, number[]>();
-    for (const r of rooms) map.set(r.id, Array(dim).fill(0));
-    for (const b of bookings) {
-      if (!b.room_id) continue;
-      const arr = map.get(b.room_id);
-      if (!arr) continue;
-      if (b.end_date < monthFirst || b.start_date > monthLast) continue;
-      const start = b.start_date < monthFirst ? monthFirst : b.start_date;
-      const end = b.end_date > monthLast ? monthLast : b.end_date;
-      const startIdx = dayIndex(start);
-      const endIdx = dayIndex(end);
-      for (let i = startIdx; i <= endIdx; i++) {
-        if (startIdx === endIdx) {
-          arr[i] |= 1 | 2 | 4;
-        } else if (i === startIdx) {
-          arr[i] |= 2; // check-in day: PM
-        } else if (i === endIdx) {
-          arr[i] |= 1; // check-out day: AM
-        } else {
-          arr[i] |= 1 | 2 | 4; // full days inside stay
-        }
-      }
-    }
-    return map;
-  }, [bookings, dim, monthFirst, monthLast, rooms]);
+  function normalizeProvider(s?: string | null) {
+    const p = (s || "").toLowerCase();
+    if (!p) return "manual"; // null/empty -> manual
+    if (p.includes("manual") || p.includes("native") || p.includes("internal") || p.includes("form") || p.includes("direct")) return "manual";
+    if (p.includes("airbnb")) return "airbnb";
+    if (p.includes("booking")) return "booking";
+    if (p.includes("expedia")) return "expedia";
+    if (p.includes("trivago")) return "trivago";
+    if (p.includes("lastminute")) return "lastminute";
+    if (p.includes("travelminit")) return "travelminit";
+    return "other";
+  }
 
-  // Slightly more transparent green (requested).
-  const fill = "color-mix(in srgb, var(--success, #22c55e) 44%, transparent)";
-  // Make day separators visible even over filled cells (Timeline requirement).
+  const providerColors = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const it of integrations) {
+      if (!it?.is_active) continue;
+      const key = normalizeProvider(it.provider);
+      if (it.color && !map.has(key)) map.set(key, it.color);
+    }
+    if (!map.has("airbnb")) map.set("airbnb", "rgba(255, 90, 96, 0.81)");
+    if (!map.has("booking")) map.set("booking", "rgba(30, 143, 255, 0.90)");
+    if (!map.has("expedia")) map.set("expedia", "rgba(254,203,46,0.81)");
+    if (!map.has("trivago")) map.set("trivago", "linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)");
+    if (!map.has("lastminute")) map.set("lastminute", "#d493baff");
+    if (!map.has("travelminit")) map.set("travelminit", "#a4579f");
+    if (!map.has("other")) map.set("other", "rgba(139,92,246,0.81)");
+    return map;
+  }, [integrations]);
+
+  const integColorById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const it of integrations) {
+      if (!it?.is_active) continue;
+      if ((it as any).id && it.color) m.set(String((it as any).id), it.color);
+    }
+    return m;
+  }, [integrations]);
+  const integColorByRoomId = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const it of integrations) {
+      if (!it?.is_active) continue;
+      if (it.room_id && it.color && !m.has(it.room_id)) m.set(it.room_id, it.color);
+    }
+    return m;
+  }, [integrations]);
+  const integColorByTypeId = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const it of integrations) {
+      if (!it?.is_active) continue;
+      if (it.room_type_id && it.color && !m.has(it.room_type_id)) m.set(it.room_type_id, it.color);
+    }
+    return m;
+  }, [integrations]);
+
+  const manualColor = "#6CCC4C";
+  const overlayOpacity = 0.22;
   const border = "color-mix(in srgb, var(--border) 86%, transparent)";
   const diag = "color-mix(in srgb, var(--border) 92%, transparent)";
   const bg = "var(--card)";
@@ -1372,23 +1432,79 @@ function TimelineView({
     return Math.max(0, Math.min(dim - 1, n - 1));
   }
 
-  function cellBackground(bits: number): string | undefined {
-    const am = (bits & 1) !== 0;
-    const pm = (bits & 2) !== 0;
-    const full = (bits & 4) !== 0;
-    if (!am && !pm) return undefined;
-    if (full) return fill;
-    // Diagonal is "\\" (top-left -> bottom-right). AM = top-left, PM = bottom-right.
-    if (am && pm) {
-      // turnover day: show a small diagonal gap so two bookings are obvious
-      return `linear-gradient(to bottom right, ${fill} 0 calc(50% - 3px), ${diag} calc(50% - 3px) calc(50% - 2px), ${bg} calc(50% - 2px) calc(50% + 2px), ${diag} calc(50% + 2px) calc(50% + 3px), ${fill} calc(50% + 3px) 100%)`;
+  function colorForBooking(b: Booking): string {
+    const key = normalizeProvider(b.source);
+    let color: string | undefined;
+
+    const intId = b.ota_integration_id || undefined;
+    if (intId && integColorById.has(intId)) color = integColorById.get(intId);
+
+    if (key === "manual") {
+      color = manualColor;
+    } else {
+      if (!color && key !== "other") color = providerColors.get(key);
+      if (!color) {
+        color =
+          (b.room_id && integColorByRoomId.get(b.room_id)) ||
+          (b.room_type_id && integColorByTypeId.get(b.room_type_id)) ||
+          providerColors.get("other") ||
+          "rgba(139,92,246,0.81)";
+      }
     }
-    if (am) {
-      return `linear-gradient(to bottom right, ${fill} 0 calc(50% - 1px), ${diag} calc(50% - 1px) calc(50% + 1px), ${bg} calc(50% + 1px) 100%)`;
-    }
-    // pm only
-    return `linear-gradient(to bottom right, ${bg} 0 calc(50% - 1px), ${diag} calc(50% - 1px) calc(50% + 1px), ${fill} calc(50% + 1px) 100%)`;
+    return color || manualColor;
   }
+
+  type CellOcc = { full: boolean; color?: string; am?: string; pm?: string };
+  const occByRoom = useMemo(() => {
+    const map = new Map<string, CellOcc[]>();
+    for (const r of rooms) map.set(r.id, Array.from({ length: dim }, () => ({ full: false })));
+    for (const b of bookings) {
+      if (!b.room_id) continue;
+      const arr = map.get(b.room_id);
+      if (!arr) continue;
+      if (b.end_date < monthFirst || b.start_date > monthLast) continue;
+
+      const color = colorForBooking(b);
+      const start = b.start_date < monthFirst ? monthFirst : b.start_date;
+      const end = b.end_date > monthLast ? monthLast : b.end_date;
+      const startIdx = dayIndex(start);
+      const endIdx = dayIndex(end);
+
+      for (let i = startIdx; i <= endIdx; i++) {
+        const cell = arr[i] || (arr[i] = { full: false });
+        if (cell.full) continue; // keep first "full" assignment
+
+        if (startIdx === endIdx) {
+          cell.full = true;
+          cell.color = color;
+          continue;
+        }
+
+        if (i === startIdx) {
+          if (!cell.pm) cell.pm = color; // check-in day: PM
+        } else if (i === endIdx) {
+          if (!cell.am) cell.am = color; // check-out day: AM
+        } else {
+          cell.full = true; // inside stay
+          cell.color = color;
+        }
+      }
+    }
+    return map;
+  }, [
+    bookings,
+    dim,
+    monthFirst,
+    monthLast,
+    rooms,
+    providerColors,
+    integColorById,
+    integColorByRoomId,
+    integColorByTypeId,
+  ]);
+
+  const diagLine = `linear-gradient(to bottom right, transparent 0 calc(50% - 1px), ${diag} calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px) 100%)`;
+  const diagGap = `linear-gradient(to bottom right, transparent 0 calc(50% - 3px), ${diag} calc(50% - 3px) calc(50% - 2px), ${bg} calc(50% - 2px) calc(50% + 2px), ${diag} calc(50% + 2px) calc(50% + 3px), transparent calc(50% + 3px) 100%)`;
 
   return (
     <section className="modalCard sb-cardglow" style={{ padding: isSmall ? 10 : 14 }}>
@@ -1413,7 +1529,7 @@ function TimelineView({
       {/* one timeline grid per unit (month split by weeks) */}
       <div style={{ display: "grid", gap: isSmall ? 10 : 12 }}>
         {rooms.map((r) => {
-          const occ = occByRoom.get(r.id) ?? Array(dim).fill(0);
+          const occ = occByRoom.get(r.id) ?? [];
           return (
             <div
               key={r.id}
@@ -1465,8 +1581,14 @@ function TimelineView({
                         );
                       }
                       const idx = dayIndex(ds);
-                      const bits = occ[idx] ?? 0;
-                      const bgFill = cellBackground(bits);
+                      const cell = (occ[idx] || { full: false }) as any as CellOcc;
+                      const isFull = !!cell.full;
+                      const fullColor = cell.color;
+                      const amColor = isFull ? fullColor : cell.am;
+                      const pmColor = isFull ? fullColor : cell.pm;
+                      const hasAM = !!amColor;
+                      const hasPM = !!pmColor;
+                      const showGap = hasAM && hasPM && !isFull && amColor !== pmColor;
                       const dayNum = parseInt(ds.slice(8, 10), 10);
                       return (
                         <button
@@ -1479,11 +1601,63 @@ function TimelineView({
                             height: cellH,
                             padding: 0,
                             border: 0,
-                            background: bgFill ?? "transparent",
+                            background: "transparent",
                             borderRight: i === 6 ? "none" : `1px solid ${border}`,
                             cursor: "pointer",
+                            overflow: "hidden",
                           }}
                         >
+                          {/* booking fill (same palette as Room view) */}
+                          {isFull && fullColor ? (
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                background: fullColor,
+                                opacity: overlayOpacity,
+                                pointerEvents: "none",
+                              }}
+                            />
+                          ) : null}
+                          {!isFull && hasAM ? (
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                background: amColor,
+                                opacity: overlayOpacity,
+                                clipPath: "polygon(0 0, 100% 0, 0 100%)",
+                                pointerEvents: "none",
+                              }}
+                            />
+                          ) : null}
+                          {!isFull && hasPM ? (
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                background: pmColor,
+                                opacity: overlayOpacity,
+                                clipPath: "polygon(100% 0, 100% 100%, 0 100%)",
+                                pointerEvents: "none",
+                              }}
+                            />
+                          ) : null}
+                          {!isFull && (hasAM || hasPM) ? (
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                background: showGap ? diagGap : diagLine,
+                                pointerEvents: "none",
+                              }}
+                            />
+                          ) : null}
+
                           <span
                             aria-hidden="true"
                             style={{
@@ -1513,8 +1687,8 @@ function TimelineView({
       </div>
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 10, color: "var(--muted)", fontSize: 12, flexWrap: "wrap" }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 18, height: 10, background: fill, borderRadius: 6, display: "inline-block" }} />
-          {lang === "ro" ? "Rezervat (diagonal pentru check-in/out)" : "Booked (diagonal check-in/out)"}
+          <span style={{ width: 18, height: 10, background: manualColor, borderRadius: 6, display: "inline-block", opacity: overlayOpacity }} />
+          {lang === "ro" ? "Rezervat (culoare din platforma)" : "Booked (platform color)"}
         </span>
       </div>
     </section>
