@@ -196,7 +196,7 @@ const [country, setCountry] = useState<string>("");
       copyLink: "Copy the link",
       continueSetup: "Continue configuring",
       goToChannels: "Connect channels",
-      connectBookings: "Connect booking platforms",
+      connectBookings: "Connect Airbnb or Booking",
       deletePropertyQuestion: "Delete property?",
       deletePropertyWarning1: "This will permanently delete",
       deletePropertyWarning2: "Related rooms, bookings, and integrations may be removed.",
@@ -264,7 +264,7 @@ const [country, setCountry] = useState<string>("");
       copyLink: "Copiază linkul",
       continueSetup: "Continuă configurarea",
       goToChannels: "Conectează canalele",
-      connectBookings: "Conectează platformele de rezervări",
+      connectBookings: "Conectează Airbnb sau Booking",
       deletePropertyQuestion: "Stergi proprietatea?",
       deletePropertyWarning1: "Aceasta actiune va sterge permanent",
       deletePropertyWarning2: "Camerele, rezervarile si integrarile asociate pot fi eliminate.",
@@ -1477,10 +1477,6 @@ const [country, setCountry] = useState<string>("");
 		                  ×
 		                </button>
 		              </div>
-              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-                {t.guestsCanNowSubmit}
-              </div>
-
               {firstPropertyUnits.length > 0 && (
                 <div style={{ display: "grid", gap: 10, padding: 10, borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
@@ -1625,9 +1621,6 @@ const [country, setCountry] = useState<string>("");
                       >
                         {t.connectBookings}
                       </a>
-                      <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", textAlign: "center" }}>
-                        {t.guestsCanNowSubmit}
-                      </div>
                     </div>
                   )}
                 </div>
