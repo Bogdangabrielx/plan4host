@@ -442,9 +442,10 @@ const [country, setCountry] = useState<string>("");
       let createdUnits: { id: string; name: string; sort_index: number }[] = [];
       try {
         const count = unitMode === "multi" ? Math.max(2, parseInt(unitCount || "2", 10) || 2) : 1;
+        const singleUnitName = (name || "").trim() || "Unit 1";
         const roomRows = Array.from({ length: count }, (_, i) => ({
           property_id: createdId,
-          name: `Unit ${i + 1}`,
+          name: count === 1 ? singleUnitName : `Unit ${i + 1}`,
           sort_index: i,
         }));
         const { data: roomData } = await supabase
