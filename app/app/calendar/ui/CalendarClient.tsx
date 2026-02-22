@@ -108,6 +108,7 @@ export default function CalendarClient({
   const initDt = new Date(`${safeInitialDate}T00:00:00`);
 
   const [view, setView]   = useState<"year" | "month">("month");
+  const [monthDisplay, setMonthDisplay] = useState<"grid" | "timeline">("grid");
   const [year, setYear]   = useState<number>(initDt.getFullYear());
   const [month, setMonth] = useState<number>(initDt.getMonth()); // 0..11
   const [highlightDate, setHighlightDate] = useState<string | null>(safeInitialDate);
@@ -196,6 +197,9 @@ export default function CalendarClient({
   useEffect(() => {
     if (isSmall && view !== "month") setView("month");
   }, [isSmall, view]);
+  useEffect(() => {
+    if (view !== "month") setMonthDisplay("grid");
+  }, [view]);
 
   // Asigură că există o proprietate selectată (prima disponibilă) imediat ce state-ul e gata
   useEffect(() => {
@@ -242,8 +246,9 @@ export default function CalendarClient({
           .select("id,property_id,room_id,start_date,end_date,start_time,end_time,status")
           .eq("property_id", propertyId)
           .neq("status","cancelled")
-          .gte("start_date", from)
-          .lte("end_date", to)
+          // Include bookings that overlap the window (not only those fully inside it).
+          .lte("start_date", to)
+          .gte("end_date", from)
           .order("start_date", { ascending: true }),
       ]);
       if (seq !== loadSeqRef.current) return;
@@ -540,6 +545,20 @@ export default function CalendarClient({
           <button type="button" className="sb-btn  sb-btn--ghost sb-btn--small" onClick={() => setShowRoomView(true)} aria-label={lang === "ro" ? "Deschide camerele" : "Open room overview"}>
             {lang === "ro" ? "Camere" : "Room view"}
           </button>
+          <button
+            type="button"
+            className="sb-btn sb-btn--ghost sb-btn--small"
+            onClick={() => setMonthDisplay((m) => (m === "grid" ? "timeline" : "grid"))}
+            aria-label={lang === "ro" ? "Schimba afisarea" : "Toggle display"}
+            style={{
+              borderColor:
+                monthDisplay === "timeline"
+                  ? "color-mix(in srgb, var(--primary) 60%, var(--border))"
+                  : undefined,
+            }}
+          >
+            {monthDisplay === "timeline" ? "Timeline" : "Grid"}
+          </button>
         </div>
         <div style={{ flex: 1 }} />
       </div>
@@ -598,18 +617,30 @@ export default function CalendarClient({
         ))}
       </div>
 
-      {/* 🟢 MonthView în .modalCard cu trigger de mobil */}
-      <MonthView
-        lang={lang}
-        year={year}
-        month={month}
-        roomsCount={rooms.length}
-        occupancyMap={occupancyMap}
-        highlightDate={highlightDate}
-        isSmall={isSmall}
-        onDayClick={(dateStr) => setOpenDate(dateStr)}
-        animate={animateRing}
-      />
+      {monthDisplay === "timeline" ? (
+        <TimelineView
+          lang={lang}
+          year={year}
+          month={month}
+          isSmall={isSmall}
+          rooms={rooms}
+          bookings={bookings}
+          onDayClick={(dateStr) => setOpenDate(dateStr)}
+        />
+      ) : (
+        // 🟢 MonthView în .modalCard cu trigger de mobil
+        <MonthView
+          lang={lang}
+          year={year}
+          month={month}
+          roomsCount={rooms.length}
+          occupancyMap={occupancyMap}
+          highlightDate={highlightDate}
+          isSmall={isSmall}
+          onDayClick={(dateStr) => setOpenDate(dateStr)}
+          animate={animateRing}
+        />
+      )}
 
       {/* DayModal — only Month view */}
       {openDate && (
@@ -1204,6 +1235,248 @@ function MonthView({
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <span style={{ width: 6, height: 6, background: "var(--primary)", borderRadius: 999, display: "inline-block" }} />
           {lang === "ro" ? "Astazi" : "Today"}
+        </span>
+      </div>
+    </section>
+  );
+}
+
+/* ================== TIMELINE VIEW ================== */
+
+function TimelineView({
+  lang,
+  year,
+  month,
+  isSmall,
+  rooms,
+  bookings,
+  onDayClick,
+}: {
+  lang: Lang;
+  year: number;
+  month: number; // 0..11
+  isSmall: boolean;
+  rooms: Room[];
+  bookings: Booking[];
+  onDayClick: (dateStr: string) => void;
+}) {
+  const dim = daysInMonth(year, month);
+  const monthFirst = `${year}-${pad(month + 1)}-01`;
+  const monthLast = `${year}-${pad(month + 1)}-${pad(dim)}`;
+
+  const labelW = isSmall ? 120 : 180;
+  const cellW = isSmall ? 18 : 22;
+  const rowH = isSmall ? 32 : 36;
+  const gridW = dim * cellW;
+
+  const days: string[] = [];
+  for (let d = 1; d <= dim; d++) days.push(`${year}-${pad(month + 1)}-${pad(d)}`);
+
+  const bookingsByRoom = useMemo(() => {
+    const map = new Map<string, Booking[]>();
+    for (const b of bookings) {
+      if (!b.room_id) continue;
+      if (!map.has(b.room_id)) map.set(b.room_id, []);
+      map.get(b.room_id)!.push(b);
+    }
+    for (const [rid, list] of map) {
+      list.sort((a, b) => (a.start_date < b.start_date ? -1 : a.start_date > b.start_date ? 1 : 0));
+      map.set(rid, list);
+    }
+    return map;
+  }, [bookings]);
+
+  const fill = "color-mix(in srgb, var(--success, #22c55e) 72%, var(--card))";
+  const border = "color-mix(in srgb, var(--border) 72%, transparent)";
+
+  function dayIndex(dateStr: string): number {
+    const n = parseInt(dateStr.slice(8, 10), 10);
+    return Math.max(0, Math.min(dim - 1, n - 1));
+  }
+
+  function clipPathFor(widthPx: number, clipLeft: boolean, clipRight: boolean): string {
+    if (widthPx <= 0) return "inset(0)";
+    const maxSlant = Math.max(0, Math.floor(widthPx / 2) - 1);
+    const slant = Math.max(6, Math.min(Math.round(cellW * 0.45), maxSlant));
+    if (clipLeft && clipRight) return "polygon(0 0, 100% 0, 100% 100%, 0 100%)";
+    if (clipLeft) return `polygon(0 0, 100% 0, calc(100% - ${slant}px) 100%, 0 100%)`; // end '\\'
+    if (clipRight) return `polygon(${slant}px 0, 100% 0, 100% 100%, 0 100%)`;        // start '/'
+    return `polygon(${slant}px 0, 100% 0, calc(100% - ${slant}px) 100%, 0 100%)`;     // '/ ... \\'
+  }
+
+  return (
+    <section className="modalCard sb-cardglow" style={{ padding: 12 }}>
+      <div style={{ overflowX: "auto", overflowY: "hidden", WebkitOverflowScrolling: "touch" }}>
+        <div style={{ minWidth: labelW + gridW }}>
+          {/* header (day numbers) */}
+          <div style={{ display: "grid", gridTemplateColumns: `${labelW}px ${gridW}px`, gap: 0, marginBottom: 6 }}>
+            <div
+              style={{
+                position: "sticky",
+                left: 0,
+                zIndex: 3,
+                background: "var(--panel)",
+                border: `1px solid ${border}`,
+                borderRight: "none",
+                borderRadius: 10,
+                borderTopRightRadius: 0,
+                borderBottomRightRadius: 0,
+                height: rowH,
+                display: "flex",
+                alignItems: "center",
+                paddingInline: 10,
+                fontWeight: 800,
+                color: "var(--muted)",
+              }}
+            >
+              {lang === "ro" ? "Unități" : "Units"}
+            </div>
+            <div
+              style={{
+                border: `1px solid ${border}`,
+                borderLeft: "none",
+                borderRadius: 10,
+                borderTopLeftRadius: 0,
+                borderBottomLeftRadius: 0,
+                height: rowH,
+                display: "grid",
+                gridTemplateColumns: `repeat(${dim}, ${cellW}px)`,
+                alignItems: "center",
+                background: "var(--panel)",
+              }}
+            >
+              {days.map((ds) => (
+                <div
+                  key={ds}
+                  style={{
+                    textAlign: "center",
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: "var(--muted)",
+                    lineHeight: 1,
+                  }}
+                >
+                  {parseInt(ds.slice(8, 10), 10)}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* rows */}
+          <div style={{ display: "grid", gap: 6 }}>
+            {rooms.map((r) => {
+              const roomBookings = bookingsByRoom.get(r.id) ?? [];
+              return (
+                <div key={r.id} style={{ display: "grid", gridTemplateColumns: `${labelW}px ${gridW}px`, gap: 0 }}>
+                  <div
+                    style={{
+                      position: "sticky",
+                      left: 0,
+                      zIndex: 2,
+                      background: "var(--panel)",
+                      border: `1px solid ${border}`,
+                      borderRight: "none",
+                      borderRadius: 10,
+                      borderTopRightRadius: 0,
+                      borderBottomRightRadius: 0,
+                      height: rowH,
+                      display: "flex",
+                      alignItems: "center",
+                      paddingInline: 10,
+                      fontWeight: 800,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                    title={r.name}
+                  >
+                    {r.name}
+                  </div>
+                  <div
+                    style={{
+                      position: "relative",
+                      height: rowH,
+                      border: `1px solid ${border}`,
+                      borderLeft: "none",
+                      borderRadius: 10,
+                      borderTopLeftRadius: 0,
+                      borderBottomLeftRadius: 0,
+                      overflow: "hidden",
+                      background: "var(--card)",
+                    }}
+                  >
+                    {/* day hit targets */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "grid",
+                        gridTemplateColumns: `repeat(${dim}, ${cellW}px)`,
+                        zIndex: 1,
+                      }}
+                    >
+                      {days.map((ds) => (
+                        <button
+                          key={ds}
+                          type="button"
+                          onClick={() => onDayClick(ds)}
+                          title={ds}
+                          style={{
+                            width: cellW,
+                            height: "100%",
+                            padding: 0,
+                            border: 0,
+                            background: "transparent",
+                            borderRight: `1px solid ${border}`,
+                            cursor: "pointer",
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* booking bars */}
+                    <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none" }}>
+                      {roomBookings.map((b) => {
+                        const start = b.start_date < monthFirst ? monthFirst : b.start_date;
+                        const end = b.end_date > monthLast ? monthLast : b.end_date;
+                        const startIdx = dayIndex(start);
+                        const endIdx = dayIndex(end);
+                        if (endIdx < startIdx) return null;
+                        const left = startIdx * cellW;
+                        const width = (endIdx - startIdx + 1) * cellW;
+                        const clipLeft = b.start_date < monthFirst;
+                        const clipRight = b.end_date > monthLast;
+                        return (
+                          <div
+                            key={b.id}
+                            aria-hidden="true"
+                            style={{
+                              position: "absolute",
+                              left,
+                              top: 4,
+                              height: rowH - 8,
+                              width,
+                              background: fill,
+                              border: `1px solid color-mix(in srgb, var(--success, #22c55e) 55%, var(--border))`,
+                              borderRadius: 8,
+                              clipPath: clipPathFor(width, clipLeft, clipRight),
+                              opacity: 0.95,
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 10, color: "var(--muted)", fontSize: 12, flexWrap: "wrap" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 18, height: 10, background: fill, borderRadius: 6, display: "inline-block" }} />
+          {lang === "ro" ? "Rezervat (check-in / check-out pe diagonală)" : "Booked (diagonal check-in / check-out)"}
         </span>
       </div>
     </section>
