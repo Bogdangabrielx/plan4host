@@ -1424,7 +1424,7 @@ function TimelineView({
   const overlayOpacity = 0.22;
   const border = "color-mix(in srgb, var(--border) 86%, transparent)";
   // Diagonal divider should be invisible (use fills only).
-  const diag = "var(--card)";
+  const diag = "var(--text)";
   const bg = "var(--card)";
   const empty = "color-mix(in srgb, var(--panel) 65%, transparent)";
 
