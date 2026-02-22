@@ -1423,7 +1423,8 @@ function TimelineView({
   const manualColor = "#6CCC4C";
   const overlayOpacity = 0.22;
   const border = "color-mix(in srgb, var(--border) 86%, transparent)";
-  const diag = "color-mix(in srgb, var(--border) 92%, transparent)";
+  // Diagonal line must match text color (not muted/border).
+  const diag = "var(--text)";
   const bg = "var(--card)";
   const empty = "color-mix(in srgb, var(--panel) 65%, transparent)";
 
