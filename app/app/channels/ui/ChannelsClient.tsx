@@ -2244,32 +2244,6 @@ function TargetFeedCard({
     );
   }
 
-  function ActiveCheck() {
-    // Status checkmark shown for both active and inactive; color follows status text.
-    // (User preference: keep the same icon, but make it muted when inactive.)
-    return (
-      <span
-        aria-hidden
-        style={{
-          width: 16,
-          height: 16,
-          borderRadius: 999,
-          border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
-          background: "color-mix(in srgb, var(--success) 18%, transparent)",
-          display: "grid",
-          placeItems: "center",
-          color: "var(--success)",
-          fontWeight: 900,
-          fontSize: 11,
-          lineHeight: 1,
-          flex: "0 0 auto",
-        }}
-      >
-        ✓
-      </span>
-    );
-  }
-
   function StatusCheck({ active }: { active: boolean }) {
     const col = active ? "var(--success)" : "var(--muted)";
     return (
@@ -2329,90 +2303,84 @@ function TargetFeedCard({
             const swatch = (f.color || providerDefaultColor(f.provider)) as string;
             const builtinLogo = providerBuiltinLogo(f.provider);
             const logoSrc = (f.logo_url || builtinLogo || "") as string;
-            return (
+	            return (
               <div
                 key={f.id}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr auto",
-                  gap: 10,
-                  alignItems: "center",
+                  gap: 8,
+                  alignItems: "start",
                   padding: "10px 10px",
                   borderRadius: 14,
                   border: "1px solid var(--border)",
                   background: "color-mix(in srgb, var(--card) 86%, transparent)",
                 }}
               >
-                <div style={{ minWidth: 0, display: "grid", gap: 4 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flex: "1 1 auto" }}>
-                      <span
-                        aria-hidden
-                        title={swatch || ""}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                    <span
+                      aria-hidden
+                      title={swatch || ""}
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 999,
+                        border: "1px solid var(--border)",
+                        background: swatch || "transparent",
+                        display: "inline-block",
+                        flex: "0 0 auto",
+                      }}
+                    />
+                    {logoSrc ? (
+                      <img
+                        src={logoSrc}
+                        alt=""
+                        width={18}
+                        height={18}
                         style={{
-                          width: 10,
-                          height: 10,
+                          width: 18,
+                          height: 18,
                           borderRadius: 999,
-                          border: "1px solid var(--border)",
-                          background: swatch || "transparent",
-                          display: "inline-block",
+                          objectFit: "contain",
                           flex: "0 0 auto",
                         }}
                       />
-                      {logoSrc ? (
-                        <img
-                          src={logoSrc}
-                          alt=""
-                          width={18}
-                          height={18}
-                          style={{
-                            width: 18,
-                            height: 18,
-                            borderRadius: 999,
-                            objectFit: "contain",
-                            flex: "0 0 auto",
-                          }}
-                        />
-                      ) : null}
-                      <span
-                        style={{
-                          fontWeight: 900,
-                          minWidth: 0,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {provider}
-                      </span>
-                    </div>
+                    ) : null}
                     <span
                       style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        flex: "0 0 auto",
+                        fontWeight: 900,
+                        minWidth: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        color: active ? "var(--success)" : "var(--muted)",
-                        fontSize: 12,
-                        fontWeight: 800,
                       }}
                     >
-                      <StatusCheck active={active} />
-                      {active ? (lang === "ro" ? "Activ" : "Active") : (lang === "ro" ? "Inactiv" : "Inactive")}
+                      {provider}
                     </span>
                   </div>
-                  <div style={{ color: "var(--muted)", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {f.url}
-                  </div>
-                  {f.last_sync ? (
-                    <div style={{ color: "var(--muted)", fontSize: 11 }}>
-                      {lang === "ro" ? "Ultima sincronizare: " : "Last synced: "}
-                      {new Date(f.last_sync).toLocaleString()}
-                    </div>
-                  ) : null}
+
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      whiteSpace: "nowrap",
+                      flex: "0 0 auto",
+                      color: active ? "var(--success)" : "var(--muted)",
+                      fontSize: 12,
+                      fontWeight: 800,
+                    }}
+                  >
+                    <StatusCheck active={active} />
+                    {active ? (lang === "ro" ? "Activ" : "Active") : (lang === "ro" ? "Inactiv" : "Inactive")}
+                  </span>
                 </div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+
+                <div style={{ color: "var(--muted)", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {f.url}
+                </div>
+
+                <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "flex-end" }}>
                   <button
                     className="sb-btn sb-btn--icon"
                     type="button"
@@ -2475,6 +2443,13 @@ function TargetFeedCard({
                     🗑
                   </button>
                 </div>
+
+                {f.last_sync ? (
+                  <div style={{ color: "var(--muted)", fontSize: 11 }}>
+                    {lang === "ro" ? "Ultima sincronizare: " : "Last synced: "}
+                    {new Date(f.last_sync).toLocaleString()}
+                  </div>
+                ) : null}
               </div>
             );
           })
