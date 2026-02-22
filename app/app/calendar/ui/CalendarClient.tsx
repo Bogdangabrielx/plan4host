@@ -315,7 +315,7 @@ export default function CalendarClient({
         setHasLoadedRooms(true);
       }
     })();
-  }, [propertyId, view, year, month, supabase, refreshToken]);
+  }, [propertyReady, propertyId, view, year, month, supabase, refreshToken]);
   // If the selected property has no rooms yet, guide the user with a custom popup
   useEffect(() => {
     if (!propertyId) return;
