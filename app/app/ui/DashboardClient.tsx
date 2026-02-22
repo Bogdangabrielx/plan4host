@@ -98,6 +98,7 @@ const [country, setCountry] = useState<string>("");
   const [firstPropertyUnitSaving, setFirstPropertyUnitSaving] = useState(false);
   const [firstPropertyUnitError, setFirstPropertyUnitError] = useState<string | null>(null);
   const [firstPropertySkippedPhoto, setFirstPropertySkippedPhoto] = useState(false);
+  const [firstPropertyUnitsEditing, setFirstPropertyUnitsEditing] = useState(false);
   const tr = {
     en: {
       dashboard: "Dashboard",
@@ -142,6 +143,11 @@ const [country, setCountry] = useState<string>("");
       unitMulti: "Multiple units",
       unitsExample: "e.g. 3",
       numberOfUnits: "Number of units",
+      unitOrganizedTitle: "How is your property organized?",
+      unitOrganizedSubtitle: "Does your property have one unit or multiple?",
+      unitUseSingle: "Use single unit",
+      unitSetUp: "Set up units",
+      unitReadySync: "Ready for sync",
       continue: "Activate the property",
       propertyPhotoOptional: "This image appears on the page your guests fill out before arrival.",
       changePhoto: "Change photo",
@@ -205,6 +211,11 @@ const [country, setCountry] = useState<string>("");
       unitMulti: "Mai multe unități",
       unitsExample: "ex. 3",
       numberOfUnits: "Număr de unități",
+      unitOrganizedTitle: "Cum este organizată proprietatea?",
+      unitOrganizedSubtitle: "Are o singură unitate sau mai multe?",
+      unitUseSingle: "Folosește o singură unitate",
+      unitSetUp: "Configurează unitățile",
+      unitReadySync: "Gata de sincronizare",
       continue: "Activează proprietatea",
       propertyPhotoOptional: "Această imagine apare în pagina pe care oaspeții o completează înainte de sosire.",
       changePhoto: "Schimba poza",
@@ -452,6 +463,7 @@ const [country, setCountry] = useState<string>("");
       setFirstPropertyCopied(false);
       setFirstPropertyPhoto(null);
       setFirstPropertySkippedPhoto(false);
+      setFirstPropertyUnitsEditing(false);
       setName("");
       setCountry("");
       setPropertyType("");
@@ -547,6 +559,7 @@ const [country, setCountry] = useState<string>("");
           return acc;
         }, {})
       );
+      setFirstPropertyUnitsEditing(false);
     } catch (e: any) {
       setFirstPropertyUnitError(e?.message || t.couldNotCreateProperty);
     } finally {
@@ -1103,30 +1116,67 @@ const [country, setCountry] = useState<string>("");
                 )}
 
                 {propertyType && (
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <label style={{ display: "block" }}>{t.unitMode}</label>
-                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                      {(["single", "multi"] as const).map((mode) => (
-                        <button
-                          key={mode}
-                          type="button"
-                          onClick={() => setUnitMode(mode)}
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <div style={{ textAlign: "center", display: "grid", gap: 4 }}>
+                      <div style={{ fontWeight: 800, textTransform: "uppercase", letterSpacing: ".08em", fontSize: "var(--fs-s)" }}>
+                        {t.unitOrganizedTitle}
+                      </div>
+                      <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)" }}>
+                        {t.unitOrganizedSubtitle}
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {[{ mode: "single", icon: "/svg_singleunit_demo.svg", title: t.unitSingle, desc: "Apartment, cabin, or entire place rented as one unit." },
+                        { mode: "multi", icon: "/svg_multipleunits_demo.svg", title: t.unitMulti, desc: "Guesthouse or hotel with separate units." }].map((opt) => (
+                        <div
+                          key={opt.mode}
                           style={{
-                            padding: "10px 14px",
-                            borderRadius: 12,
-                            border: unitMode === mode ? "2px solid var(--primary)" : "1px solid var(--border)",
-                            background: unitMode === mode ? "color-mix(in srgb, var(--primary) 16%, transparent)" : "var(--card)",
-                            color: "var(--text)",
-                            fontWeight: 800,
-                            cursor: "pointer",
+                            display: "grid",
+                            gridTemplateColumns: "1fr auto",
+                            alignItems: "center",
+                            gap: 12,
+                            padding: 12,
+                            borderRadius: 14,
+                            border: unitMode === opt.mode ? "2px solid var(--primary)" : "1px solid var(--border)",
+                            background: "color-mix(in srgb, var(--card) 92%, transparent)",
                           }}
                         >
-                          {mode === "single" ? t.unitSingle : t.unitMulti}
-                        </button>
+                          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                            <img src={opt.icon} alt="" width={46} height={46} style={{ width: 46, height: 46, objectFit: "contain" }} />
+                            <div>
+                              <div style={{ fontWeight: 800 }}>{opt.title}</div>
+                              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)" }}>{opt.desc}</div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="sb-btn sb-btn--primary"
+                            style={{
+                              minWidth: 140,
+                              borderRadius: 999,
+                              background: "var(--primary)",
+                              color: "#fff",
+                              fontWeight: 800,
+                              border: "1px solid var(--primary)",
+                            }}
+                            onClick={() => {
+                              setUnitMode(opt.mode as "single" | "multi");
+                              if (opt.mode === "single") {
+                                setUnitCount("1");
+                              } else {
+                                setUnitCount((prev) => (Number(prev) >= 2 ? prev : "2"));
+                              }
+                            }}
+                          >
+                            {opt.mode === "single" ? t.unitUseSingle : t.unitSetUp}
+                          </button>
+                        </div>
                       ))}
                     </div>
+
                     {unitMode === "multi" && (
-                      <div style={{ marginTop: 6, display: "grid", gap: 6 }}>
+                      <div style={{ marginTop: 4, display: "grid", gap: 6 }}>
                         <label style={{ display: "block" }}>{t.numberOfUnits}</label>
                         <input
                           type="number"
@@ -1134,7 +1184,7 @@ const [country, setCountry] = useState<string>("");
                           inputMode="numeric"
                           value={unitCount}
                           onChange={(e) => setUnitCount(e.currentTarget.value)}
-                          style={{ ...FIELD_STYLE, maxWidth: 140 }}
+                          style={{ ...FIELD_STYLE, maxWidth: 160 }}
                           placeholder="2"
                         />
                         <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
@@ -1386,6 +1436,7 @@ const [country, setCountry] = useState<string>("");
                     setFirstPropertyUnits([]);
                     setFirstPropertyUnitDrafts({});
                     setFirstPropertyUnitError(null);
+                    setFirstPropertyUnitsEditing(false);
                   }}
 		                >
 		                  ×
@@ -1397,47 +1448,152 @@ const [country, setCountry] = useState<string>("");
 
               {firstPropertyUnits.length > 0 && (
                 <div style={{ display: "grid", gap: 10, padding: 10, borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
-                  <div style={{ fontWeight: 800, textTransform: "uppercase", fontSize: "var(--fs-s)", letterSpacing: ".08em", color: "var(--muted)" }}>
-                    {t.unitsCreated}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <div style={{ fontWeight: 800, textTransform: "uppercase", fontSize: "var(--fs-s)", letterSpacing: ".08em", color: "var(--muted)" }}>
+                      {t.unitsCreated}
+                    </div>
+                    {!firstPropertyUnitsEditing ? (
+                      <button
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          color: "var(--primary)",
+                          fontWeight: 700,
+                          textDecoration: "underline",
+                          textUnderlineOffset: 4,
+                          cursor: "pointer",
+                          padding: 0,
+                        }}
+                        onClick={() => {
+                          setFirstPropertyUnitDrafts(() =>
+                            firstPropertyUnits.reduce<Record<string, string>>((acc, u) => {
+                              acc[u.id] = u.name || "";
+                              return acc;
+                            }, {})
+                          );
+                          setFirstPropertyUnitsEditing(true);
+                        }}
+                      >
+                        {t.editUnitNames}
+                      </button>
+                    ) : null}
                   </div>
+
                   <div style={{ display: "grid", gap: 8 }}>
                     {firstPropertyUnits
                       .slice()
                       .sort((a, b) => (a.sort_index ?? 0) - (b.sort_index ?? 0))
-                      .map((u) => (
-                        <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <span style={{ color: "var(--muted)", fontSize: "var(--fs-s)", width: 64 }}>{u.name}</span>
-                          <input
-                            value={(firstPropertyUnitDrafts[u.id] ?? u.name ?? "").toString()}
-                            onChange={(e) =>
-                              setFirstPropertyUnitDrafts((prev) => ({ ...prev, [u.id]: e.currentTarget.value }))
-                            }
-                            style={{
-                              flex: 1,
-                              padding: 10,
-                              background: "var(--card)",
-                              color: "var(--text)",
-                              border: "1px solid var(--border)",
-                              borderRadius: 10,
-                              fontFamily: "inherit",
-                            }}
-                          />
-                        </div>
-                      ))}
+                      .map((u) => {
+                        const draft = (firstPropertyUnitDrafts[u.id] ?? u.name ?? "").toString();
+                        return (
+                          <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <img src={isDark ? "/room_fordark.png" : "/room_forlight.png"} alt="" width={18} height={18} />
+                              {firstPropertyUnitsEditing ? (
+                                <input
+                                  value={draft}
+                                  onChange={(e) =>
+                                    setFirstPropertyUnitDrafts((prev) => ({ ...prev, [u.id]: e.currentTarget.value }))
+                                  }
+                                  style={{
+                                    padding: 8,
+                                    minWidth: 140,
+                                    background: "var(--card)",
+                                    color: "var(--text)",
+                                    border: "1px solid var(--border)",
+                                    borderRadius: 10,
+                                    fontFamily: "inherit",
+                                  }}
+                                />
+                              ) : (
+                                <span style={{ fontWeight: 700 }}>{u.name}</span>
+                              )}
+                            </div>
+                            {!firstPropertyUnitsEditing ? (
+                              <span style={{ color: "var(--muted)", fontSize: "var(--fs-s)", display: "flex", alignItems: "center", gap: 6 }}>
+                                {t.unitReadySync}
+                                <span
+                                  aria-hidden
+                                  style={{
+                                    width: 18,
+                                    height: 18,
+                                    borderRadius: 999,
+                                    border: "1px solid color-mix(in srgb, var(--success) 80%, transparent)",
+                                    background: "color-mix(in srgb, var(--success) 16%, var(--card))",
+                                    display: "grid",
+                                    placeItems: "center",
+                                    color: "color-mix(in srgb, var(--success) 90%, var(--text))",
+                                    fontWeight: 900,
+                                    fontSize: 12,
+                                  }}
+                                >
+                                  ✓
+                                </span>
+                              </span>
+                            ) : null}
+                          </div>
+                        );
+                      })}
                   </div>
+
                   {firstPropertyUnitError && (
                     <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", textAlign: "center" }}>
                       {firstPropertyUnitError}
                     </div>
                   )}
-                  <button
-                    className="sb-btn sb-cardglow"
-                    style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
-                    disabled={firstPropertyUnitSaving}
-                    onClick={() => void saveFirstPropertyUnits()}
-                  >
-                    {t.editUnitNames}
-                  </button>
+
+                  {firstPropertyUnitsEditing ? (
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <button
+                        className="sb-btn sb-cardglow"
+                        style={{ flex: 1, minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+                        disabled={firstPropertyUnitSaving}
+                        onClick={() => void saveFirstPropertyUnits()}
+                      >
+                        {t.save}
+                      </button>
+                      <button
+                        className="sb-btn"
+                        style={{ flex: 1, minHeight: 44, borderRadius: 999 }}
+                        onClick={() => {
+                          setFirstPropertyUnitDrafts(() =>
+                            firstPropertyUnits.reduce<Record<string, string>>((acc, u) => {
+                              acc[u.id] = u.name || "";
+                              return acc;
+                            }, {})
+                          );
+                          setFirstPropertyUnitsEditing(false);
+                          setFirstPropertyUnitError(null);
+                        }}
+                      >
+                        {t.cancel}
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display: "grid", gap: 8 }}>
+                      <a
+                        className="sb-btn sb-cardglow"
+                        style={{
+                          width: "100%",
+                          minHeight: 44,
+                          borderRadius: 999,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: "var(--fw-medium)",
+                          border: "1px solid var(--primary)",
+                          background: "color-mix(in srgb, var(--primary) 18%, transparent)",
+                          color: "var(--text)",
+                        }}
+                        href="/app/channels"
+                      >
+                        {t.connectBookings}
+                      </a>
+                      <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", textAlign: "center" }}>
+                        {t.guestsCanNowSubmit}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1455,11 +1611,11 @@ const [country, setCountry] = useState<string>("");
                 >
                   {t.viewGuestLink}
                 </button>
-	                <button
-	                  className="sb-btn"
-	                  style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
-	                  onClick={async () => {
-	                    try {
+                <button
+                  className="sb-btn"
+                  style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
+                  onClick={async () => {
+                    try {
 	                      await navigator.clipboard.writeText(firstPropertyResult.link);
 	                      setFirstPropertyCopied(true);
 	                      window.setTimeout(() => setFirstPropertyCopied(false), 1000);
@@ -1470,26 +1626,6 @@ const [country, setCountry] = useState<string>("");
                 >
                   {firstPropertyCopied ? t.copied : t.copyLink}
                 </button>
-                <div style={{ display: "grid", gap: 8 }}>
-                <a
-                  className="sb-btn sb-cardglow"
-                  style={{
-                    width: "100%",
-                    minHeight: 44,
-                    borderRadius: 999,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: "var(--fw-medium)",
-                    border: "1px solid var(--primary)",
-                    background: "transparent",
-                    color: "var(--text)",
-                  }}
-                  href="/app/channels"
-                >
-                  {t.connectBookings}
-                </a>
-              </div>
                 <a
                   href={firstPropertyResult.link}
                   target="_blank"
