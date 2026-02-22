@@ -49,6 +49,8 @@ export default function LoginClient({
   const tr = {
     en: {
       welcome: "Welcome to Plan4Host",
+      quoteLine1: "My wish is that this platform helps your business grow —",
+      quoteLine2: "and gives you back what money can’t buy: your time.",
       signIn: "Sign in",
       createAccount: "Create account",
       signingIn: "Signing in...",
@@ -90,6 +92,8 @@ export default function LoginClient({
     },
     ro: {
       welcome: "Bine ai venit in Plan4Host",
+      quoteLine1: "Dorinta mea este ca aceasta platforma sa-ti ajute afacerea sa creasca —",
+      quoteLine2: "si sa-ti ofere inapoi ce banii nu pot cumpara: timpul tau.",
       signIn: "Autentificare",
       createAccount: "Creeaza cont",
       signingIn: "Se autentifica...",
@@ -383,17 +387,17 @@ export default function LoginClient({
         <div style={quoteWrap}>
           <div style={quoteText}>
             <span style={{ display: "block" }}>
-              “My wish is that this platform helps your business grow —
+              “{t.quoteLine1}
             </span>
             <span style={{ display: "block" }}>
-              and gives you back what money can’t buy: your time.”
+              {t.quoteLine2}”
             </span>
           </div>
           <div style={quoteAuthorWrap}>
             <img src="/founder.jpg" alt="" width={34} height={34} style={quoteAuthorAvatar} />
             <div style={quoteAuthorText}>
               <span style={{ display: "block" }}>— Bogdan E.</span>
-              <span style={{ display: "block" }}>Founder of Plan4Host</span>
+              <span style={{ display: "block" }}>{lang === "ro" ? "Fondator Plan4Host" : "Founder of Plan4Host"}</span>
             </div>
           </div>
         </div>
