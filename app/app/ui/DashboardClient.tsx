@@ -93,6 +93,11 @@ const [country, setCountry] = useState<string>("");
   const firstPropertyLoadingTimerRef = useRef<number | null>(null);
   const firstPropertyLoadingIntervalRef = useRef<number | null>(null);
   const [firstPropertyError, setFirstPropertyError] = useState<string | null>(null);
+  const [firstPropertyUnits, setFirstPropertyUnits] = useState<{ id: string; name: string; sort_index: number }[]>([]);
+  const [firstPropertyUnitDrafts, setFirstPropertyUnitDrafts] = useState<Record<string, string>>({});
+  const [firstPropertyUnitSaving, setFirstPropertyUnitSaving] = useState(false);
+  const [firstPropertyUnitError, setFirstPropertyUnitError] = useState<string | null>(null);
+  const [firstPropertySkippedPhoto, setFirstPropertySkippedPhoto] = useState(false);
   const tr = {
     en: {
       dashboard: "Dashboard",
@@ -104,6 +109,8 @@ const [country, setCountry] = useState<string>("");
       loadingLine1: "This is what your guests will see before arrival.",
       loadingLine2: "Creating guest check-in link…",
       loadingLine3: "Final touches…",
+      unitsCreated: "Units created",
+      editUnitNames: "Edit unit names",
       couldNotCreateProperty: "Could not create property.",
       copyThisLink: "Copy this link:",
       onlyPdfAllowed: "Only PDF files are allowed.",
@@ -165,6 +172,8 @@ const [country, setCountry] = useState<string>("");
       loadingLine1: "Asta este experienta pe care o vor vedea oaspetii inainte de sosire.",
       loadingLine2: "Se creeaza linkul de check-in…",
       loadingLine3: "Ultimele ajustari…",
+      unitsCreated: "Unitati create",
+      editUnitNames: "Redenumește unitățile",
       couldNotCreateProperty: "Proprietatea nu a putut fi creata.",
       copyThisLink: "Copiaza acest link:",
       onlyPdfAllowed: "Sunt permise doar fisiere PDF.",
@@ -385,7 +394,7 @@ const [country, setCountry] = useState<string>("");
       if (!createdId) throw new Error(t.couldNotCreateProperty);
 
       // Create default rooms based on unitMode selection (only for onboarding wizard)
-      let createdUnits: string[] = [];
+      let createdUnits: { id: string; name: string; sort_index: number }[] = [];
       try {
         const count = unitMode === "multi" ? Math.max(2, parseInt(unitCount || "2", 10) || 2) : 1;
         const roomRows = Array.from({ length: count }, (_, i) => ({
@@ -393,8 +402,23 @@ const [country, setCountry] = useState<string>("");
           name: `Unit ${i + 1}`,
           sort_index: i,
         }));
-        await supabase.from("rooms").insert(roomRows as any);
-        createdUnits = roomRows.map((r) => r.name);
+        const { data: roomData } = await supabase
+          .from("rooms")
+          .insert(roomRows as any)
+          .select("id,name,sort_index")
+          .order("sort_index", { ascending: true });
+        createdUnits = (roomData ?? []).map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          sort_index: r.sort_index ?? 0,
+        }));
+        setFirstPropertyUnits(createdUnits);
+        setFirstPropertyUnitDrafts(() =>
+          (createdUnits ?? []).reduce<Record<string, string>>((acc, u) => {
+            acc[u.id] = u.name || "";
+            return acc;
+          }, {})
+        );
       } catch (e) {
         console.error("Failed to create default rooms", e);
       }
@@ -424,9 +448,10 @@ const [country, setCountry] = useState<string>("");
       if (remaining) await wait(remaining);
 
       const link = buildPropertyCheckinLink({ id: createdId } as Property);
-      setFirstPropertyResult({ propertyId: createdId, link, units: createdUnits });
+      setFirstPropertyResult({ propertyId: createdId, link, units: createdUnits.map((u) => u.name) });
       setFirstPropertyCopied(false);
       setFirstPropertyPhoto(null);
+      setFirstPropertySkippedPhoto(false);
       setName("");
       setCountry("");
       setPropertyType("");
@@ -494,6 +519,38 @@ const [country, setCountry] = useState<string>("");
     } catch (e) {
       console.error(e);
       setStatus('Error');
+    }
+  }
+
+  async function saveFirstPropertyUnits() {
+    if (!firstPropertyResult?.propertyId || !firstPropertyUnits.length) return;
+    setFirstPropertyUnitError(null);
+    setFirstPropertyUnitSaving(true);
+    try {
+      for (const u of firstPropertyUnits) {
+        const next = (firstPropertyUnitDrafts[u.id] ?? u.name ?? "").toString().trim() || u.name;
+        if (next === u.name) continue;
+        const { error } = await supabase.from("rooms").update({ name: next }).eq("id", u.id);
+        if (error) throw error;
+      }
+      // refresh local list
+      const { data } = await supabase
+        .from("rooms")
+        .select("id,name,sort_index")
+        .eq("property_id", firstPropertyResult.propertyId)
+        .order("sort_index", { ascending: true });
+      const refreshed = (data ?? []).map((r: any) => ({ id: r.id, name: r.name, sort_index: r.sort_index ?? 0 }));
+      setFirstPropertyUnits(refreshed);
+      setFirstPropertyUnitDrafts(() =>
+        refreshed.reduce<Record<string, string>>((acc, u) => {
+          acc[u.id] = u.name || "";
+          return acc;
+        }, {})
+      );
+    } catch (e: any) {
+      setFirstPropertyUnitError(e?.message || t.couldNotCreateProperty);
+    } finally {
+      setFirstPropertyUnitSaving(false);
     }
   }
 
@@ -968,18 +1025,19 @@ const [country, setCountry] = useState<string>("");
 		                </div>
 		              </div>
 		              <button
-		                aria-label={t.close}
-		                className="sb-btn sb-cardglow sb-btn--icon"
-		                style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
-		                onClick={() => {
-		                  setShowFirstPropertyGuide(false);
-		                  setFirstPropertyStep(0);
-		                  setFirstPropertyPhoto(null);
-		                }}
-		              >
-		                ×
-		              </button>
-		            </div>
+                aria-label={t.close}
+                className="sb-btn sb-cardglow sb-btn--icon"
+                style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
+                onClick={() => {
+                  setShowFirstPropertyGuide(false);
+                  setFirstPropertyStep(0);
+                  setFirstPropertyPhoto(null);
+                  setFirstPropertySkippedPhoto(false);
+                }}
+              >
+                ×
+              </button>
+            </div>
 
 		            {firstPropertyStep === 1 ? (
 		              <div style={{ display: "grid", gap: 12 }}>
@@ -1096,134 +1154,153 @@ const [country, setCountry] = useState<string>("");
                       background: "transparent",
                       color: "var(--text)",
                       borderRadius: 999,
-		                      fontWeight: "var(--fw-medium)",
-		                    }}
-		                    onClick={() => setFirstPropertyStep(2)}
-		                  >
-		                    {t.continue}
-		                  </button>
-		                </div>
+                      fontWeight: "var(--fw-medium)",
+                    }}
+                    onClick={() => {
+                      setFirstPropertySkippedPhoto(false);
+                      setFirstPropertyPhoto(null);
+                      setFirstPropertyStep(2);
+                    }}
+                  >
+                    {t.continue}
+                  </button>
+                </div>
 		              </div>
 	            ) : (
 	              <div style={{ display: "grid", gap: 12 }}>
 		                <div style={{ display: "grid", gap: 6 }}>
-		                  <label style={{ display: "block" }}>{t.propertyPhotoOptional}</label>
-	                  <input
-	                    ref={firstPropertyPhotoInputRef}
-	                    type="file"
-	                    accept="image/*"
-	                    style={{ display: "none" }}
-	                    onChange={(e) => setFirstPropertyPhoto(e.currentTarget.files?.[0] ?? null)}
-	                  />
-			                  <button
-			                    type="button"
-			                    className="sb-btn sb-btn--primary sb-cardglow"
-			                    style={{
-			                      width: "100%",
-			                      minHeight: 44,
-			                      borderRadius: 999,
-			                      border: "1px solid var(--primary)",
-			                      background: "var(--primary)",
-			                      color: "#fff",
-			                      display: "inline-flex",
-			                      alignItems: "center",
-			                      justifyContent: "center",
-			                      gap: 10,
-			                      fontWeight: 800,
-			                    }}
-			                    onClick={() => firstPropertyPhotoInputRef.current?.click()}
-			                  >
-			                    <span aria-hidden style={{ display: "grid", placeItems: "center" }}>
-			                      <svg
-			                        width="18"
-			                        height="18"
-			                        viewBox="0 0 24 24"
-			                        fill="none"
-			                        xmlns="http://www.w3.org/2000/svg"
-			                        style={{ display: "block" }}
-			                      >
-			                        <path
-			                          d="M7 11C8.10457 11 9 10.1046 9 9C9 7.89543 8.10457 7 7 7C5.89543 7 5 7.89543 5 9C5 10.1046 5.89543 11 7 11Z"
-			                          stroke="currentColor"
-			                          strokeWidth="1.5"
-			                          strokeLinecap="round"
-			                          strokeLinejoin="round"
-			                        />
-			                        <path
-			                          d="M5.56055 21C11.1305 11.1 15.7605 9.35991 21.0005 15.7899"
-			                          stroke="currentColor"
-			                          strokeWidth="1.5"
-			                          strokeLinecap="round"
-			                          strokeLinejoin="round"
-			                        />
-			                        <path
-			                          d="M11.5 3H5C3.93913 3 2.92172 3.42136 2.17157 4.17151C1.42142 4.92165 1 5.93913 1 7V17C1 18.0609 1.42142 19.0782 2.17157 19.8284C2.92172 20.5785 3.93913 21 5 21H17C18.0609 21 19.0783 20.5785 19.8284 19.8284C20.5786 19.0782 21 18.0609 21 17V11"
-			                          stroke="currentColor"
-			                          strokeWidth="1.5"
-			                          strokeLinecap="round"
-			                          strokeLinejoin="round"
-			                        />
-			                        <path
-			                          d="M20.6 1.00003C20.008 1.00175 19.4377 1.2171 19 1.60422C18.6567 1.30103 18.23 1.10139 17.7719 1.02963C17.3138 0.957876 16.844 1.0171 16.42 1.20011C15.9959 1.38311 15.6359 1.68198 15.3838 2.06026C15.1316 2.43854 14.9983 2.87989 15 3.33048C15 6.11406 19 8 19 8C19 8 23 6.11406 23 3.33048C23 2.71241 22.7472 2.11966 22.2971 1.68261C21.847 1.24557 21.2365 1.00003 20.6 1.00003Z"
-			                          stroke="currentColor"
-			                          strokeWidth="1.5"
-			                          strokeLinecap="round"
-			                          strokeLinejoin="round"
-			                        />
-			                      </svg>
-			                    </span>
-			                    {firstPropertyPhoto ? t.changePhoto : t.addPhotoButton}
-			                  </button>
-		                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
-		                    {firstPropertyPhoto ? firstPropertyPhoto.name : t.optionalSkip}
-		                  </div>
-		                </div>
+                  <label style={{ display: "block" }}>{t.propertyPhotoOptional}</label>
+                  <input
+                    ref={firstPropertyPhotoInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      setFirstPropertySkippedPhoto(false);
+                      setFirstPropertyPhoto(e.currentTarget.files?.[0] ?? null);
+                    }}
+                  />
+                  {!firstPropertySkippedPhoto && (
+                    <button
+                      type="button"
+                      className="sb-btn sb-btn--primary sb-cardglow"
+                      style={{
+                        width: "100%",
+                        minHeight: 44,
+                        borderRadius: 999,
+                        border: "1px solid var(--primary)",
+                        background: "var(--primary)",
+                        color: "#fff",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10,
+                        fontWeight: 800,
+                      }}
+                      onClick={() => firstPropertyPhotoInputRef.current?.click()}
+                    >
+                      <span aria-hidden style={{ display: "grid", placeItems: "center" }}>
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          style={{ display: "block" }}
+                        >
+                          <path
+                            d="M7 11C8.10457 11 9 10.1046 9 9C9 7.89543 8.10457 7 7 7C5.89543 7 5 7.89543 5 9C5 10.1046 5.89543 11 7 11Z"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M5.56055 21C11.1305 11.1 15.7605 9.35991 21.0005 15.7899"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M11.5 3H5C3.93913 3 2.92172 3.42136 2.17157 4.17151C1.42142 4.92165 1 5.93913 1 7V17C1 18.0609 1.42142 19.0782 2.17157 19.8284C2.92172 20.5785 3.93913 21 5 21H17C18.0609 21 19.0783 20.5785 19.8284 19.8284C20.5786 19.0782 21 18.0609 21 17V11"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M20.6 1.00003C20.008 1.00175 19.4377 1.2171 19 1.60422C18.6567 1.30103 18.23 1.10139 17.7719 1.02963C17.3138 0.957876 16.844 1.0171 16.42 1.20011C15.9959 1.38311 15.6359 1.68198 15.3838 2.06026C15.1316 2.43854 14.9983 2.87989 15 3.33048C15 6.11406 19 8 19 8C19 8 23 6.11406 23 3.33048C23 2.71241 22.7472 2.11966 22.2971 1.68261C21.847 1.24557 21.2365 1.00003 20.6 1.00003Z"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                      {firstPropertyPhoto ? t.changePhoto : t.addPhotoButton}
+                    </button>
+                  )}
+                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                    {firstPropertyPhoto
+                      ? firstPropertyPhoto.name
+                      : firstPropertySkippedPhoto
+                        ? t.skipPhoto
+                        : t.optionalSkip}
+                  </div>
+                </div>
 
-			                <div style={{ display: "grid", gap: 10 }}>
-				                  <button
-				                    className="sb-btn sb-cardglow"
-				                    style={{
-				                      width: "100%",
-				                      minHeight: 44,
-				                      borderRadius: 999,
-				                      border: "1px solid var(--primary)",
-				                      background: "transparent",
-				                      color: "var(--text)",
-				                      justifyContent: "center",
-				                      fontWeight: "var(--fw-medium)",
-				                    }}
-				                    disabled={!name || !country || firstPropertyLoading}
-				                    onClick={() => {
-				                      setShowFirstPropertyGuide(false);
-				                      setFirstPropertyStep(0);
-			                      createFirstProperty();
-			                    }}
-			                  >
-			                    {t.createAndViewGuestLink}
-			                  </button>
-			                  {!firstPropertyPhoto && (
-			                    <button
-			                      className="sb-btn"
-			                      style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
-			                      disabled={!name || !country || firstPropertyLoading}
-			                      onClick={() => {
-			                        setFirstPropertyPhoto(null);
-			                        setShowFirstPropertyGuide(false);
-			                        setFirstPropertyStep(0);
-			                        createFirstProperty();
-			                      }}
-			                    >
-			                      {t.skipPhoto}
-			                    </button>
-			                  )}
-			                  {firstPropertyError && (
-			                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-			                      {firstPropertyError}
-			                    </div>
-			                  )}
-			                </div>
+                <div style={{ display: "grid", gap: 10 }}>
+                  {(firstPropertyPhoto || firstPropertySkippedPhoto) && (
+                  <button
+                    className="sb-btn sb-cardglow"
+                    style={{
+                      width: "100%",
+                      minHeight: 44,
+                        borderRadius: 999,
+                        border: "1px solid var(--primary)",
+                        background: "transparent",
+                        color: "var(--text)",
+                        justifyContent: "center",
+                        fontWeight: "var(--fw-medium)",
+                    }}
+                    disabled={
+                      !name ||
+                      !country ||
+                      !propertyType ||
+                      !(firstPropertyPhoto || firstPropertySkippedPhoto) ||
+                      firstPropertyLoading
+                    }
+                    onClick={() => {
+                      setShowFirstPropertyGuide(false);
+                      setFirstPropertyStep(0);
+                      createFirstProperty();
+                    }}
+                    >
+                      {t.createAndViewGuestLink}
+                    </button>
+                  )}
+                  {!firstPropertyPhoto && !firstPropertySkippedPhoto && (
+                    <button
+                      className="sb-btn"
+                      style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
+                      disabled={!name || !country || firstPropertyLoading}
+                      onClick={() => {
+                        setFirstPropertyPhoto(null);
+                        setFirstPropertySkippedPhoto(true);
+                      }}
+                    >
+                      {t.skipPhoto}
+                    </button>
+                  )}
+                  {firstPropertyError && (
+                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                      {firstPropertyError}
+                    </div>
+                  )}
+                </div>
 		              </div>
-		            )}
+	            )}
 		          </div>
 		        </div>
 		      )}
@@ -1304,29 +1381,80 @@ const [country, setCountry] = useState<string>("");
 		                  aria-label="Close"
 		                  className="sb-btn sb-cardglow sb-btn--icon"
 		                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
-		                  onClick={() => setFirstPropertyResult(null)}
+                  onClick={() => {
+                    setFirstPropertyResult(null);
+                    setFirstPropertyUnits([]);
+                    setFirstPropertyUnitDrafts({});
+                    setFirstPropertyUnitError(null);
+                  }}
 		                >
 		                  ×
 		                </button>
 		              </div>
-		              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
-		                {t.guestsCanNowSubmit}
-		              </div>
+              <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", textAlign: "center" }}>
+                {t.guestsCanNowSubmit}
+              </div>
 
-		              <div style={{ display: "grid", gap: 10 }}>
-		                <button
-		                  className="sb-btn sb-btn--primary sb-cardglow"
-		                  style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
-		                  onClick={() => {
-		                    try {
-		                      window.open(firstPropertyResult.link, "_blank", "noopener,noreferrer");
-	                    } catch {
-	                      window.location.href = firstPropertyResult.link;
-	                    }
-	                  }}
-	                >
-	                  {t.viewGuestLink}
-	                </button>
+              {firstPropertyUnits.length > 0 && (
+                <div style={{ display: "grid", gap: 10, padding: 10, borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
+                  <div style={{ fontWeight: 800, textTransform: "uppercase", fontSize: "var(--fs-s)", letterSpacing: ".08em", color: "var(--muted)" }}>
+                    {t.unitsCreated}
+                  </div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {firstPropertyUnits
+                      .slice()
+                      .sort((a, b) => (a.sort_index ?? 0) - (b.sort_index ?? 0))
+                      .map((u) => (
+                        <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <span style={{ color: "var(--muted)", fontSize: "var(--fs-s)", width: 64 }}>{u.name}</span>
+                          <input
+                            value={(firstPropertyUnitDrafts[u.id] ?? u.name ?? "").toString()}
+                            onChange={(e) =>
+                              setFirstPropertyUnitDrafts((prev) => ({ ...prev, [u.id]: e.currentTarget.value }))
+                            }
+                            style={{
+                              flex: 1,
+                              padding: 10,
+                              background: "var(--card)",
+                              color: "var(--text)",
+                              border: "1px solid var(--border)",
+                              borderRadius: 10,
+                              fontFamily: "inherit",
+                            }}
+                          />
+                        </div>
+                      ))}
+                  </div>
+                  {firstPropertyUnitError && (
+                    <div style={{ color: "var(--danger)", fontSize: "var(--fs-s)", textAlign: "center" }}>
+                      {firstPropertyUnitError}
+                    </div>
+                  )}
+                  <button
+                    className="sb-btn sb-cardglow"
+                    style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+                    disabled={firstPropertyUnitSaving}
+                    onClick={() => void saveFirstPropertyUnits()}
+                  >
+                    {t.editUnitNames}
+                  </button>
+                </div>
+              )}
+
+              <div style={{ display: "grid", gap: 10 }}>
+                <button
+                  className="sb-btn sb-btn--primary sb-cardglow"
+                  style={{ width: "100%", minHeight: 44, background: "var(--primary)", justifyContent: "center" }}
+                  onClick={() => {
+                    try {
+                      window.open(firstPropertyResult.link, "_blank", "noopener,noreferrer");
+                    } catch {
+                      window.location.href = firstPropertyResult.link;
+                    }
+                  }}
+                >
+                  {t.viewGuestLink}
+                </button>
 	                <button
 	                  className="sb-btn"
 	                  style={{ width: "100%", minHeight: 44, borderRadius: 999 }}
