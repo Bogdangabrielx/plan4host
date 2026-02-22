@@ -9,6 +9,40 @@ import PlanHeaderBadge from "../_components/PlanHeaderBadge";
 import LoadingPill from "../_components/LoadingPill";
 import overlayStyles from "../_components/AppLoadingOverlay.module.css";
 
+function MaskedSvgIcon({
+  src,
+  size = 44,
+  zoom = 1,
+  color = "var(--text)",
+}: {
+  src: string;
+  size?: number;
+  zoom?: number;
+  color?: string;
+}) {
+  const zoomPct = `${Math.round(zoom * 100)}%`;
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        width: size,
+        height: size,
+        display: "block",
+        flex: "0 0 auto",
+        backgroundColor: color,
+        WebkitMaskImage: `url(${src})`,
+        maskImage: `url(${src})`,
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+        WebkitMaskSize: zoomPct,
+        maskSize: zoomPct,
+      }}
+    />
+  );
+}
+
 type Lang = "en" | "ro";
 
 type Property = {
@@ -1143,7 +1177,7 @@ const [country, setCountry] = useState<string>("");
                           }}
                         >
                           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                            <img src={opt.icon} alt="" width={46} height={46} style={{ width: 46, height: 46, objectFit: "contain" }} />
+                            <MaskedSvgIcon src={opt.icon} size={46} zoom={0.86} color="var(--text)" />
                             <div>
                               <div style={{ fontWeight: 800 }}>{opt.title}</div>
                               <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)" }}>{opt.desc}</div>
@@ -1484,7 +1518,7 @@ const [country, setCountry] = useState<string>("");
                       .slice()
                       .sort((a, b) => (a.sort_index ?? 0) - (b.sort_index ?? 0))
                       .map((u) => {
-                        const draft = (firstPropertyUnitDrafts[u.id] ?? u.name ?? "").toString();
+                        const draft = (firstPropertyUnitDrafts[u.id] ?? u.name ?? "") as string;
                         return (
                           <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", justifyContent: "space-between" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
