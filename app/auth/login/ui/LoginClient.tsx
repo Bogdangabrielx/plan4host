@@ -383,7 +383,7 @@ export default function LoginClient({
 
   return (
     <>
-      <div style={outerWrap}>
+      <div style={outerWrap} className="p4h-outerWrap">
         <div style={quoteWrap} className="p4h-quoteWrap">
           <div style={quoteText} className="p4h-quoteText">
             <span style={{ display: "block", whiteSpace: "nowrap" }}>
@@ -402,7 +402,7 @@ export default function LoginClient({
           </div>
         </div>
          
-        <div  style={wrap(mounted ? theme : "dark")} >
+        <div style={wrap(mounted ? theme : "dark")} className="p4h-authCard">
           <div  style={headRow}>
             <div style={headLeft}>
               <div style={langToggleWrap}>
@@ -612,6 +612,12 @@ export default function LoginClient({
           60% { transform: translate(-6px,6px) scale(1.05); }
           100% { transform: translate(0,0) scale(1); }
         }
+
+        /* Very small phones: keep the card visually "full" by trimming padding a bit. */
+        @media (max-width: 360px) {
+          .p4h-authCard { padding: 14px !important; }
+          .p4h-outerWrap { gap: 10px !important; }
+        }
       `}</style>
     </>
   );
@@ -629,14 +635,9 @@ const quoteWrap: React.CSSProperties = {
   margin: 0,
   display: "grid",
   gap: 6,
-  /* Let the quote "bleed" outside the auth card, but stay centered in the viewport. */
-  width: "100vw",
-  marginLeft: "calc(50% - 50vw)",
-  marginRight: "calc(50% - 50vw)",
-  paddingLeft: 12,
-  paddingRight: 12,
-  boxSizing: "border-box",
-  justifyItems: "center",
+  // Keep the quote in the same centered column as the auth card.
+  width: "100%",
+  justifyItems: "stretch",
 };
 const quoteText: React.CSSProperties = {
   width: "100%",

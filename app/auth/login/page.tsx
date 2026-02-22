@@ -30,8 +30,8 @@ export default async function LoginPage() {
         // Use responsive padding that still caps at 16px on larger screens.
         paddingTop: "calc(clamp(8px, 2vw, 16px) + env(safe-area-inset-top))",
         paddingBottom: "calc(clamp(8px, 2vw, 16px) + env(safe-area-inset-bottom))",
-        paddingLeft: "calc(clamp(8px, 2vw, 16px) + env(safe-area-inset-left))",
-        paddingRight: "calc(clamp(8px, 2vw, 16px) + env(safe-area-inset-right))",
+        paddingLeft: "calc(clamp(4px, 2vw, 16px) + env(safe-area-inset-left))",
+        paddingRight: "calc(clamp(4px, 2vw, 16px) + env(safe-area-inset-right))",
       }}
     >
       <LoginClient initialTheme={theme} initialLang={initialLang} />
