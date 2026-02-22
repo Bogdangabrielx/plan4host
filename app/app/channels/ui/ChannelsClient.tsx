@@ -1305,7 +1305,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               }}
               title={lang === "ro" ? "Adauga un feed iCal" : "Add an iCal feed"}
             >
-              {lang === "ro" ? "Adauga feed iCal" : "Add iCal feed"}
+              {lang === "ro" ? "+ Adauga feed iCal" : "+ Add iCal feed"}
             </button>
 
             {/* PILLAȘ persistent lângă butonul global */}
