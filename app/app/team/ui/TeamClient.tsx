@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
 type Lang = "en" | "ro";
@@ -33,7 +33,7 @@ export default function TeamClient() {
   const [roleError, setRoleError] = useState<boolean>(false);
   const [scopes, setScopes] = useState<string[]>([]);
   const [q, setQ] = useState<string>("");
-  const [qApplied, setQApplied] = useState<string>("");
+  const searchRef = useRef<HTMLInputElement | null>(null);
   const t = {
     en: {
       pleaseSelectRole: "Please select a Role.",
@@ -181,12 +181,6 @@ export default function TeamClient() {
       cancelled = true;
     };
   }, [supa]);
-
-  // Debounced search: lets the user type without filtering on every keystroke.
-  useEffect(() => {
-    const id = window.setTimeout(() => setQApplied(q), 350);
-    return () => window.clearTimeout(id);
-  }, [q]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -400,7 +394,7 @@ export default function TeamClient() {
   }
 
   const filteredMembers = members.filter((m) => {
-    const qq = qApplied.trim().toLowerCase();
+    const qq = q.trim().toLowerCase();
     if (!qq) return true;
     return (
       String(m.email || "").toLowerCase().includes(qq) ||
@@ -590,27 +584,76 @@ export default function TeamClient() {
               icon="/svg_team.svg"
               title={i18n.members}
               right={
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.currentTarget.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") setQApplied(e.currentTarget.value);
-                    if (e.key === "Escape") {
-                      setQ("");
-                      setQApplied("");
-                      e.currentTarget.blur();
-                    }
-                  }}
-                  placeholder={i18n.search}
-                  style={{
-                    ...input,
-                    width: 260,
-                    maxWidth: "50vw",
-                    padding: "8px 10px",
-                    borderRadius: 999,
-                    background: "color-mix(in srgb, var(--card) 88%, transparent)",
-                  }}
-                />
+                <div style={{ position: "relative", width: 260, maxWidth: "50vw" }}>
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    style={{
+                      position: "absolute",
+                      left: 10,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: 18,
+                      height: 18,
+                      opacity: 0.7,
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <path
+                      d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  <input
+                    ref={searchRef}
+                    value={q}
+                    onChange={(e) => setQ(e.currentTarget.value)}
+                    onFocus={() => { try { window.dispatchEvent(new Event('p4h:nav:hide')); } catch {} }}
+                    onBlur={() => { try { window.dispatchEvent(new Event('p4h:nav:show')); } catch {} }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setQ("");
+                        e.currentTarget.blur();
+                      }
+                    }}
+                    placeholder={i18n.search}
+                    style={{
+                      ...input,
+                      width: "100%",
+                      padding: "8px 42px 8px 36px",
+                      borderRadius: 999,
+                      background: "color-mix(in srgb, var(--card) 88%, transparent)",
+                    }}
+                    aria-label={i18n.search}
+                  />
+                  {q && (
+                    <button
+                      type="button"
+                      aria-label={lang === "ro" ? "Sterge cautarea" : "Clear search"}
+                      onClick={() => {
+                        setQ("");
+                        searchRef.current?.focus();
+                      }}
+                      style={{
+                        position: "absolute",
+                        right: 4,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: 36,
+                        height: 36,
+                        borderRadius: 999,
+                        border: "1px solid var(--border)",
+                        background: "transparent",
+                        color: "var(--muted)",
+                        cursor: "pointer",
+                        touchAction: "manipulation",
+                        WebkitTapHighlightColor: "transparent",
+                      }}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
               }
             />
             {loading && <div style={{ color: "var(--muted)" }}>{i18n.loading}</div>}
