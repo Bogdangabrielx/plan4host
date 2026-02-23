@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHeader } from "@/app/app/_components/HeaderContext";
 import PlanHeaderBadge from "@/app/app/_components/PlanHeaderBadge";
@@ -75,6 +75,50 @@ const AI_ACTION_STYLE: React.CSSProperties = {
   color: "#0c111b",
   fontWeight: 700,
 };
+
+function MaskIcon({ src, size = 18, color = "var(--text)", opacity = 0.92 }: { src: string; size?: number; color?: string; opacity?: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        width: size,
+        height: size,
+        display: "inline-block",
+        backgroundColor: color,
+        opacity,
+        WebkitMaskImage: `url(${src})`,
+        WebkitMaskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        WebkitMaskSize: "contain",
+        maskImage: `url(${src})`,
+        maskRepeat: "no-repeat",
+        maskPosition: "center",
+        maskSize: "contain",
+        flex: "0 0 auto",
+      }}
+    />
+  );
+}
+
+function SectionHeader({
+  icon,
+  title,
+  right,
+}: {
+  icon: string;
+  title: string;
+  right?: ReactNode;
+}) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+        <MaskIcon src={icon} size={18} color="var(--text)" />
+        <h3 style={{ margin: 0, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</h3>
+      </div>
+      {right ? <div style={{ flex: "0 0 auto" }}>{right}</div> : null}
+    </div>
+  );
+}
 
 function Info({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
@@ -1212,7 +1256,16 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
       <PlanHeaderBadge title={t.title} slot="under-title" />
-      <div style={{ padding: isNarrow ? "10px 12px 16px" : "16px", display: "grid", gap: 16 }}>
+      <div
+        style={{
+          padding: isNarrow ? "10px 12px 16px" : "16px",
+          display: "grid",
+          gap: 16,
+          maxWidth: 1100,
+          margin: "0 auto",
+          width: "100%",
+        }}
+      >
         {/* Controls (same spacing pattern as Guest Overview) */}
         <div className="sb-toolbar" style={{ gap: isNarrow ? 12 : 20, flexWrap: "wrap", marginBottom: 12 }}>
           {/* Property selector (pill with avatar only) */}
@@ -2351,7 +2404,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         <>
           {/* Check-in Link */}
           <section className="sb-cardglow" style={card}>
-            <h3 style={{ marginTop: 0 }}>{t.checkinLink}</h3>
+            <SectionHeader icon="/svg_checkin.svg" title={t.checkinLink} />
             <div style={{ display: "grid", gap: 8, alignItems: "start" }}>
               <div>
                 <button
@@ -2666,7 +2719,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 : null),
             }}
           >
-            <h3 style={{ marginTop: 0 }}>{t.houseRulesPdf}</h3>
+            <SectionHeader
+              icon="/svg_access_codes.svg"
+              title={t.houseRulesPdf}
+              right={
+                <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 800, whiteSpace: "nowrap" }}>
+                  {prop.regulation_pdf_url ? (uiLang === "ro" ? "PDF incarcat" : "PDF uploaded") : (uiLang === "ro" ? "Lipseste" : "Missing")}
+                </span>
+              }
+            />
             {prop.regulation_pdf_url ? (
               <div style={{ display: "grid", gap: isNarrow ? 10 : 8 }}>
                 <div
@@ -2830,7 +2891,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 : null),
             }}
           >
-            <h3 style={{ marginTop: 0 }}>{t.propertyContact}</h3>
+            <SectionHeader icon="/svg_contact_the_host.svg" title={t.propertyContact} />
             <form onSubmit={saveContacts} style={{ display:'grid', gap:12, maxWidth:560 }}>
               <div>
                 <label style={{ display:'block', marginBottom:6 }}>{t.email}</label>
@@ -3042,7 +3103,15 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 : null),
             }}
           >
-            <h3 style={{ marginTop: 0 }}>{t.presentationImage}</h3>
+            <SectionHeader
+              icon="/svg_addphoto_demo.svg"
+              title={t.presentationImage}
+              right={
+                <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 800, whiteSpace: "nowrap" }}>
+                  {prop.presentation_image_url ? (uiLang === "ro" ? "Incarcata" : "Uploaded") : (uiLang === "ro" ? "Lipseste" : "Missing")}
+                </span>
+              }
+            />
             <div style={{ display:'grid', gap:10 }}>
               {prop.presentation_image_url ? (
                 <div style={{ display:'grid', gap:8 }}>
