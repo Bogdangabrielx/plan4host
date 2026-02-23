@@ -104,15 +104,17 @@ function SectionHeader({
   icon,
   title,
   right,
+  iconSize = 18,
 }: {
   icon: string;
   title: string;
   right?: ReactNode;
+  iconSize?: number;
 }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-        <MaskIcon src={icon} size={18} color="var(--text)" />
+        <MaskIcon src={icon} size={iconSize} color="var(--text)" />
         <h3 style={{ margin: 0, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</h3>
       </div>
       {right ? <div style={{ flex: "0 0 auto" }}>{right}</div> : null}
@@ -2404,7 +2406,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
         <>
           {/* Check-in Link */}
           <section className="sb-cardglow" style={card}>
-            <SectionHeader icon="/svg_checkin.svg" title={t.checkinLink} />
+            <SectionHeader icon="/svg_checkin.svg" title={t.checkinLink} iconSize={isNarrow ? 18 : 20} />
             <div style={{ display: "grid", gap: 8, alignItems: "start" }}>
               <div>
                 <button
@@ -2722,6 +2724,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             <SectionHeader
               icon="/svg_access_codes.svg"
               title={t.houseRulesPdf}
+              iconSize={isNarrow ? 18 : 20}
               right={
                 <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 800, whiteSpace: "nowrap" }}>
                   {prop.regulation_pdf_url ? (uiLang === "ro" ? "PDF incarcat" : "PDF uploaded") : (uiLang === "ro" ? "Lipseste" : "Missing")}
@@ -2891,7 +2894,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 : null),
             }}
           >
-            <SectionHeader icon="/svg_contact_the_host.svg" title={t.propertyContact} />
+            <SectionHeader icon="/svg_contact_the_host.svg" title={t.propertyContact} iconSize={isNarrow ? 18 : 20} />
             <form onSubmit={saveContacts} style={{ display:'grid', gap:12, maxWidth:560 }}>
               <div>
                 <label style={{ display:'block', marginBottom:6 }}>{t.email}</label>
@@ -3106,6 +3109,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             <SectionHeader
               icon="/svg_addphoto_demo.svg"
               title={t.presentationImage}
+              iconSize={isNarrow ? 18 : 20}
               right={
                 <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 800, whiteSpace: "nowrap" }}>
                   {prop.presentation_image_url ? (uiLang === "ro" ? "Incarcata" : "Uploaded") : (uiLang === "ro" ? "Lipseste" : "Missing")}
@@ -3135,7 +3139,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       className="sb-btn sb-cardglow"
                       style={{ width: "100%", justifyContent: "center", gap: 10 }}
                     >
-                      <MaskIcon src="/svg_preview_image.svg" size={18} />
+                      <MaskIcon src="/svg_preview_image.svg" size={isNarrow ? 18 : 20} />
                       {t.preview}
                     </a>
                     <button
@@ -3144,7 +3148,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       ref={imageUploadBtnRef}
                       style={{ width: "100%", justifyContent: "center", gap: 10 }}
                     >
-                      <MaskIcon src="/svg_replaceimage.svg" size={18} />
+                      <MaskIcon src="/svg_replaceimage.svg" size={isNarrow ? 18 : 20} />
                       {t.replaceImage}
                     </button>
                   </div>
