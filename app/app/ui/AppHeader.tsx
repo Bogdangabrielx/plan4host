@@ -99,6 +99,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
   const [mgmtBtnPressed, setMgmtBtnPressed] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
+  const [avatarLoaded, setAvatarLoaded] = useState<boolean>(false);
   // Theme
   const [theme, setTheme] = useState<"light" | "dark">("dark");
 
@@ -289,6 +290,10 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
     const localPart = userEmail.split("@")[0] || "";
     return (localPart.substring(0, 2) || "MY").toUpperCase();
   })();
+  useEffect(() => {
+    // If the URL changes, treat it as not loaded until the <img> fires onLoad.
+    setAvatarLoaded(false);
+  }, [userAvatarUrl]);
   const AvatarBadge = ({ size }: { size: number }) => (
     <span
       style={{
@@ -302,16 +307,12 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         display: "grid",
         placeItems: "center",
         flexShrink: 0,
+        position: "relative",
         pointerEvents: "none", // nu bloca click-ul pe butonul părinte
       }}
     >
-      {userAvatarUrl ? (
-        <img
-          src={userAvatarUrl}
-          alt=""
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-        />
-      ) : (
+      {/* Keep a visible fallback while the avatar is loading or fails. */}
+      {(!userAvatarUrl || !avatarLoaded) && (
         <span
           aria-hidden="true"
           style={{
@@ -319,10 +320,36 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
             fontWeight: 700,
             letterSpacing: "0.08em",
             fontSize: size * 0.35,
+            position: "relative",
+            zIndex: 1,
           }}
         >
           {placeholderInitials}
         </span>
+      )}
+      {userAvatarUrl ? (
+        <img
+          src={userAvatarUrl}
+          alt=""
+          onLoad={() => setAvatarLoaded(true)}
+          onError={() => {
+            // If the remote image fails, fall back to initials so the button remains obvious.
+            setAvatarLoaded(false);
+            setUserAvatarUrl(null);
+          }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+            position: "absolute",
+            inset: 0,
+            opacity: avatarLoaded ? 1 : 0,
+            transition: "opacity .15s ease",
+          }}
+        />
+      ) : (
+        null
       )}
     </span>
   );
