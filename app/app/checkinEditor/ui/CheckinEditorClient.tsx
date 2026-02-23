@@ -3133,16 +3133,18 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       target="_blank"
                       rel="noreferrer"
                       className="sb-btn sb-cardglow"
-                      style={{ width: "100%", justifyContent: "center" }}
+                      style={{ width: "100%", justifyContent: "center", gap: 10 }}
                     >
+                      <MaskIcon src="/svg_preview_image.svg" size={18} />
                       {t.preview}
                     </a>
                     <button
                       className="sb-btn sb-cardglow"
                       onClick={triggerImageUpload}
                       ref={imageUploadBtnRef}
-                      style={{ width: "100%", justifyContent: "center" }}
+                      style={{ width: "100%", justifyContent: "center", gap: 10 }}
                     >
+                      <MaskIcon src="/svg_replaceimage.svg" size={18} />
                       {t.replaceImage}
                     </button>
                   </div>
