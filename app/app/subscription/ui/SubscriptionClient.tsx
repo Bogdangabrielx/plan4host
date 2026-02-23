@@ -1103,8 +1103,9 @@ export default function SubscriptionClient({
             position: 'fixed',
             inset: 0,
             zIndex: 9999,
-            display: 'grid',
-            placeItems: isMobileNav ? 'start center' : 'center',
+            display: 'flex',
+            alignItems: isMobileNav ? 'flex-start' : 'center',
+            justifyContent: 'center',
             paddingLeft: 12,
             paddingRight: 12,
             paddingTop: isMobileNav
@@ -1116,6 +1117,8 @@ export default function SubscriptionClient({
             background: "color-mix(in srgb, var(--bg) 55%, transparent)",
             backdropFilter: 'blur(2px)',
             WebkitBackdropFilter: 'blur(2px)',
+            overflow: 'hidden',
+            overscrollBehavior: 'contain',
           }}
         >
           <div
@@ -1177,8 +1180,9 @@ export default function SubscriptionClient({
             position: 'fixed',
             inset: 0,
             zIndex: 9999,
-            display: 'grid',
-            placeItems: isMobileNav ? 'start center' : 'center',
+            display: 'flex',
+            alignItems: isMobileNav ? 'flex-start' : 'center',
+            justifyContent: 'center',
             paddingLeft: 12,
             paddingRight: 12,
             paddingTop: isMobileNav
@@ -1190,6 +1194,8 @@ export default function SubscriptionClient({
             background: "color-mix(in srgb, var(--bg) 55%, transparent)",
             backdropFilter: 'blur(2px)',
             WebkitBackdropFilter: 'blur(2px)',
+            overflow: 'hidden',
+            overscrollBehavior: 'contain',
           }}
         >
           <div
