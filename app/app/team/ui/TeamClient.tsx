@@ -582,6 +582,7 @@ export default function TeamClient() {
                           {u.email || u.user_id}
                         </strong>
                         <span
+                          className="memberStatusTop"
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
@@ -595,18 +596,31 @@ export default function TeamClient() {
                           <span
                             aria-hidden
                             style={{
-                              width: 8,
-                              height: 8,
+                              width: 16,
+                              height: 16,
                               borderRadius: 999,
-                              background: active ? "var(--success)" : "var(--muted)",
-                              display: "inline-block",
+                              border: active
+                                ? "1px solid color-mix(in srgb, var(--success) 80%, transparent)"
+                                : "1px solid color-mix(in srgb, var(--muted) 55%, transparent)",
+                              background: active
+                                ? "color-mix(in srgb, var(--success) 18%, transparent)"
+                                : "color-mix(in srgb, var(--muted) 14%, transparent)",
+                              display: "grid",
+                              placeItems: "center",
+                              color: active ? "var(--success)" : "var(--muted)",
+                              fontWeight: 900,
+                              fontSize: 11,
+                              lineHeight: 1,
+                              flex: "0 0 auto",
                             }}
-                          />
+                          >
+                            ✓
+                          </span>
                           {active ? i18n.active : i18n.disabled}
                         </span>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <div className="roleStatusRow">
                         <span
                           style={{
                             display: "inline-flex",
@@ -624,6 +638,44 @@ export default function TeamClient() {
                         >
                           {u.role}
                           {isAdmin ? <span style={{ opacity: 0.85 }}>{i18n.baseAccount}</span> : null}
+                        </span>
+
+                        <span
+                          className="memberStatusInline"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 8,
+                            whiteSpace: "nowrap",
+                            color: active ? "var(--success)" : "var(--muted)",
+                            fontSize: 12,
+                            fontWeight: 900,
+                          }}
+                        >
+                          <span
+                            aria-hidden
+                            style={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: 999,
+                              border: active
+                                ? "1px solid color-mix(in srgb, var(--success) 80%, transparent)"
+                                : "1px solid color-mix(in srgb, var(--muted) 55%, transparent)",
+                              background: active
+                                ? "color-mix(in srgb, var(--success) 18%, transparent)"
+                                : "color-mix(in srgb, var(--muted) 14%, transparent)",
+                              display: "grid",
+                              placeItems: "center",
+                              color: active ? "var(--success)" : "var(--muted)",
+                              fontWeight: 900,
+                              fontSize: 11,
+                              lineHeight: 1,
+                              flex: "0 0 auto",
+                            }}
+                          >
+                            ✓
+                          </span>
+                          {active ? i18n.active : i18n.disabled}
                         </span>
                       </div>
 
@@ -739,6 +791,8 @@ export default function TeamClient() {
             padding: 12px;
           }
           .memberActions { display: flex; gap: 8px; align-items: center; }
+          .roleStatusRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+          .memberStatusInline { display: none; }
           @media (max-width: 720px) {
             .memberRow {
               grid-template-columns: 44px 1fr;
@@ -748,6 +802,9 @@ export default function TeamClient() {
               justify-content: flex-end;
               padding-top: 4px;
             }
+            .memberStatusTop { display: none !important; }
+            .memberStatusInline { display: inline-flex !important; }
+            .roleStatusRow { flex-wrap: nowrap; }
           }
         `}</style>
       </div>
