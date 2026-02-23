@@ -1401,6 +1401,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                     feeds={integrations.filter((i) => i.room_id === r.id)}
                     canWrite={canWrite}
                     lang={lang}
+                    isSmall={isSmall}
                     onToggle={toggleActive}
                     onDelete={(f) => { setConfirmDeleteFeed(f); setConfirmDeleteError(""); }}
                     onEdit={(f) => {
@@ -1439,6 +1440,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
                       feeds={integrations.filter((i) => i.room_type_id === t.id)}
                       canWrite={canWrite}
                       lang={lang}
+                      isSmall={isSmall}
                       onToggle={toggleActive}
                       onDelete={(f) => { setConfirmDeleteFeed(f); setConfirmDeleteError(""); }}
                       onEdit={(f) => {
@@ -2207,6 +2209,7 @@ function TargetFeedCard({
   feeds,
   canWrite,
   lang,
+  isSmall,
   onToggle,
   onDelete,
   onEdit,
@@ -2217,11 +2220,25 @@ function TargetFeedCard({
   feeds: TypeIntegration[];
   canWrite: boolean;
   lang: Lang;
+  isSmall: boolean;
   onToggle: (ii: TypeIntegration) => void;
   onDelete: (ii: TypeIntegration) => void;
   onEdit: (ii: TypeIntegration) => void;
 }) {
   const hasFeeds = feeds.length > 0;
+  const formatLastSync = (ts: string | null | undefined) => {
+    if (!ts) return isSmall ? (lang === "ro" ? "niciodata" : "never") : "";
+    try {
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return isSmall ? (lang === "ro" ? "niciodata" : "never") : "";
+      return d.toLocaleString(lang === "ro" ? "ro-RO" : "en-US", isSmall
+        ? { year: "2-digit", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }
+        : { year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" }
+      );
+    } catch {
+      return isSmall ? (lang === "ro" ? "niciodata" : "never") : "";
+    }
+  };
 
   function PowerIcon({ active }: { active: boolean }) {
     return (
@@ -2382,92 +2399,111 @@ function TargetFeedCard({
                   {f.url}
                 </div>
 
-                <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "flex-end" }}>
-                  <button
-                    className="sb-btn sb-btn--icon"
-                    type="button"
-                    disabled={!canWrite}
-                    onClick={() => onToggle(f)}
-                    title={lang === "ro" ? "Activeaza / dezactiveaza" : "Toggle active"}
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 999,
-                      opacity: canWrite ? 1 : 0.55,
-                      color: active ? "var(--success)" : "var(--muted)",
-                      display: "grid",
-                      placeItems: "center",
-                      padding: 0,
-                      touchAction: "manipulation",
-                    }}
-                  >
-                    <PowerIcon active={active} />
-                  </button>
-                  <button
-                    className="sb-btn sb-btn--icon"
-                    type="button"
-                    disabled={!canWrite}
-                    onClick={() => onEdit(f)}
-                    title={lang === "ro" ? "Editeaza feed" : "Edit feed"}
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 999,
-                      opacity: canWrite ? 1 : 0.55,
-                      color: "var(--text)",
-                      display: "grid",
-                      placeItems: "center",
-                      padding: 0,
-                      touchAction: "manipulation",
-                    }}
-                  >
-                    <span
-                      aria-hidden
-                      style={{
-                        width: 16,
-                        height: 16,
-                        backgroundColor: "currentColor",
-                        WebkitMaskImage: "url(/svg_edit_ical.svg)",
-                        WebkitMaskRepeat: "no-repeat",
-                        WebkitMaskSize: "contain",
-                        WebkitMaskPosition: "center",
-                        maskImage: "url(/svg_edit_ical.svg)",
-                        maskRepeat: "no-repeat",
-                        maskSize: "contain",
-                        maskPosition: "center",
-                        display: "block",
-                        opacity: 0.95,
-                        pointerEvents: "none",
-                      }}
-                    />
-                  </button>
-                  <button
-                    className="sb-btn sb-btn--icon"
-                    type="button"
-                    disabled={!canWrite}
-                    onClick={() => onDelete(f)}
-                    title={lang === "ro" ? "Sterge feed" : "Delete feed"}
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 999,
-                      opacity: canWrite ? 1 : 0.55,
-                      display: "grid",
-                      placeItems: "center",
-                      padding: 0,
-                      touchAction: "manipulation",
-                    }}
-                  >
-                    🗑
-                  </button>
-                </div>
-
-                {f.last_sync ? (
-                  <div style={{ color: "var(--muted)", fontSize: 11 }}>
-                    {lang === "ro" ? "Ultima sincronizare: " : "Last synced: "}
-                    {new Date(f.last_sync).toLocaleString()}
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {(f.last_sync || isSmall) ? (
+                      <div
+                        style={{
+                          color: "var(--muted)",
+                          fontSize: 11,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                        title={f.last_sync ? new Date(f.last_sync).toLocaleString() : undefined}
+                      >
+                        {isSmall ? (
+                          formatLastSync(f.last_sync)
+                        ) : (
+                          <>
+                            {lang === "ro" ? "Ultima sincronizare: " : "Last sync: "}
+                            {formatLastSync(f.last_sync)}
+                          </>
+                        )}
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
+
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "flex-end", flex: "0 0 auto" }}>
+                    <button
+                      className="sb-btn sb-btn--icon"
+                      type="button"
+                      disabled={!canWrite}
+                      onClick={() => onToggle(f)}
+                      title={lang === "ro" ? "Activeaza / dezactiveaza" : "Toggle active"}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 999,
+                        opacity: canWrite ? 1 : 0.55,
+                        color: active ? "var(--success)" : "var(--muted)",
+                        display: "grid",
+                        placeItems: "center",
+                        padding: 0,
+                        touchAction: "manipulation",
+                      }}
+                    >
+                      <PowerIcon active={active} />
+                    </button>
+                    <button
+                      className="sb-btn sb-btn--icon"
+                      type="button"
+                      disabled={!canWrite}
+                      onClick={() => onEdit(f)}
+                      title={lang === "ro" ? "Editeaza feed" : "Edit feed"}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 999,
+                        opacity: canWrite ? 1 : 0.55,
+                        color: "var(--text)",
+                        display: "grid",
+                        placeItems: "center",
+                        padding: 0,
+                        touchAction: "manipulation",
+                      }}
+                    >
+                      <span
+                        aria-hidden
+                        style={{
+                          width: 16,
+                          height: 16,
+                          backgroundColor: "currentColor",
+                          WebkitMaskImage: "url(/svg_edit_ical.svg)",
+                          WebkitMaskRepeat: "no-repeat",
+                          WebkitMaskSize: "contain",
+                          WebkitMaskPosition: "center",
+                          maskImage: "url(/svg_edit_ical.svg)",
+                          maskRepeat: "no-repeat",
+                          maskSize: "contain",
+                          maskPosition: "center",
+                          display: "block",
+                          opacity: 0.95,
+                          pointerEvents: "none",
+                        }}
+                      />
+                    </button>
+                    <button
+                      className="sb-btn sb-btn--icon"
+                      type="button"
+                      disabled={!canWrite}
+                      onClick={() => onDelete(f)}
+                      title={lang === "ro" ? "Sterge feed" : "Delete feed"}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 999,
+                        opacity: canWrite ? 1 : 0.55,
+                        display: "grid",
+                        placeItems: "center",
+                        padding: 0,
+                        touchAction: "manipulation",
+                      }}
+                    >
+                      🗑
+                    </button>
+                  </div>
+                </div>
               </div>
             );
           })
