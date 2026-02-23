@@ -942,6 +942,26 @@ export default function ReservationMessageClient({
   const card: React.CSSProperties = { background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 };
   const input: React.CSSProperties = { padding: 10, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, width: "100%", boxSizing: "border-box", fontFamily: "inherit" };
   const btn: React.CSSProperties = { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontWeight: 700, cursor: "pointer" };
+  const iconBtn: React.CSSProperties = {
+    width: 38,
+    height: 38,
+    padding: 0,
+    borderRadius: 999,
+    display: "grid",
+    placeItems: "center",
+    lineHeight: 1,
+  };
+  const iconMaskBase: React.CSSProperties = {
+    width: 18,
+    height: 18,
+    backgroundColor: "var(--text)",
+    maskRepeat: "no-repeat",
+    maskPosition: "center",
+    maskSize: "contain",
+    WebkitMaskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    WebkitMaskSize: "contain",
+  };
 
   useEffect(() => {
     const pillLabel =
@@ -1258,29 +1278,102 @@ export default function ReservationMessageClient({
                   role="button"
                   tabIndex={0}
                 >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 8 }}>
                     <strong
                       style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, flex: 1 }}
                       dangerouslySetInnerHTML={{ __html: titleToChips(tplItem.title || "(Untitled)") }}
                     />
-                    <span
-                      className="sb-badge"
-                      style={{
-                        display: "inline-block",
-                        whiteSpace: "nowrap",
-                        background: tplItem.status === "published" ? "var(--primary)" : "var(--card)",
-                        color: tplItem.status === "published" ? "#0c111b" : "var(--muted)",
-                        flex: '0 0 auto'
-                      }}
-                    >
-                      {tplItem.status === "published" ? t.active : t.draft}
-                    </span>
                   </div>
                   <small style={{ color: "var(--muted)" }}>{t.updated} {new Date(tplItem.updated_at).toLocaleString()}</small>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); setActiveId(tplItem.id); }}>{t.edit}</button>
-                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); onDuplicate(tplItem.id, tplItem.title); }}>{t.duplicate}</button>
-                    <button className="sb-btn" onClick={(e) => { e.stopPropagation(); onDelete(tplItem.id); }}>{t.delete}</button>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        whiteSpace: "nowrap",
+                        color: tplItem.status === "published" ? "var(--text)" : "var(--muted)",
+                        fontWeight: 800,
+                        minWidth: 0,
+                      }}
+                      aria-label={tplItem.status === "published" ? t.active : t.draft}
+                      title={tplItem.status === "published" ? t.active : t.draft}
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        style={{ color: tplItem.status === "published" ? "var(--primary)" : "var(--muted)" }}
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M9.2 12.6l1.9 1.9 3.9-4.1"
+                          stroke="currentColor"
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" opacity="0.55" />
+                      </svg>
+                      <span>{tplItem.status === "published" ? t.active : t.draft}</span>
+                    </span>
+
+                    <div style={{ display: "flex", gap: 6, flex: "0 0 auto" }}>
+                      <button
+                        className="sb-btn"
+                        style={iconBtn}
+                        aria-label={t.edit}
+                        title={t.edit}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveId(tplItem.id);
+                        }}
+                      >
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            ...iconMaskBase,
+                            maskImage: "url(/svg_edit_ical.svg)",
+                            WebkitMaskImage: "url(/svg_edit_ical.svg)",
+                          }}
+                        />
+                      </button>
+                      <button
+                        className="sb-btn"
+                        style={iconBtn}
+                        aria-label={t.duplicate}
+                        title={t.duplicate}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDuplicate(tplItem.id, tplItem.title);
+                        }}
+                      >
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            ...iconMaskBase,
+                            maskImage: "url(/svg_duplicate.svg)",
+                            WebkitMaskImage: "url(/svg_duplicate.svg)",
+                          }}
+                        />
+                      </button>
+                      <button
+                        className="sb-btn"
+                        style={iconBtn}
+                        aria-label={t.delete}
+                        title={t.delete}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(tplItem.id);
+                        }}
+                      >
+                        <span aria-hidden="true" style={{ fontSize: 18, color: "var(--text)", transform: "translateY(-0.5px)" }}>
+                          🗑️
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
