@@ -374,6 +374,9 @@ export default function TeamClient() {
     );
   });
 
+  // UI rule: "Members" count excludes the base admin account.
+  const membersCount = Math.max(0, members.length - 1);
+
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
       <PlanHeaderBadge title={i18n.team} slot="under-title" />
@@ -394,7 +397,7 @@ export default function TeamClient() {
               title={i18n.addUser}
               right={
                 <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 800, whiteSpace: "nowrap" }}>
-                  {members.length} {lang === "ro" ? "membri" : "members"}
+                  {membersCount} {lang === "ro" ? "membri" : "members"}
                 </span>
               }
             />
