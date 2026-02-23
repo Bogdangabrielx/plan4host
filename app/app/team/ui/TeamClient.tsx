@@ -638,6 +638,7 @@ export default function TeamClient() {
 
                       <div className="roleStatusRow">
                         <span
+                          className="memberRolePill"
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
@@ -649,6 +650,8 @@ export default function TeamClient() {
                             color: isAdmin ? "#0c111b" : "var(--text)",
                             fontSize: 12,
                             fontWeight: 900,
+                            flex: "1 1 auto",
+                            minWidth: 0,
                           }}
                           title={isAdmin ? i18n.baseAccount : undefined}
                         >
@@ -665,6 +668,7 @@ export default function TeamClient() {
                             color: active ? "var(--success)" : "var(--muted)",
                             fontSize: 12,
                             fontWeight: 900,
+                            flex: "0 0 auto",
                           }}
                         >
                           <span
@@ -804,11 +808,15 @@ export default function TeamClient() {
             border: 1px solid var(--border);
             border-radius: 14px;
             padding: 12px;
+            overflow: hidden; /* keep long text/chips inside card */
           }
+          /* Grid children default min-width:auto can cause overflow in narrow layouts. */
+          .memberRow > :nth-child(2) { min-width: 0; }
           .memberActions { display: flex; gap: 8px; align-items: center; align-self: end; }
           .roleStatusRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
           .memberStatusInline { display: none; }
-          .memberScopesGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+          .memberScopesGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 0; width: 100%; }
+          .memberScopesGrid > span { min-width: 0; }
           @media (max-width: 360px) {
             .memberScopesGrid { grid-template-columns: 1fr; }
           }
@@ -823,7 +831,8 @@ export default function TeamClient() {
             }
             .memberStatusTop { display: none !important; }
             .memberStatusInline { display: inline-flex !important; }
-            .roleStatusRow { flex-wrap: nowrap; }
+            .roleStatusRow { flex-wrap: nowrap; min-width: 0; }
+            .memberRolePill { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
           }
         `}</style>
       </div>
