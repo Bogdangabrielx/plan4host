@@ -1109,7 +1109,7 @@ export default function SubscriptionClient({
             paddingLeft: 12,
             paddingRight: 12,
             paddingTop: isMobileNav
-              ? "calc(var(--safe-top, 0px) + var(--p4h-fixed-header-h, 56px) + 12px)"
+              ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 12px)"
               : 12,
             paddingBottom: isMobileNav
               ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
@@ -1133,7 +1133,7 @@ export default function SubscriptionClient({
               gap:12,
               background:'var(--panel)',
               maxHeight: isMobileNav
-                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--p4h-fixed-header-h, 56px) + var(--nav-h, 0px) + 24px))"
+                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
                 : "85vh",
               overflowY: 'auto',
               WebkitOverflowScrolling: 'touch',
@@ -1186,7 +1186,7 @@ export default function SubscriptionClient({
             paddingLeft: 12,
             paddingRight: 12,
             paddingTop: isMobileNav
-              ? "calc(var(--safe-top, 0px) + var(--p4h-fixed-header-h, 56px) + 12px)"
+              ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 12px)"
               : 12,
             paddingBottom: isMobileNav
               ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
@@ -1210,7 +1210,7 @@ export default function SubscriptionClient({
               gap:12,
               background:'var(--panel)',
               maxHeight: isMobileNav
-                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--p4h-fixed-header-h, 56px) + var(--nav-h, 0px) + 24px))"
+                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
                 : "85vh",
               overflowY: 'auto',
               WebkitOverflowScrolling: 'touch',

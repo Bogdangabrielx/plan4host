@@ -617,12 +617,8 @@ export default function AppShell({ title, currentPath, children }: Props) {
 	              }
 	              input, textarea, select { font-size: 16px; }
 		              html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-		              @media (max-width: 640px) {
-		                /* Keep a single source of truth for "fixed header height" on BottomNav screens. */
-		                :root { --p4h-fixed-header-h: var(--app-header-h, 64px); }
-		              }
 		              @media (max-width: 480px) {
-		                /* Only on very small screens the header is fixed, so main needs padding-top. */
+		                :root { --p4h-fixed-header-h: var(--app-header-h, 64px); }
 		                #app-main { padding-top: calc(var(--app-header-h, 64px) + var(--safe-top, 0px)) !important; }
 		              }
 		            `,
