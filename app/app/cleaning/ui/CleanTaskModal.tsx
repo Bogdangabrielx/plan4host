@@ -242,9 +242,25 @@ export default function CleanTaskModal({
                 const checked = !!local[t.id];
                 return (
                   <li key={t.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--panel)", borderRadius: 10, padding: 10 }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: locked || saving ? "default" : "pointer", opacity: locked ? .7 : 1 }}>
-                      <input type="checkbox" checked={checked} disabled={locked || saving} onChange={(e) => toggle(t.id, (e.target as HTMLInputElement).checked)} />
-                      <span>{t.label}</span>
+                    <label
+                      className="cb-checkRow"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        cursor: locked || saving ? "default" : "pointer",
+                        opacity: locked ? .7 : 1,
+                        minWidth: 0,
+                      }}
+                    >
+                      <input
+                        className="cb-checkInput"
+                        type="checkbox"
+                        checked={checked}
+                        disabled={locked || saving}
+                        onChange={(e) => toggle(t.id, (e.target as HTMLInputElement).checked)}
+                      />
+                      <span className="cb-checkText">{t.label}</span>
                     </label>
                   </li>
                 );
@@ -281,6 +297,51 @@ export default function CleanTaskModal({
         /* Visible task area fixed height (approx ~8 on desktop, ~6 on mobile) */
         .ct-body { height: 448px; padding-bottom: calc(var(--safe-bottom) + 8px); }
         @media (max-width: 720px) { .ct-body { height: 336px; } }
+
+        /* Custom checkbox (matches Property Setup) */
+        .cb-checkRow{
+          user-select: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .cb-checkInput{
+          appearance: none;
+          -webkit-appearance: none;
+          width: 18px;
+          height: 18px;
+          border-radius: 999px;
+          border: 1px solid color-mix(in srgb, var(--muted) 26%, transparent);
+          background: color-mix(in srgb, var(--muted) 8%, transparent);
+          display: grid;
+          place-items: center;
+          cursor: pointer;
+          flex: 0 0 auto;
+          touch-action: manipulation;
+          color: transparent;
+        }
+        .cb-checkInput::after{
+          content: "✓";
+          opacity: 0;
+          font-weight: 900;
+          font-size: 12px;
+          line-height: 1;
+          transform: translateY(-0.5px);
+        }
+        .cb-checkInput:checked{
+          border-color: color-mix(in srgb, var(--success, #22c55e) 80%, transparent);
+          background: color-mix(in srgb, var(--success, #22c55e) 16%, var(--card));
+          color: color-mix(in srgb, var(--success, #22c55e) 90%, var(--text));
+        }
+        .cb-checkInput:checked::after{ opacity: 1; }
+        .cb-checkInput:focus-visible{
+          outline: 2px solid color-mix(in srgb, var(--success, #22c55e) 45%, transparent);
+          outline-offset: 3px;
+        }
+        .cb-checkText{
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
       `}</style>
     </>,
     portalTarget

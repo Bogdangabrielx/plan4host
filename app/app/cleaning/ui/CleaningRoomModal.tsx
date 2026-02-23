@@ -154,12 +154,15 @@ export default function CleaningRoomModal({
                   display: "flex", alignItems: "center", gap: 8,
                   background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10, padding: 10
                 }}>
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={(e) => toggleTask(t.id, (e.target as HTMLInputElement).checked)}
-                  />
-                  <span>{t.label}</span>
+                  <label className="cb-checkRow" style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", minWidth: 0 }}>
+                    <input
+                      className="cb-checkInput"
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => toggleTask(t.id, (e.target as HTMLInputElement).checked)}
+                    />
+                    <span className="cb-checkText">{t.label}</span>
+                  </label>
                 </li>
               );
             })}
@@ -178,6 +181,52 @@ export default function CleaningRoomModal({
           </button>
         </div>
       </div>
+      <style jsx>{`
+        /* Custom checkbox (matches Property Setup) */
+        .cb-checkRow{
+          user-select: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .cb-checkInput{
+          appearance: none;
+          -webkit-appearance: none;
+          width: 18px;
+          height: 18px;
+          border-radius: 999px;
+          border: 1px solid color-mix(in srgb, var(--muted) 26%, transparent);
+          background: color-mix(in srgb, var(--muted) 8%, transparent);
+          display: grid;
+          place-items: center;
+          cursor: pointer;
+          flex: 0 0 auto;
+          touch-action: manipulation;
+          color: transparent;
+        }
+        .cb-checkInput::after{
+          content: "✓";
+          opacity: 0;
+          font-weight: 900;
+          font-size: 12px;
+          line-height: 1;
+          transform: translateY(-0.5px);
+        }
+        .cb-checkInput:checked{
+          border-color: color-mix(in srgb, var(--success, #22c55e) 80%, transparent);
+          background: color-mix(in srgb, var(--success, #22c55e) 16%, var(--card));
+          color: color-mix(in srgb, var(--success, #22c55e) 90%, var(--text));
+        }
+        .cb-checkInput:checked::after{ opacity: 1; }
+        .cb-checkInput:focus-visible{
+          outline: 2px solid color-mix(in srgb, var(--success, #22c55e) 45%, transparent);
+          outline-offset: 3px;
+        }
+        .cb-checkText{
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      `}</style>
     </div>
   );
 }
