@@ -118,6 +118,7 @@ export default function SubscriptionClient({
   const [payResultOpen, setPayResultOpen] = useState<boolean>(false);
   const [payResultSuccess, setPayResultSuccess] = useState<boolean>(false);
   const [payResultPlan, setPayResultPlan] = useState<string>("");
+  const [isMobileNav, setIsMobileNav] = useState<boolean>(false);
 
   // Demo-only: billing profile collection UI (no persistence yet)
   type BuyerType = 'b2b' | 'b2c';
@@ -232,7 +233,27 @@ export default function SubscriptionClient({
     })();
     return () => {
       alive = false;
-    };
+  };
+
+  // Same breakpoint as BottomNav (<= 640px). Used to keep modals under AppHeader and above BottomNav.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia?.("(max-width: 640px)");
+    const update = () => setIsMobileNav(!!mq?.matches);
+    update();
+    try {
+      mq?.addEventListener?.("change", update);
+      return () => mq?.removeEventListener?.("change", update);
+    } catch {
+      // Safari fallback
+      // @ts-ignore
+      mq?.addListener?.(update);
+      return () => {
+        // @ts-ignore
+        mq?.removeListener?.(update);
+      };
+    }
+  }, []);
   }, []);
 
   useEffect(() => {
@@ -1078,7 +1099,24 @@ export default function SubscriptionClient({
           aria-modal="true"
           aria-labelledby="buyer-type-title"
           onClick={() => setBuyerTypeOpen(false)}
-          style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'grid',
+            placeItems: isMobileNav ? 'start center' : 'center',
+            paddingLeft: 12,
+            paddingRight: 12,
+            paddingTop: isMobileNav
+              ? "calc(var(--safe-top, 0px) + var(--p4h-fixed-header-h, var(--app-header-h, 64px)) + 12px)"
+              : 12,
+            paddingBottom: isMobileNav
+              ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
+              : 12,
+            background: "color-mix(in srgb, var(--bg) 55%, transparent)",
+            backdropFilter: 'blur(2px)',
+            WebkitBackdropFilter: 'blur(2px)',
+          }}
         >
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
@@ -1117,7 +1155,24 @@ export default function SubscriptionClient({
           aria-modal="true"
           aria-labelledby="billing-title"
           onClick={() => setBillingFormOpen(false)}
-          style={{ position:'fixed', inset:0, zIndex:9999, display:'grid', placeItems:'center', padding:12, background:"color-mix(in srgb, var(--bg) 55%, transparent)", backdropFilter:'blur(2px)', WebkitBackdropFilter:'blur(2px)' }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'grid',
+            placeItems: isMobileNav ? 'start center' : 'center',
+            paddingLeft: 12,
+            paddingRight: 12,
+            paddingTop: isMobileNav
+              ? "calc(var(--safe-top, 0px) + var(--p4h-fixed-header-h, var(--app-header-h, 64px)) + 12px)"
+              : 12,
+            paddingBottom: isMobileNav
+              ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
+              : 12,
+            background: "color-mix(in srgb, var(--bg) 55%, transparent)",
+            backdropFilter: 'blur(2px)',
+            WebkitBackdropFilter: 'blur(2px)',
+          }}
         >
           <div
             className="modalCard"
@@ -1130,8 +1185,12 @@ export default function SubscriptionClient({
               display:'grid',
               gap:12,
               background:'var(--panel)',
-              maxHeight:'85vh',
-              overflowY:'auto',
+              maxHeight: isMobileNav
+                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--p4h-fixed-header-h, var(--app-header-h, 64px)) + var(--nav-h, 0px) + 24px))"
+                : "85vh",
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain',
             }}
           >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
