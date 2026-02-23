@@ -798,30 +798,77 @@ export default function RoomDetailModal({
         overscrollBehavior: "contain",
       }}
       >
-        <style
-        // Keep styles scoped to this modal without relying on build-time CSS tooling.
-        dangerouslySetInnerHTML={{
-          __html: `
-            [data-roomdetail-scroll]{
-              overscroll-behavior: contain;
-              -webkit-overflow-scrolling: touch;
-              scrollbar-width: thin;
-              scrollbar-color: color-mix(in srgb, var(--text) 28%, transparent) transparent;
-            }
-            [data-roomdetail-scroll]::-webkit-scrollbar{ width: 8px; }
-            [data-roomdetail-scroll]::-webkit-scrollbar-track{ background: transparent; }
-            [data-roomdetail-scroll]::-webkit-scrollbar-thumb{
-              background: color-mix(in srgb, var(--text) 28%, transparent);
-              border-radius: 999px;
-            }
-            @media (min-width: 720px){
-              /* Hide scrollbars on large screens (keep scrolling enabled). */
-              [data-roomdetail-scroll]{ scrollbar-width: none; }
-              [data-roomdetail-scroll]::-webkit-scrollbar{ width: 0; height: 0; }
-            }
-          `,
-        }}
-      />
+	        <style
+	        // Keep styles scoped to this modal without relying on build-time CSS tooling.
+	        dangerouslySetInnerHTML={{
+	          __html: `
+	            [data-roomdetail-scroll]{
+	              overscroll-behavior: contain;
+	              -webkit-overflow-scrolling: touch;
+	              scrollbar-width: thin;
+	              scrollbar-color: color-mix(in srgb, var(--text) 28%, transparent) transparent;
+	            }
+	            [data-roomdetail-scroll]::-webkit-scrollbar{ width: 8px; }
+	            [data-roomdetail-scroll]::-webkit-scrollbar-track{ background: transparent; }
+	            [data-roomdetail-scroll]::-webkit-scrollbar-thumb{
+	              background: color-mix(in srgb, var(--text) 28%, transparent);
+	              border-radius: 999px;
+	            }
+	            .rd-checkRow{
+	              display: inline-flex;
+	              align-items: center;
+	              gap: 10px;
+	              cursor: pointer;
+	              user-select: none;
+	              -webkit-tap-highlight-color: transparent;
+	            }
+	            .rd-checkInput{
+	              appearance: none;
+	              -webkit-appearance: none;
+	              width: 20px;
+	              height: 20px;
+	              border-radius: 999px;
+	              border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+	              background: color-mix(in srgb, var(--card) 55%, transparent);
+	              display: grid;
+	              place-items: center;
+	              cursor: pointer;
+	              flex: 0 0 auto;
+	              touch-action: manipulation;
+	            }
+	            .rd-checkInput::after{
+	              content: "";
+	              width: 10px;
+	              height: 6px;
+	              border-left: 2px solid transparent;
+	              border-bottom: 2px solid transparent;
+	              transform: rotate(-45deg) translateY(-1px);
+	            }
+	            .rd-checkInput:checked{
+	              border-color: color-mix(in srgb, var(--success, #22c55e) 80%, transparent);
+	              background: color-mix(in srgb, var(--success, #22c55e) 16%, transparent);
+	            }
+	            .rd-checkInput:checked::after{
+	              border-left-color: var(--success, #22c55e);
+	              border-bottom-color: var(--success, #22c55e);
+	            }
+	            .rd-checkInput:focus-visible{
+	              outline: 2px solid color-mix(in srgb, var(--success, #22c55e) 45%, transparent);
+	              outline-offset: 3px;
+	            }
+	            .rd-checkText{
+	              font-weight: 650;
+	              color: var(--text);
+	              min-width: 0;
+	            }
+	            @media (min-width: 720px){
+	              /* Hide scrollbars on large screens (keep scrolling enabled). */
+	              [data-roomdetail-scroll]{ scrollbar-width: none; }
+	              [data-roomdetail-scroll]::-webkit-scrollbar{ width: 0; height: 0; }
+	            }
+	          `,
+	        }}
+	      />
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
@@ -1433,24 +1480,27 @@ export default function RoomDetailModal({
             <div style={{ display: "grid", gap: 10, marginTop: 6 }}>
               <strong style={{ letterSpacing: 0.3 }}>{t.roomDetails}</strong>
 
-              {checkDefs.length > 0 && (
-                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
-                  {checkDefs.map(c => (
-                    <li key={c.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <input
-                        type="checkbox"
-                        checked={!!checkValues[c.id]}
-                        onChange={(e) => {
-                          const el = e.target as HTMLInputElement;
-                          setCheckValues(v => ({ ...v, [c.id]: el.checked }));
-                          setDetailsDirty(true);
-                        }}
-                      />
-                      <span style={{ fontWeight: 600 }}>{c.label}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+	              {checkDefs.length > 0 && (
+	                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
+	                  {checkDefs.map(c => (
+	                    <li key={c.id}>
+	                      <label className="rd-checkRow">
+	                        <input
+	                          className="rd-checkInput"
+	                          type="checkbox"
+	                          checked={!!checkValues[c.id]}
+	                          onChange={(e) => {
+	                            const el = e.target as HTMLInputElement;
+	                            setCheckValues(v => ({ ...v, [c.id]: el.checked }));
+	                            setDetailsDirty(true);
+	                          }}
+	                        />
+	                        <span className="rd-checkText">{c.label}</span>
+	                      </label>
+	                    </li>
+	                  ))}
+	                </ul>
+	              )}
 
               {textDefs.length > 0 && (
                 <div style={{ display: "grid", gap: 10 }}>
