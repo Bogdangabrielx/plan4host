@@ -381,12 +381,13 @@ export default function LoginClient({
     : status === "Error" ? t.error
     : t.idle;
 
-  const quoteEmphasis = lang === "ro" ? "Timpul tău." : "Your time.";
+  const quoteEmphasisSearch = lang === "ro" ? "timpul tău." : "your time.";
+  const quoteEmphasisDisplay = lang === "ro" ? "Timpul tău." : "Your time.";
   const quoteLine2 = t.quoteLine2 || "";
-  const quoteEmIdx = quoteLine2.indexOf(quoteEmphasis);
+  const quoteEmIdx = quoteLine2.indexOf(quoteEmphasisSearch);
   const quote2Pre = quoteEmIdx >= 0 ? quoteLine2.slice(0, quoteEmIdx) : quoteLine2;
-  const quote2Em = quoteEmIdx >= 0 ? quoteLine2.slice(quoteEmIdx, quoteEmIdx + quoteEmphasis.length) : "";
-  const quote2Post = quoteEmIdx >= 0 ? quoteLine2.slice(quoteEmIdx + quoteEmphasis.length) : "";
+  const quote2Em = quoteEmIdx >= 0 ? quoteEmphasisDisplay : "";
+  const quote2Post = quoteEmIdx >= 0 ? quoteLine2.slice(quoteEmIdx + quoteEmphasisSearch.length) : "";
 
   return (
     <>
