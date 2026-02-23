@@ -245,6 +245,7 @@ export default function ReservationMessageClient({
   const [templates, setTemplates] = useState<Array<{ id: string; title: string; status: "draft" | "published"; updated_at: string }>>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loadingList, setLoadingList] = useState<boolean>(false);
+  const [statusToggleId, setStatusToggleId] = useState<string | null>(null);
   const [titleText, setTitleText] = useState<string>("");
   const [focusedInput, setFocusedInput] = useState<null | "title" | "body">(null);
   const [saving, setSaving] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
@@ -756,6 +757,92 @@ export default function ReservationMessageClient({
       setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
       if (activeId === id) setActiveId(null);
     } catch (e: any) { alert(e?.message || (uiLang === "ro" ? "Actiunea a esuat" : "Failed")); }
+  }
+
+  async function toggleTemplateStatus(id: string, currentStatus: "draft" | "published") {
+    if (!propertyId) return;
+    if (statusToggleId) return;
+
+    const nextStatus: "draft" | "published" = currentStatus === "published" ? "draft" : "published";
+
+    // Optimistic UI so it feels instant.
+    setStatusToggleId(id);
+    setSaving("Saving…");
+    setTemplates((prev) => prev.map((x) => (x.id === id ? { ...x, status: nextStatus } : x)));
+
+    try {
+      const r = await fetch(`/api/reservation-message/template?id=${encodeURIComponent(id)}`, { cache: "no-store" });
+      const j = await r.json().catch(() => ({}));
+      const tpl = j?.template;
+      if (!r.ok || !tpl) throw new Error(j?.error || "Failed to load template.");
+
+      const allowedKinds = new Set(["hour_before_checkin", "on_arrival", "hours_before_checkout"]);
+      const normalizedKind = String(tpl.schedule_kind || "").toLowerCase();
+      const needsScheduler = nextStatus === "published" && !allowedKinds.has(normalizedKind);
+
+      const schedule_kind = needsScheduler ? "on_arrival" : (allowedKinds.has(normalizedKind) ? normalizedKind : null);
+      const schedule_offset_hours =
+        schedule_kind === "hours_before_checkout" ? 12 :
+        schedule_kind === "hour_before_checkin" ? 1 :
+        null;
+
+      const payload = {
+        id,
+        property_id: String(tpl.property_id || propertyId),
+        title: String(tpl.title || ""),
+        status: nextStatus,
+        schedule_kind,
+        schedule_offset_hours,
+        blocks: Array.isArray(tpl.blocks)
+          ? tpl.blocks.map((b: any) => ({ type: b.type, text: b.text ?? null, lang: b.lang ?? "ro" }))
+          : [],
+        fields: Array.isArray(tpl.fields)
+          ? tpl.fields.map((f: any) => ({
+              key: f.key,
+              label: f.label,
+              required: !!f.required,
+              multiline: !!f.multiline,
+              placeholder: f.placeholder ?? null,
+              default_value: f.default_value ?? null,
+            }))
+          : [],
+      };
+
+      const res = await fetch("/api/reservation-message/template", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const jj = await res.json().catch(() => ({}));
+      if (!res.ok || !jj?.ok) throw new Error(jj?.error || "Failed to update status.");
+
+      // Refresh list so updated_at and server truth is reflected.
+      try {
+        const rl = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(propertyId)}`, { cache: "no-store" });
+        const jl = await rl.json().catch(() => ({}));
+        const items = Array.isArray(jl?.items) ? jl.items : [];
+        setTemplates(items.map((x: any) => ({ id: String(x.id), title: String(x.title || ""), status: (x.status || "draft"), updated_at: String(x.updated_at || "") })) as any);
+      } catch {}
+
+      if (activeId === id) {
+        setTpl((prev) => ({
+          ...prev,
+          status: nextStatus,
+          schedule_kind: (schedule_kind ?? "") as TemplateState["schedule_kind"],
+          schedule_offset_hours: schedule_offset_hours ?? null,
+        }));
+      }
+
+      setSaving("Synced");
+      window.setTimeout(() => setSaving("Idle"), 700);
+    } catch (e) {
+      // Revert optimistic UI on failure.
+      setTemplates((prev) => prev.map((x) => (x.id === id ? { ...x, status: currentStatus } : x)));
+      setSaving("Error");
+      window.setTimeout(() => setSaving("Idle"), 900);
+    } finally {
+      setStatusToggleId(null);
+    }
   }
 
   /** --------- Editor helpers --------- */
@@ -1321,6 +1408,38 @@ export default function ReservationMessageClient({
                     </span>
 
                     <div style={{ display: "flex", gap: 6, flex: "0 0 auto" }}>
+                      <button
+                        className="sb-btn"
+                        style={{ ...iconBtn, touchAction: "manipulation" }}
+                        aria-label={tplItem.status === "published" ? (uiLang === "ro" ? "Dezactiveaza" : "Turn off") : (uiLang === "ro" ? "Activeaza" : "Turn on")}
+                        title={tplItem.status === "published" ? (uiLang === "ro" ? "Dezactiveaza" : "Turn off") : (uiLang === "ro" ? "Activeaza" : "Turn on")}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleTemplateStatus(tplItem.id, tplItem.status);
+                        }}
+                        disabled={statusToggleId === tplItem.id}
+                      >
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          aria-hidden="true"
+                          style={{
+                            color: tplItem.status === "published" ? "var(--primary)" : "var(--muted)",
+                            pointerEvents: "none",
+                          }}
+                        >
+                          <path d="M12 2v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          <path
+                            d="M6.2 4.8a9 9 0 1 0 11.6 0"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </button>
                       <button
                         className="sb-btn"
                         style={iconBtn}
