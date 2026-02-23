@@ -114,8 +114,13 @@ export default function RoomDetailsTab({
                 } }
                 style={textInput} />
 
-              <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <input type="checkbox" defaultChecked={c.default_value} onChange={(e) => onToggleCheckDefault(c.id, e.currentTarget.checked)} />
+              <label className="rd-defaultRow" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input
+                  className="rd-defaultCheck"
+                  type="checkbox"
+                  defaultChecked={c.default_value}
+                  onChange={(e) => onToggleCheckDefault(c.id, e.currentTarget.checked)}
+                />
                 {t.defaultOn}
               </label>
               <div className="rd-actions" style={{ display: "flex", gap: 6 }}>
@@ -247,6 +252,51 @@ export default function RoomDetailsTab({
         .rd-row[data-kind="check"] > label { grid-area: toggle; }
         .rd-row[data-kind="check"] > .rd-actions { grid-area: actions; }
         .rd-actions { display: flex; gap: 8px; justify-content: flex-end; }
+      }
+
+      /* Default ON toggle: custom checkbox (muted when unchecked, green when checked) */
+      .rd-defaultRow{
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: var(--fs-s);
+        font-weight: 800;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+      }
+      .rd-defaultCheck{
+        appearance: none;
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in srgb, var(--muted) 26%, transparent);
+        background: color-mix(in srgb, var(--muted) 8%, transparent);
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        cursor: pointer;
+        touch-action: manipulation;
+        color: transparent;
+      }
+      .rd-defaultCheck::after{
+        content: "✓";
+        opacity: 0;
+        font-weight: 900;
+        font-size: 12px;
+        line-height: 1;
+        transform: translateY(-0.5px);
+      }
+      .rd-defaultCheck:checked{
+        border-color: color-mix(in srgb, var(--success, #22c55e) 80%, transparent);
+        background: color-mix(in srgb, var(--success, #22c55e) 16%, var(--card));
+        color: color-mix(in srgb, var(--success, #22c55e) 90%, var(--text));
+      }
+      .rd-defaultCheck:checked::after{ opacity: 1; }
+      .rd-defaultCheck:focus-visible{
+        outline: 2px solid color-mix(in srgb, var(--success, #22c55e) 45%, transparent);
+        outline-offset: 3px;
       }
     `}</style></>
   );
