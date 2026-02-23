@@ -381,6 +381,13 @@ export default function LoginClient({
     : status === "Error" ? t.error
     : t.idle;
 
+  const quoteEmphasis = lang === "ro" ? "timpul tău." : "your time.";
+  const quoteLine2 = t.quoteLine2 || "";
+  const quoteEmIdx = quoteLine2.indexOf(quoteEmphasis);
+  const quote2Pre = quoteEmIdx >= 0 ? quoteLine2.slice(0, quoteEmIdx) : quoteLine2;
+  const quote2Em = quoteEmIdx >= 0 ? quoteLine2.slice(quoteEmIdx, quoteEmIdx + quoteEmphasis.length) : "";
+  const quote2Post = quoteEmIdx >= 0 ? quoteLine2.slice(quoteEmIdx + quoteEmphasis.length) : "";
+
   return (
     <>
       <div style={outerWrap} className="p4h-outerWrap">
@@ -390,7 +397,9 @@ export default function LoginClient({
               “{t.quoteLine1}
             </span>
             <span style={{ display: "block", whiteSpace: "nowrap" }}>
-              {t.quoteLine2}”
+              {quote2Pre}
+              {quote2Em ? <span style={{ fontWeight: 850 }}>{quote2Em}</span> : null}
+              {quote2Post}”
             </span>
           </div>
           <div style={quoteAuthorWrap} className="p4h-quoteAuthorWrap">
@@ -643,7 +652,7 @@ const quoteText: React.CSSProperties = {
   width: "100%",
   maxWidth: 560,
   fontSize: 15,
-  fontWeight: 850,
+  fontWeight: 550,
   color: "var(--text)",
   lineHeight: 1.25,
   fontStyle: "italic",
