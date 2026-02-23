@@ -701,6 +701,31 @@ export default function SubscriptionClient({
     } catch {}
   }, []);
 
+  // Billing form validation (used by fixed footer buttons in the modal)
+  const billingEmail = buyerType === 'b2c' ? formB2C.email : buyerType === 'b2b' ? formB2B.email : '';
+  const billingConfirmEmail = buyerType === 'b2c' ? formB2C.confirmEmail : buyerType === 'b2b' ? formB2B.confirmEmail : '';
+  const billingEmailOk = /.+@.+\..+/.test((billingEmail || '').trim());
+  const billingConfirmOk = billingEditMode
+    ? true
+    : ((billingEmail || '').trim() !== '' && (billingEmail || '').trim() === (billingConfirmEmail || '').trim());
+  const billingPostalLen = (buyerType === 'b2c' ? formB2C.postalCode : buyerType === 'b2b' ? formB2B.postalCode : '').trim().length;
+  const billingPostalOk = billingPostalLen >= 3;
+  const billingAddressOk =
+    buyerType === 'b2c'
+      ? (formB2C.street.trim() !== '' && formB2C.city.trim() !== '' && formB2C.county.trim() !== '')
+      : buyerType === 'b2b'
+        ? (formB2B.street.trim() !== '' && formB2B.city.trim() !== '' && formB2B.county.trim() !== '')
+        : false;
+  const billingNameOk =
+    buyerType === 'b2c'
+      ? (formB2C.fullName.trim().length >= 2)
+      : buyerType === 'b2b'
+        ? (formB2B.legalName.trim().length >= 2)
+        : false;
+  const billingTaxOk = buyerType === 'b2b' ? (formB2B.taxId.trim().length >= 2) : true;
+  const billingCanSubmit =
+    !!buyerType && billingEmailOk && billingConfirmOk && billingPostalOk && billingAddressOk && billingNameOk && billingTaxOk;
+
   return (
     <div className={styles.container}>
       {/* Header bar: current plan */}
@@ -1121,53 +1146,55 @@ export default function SubscriptionClient({
             overscrollBehavior: 'contain',
           }}
         >
-          <div
-            className="modalCard"
-            onClick={(e)=>e.stopPropagation()}
-            style={{
-              width:'min(560px, 100%)',
-              border:'1px solid var(--border)',
-              borderRadius:16,
-              padding:16,
-              display:'grid',
-              gap:12,
-              background:'var(--panel)',
-              maxHeight: isMobileNav
-                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
-                : "85vh",
-              overflowY: 'auto',
-              WebkitOverflowScrolling: 'touch',
-              overscrollBehavior: 'contain',
-            }}
-          >
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <h3 id="buyer-type-title" style={{ margin:0 }}>{lang === "ro" ? "Tip facturare" : "Billing Type"}</h3>
-              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setBuyerTypeOpen(false)}>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            </div>
+	          <div
+	            className="modalCard"
+	            onClick={(e)=>e.stopPropagation()}
+	            style={{
+	              width:'min(560px, 100%)',
+	              border:'1px solid var(--border)',
+	              borderRadius:16,
+	              padding:0,
+	              display:'grid',
+	              gridTemplateRows:'auto minmax(0, 1fr)',
+	              background:'var(--panel)',
+	              maxHeight: isMobileNav
+	                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
+	                : "85vh",
+	              overflow: 'hidden',
+	            }}
+	          >
+	            {/* Fixed header */}
+	            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', borderBottom:'1px solid color-mix(in srgb, var(--border) 70%, transparent)', background:'var(--panel)' }}>
+	              <h3 id="buyer-type-title" style={{ margin:0 }}>{lang === "ro" ? "Tip facturare" : "Billing Type"}</h3>
+	              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setBuyerTypeOpen(false)}>
+	                <svg viewBox="0 0 24 24" aria-hidden="true">
+	                  <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+	                </svg>
+	              </button>
+	            </div>
 
-            <p style={{ color:'var(--muted)', margin:'4px 0 0' }}>{lang === "ro" ? "Cine plateste acest abonament?" : "Who is paying for this subscription?"}</p>
+	            {/* Scrollable body */}
+	            <div style={{ padding:16, overflowY:'auto', WebkitOverflowScrolling:'touch', overscrollBehavior:'contain', minHeight:0 }}>
+	              <p style={{ color:'var(--muted)', margin:'4px 0 0' }}>{lang === "ro" ? "Cine plateste acest abonament?" : "Who is paying for this subscription?"}</p>
 
-            <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr' }}>
-              <button
-                className={`${styles.btn} ${styles.btnChoose}`}
-                data-selected={buyerType==='b2b' || undefined}
-                onClick={()=>{ setBuyerType('b2b'); setBuyerTypeOpen(false); setBillingFormOpen(true); }}
-                style={{ border:'1px solid var(--border)', background:'transparent' }}
-              >{lang === "ro" ? "Companie (B2B)" : "Business (B2B)"}</button>
-              <button
-                className={`${styles.btn} ${styles.btnChoose}`}
-                data-selected={buyerType==='b2c' || undefined}
-                onClick={()=>{ setBuyerType('b2c'); setBuyerTypeOpen(false); setBillingFormOpen(true); }}
-                style={{ border:'1px solid var(--border)', background:'transparent' }}
-              >{lang === "ro" ? "Persoana fizica (B2C)" : "Individual (B2C)"}</button>
-            </div>
-          </div>
-        </div>
-      )}
+	              <div style={{ display:'grid', gap:10, gridTemplateColumns:'1fr 1fr', marginTop:10 }}>
+	                <button
+	                  className={`${styles.btn} ${styles.btnChoose}`}
+	                  data-selected={buyerType==='b2b' || undefined}
+	                  onClick={()=>{ setBuyerType('b2b'); setBuyerTypeOpen(false); setBillingFormOpen(true); }}
+	                  style={{ border:'1px solid var(--border)', background:'transparent' }}
+	                >{lang === "ro" ? "Companie (B2B)" : "Business (B2B)"}</button>
+	                <button
+	                  className={`${styles.btn} ${styles.btnChoose}`}
+	                  data-selected={buyerType==='b2c' || undefined}
+	                  onClick={()=>{ setBuyerType('b2c'); setBuyerTypeOpen(false); setBillingFormOpen(true); }}
+	                  style={{ border:'1px solid var(--border)', background:'transparent' }}
+	                >{lang === "ro" ? "Persoana fizica (B2C)" : "Individual (B2C)"}</button>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	      )}
 
       {/* Billing Details modal (demo only; shows B2C or B2B based on selection) */}
       {billingFormOpen && (
@@ -1198,44 +1225,45 @@ export default function SubscriptionClient({
             overscrollBehavior: 'contain',
           }}
         >
-          <div
-            className="modalCard"
-            onClick={(e)=>e.stopPropagation()}
-            style={{
-              width:'min(720px, 100%)',
-              border:'1px solid var(--border)',
-              borderRadius:16,
-              padding:16,
-              display:'grid',
-              gap:12,
-              background:'var(--panel)',
-              maxHeight: isMobileNav
-                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
-                : "85vh",
-              overflowY: 'auto',
-              WebkitOverflowScrolling: 'touch',
-              overscrollBehavior: 'contain',
-            }}
-          >
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <h3 id="billing-title" style={{ margin:0 }}>
-                {buyerType==='b2b'
-                  ? (lang === "ro" ? 'Detalii facturare (Companie)' : 'Billing Details (Business)')
-                  : (lang === "ro" ? 'Detalii facturare (Persoana fizica)' : 'Billing Details (Individual)')}
-              </h3>
-              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>{ setBillingFormOpen(false); setBillingEditMode(false); }}>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            </div>
+	          <div
+	            className="modalCard"
+	            onClick={(e)=>e.stopPropagation()}
+	            style={{
+	              width:'min(720px, 100%)',
+	              border:'1px solid var(--border)',
+	              borderRadius:16,
+	              padding:0,
+	              display:'grid',
+	              gridTemplateRows:'auto minmax(0, 1fr) auto',
+	              background:'var(--panel)',
+	              maxHeight: isMobileNav
+	                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
+	                : "85vh",
+	              overflow: 'hidden',
+	            }}
+	          >
+	            {/* Fixed header */}
+	            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', borderBottom:'1px solid color-mix(in srgb, var(--border) 70%, transparent)', background:'var(--panel)' }}>
+	              <h3 id="billing-title" style={{ margin:0 }}>
+	                {buyerType==='b2b'
+	                  ? (lang === "ro" ? 'Detalii facturare (Companie)' : 'Billing Details (Business)')
+	                  : (lang === "ro" ? 'Detalii facturare (Persoana fizica)' : 'Billing Details (Individual)')}
+	              </h3>
+	              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>{ setBillingFormOpen(false); setBillingEditMode(false); }}>
+	                <svg viewBox="0 0 24 24" aria-hidden="true">
+	                  <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+	                </svg>
+	              </button>
+	            </div>
 
-            {buyerType === 'b2c' ? (
-              <div style={{ display:'grid', gap:10 }}>
-                <div style={{ display:'grid', gap:6 }}>
-                  <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Nume complet" : "Full name"}</label>
-                  <input className={styles.input} placeholder={lang === "ro" ? "ex: Andrei Popescu" : "e.g. Andrei Popescu"} value={formB2C.fullName} onChange={e=>setFormB2C(s=>({...s, fullName:e.target.value}))} />
-                </div>
+	            {/* Scrollable body */}
+	            <div style={{ padding:16, overflowY:'auto', WebkitOverflowScrolling:'touch', overscrollBehavior:'contain', minHeight:0 }}>
+	            {buyerType === 'b2c' ? (
+	              <div style={{ display:'grid', gap:10 }}>
+	                <div style={{ display:'grid', gap:6 }}>
+	                  <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Nume complet" : "Full name"}</label>
+	                  <input className={styles.input} placeholder={lang === "ro" ? "ex: Andrei Popescu" : "e.g. Andrei Popescu"} value={formB2C.fullName} onChange={e=>setFormB2C(s=>({...s, fullName:e.target.value}))} />
+	                </div>
                 <div style={{ display:'grid', gap:6 }}>
                   <label style={{ color:'var(--muted)' }}>{lang === "ro" ? "Strada si numar" : "Street & number"}</label>
                   <input className={styles.input} placeholder={lang === "ro" ? "ex: Str. Lalelelor 12A" : "e.g. Str. Lalelelor 12A"} value={formB2C.street} onChange={e=>setFormB2C(s=>({...s, street:e.target.value}))} />
@@ -1414,53 +1442,40 @@ export default function SubscriptionClient({
                     <input className={styles.input} placeholder={lang === "ro" ? "ex: RO49AAAA1B31007593840000" : "e.g. RO49AAAA1B31007593840000"} value={formB2B.iban} onChange={e=>setFormB2B(s=>({...s, iban:e.target.value}))} />
                   </div>
                 </div>
-              </div>
-            )}
+	              </div>
+	            )}
 
-            {(() => {
-              const email = buyerType==='b2c' ? formB2C.email : formB2B.email;
-              const confirmEmail = buyerType==='b2c' ? formB2C.confirmEmail : formB2B.confirmEmail;
-              const emailOk = /.+@.+\..+/.test(email.trim());
-              const confirmOk = billingEditMode ? true : (email.trim() !== '' && email.trim() === confirmEmail.trim());
-              const postalLen = (buyerType==='b2c' ? formB2C.postalCode : formB2B.postalCode).trim().length;
-              const postalOk = postalLen >= 3;
-              const addressOk = (buyerType==='b2c' ? formB2C.street : formB2B.street).trim() !== '' &&
-                                (buyerType==='b2c' ? formB2C.city : formB2B.city).trim() !== '' &&
-                                (buyerType==='b2c' ? formB2C.county : formB2B.county).trim() !== '';
-              const nameOk = buyerType==='b2c' ? (formB2C.fullName.trim().length >= 2) : (formB2B.legalName.trim().length >= 2);
-              const taxOk = buyerType==='b2b' ? (formB2B.taxId.trim().length >= 2) : true;
-              const canSubmit = emailOk && confirmOk && postalOk && addressOk && nameOk && taxOk;
-              return (
-                <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
-                  {!billingEditMode && (
-                    <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>{ setBillingFormOpen(false); setBuyerTypeOpen(true); }}>
-                      <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
-                        <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      {lang === "ro" ? "Inapoi" : "Back"}
-                    </button>
-                  )}
-                  <button
-                    className={`${styles.btn} ${styles.btnPrimary}`}
-                    disabled={!canSubmit}
-                    onClick={async ()=>{
-                      const ok = await saveBillingProfile();
-                      if (!ok) return;
-                      setBillingFormOpen(false);
-                      setBillingEditMode(false);
-                      await refreshBillingStatus();
-                      if (selectedPlan) {
-                        const plan = selectedPlan; setSelectedPlan(null);
-                        startCheckout(plan);
-                      }
-                    }}
-                  >{billingEditMode ? (lang === "ro" ? 'Salveaza modificarile' : 'Save changes') : (lang === "ro" ? 'Salveaza si continua' : 'Save & Continue')}</button>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
-      )}
+	            </div>
+
+	            {/* Fixed footer */}
+	            <div style={{ display:'flex', justifyContent:'flex-end', gap:10, padding:'14px 16px', borderTop:'1px solid color-mix(in srgb, var(--border) 70%, transparent)', background:'var(--panel)' }}>
+	              {!billingEditMode && (
+	                <button className={`${styles.btn} ${styles.btnGhost}`} onClick={()=>{ setBillingFormOpen(false); setBuyerTypeOpen(true); }}>
+	                  <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width:16, height:16, marginRight:6 }}>
+	                    <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+	                  </svg>
+	                  {lang === "ro" ? "Inapoi" : "Back"}
+	                </button>
+	              )}
+	              <button
+	                className={`${styles.btn} ${styles.btnPrimary}`}
+	                disabled={!billingCanSubmit}
+	                onClick={async ()=>{
+	                  const ok = await saveBillingProfile();
+	                  if (!ok) return;
+	                  setBillingFormOpen(false);
+	                  setBillingEditMode(false);
+	                  await refreshBillingStatus();
+	                  if (selectedPlan) {
+	                    const plan = selectedPlan; setSelectedPlan(null);
+	                    startCheckout(plan);
+	                  }
+	                }}
+	              >{billingEditMode ? (lang === "ro" ? 'Salveaza modificarile' : 'Save changes') : (lang === "ro" ? 'Salveaza si continua' : 'Save & Continue')}</button>
+	            </div>
+	          </div>
+	        </div>
+	      )}
 
       {/* Plan change (schedule) modal */}
       {planConfirmOpen && planToSchedule && (
