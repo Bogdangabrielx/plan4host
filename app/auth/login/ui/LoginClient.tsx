@@ -678,7 +678,7 @@ const quoteAuthorAvatar: React.CSSProperties = {
 };
 const quoteAuthorText: React.CSSProperties = {
   fontSize: 12,
-  fontWeight: 750,
+  fontWeight: 600,
   color: "var(--muted)",
   lineHeight: 1.15,
   textAlign: "left",
