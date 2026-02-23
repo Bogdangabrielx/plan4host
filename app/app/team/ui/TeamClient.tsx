@@ -601,7 +601,6 @@ export default function TeamClient() {
                         <span
                           className="memberStatusTop"
                           style={{
-                            display: "inline-flex",
                             alignItems: "center",
                             gap: 8,
                             whiteSpace: "nowrap",
@@ -660,7 +659,6 @@ export default function TeamClient() {
                         <span
                           className="memberStatusInline"
                           style={{
-                            display: "inline-flex",
                             alignItems: "center",
                             gap: 8,
                             whiteSpace: "nowrap",
@@ -807,7 +805,7 @@ export default function TeamClient() {
             border-radius: 14px;
             padding: 12px;
           }
-          .memberActions { display: flex; gap: 8px; align-items: center; }
+          .memberActions { display: flex; gap: 8px; align-items: center; align-self: end; }
           .roleStatusRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
           .memberStatusInline { display: none; }
           .memberScopesGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
