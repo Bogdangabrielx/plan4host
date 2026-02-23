@@ -441,7 +441,7 @@ export default function TeamClient() {
 
               <div style={{ display: "grid", gap: 8 }}>
                 <label style={{ ...label, fontWeight: 900, color: roleError ? "var(--danger)" : "var(--muted)" }}>{i18n.role}</label>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <div className="roleGrid">
                   <button
                     type="button"
                     className="sb-btn"
@@ -449,12 +449,14 @@ export default function TeamClient() {
                     disabled={loading}
                     style={{
                       borderRadius: 999,
-                      padding: "8px 12px",
+                      padding: "10px 12px",
                       border: "1px solid var(--border)",
                       background: role === "editor" ? "color-mix(in srgb, var(--primary) 75%, var(--card))" : "var(--card)",
-                      color: role === "editor" ? "#0c111b" : "var(--text)",
+                      color: role === "editor" ? "#0c111b" : "var(--muted)",
                       fontWeight: 900,
                       minHeight: 40,
+                      width: "100%",
+                      justifyContent: "center",
                     }}
                   >
                     {i18n.editor}
@@ -466,12 +468,14 @@ export default function TeamClient() {
                     disabled={loading}
                     style={{
                       borderRadius: 999,
-                      padding: "8px 12px",
+                      padding: "10px 12px",
                       border: "1px solid var(--border)",
                       background: role === "viewer" ? "color-mix(in srgb, var(--primary) 75%, var(--card))" : "var(--card)",
-                      color: role === "viewer" ? "#0c111b" : "var(--text)",
+                      color: role === "viewer" ? "#0c111b" : "var(--muted)",
                       fontWeight: 900,
                       minHeight: 40,
+                      width: "100%",
+                      justifyContent: "center",
                     }}
                   >
                     {i18n.viewer}
@@ -494,7 +498,12 @@ export default function TeamClient() {
                         aria-pressed={checked}
                         title={title}
                       >
-                        <MaskIcon src={SCOPE_ICON[key] || "/svg_dashboard.svg"} size={16} color={checked ? "#0c111b" : "var(--text)"} opacity={checked ? 0.95 : 0.8} />
+                        <MaskIcon
+                          src={SCOPE_ICON[key] || "/svg_dashboard.svg"}
+                          size={16}
+                          color={checked ? "#0c111b" : "var(--muted)"}
+                          opacity={checked ? 0.95 : 0.85}
+                        />
                         <span style={{ opacity: checked ? 1 : 0.9 }}>{title}</span>
                       </button>
                     );
@@ -503,14 +512,16 @@ export default function TeamClient() {
               </div>
 
               <div style={{ display: "grid", gap: 8 }}>
-                <button
-                  className="sb-btn sb-btn--primary sb-cardglow"
-                  style={{ width: "100%", justifyContent: "center", minHeight: 44 }}
-                  onClick={createUser}
-                  disabled={loading || !email || !password}
-                >
-                  {i18n.create}
-                </button>
+                {email.trim() ? (
+                  <button
+                    className="sb-btn sb-btn--primary sb-cardglow"
+                    style={{ width: "100%", justifyContent: "center", minHeight: 44 }}
+                    onClick={createUser}
+                    disabled={loading || !email || !password}
+                  >
+                    {i18n.create}
+                  </button>
+                ) : null}
                 <div style={{ color: "var(--muted)", fontSize: 12 }}>
                   {lang === "ro"
                     ? "Utilizatorul va vedea doar paginile bifate mai sus."
@@ -695,7 +706,8 @@ export default function TeamClient() {
           @media (min-width: 720px) {
             .addFormGrid { grid-template-columns: 1fr 1fr; }
           }
-          .scopesWrap { display: flex; flex-wrap: wrap; gap: 8px; }
+          .roleGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+          .scopesWrap { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
           .scopeChip {
             display: inline-flex;
             align-items: center;
@@ -704,10 +716,12 @@ export default function TeamClient() {
             border-radius: 999px;
             border: 1px solid var(--border);
             background: var(--card);
-            color: var(--text);
+            color: var(--muted);
             font-weight: 900;
             min-height: 40px;
             cursor: pointer;
+            width: 100%;
+            justify-content: flex-start;
           }
           .scopeChip[aria-pressed="true"] {
             background: var(--primary);
