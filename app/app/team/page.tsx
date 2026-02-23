@@ -3,11 +3,14 @@ import AppShell from "@/app/app/_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TeamClient from "./ui/TeamClient";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function TeamPage() {
+  const cookieStore = cookies();
+  const uiLang = cookieStore.get("app_lang")?.value === "ro" ? "ro" : "en";
   const supa = createClient();
   const { data: { user } } = await supa.auth.getUser();
   if (!user) redirect("/auth/login");
@@ -44,7 +47,7 @@ export default async function TeamPage() {
   if (plan !== "premium") redirect("/app/subscription");
 
   return (
-    <AppShell currentPath="/app/team" title="Team">
+    <AppShell currentPath="/app/team" title={uiLang === "ro" ? "Echipa" : "Team"}>
       <TeamClient />
     </AppShell>
   );
