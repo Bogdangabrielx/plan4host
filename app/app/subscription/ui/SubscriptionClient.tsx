@@ -1108,7 +1108,7 @@ export default function SubscriptionClient({
             paddingLeft: 12,
             paddingRight: 12,
             paddingTop: isMobileNav
-              ? "calc(var(--safe-top, 0px) + var(--p4h-fixed-header-h, var(--app-header-h, 64px)) + 12px)"
+              ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 12px)"
               : 12,
             paddingBottom: isMobileNav
               ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
@@ -1118,7 +1118,25 @@ export default function SubscriptionClient({
             WebkitBackdropFilter: 'blur(2px)',
           }}
         >
-          <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
+          <div
+            className="modalCard"
+            onClick={(e)=>e.stopPropagation()}
+            style={{
+              width:'min(560px, 100%)',
+              border:'1px solid var(--border)',
+              borderRadius:16,
+              padding:16,
+              display:'grid',
+              gap:12,
+              background:'var(--panel)',
+              maxHeight: isMobileNav
+                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
+                : "85vh",
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain',
+            }}
+          >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="buyer-type-title" style={{ margin:0 }}>{lang === "ro" ? "Tip facturare" : "Billing Type"}</h3>
               <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setBuyerTypeOpen(false)}>
@@ -1164,7 +1182,7 @@ export default function SubscriptionClient({
             paddingLeft: 12,
             paddingRight: 12,
             paddingTop: isMobileNav
-              ? "calc(var(--safe-top, 0px) + var(--p4h-fixed-header-h, var(--app-header-h, 64px)) + 12px)"
+              ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 12px)"
               : 12,
             paddingBottom: isMobileNav
               ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
@@ -1186,7 +1204,7 @@ export default function SubscriptionClient({
               gap:12,
               background:'var(--panel)',
               maxHeight: isMobileNav
-                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--p4h-fixed-header-h, var(--app-header-h, 64px)) + var(--nav-h, 0px) + 24px))"
+                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
                 : "85vh",
               overflowY: 'auto',
               WebkitOverflowScrolling: 'touch',
