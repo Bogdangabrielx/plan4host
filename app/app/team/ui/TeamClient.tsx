@@ -31,6 +31,7 @@ export default function TeamClient() {
   const [roleError, setRoleError] = useState<boolean>(false);
   const [scopes, setScopes] = useState<string[]>([]);
   const [q, setQ] = useState<string>("");
+  const [qApplied, setQApplied] = useState<string>("");
   const t = {
     en: {
       pleaseSelectRole: "Please select a Role.",
@@ -152,6 +153,12 @@ export default function TeamClient() {
     const clean = s.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
     return (clean.slice(0, 2) || "U").padEnd(2, "U");
   }
+
+  // Debounced search: lets the user type without filtering on every keystroke.
+  useEffect(() => {
+    const id = window.setTimeout(() => setQApplied(q), 350);
+    return () => window.clearTimeout(id);
+  }, [q]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -365,7 +372,7 @@ export default function TeamClient() {
   }
 
   const filteredMembers = members.filter((m) => {
-    const qq = q.trim().toLowerCase();
+    const qq = qApplied.trim().toLowerCase();
     if (!qq) return true;
     return (
       String(m.email || "").toLowerCase().includes(qq) ||
@@ -558,6 +565,14 @@ export default function TeamClient() {
                 <input
                   value={q}
                   onChange={(e) => setQ(e.currentTarget.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") setQApplied(e.currentTarget.value);
+                    if (e.key === "Escape") {
+                      setQ("");
+                      setQApplied("");
+                      e.currentTarget.blur();
+                    }
+                  }}
                   placeholder={i18n.search}
                   style={{
                     ...input,
