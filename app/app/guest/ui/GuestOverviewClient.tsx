@@ -1736,33 +1736,41 @@ function EditFormBookingModal({
     }
   }
 
-  // Overlay above AppHeader (AppHeader overlays use z-index up to 121)
+  // Keep the modal fully visible under the fixed AppHeader on mobile.
+  // (BottomNav sits above everything; we pad + clamp height to avoid overlap.)
+  const overlayPadTop = isSmall
+    ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 12px)"
+    : 12;
+  const overlayPadBottom = isSmall
+    ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
+    : 12;
   const wrap: React.CSSProperties = {
     position: "fixed",
     inset: 0,
     background: "rgba(0,0,0,0.55)",
     zIndex: 200,
-    display: "grid",
-    placeItems: "center",
-    padding: 12,
-    // Make overlay itself scrollable on iOS/PWA
-    overflowY: "auto",
-    WebkitOverflowScrolling: "touch",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: isSmall ? "flex-start" : "center",
+    alignItems: "center",
+    paddingLeft: 12,
+    paddingRight: 12,
+    paddingTop: overlayPadTop,
+    paddingBottom: overlayPadBottom,
+    overflow: "hidden",
     overscrollBehavior: "contain",
-    touchAction: "pan-y",
-    height: '100dvh',
+    height: "100dvh",
   };
   const card: React.CSSProperties = {
     width: "min(680px, 100%)",
-    maxHeight: "calc(100dvh - 32px)",
+    maxHeight: isSmall
+      ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
+      : "calc(100dvh - 32px)",
     display: "grid",
-    gridTemplateRows: "auto 1fr",
+    gridTemplateRows: "auto minmax(0, 1fr)",
     overflow: "hidden",
-    WebkitOverflowScrolling: "touch",
-    overscrollBehavior: "contain",
-    touchAction: "pan-y",
     padding: 16,
-    borderRadius:16,
+    borderRadius: 16,
   };
 
   return (
@@ -1993,7 +2001,7 @@ function EditFormBookingModal({
         </div>
 
         {/* Scrollable content */}
-        <div style={{ overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
+        <div style={{ overflowY:"auto", WebkitOverflowScrolling:"touch", minHeight: 0 }}>
           {loading ? (
             <div style={{ color:"var(--muted)" }}>{lang === "ro" ? "Se incarca…" : "Loading…"}</div>
           ) : error ? (
