@@ -1134,7 +1134,7 @@ export default function SubscriptionClient({
 	            paddingLeft: 12,
 	            paddingRight: 12,
 	            paddingTop: isMobileNav
-	              ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 24px)"
+	              ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 48px)"
 	              : 12,
 	            paddingBottom: isMobileNav
 	              ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
