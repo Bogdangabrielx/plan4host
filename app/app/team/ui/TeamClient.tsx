@@ -26,6 +26,8 @@ export default function TeamClient() {
     if (typeof window === "undefined") return false;
     return window.matchMedia?.("(max-width: 480px)")?.matches ?? false;
   });
+  const [myAvatarUrl, setMyAvatarUrl] = useState<string | null>(null);
+  const [myAvatarLoaded, setMyAvatarLoaded] = useState<boolean>(false);
   // Nou: default role = "editor" (nu mai folosim "member")
   const [role, setRole] = useState<Role | "">("");
   const [roleError, setRoleError] = useState<boolean>(false);
@@ -54,6 +56,7 @@ export default function TeamClient() {
       search: "Search member…",
       roleLabel: "role",
       baseAccount: "(base account)",
+      propertyManager: "Property Manager",
       disabled: "Disabled",
       active: "Active",
       notAllowedForAdmin: "Not allowed for admin",
@@ -88,6 +91,7 @@ export default function TeamClient() {
       search: "Cauta membru…",
       roleLabel: "rol",
       baseAccount: "(cont de baza)",
+      propertyManager: "Manager Proprietate",
       disabled: "Dezactivat",
       active: "Activ",
       notAllowedForAdmin: "Nu este permis pentru admin",
@@ -153,6 +157,30 @@ export default function TeamClient() {
     const clean = s.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
     return (clean.slice(0, 2) || "U").padEnd(2, "U");
   }
+
+  useEffect(() => {
+    // If the URL changes, treat it as not loaded until the <img> fires onLoad.
+    setMyAvatarLoaded(false);
+  }, [myAvatarUrl]);
+
+  // Load current user's avatar (same source as AppHeader: auth user metadata).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supa.auth.getUser();
+        if (cancelled) return;
+        const metadata = data.user?.user_metadata as Record<string, any> | undefined;
+        const avatar = metadata?.avatar_url || metadata?.picture || metadata?.provider_avatar || null;
+        setMyAvatarUrl(avatar);
+      } catch {
+        if (!cancelled) setMyAvatarUrl(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supa]);
 
   // Debounced search: lets the user type without filtering on every keystroke.
   useEffect(() => {
@@ -590,6 +618,8 @@ export default function TeamClient() {
               {filteredMembers.map((u) => {
                 const isAdmin = u.role === "admin";
                 const active = !u.disabled;
+                const initials = initialsFromEmail(u.email || u.user_id);
+                const avatarUrl = isAdmin ? myAvatarUrl : null;
                 return (
                   <li key={u.user_id} className="memberRow">
                     <div
@@ -598,7 +628,9 @@ export default function TeamClient() {
                         width: 44,
                         height: 44,
                         borderRadius: 999,
-                        background: "color-mix(in srgb, var(--primary) 26%, var(--card))",
+                        background: avatarUrl
+                          ? "var(--card)"
+                          : "linear-gradient(135deg, #25d366, #128c7e)",
                         border: "1px solid var(--border)",
                         display: "grid",
                         placeItems: "center",
@@ -606,9 +638,35 @@ export default function TeamClient() {
                         fontWeight: 900,
                         color: "var(--text)",
                         letterSpacing: "0.08em",
+                        overflow: "hidden",
+                        position: "relative",
                       }}
                     >
-                      {initialsFromEmail(u.email || u.user_id)}
+                      {/* Admin avatar mirrors AppHeader; others keep initials for now. */}
+                      {(!avatarUrl || !myAvatarLoaded) && (
+                        <span aria-hidden style={{ display: "block", color: "#fff" }}>{initials}</span>
+                      )}
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt=""
+                          onLoad={() => setMyAvatarLoaded(true)}
+                          onError={() => {
+                            setMyAvatarLoaded(false);
+                            setMyAvatarUrl(null);
+                          }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                            position: "absolute",
+                            inset: 0,
+                            opacity: myAvatarLoaded ? 1 : 0,
+                            transition: "opacity .15s ease",
+                          }}
+                        />
+                      ) : null}
                     </div>
 
                     <div style={{ minWidth: 0, display: "grid", gap: 6 }}>
@@ -672,10 +730,9 @@ export default function TeamClient() {
                             minWidth: 0,
                             maxWidth: "100%",
                           }}
-                          title={isAdmin ? i18n.baseAccount : undefined}
+                          title={isAdmin ? i18n.propertyManager : undefined}
                         >
-                          {u.role}
-                          {isAdmin ? <span style={{ opacity: 0.85 }}>{i18n.baseAccount}</span> : null}
+                          {isAdmin ? i18n.propertyManager : u.role}
                         </span>
 
                         <span
