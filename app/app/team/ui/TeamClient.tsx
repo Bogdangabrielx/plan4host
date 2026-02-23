@@ -818,6 +818,15 @@ export default function TeamClient() {
           }
           /* Grid children default min-width:auto can cause overflow in narrow layouts. */
           .memberRow > :nth-child(2) { min-width: 0; }
+          .memberTopRow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            min-width: 0;
+            max-width: 100%;
+          }
+          .memberEmailWrap { min-width: 0; flex: 1 1 auto; }
           .memberEmail {
             display: block;
             min-width: 0;
