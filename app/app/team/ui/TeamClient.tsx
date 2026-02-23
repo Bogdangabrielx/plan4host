@@ -801,7 +801,7 @@ export default function TeamClient() {
           }
           .memberRow {
             display: grid;
-            grid-template-columns: 44px 1fr auto;
+            grid-template-columns: 44px minmax(0, 1fr) auto;
             gap: 12px;
             align-items: center;
             background: var(--card);
@@ -809,6 +809,8 @@ export default function TeamClient() {
             border-radius: 14px;
             padding: 12px;
             overflow: hidden; /* keep long text/chips inside card */
+            width: 100%;
+            box-sizing: border-box;
           }
           /* Grid children default min-width:auto can cause overflow in narrow layouts. */
           .memberRow > :nth-child(2) { min-width: 0; }
@@ -822,7 +824,7 @@ export default function TeamClient() {
           }
           @media (max-width: 720px) {
             .memberRow {
-              grid-template-columns: 44px 1fr;
+              grid-template-columns: 44px minmax(0, 1fr);
             }
             .memberActions {
               grid-column: 1 / -1;
