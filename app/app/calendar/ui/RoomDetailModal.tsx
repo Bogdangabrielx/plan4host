@@ -160,6 +160,7 @@ export default function RoomDetailModal({
   }, [on]);
 
   // Custom fields
+  const [reservationDetailsOpen, setReservationDetailsOpen] = useState<boolean>(true);
   const [checkDefs, setCheckDefs] = useState<CheckDef[]>([]);
   const [textDefs,  setTextDefs]  = useState<TextDef[]>([]);
   const [checkValues, setCheckValues] = useState<Record<string, boolean>>({});
@@ -825,8 +826,8 @@ export default function RoomDetailModal({
 	            .rd-checkInput{
 	              appearance: none;
 	              -webkit-appearance: none;
-	              width: 20px;
-	              height: 20px;
+	              width: 18px;
+	              height: 18px;
 	              border-radius: 999px;
 	              border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
 	              background: color-mix(in srgb, var(--card) 55%, transparent);
@@ -835,22 +836,23 @@ export default function RoomDetailModal({
 	              cursor: pointer;
 	              flex: 0 0 auto;
 	              touch-action: manipulation;
+	              color: transparent;
 	            }
 	            .rd-checkInput::after{
-	              content: "";
-	              width: 10px;
-	              height: 6px;
-	              border-left: 2px solid transparent;
-	              border-bottom: 2px solid transparent;
-	              transform: rotate(-45deg) translateY(-1px);
+	              content: "✓";
+	              opacity: 0;
+	              font-weight: 900;
+	              font-size: 12px;
+	              line-height: 1;
+	              transform: translateY(-0.5px);
 	            }
 	            .rd-checkInput:checked{
 	              border-color: color-mix(in srgb, var(--success, #22c55e) 80%, transparent);
-	              background: color-mix(in srgb, var(--success, #22c55e) 16%, transparent);
+	              background: color-mix(in srgb, var(--success, #22c55e) 16%, var(--card));
+	              color: color-mix(in srgb, var(--success, #22c55e) 90%, var(--text));
 	            }
 	            .rd-checkInput:checked::after{
-	              border-left-color: var(--success, #22c55e);
-	              border-bottom-color: var(--success, #22c55e);
+	              opacity: 1;
 	            }
 	            .rd-checkInput:focus-visible{
 	              outline: 2px solid color-mix(in srgb, var(--success, #22c55e) 45%, transparent);
@@ -1478,58 +1480,88 @@ export default function RoomDetailModal({
           {/* Custom detail fields */}
           {(checkDefs.length > 0 || textDefs.length > 0) && (
             <div style={{ display: "grid", gap: 10, marginTop: 6 }}>
-              <strong style={{ letterSpacing: 0.3 }}>{t.roomDetails}</strong>
+              <button
+                type="button"
+                onClick={() => setReservationDetailsOpen(v => !v)}
+                aria-expanded={reservationDetailsOpen}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  padding: 0,
+                  border: 0,
+                  background: "transparent",
+                  color: "var(--text)",
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+              >
+                <span style={{ fontWeight: 800, letterSpacing: 0.3 }}>{t.roomDetails}</span>
+                <span aria-hidden style={{ color: "var(--muted)", fontWeight: 800 }}>
+                  {reservationDetailsOpen ? "▾" : "▸"}
+                </span>
+              </button>
 
-	              {checkDefs.length > 0 && (
-	                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
-	                  {checkDefs.map(c => (
-	                    <li key={c.id}>
-	                      <label className="rd-checkRow">
-	                        <input
-	                          className="rd-checkInput"
-	                          type="checkbox"
-	                          checked={!!checkValues[c.id]}
-	                          onChange={(e) => {
-	                            const el = e.target as HTMLInputElement;
-	                            setCheckValues(v => ({ ...v, [c.id]: el.checked }));
-	                            setDetailsDirty(true);
-	                          }}
-	                        />
-	                        <span className="rd-checkText">{c.label}</span>
-	                      </label>
-	                    </li>
-	                  ))}
-	                </ul>
-	              )}
+              {reservationDetailsOpen && (
+                <>
+		              {checkDefs.length > 0 && (
+		                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
+		                  {checkDefs.map(c => (
+		                    <li key={c.id}>
+		                      <label className="rd-checkRow">
+		                        <input
+		                          className="rd-checkInput"
+		                          type="checkbox"
+		                          checked={!!checkValues[c.id]}
+		                          onChange={(e) => {
+		                            const el = e.target as HTMLInputElement;
+		                            setCheckValues(v => ({ ...v, [c.id]: el.checked }));
+		                            setDetailsDirty(true);
+		                          }}
+		                        />
+		                        <span className="rd-checkText">{c.label}</span>
+		                      </label>
+		                    </li>
+		                  ))}
+		                </ul>
+		              )}
 
-              {textDefs.length > 0 && (
-                <div style={{ display: "grid", gap: 10 }}>
-                  {textDefs.map(t => (
-                    <div key={t.id} style={{ display: "grid", gap: 6 }}>
-                      <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.label}</label>
-                      <input
-                        type="text"
-                        placeholder={t.placeholder ?? ""}
-                        value={textValues[t.id] ?? ""}
-                        onChange={(e) => {
-                          const el = e.target as HTMLInputElement;
-                          setTextValues(v => ({ ...v, [t.id]: el.value }));
-                          setDetailsDirty(true);
-                        }}
-                        style={{
-                          padding: "12px 12px",
-                          background: "var(--card)",
-                          color: "var(--text)",
-                          border: "1px solid var(--border)",
-                          borderRadius: 10,
-                          fontSize: 14,
-                          fontWeight: 600,
-                        }}
-                      />
+                  {textDefs.length > 0 && (
+                    <div style={{ display: "grid", gap: 10 }}>
+                      {textDefs.map(t => (
+                        <div key={t.id} style={{ display: "grid", gap: 6 }}>
+                          <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>{t.label}</label>
+                          <input
+                            type="text"
+                            placeholder={t.placeholder ?? ""}
+                            value={textValues[t.id] ?? ""}
+                            onChange={(e) => {
+                              const el = e.target as HTMLInputElement;
+                              setTextValues(v => ({ ...v, [t.id]: el.value }));
+                              setDetailsDirty(true);
+                            }}
+                            style={{
+                              padding: "12px 12px",
+                              background: "var(--card)",
+                              color: "var(--text)",
+                              border: "1px solid var(--border)",
+                              borderRadius: 10,
+                              fontSize: 14,
+                              fontWeight: 600,
+                            }}
+                          />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                  )}
+                </>
+
+
+
+
+
+)}
             </div>
           )}
 
