@@ -1124,21 +1124,21 @@ export default function SubscriptionClient({
           aria-modal="true"
           aria-labelledby="buyer-type-title"
           onClick={() => setBuyerTypeOpen(false)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: isMobileNav ? 'flex-start' : 'center',
-            justifyContent: 'center',
-            paddingLeft: 12,
-            paddingRight: 12,
-            paddingTop: isMobileNav
-              ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 12px)"
-              : 12,
-            paddingBottom: isMobileNav
-              ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
-              : 12,
+	          style={{
+	            position: 'fixed',
+	            inset: 0,
+	            zIndex: 9999,
+	            display: 'flex',
+	            alignItems: isMobileNav ? 'flex-start' : 'center',
+	            justifyContent: 'center',
+	            paddingLeft: 12,
+	            paddingRight: 12,
+	            paddingTop: isMobileNav
+	              ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 24px)"
+	              : 12,
+	            paddingBottom: isMobileNav
+	              ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
+	              : 12,
             background: "color-mix(in srgb, var(--bg) 55%, transparent)",
             backdropFilter: 'blur(2px)',
             WebkitBackdropFilter: 'blur(2px)',
@@ -1158,7 +1158,7 @@ export default function SubscriptionClient({
 	              gridTemplateRows:'auto minmax(0, 1fr)',
 	              background:'var(--panel)',
 	              maxHeight: isMobileNav
-	                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
+	                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 36px))"
 	                : "85vh",
 	              overflow: 'hidden',
 	            }}
@@ -1203,21 +1203,21 @@ export default function SubscriptionClient({
           aria-modal="true"
           aria-labelledby="billing-title"
           onClick={() => setBillingFormOpen(false)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: isMobileNav ? 'flex-start' : 'center',
-            justifyContent: 'center',
-            paddingLeft: 12,
-            paddingRight: 12,
-            paddingTop: isMobileNav
-              ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 12px)"
-              : 12,
-            paddingBottom: isMobileNav
-              ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
-              : 12,
+	          style={{
+	            position: 'fixed',
+	            inset: 0,
+	            zIndex: 9999,
+	            display: 'flex',
+	            alignItems: isMobileNav ? 'flex-start' : 'center',
+	            justifyContent: 'center',
+	            paddingLeft: 12,
+	            paddingRight: 12,
+	            paddingTop: isMobileNav
+	              ? "calc(var(--safe-top, 0px) + var(--app-header-h, 64px) + 24px)"
+	              : 12,
+	            paddingBottom: isMobileNav
+	              ? "calc(var(--safe-bottom, 0px) + var(--nav-h, 0px) + 12px)"
+	              : 12,
             background: "color-mix(in srgb, var(--bg) 55%, transparent)",
             backdropFilter: 'blur(2px)',
             WebkitBackdropFilter: 'blur(2px)',
@@ -1237,7 +1237,7 @@ export default function SubscriptionClient({
 	              gridTemplateRows:'auto minmax(0, 1fr) auto',
 	              background:'var(--panel)',
 	              maxHeight: isMobileNav
-	                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 24px))"
+	                ? "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + var(--app-header-h, 64px) + var(--nav-h, 0px) + 36px))"
 	                : "85vh",
 	              overflow: 'hidden',
 	            }}
