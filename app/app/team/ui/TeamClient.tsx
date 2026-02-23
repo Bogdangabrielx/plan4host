@@ -13,6 +13,56 @@ type Member = {
   disabled: boolean | null;
 };
 
+function MaskIcon({ src, size = 18, color = "var(--text)", opacity = 0.92 }: { src: string; size?: number; color?: string; opacity?: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        width: size,
+        height: size,
+        display: "inline-block",
+        backgroundColor: color,
+        opacity,
+        WebkitMaskImage: `url(${src})`,
+        WebkitMaskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        WebkitMaskSize: "contain",
+        maskImage: `url(${src})`,
+        maskRepeat: "no-repeat",
+        maskPosition: "center",
+        maskSize: "contain",
+        flex: "0 0 auto",
+      }}
+    />
+  );
+}
+
+function SectionHeader({
+  icon,
+  title,
+  right,
+}: {
+  icon: string;
+  title: string;
+  right?: ReactNode;
+}) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+        <MaskIcon src={icon} size={20} color="var(--text)" />
+        <h3 style={{ margin: 0, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</h3>
+      </div>
+      {right ? <div style={{ flex: "0 0 auto" }}>{right}</div> : null}
+    </div>
+  );
+}
+
+function initialsFromEmail(e?: string | null) {
+  const s = (e || "").split("@")[0] || "";
+  const clean = s.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  return (clean.slice(0, 2) || "U").padEnd(2, "U");
+}
+
 export default function TeamClient() {
   const supa = useMemo(() => createClient(), []); // (îl păstrăm dacă îl vei folosi)
   const [lang, setLang] = useState<Lang>("en");
@@ -107,56 +157,6 @@ export default function TeamClient() {
     },
   } as const;
   const i18n = t[lang];
-
-  function MaskIcon({ src, size = 18, color = "var(--text)", opacity = 0.92 }: { src: string; size?: number; color?: string; opacity?: number }) {
-    return (
-      <span
-        aria-hidden="true"
-        style={{
-          width: size,
-          height: size,
-          display: "inline-block",
-          backgroundColor: color,
-          opacity,
-          WebkitMaskImage: `url(${src})`,
-          WebkitMaskRepeat: "no-repeat",
-          WebkitMaskPosition: "center",
-          WebkitMaskSize: "contain",
-          maskImage: `url(${src})`,
-          maskRepeat: "no-repeat",
-          maskPosition: "center",
-          maskSize: "contain",
-          flex: "0 0 auto",
-        }}
-      />
-    );
-  }
-
-  function SectionHeader({
-    icon,
-    title,
-    right,
-  }: {
-    icon: string;
-    title: string;
-    right?: ReactNode;
-  }) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-          <MaskIcon src={icon} size={20} color="var(--text)" />
-          <h3 style={{ margin: 0, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</h3>
-        </div>
-        {right ? <div style={{ flex: "0 0 auto" }}>{right}</div> : null}
-      </div>
-    );
-  }
-
-  function initialsFromEmail(e?: string | null) {
-    const s = (e || "").split("@")[0] || "";
-    const clean = s.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-    return (clean.slice(0, 2) || "U").padEnd(2, "U");
-  }
 
   useEffect(() => {
     // If the URL changes, treat it as not loaded until the <img> fires onLoad.
