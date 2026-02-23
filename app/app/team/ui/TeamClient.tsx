@@ -53,8 +53,8 @@ export default function TeamClient() {
       search: "Search member…",
       roleLabel: "role",
       baseAccount: "(base account)",
-      disabled: "disabled",
-      active: "active",
+      disabled: "Disabled",
+      active: "Active",
       notAllowedForAdmin: "Not allowed for admin",
       setPassword: "Set password",
       remove: "Remove",
@@ -87,8 +87,8 @@ export default function TeamClient() {
       search: "Cauta membru…",
       roleLabel: "rol",
       baseAccount: "(cont de baza)",
-      disabled: "dezactivat",
-      active: "activ",
+      disabled: "Dezactivat",
+      active: "Activ",
       notAllowedForAdmin: "Nu este permis pentru admin",
       setPassword: "Seteaza parola",
       remove: "Elimina",
@@ -321,7 +321,7 @@ export default function TeamClient() {
       return <span style={{ color: "var(--muted)" }}>—</span>;
     }
     return (
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+      <div className="memberScopesGrid">
         {keys.map((k) => (
           <span
             key={k}
@@ -337,11 +337,27 @@ export default function TeamClient() {
               fontSize: 12,
               fontWeight: 800,
               whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              minWidth: 0,
+              width: "100%",
+              justifyContent: "flex-start",
             }}
             title={TITLE_BY[k] ?? k}
           >
             <MaskIcon src={SCOPE_ICON[k] || "/svg_dashboard.svg"} size={14} color="var(--text)" opacity={0.9} />
-            <span style={{ color: "var(--muted)", fontWeight: 800 }}>{TITLE_BY[k] ?? k}</span>
+            <span
+              style={{
+                color: "var(--muted)",
+                fontWeight: 800,
+                minWidth: 0,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {TITLE_BY[k] ?? k}
+            </span>
           </span>
         ))}
       </div>
@@ -568,6 +584,7 @@ export default function TeamClient() {
                         border: "1px solid var(--border)",
                         display: "grid",
                         placeItems: "center",
+                        alignSelf: "start",
                         fontWeight: 900,
                         color: "var(--text)",
                         letterSpacing: "0.08em",
@@ -793,6 +810,10 @@ export default function TeamClient() {
           .memberActions { display: flex; gap: 8px; align-items: center; }
           .roleStatusRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
           .memberStatusInline { display: none; }
+          .memberScopesGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+          @media (max-width: 360px) {
+            .memberScopesGrid { grid-template-columns: 1fr; }
+          }
           @media (max-width: 720px) {
             .memberRow {
               grid-template-columns: 44px 1fr;
