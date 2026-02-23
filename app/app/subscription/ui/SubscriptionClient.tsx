@@ -233,7 +233,8 @@ export default function SubscriptionClient({
     })();
     return () => {
       alive = false;
-  };
+    };
+  }, []);
 
   // Same breakpoint as BottomNav (<= 640px). Used to keep modals under AppHeader and above BottomNav.
   useEffect(() => {
@@ -253,7 +254,6 @@ export default function SubscriptionClient({
         mq?.removeListener?.(update);
       };
     }
-  }, []);
   }, []);
 
   useEffect(() => {
