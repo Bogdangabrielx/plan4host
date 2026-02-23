@@ -221,7 +221,7 @@ export default function RoomDetailModal({
     minorGuest: lang === "ro" ? "Oaspete minor" : "Minor guest",
     guardian: lang === "ro" ? "Tutore" : "Guardian",
     document: lang === "ro" ? "Document" : "Document",
-    roomDetails: lang === "ro" ? "Detalii camera" : "Room details",
+    roomDetails: lang === "ro" ? "Detalii rezervare" : "Reservation details",
     confirmReservation: lang === "ro" ? "Confirma rezervarea" : "Confirm reservation",
     saveDetails: lang === "ro" ? "Salveaza detalii" : "Save details",
     saveDatesTimes: lang === "ro" ? "Salveaza datele si orele" : "Save dates & times",
