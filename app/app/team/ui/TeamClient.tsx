@@ -650,8 +650,9 @@ export default function TeamClient() {
                             color: isAdmin ? "#0c111b" : "var(--text)",
                             fontSize: 12,
                             fontWeight: 900,
-                            flex: "1 1 auto",
+                            flex: "0 1 auto",
                             minWidth: 0,
+                            maxWidth: "100%",
                           }}
                           title={isAdmin ? i18n.baseAccount : undefined}
                         >
@@ -834,7 +835,13 @@ export default function TeamClient() {
             .memberStatusTop { display: none !important; }
             .memberStatusInline { display: inline-flex !important; }
             .roleStatusRow { flex-wrap: nowrap; min-width: 0; }
-            .memberRolePill { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .memberRolePill {
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              /* Leave space for the inline status (Active/Disabled) */
+              max-width: calc(100% - 92px);
+            }
           }
         `}</style>
       </div>
