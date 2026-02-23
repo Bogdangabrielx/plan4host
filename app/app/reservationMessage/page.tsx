@@ -52,7 +52,7 @@ export default async function ReservationMessagePage() {
 
   return (
     <AppShell currentPath="/app/reservationMessage" title={uiLang === "ro" ? "Mesaje automate" : "Automatic Messages"}>
-      <ReservationMessageClient initialProperties={properties} isAdmin={isAdmin} />
+      <ReservationMessageClient initialProperties={properties} isAdmin={isAdmin} initialLang={uiLang} />
     </AppShell>
   );
 }

@@ -221,9 +221,11 @@ function useIsSmall() {
 export default function ReservationMessageClient({
   initialProperties,
   isAdmin,
+  initialLang,
 }: {
   initialProperties: Property[];
   isAdmin: boolean;
+  initialLang: "ro" | "en";
 }) {
   const [properties] = useState<Property[]>(initialProperties);
   const isSinglePropertyAccount = properties.length === 1;
@@ -239,13 +241,15 @@ export default function ReservationMessageClient({
     return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ?? false;
   });
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
-  const [uiLang, setUiLang] = useState<"ro" | "en">("en");
-  const [lang, setLang] = useState<'ro'|'en'>('ro');
+  const [uiLang, setUiLang] = useState<"ro" | "en">(initialLang);
+  const [lang, setLang] = useState<"ro" | "en">(initialLang);
+  const langPinnedRef = useRef<boolean>(false);
   const [scheduler, setScheduler] = useState<TemplateState['schedule_kind']>('');
   const [templates, setTemplates] = useState<Array<{ id: string; title: string; status: "draft" | "published"; updated_at: string }>>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loadingList, setLoadingList] = useState<boolean>(false);
   const [statusToggleId, setStatusToggleId] = useState<string | null>(null);
+  const [listTitleById, setListTitleById] = useState<Record<string, string>>({});
   const [titleText, setTitleText] = useState<string>("");
   const [focusedInput, setFocusedInput] = useState<null | "title" | "body">(null);
   const [saving, setSaving] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
@@ -300,6 +304,11 @@ export default function ReservationMessageClient({
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
+
+  // Keep template language default in sync with app language unless user explicitly picked RO/EN in composer.
+  useEffect(() => {
+    if (!langPinnedRef.current) setLang(uiLang);
+  }, [uiLang]);
 
   useEffect(() => {
     onbOpenRef.current = onbOpen;
@@ -393,6 +402,81 @@ export default function ReservationMessageClient({
   } as const;
 
   const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
+
+  // Prefer showing template titles in the chosen app language (fallback to server title until cached).
+  useEffect(() => {
+    if (!propertyReady || !propertyId) { setListTitleById({}); return; }
+    if (templates.length === 0) { setListTitleById({}); return; }
+
+    let alive = true;
+    const preferred: "ro" | "en" = uiLang;
+
+    const deriveTitleFromState = (state: TemplateState, langVal: "ro" | "en") => {
+      const blocks = langVal === "ro" ? (state.blocks || []) : (state.blocks_en || state.blocks || []);
+      const d = deriveFromBlocks(blocks);
+      return (d.title || "").trim();
+    };
+
+    // 1) Immediate pass: try localStorage for each template id.
+    const immediate: Record<string, string> = {};
+    for (const it of templates) {
+      try {
+        const raw = localStorage.getItem(`p4h:rm:template:${it.id}`);
+        if (!raw) continue;
+        const parsed = JSON.parse(raw) as TemplateState;
+        const title = deriveTitleFromState(parsed, preferred);
+        if (title) immediate[it.id] = title;
+      } catch {}
+    }
+    if (Object.keys(immediate).length) setListTitleById((prev) => ({ ...prev, ...immediate }));
+
+    // 2) Background fetch: fill missing titles without overwriting existing local drafts.
+    (async () => {
+      for (const it of templates) {
+        if (!alive) break;
+        if (immediate[it.id]) continue;
+        try {
+          const exists = localStorage.getItem(`p4h:rm:template:${it.id}`);
+          if (exists) continue; // don't overwrite potential local edits
+
+          const r = await fetch(`/api/reservation-message/template?id=${encodeURIComponent(it.id)}`, { cache: "no-store" });
+          const j = await r.json().catch(() => ({}));
+          const tpls = j?.template;
+          if (!r.ok || !tpls) continue;
+
+          const fromServer: any[] = Array.isArray(tpls.blocks) ? tpls.blocks : [];
+          const roBlocks: Block[] = fromServer
+            .filter((b: any) => String((b.lang || "ro")).toLowerCase() === "ro")
+            .map((b: any) => ({ id: uid(), type: b.type, text: b.text ?? "" }));
+          const enBlocks: Block[] = fromServer
+            .filter((b: any) => String((b.lang || "ro")).toLowerCase() === "en")
+            .map((b: any) => ({ id: uid(), type: b.type, text: b.text ?? "" }));
+          const fields: ManualField[] = Array.isArray(tpls.fields)
+            ? (tpls.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label, defaultValue: (f as any).default_value ?? null }))
+            : [];
+
+          const next: TemplateState = {
+            status: (tpls.status || "draft") as any,
+            blocks: roBlocks,
+            blocks_en: enBlocks,
+            fields,
+            schedule_kind: (tpls.schedule_kind || "") as any,
+            schedule_offset_hours: (tpls.schedule_offset_hours ?? null),
+          };
+
+          // Save only if missing, as a read-only cache for list titles.
+          try { localStorage.setItem(`p4h:rm:template:${it.id}`, JSON.stringify(next)); } catch {}
+
+          const title = deriveTitleFromState(next, preferred) || (it.title || "");
+          if (title && alive) setListTitleById((prev) => ({ ...prev, [it.id]: title }));
+        } catch {
+          // ignore
+        }
+      }
+    })();
+
+    return () => { alive = false; };
+  }, [templates, uiLang, propertyId, propertyReady]);
 
   /** --------- Load template list --------- */
   useEffect(() => {
@@ -1368,7 +1452,7 @@ export default function ReservationMessageClient({
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 8 }}>
                     <strong
                       style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, flex: 1 }}
-                      dangerouslySetInnerHTML={{ __html: titleToChips(tplItem.title || "(Untitled)") }}
+                      dangerouslySetInnerHTML={{ __html: titleToChips((listTitleById[tplItem.id] || tplItem.title) || "(Untitled)") }}
                     />
                   </div>
                   <small style={{ color: "var(--muted)" }}>{t.updated} {new Date(tplItem.updated_at).toLocaleString()}</small>
@@ -1516,6 +1600,7 @@ export default function ReservationMessageClient({
                 const cur = composeBlocks();
                 const next = { ...tpl, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) } as TemplateState;
                 setTpl(next);
+                langPinnedRef.current = true;
                 setLang('ro');
                 const { title, body } = deriveFromBlocks(next.blocks || []);
                 if (titleRef.current) tokensTextToChips(titleRef.current, title);
@@ -1530,6 +1615,7 @@ export default function ReservationMessageClient({
                 const cur = composeBlocks();
                 const next = { ...tpl, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) } as TemplateState;
                 setTpl(next);
+                langPinnedRef.current = true;
                 setLang('en');
                 const { title, body } = deriveFromBlocks(next.blocks_en || []);
                 if (titleRef.current) tokensTextToChips(titleRef.current, title);
