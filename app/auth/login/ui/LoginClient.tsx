@@ -381,7 +381,7 @@ export default function LoginClient({
     : status === "Error" ? t.error
     : t.idle;
 
-  const quoteEmphasis = lang === "ro" ? "timpul tău." : "your time.";
+  const quoteEmphasis = lang === "ro" ? "Timpul tău." : "Your time.";
   const quoteLine2 = t.quoteLine2 || "";
   const quoteEmIdx = quoteLine2.indexOf(quoteEmphasis);
   const quote2Pre = quoteEmIdx >= 0 ? quoteLine2.slice(0, quoteEmIdx) : quoteLine2;
