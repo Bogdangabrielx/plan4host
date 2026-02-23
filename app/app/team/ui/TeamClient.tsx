@@ -825,7 +825,8 @@ export default function TeamClient() {
             white-space: nowrap;
           }
           .memberActions { display: flex; gap: 8px; align-items: center; align-self: end; }
-          .roleStatusRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+          /* Keep role + status grouped together (no huge empty space when role label is short). */
+          .roleStatusRow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
           .memberStatusInline { display: none; }
           .memberScopesGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 0; width: 100%; }
           .memberScopesGrid > span { min-width: 0; }
@@ -843,7 +844,7 @@ export default function TeamClient() {
             }
             .memberStatusTop { display: none !important; }
             .memberStatusInline { display: inline-flex !important; }
-            .roleStatusRow { flex-wrap: nowrap; min-width: 0; }
+            .roleStatusRow { flex-wrap: nowrap; }
             .memberRolePill {
               overflow: hidden;
               text-overflow: ellipsis;
