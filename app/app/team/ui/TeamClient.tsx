@@ -594,8 +594,8 @@ export default function TeamClient() {
                     </div>
 
                     <div style={{ minWidth: 0, display: "grid", gap: 6 }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                        <strong style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, minWidth: 0, maxWidth: "100%" }}>
+                        <strong className="memberEmail">
                           {u.email || u.user_id}
                         </strong>
                         <span
@@ -815,6 +815,15 @@ export default function TeamClient() {
           }
           /* Grid children default min-width:auto can cause overflow in narrow layouts. */
           .memberRow > :nth-child(2) { min-width: 0; }
+          .memberEmail {
+            display: block;
+            min-width: 0;
+            max-width: 100%;
+            flex: 1 1 auto;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
           .memberActions { display: flex; gap: 8px; align-items: center; align-self: end; }
           .roleStatusRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
           .memberStatusInline { display: none; }
