@@ -370,6 +370,7 @@ export default function CheckinClient() {
       houseRules: 'House Rules',
       openPdfHint: '(Tap to view the House Rules in-app)',
       signaturePrompt: 'Please draw your signature below (mouse or touch). By signing, you confirm that the information provided is accurate and that you have read the Privacy Policy / GDPR information and the property\'s House Rules.',
+      signatureHere: 'Sign here',
       submitSubmitting: 'Submitting…',
       submit: 'Submit check-in',
       confirmEmailTitle: 'Confirmation Email',
@@ -439,6 +440,7 @@ export default function CheckinClient() {
       houseRules: 'Regulamentul de ordine interioară',
       openPdfHint: '(Apasă pentru a vedea regulamentul în aplicație)',
       signaturePrompt: 'Te rugăm să desenezi semnătura mai jos (mouse sau touch). Prin semnătură confirmi că datele completate sunt corecte și că ai luat la cunoștință Politica de confidențialitate / GDPR și regulile proprietății (House Rules).',
+      signatureHere: 'Semnează aici',
       submitSubmitting: 'Se trimite…',
       submit: 'Trimite check‑in',
       confirmEmailTitle: 'Email de confirmare',
@@ -1770,6 +1772,20 @@ export default function CheckinClient() {
             }
             .ci-consentText{ font-size: 13px; color: var(--muted); line-height: 1.45; }
             .ci-consentHint{ margin-top: 6px; font-size: 12px; color: color-mix(in srgb, var(--muted) 92%, transparent); }
+            .ci-sigWrap{ position: relative; width: 100%; height: 180px; }
+            .ci-sigPlaceholder{
+              position: absolute;
+              inset: 0;
+              display: grid;
+              place-items: center;
+              pointer-events: none;
+              color: color-mix(in srgb, var(--muted) 58%, transparent);
+              font-weight: 800;
+              letter-spacing: .18em;
+              text-transform: uppercase;
+              font-size: 12px;
+              opacity: 0.55;
+            }
             .ci-modalOverlay{
               position: fixed;
               inset: 0;
@@ -2965,7 +2981,8 @@ export default function CheckinClient() {
                       Clear
                     </button>
                   </div>
-                  <div style={{ width: '100%', height: 180 }}>
+                  <div className="ci-sigWrap">
+                    {!sigDirty && <div className="ci-sigPlaceholder">{T("signatureHere")}</div>}
                     <canvas
                       ref={sigCanvasRef}
                       onPointerDown={onSigDown}
