@@ -1040,13 +1040,15 @@ const [country, setCountry] = useState<string>("");
           role="dialog"
           aria-modal="true"
           onClick={(e) => {
-            // Require explicit close button
+            // Block any interaction outside the wizard card (including AppHeader/BottomNav).
+            e.preventDefault();
             e.stopPropagation();
           }}
           style={{
             position: "fixed",
             inset: 0,
-            zIndex: 240,
+            // Must sit above AppHeader + BottomNav to avoid "click-through".
+            zIndex: 2147483005,
             background: "rgba(0,0,0,0.55)",
             display: "flex",
             alignItems: "flex-start",
@@ -1075,8 +1077,7 @@ const [country, setCountry] = useState<string>("");
               gap: 12,
             }}
 		          >
-		            <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
-		              <div aria-hidden />
+		            <div style={{ display: "grid", alignItems: "start", gap: 12 }}>
 		              <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6 }}>
 		                <div
 		                  style={{
@@ -1090,19 +1091,6 @@ const [country, setCountry] = useState<string>("");
 		                  {firstPropertyStep === 1 ? t.addProperty : t.addPhoto}
 		                </div>
 		              </div>
-		              <button
-                aria-label={t.close}
-                className="sb-btn sb-cardglow sb-btn--icon"
-                style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
-                onClick={() => {
-                  setShowFirstPropertyGuide(false);
-                  setFirstPropertyStep(0);
-                  setFirstPropertyPhoto(null);
-                  setFirstPropertySkippedPhoto(false);
-                }}
-              >
-                ×
-              </button>
             </div>
 
             <div
@@ -1428,7 +1416,10 @@ const [country, setCountry] = useState<string>("");
 	          role="status"
 	          aria-live="polite"
 	          aria-label={FIRST_PROPERTY_LOADING_TITLE}
-	          style={{ zIndex: 243 }}
+	          style={{
+              // Must sit above AppHeader + BottomNav (BottomNav uses very high z-index).
+              zIndex: 2147483006,
+            }}
 	        >
 	          <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
 	            <LoadingPill title={FIRST_PROPERTY_LOADING_TITLE} />
@@ -1448,8 +1439,17 @@ const [country, setCountry] = useState<string>("");
 			      {firstPropertyResult && (
 		        <>
 		          <div
-		            onClick={() => {}}
-		            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 241 }}
+		            onClick={(e) => {
+                  // Block any interaction outside the card.
+		              e.preventDefault();
+                  e.stopPropagation();
+                }}
+		            style={{
+                  position: "fixed",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.55)",
+                  zIndex: 2147483005,
+                }}
 		          />
 		          <div
 		            role="dialog"
@@ -1459,7 +1459,7 @@ const [country, setCountry] = useState<string>("");
 	              inset: 0,
 	              display: "grid",
 	              placeItems: "center",
-	              zIndex: 242,
+	              zIndex: 2147483006,
 	              padding: 12,
 	              paddingTop: "calc(var(--safe-top, 0px) + 12px)",
 	              paddingBottom: "calc(var(--safe-bottom, 0px) + 12px)",
@@ -1478,8 +1478,7 @@ const [country, setCountry] = useState<string>("");
 	                gap: 12,
 	              }}
 	            >
-	              <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "start", gap: 12 }}>
-	                <div aria-hidden />
+	              <div style={{ display: "grid", alignItems: "start", gap: 12 }}>
 	                <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 6 }}>
 	                  <div
 	                    style={{
@@ -1493,20 +1492,6 @@ const [country, setCountry] = useState<string>("");
 	                    {t.checkinAutomated}
 	                  </div>
 	                </div>
-		                <button
-		                  aria-label="Close"
-		                  className="sb-btn sb-cardglow sb-btn--icon"
-		                  style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
-                  onClick={() => {
-                    setFirstPropertyResult(null);
-                    setFirstPropertyUnits([]);
-                    setFirstPropertyUnitDrafts({});
-                    setFirstPropertyUnitError(null);
-                    setFirstPropertyUnitsEditing(false);
-                  }}
-		                >
-		                  ×
-		                </button>
 		              </div>
               {firstPropertyUnits.length > 0 && (
                 <div style={{ display: "grid", gap: 10, padding: 10, borderRadius: 12, border: "1px solid var(--border)", background: "color-mix(in srgb, var(--card) 88%, transparent)" }}>
