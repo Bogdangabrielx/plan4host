@@ -92,9 +92,10 @@ export default function DashboardClient({
   const [status, setStatus] = useState<"Idle" | "Saving…" | "Synced" | "Error">("Idle");
   const [lang, setLang] = useState<Lang>("en");
   const [name, setName] = useState("");
-const [country, setCountry] = useState<string>("");
+  const [country, setCountry] = useState<string>("");
   const [propertyType, setPropertyType] = useState<string>("");
-  const [unitMode, setUnitMode] = useState<"single" | "multi">("single");
+  // Don't preselect a unit mode in onboarding; require explicit user choice.
+  const [unitMode, setUnitMode] = useState<"single" | "multi" | null>(null);
   const [unitCount, setUnitCount] = useState<string>("2");
   const [isSmall, setIsSmall] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -369,6 +370,8 @@ const [country, setCountry] = useState<string>("");
         guideShownRef.current = true;
         setShowFirstPropertyGuide(true);
         setFirstPropertyStep(1);
+        setUnitMode(null);
+        setUnitCount("2");
       }
     } catch { /* noop */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -399,7 +402,7 @@ const [country, setCountry] = useState<string>("");
   ];
 
   async function createFirstProperty() {
-    if (!name || !country || !propertyType) return;
+    if (!name || !country || !propertyType || !unitMode) return;
     setFirstPropertyError(null);
     setFirstPropertyLoadingIdx(0);
     setFirstPropertyLoading(true);
@@ -502,7 +505,7 @@ const [country, setCountry] = useState<string>("");
       setName("");
       setCountry("");
       setPropertyType("");
-      setUnitMode("single");
+      setUnitMode(null);
       setUnitCount("2");
       try {
         window.dispatchEvent(new CustomEvent("p4h:onboardingDirty"));
@@ -872,6 +875,8 @@ const [country, setCountry] = useState<string>("");
                   setFirstPropertyError(null);
                   setShowFirstPropertyGuide(true);
                   setFirstPropertyStep(1);
+                  setUnitMode(null);
+                  setUnitCount("2");
                   return;
                 }
                 addProperty();
@@ -1149,7 +1154,10 @@ const [country, setCountry] = useState<string>("");
                     <label style={{ display: "block" }}>{t.propertyType}</label>
                     <select
                       value={propertyType}
-                      onChange={(e) => setPropertyType(e.currentTarget.value)}
+                      onChange={(e) => {
+                        setPropertyType(e.currentTarget.value);
+                        setUnitMode(null);
+                      }}
                       style={FIELD_STYLE}
                     >
                       <option value="">{t.propertyTypePlaceholder}</option>
@@ -1251,7 +1259,7 @@ const [country, setCountry] = useState<string>("");
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                   <button
                     className="sb-btn sb-cardglow"
-                    disabled={!name || !country || !propertyType}
+                    disabled={!name || !country || !propertyType || !unitMode || (unitMode === "multi" && !(parseInt(unitCount || "0", 10) >= 2))}
                     style={{
                       border: "1px solid var(--primary)",
                       background: "transparent",
@@ -1367,13 +1375,14 @@ const [country, setCountry] = useState<string>("");
                         justifyContent: "center",
                         fontWeight: "var(--fw-medium)",
                     }}
-                    disabled={
-                      !name ||
-                      !country ||
-                      !propertyType ||
-                      !(firstPropertyPhoto || firstPropertySkippedPhoto) ||
-                      firstPropertyLoading
-                    }
+	                    disabled={
+	                      !name ||
+	                      !country ||
+	                      !propertyType ||
+	                      !unitMode ||
+	                      !(firstPropertyPhoto || firstPropertySkippedPhoto) ||
+	                      firstPropertyLoading
+	                    }
                     onClick={() => {
                       setShowFirstPropertyGuide(false);
                       setFirstPropertyStep(0);
