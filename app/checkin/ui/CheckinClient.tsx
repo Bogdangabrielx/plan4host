@@ -243,7 +243,7 @@ export default function CheckinClient() {
     return s === "form" ? "form" : "intro";
   });
   const formTopRef = useRef<HTMLDivElement | null>(null);
-  const houseRulesLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const houseRulesLinkRef = useRef<HTMLButtonElement | null>(null);
   const consentCardRef = useRef<HTMLDivElement | null>(null);
   const [highlightHouseRules, setHighlightHouseRules] = useState<boolean>(false);
 
@@ -368,7 +368,7 @@ export default function CheckinClient() {
       selected: 'Selected:',
       consentPrefix: 'I have read and agree to the ',
       houseRules: 'House Rules',
-      openPdfHint: '(Please open the PDF to enable the checkbox)',
+      openPdfHint: '(Tap to view the House Rules in-app)',
       signaturePrompt: 'Please draw your signature below (mouse or touch). By signing, you confirm that the information provided is accurate and that you have read the Privacy Policy / GDPR information and the property\'s House Rules.',
       submitSubmitting: 'Submitting…',
       submit: 'Submit check-in',
@@ -437,7 +437,7 @@ export default function CheckinClient() {
       selected: 'Selectat:',
       consentPrefix: 'Am citit și sunt de acord cu ',
       houseRules: 'Regulamentul de ordine interioară',
-      openPdfHint: '(Te rugăm să deschizi PDF‑ul pentru a activa această bifă)',
+      openPdfHint: '(Apasă pentru a vedea regulamentul în aplicație)',
       signaturePrompt: 'Te rugăm să desenezi semnătura mai jos (mouse sau touch). Prin semnătură confirmi că datele completate sunt corecte și că ai luat la cunoștință Politica de confidențialitate / GDPR și regulile proprietății (House Rules).',
       submitSubmitting: 'Se trimite…',
       submit: 'Trimite check‑in',
@@ -692,6 +692,7 @@ export default function CheckinClient() {
   // house rules gate
   const [pdfViewed, setPdfViewed] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [houseRulesOpen, setHouseRulesOpen] = useState<boolean>(false);
 
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
@@ -1245,6 +1246,7 @@ export default function CheckinClient() {
   function onOpenPdf() {
     if (!pdfUrl) return;
     try { setPdfViewed(true); } catch {}
+    setHouseRulesOpen(true);
   }
 
   // Initialize canvas when it becomes visible (after agreeing to House Rules)
@@ -2897,33 +2899,44 @@ export default function CheckinClient() {
                   id="agree"
                   type="checkbox"
                   checked={agree}
-                  disabled={!!pdfUrl && !pdfViewed}
-                  onChange={(e) => setAgree(e.currentTarget.checked)}
-                  style={{ marginTop: 2, cursor: (!!pdfUrl && !pdfViewed) ? "not-allowed" : "pointer" }}
-                  title={!!pdfUrl && !pdfViewed ? "Open the House Rules to enable this checkbox." : undefined}
+                  onChange={(e) => {
+                    // If House Rules PDF exists, show it in-app first, then allow checking.
+                    if (!!pdfUrl && !pdfViewed) { onOpenPdf(); return; }
+                    setAgree(e.currentTarget.checked);
+                  }}
+                  style={{ marginTop: 2, cursor: "pointer" }}
+                  title={!!pdfUrl && !pdfViewed ? (lang === "ro" ? "Apasă pentru a vedea regulamentul." : "Tap to view the House Rules.") : undefined}
                 />
                 <div style={{ minWidth: 0 }}>
                   <label htmlFor="agree" className="ci-consentText">
                     {T('consentPrefix')}
                     {pdfUrl ? (
-                      <a
+                      <button
+                        type="button"
                         ref={houseRulesLinkRef}
-                        href={pdfUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         onClick={onOpenPdf}
                         className={highlightHouseRules ? "ci-hlLink" : undefined}
-                        style={{ fontWeight: 700, fontSize: 12, color: 'var(--primary)' }}
+                        style={{
+                          fontWeight: 700,
+                          fontSize: 12,
+                          color: 'var(--primary)',
+                          background: 'transparent',
+                          border: 0,
+                          padding: 0,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          textUnderlineOffset: 3,
+                        }}
                       >
-                        Property Rules (pdf)
-                      </a>
+                        {lang === "ro" ? "Regulament (pdf)" : "Property Rules (pdf)"}
+                      </button>
                     ) : (
                       <span style={{ fontStyle: "italic" }}>{T('houseRules')}</span>
                     )}
                     .
                     {!!pdfUrl && pdfViewed && (
                       <span style={{ marginLeft: 8, color: "var(--text)", fontWeight: 700, fontSize: 11 }}>
-                        Opened
+                        {lang === "ro" ? "Deschis" : "Opened"}
                       </span>
                     )}
                   </label>
@@ -3471,6 +3484,113 @@ export default function CheckinClient() {
                 </>
               );
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* House Rules modal (opened from checkbox/link; allows reading in-app) */}
+      {houseRulesOpen && !!pdfUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="ci-modalOverlay"
+          onClick={() => setHouseRulesOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sb-card ci-modalCard ci-modalCard--wide"
+            style={{
+              padding: 0,
+              overflow: "hidden",
+              maxHeight: "calc(100dvh - (var(--safe-top, 0px) + var(--safe-bottom, 0px) + 32px))",
+              display: "grid",
+              gridTemplateRows: "auto minmax(0, 1fr) auto",
+            }}
+          >
+            <div
+              className="ci-modalHead"
+              style={{
+                marginBottom: 0,
+                padding: "14px 16px",
+                borderBottom: "1px solid var(--border)",
+              }}
+            >
+              <div className="ci-modalTitle">
+                {lang === "ro" ? "Regulament" : "House Rules"}
+              </div>
+              <button
+                className="ci-modalIconBtn"
+                onClick={() => setHouseRulesOpen(false)}
+                aria-label={lang === "ro" ? "Inchide" : "Close"}
+              >
+                ×
+              </button>
+            </div>
+
+            <div
+              className="ci-modalBody"
+              style={{
+                padding: 12,
+                overflowY: "auto",
+                WebkitOverflowScrolling: "touch",
+                gap: 10,
+              }}
+            >
+              <div
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  background: "var(--panel)",
+                  height: "min(64vh, 720px)",
+                }}
+              >
+                <iframe
+                  title={lang === "ro" ? "Regulament" : "House Rules"}
+                  src={pdfUrl}
+                  style={{ width: "100%", height: "100%", border: 0, display: "block" }}
+                />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <small style={{ color: "var(--muted)" }}>
+                  {lang === "ro"
+                    ? "Daca nu se incarca in modal, deschide PDF-ul intr-un tab nou."
+                    : "If it doesn't load in the modal, open the PDF in a new tab."}
+                </small>
+                <a
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ci-modalLink"
+                  style={{ fontSize: 12 }}
+                >
+                  {lang === "ro" ? "Deschide in tab nou" : "Open in new tab"}
+                </a>
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: "12px 16px",
+                borderTop: "1px solid var(--border)",
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+              }}
+            >
+              <button className="sb-btn" onClick={() => setHouseRulesOpen(false)}>
+                {lang === "ro" ? "Inchide" : "Close"}
+              </button>
+              <button
+                className="sb-btn sb-btn--primary"
+                onClick={() => {
+                  setAgree(true);
+                  setHouseRulesOpen(false);
+                }}
+              >
+                {lang === "ro" ? "Am citit" : "I read"}
+              </button>
+            </div>
           </div>
         </div>
       )}
