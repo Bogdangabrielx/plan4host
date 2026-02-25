@@ -1779,12 +1779,16 @@ export default function CheckinClient() {
               display: grid;
               place-items: center;
               pointer-events: none;
-              color: color-mix(in srgb, var(--muted) 58%, transparent);
-              font-weight: 800;
-              letter-spacing: .18em;
+              color: color-mix(in srgb, var(--text) 34%, transparent);
+              font-weight: 900;
+              letter-spacing: .22em;
               text-transform: uppercase;
-              font-size: 12px;
-              opacity: 0.55;
+              font-size: 14px;
+              opacity: 0.8;
+              text-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            }
+            @media (min-width: 560px){
+              .ci-sigPlaceholder{ font-size: 16px; }
             }
             .ci-modalOverlay{
               position: fixed;
