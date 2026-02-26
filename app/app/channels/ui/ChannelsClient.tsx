@@ -94,8 +94,8 @@ function providerDefaultColor(provider?: string | null): string {
   if (s.includes("airbnb")) return "rgba(255, 90, 96, 0.81)";
   if (s.includes("booking")) return "rgba(30, 143, 255, 0.9)";
   if (s.includes("expedia")) return "rgba(254, 203, 46, 0.81)";
-  // Match the calendar default for Trivago (brand-ish gradient).
-  if (s.includes("trivago")) return "linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)";
+  // Use a solid Trivago orange; gradients don't always preview/store consistently across contexts.
+  if (s.includes("trivago")) return "#FF8B00";
   if (s.includes("lastminute")) return "rgba(212, 147, 186, 0.81)";
   if (s.includes("travelminit")) return "rgba(164, 87, 159, 0.86)";
   return "rgba(139, 92, 246, 0.81)";
@@ -1764,8 +1764,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <div style={{ fontWeight: 800 }}>{lang === "ro" ? "Culoare" : "Color"}</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                 {[
-                  // Trivago default (gradient)
-                  "linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)",
+                  "#FF8B00",
                   "rgba(30,144,255,0.81)",
                   "rgba(255,90,95,0.81)",
                   "rgba(254,203,46,0.81)",
@@ -2571,7 +2570,7 @@ function ManageTypeModal({
 	    if (s.includes('airbnb')) return 'rgba(255, 90, 96, 0.81)';
 	    if (s.includes('booking')) return 'rgba(30, 143, 255, 0.9)';
 	    if (s.includes('expedia')) return 'rgba(254,203,46,0.81)';
-	    if (s.includes('trivago')) return 'linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)';
+	    if (s.includes('trivago')) return '#FF8B00';
 	    if (s.includes('lastminute')) return '#d493baff';
 	    if (s.includes('travelminit')) return '#a4579f';
 	    return 'rgba(139,92,246,0.81)';
@@ -2998,7 +2997,7 @@ function ManageRoomModal({
 	    if (s.includes('airbnb')) return 'rgba(255, 90, 96, 0.81)';
 	    if (s.includes('booking')) return 'rgba(30, 143, 255, 0.9)';
 	    if (s.includes('expedia')) return 'rgba(254,203,46,0.81)';
-	    if (s.includes('trivago')) return 'linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)';
+	    if (s.includes('trivago')) return '#FF8B00';
 	    if (s.includes('lastminute')) return '#d493baff';
 	    if (s.includes('travelminit')) return '#a4579f';
 	    return 'rgba(139,92,246,0.81)';
