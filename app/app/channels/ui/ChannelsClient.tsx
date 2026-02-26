@@ -94,7 +94,8 @@ function providerDefaultColor(provider?: string | null): string {
   if (s.includes("airbnb")) return "rgba(255, 90, 96, 0.81)";
   if (s.includes("booking")) return "rgba(30, 143, 255, 0.9)";
   if (s.includes("expedia")) return "rgba(254, 203, 46, 0.81)";
-  if (s.includes("trivago")) return "rgba(62, 173, 215, 0.81)";
+  // Match the calendar default for Trivago (brand-ish gradient).
+  if (s.includes("trivago")) return "linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)";
   if (s.includes("lastminute")) return "rgba(212, 147, 186, 0.81)";
   if (s.includes("travelminit")) return "rgba(164, 87, 159, 0.86)";
   return "rgba(139, 92, 246, 0.81)";
@@ -1763,6 +1764,8 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <div style={{ fontWeight: 800 }}>{lang === "ro" ? "Culoare" : "Color"}</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                 {[
+                  // Trivago default (gradient)
+                  "linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)",
                   "rgba(30,144,255,0.81)",
                   "rgba(255,90,95,0.81)",
                   "rgba(254,203,46,0.81)",
@@ -2563,16 +2566,16 @@ function ManageTypeModal({
   const [pickerFor, setPickerFor] = useState<string | null>(null);
   const LS_KEY = `p4h:otaColors:type:${typeId}`;
   function norm(p?: string | null) { return (p || '').toLowerCase().trim(); }
-  function defaultColor(p?: string | null) {
-    const s = norm(p);
-    if (s.includes('airbnb')) return 'rgba(255, 90, 96, 0.81)';
-    if (s.includes('booking')) return 'rgba(30, 143, 255, 0.9)';
-    if (s.includes('expedia')) return 'rgba(254,203,46,0.81)';
-    if (s.includes('trivago')) return '#FF8B00';
-    if (s.includes('lastminute')) return '#d493baff';
-    if (s.includes('travelminit')) return '#a4579f';
-    return 'rgba(139,92,246,0.81)';
-  }
+	  function defaultColor(p?: string | null) {
+	    const s = norm(p);
+	    if (s.includes('airbnb')) return 'rgba(255, 90, 96, 0.81)';
+	    if (s.includes('booking')) return 'rgba(30, 143, 255, 0.9)';
+	    if (s.includes('expedia')) return 'rgba(254,203,46,0.81)';
+	    if (s.includes('trivago')) return 'linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)';
+	    if (s.includes('lastminute')) return '#d493baff';
+	    if (s.includes('travelminit')) return '#a4579f';
+	    return 'rgba(139,92,246,0.81)';
+	  }
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
@@ -2990,16 +2993,16 @@ function ManageRoomModal({
   const [pickerFor, setPickerFor] = useState<string | null>(null);
   const LS_KEY = `p4h:otaColors:room:${room.id}`;
   function norm(p?: string | null) { return (p || '').toLowerCase().trim(); }
-  function defaultColor(p?: string | null) {
-    const s = norm(p);
-    if (s.includes('airbnb')) return 'rgba(255, 90, 96, 0.81)';
-    if (s.includes('booking')) return 'rgba(30, 143, 255, 0.9)';
-    if (s.includes('expedia')) return 'rgba(254,203,46,0.81)';
-    if (s.includes('trivago')) return '#FF8B00';
-    if (s.includes('lastminute')) return '#d493baff';
-    if (s.includes('travelminit')) return '#a4579f';
-    return 'rgba(139,92,246,0.81)';
-  }
+	  function defaultColor(p?: string | null) {
+	    const s = norm(p);
+	    if (s.includes('airbnb')) return 'rgba(255, 90, 96, 0.81)';
+	    if (s.includes('booking')) return 'rgba(30, 143, 255, 0.9)';
+	    if (s.includes('expedia')) return 'rgba(254,203,46,0.81)';
+	    if (s.includes('trivago')) return 'linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)';
+	    if (s.includes('lastminute')) return '#d493baff';
+	    if (s.includes('travelminit')) return '#a4579f';
+	    return 'rgba(139,92,246,0.81)';
+	  }
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
