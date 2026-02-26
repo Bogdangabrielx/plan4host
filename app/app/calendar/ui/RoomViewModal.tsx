@@ -139,7 +139,7 @@ export default function RoomViewModal({
     if (!map.has("airbnb")) map.set("airbnb", "rgba(255, 90, 96, 0.81)");
     if (!map.has("booking")) map.set("booking", "rgba(30, 143, 255, 0.90)");
     if (!map.has("expedia")) map.set("expedia", "rgba(254,203,46,0.81)");
-    if (!map.has("trivago")) map.set("trivago", "linear-gradient(90deg, #ec7163ff 0%, #f2a553ff 50%, #3eadd7 100%)");
+    if (!map.has("trivago")) map.set("trivago", "#FF8B00");
     if (!map.has("lastminute")) map.set("lastminute", "#d493baff");
     if (!map.has("travelminit")) map.set("travelminit", "#a4579f");
     if (!map.has("other")) map.set("other", "rgba(139,92,246,0.81)"); // violet fallback
