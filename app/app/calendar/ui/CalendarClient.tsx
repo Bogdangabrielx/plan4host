@@ -66,6 +66,8 @@ type Booking = {
   end_time: string | null;
   status: string;
   source?: string | null;
+  // For iCal imports, `source` is typically "ical" and the real provider is stored here.
+  ota_provider?: string | null;
   ota_integration_id?: string | null;
 };
 type TypeIntegration = {
@@ -291,7 +293,7 @@ export default function CalendarClient({
           .order("sort_index", { ascending: true })
           .order("created_at", { ascending: true }),
         supabase.from("bookings")
-          .select("id,property_id,room_id,room_type_id,start_date,end_date,start_time,end_time,status,source,ota_integration_id")
+          .select("id,property_id,room_id,room_type_id,start_date,end_date,start_time,end_time,status,source,ota_provider,ota_integration_id")
           .eq("property_id", propertyId)
           .neq("status","cancelled")
           // Include bookings that overlap the window (not only those fully inside it).
@@ -1451,7 +1453,9 @@ function TimelineView({
   }
 
   function colorForBooking(b: Booking): string {
-    const key = normalizeProvider(b.source);
+    // Most iCal bookings have `source="ical"` for all providers, so use `ota_provider`
+    // (when present) to infer the right platform color.
+    const key = b.source === "ical" && b.ota_provider ? normalizeProvider(b.ota_provider) : normalizeProvider(b.source);
     let color: string | undefined;
 
     const intId = b.ota_integration_id || undefined;
