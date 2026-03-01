@@ -3659,49 +3659,58 @@ export default function CheckinClient() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: "grid", gap: 6, marginBottom: 12 }}>
-              <strong style={{ fontSize: 15 }}>
-                {lang === "ro" ? "Verifică datele înainte de trimitere" : "Review details before sending"}
-              </strong>
-              <small style={{ color: "var(--muted)" }}>
+            <div style={{ display: "grid", gap: 4, marginBottom: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: "-0.1px", color: "color-mix(in srgb, var(--text) 92%, transparent)" }}>
+                {lang === "ro" ? "Confirmă datele" : "Confirm details"}
+              </div>
+              <div style={{ fontSize: 12, lineHeight: "18px", color: "color-mix(in srgb, var(--muted) 92%, transparent)" }}>
                 {lang === "ro"
-                  ? "Te rugăm să verifici că numele și perioada sejurului sunt corecte."
-                  : "Please make sure the guest name and stay dates are correct."}
-              </small>
+                  ? "Verifică numele și perioada sejurului înainte să trimitem emailul."
+                  : "Double-check the guest name and stay dates before we send the email."}
+              </div>
             </div>
 
             <div
               style={{
                 display: "grid",
                 gap: 10,
-                padding: 12,
-                borderRadius: 12,
-                border: "1px solid var(--border)",
-                background: "color-mix(in srgb, var(--card) 86%, transparent)",
+                padding: 14,
+                borderRadius: 16,
+                border: "1px solid color-mix(in srgb, var(--border) 88%, transparent)",
+                background: "color-mix(in srgb, var(--card) 92%, transparent)",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                <img src="/logoguest_forlight.png" alt="" width={18} height={18} style={{ display: "block", opacity: 0.9 }} />
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
-                    {lang === "ro" ? "Oaspete" : "Guest"}
-                  </div>
-                  <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <img src="/logoguest_forlight.png" alt="" width={18} height={18} style={{ display: "block", opacity: 0.9, flex: "0 0 auto" }} />
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, minWidth: 0, flex: 1 }}>
+                  <span style={{ color: "var(--text)", fontWeight: 800, whiteSpace: "nowrap" }}>
+                    {lang === "ro" ? "Oaspete:" : "Guest:"}
+                  </span>
+                  <span
+                    style={{
+                      color: "var(--muted)",
+                      fontWeight: 500,
+                      minWidth: 0,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {`${firstName.trim()} ${lastName.trim()}`.trim() || (lang === "ro" ? "—" : "—")}
                     {expectedCompanions > 0 ? ` + ${expectedCompanions}` : ""}
-                  </div>
+                  </span>
                 </div>
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                <img src="/night_forlight.png" alt="" width={18} height={18} style={{ display: "block", opacity: 0.9 }} />
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
-                    {lang === "ro" ? "Sejur" : "Stay"}
-                  </div>
-                  <div style={{ fontWeight: 800 }}>
+                <img src="/night_forlight.png" alt="" width={18} height={18} style={{ display: "block", opacity: 0.9, flex: "0 0 auto" }} />
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, minWidth: 0, flex: 1 }}>
+                  <span style={{ color: "var(--text)", fontWeight: 800, whiteSpace: "nowrap" }}>
+                    {lang === "ro" ? "Sejur:" : "Stay:"}
+                  </span>
+                  <span style={{ color: "var(--muted)", fontWeight: 500, whiteSpace: "nowrap" }}>
                     {fmtDMY(startDate)} {"\u2192"} {fmtDMY(endDate)}
-                  </div>
+                  </span>
                 </div>
               </div>
             </div>
