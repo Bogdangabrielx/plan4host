@@ -1405,6 +1405,54 @@ function EditFormBookingModal({
   const baselineSetRef = useRef(false);
   const baselineRef = useRef<{ sd: string; ed: string; roomId: string; roomTypeId: string }>({ sd: '', ed: '', roomId: '', roomTypeId: '' });
 
+  async function sendGuestInfoEmail(targetBookingId: string): Promise<boolean> {
+    // Ensure the legacy prompt stays closed for the auto-send path.
+    setSendMailOpen(false);
+    setSendMailBusy(true);
+    setSendMailError(null);
+    prevPillRef.current = pill;
+    setPill(lang === "ro" ? "Se trimite…" : "Sending…");
+    try {
+      // Ensure public link exists (best-effort)
+      try {
+        const gen = await fetch("/api/reservation-message/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ property_id: propertyId, booking_id: targetBookingId }),
+        });
+        await gen.json().catch(() => ({}));
+      } catch {}
+
+      const r = await fetch("/api/reservation-message/confirm-room", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ property_id: propertyId, booking_id: targetBookingId }),
+      });
+      const jj = await r.json().catch(() => ({}));
+
+      if (r.ok && (jj?.ok || jj?.sent)) {
+        setPill(overlayMessageNode(lang === "ro" ? "Email de confirmare trimis" : "Confirmation email sent"));
+        await wait(1100);
+        setPill(prevPillRef.current);
+        return true;
+      }
+
+      const msg =
+        lang === "ro"
+          ? "Emailul nu a putut fi trimis. Incearca din nou peste 10 minute."
+          : "Email could not be sent. Please try again in 10 minutes.";
+      setSendMailError(msg);
+      setPill(prevPillRef.current);
+      return false;
+    } catch (er: any) {
+      setSendMailError(er?.message || (lang === "ro" ? "Nu am putut trimite." : "Failed to send."));
+      try { setPill(prevPillRef.current); } catch {}
+      return false;
+    } finally {
+      setSendMailBusy(false);
+    }
+  }
+
   // booking fields
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -1666,7 +1714,19 @@ function EditFormBookingModal({
       baselineRef.current = { sd: startDate, ed: endDate, roomId: String(roomId || ''), roomTypeId: String(roomTypeId || '') };
       setJustSaved(true);
       if (linkedId) {
-        setSendMailOpen(true);
+        // Confirm booking: auto-send the info email (no extra prompt).
+        if (!confirmOnSave) {
+          const ok = await sendGuestInfoEmail(linkedId);
+          if (ok) {
+            try { onSaved(); } catch {}
+            try { onClose(); } catch {}
+          } else {
+            setPopupTitle(lang === "ro" ? "Email netrimis" : "Email not sent");
+            setPopupMsg(lang === "ro" ? "Emailul nu a putut fi trimis. Incearca din nou peste 10 minute." : "Email could not be sent. Please try again in 10 minutes.");
+          }
+        } else {
+          setSendMailOpen(true);
+        }
       } else {
         // Închide modalul și dă refresh dacă nu avem pasul de email
         try { onSaved(); } catch {}
@@ -2240,7 +2300,15 @@ function EditFormBookingModal({
                     onClick={onSave}
                     style={{ minHeight:44 }}
                   >
-                    {saving ? (lang === "ro" ? "Se salveaza…" : "Saving…") : (justSaved ? (lang === "ro" ? "Salvat" : "Saved") : (lang === "ro" ? "Salveaza modificarile" : "Save changes"))}
+                    {saving
+                      ? (confirmOnSave
+                          ? (lang === "ro" ? "Se salveaza…" : "Saving…")
+                          : (lang === "ro" ? "Se confirma…" : "Confirming…"))
+                      : (justSaved
+                          ? (lang === "ro" ? "Salvat" : "Saved")
+                          : (confirmOnSave
+                              ? (lang === "ro" ? "Salveaza modificarile" : "Save changes")
+                              : (lang === "ro" ? "Confirma rezervarea" : "Confirm booking")))}
                   </button>
                 )}
               </div>
