@@ -550,54 +550,73 @@ export default function CheckinClient() {
   const sigDrawingRef = useRef<boolean>(false);
   const [sigDirty, setSigDirty] = useState<boolean>(false);
 
-  // Initialize/rescale signature canvas for crisp drawing
+  // Initialize/rescale signature canvas for crisp drawing (hi-DPI + anti-aliased strokes).
+  // Runs after House Rules are agreed (canvas is mounted only then).
   useEffect(() => {
+    if (!agree) return;
+
     function initCanvas() {
       const el = sigCanvasRef.current;
       if (!el) return;
-      // snapshot current content before resizing (to avoid clearing on viewport/keyboard changes)
+
+      // Snapshot current content before resizing (to avoid clearing on viewport/keyboard changes).
       let snapshot: HTMLCanvasElement | null = null;
       if (el.width > 0 && el.height > 0) {
-        snapshot = document.createElement('canvas');
+        snapshot = document.createElement("canvas");
         snapshot.width = el.width;
         snapshot.height = el.height;
-        const sctx = snapshot.getContext('2d');
+        const sctx = snapshot.getContext("2d");
         if (sctx) sctx.drawImage(el, 0, 0);
       }
 
-      const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+      // Use fractional DPR (don't floor) to avoid jagged strokes on zoomed/hi-DPI screens.
+      const dpr = Math.max(1, Math.min(4, window.devicePixelRatio || 1));
       const rect = el.getBoundingClientRect();
-      el.width = Math.max(1, Math.floor(rect.width * dpr));
-      el.height = Math.max(1, Math.floor(rect.height * dpr));
+      el.width = Math.max(1, Math.round(rect.width * dpr));
+      el.height = Math.max(1, Math.round(rect.height * dpr));
       sigScaleRef.current = dpr;
-      const ctx = el.getContext('2d');
+
+      const ctx = el.getContext("2d");
       if (!ctx) return;
       sigCtxRef.current = ctx;
-      // white background for better readability when exported
-      ctx.fillStyle = '#ffffff';
+
+      // White background for better readability when exported.
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, el.width, el.height);
-      // restore previous drawing scaled to new size
+
+      // Restore previous drawing scaled to new size.
       if (snapshot) {
-        try { ctx.drawImage(snapshot, 0, 0, snapshot.width, snapshot.height, 0, 0, el.width, el.height); } catch {}
+        try {
+          ctx.drawImage(snapshot, 0, 0, snapshot.width, snapshot.height, 0, 0, el.width, el.height);
+        } catch {}
       }
-      ctx.lineWidth = 2 * dpr;
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = '#111827';
+
+      ctx.lineWidth = 2.25 * dpr;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.miterLimit = 1;
+      ctx.strokeStyle = "#111827";
     }
-    initCanvas();
+
+    // Init on mount + allow layout to settle (mobile keyboard / iOS Safari).
+    const t = window.setTimeout(() => initCanvas(), 0);
     const onResize = () => initCanvas();
-    window.addEventListener('resize', onResize);
-    // Observe element size changes (not only window resize)
+    window.addEventListener("resize", onResize);
+
+    // Observe element size changes (not only window resize).
     let ro: ResizeObserver | null = null;
     try {
       ro = new ResizeObserver(() => initCanvas());
-      const el = sigCanvasRef.current; if (el) ro.observe(el);
+      const el = sigCanvasRef.current;
+      if (el) ro.observe(el);
     } catch {}
+
     return () => {
-      window.removeEventListener('resize', onResize);
+      try { window.clearTimeout(t); } catch {}
+      window.removeEventListener("resize", onResize);
       try { ro?.disconnect(); } catch {}
     };
-  }, []);
+  }, [agree]);
 
   function sigPointFromClient(el: HTMLCanvasElement, clientX: number, clientY: number) {
     const rect = el.getBoundingClientRect();
@@ -680,8 +699,10 @@ export default function CheckinClient() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, el.width, el.height);
     ctx.fillStyle = '#111827';
-    ctx.lineWidth = 2 * (sigScaleRef.current || 1);
+    ctx.lineWidth = 2.25 * (sigScaleRef.current || 1);
     ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.miterLimit = 1;
     ctx.strokeStyle = '#111827';
     setSigDirty(false);
   }
@@ -1251,28 +1272,7 @@ export default function CheckinClient() {
     setHouseRulesOpen(true);
   }
 
-  // Initialize canvas when it becomes visible (after agreeing to House Rules)
-  useEffect(() => {
-    if (!agree) return;
-    const t = window.setTimeout(() => {
-      try {
-        const el = sigCanvasRef.current; if (!el) return;
-        const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-        const rect = el.getBoundingClientRect();
-        el.width = Math.max(1, Math.floor(rect.width * dpr));
-        el.height = Math.max(1, Math.floor(rect.height * dpr));
-        sigScaleRef.current = dpr;
-        const ctx = el.getContext('2d'); if (!ctx) return;
-        sigCtxRef.current = ctx;
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, el.width, el.height);
-        ctx.lineWidth = 2 * dpr;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = '#111827';
-      } catch {}
-    }, 0);
-    return () => { try { window.clearTimeout(t); } catch {} };
-  }, [agree]);
+  // Canvas init is handled in the hi-DPI effect above.
 
   // upload helper
   async function uploadDocFile(): Promise<{ path: string; mime: string } | null> {
