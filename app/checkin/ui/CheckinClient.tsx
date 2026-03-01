@@ -550,74 +550,6 @@ export default function CheckinClient() {
   const sigDrawingRef = useRef<boolean>(false);
   const [sigDirty, setSigDirty] = useState<boolean>(false);
 
-  // Initialize/rescale signature canvas for crisp drawing (hi-DPI + anti-aliased strokes).
-  // Runs after House Rules are agreed (canvas is mounted only then).
-  useEffect(() => {
-    if (!agree) return;
-
-    function initCanvas() {
-      const el = sigCanvasRef.current;
-      if (!el) return;
-
-      // Snapshot current content before resizing (to avoid clearing on viewport/keyboard changes).
-      let snapshot: HTMLCanvasElement | null = null;
-      if (el.width > 0 && el.height > 0) {
-        snapshot = document.createElement("canvas");
-        snapshot.width = el.width;
-        snapshot.height = el.height;
-        const sctx = snapshot.getContext("2d");
-        if (sctx) sctx.drawImage(el, 0, 0);
-      }
-
-      // Use fractional DPR (don't floor) to avoid jagged strokes on zoomed/hi-DPI screens.
-      const dpr = Math.max(1, Math.min(4, window.devicePixelRatio || 1));
-      const rect = el.getBoundingClientRect();
-      el.width = Math.max(1, Math.round(rect.width * dpr));
-      el.height = Math.max(1, Math.round(rect.height * dpr));
-      sigScaleRef.current = dpr;
-
-      const ctx = el.getContext("2d");
-      if (!ctx) return;
-      sigCtxRef.current = ctx;
-
-      // White background for better readability when exported.
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, el.width, el.height);
-
-      // Restore previous drawing scaled to new size.
-      if (snapshot) {
-        try {
-          ctx.drawImage(snapshot, 0, 0, snapshot.width, snapshot.height, 0, 0, el.width, el.height);
-        } catch {}
-      }
-
-      ctx.lineWidth = 2.25 * dpr;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.miterLimit = 1;
-      ctx.strokeStyle = "#111827";
-    }
-
-    // Init on mount + allow layout to settle (mobile keyboard / iOS Safari).
-    const t = window.setTimeout(() => initCanvas(), 0);
-    const onResize = () => initCanvas();
-    window.addEventListener("resize", onResize);
-
-    // Observe element size changes (not only window resize).
-    let ro: ResizeObserver | null = null;
-    try {
-      ro = new ResizeObserver(() => initCanvas());
-      const el = sigCanvasRef.current;
-      if (el) ro.observe(el);
-    } catch {}
-
-    return () => {
-      try { window.clearTimeout(t); } catch {}
-      window.removeEventListener("resize", onResize);
-      try { ro?.disconnect(); } catch {}
-    };
-  }, [agree]);
-
   function sigPointFromClient(el: HTMLCanvasElement, clientX: number, clientY: number) {
     const rect = el.getBoundingClientRect();
     const s = sigScaleRef.current || 1;
@@ -717,6 +649,74 @@ export default function CheckinClient() {
   const [agree, setAgree] = useState(false);
   const [houseRulesOpen, setHouseRulesOpen] = useState<boolean>(false);
 
+  // Initialize/rescale signature canvas for crisp drawing (hi-DPI + anti-aliased strokes).
+  // Runs after House Rules are agreed (canvas is mounted only then).
+  useEffect(() => {
+    if (!agree) return;
+
+    function initCanvas() {
+      const el = sigCanvasRef.current;
+      if (!el) return;
+
+      // Snapshot current content before resizing (to avoid clearing on viewport/keyboard changes).
+      let snapshot: HTMLCanvasElement | null = null;
+      if (el.width > 0 && el.height > 0) {
+        snapshot = document.createElement("canvas");
+        snapshot.width = el.width;
+        snapshot.height = el.height;
+        const sctx = snapshot.getContext("2d");
+        if (sctx) sctx.drawImage(el, 0, 0);
+      }
+
+      // Use fractional DPR (don't floor) to avoid jagged strokes on zoomed/hi-DPI screens.
+      const dpr = Math.max(1, Math.min(4, window.devicePixelRatio || 1));
+      const rect = el.getBoundingClientRect();
+      el.width = Math.max(1, Math.round(rect.width * dpr));
+      el.height = Math.max(1, Math.round(rect.height * dpr));
+      sigScaleRef.current = dpr;
+
+      const ctx = el.getContext("2d");
+      if (!ctx) return;
+      sigCtxRef.current = ctx;
+
+      // White background for better readability when exported.
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, el.width, el.height);
+
+      // Restore previous drawing scaled to new size.
+      if (snapshot) {
+        try {
+          ctx.drawImage(snapshot, 0, 0, snapshot.width, snapshot.height, 0, 0, el.width, el.height);
+        } catch {}
+      }
+
+      ctx.lineWidth = 2.25 * dpr;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.miterLimit = 1;
+      ctx.strokeStyle = "#111827";
+    }
+
+    // Init on mount + allow layout to settle (mobile keyboard / iOS Safari).
+    const t = window.setTimeout(() => initCanvas(), 0);
+    const onResize = () => initCanvas();
+    window.addEventListener("resize", onResize);
+
+    // Observe element size changes (not only window resize).
+    let ro: ResizeObserver | null = null;
+    try {
+      ro = new ResizeObserver(() => initCanvas());
+      const el = sigCanvasRef.current;
+      if (el) ro.observe(el);
+    } catch {}
+
+    return () => {
+      try { window.clearTimeout(t); } catch {}
+      window.removeEventListener("resize", onResize);
+      try { ro?.disconnect(); } catch {}
+    };
+  }, [agree]);
+
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -747,6 +747,7 @@ export default function CheckinClient() {
   const [confirmError, setConfirmError] = useState<string>("");
   const [qrUrl, setQrUrl] = useState<string>("");
   const confirmCardRef = useRef<HTMLDivElement | null>(null);
+  const [reviewOpen, setReviewOpen] = useState<boolean>(false);
 
   // Ensure the confirmation modal is visible and focused when opened
   useEffect(() => {
@@ -1325,10 +1326,15 @@ export default function CheckinClient() {
   }
 
   // 4) submit
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!canSubmit) return;
+  function fmtDMY(ymd: string) {
+    // ymd: YYYY-MM-DD -> DD.MM.YYYY
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return ymd;
+    const [y, m, d] = ymd.split("-");
+    return `${d}.${m}.${y}`;
+  }
 
+  async function actuallySubmit() {
+    if (!canSubmit) return;
     setSubmitState("submitting");
     setErrorMsg("");
     // Show confirmation modal immediately to indicate progress
@@ -1448,6 +1454,14 @@ export default function CheckinClient() {
       setSubmitState("error");
       setConfirmOpen(false);
     }
+  }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!canSubmit) return;
+    // Ask for final confirmation before sending anything.
+    setConfirmOpen(false);
+    setReviewOpen(true);
   }
 
   // Auto-close confirmation modal on successful send
@@ -3610,6 +3624,104 @@ export default function CheckinClient() {
                 }}
               >
                 {lang === "ro" ? "Am citit" : "I read"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review before sending (no cancel / no X) */}
+      {reviewOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 310,
+            background: "rgba(0,0,0,.62)",
+            WebkitBackdropFilter: "blur(6px)",
+            backdropFilter: "blur(6px)",
+            display: "grid",
+            placeItems: "center",
+            padding: 12,
+          }}
+        >
+          <div
+            className="sb-card"
+            style={{
+              width: "min(560px, 100%)",
+              padding: 16,
+              color: "var(--text)",
+              border: "1px solid var(--border)",
+              background: "var(--card)",
+              boxShadow: "0 16px 44px rgba(0,0,0,0.24)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "grid", gap: 6, marginBottom: 12 }}>
+              <strong style={{ fontSize: 15 }}>
+                {lang === "ro" ? "Verifică datele înainte de trimitere" : "Review details before sending"}
+              </strong>
+              <small style={{ color: "var(--muted)" }}>
+                {lang === "ro"
+                  ? "Te rugăm să verifici că numele și perioada sejurului sunt corecte."
+                  : "Please make sure the guest name and stay dates are correct."}
+              </small>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: 10,
+                padding: 12,
+                borderRadius: 12,
+                border: "1px solid var(--border)",
+                background: "color-mix(in srgb, var(--card) 86%, transparent)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                <img src="/logoguest_forlight.png" alt="" width={18} height={18} style={{ display: "block", opacity: 0.9 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
+                    {lang === "ro" ? "Oaspete" : "Guest"}
+                  </div>
+                  <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {`${firstName.trim()} ${lastName.trim()}`.trim() || (lang === "ro" ? "—" : "—")}
+                    {expectedCompanions > 0 ? ` + ${expectedCompanions}` : ""}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                <img src="/night_forlight.png" alt="" width={18} height={18} style={{ display: "block", opacity: 0.9 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>
+                    {lang === "ro" ? "Sejur" : "Stay"}
+                  </div>
+                  <div style={{ fontWeight: 800 }}>
+                    {fmtDMY(startDate)} {"\u2192"} {fmtDMY(endDate)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 14, display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                className="sb-btn"
+                onClick={() => setReviewOpen(false)}
+                style={{ borderRadius: 999 }}
+              >
+                {lang === "ro" ? "Nu, editează" : "No, edit"}
+              </button>
+              <button
+                type="button"
+                className="sb-btn sb-btn--primary"
+                onClick={() => { setReviewOpen(false); void actuallySubmit(); }}
+                style={{ borderRadius: 999 }}
+              >
+                {lang === "ro" ? "Da, trimite" : "Yes, send"}
               </button>
             </div>
           </div>
