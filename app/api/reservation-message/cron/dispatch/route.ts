@@ -130,7 +130,35 @@ export async function GET(req: NextRequest) {
       function parseDate(d: string){ const m = (d||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); return { y: Number(m?.[1]||1970), m: Number(m?.[2]||1), d: Number(m?.[3]||1) }; }
       function toKey(y:number,m:number,d:number,h:number,mi:number,s:number){ const p=(n:number,w=2)=>String(n).padStart(w,'0'); return `${p(y,4)}${p(m)}${p(d)}${p(h)}${p(mi)}${p(s)}`; }
       function addHoursLocal(parts: { y:number;m:number;d:number;h:number;mi:number;s:number }, hours: number){ const dt = new Date(Date.UTC(parts.y, parts.m-1, parts.d, parts.h, parts.mi, parts.s)); dt.setUTCHours(dt.getUTCHours() + hours); return { y: dt.getUTCFullYear(), m: dt.getUTCMonth()+1, d: dt.getUTCDate(), h: dt.getUTCHours(), mi: dt.getUTCMinutes(), s: dt.getUTCSeconds() }; }
-      function nowLocalParts(timeZone: string){ const dtf = new Intl.DateTimeFormat('en-CA', { timeZone, hour12:false, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' }); const parts = dtf.formatToParts(new Date()); const map=Object.fromEntries(parts.map(p=>[p.type,p.value])); return { y:Number(map.year), m:Number(map.month), d:Number(map.day), h:Number(map.hour), mi:Number(map.minute), s:Number(map.second) }; }
+      function nowLocalParts(timeZone: string){
+        // NOTE: Some runtimes format midnight as "24:00:xx" (hour=24). We normalize 24 -> 0.
+        // Split date/time formatters so the date can't drift if the hour formatting is quirky.
+        const now = new Date();
+        const dtfDate = new Intl.DateTimeFormat('en-CA', {
+          timeZone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        });
+        const dtfTime = new Intl.DateTimeFormat('en-CA', {
+          timeZone,
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        });
+        const dateMap = Object.fromEntries(dtfDate.formatToParts(now).map((p) => [p.type, p.value]));
+        const timeMap = Object.fromEntries(dtfTime.formatToParts(now).map((p) => [p.type, p.value]));
+        const hh = Number(timeMap.hour);
+        return {
+          y: Number(dateMap.year),
+          m: Number(dateMap.month),
+          d: Number(dateMap.day),
+          h: hh === 24 ? 0 : hh,
+          mi: Number(timeMap.minute),
+          s: Number(timeMap.second),
+        };
+      }
       const nowL = nowLocalParts(tz);
       const nowKey = toKey(nowL.y, nowL.m, nowL.d, nowL.h, nowL.mi, nowL.s);
       const ciD = parseDate(bk.start_date); const coD = parseDate(bk.end_date);

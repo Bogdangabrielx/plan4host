@@ -200,7 +200,12 @@ export async function POST(req: Request) {
           ${totalGuestsText ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconGuest}\" alt=\"guest\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Guest:</strong> <span>${escapeHtml(totalGuestsText)}</span></div>` : ''}
           ${(arrival && depart) ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconNight}\" alt=\"stay\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Stay:</strong> <span>${arrival} → ${depart}</span></div>` : ''}
         </div>
-        <p style="margin:8px 0; color:#475569;">Once your reservation is confirmed, we’ll inform you which room you’ll be staying in and share any arrival details you’ll need.</p>
+        <p style="margin:8px 0; color:#475569;">
+          Once your reservation is confirmed, you’ll receive an email with your accommodation details, arrival information, and a private link where you’ll receive messages from the property.
+        </p>
+        <p style="margin:8px 0; color:#475569;">
+          Please check your inbox — <strong>and spam or junk folder</strong> — so you don’t miss important updates.
+        </p>
         <p style="margin:8px 0; color:#475569;">If you need to make changes, please contact the property directly.</p>
               <div style=\"margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; text-align:center;\">
           <div style=\"font-weight:800; margin-bottom:8px;\">Your QR code</div>
@@ -221,7 +226,9 @@ export async function POST(req: Request) {
     if (totalGuestsText) lines.push(`Guest: ${totalGuestsText}`);
     lines.push('');
     lines.push('We’ve received your details and forwarded them to the property.\nQR: ${qrLink}');
-    lines.push('Once your reservation is confirmed, we will inform you about your room and arrival details.');
+    lines.push('Once your reservation is confirmed, you’ll receive an email with your accommodation details, arrival information, and a private link where you’ll receive messages from the property.');
+    lines.push('Please check your inbox — and spam or junk folder — so you don’t miss important updates.');
+    lines.push('If you need to make changes, please contact the property directly.');
     const text = lines.join('\n');
 
     // 3) Insert outbox pending

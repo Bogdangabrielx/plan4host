@@ -68,7 +68,7 @@ const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
         id: "p1",
         type: "paragraph",
         text:
-          "Hi {{guest_first_name}} — happy to have you!\n\n✅ Check‑in: Now\n🕚 Check‑out: {{check_out_time}}\n🏠 Your unit: {{room_name}}",
+          "Hi {{guest_first_name}} — happy to have you!\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Your unit: {{room_name}}",
       },
       {
         id: "p2",
@@ -83,7 +83,7 @@ const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
         id: "p1",
         type: "paragraph",
         text:
-          "Salut {{guest_first_name}} — ne bucurăm să te avem!\n\n✅ Check‑in: Acum\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitatea ta: {{room_name}}",
+          "Salut {{guest_first_name}} — ne bucurăm să te avem!\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitatea ta: {{room_name}}",
       },
       {
         id: "p2",
@@ -106,7 +106,7 @@ const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
       {
         id: "p2",
         type: "paragraph",
-        text: "✅ Check‑in: Now\n🕚 Check‑out: {{check_out_time}}\n🏠 Unit: {{room_name}}",
+        text: "✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unit: {{room_name}}",
       },
       {
         id: "p3",
@@ -125,7 +125,7 @@ const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
       {
         id: "p2",
         type: "paragraph",
-        text: "✅ Check‑in: Acum\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitate: {{room_name}}",
+        text: "✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitate: {{room_name}}",
       },
       {
         id: "p3",
@@ -144,7 +144,7 @@ const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
         id: "p1",
         type: "paragraph",
         text:
-          "Welcome to {{property_name}}.\n\n✅ Check‑in: Now\n🕚 Check‑out: {{check_out_time}}\n🏠 Unit: {{room_name}}",
+          "Welcome to {{property_name}}.\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unit: {{room_name}}",
       },
       {
         id: "p2",
@@ -159,7 +159,7 @@ const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
         id: "p1",
         type: "paragraph",
         text:
-          "Bun venit la {{property_name}}.\n\n✅ Check‑in: Acum\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitate: {{room_name}}",
+          "Bun venit la {{property_name}}.\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitate: {{room_name}}",
       },
       {
         id: "p2",
@@ -244,7 +244,8 @@ export default function ReservationMessageClient({
   const [uiLang, setUiLang] = useState<"ro" | "en">(initialLang);
   const [lang, setLang] = useState<"ro" | "en">(initialLang);
   const langPinnedRef = useRef<boolean>(false);
-  const [scheduler, setScheduler] = useState<TemplateState['schedule_kind']>('');
+  // Scheduler UI stores a value that may include an offset: e.g. "hour_before_checkin:5".
+  const [scheduler, setScheduler] = useState<string>("");
   const [templates, setTemplates] = useState<Array<{ id: string; title: string; status: "draft" | "published"; updated_at: string }>>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loadingList, setLoadingList] = useState<boolean>(false);
@@ -258,6 +259,33 @@ export default function ReservationMessageClient({
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const sb = useMemo(() => createClient(), []);
   const [hasRoomTypes, setHasRoomTypes] = useState(false);
+
+  function decodeSchedulerValue(val: string): { kind: TemplateState["schedule_kind"] | null; offset: number | null } {
+    const raw = String(val || "").trim();
+    if (!raw) return { kind: null, offset: null };
+    if (raw === "on_arrival") return { kind: "on_arrival", offset: null };
+    const m = raw.match(/^(hour_before_checkin|hours_before_checkout)(?::(\d+))?$/);
+    if (!m) return { kind: null, offset: null };
+    const kind = m[1] as TemplateState["schedule_kind"];
+    const off = m[2] ? Number(m[2]) : null;
+    return { kind, offset: Number.isFinite(off as any) ? off : null };
+  }
+
+  function normalizeSchedule(kindRaw: any, offsetRaw: any): { kind: TemplateState["schedule_kind"] | null; offset: number | null } {
+    const kind = String(kindRaw || "").toLowerCase();
+    const off = (typeof offsetRaw === "number" && Number.isFinite(offsetRaw)) ? Number(offsetRaw) : null;
+    if (kind === "hours_before_checkout") return { kind: "hours_before_checkout", offset: off ?? 12 };
+    if (kind === "hour_before_checkin") return { kind: "hour_before_checkin", offset: off ?? 1 };
+    if (kind === "on_arrival") return { kind: "on_arrival", offset: null };
+    return { kind: null, offset: null };
+  }
+
+  function encodeSchedulerValue(kindRaw: any, offsetRaw: any): string {
+    const n = normalizeSchedule(kindRaw, offsetRaw);
+    if (!n.kind) return "";
+    if (n.kind === "on_arrival") return "on_arrival";
+    return `${n.kind}:${n.offset ?? 0}`;
+  }
 
   // Room Variables UI state
   const [rvOpen, setRvOpen] = useState<boolean>(false);
@@ -372,6 +400,7 @@ export default function ReservationMessageClient({
       uiLang === "ro" ? "Programare (obligatoriu inainte de Publicare)" : "Scheduler (required before Publish)",
     select: uiLang === "ro" ? "— selecteaza —" : "— select —",
     oneHourBeforeReservation: uiLang === "ro" ? "Cu o ora inainte de rezervare" : "One hour before reservation",
+    fiveHoursBeforeCheckin: uiLang === "ro" ? "Cu 5 ore inainte de check-in" : "5 hours before check-in",
     onceGuestArrives: uiLang === "ro" ? "Cand oaspetele ajunge (ora check-in)" : "Once the guest arrives (check-in time)",
     twelveBeforeCheckout: uiLang === "ro" ? "Cu 12 ore inainte de check-out" : "12 hours before check out",
     reservationDetails: uiLang === "ro" ? "Detalii rezervare" : "Reservation details",
@@ -543,8 +572,8 @@ export default function ReservationMessageClient({
       property_id: propertyId,
       title: picked.title,
       status: "published",
-      schedule_kind: "on_arrival",
-      schedule_offset_hours: null,
+      schedule_kind: "hour_before_checkin",
+      schedule_offset_hours: 5,
       blocks: [
         ...picked.blocks_ro.map((b) => ({ type: b.type, text: (b as any).text ?? null, lang: "ro" })),
         ...picked.blocks_en.map((b) => ({ type: b.type, text: (b as any).text ?? null, lang: "en" })),
@@ -579,7 +608,7 @@ export default function ReservationMessageClient({
     await runOnboardingLoadingSequence(async () => {
       const templateId = await createTemplateFromOnboarding(picked);
       setActiveId(templateId);
-      setScheduler("on_arrival");
+      setScheduler("hour_before_checkin:5");
       try {
         const rl = await fetch(`/api/reservation-message/templates?property=${encodeURIComponent(propertyId || "")}`, { cache: "no-store" });
         const jl = await rl.json().catch(() => ({}));
@@ -616,6 +645,7 @@ export default function ReservationMessageClient({
       const base = { ...EMPTY, ...(parsed || {}) } as TemplateState;
       if (!cancelled && keySnapshot === storageKey) {
         setTpl(base);
+        setScheduler(encodeSchedulerValue(base.schedule_kind, base.schedule_offset_hours));
         const blocksForLang = (lang === 'ro' ? (base.blocks || []) : (base.blocks_en || base.blocks || []));
         const { title, body } = deriveFromBlocks(blocksForLang);
         if (titleRef.current) tokensTextToChips(titleRef.current, title);
@@ -643,7 +673,7 @@ export default function ReservationMessageClient({
         const next: TemplateState = { status: (t.status || 'draft') as any, blocks: roBlocks, blocks_en: enBlocks, fields, schedule_kind: (t.schedule_kind || '') as any, schedule_offset_hours: (t.schedule_offset_hours ?? null) };
         if (!cancelled && keySnapshot === storageKey) {
           setTpl(next);
-          setScheduler((next.schedule_kind || '') as any);
+          setScheduler(encodeSchedulerValue(next.schedule_kind, next.schedule_offset_hours));
           try { localStorage.setItem(keySnapshot, JSON.stringify(next)); } catch {}
           const { title, body } = deriveFromBlocks(lang==='ro' ? roBlocks : enBlocks);
           if (titleRef.current) tokensTextToChips(titleRef.current, title);
@@ -733,7 +763,16 @@ export default function ReservationMessageClient({
     const current = composeBlocks();
     const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
     const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
-    const next = { ...tpl, status: 'draft' as const, blocks: roBlocks, blocks_en: enBlocks, schedule_kind: (scheduler || undefined) as any, schedule_offset_hours: scheduler==='hours_before_checkout' ? 12 : (scheduler==='hour_before_checkin' ? 1 : null) };
+    const fromUi = scheduler ? decodeSchedulerValue(scheduler) : { kind: null, offset: null };
+    const sched = fromUi.kind ? normalizeSchedule(fromUi.kind, fromUi.offset) : normalizeSchedule(tpl.schedule_kind, tpl.schedule_offset_hours);
+    const next = {
+      ...tpl,
+      status: "draft" as const,
+      blocks: roBlocks,
+      blocks_en: enBlocks,
+      schedule_kind: (sched.kind || undefined) as any,
+      schedule_offset_hours: sched.offset,
+    };
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     setTpl(next);
     const combined = [
@@ -745,10 +784,20 @@ export default function ReservationMessageClient({
   function publish() {
     if (!propertyId) return;
     if (!scheduler) { alert(uiLang === "ro" ? "Selecteaza Programarea inainte de publicare." : "Select a Scheduler before publishing."); return; }
+    const fromUi = decodeSchedulerValue(scheduler);
+    const sched = normalizeSchedule(fromUi.kind, fromUi.offset);
+    if (!sched.kind) { alert(uiLang === "ro" ? "Selecteaza Programarea inainte de publicare." : "Select a Scheduler before publishing."); return; }
     const current = composeBlocks();
     const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
     const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
-    const next = { ...tpl, status: 'published' as const, blocks: roBlocks, blocks_en: enBlocks, schedule_kind: scheduler || 'none', schedule_offset_hours: scheduler==='hours_before_checkout' ? 12 : (scheduler==='hour_before_checkin' ? 1 : null) };
+    const next = {
+      ...tpl,
+      status: "published" as const,
+      blocks: roBlocks,
+      blocks_en: enBlocks,
+      schedule_kind: (sched.kind || "none") as any,
+      schedule_offset_hours: sched.offset,
+    };
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     setTpl(next);
     const combined = [
@@ -765,7 +814,8 @@ export default function ReservationMessageClient({
         ...(tpl.blocks || []).map(b => ({ ...b, lang: 'ro' } as any)),
         ...(tpl.blocks_en || []).map(b => ({ ...b, lang: 'en' } as any)),
       ];
-      const sk: any = scheduler || tpl.schedule_kind || null;
+      const fromUi = scheduler ? decodeSchedulerValue(scheduler) : { kind: null, offset: null };
+      const sched = fromUi.kind ? normalizeSchedule(fromUi.kind, fromUi.offset) : normalizeSchedule(tpl.schedule_kind, tpl.schedule_offset_hours);
       const { title } = deriveFromBlocks(roOnly as any);
       const payload: any = {
         id: activeId || undefined,
@@ -774,8 +824,8 @@ export default function ReservationMessageClient({
         status,
         blocks: payloadBlocks.map((b: any) => ({ type: b.type, text: b.text || null, lang: b.lang })),
         fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, default_value: f.defaultValue ?? null })),
-        schedule_kind: sk,
-        schedule_offset_hours: sk === 'hours_before_checkout' ? 12 : (sk === 'hour_before_checkin' ? 1 : null),
+        schedule_kind: sched.kind,
+        schedule_offset_hours: sched.offset,
       };
       const res = await fetch("/api/reservation-message/template", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const j = await res.json().catch(() => ({}));
@@ -865,9 +915,14 @@ export default function ReservationMessageClient({
       const needsScheduler = nextStatus === "published" && !allowedKinds.has(normalizedKind);
 
       const schedule_kind = needsScheduler ? "on_arrival" : (allowedKinds.has(normalizedKind) ? normalizedKind : null);
+      const offRaw: any = (tpl as any).schedule_offset_hours;
+      const existingOff =
+        (typeof offRaw === "number" && Number.isFinite(offRaw)) ? Number(offRaw) :
+        (typeof offRaw === "string" && offRaw.trim() !== "" && Number.isFinite(Number(offRaw))) ? Number(offRaw) :
+        null;
       const schedule_offset_hours =
-        schedule_kind === "hours_before_checkout" ? 12 :
-        schedule_kind === "hour_before_checkin" ? 1 :
+        schedule_kind === "hours_before_checkout" ? (existingOff ?? 12) :
+        schedule_kind === "hour_before_checkin" ? (existingOff ?? 1) :
         null;
 
       const payload = {
@@ -1632,11 +1687,12 @@ export default function ReservationMessageClient({
           {/* Scheduler selector */}
           <div style={{ display:'grid', gap:6, marginTop:10, maxWidth: 360 }}>
             <label style={{ fontSize:12, color:'var(--muted)', fontWeight:800 }}>{t.schedulerRequired}</label>
-            <select className="sb-select sb-cardglow"  value={scheduler || ''} onChange={(e)=>setScheduler(e.currentTarget.value as any)}>
+            <select className="sb-select sb-cardglow"  value={scheduler || ''} onChange={(e)=>setScheduler(e.currentTarget.value)}>
               <option value="">{t.select}</option>
-              <option value="hour_before_checkin">{t.oneHourBeforeReservation}</option>
+              <option value="hour_before_checkin:1">{t.oneHourBeforeReservation}</option>
+              <option value="hour_before_checkin:5">{t.fiveHoursBeforeCheckin}</option>
               <option value="on_arrival">{t.onceGuestArrives}</option>
-              <option value="hours_before_checkout">{t.twelveBeforeCheckout}</option>
+              <option value="hours_before_checkout:12">{t.twelveBeforeCheckout}</option>
             </select>
           </div>
 
