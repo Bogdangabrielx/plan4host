@@ -395,12 +395,16 @@ export default function CalendarClient({
   );
   const occupiedToday = useMemo(() => {
     if (!currentPropertyId) return 0;
-    return bookings.filter(
-      (b) =>
-        b.property_id === currentPropertyId &&
-        b.start_date <= todayYmd &&
-        b.end_date >= todayYmd
-    ).length;
+    // Treat `end_date` as checkout day (exclusive) so a checkout + check-in on the same day
+    // doesn't show as "2/1". This matches "nights" occupancy, not "full-day" overlap.
+    const occ = new Set<string>();
+    for (const b of bookings) {
+      if (b.property_id !== currentPropertyId) continue;
+      const roomId = (b as any).room_id ? String((b as any).room_id) : "";
+      if (!roomId) continue;
+      if (b.start_date <= todayYmd && b.end_date > todayYmd) occ.add(roomId);
+    }
+    return occ.size;
   }, [bookings, currentPropertyId, todayYmd]);
   const isCurrentMonth =
     today.getFullYear() === year && today.getMonth() === month;
@@ -641,18 +645,8 @@ export default function CalendarClient({
       </div>
 
       {/* Summary row: totals */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: isSmall ? "repeat(3, minmax(0, 1fr))" : "repeat(3, minmax(0, 1fr))",
-          gap: isSmall ? 6 : 10,
-          padding: isSmall ? "0 4px" : "0 6px",
-          marginTop: isSmall ? 0 : -4,
-          marginBottom: 10,
-          alignItems: "center",
-        }}
-      >
-        {[
+      {(() => {
+        const summaryItems = [
           {
             label: lang === "ro" ? "Rezervări totale" : "Total bookings",
             value: totalBookings,
@@ -670,7 +664,22 @@ export default function CalendarClient({
                 dot: "color-mix(in srgb, var(--success, #22c55e) 70%, transparent)",
               }]
             : []),
-        ].map((item) => (
+        ] as const;
+
+        return (
+      <div
+        style={{
+          display: "grid",
+          // Keep everything on one row; if "Occupied today" is hidden, use 2 columns to avoid awkward empty space.
+          gridTemplateColumns: `repeat(${summaryItems.length}, minmax(0, 1fr))`,
+          gap: isSmall ? 6 : 10,
+          padding: isSmall ? "0 4px" : "0 6px",
+          marginTop: isSmall ? 0 : -4,
+          marginBottom: 10,
+          alignItems: "center",
+        }}
+      >
+        {summaryItems.map((item) => (
           <div
             key={item.label}
             style={{
@@ -693,6 +702,8 @@ export default function CalendarClient({
           </div>
         ))}
       </div>
+        );
+      })()}
 
       {monthDisplay === "timeline" ? (
         <TimelineView
