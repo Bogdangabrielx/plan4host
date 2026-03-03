@@ -192,34 +192,52 @@ export async function POST(req: Request) {
     const qrLink = `${base}/r/ci/${booking_id}`;
     const qrImg  = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&ecc=H&data=${encodeURIComponent(qrLink)}`;
 
-    const html = `
-      <div style="background:#ffffff; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0c111b; line-height:1.5; padding:16px;">
-        <h2 style="margin:0 0 12px;">Check-in received${propName ? ` for <span style=\"color:#3ECF8E\">${escapeHtml(propName)}</span>` : ''}</h2>
-        <p style="margin:8px 0;">Thank you for submitting your check-in details${propName ? ` for <strong>${escapeHtml(propName)}</strong>` : ''}. We’ve forwarded your information to the property.</p>
-        <div style="margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:grid; gap:10px;">
-          ${totalGuestsText ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconGuest}\" alt=\"guest\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Guest:</strong> <span>${escapeHtml(totalGuestsText)}</span></div>` : ''}
-          ${(arrival && depart) ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconNight}\" alt=\"stay\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Stay:</strong> <span>${arrival} → ${depart}</span></div>` : ''}
-        </div>
-        <p style="margin:8px 0; color:#475569;">
-          Once your reservation is confirmed, you’ll receive an email with your accommodation details, arrival information, and a private link where you’ll receive messages from the property.
-        </p>
-        <p style="margin:8px 0; color:#475569;">
-          Please check your inbox — <strong>and spam or junk folder</strong> — so you don’t miss important updates.
-        </p>
-        <p style="margin:8px 0; color:#475569;">If you need to make changes, please contact the property directly.</p>
-              <div style=\"margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; text-align:center;\">
-          <div style=\"font-weight:800; margin-bottom:8px;\">Your QR code</div>
-          <div style=\"display:block; margin:0 auto; width:240px;\">
-            <div style=\"position:relative; width:240px; height:240px; border-radius:16px; overflow:hidden; margin:0 auto;\">
-              <img src=\"${qrImg}\" alt=\"QR code\" width=\"240\" height=\"240\" style=\"display:block;\"/>
-              <img src=\"${base}/p4h_logo_round_QR.png\" alt=\"Logo\" width=\"72\" height=\"72\" style=\"position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:9999px; background:#ffffff; border:4px solid #ffffff;\"/>
-            </div>
-          </div>
-          <div style=\"font-size:12px; color:#475569; margin-top:8px; word-break:break-all;\">${escapeHtml(qrLink)}</div>
-          ${validUntil ? `<div style=\"font-size:12px; color:#475569; margin-top:6px;\">Valid for 30 days (until ${validUntil}).</div>` : ''}
-        </div>
-</div>
-    `;
+    const html = `<!doctype html>
+      <html lang="en">
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content="light" />
+        <meta name="supported-color-schemes" content="light" />
+        <title>${escapeHtml(subject)}</title>
+      </head>
+      <body style="margin:0;padding:0;background:#f8fafc;color:#0c111b;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f8fafc;">
+          <tr>
+            <td align="center" style="padding:16px;">
+              <div style="max-width:680px;margin:0 auto;">
+                <div style="background:#ffffff; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#0c111b; line-height:1.5; padding:16px; border:1px solid #e2e8f0; border-radius:14px;">
+                  <h2 style="margin:0 0 12px;">Check-in received${propName ? ` for <span style=\"color:#3ECF8E\">${escapeHtml(propName)}</span>` : ''}</h2>
+                  <p style="margin:8px 0;">Thank you for submitting your check-in details${propName ? ` for <strong>${escapeHtml(propName)}</strong>` : ''}. We’ve forwarded your information to the property.</p>
+                  <div style="margin:14px 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:grid; gap:10px;">
+                    ${totalGuestsText ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconGuest}\" alt=\"guest\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Guest:</strong> <span>${escapeHtml(totalGuestsText)}</span></div>` : ''}
+                    ${(arrival && depart) ? `<div style=\"display:flex; align-items:center; gap:8px;\"><img src=\"${iconNight}\" alt=\"stay\" width=\"16\" height=\"16\"/><strong style=\"margin-right:6px;\">Stay:</strong> <span>${arrival} → ${depart}</span></div>` : ''}
+                  </div>
+                  <p style="margin:8px 0; color:#475569;">
+                    Once your reservation is confirmed, you’ll receive an email with your accommodation details, arrival information, and a private link where you’ll receive messages from the property.
+                  </p>
+                  <p style="margin:8px 0; color:#475569;">
+                    Please check your inbox — <strong>and spam or junk folder</strong> — so you don’t miss important updates.
+                  </p>
+                  <p style="margin:8px 0; color:#475569;">If you need to make changes, please contact the property directly.</p>
+                  <div style=\"margin:14px 0 0; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; text-align:center;\">
+                    <div style=\"font-weight:800; margin-bottom:8px;\">Your QR code</div>
+                    <div style=\"display:block; margin:0 auto; width:240px;\">
+                      <div style=\"position:relative; width:240px; height:240px; border-radius:16px; overflow:hidden; margin:0 auto;\">
+                        <img src=\"${qrImg}\" alt=\"QR code\" width=\"240\" height=\"240\" style=\"display:block;\"/>
+                        <img src=\"${base}/p4h_logo_round_QR.png\" alt=\"Logo\" width=\"72\" height=\"72\" style=\"position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:9999px; background:#ffffff; border:4px solid #ffffff;\"/>
+                      </div>
+                    </div>
+                    <div style=\"font-size:12px; color:#475569; margin-top:8px; word-break:break-all;\">${escapeHtml(qrLink)}</div>
+                    ${validUntil ? `<div style=\"font-size:12px; color:#475569; margin-top:6px;\">Valid for 30 days (until ${validUntil}).</div>` : ''}
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>`;
     const lines: string[] = [];
     lines.push(`Check-in received${propName ? ` for ${propName}` : ''}`);
     if (arrival && depart) lines.push(`Stay: ${arrival} -> ${depart}`);
