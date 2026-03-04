@@ -1137,7 +1137,7 @@ export default function HomePageRO() {
         </div>
         <div className={styles.heroVisual} aria-label="Calendar preview" data-p4h-reveal>
           <img
-            src="/Hero_device2.png"
+            src="/HeroDevTimeline.png"
             alt="Mockup-uri aplicația Plan4Host"
             className={styles.focusable}
           />
