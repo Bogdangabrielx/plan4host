@@ -129,65 +129,74 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
         </section>
 
         <section className={seo.section} aria-labelledby="automated">
-          <div className={seo.sectionIntro} data-p4h-reveal>
+          <div className={`sb-cardglow ${seo.showcaseCard}`} data-p4h-reveal>
             <h2 id="automated" className={seo.h2}>
-              What Is Automated Guest Messaging?
+              How Plan4Host Solves It
             </h2>
             <p className={seo.p}>
-              Automated guest messaging means preparing reservation-related communication once and letting the system
-              show it based on clear triggers such as booking confirmation, before check-in, during the stay, and
-              before checkout.
+              Automated guest messaging works when one system handles timing, delivery, and guest access to information.
+              That is where Plan4Host fits: it combines scheduled guest messages, one guest portal, a virtual reception
+              assistant, and automatic translation in the guest&apos;s language.
             </p>
-            <p className={seo.p}>
-              It improves the guest experience because information arrives when it becomes useful, not hours or days
-              before the guest actually needs it.
-            </p>
-          </div>
-
-          <div className={seo.benefitGrid} data-p4h-reveal>
-            <div className={`sb-cardglow ${seo.benefitCard}`}>
-              <div className={seo.benefitMiniUi} aria-hidden="true">
-                <Image
-                  src="/right_moment_en.png"
-                  alt=""
-                  width={800}
-                  height={520}
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
+            <ul className={styles.includedList}>
+              <li>automatic guest messages based on booking timing</li>
+              <li>a unified guest portal instead of scattered chats</li>
+              <li>AI assistance for common guest questions</li>
+              <li>consistent communication across Airbnb, Booking.com, and other channels</li>
+            </ul>
+            <div className={seo.benefitGrid}>
+              <div className={`sb-cardglow ${seo.benefitCard}`}>
+                <div className={seo.benefitMiniUi} aria-hidden="true">
+                  <Image
+                    src="/right_moment_en.png"
+                    alt=""
+                    width={800}
+                    height={520}
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </div>
+                <p className={seo.benefitText}>
+                  Guests are more likely to act on a short message shown shortly before arrival than on a long message sent days in advance.
+                </p>
               </div>
-              <p className={seo.benefitText}>
-                Guests are more likely to act on a short message shown shortly before arrival than on a long message sent days in advance.
-              </p>
+
+              <div className={`sb-cardglow ${seo.benefitCard}`}>
+                <div className={seo.benefitMiniUi} aria-hidden="true">
+                  <Image
+                    src="/automatic_translate_en.png"
+                    alt=""
+                    width={800}
+                    height={520}
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </div>
+                <p className={seo.benefitText}>
+                  Clear communication in the guest&apos;s own language reduces friction and lowers the chance of avoidable questions.
+                </p>
+              </div>
+
+              <div className={`sb-cardglow ${seo.benefitCard}`}>
+                <div className={seo.benefitMiniUi} aria-hidden="true">
+                  <Image
+                    src="/centralized_en.png"
+                    alt=""
+                    width={800}
+                    height={520}
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </div>
+                <p className={seo.benefitText}>
+                  One guest portal keeps booking details, stay instructions, and reminders in the same calm interface.
+                </p>
+              </div>
             </div>
-
-            <div className={`sb-cardglow ${seo.benefitCard}`}>
-              <div className={seo.benefitMiniUi} aria-hidden="true">
-                <Image
-                  src="/automatic_translate_en.png"
-                  alt=""
-                  width={800}
-                  height={520}
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
-              </div>
-              <p className={seo.benefitText}>
-                Clear communication in the guest&apos;s own language reduces friction and lowers the chance of avoidable questions.
-              </p>
-            </div>
-
-            <div className={`sb-cardglow ${seo.benefitCard}`}>
-              <div className={seo.benefitMiniUi} aria-hidden="true">
-                <Image
-                  src="/centralized_en.png"
-                  alt=""
-                  width={800}
-                  height={520}
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
-              </div>
-              <p className={seo.benefitText}>
-                One guest portal keeps booking details, stay instructions, and reminders in the same calm interface.
-              </p>
+            <div className={seo.ctaRow}>
+              <Link className={`${styles.btn} ${styles.btnSolid}`} href="/automatic-guest-messages">
+                Explore automatic guest messages
+              </Link>
+              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant">
+                Explore the guest AI assistant
+              </Link>
             </div>
           </div>
         </section>
@@ -303,80 +312,22 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
           </div>
         </section>
 
-        <section className={seo.section} aria-labelledby="questions">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="questions" className={seo.h2}>
-              Reducing Repetitive Guest Questions
-            </h2>
-            <p className={seo.p}>
-              One of the clearest benefits of short-term rental communication tools is reducing the same guest questions
-              week after week. Most hosts recognize the pattern immediately.
-            </p>
-            <ul className={styles.includedList}>
-              <li>What is the Wi-Fi password?</li>
-              <li>Where do I park?</li>
-              <li>How do I check in?</li>
-              <li>Where are the house rules?</li>
-              <li>How do I use the heating, AC, or appliances?</li>
-            </ul>
-            <p className={seo.p}>
-              The real fix is not only sending more messages. It is giving guests one central place where the answers
-              are easy to find. When guests know where to look, they stop opening new conversations for every small
-              operational question.
-            </p>
-            <p className={seo.pStrong}>
-              A central guest portal reduces repetitive messages because answers stay organized and visible throughout the stay.
-            </p>
-          </div>
-        </section>
-
-        <section className={seo.section} aria-labelledby="system">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="system" className={seo.h2}>
-              Example: A System That Automates Guest Communication
-            </h2>
-            <p className={seo.p}>
-              One example is Plan4Host, which is built around the practical communication needs of short-term rentals.
-              Instead of relying on scattered chats, it helps hosts organize guest communication in a more structured way.
-            </p>
-            <p className={seo.p}>
-              The platform includes{" "}
-              <Link href="https://plan4host.com/automatic-guest-messages">automated guest messages</Link> that can be
-              shown around booking confirmation, before check-in, during the stay, and before checkout.
-            </p>
-            <p className={seo.p}>
-              It also includes a unified guest communication portal and a{" "}
-              <Link href="https://plan4host.com/guest-ai-assistant">virtual reception assistant</Link>, so guests can
-              find what they need without forcing the host to answer every operational question manually.
-            </p>
-            <p className={seo.p}>
-              Automatic translation in the guest&apos;s language also matters. If the guest understands the message
-              immediately, they are more likely to follow instructions correctly and less likely to open unnecessary conversations.
-            </p>
-            <p className={seo.pStrong}>
-              This is the practical side of vacation rental messaging automation: fewer repetitive questions, more
-              consistent communication, and better timing across the full stay.
-            </p>
-          </div>
-        </section>
-
         <section className={seo.section} aria-labelledby="benefits">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+          <div className={`sb-cardglow ${seo.showcaseCard}`} data-p4h-reveal>
             <h2 id="benefits" className={seo.h2}>
               Benefits of Automating Guest Messaging
             </h2>
+            <p className={seo.p}>
+              The value is straightforward: fewer repetitive questions, less time lost in chat, and a cleaner guest
+              experience from confirmation to checkout.
+            </p>
             <ul className={styles.includedList}>
               <li>reduce repetitive questions from guests</li>
               <li>save time answering operational messages</li>
               <li>improve the guest experience with clearer communication</li>
               <li>deliver information at the right moment</li>
-              <li>keep guest communication organized in one place</li>
-              <li>make automated Airbnb messages and Booking messages more consistent</li>
+              <li>keep communication organized in one place</li>
             </ul>
-            <p className={seo.p}>
-              For hosts, this means fewer interruptions and a more stable daily workflow. For guests, it means less
-              uncertainty and less searching through old conversations.
-            </p>
             <div className={seo.statPanel}>
               <Image
                 src="/benefits_en.png"
