@@ -203,73 +203,78 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
         </section>
 
         <section className={seo.section} aria-labelledby="key-messages">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="key-messages" className={seo.h2}>
-              Key Messages Every Short-Term Rental Should Automate
-            </h2>
-            <p className={seo.p}>
-              If you want to automate guest communication effectively, start with the messages that nearly every guest
-              needs. These are operational messages, not promotional ones.
-            </p>
+          <div className={`sb-cardglow ${seo.showcaseCard}`} data-p4h-reveal>
+            <div className={seo.splitShowcase}>
+              <div className={seo.copyStack}>
+                <h2 id="key-messages" className={seo.h2}>
+                  Key Messages Every Short-Term Rental Should Automate
+                </h2>
+                <p className={seo.p}>
+                  The most useful automated messages are operational. Guests need clarity, not long blocks of text.
+                </p>
 
-            <h3 className={seo.h2} style={{ fontSize: 18 }}>
-              Booking confirmation message
-            </h3>
-            <p className={seo.p}>
-              Immediately after a reservation is confirmed, guests want clarity. They need to know that the booking is
-              valid, what happens next, and where they will receive future information.
-            </p>
-            <ul className={styles.includedList}>
-              <li>confirmation that the stay is registered</li>
-              <li>what the next step is</li>
-              <li>where future messages and check-in steps will appear</li>
-            </ul>
+                <h3 className={seo.h2} style={{ fontSize: 18 }}>
+                  Booking confirmation
+                </h3>
+                <p className={seo.p}>
+                  Confirm the stay and explain what happens next.
+                </p>
+                <ul className={styles.includedList}>
+                  <li>reservation confirmed</li>
+                  <li>next step</li>
+                  <li>where future details will appear</li>
+                </ul>
 
-            <h3 className={seo.h2} style={{ fontSize: 18 }}>
-              Before check-in
-            </h3>
-            <p className={seo.p}>
-              This is usually the most important message window. Access instructions, directions, entry details, and
-              parking information should arrive close enough to check-in to be useful, but not so late that the guest
-              feels uncertain.
-            </p>
-            <ul className={styles.includedList}>
-              <li>property access instructions</li>
-              <li>directions and arrival notes</li>
-              <li>parking details</li>
-              <li>building entry guidance</li>
-            </ul>
+                <h3 className={seo.h2} style={{ fontSize: 18 }}>
+                  Before check-in
+                </h3>
+                <p className={seo.p}>
+                  Send arrival essentials close to check-in.
+                </p>
+                <ul className={styles.includedList}>
+                  <li>access instructions</li>
+                  <li>directions</li>
+                  <li>parking</li>
+                </ul>
 
-            <h3 className={seo.h2} style={{ fontSize: 18 }}>
-              During the stay
-            </h3>
-            <p className={seo.p}>
-              Once the guest is inside, the most relevant information changes. At this point, they need practical stay
-              guidance rather than arrival logistics.
-            </p>
-            <ul className={styles.includedList}>
-              <li>Wi-Fi password</li>
-              <li>house instructions</li>
-              <li>how appliances work</li>
-              <li>local recommendations and useful tips</li>
-            </ul>
+                <h3 className={seo.h2} style={{ fontSize: 18 }}>
+                  During the stay
+                </h3>
+                <p className={seo.p}>
+                  Show the practical details guests need inside the property.
+                </p>
+                <ul className={styles.includedList}>
+                  <li>Wi-Fi</li>
+                  <li>house instructions</li>
+                  <li>local tips</li>
+                </ul>
 
-            <h3 className={seo.h2} style={{ fontSize: 18 }}>
-              Before checkout
-            </h3>
-            <p className={seo.p}>
-              The final message should be simple and practical. Guests do not need a long explanation. They need a
-              reminder of checkout time and a few easy actions.
-            </p>
-            <ul className={styles.includedList}>
-              <li>checkout time</li>
-              <li>where to leave keys</li>
-              <li>what to do with trash or dishes</li>
-              <li>any final departure reminders</li>
-            </ul>
-            <p className={seo.pStrong}>
-              In guest messaging automation, timing matters more than writing long messages full of details.
-            </p>
+                <h3 className={seo.h2} style={{ fontSize: 18 }}>
+                  Before checkout
+                </h3>
+                <p className={seo.p}>
+                  Keep the final reminder short and actionable.
+                </p>
+                <ul className={styles.includedList}>
+                  <li>checkout time</li>
+                  <li>keys</li>
+                  <li>simple departure steps</li>
+                </ul>
+                <p className={seo.pStrong}>
+                  Timing matters more than message length.
+                </p>
+              </div>
+
+              <div className={seo.statPanel}>
+                <Image
+                  src="/Key_msg_en.png"
+                  alt="Key automated guest messages preview"
+                  width={900}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+            </div>
           </div>
         </section>
 
