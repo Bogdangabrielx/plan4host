@@ -79,24 +79,10 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
 
         <div aria-label="Guest message automation preview" data-p4h-reveal>
           <div className={seo.visualStage}>
-            <div className={seo.visualGlow} aria-hidden="true" />
-            <div className={`${seo.floatingCard} ${seo.floatingCardTop}`}>
-              <p className={seo.floatingTitle}>Arrival message</p>
-              <p className={seo.floatingText}>Access details, directions and parking appear before check-in.</p>
-              <span className={seo.floatingMeta}>Delivered at the right time</span>
-            </div>
-            <div className={`${seo.floatingCard} ${seo.floatingCardMid}`}>
-              <p className={seo.floatingTitle}>Stay essentials</p>
-              <p className={seo.floatingText}>Wi-Fi, house instructions and local tips stay visible in one place.</p>
-            </div>
-            <div className={`${seo.floatingCard} ${seo.floatingCardBottom}`}>
-              <p className={seo.floatingTitle}>Checkout reminder</p>
-              <p className={seo.floatingText}>Clear departure steps without last-minute back and forth.</p>
-            </div>
             <div className={seo.visualImageWrap}>
               <Image
-                src="/Hero_device2.png"
-                alt="Guest portal preview on mobile"
+                src="/HeroMSG_en.png"
+                alt="Guest messaging automation preview"
                 width={900}
                 height={900}
                 style={{ width: "100%", height: "auto", display: "block" }}
@@ -140,16 +126,13 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
               </div>
 
               <div className={seo.statPanel}>
-                <div className={seo.statBubble}>
-                  <p className={seo.statBubbleValue}>Up to 60%</p>
-                  <p className={seo.statBubbleText}>of guest questions tend to be repetitive when communication is not structured.</p>
-                </div>
-                <div className={seo.statChart} aria-hidden="true" />
-                <div className={seo.statMini}>
-                  <div className={seo.statMiniCard}>Wi-Fi password</div>
-                  <div className={seo.statMiniCard}>Parking instructions</div>
-                  <div className={seo.statMiniCard}>Check-in details</div>
-                </div>
+                <Image
+                  src="/60%_en.png"
+                  alt="Repetitive guest questions visual"
+                  width={900}
+                  height={700}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
               </div>
             </div>
           </div>
