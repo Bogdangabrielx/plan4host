@@ -202,54 +202,47 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                 <p className={seo.p}>
                   The most useful automated messages are operational. Guests need clarity, not long blocks of text.
                 </p>
+                <div className={seo.messageGrid}>
+                  <article className={seo.messageItem}>
+                    <h3 className={seo.messageItemTitle}>Booking confirmation</h3>
+                    <p className={seo.messageItemText}>Confirm the stay and explain what happens next.</p>
+                    <ul className={seo.messageItemList}>
+                      <li>reservation confirmed</li>
+                      <li>next step</li>
+                      <li>where future details will appear</li>
+                    </ul>
+                  </article>
 
-                <h3 className={seo.h2} style={{ fontSize: 18 }}>
-                  Booking confirmation
-                </h3>
-                <p className={seo.p}>
-                  Confirm the stay and explain what happens next.
-                </p>
-                <ul className={styles.includedList}>
-                  <li>reservation confirmed</li>
-                  <li>next step</li>
-                  <li>where future details will appear</li>
-                </ul>
+                  <article className={seo.messageItem}>
+                    <h3 className={seo.messageItemTitle}>Before check-in</h3>
+                    <p className={seo.messageItemText}>Send arrival essentials close to check-in.</p>
+                    <ul className={seo.messageItemList}>
+                      <li>access instructions</li>
+                      <li>directions</li>
+                      <li>parking</li>
+                    </ul>
+                  </article>
 
-                <h3 className={seo.h2} style={{ fontSize: 18 }}>
-                  Before check-in
-                </h3>
-                <p className={seo.p}>
-                  Send arrival essentials close to check-in.
-                </p>
-                <ul className={styles.includedList}>
-                  <li>access instructions</li>
-                  <li>directions</li>
-                  <li>parking</li>
-                </ul>
+                  <article className={seo.messageItem}>
+                    <h3 className={seo.messageItemTitle}>During the stay</h3>
+                    <p className={seo.messageItemText}>Show the practical details guests need inside the property.</p>
+                    <ul className={seo.messageItemList}>
+                      <li>Wi-Fi</li>
+                      <li>house instructions</li>
+                      <li>local tips</li>
+                    </ul>
+                  </article>
 
-                <h3 className={seo.h2} style={{ fontSize: 18 }}>
-                  During the stay
-                </h3>
-                <p className={seo.p}>
-                  Show the practical details guests need inside the property.
-                </p>
-                <ul className={styles.includedList}>
-                  <li>Wi-Fi</li>
-                  <li>house instructions</li>
-                  <li>local tips</li>
-                </ul>
-
-                <h3 className={seo.h2} style={{ fontSize: 18 }}>
-                  Before checkout
-                </h3>
-                <p className={seo.p}>
-                  Keep the final reminder short and actionable.
-                </p>
-                <ul className={styles.includedList}>
-                  <li>checkout time</li>
-                  <li>keys</li>
-                  <li>simple departure steps</li>
-                </ul>
+                  <article className={seo.messageItem}>
+                    <h3 className={seo.messageItemTitle}>Before checkout</h3>
+                    <p className={seo.messageItemText}>Keep the final reminder short and actionable.</p>
+                    <ul className={seo.messageItemList}>
+                      <li>checkout time</li>
+                      <li>keys</li>
+                      <li>simple departure steps</li>
+                    </ul>
+                  </article>
+                </div>
                 <p className={seo.pStrong}>
                   Timing matters more than message length.
                 </p>

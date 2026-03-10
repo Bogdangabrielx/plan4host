@@ -174,6 +174,60 @@
   max-width: 560px;
 }
 
+.messageGrid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.messageItem{
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--text) 8%, var(--border));
+  background: color-mix(in srgb, var(--card) 94%, white);
+}
+
+.messageItemTitle{
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.messageItemText{
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.messageItemList{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.messageItemList li{
+  position: relative;
+  padding-left: 16px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.messageItemList li::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  top: .58em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 72%, white);
+}
+
 .statPanel{
   position: relative;
   width: 100%;
@@ -489,6 +543,7 @@
   .showcaseCard{ padding: 20px; border-radius: 24px; }
   .visualStage{ min-height: 360px; border-radius: 24px; }
   .benefitGrid{ grid-template-columns: 1fr; }
+  .messageGrid{ grid-template-columns: 1fr; }
 }
 
 @media (max-width: 900px){
