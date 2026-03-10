@@ -89,25 +89,25 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
         <section className={seo.articleSection} aria-labelledby="problem">
           <div className={seo.articleSplit}>
             <div className={seo.articleSectionTight}>
-                <h2 id="problem" className={seo.h2}>
-                  Why Guest Messaging Becomes a Problem for Hosts
-                </h2>
-                <p className={seo.p}>
-                  Guest messaging becomes repetitive very quickly. Hosts keep answering the same operational questions,
-                  often across multiple platforms, while long messages are ignored until the guest needs one specific detail.
-                </p>
-                <ul
-                  className={styles.includedList}
-                  style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
-                >
-                  <li>the same questions come back with every reservation</li>
-                  <li>important details arrive too early or get buried</li>
-                  <li>communication is split across Airbnb, Booking.com, email, and chat apps</li>
-                  <li>too much time is lost on repetitive replies</li>
-                </ul>
-                <p className={seo.pStrong}>
-                  Typical examples: Wi-Fi password, parking, check-in details, early access, and checkout instructions.
-                </p>
+              <h2 id="problem" className={seo.h2}>
+                Why Guest Messaging Becomes a Problem for Hosts
+              </h2>
+              <p className={seo.p}>
+                Most hosts do not struggle because messaging is complex. They struggle because the same questions keep
+                coming back: parking, access, Wi-Fi, directions, and checkout.
+              </p>
+              <p className={seo.p}>
+                Once those answers are repeated across Airbnb, Booking.com, email, and chat apps, communication stops
+                being helpful and starts eating time every day.
+              </p>
+              <ul
+                className={styles.includedList}
+                style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+              >
+                <li>guests miss long messages sent too early</li>
+                <li>important details get buried inside generic replies</li>
+                <li>hosts lose time answering the same operational questions</li>
+              </ul>
             </div>
 
             <div className={seo.imageFrame}>
@@ -125,74 +125,77 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
         <div className={seo.articleRule} />
 
         <section className={seo.articleSection} aria-labelledby="automated">
-          <div className={seo.articleSectionTight}>
-            <h2 id="automated" className={seo.h2}>
-              How Plan4Host Solves It
-            </h2>
-            <p className={seo.p}>
-              Automated guest messaging works when one system handles timing, delivery, and guest access to information.
-              That is where Plan4Host fits: it combines scheduled guest messages, one guest portal, a virtual reception
-              assistant, and automatic translation in the guest&apos;s language.
-            </p>
-            <ul className={styles.includedList}>
-              <li>automatic guest messages based on booking timing</li>
-              <li>a unified guest portal instead of scattered chats</li>
-              <li>AI assistance for common guest questions</li>
-              <li>consistent communication across Airbnb, Booking.com, and other channels</li>
-            </ul>
-            <div className={seo.featureRow}>
-              <div className={seo.featureItem}>
-                <div className={seo.imageFrame} aria-hidden="true">
-                  <Image
-                    src="/right_moment_en.png"
-                    alt=""
-                    width={800}
-                    height={520}
-                    style={{ width: "100%", height: "auto", display: "block" }}
-                  />
-                </div>
-                <p className={seo.featureCaption}>
-                  Guests are more likely to act on a short message shown shortly before arrival than on a long message sent days in advance.
-                </p>
-              </div>
-
-              <div className={seo.featureItem}>
-                <div className={seo.imageFrame} aria-hidden="true">
-                  <Image
-                    src="/automatic_translate_en.png"
-                    alt=""
-                    width={800}
-                    height={520}
-                    style={{ width: "100%", height: "auto", display: "block" }}
-                  />
-                </div>
-                <p className={seo.featureCaption}>
-                  Clear communication in the guest&apos;s own language reduces friction and lowers the chance of avoidable questions.
-                </p>
-              </div>
-
-              <div className={seo.featureItem}>
-                <div className={seo.imageFrame} aria-hidden="true">
-                  <Image
-                    src="/centralized_en.png"
-                    alt=""
-                    width={800}
-                    height={520}
-                    style={{ width: "100%", height: "auto", display: "block" }}
-                  />
-                </div>
-                <p className={seo.featureCaption}>
-                  One guest portal keeps booking details, stay instructions, and reminders in the same calm interface.
-                </p>
+          <div className={seo.articleSplit}>
+            <div className={seo.articleSectionTight}>
+              <h2 id="automated" className={seo.h2}>
+                How Plan4Host Solves It
+              </h2>
+              <p className={seo.p}>
+                Automated guest messaging only works when the process is simple: the right message goes out at the right
+                moment, guests know where to find details, and the host does not need to repeat the same answer in five places.
+              </p>
+              <p className={seo.p}>
+                Plan4Host does that with scheduled guest messages, one guest communication portal, a virtual reception assistant,
+                and automatic translation in the guest&apos;s language.
+              </p>
+              <ul className={styles.includedList}>
+                <li>scheduled guest messages around check-in, stay, and checkout</li>
+                <li>a unified portal for instructions, reminders, and updates</li>
+                <li>AI support for common guest questions</li>
+                <li>consistent communication across channels</li>
+              </ul>
+              <p className={seo.p}>
+                You can explore <Link href="/automatic-guest-messages">automatic guest messages</Link> and the{' '}
+                <Link href="/guest-ai-assistant">guest AI assistant</Link> separately, but together they solve the same core
+                issue: repetitive guest communication.
+              </p>
+              <div className={seo.ctaRow}>
+                <Link className={`${styles.btn} ${styles.btnSolid}`} href="/automatic-guest-messages">
+                  Explore automatic guest messages
+                </Link>
+                <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant">
+                  Explore the guest AI assistant
+                </Link>
               </div>
             </div>
-            <div className={seo.ctaRow}>
-              <Link className={`${styles.btn} ${styles.btnSolid}`} href="/automatic-guest-messages">
-                Explore automatic guest messages
-              </Link>
-              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant">
-                Explore the guest AI assistant
-              </Link>
+
+            <div className={seo.articleSectionTight}>
+              <div className={seo.imageFrame} aria-hidden="true">
+                <Image
+                  src="/right_moment_en.png"
+                  alt=""
+                  width={800}
+                  height={520}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+              <p className={seo.featureCaption}>
+                Guests are more likely to act on a short message shown shortly before arrival than on a long message sent days in advance.
+              </p>
+              <div className={seo.imageFrame} aria-hidden="true">
+                <Image
+                  src="/automatic_translate_en.png"
+                  alt=""
+                  width={800}
+                  height={520}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+              <p className={seo.featureCaption}>
+                Clear communication in the guest&apos;s own language reduces friction and lowers the chance of avoidable questions.
+              </p>
+              <div className={seo.imageFrame} aria-hidden="true">
+                <Image
+                  src="/centralized_en.png"
+                  alt=""
+                  width={800}
+                  height={520}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+              <p className={seo.featureCaption}>
+                One guest portal keeps booking details, stay instructions, and reminders in the same calm interface.
+              </p>
             </div>
           </div>
         </section>
@@ -268,9 +271,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
               </div>
             </div>
 
-            <p className={seo.pStrong}>
-              Timing matters more than message length.
-            </p>
+            <p className={seo.p}>Timing matters more than message length.</p>
           </div>
         </section>
 
@@ -297,7 +298,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
               <li>Show Wi-Fi details during the stay, not buried inside an early message.</li>
               <li>Send checkout reminders close enough to departure that guests still act on them.</li>
             </ul>
-            <p className={seo.pStrong}>
+            <p className={seo.p}>
               Airbnb message automation works best when short messages are attached to the exact moment a guest needs them.
             </p>
             <div className={seo.imageFrame}>
@@ -367,7 +368,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
               When you automate guest messaging with a central system, communication stays consistent regardless of
               platform. The guest still gets the right information, even if the booking originated somewhere else.
             </p>
-            <p className={seo.pStrong}>
+            <p className={seo.p}>
               That consistency is one of the biggest operational advantages of modern short-term rental communication tools.
             </p>
           </div>
@@ -389,7 +390,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
               Well-timed automation helps hosts save time, reduce stress, and improve the guest experience without
               turning communication into something cold or impersonal.
             </p>
-            <p className={seo.pStrong}>
+            <p className={seo.p}>
               Plan4Host is one example of how automated guest messages, a guest portal, and AI-assisted communication
               can make that process easier to manage.
             </p>
