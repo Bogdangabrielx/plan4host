@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
-import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
 import styles from "../home.module.css";
 import seo from "../seo.module.css";
@@ -35,7 +34,6 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
       style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: "100dvh", overflowX: "hidden" }}
     >
       <LandingSafeArea />
-      <MobileScrollReveal />
 
       <nav className={styles.nav} aria-label="Navigation" data-p4h-landing-nav>
         <Link href="/" className={styles.brand}>
@@ -51,7 +49,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
       </nav>
 
       <section className={styles.hero} aria-labelledby="title">
-        <div className={styles.heroText} data-p4h-reveal>
+        <div className={styles.heroText}>
           <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
             How to automate guest messaging for short-term rentals
           </h1>
@@ -73,27 +71,24 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
           </div>
         </div>
 
-        <div aria-label="Guest message automation preview" data-p4h-reveal>
-          <div className={seo.visualStage}>
-            <div className={seo.visualImageWrap}>
-              <Image
-                src="/HeroMSG_en.png"
-                alt="Guest messaging automation preview"
-                width={900}
-                height={900}
-                style={{ width: "100%", height: "auto", display: "block" }}
-                priority
-              />
-            </div>
+        <div aria-label="Guest message automation preview">
+          <div className={seo.imageFrame}>
+            <Image
+              src="/HeroMSG_en.png"
+              alt="Guest messaging automation preview"
+              width={1200}
+              height={1000}
+              style={{ width: "100%", height: "auto", display: "block" }}
+              priority
+            />
           </div>
         </div>
       </section>
 
-      <div className={seo.content}>
-        <section className={seo.section} aria-labelledby="problem">
-          <div className={`sb-cardglow ${seo.showcaseCard}`} data-p4h-reveal>
-            <div className={seo.splitShowcase}>
-              <div className={seo.copyStack}>
+      <article className={seo.article}>
+        <section className={seo.articleSection} aria-labelledby="problem">
+          <div className={seo.articleSplit}>
+            <div className={seo.articleSectionTight}>
                 <h2 id="problem" className={seo.h2}>
                   Why Guest Messaging Becomes a Problem for Hosts
                 </h2>
@@ -113,23 +108,24 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                 <p className={seo.pStrong}>
                   Typical examples: Wi-Fi password, parking, check-in details, early access, and checkout instructions.
                 </p>
-              </div>
+            </div>
 
-              <div className={seo.statPanel}>
-                <Image
-                  src="/60%_en.png"
-                  alt="Repetitive guest questions visual"
-                  width={900}
-                  height={700}
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
-              </div>
+            <div className={seo.imageFrame}>
+              <Image
+                src="/60%_en.png"
+                alt="Repetitive guest questions visual"
+                width={900}
+                height={700}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
             </div>
           </div>
         </section>
 
-        <section className={seo.section} aria-labelledby="automated">
-          <div className={`sb-cardglow ${seo.showcaseCard}`} data-p4h-reveal>
+        <div className={seo.articleRule} />
+
+        <section className={seo.articleSection} aria-labelledby="automated">
+          <div className={seo.articleSectionTight}>
             <h2 id="automated" className={seo.h2}>
               How Plan4Host Solves It
             </h2>
@@ -144,9 +140,9 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
               <li>AI assistance for common guest questions</li>
               <li>consistent communication across Airbnb, Booking.com, and other channels</li>
             </ul>
-            <div className={seo.benefitGrid}>
-              <div className={`sb-cardglow ${seo.benefitCard}`}>
-                <div className={seo.benefitMiniUi} aria-hidden="true">
+            <div className={seo.featureRow}>
+              <div className={seo.featureItem}>
+                <div className={seo.imageFrame} aria-hidden="true">
                   <Image
                     src="/right_moment_en.png"
                     alt=""
@@ -155,13 +151,13 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                     style={{ width: "100%", height: "auto", display: "block" }}
                   />
                 </div>
-                <p className={seo.benefitText}>
+                <p className={seo.featureCaption}>
                   Guests are more likely to act on a short message shown shortly before arrival than on a long message sent days in advance.
                 </p>
               </div>
 
-              <div className={`sb-cardglow ${seo.benefitCard}`}>
-                <div className={seo.benefitMiniUi} aria-hidden="true">
+              <div className={seo.featureItem}>
+                <div className={seo.imageFrame} aria-hidden="true">
                   <Image
                     src="/automatic_translate_en.png"
                     alt=""
@@ -170,13 +166,13 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                     style={{ width: "100%", height: "auto", display: "block" }}
                   />
                 </div>
-                <p className={seo.benefitText}>
+                <p className={seo.featureCaption}>
                   Clear communication in the guest&apos;s own language reduces friction and lowers the chance of avoidable questions.
                 </p>
               </div>
 
-              <div className={`sb-cardglow ${seo.benefitCard}`}>
-                <div className={seo.benefitMiniUi} aria-hidden="true">
+              <div className={seo.featureItem}>
+                <div className={seo.imageFrame} aria-hidden="true">
                   <Image
                     src="/centralized_en.png"
                     alt=""
@@ -185,7 +181,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                     style={{ width: "100%", height: "auto", display: "block" }}
                   />
                 </div>
-                <p className={seo.benefitText}>
+                <p className={seo.featureCaption}>
                   One guest portal keeps booking details, stay instructions, and reminders in the same calm interface.
                 </p>
               </div>
@@ -201,10 +197,12 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
           </div>
         </section>
 
-        <section className={seo.section} aria-labelledby="key-messages">
-          <div className={`sb-cardglow ${seo.showcaseCard}`} data-p4h-reveal>
-            <div className={seo.splitShowcase}>
-              <div className={seo.copyStack}>
+        <div className={seo.articleRule} />
+
+        <section className={seo.articleSection} aria-labelledby="key-messages">
+          <div className={seo.articleSectionTight}>
+            <div className={seo.articleSplit}>
+              <div className={seo.articleSectionTight}>
                 <h2 id="key-messages" className={seo.h2}>
                   Key Messages Every Short-Term Rental Should Automate
                 </h2>
@@ -213,7 +211,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                 </p>
               </div>
 
-              <div className={seo.statPanel}>
+              <div className={seo.imageFrame}>
                 <Image
                   src="/Key_msg_en.png"
                   alt="Key automated guest messages preview"
@@ -224,9 +222,9 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
               </div>
             </div>
 
-            <div className={seo.messageColumns}>
+            <div className={seo.plainColumns}>
               <div className={seo.messageColumn}>
-                <article className={seo.messageBlock}>
+                <div className={seo.miniSection}>
                   <h3 className={seo.messageItemTitle}>Booking confirmation</h3>
                   <p className={seo.messageItemText}>Confirm the stay and explain what happens next.</p>
                   <ul className={seo.messageItemList}>
@@ -234,9 +232,9 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                     <li>next step</li>
                     <li>where future details will appear</li>
                   </ul>
-                </article>
+                </div>
 
-                <article className={seo.messageBlock}>
+                <div className={seo.miniSection}>
                   <h3 className={seo.messageItemTitle}>During the stay</h3>
                   <p className={seo.messageItemText}>Show the practical details guests need inside the property.</p>
                   <ul className={seo.messageItemList}>
@@ -244,11 +242,11 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                     <li>house instructions</li>
                     <li>local tips</li>
                   </ul>
-                </article>
+                </div>
               </div>
 
               <div className={seo.messageColumn}>
-                <article className={seo.messageBlock}>
+                <div className={seo.miniSection}>
                   <h3 className={seo.messageItemTitle}>Before check-in</h3>
                   <p className={seo.messageItemText}>Send arrival essentials close to check-in.</p>
                   <ul className={seo.messageItemList}>
@@ -256,9 +254,9 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                     <li>directions</li>
                     <li>parking</li>
                   </ul>
-                </article>
+                </div>
 
-                <article className={seo.messageBlock}>
+                <div className={seo.miniSection}>
                   <h3 className={seo.messageItemTitle}>Before checkout</h3>
                   <p className={seo.messageItemText}>Keep the final reminder short and actionable.</p>
                   <ul className={seo.messageItemList}>
@@ -266,7 +264,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                     <li>keys</li>
                     <li>simple departure steps</li>
                   </ul>
-                </article>
+                </div>
               </div>
             </div>
 
@@ -276,8 +274,10 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
           </div>
         </section>
 
-        <section className={seo.section} aria-labelledby="timing">
-          <div className={`sb-cardglow ${seo.showcaseCard}`} data-p4h-reveal>
+        <div className={seo.articleRule} />
+
+        <section className={seo.articleSection} aria-labelledby="timing">
+          <div className={seo.articleSectionTight}>
             <h2 id="timing" className={seo.h2}>
               Why Timing Matters More Than Message Length
             </h2>
@@ -300,7 +300,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
             <p className={seo.pStrong}>
               Airbnb message automation works best when short messages are attached to the exact moment a guest needs them.
             </p>
-            <div className={seo.statPanel}>
+            <div className={seo.imageFrame}>
               <Image
                 src="/timing_en.png"
                 alt="Why timing matters in guest messaging"
@@ -312,8 +312,10 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
           </div>
         </section>
 
-        <section className={seo.section} aria-labelledby="benefits">
-          <div className={`sb-cardglow ${seo.showcaseCard}`} data-p4h-reveal>
+        <div className={seo.articleRule} />
+
+        <section className={seo.articleSection} aria-labelledby="benefits">
+          <div className={seo.articleSectionTight}>
             <h2 id="benefits" className={seo.h2}>
               Benefits of Automating Guest Messaging
             </h2>
@@ -328,7 +330,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
               <li>deliver information at the right moment</li>
               <li>keep communication organized in one place</li>
             </ul>
-            <div className={seo.statPanel}>
+            <div className={seo.imageFrame}>
               <Image
                 src="/benefits_en.png"
                 alt="Benefits of automating guest messaging"
@@ -340,8 +342,10 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
           </div>
         </section>
 
-        <section className={seo.section} aria-labelledby="platforms">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+        <div className={seo.articleRule} />
+
+        <section className={seo.articleSection} aria-labelledby="platforms">
+          <div className={seo.articleSectionTight}>
             <h2 id="platforms" className={seo.h2}>
               Automating Guest Communication Across Multiple Platforms
             </h2>
@@ -369,8 +373,10 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
           </div>
         </section>
 
-        <section className={seo.section} aria-labelledby="final">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+        <div className={seo.articleRule} />
+
+        <section className={seo.articleSection} aria-labelledby="final">
+          <div className={seo.articleSectionTight}>
             <h2 id="final" className={seo.h2}>
               Final Thoughts
             </h2>
@@ -397,7 +403,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
             </div>
           </div>
         </section>
-      </div>
+      </article>
 
       <SeoFooter lang="en" />
     </main>
