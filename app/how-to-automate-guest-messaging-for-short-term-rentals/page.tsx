@@ -156,13 +156,6 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
 
           <div className={seo.benefitGrid} data-p4h-reveal>
             <div className={`sb-cardglow ${seo.benefitCard}`}>
-              <div className={seo.benefitHead}>
-                <div className={seo.benefitIcon} aria-hidden="true">1</div>
-                <h3 className={seo.benefitTitle}>Send messages at the right moment</h3>
-              </div>
-              <p className={seo.benefitText}>
-                Guests are more likely to act on a short message shown shortly before arrival than on a long message sent days in advance.
-              </p>
               <div className={seo.benefitMiniUi} aria-hidden="true">
                 <Image
                   src="/right_moment_en.png"
@@ -172,6 +165,9 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                   style={{ width: "100%", height: "auto", display: "block" }}
                 />
               </div>
+              <p className={seo.benefitText}>
+                Guests are more likely to act on a short message shown shortly before arrival than on a long message sent days in advance.
+              </p>
             </div>
 
             <div className={`sb-cardglow ${seo.benefitCard}`}>
