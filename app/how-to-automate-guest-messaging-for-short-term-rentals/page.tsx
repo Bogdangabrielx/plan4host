@@ -269,7 +269,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
         </section>
 
         <section className={seo.section} aria-labelledby="timing">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+          <div className={`sb-cardglow ${seo.showcaseCard}`} data-p4h-reveal>
             <h2 id="timing" className={seo.h2}>
               Why Timing Matters More Than Message Length
             </h2>
@@ -283,13 +283,6 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
               standing outside the property with luggage. A guest who receives checkout details at booking confirmation
               will probably ignore them until the final day.
             </p>
-            <div className={seo.flowRow} aria-label="Messaging timing flow">
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>right message</span>
-              <span className={seo.flowArrow}>+</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>right moment</span>
-              <span className={seo.flowArrow}>=</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>less confusion</span>
-            </div>
             <p className={seo.p}>Practical examples:</p>
             <ul className={styles.includedList}>
               <li>Send access instructions shortly before arrival, not right after booking.</li>
@@ -299,6 +292,15 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
             <p className={seo.pStrong}>
               Airbnb message automation works best when short messages are attached to the exact moment a guest needs them.
             </p>
+            <div className={seo.statPanel}>
+              <Image
+                src="/timing_en.png"
+                alt="Why timing matters in guest messaging"
+                width={1200}
+                height={900}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
           </div>
         </section>
 
