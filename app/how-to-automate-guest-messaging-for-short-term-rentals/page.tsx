@@ -52,6 +52,10 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
+          <div className={seo.heroEyebrow}>
+            <span className={seo.heroEyebrowDot} aria-hidden="true" />
+            Short-term rental communication
+          </div>
           <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
             How to automate guest messaging for short-term rentals
           </h1>
@@ -73,79 +77,166 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
           </div>
         </div>
 
-        <div className={styles.heroVisual} aria-label="Guest message automation preview" data-p4h-reveal>
-          <Image
-            src="/Hero_device2.png"
-            alt="Guest message automation preview"
-            width={900}
-            height={900}
-            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
-            priority
-          />
+        <div aria-label="Guest message automation preview" data-p4h-reveal>
+          <div className={seo.visualStage}>
+            <div className={seo.visualGlow} aria-hidden="true" />
+            <div className={`${seo.floatingCard} ${seo.floatingCardTop}`}>
+              <p className={seo.floatingTitle}>Arrival message</p>
+              <p className={seo.floatingText}>Access details, directions and parking appear before check-in.</p>
+              <span className={seo.floatingMeta}>Delivered at the right time</span>
+            </div>
+            <div className={`${seo.floatingCard} ${seo.floatingCardMid}`}>
+              <p className={seo.floatingTitle}>Stay essentials</p>
+              <p className={seo.floatingText}>Wi-Fi, house instructions and local tips stay visible in one place.</p>
+            </div>
+            <div className={`${seo.floatingCard} ${seo.floatingCardBottom}`}>
+              <p className={seo.floatingTitle}>Checkout reminder</p>
+              <p className={seo.floatingText}>Clear departure steps without last-minute back and forth.</p>
+            </div>
+            <div className={seo.visualImageWrap}>
+              <Image
+                src="/Hero_device2.png"
+                alt="Guest portal preview on mobile"
+                width={900}
+                height={900}
+                style={{ width: "100%", height: "auto", display: "block" }}
+                priority
+              />
+            </div>
+          </div>
         </div>
       </section>
 
       <div className={seo.content}>
         <section className={seo.section} aria-labelledby="problem">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="problem" className={seo.h2}>
-              Why Guest Messaging Becomes a Problem for Hosts
-            </h2>
-            <p className={seo.p}>
-              Guest communication seems simple when you manage only a few bookings. In practice, it becomes one of the
-              most repetitive parts of hosting. Airbnb hosts and short-term rental managers quickly notice that many
-              guests ask the same things, even when the information was already sent once.
-            </p>
-            <p className={seo.p}>
-              The problem is not just message volume. It is also timing, channel fragmentation, and the fact that long
-              messages are usually ignored until the guest urgently needs one detail.
-            </p>
-            <ul
-              className={styles.includedList}
-              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
-            >
-              <li>Hosts answer the same questions repeatedly for every reservation.</li>
-              <li>Guests often do not read long messages sent too early.</li>
-              <li>Important information is sent at the wrong moment and gets buried.</li>
-              <li>Communication is spread across Airbnb, Booking.com, email, and chat apps.</li>
-              <li>Too much time is lost replying manually to repetitive questions.</li>
-            </ul>
-            <p className={seo.p}>Typical examples include:</p>
-            <ul className={styles.includedList}>
-              <li>A guest asks for the Wi-Fi password after it was already included in the arrival note.</li>
-              <li>A guest cannot find the parking instructions because they were sent three days earlier.</li>
-              <li>A checkout reminder is sent too soon, so the guest forgets it by the final morning.</li>
-            </ul>
-            <p className={seo.pStrong}>
-              This is exactly where short-term rental guest messaging automation starts to make operational sense.
-            </p>
+          <div className={`sb-cardglow ${seo.showcaseCard}`} data-p4h-reveal>
+            <div className={seo.splitShowcase}>
+              <div className={seo.copyStack}>
+                <h2 id="problem" className={seo.h2}>
+                  Why Guest Messaging Becomes a Problem for Hosts
+                </h2>
+                <p className={seo.p}>
+                  Guest communication seems simple when you manage only a few bookings. In practice, it becomes one of
+                  the most repetitive parts of hosting. Airbnb hosts and short-term rental managers quickly notice that
+                  many guests ask the same things, even when the information was already sent once.
+                </p>
+                <p className={seo.p}>
+                  The problem is not just message volume. It is timing, channel fragmentation, and the fact that long
+                  messages are often ignored until the guest urgently needs one detail.
+                </p>
+                <ul
+                  className={styles.includedList}
+                  style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+                >
+                  <li>Hosts answer the same questions repeatedly for every reservation.</li>
+                  <li>Guests do not read long messages sent too early.</li>
+                  <li>Important information is sent at the wrong time and gets buried.</li>
+                  <li>Communication is split across Airbnb, Booking.com, email, and chat apps.</li>
+                  <li>Too much time is lost replying manually to repetitive questions.</li>
+                </ul>
+                <p className={seo.pStrong}>
+                  Typical examples: Wi-Fi password, parking, check-in details, early access, and checkout instructions.
+                </p>
+              </div>
+
+              <div className={seo.statPanel}>
+                <div className={seo.statBubble}>
+                  <p className={seo.statBubbleValue}>Up to 60%</p>
+                  <p className={seo.statBubbleText}>of guest questions tend to be repetitive when communication is not structured.</p>
+                </div>
+                <div className={seo.statChart} aria-hidden="true" />
+                <div className={seo.statMini}>
+                  <div className={seo.statMiniCard}>Wi-Fi password</div>
+                  <div className={seo.statMiniCard}>Parking instructions</div>
+                  <div className={seo.statMiniCard}>Check-in details</div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
         <section className={seo.section} aria-labelledby="automated">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+          <div className={seo.sectionIntro} data-p4h-reveal>
             <h2 id="automated" className={seo.h2}>
               What Is Automated Guest Messaging?
             </h2>
             <p className={seo.p}>
-              Automated guest messaging means sending reservation-related information automatically based on specific
-              events or moments in the stay. Instead of manually remembering what to send and when to send it, the host
-              creates a message once and lets the system deliver it when it becomes relevant.
+              Automated guest messaging means preparing reservation-related communication once and letting the system
+              show it based on clear triggers such as booking confirmation, before check-in, during the stay, and
+              before checkout.
             </p>
-            <p className={seo.p}>In short-term rentals, messages can be triggered automatically:</p>
-            <ul className={styles.includedList}>
-              <li>after booking confirmation</li>
-              <li>before check-in</li>
-              <li>during the stay</li>
-              <li>before checkout</li>
-            </ul>
             <p className={seo.p}>
-              This type of vacation rental messaging automation improves the guest experience because communication feels
-              timely and useful, not random. Guests receive fewer messages, but each one has a clear purpose.
+              It improves the guest experience because information arrives when it becomes useful, not hours or days
+              before the guest actually needs it.
             </p>
-            <p className={seo.pStrong}>
-              Good automation does not mean more communication. It means smarter communication.
-            </p>
+          </div>
+
+          <div className={seo.benefitGrid} data-p4h-reveal>
+            <div className={`sb-cardglow ${seo.benefitCard}`}>
+              <div className={seo.benefitHead}>
+                <div className={seo.benefitIcon} aria-hidden="true">1</div>
+                <h3 className={seo.benefitTitle}>Send messages at the right moment</h3>
+              </div>
+              <p className={seo.benefitText}>
+                Guests are more likely to act on a short message shown shortly before arrival than on a long message sent days in advance.
+              </p>
+              <div className={seo.benefitMiniUi} aria-hidden="true">
+                <div className={seo.benefitMiniRow}>
+                  <span className={seo.benefitMiniDot} />
+                  <span className={seo.benefitMiniLine} />
+                  <span className={seo.benefitMiniTag} />
+                </div>
+                <div className={seo.benefitMiniRow}>
+                  <span className={seo.benefitMiniDot} />
+                  <span className={seo.benefitMiniLine} />
+                  <span className={seo.benefitMiniTag} />
+                </div>
+              </div>
+            </div>
+
+            <div className={`sb-cardglow ${seo.benefitCard}`}>
+              <div className={seo.benefitHead}>
+                <div className={seo.benefitIcon} aria-hidden="true">2</div>
+                <h3 className={seo.benefitTitle}>Automatic language translation</h3>
+              </div>
+              <p className={seo.benefitText}>
+                Clear communication in the guest&apos;s own language reduces friction and lowers the chance of avoidable questions.
+              </p>
+              <div className={seo.benefitMiniUi} aria-hidden="true">
+                <div className={seo.benefitMiniRow}>
+                  <span className={seo.benefitMiniDot} />
+                  <span className={seo.benefitMiniLine} />
+                  <span className={seo.benefitMiniTag} />
+                </div>
+                <div className={seo.benefitMiniRow}>
+                  <span className={seo.benefitMiniDot} />
+                  <span className={seo.benefitMiniLine} />
+                  <span className={seo.benefitMiniTag} />
+                </div>
+              </div>
+            </div>
+
+            <div className={`sb-cardglow ${seo.benefitCard}`}>
+              <div className={seo.benefitHead}>
+                <div className={seo.benefitIcon} aria-hidden="true">3</div>
+                <h3 className={seo.benefitTitle}>Centralized communication</h3>
+              </div>
+              <p className={seo.benefitText}>
+                One guest portal keeps booking details, stay instructions, and reminders in the same calm interface.
+              </p>
+              <div className={seo.benefitMiniUi} aria-hidden="true">
+                <div className={seo.benefitMiniRow}>
+                  <span className={seo.benefitMiniDot} />
+                  <span className={seo.benefitMiniLine} />
+                  <span className={seo.benefitMiniTag} />
+                </div>
+                <div className={seo.benefitMiniRow}>
+                  <span className={seo.benefitMiniDot} />
+                  <span className={seo.benefitMiniLine} />
+                  <span className={seo.benefitMiniTag} />
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
