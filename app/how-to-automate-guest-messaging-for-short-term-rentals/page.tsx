@@ -120,72 +120,78 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
         <div className={seo.articleRule} />
 
         <section className={seo.articleSection} aria-labelledby="automated">
-          <div className={seo.articleSplit}>
-            <div className={seo.articleSectionTight}>
-              <h2 id="automated" className={seo.h2}>
-                How Plan4Host Solves It
-              </h2>
-              <p className={seo.p}>
-                Good automation is simple: send the right message at the right time and keep guest details in one place.
-                That is what Plan4Host does.
-              </p>
-              <ul className={styles.includedList}>
-                <li>scheduled guest messages around check-in, stay, and checkout</li>
-                <li>a unified portal for instructions, reminders, and updates</li>
-                <li>AI support for common guest questions</li>
-                <li>consistent communication across channels</li>
-              </ul>
-              <p className={seo.p}>
-                See <Link href="/automatic-guest-messages">automatic guest messages</Link> and the{" "}
-                <Link href="/guest-ai-assistant">guest AI assistant</Link> if you want the full workflow.
-              </p>
-              <div className={seo.ctaRow}>
-                <Link className={`${styles.btn} ${styles.btnSolid}`} href="/automatic-guest-messages">
-                  Explore automatic guest messages
-                </Link>
-                <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant">
-                  Explore the guest AI assistant
-                </Link>
-              </div>
+          <div className={seo.articleSectionTight}>
+            <h2 id="automated" className={seo.h2}>
+              How Plan4Host Solves It
+            </h2>
+            <p className={seo.p}>
+              Good automation is simple: send the right message at the right time and keep guest details in one place.
+              That is what Plan4Host does.
+            </p>
+            <ul className={styles.includedList}>
+              <li>scheduled guest messages around check-in, stay, and checkout</li>
+              <li>a unified portal for instructions, reminders, and updates</li>
+              <li>AI support for common guest questions</li>
+              <li>consistent communication across channels</li>
+            </ul>
+            <p className={seo.p}>
+              See <Link href="/automatic-guest-messages">automatic guest messages</Link> and the{" "}
+              <Link href="/guest-ai-assistant">guest AI assistant</Link> if you want the full workflow.
+            </p>
+            <div className={seo.ctaRow}>
+              <Link className={`${styles.btn} ${styles.btnSolid}`} href="/automatic-guest-messages">
+                Explore automatic guest messages
+              </Link>
+              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/guest-ai-assistant">
+                Explore the guest AI assistant
+              </Link>
             </div>
 
-            <div className={seo.articleSectionTight}>
-              <div className={seo.imageFrame} aria-hidden="true">
-                <Image
-                  src="/right_moment_en.png"
-                  alt=""
-                  width={800}
-                  height={520}
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
+            <div className={seo.featureRow}>
+              <div className={seo.featureItem}>
+                <div className={seo.imageFrame} aria-hidden="true">
+                  <Image
+                    src="/right_moment_en.png"
+                    alt=""
+                    width={800}
+                    height={520}
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </div>
+                <p className={seo.featureCaption}>
+                  Short messages sent close to arrival work better than long messages sent days too early.
+                </p>
               </div>
-              <p className={seo.featureCaption}>
-                Short messages sent close to arrival work better than long messages sent days too early.
-              </p>
-              <div className={seo.imageFrame} aria-hidden="true">
-                <Image
-                  src="/automatic_translate_en.png"
-                  alt=""
-                  width={800}
-                  height={520}
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
+
+              <div className={seo.featureItem}>
+                <div className={seo.imageFrame} aria-hidden="true">
+                  <Image
+                    src="/automatic_translate_en.png"
+                    alt=""
+                    width={800}
+                    height={520}
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </div>
+                <p className={seo.featureCaption}>
+                  Messages in the guest&apos;s own language reduce friction and avoidable questions.
+                </p>
               </div>
-              <p className={seo.featureCaption}>
-                Messages in the guest&apos;s own language reduce friction and avoidable questions.
-              </p>
-              <div className={seo.imageFrame} aria-hidden="true">
-                <Image
-                  src="/centralized_en.png"
-                  alt=""
-                  width={800}
-                  height={520}
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
+
+              <div className={seo.featureItem}>
+                <div className={seo.imageFrame} aria-hidden="true">
+                  <Image
+                    src="/centralized_en.png"
+                    alt=""
+                    width={800}
+                    height={520}
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </div>
+                <p className={seo.featureCaption}>
+                  One portal keeps booking details, stay instructions, and reminders together.
+                </p>
               </div>
-              <p className={seo.featureCaption}>
-                One portal keeps booking details, stay instructions, and reminders together.
-              </p>
             </div>
           </div>
         </section>

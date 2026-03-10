@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
-import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
 import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
@@ -35,7 +34,6 @@ export default function CumAutomatizeziMesajeleSeoPage() {
       style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: "100dvh", overflowX: "hidden" }}
     >
       <LandingSafeArea />
-      <MobileScrollReveal />
 
       <nav className={styles.nav} aria-label="Navigatie" data-p4h-landing-nav>
         <Link href="/ro" className={styles.brand}>
@@ -51,14 +49,13 @@ export default function CumAutomatizeziMesajeleSeoPage() {
       </nav>
 
       <section className={styles.hero} aria-labelledby="title">
-        <div className={styles.heroText} data-p4h-reveal>
+        <div className={styles.heroText}>
           <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
             Cum sa automatizezi mesajele pentru oaspeti la cazarile pe termen scurt
           </h1>
           <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
-            In cazarile pe termen scurt, gazdele raspund des la aceleasi intrebari: check-in, parcare, Wi-Fi,
-            directii si check-out. Automatizarea mesajelor reduce comunicarea manuala, pastreaza informatia coerenta
-            si ajuta oaspetii sa primeasca exact mesajul de care au nevoie, la momentul potrivit.
+            Gazdele raspund zilnic la aceleasi intrebari: check-in, parcare, Wi-Fi, directii si check-out.
+            Automatizarea reduce raspunsurile repetitive si livreaza informatia exact cand oaspetele are nevoie de ea.
           </p>
           <div className={styles.heroCta}>
             <Link className={`${styles.btn} ${styles.btnSolid}`} href="/guest-ai-assistant/demo">
@@ -70,310 +67,206 @@ export default function CumAutomatizeziMesajeleSeoPage() {
           </div>
         </div>
 
-        <div className={styles.heroVisual} aria-label="Preview automatizare mesaje oaspeti" data-p4h-reveal>
-          <Image
-            src="/Hero_device2.png"
-            alt="Preview automatizare mesaje oaspeti"
-            width={900}
-            height={900}
-            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
-            priority
-          />
+        <div aria-label="Preview automatizare mesaje oaspeti">
+          <div className={seo.imageFrame}>
+            <Image
+              src="/HeroMSG_en.png"
+              alt="Preview automatizare mesaje oaspeti"
+              width={1200}
+              height={1000}
+              style={{ width: "100%", height: "auto", display: "block" }}
+              priority
+            />
+          </div>
         </div>
       </section>
 
-      <div className={seo.content}>
-        <section className={seo.section} aria-labelledby="problem">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="problem" className={seo.h2}>
-              De ce mesajele pentru oaspeti devin o problema pentru gazde
-            </h2>
-            <p className={seo.p}>
-              Comunicarea cu oaspetii pare simpla cand ai putine rezervari. In realitate, devine rapid una dintre cele
-              mai repetitive parti ale operarii unei proprietati. Gazdele din Airbnb si managerii de cazari observa
-              repede ca multi oaspeti intreaba exact aceleasi lucruri, chiar si atunci cand informatia a fost deja trimisa.
-            </p>
-            <p className={seo.p}>
-              Problema nu este doar numarul de mesaje. Problema este si momentul in care ajung, faptul ca sunt raspandite
-              pe mai multe platforme si ca mesajele lungi sunt, de cele mai multe ori, ignorate pana cand oaspetele are
-              nevoie urgenta de un detaliu.
-            </p>
-            <ul
-              className={styles.includedList}
-              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
-            >
-              <li>Gazda raspunde de fiecare data la aceleasi intrebari.</li>
-              <li>Oaspetii nu citesc mesaje lungi trimise prea devreme.</li>
-              <li>Informatiile importante ajung la momentul gresit si se pierd in conversatie.</li>
-              <li>Comunicarea este impartita intre Airbnb, Booking.com, email si aplicatii de chat.</li>
-              <li>Se pierde timp zilnic cu raspunsuri repetitive.</li>
-            </ul>
-            <p className={seo.p}>Exemple tipice:</p>
-            <ul className={styles.includedList}>
-              <li>Oaspetele cere parola de Wi-Fi, desi era deja inclusa in mesajul de sosire.</li>
-              <li>Nu gaseste instructiunile de parcare pentru ca au fost trimise cu cateva zile inainte.</li>
-              <li>Un reminder de check-out a fost trimis prea devreme si este uitat pana dimineata plecarii.</li>
-            </ul>
-            <p className={seo.pStrong}>
-              Aici incepe sa aiba sens automatizarea mesajelor pentru oaspeti la cazarile pe termen scurt.
-            </p>
+      <article className={seo.article}>
+        <section className={seo.articleSection} aria-labelledby="problem">
+          <div className={seo.articleSplit}>
+            <div className={seo.articleSectionTight}>
+              <h2 id="problem" className={seo.h2}>
+                De ce mesajele pentru oaspeti devin o problema pentru gazde
+              </h2>
+              <p className={seo.p}>
+                Problema nu este complexitatea. Problema este repetitia. Oaspetii intreaba iar si iar despre acces,
+                parcare, Wi-Fi, directii si check-out.
+              </p>
+              <ul
+                className={styles.includedList}
+                style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+              >
+                <li>oaspetii rateaza mesajele lungi trimise prea devreme</li>
+                <li>detaliile importante se pierd in raspunsuri generale</li>
+                <li>gazda pierde timp cu aceleasi intrebari operationale</li>
+              </ul>
+            </div>
+
+            <div className={seo.imageFrame}>
+              <Image
+                src="/60%_en.png"
+                alt="Vizual cu intrebari repetitive de la oaspeti"
+                width={900}
+                height={700}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
           </div>
         </section>
 
-        <section className={seo.section} aria-labelledby="automated">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+        <div className={seo.articleRule} />
+
+        <section className={seo.articleSection} aria-labelledby="automated">
+          <div className={seo.articleSectionTight}>
             <h2 id="automated" className={seo.h2}>
-              Ce inseamna mesaje automate pentru oaspeti
+              Cum rezolva Plan4Host problema
             </h2>
             <p className={seo.p}>
-              Mesajele automate inseamna ca informatia legata de rezervare este afisata sau trimisa automat in functie
-              de anumite evenimente sau momente din sejur. In loc sa iti amintesti manual ce sa trimiti si cand, scrii
-              mesajul o singura data, iar sistemul il livreaza cand devine relevant.
+              Automatizarea buna este simpla: mesajul potrivit pleaca la momentul potrivit, iar toate detaliile
+              pentru oaspete raman intr-un singur loc. Asta face Plan4Host.
             </p>
-            <p className={seo.p}>Intr-o cazare pe termen scurt, mesajele pot fi declansate automat:</p>
             <ul className={styles.includedList}>
-              <li>dupa confirmarea rezervarii</li>
-              <li>inainte de check-in</li>
-              <li>in timpul sejurului</li>
-              <li>inainte de check-out</li>
+              <li>mesaje programate pentru check-in, sejur si check-out</li>
+              <li>un portal central cu instructiuni si remindere</li>
+              <li>asistenta AI pentru intrebarile frecvente</li>
+              <li>comunicare coerenta pentru toate sursele de rezervare</li>
             </ul>
             <p className={seo.p}>
-              Acest tip de automatizare imbunatateste experienta oaspetelui pentru ca mesajele par utile si bine plasate,
-              nu intamplatoare. Oaspetele primeste mai putine mesaje, dar fiecare are un scop clar.
+              Poti vedea separat pagina despre <Link href="/ro/mesaje-automate-pentru-oaspeti">mesaje automate</Link>{" "}
+              si pagina despre <Link href="/ro/asistent-ai-oaspeti">asistentul AI pentru oaspeti</Link>, dar impreuna
+              ele rezolva aceeasi problema: comunicarea repetitiva.
             </p>
-            <p className={seo.pStrong}>
-              Automatizarea buna nu inseamna mai multa comunicare. Inseamna comunicare mai inteligenta.
-            </p>
+            <div className={seo.ctaRow}>
+              <Link className={`${styles.btn} ${styles.btnSolid}`} href="/ro/mesaje-automate-pentru-oaspeti">
+                Vezi mesaje automate
+              </Link>
+              <Link className={`${styles.btn} ${styles.btnOutline}`} href="/ro/asistent-ai-oaspeti">
+                Vezi asistentul AI
+              </Link>
+            </div>
+
+            <div className={seo.featureRow}>
+              <div className={seo.featureItem}>
+                <div className={seo.imageFrame} aria-hidden="true">
+                  <Image
+                    src="/right_moment_en.png"
+                    alt=""
+                    width={800}
+                    height={520}
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </div>
+                <p className={seo.featureCaption}>
+                  Mesajele scurte trimise aproape de sosire functioneaza mai bine decat mesajele lungi trimise prea devreme.
+                </p>
+              </div>
+
+              <div className={seo.featureItem}>
+                <div className={seo.imageFrame} aria-hidden="true">
+                  <Image
+                    src="/automatic_translate_en.png"
+                    alt=""
+                    width={800}
+                    height={520}
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </div>
+                <p className={seo.featureCaption}>
+                  Mesajele in limba oaspetelui reduc confuzia si intrebarile inutile.
+                </p>
+              </div>
+
+              <div className={seo.featureItem}>
+                <div className={seo.imageFrame} aria-hidden="true">
+                  <Image
+                    src="/centralized_en.png"
+                    alt=""
+                    width={800}
+                    height={520}
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </div>
+                <p className={seo.featureCaption}>
+                  Un singur portal tine la un loc detaliile rezervarii, instructiunile si reminderele.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className={seo.section} aria-labelledby="key-messages">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="key-messages" className={seo.h2}>
-              Mesajele esentiale pe care fiecare cazare ar trebui sa le automatizeze
-            </h2>
-            <p className={seo.p}>
-              Daca vrei sa automatizezi comunicarea cu oaspetii corect, incepe cu mesajele de care aproape orice
-              oaspete are nevoie. Sunt mesaje operationale, nu mesaje de marketing.
-            </p>
+        <div className={seo.articleRule} />
 
-            <h3 className={seo.h2} style={{ fontSize: 18 }}>
-              Mesajul de confirmare a rezervarii
-            </h3>
-            <p className={seo.p}>
-              Imediat dupa confirmare, oaspetele are nevoie de claritate. Vrea sa stie ca rezervarea este valida,
-              care este pasul urmator si unde va vedea informatiile viitoare.
-            </p>
-            <ul className={styles.includedList}>
-              <li>confirmarea ca sejurul este inregistrat</li>
-              <li>care este urmatorul pas</li>
-              <li>unde vor aparea mesajele si pasii de check-in</li>
-            </ul>
-
-            <h3 className={seo.h2} style={{ fontSize: 18 }}>
-              Inainte de check-in
-            </h3>
-            <p className={seo.p}>
-              Acesta este, de obicei, cel mai important interval. Instructiunile de acces, directiile, detaliile de
-              intrare si parcarea trebuie sa ajunga suficient de aproape de check-in incat sa fie utile, dar nu atat de
-              tarziu incat oaspetele sa devina nesigur.
-            </p>
-            <ul className={styles.includedList}>
-              <li>instructiuni de acces</li>
-              <li>directii si detalii de sosire</li>
-              <li>informatii despre parcare</li>
-              <li>ghidaj pentru intrarea in cladire</li>
-            </ul>
-
-            <h3 className={seo.h2} style={{ fontSize: 18 }}>
-              In timpul sejurului
-            </h3>
-            <p className={seo.p}>
-              Dupa ce oaspetele a intrat in proprietate, informatia relevanta se schimba. Acum are nevoie de ghidaj
-              practic pentru sedere, nu de logistica de sosire.
-            </p>
-            <ul className={styles.includedList}>
-              <li>parola de Wi-Fi</li>
-              <li>instructiuni despre casa</li>
-              <li>cum functioneaza aparatele</li>
-              <li>recomandari locale si tips utile</li>
-            </ul>
-
-            <h3 className={seo.h2} style={{ fontSize: 18 }}>
-              Inainte de check-out
-            </h3>
-            <p className={seo.p}>
-              Ultimul mesaj trebuie sa fie simplu si practic. Oaspetele nu are nevoie de o explicatie lunga. Are nevoie
-              de ora de check-out si de cativa pasi usor de urmat.
-            </p>
-            <ul className={styles.includedList}>
-              <li>ora de check-out</li>
-              <li>unde lasa cheile</li>
-              <li>ce face cu gunoiul sau vasele</li>
-              <li>orice reminder final de plecare</li>
-            </ul>
-            <p className={seo.pStrong}>
-              In automatizarea mesajelor pentru oaspeti, momentul conteaza mai mult decat mesajele lungi.
-            </p>
-          </div>
-        </section>
-
-        <section className={seo.section} aria-labelledby="timing">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+        <section className={seo.articleSection} aria-labelledby="timing">
+          <div className={seo.articleSectionTight}>
             <h2 id="timing" className={seo.h2}>
               De ce timingul conteaza mai mult decat lungimea mesajului
             </h2>
             <p className={seo.p}>
-              Multe gazde cred ca solutia este sa scrie un singur mesaj complet, cu toate detaliile posibile. In
-              realitate, oaspetii citesc rar instructiuni lungi trimise prea devreme. Chiar si atunci cand le citesc,
-              nu isi amintesc exact detaliul de care au nevoie mai tarziu.
+              Mesajele lungi trimise prea devreme sunt de obicei ignorate. Oaspetii reactioneaza mai bine cand mesajul
+              apare exact in momentul util.
             </p>
+            <ul className={styles.includedList}>
+              <li>trimite accesul aproape de sosire</li>
+              <li>afiseaza Wi-Fi-ul in timpul sejurului</li>
+              <li>trimite reminderul de check-out aproape de plecare</li>
+            </ul>
             <p className={seo.p}>
-              Un oaspete care primeste parcarea cu patru zile inainte de sosire poate sa nu o mai tina minte cand ajunge
-              in fata proprietatii cu bagajele. Un oaspete care primeste detaliile de check-out imediat dupa rezervare le
-              va ignora aproape sigur pana in ultima zi.
+              Aici automatizarea mesajelor devine cu adevarat utila: mesajele scurte si bine plasate functioneaza mai bine decat un mesaj generic.
             </p>
-            <div className={seo.flowRow} aria-label="Flux timing mesaje">
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>mesajul potrivit</span>
-              <span className={seo.flowArrow}>+</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>momentul potrivit</span>
-              <span className={seo.flowArrow}>=</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>mai putina confuzie</span>
+            <div className={seo.imageFrame}>
+              <Image
+                src="/timing_en.png"
+                alt="De ce timingul conteaza in mesajele pentru oaspeti"
+                width={1200}
+                height={900}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
             </div>
-            <p className={seo.p}>Exemple practice:</p>
-            <ul className={styles.includedList}>
-              <li>Trimite accesul aproape de sosire, nu imediat dupa rezervare.</li>
-              <li>Afiseaza Wi-Fi-ul in timpul sejurului, nu ingropat intr-un mesaj vechi.</li>
-              <li>Trimite reminderul de check-out suficient de aproape de plecare incat oaspetele sa actioneze.</li>
-            </ul>
-            <p className={seo.pStrong}>
-              Automatizarea functioneaza cel mai bine cand mesajele scurte sunt legate de momentul exact in care oaspetele are nevoie de ele.
-            </p>
           </div>
         </section>
 
-        <section className={seo.section} aria-labelledby="questions">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="questions" className={seo.h2}>
-              Cum reduci intrebarile repetitive ale oaspetilor
-            </h2>
-            <p className={seo.p}>
-              Unul dintre cele mai clare beneficii ale unor instrumente bune de comunicare pentru cazari pe termen scurt
-              este reducerea intrebarilor repetitive. Majoritatea gazdelor recunosc imediat tiparul.
-            </p>
-            <ul className={styles.includedList}>
-              <li>Care este parola de Wi-Fi?</li>
-              <li>Unde parchez?</li>
-              <li>Cum fac check-in?</li>
-              <li>Unde gasesc regulamentul?</li>
-              <li>Cum folosesc centrala, AC-ul sau electrocasnicele?</li>
-            </ul>
-            <p className={seo.p}>
-              Solutia reala nu este doar sa trimiti mai multe mesaje. Solutia este sa oferi oaspetilor un loc central
-              unde gasesc raspunsurile rapid. Cand oaspetele stie unde sa caute, nu mai deschide o conversatie noua
-              pentru fiecare intrebare operationala.
-            </p>
-            <p className={seo.pStrong}>
-              Un portal central pentru oaspete reduce mesajele repetitive pentru ca raspunsurile raman organizate si vizibile pe toata durata sejurului.
-            </p>
-          </div>
-        </section>
+        <div className={seo.articleRule} />
 
-        <section className={seo.section} aria-labelledby="system">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="system" className={seo.h2}>
-              Exemplu: un sistem care automatizeaza comunicarea cu oaspetii
-            </h2>
-            <p className={seo.p}>
-              Un exemplu este Plan4Host, construit in jurul nevoilor practice de comunicare din cazarile pe termen scurt.
-              In loc sa se bazeze pe conversatii raspandite in mai multe locuri, ajuta gazda sa organizeze comunicarea
-              intr-un mod mai clar si mai controlat.
-            </p>
-            <p className={seo.p}>
-              Platforma include{" "}
-              <Link href="https://plan4host.com/automatic-guest-messages">mesaje automate pentru oaspeti</Link>, care pot
-              fi afisate dupa confirmarea rezervarii, inainte de check-in, in timpul sejurului si inainte de check-out.
-            </p>
-            <p className={seo.p}>
-              Exista si un portal unificat de comunicare cu oaspetele, plus un{" "}
-              <Link href="https://plan4host.com/guest-ai-assistant">asistent virtual de receptie</Link>, astfel incat
-              oaspetele sa gaseasca rapid ce are nevoie fara ca gazda sa raspunda manual la fiecare intrebare operationala.
-            </p>
-            <p className={seo.p}>
-              Conteaza si traducerea automata in limba oaspetelui. Daca intelege imediat mesajul, este mai probabil sa
-              urmeze corect instructiunile si mai putin probabil sa deschida conversatii inutile.
-            </p>
-            <p className={seo.pStrong}>
-              Asta inseamna, in practica, mai putine intrebari repetitive, comunicare mai coerenta si timing mai bun pe tot parcursul sejurului.
-            </p>
-          </div>
-        </section>
-
-        <section className={seo.section} aria-labelledby="benefits">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+        <section className={seo.articleSection} aria-labelledby="benefits">
+          <div className={seo.articleSectionTight}>
             <h2 id="benefits" className={seo.h2}>
-              Beneficiile automatizarii mesajelor pentru oaspeti
+              Beneficiile automatizarii mesajelor dintr-un singur loc
             </h2>
+            <p className={seo.p}>
+              Scopul este simplu: mai putina repetitie, mai putina munca manuala si o comunicare mai clara, indiferent de unde vine rezervarea.
+            </p>
             <ul className={styles.includedList}>
-              <li>reduci intrebarile repetitive venite de la oaspeti</li>
-              <li>castigi timp si raspunzi mai putin manual</li>
-              <li>imbunatatesti experienta oaspetelui</li>
+              <li>reduci intrebarile repetitive</li>
+              <li>castigi timp la raspunsurile operationale</li>
+              <li>pastrezi comunicarea coerenta pentru orice sursa de booking</li>
               <li>livrezi informatia la momentul potrivit</li>
-              <li>tii comunicarea organizata intr-un singur loc</li>
-              <li>pastrezi coerenta indiferent de platforma de rezervare</li>
+              <li>tii totul organizat intr-un singur loc</li>
             </ul>
             <p className={seo.p}>
-              Pentru gazda, asta inseamna mai putine intreruperi si un flux zilnic mai stabil. Pentru oaspete,
-              inseamna mai putina nesiguranta si mai putin timp pierdut cautand detalii prin mesaje vechi.
+              Daca rezervarile vin din Airbnb, Booking.com sau Vrbo, cea mai sigura varianta este sa gestionezi mesajele dintr-o platforma centrala care aduna toate booking-urile.
             </p>
+            <div className={seo.imageFrame}>
+              <Image
+                src="/benefits_en.png"
+                alt="Beneficiile automatizarii mesajelor pentru oaspeti"
+                width={1200}
+                height={900}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
           </div>
         </section>
 
-        <section className={seo.section} aria-labelledby="platforms">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="platforms" className={seo.h2}>
-              Automatizarea comunicarii pe mai multe platforme de rezervare
-            </h2>
-            <p className={seo.p}>
-              Multe proprietati primesc rezervari din mai multe surse. O singura unitate poate avea rezervari simultan
-              din Airbnb, Booking.com si Vrbo.
-            </p>
-            <ul className={styles.includedList}>
-              <li>Airbnb</li>
-              <li>Booking.com</li>
-              <li>Vrbo</li>
-            </ul>
-            <p className={seo.p}>
-              Fara automatizare, calitatea comunicarii depinde prea mult de platforma din care a venit rezervarea. Unii
-              oaspeti primesc toate detaliile, altii doar partial, iar gazda adapteaza manual procesul de fiecare data.
-            </p>
-            <p className={seo.p}>
-              Cand automatizezi comunicarea cu un sistem central, mesajele raman coerente indiferent de sursa rezervarii.
-              Oaspetele primeste informatia corecta chiar daca rezervarea a venit din alta platforma.
-            </p>
-            <p className={seo.pStrong}>
-              Aceasta coerenta este unul dintre cele mai importante avantaje operationale pentru orice gazda care lucreaza pe mai multe canale.
-            </p>
-          </div>
-        </section>
+        <div className={seo.articleRule} />
 
-        <section className={seo.section} aria-labelledby="final">
-          <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
+        <section className={seo.articleSection} aria-labelledby="final">
+          <div className={seo.articleSectionTight}>
             <h2 id="final" className={seo.h2}>
               Concluzie
             </h2>
             <p className={seo.p}>
-              Daca vrei sa automatizezi mesajele pentru oaspeti la cazarile pe termen scurt, incepe cu problemele
-              practice care consuma timp in fiecare saptamana: intrebarile repetate, instructiunile trimise prea devreme
-              si comunicarea imprastiata in prea multe locuri.
-            </p>
-            <p className={seo.p}>
-              O automatizare bine facuta ajuta gazda sa economiseasca timp, sa reduca stresul si sa imbunatateasca
-              experienta oaspetelui fara sa transforme comunicarea in ceva rece sau impersonal.
-            </p>
-            <p className={seo.pStrong}>
-              Plan4Host este un exemplu de solutie care combina mesaje automate, portal pentru oaspeti si asistenta AI
-              pentru a face acest proces mai usor de gestionat.
+              Incepe cu lucrurile care consuma timp in fiecare saptamana: intrebarile repetitive, instructiunile trimise prea devreme si comunicarea imprastiata in prea multe locuri.
+              O automatizare buna economiseste timp si imbunatateste experienta oaspetelui fara sa para rece sau impersonala.
             </p>
             <div className={seo.ctaRow}>
               <Link className={`${styles.btn} ${styles.btnSolid}`} href="/ro/mesaje-automate-pentru-oaspeti">
@@ -385,7 +278,7 @@ export default function CumAutomatizeziMesajeleSeoPage() {
             </div>
           </div>
         </section>
-      </div>
+      </article>
 
       <SeoFooter lang="ro" />
     </main>
