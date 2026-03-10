@@ -371,6 +371,15 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
               For hosts, this means fewer interruptions and a more stable daily workflow. For guests, it means less
               uncertainty and less searching through old conversations.
             </p>
+            <div className={seo.statPanel}>
+              <Image
+                src="/benefits_en.png"
+                alt="Benefits of automating guest messaging"
+                width={1200}
+                height={900}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
           </div>
         </section>
 
