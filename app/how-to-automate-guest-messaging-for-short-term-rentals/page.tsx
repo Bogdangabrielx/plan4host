@@ -13,6 +13,10 @@ export const metadata: Metadata = {
     "A practical guide to automate guest messaging for short-term rentals with better timing, fewer repetitive questions, and a clearer guest experience.",
   alternates: {
     canonical: "/how-to-automate-guest-messaging-for-short-term-rentals",
+    languages: {
+      en: "/how-to-automate-guest-messaging-for-short-term-rentals",
+      ro: "/ro/cum-sa-automatizezi-mesajele-pentru-oaspeti-la-cazarile-pe-termen-scurt",
+    },
   },
   openGraph: {
     title: "How to automate guest messaging for short-term rentals | Plan4Host",

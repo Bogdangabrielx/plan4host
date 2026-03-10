@@ -18,6 +18,13 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
   const thirdHref = lang === "ro" ? "/ro/calendar-rezervari-unificat" : "/unified-booking-calendar";
   const thirdTitle = lang === "ro" ? "Calendar rezervari unificat" : "Unified booking calendar";
 
+  const fourthHref = lang === "ro"
+    ? "/ro/cum-sa-automatizezi-mesajele-pentru-oaspeti-la-cazarile-pe-termen-scurt"
+    : "/how-to-automate-guest-messaging-for-short-term-rentals";
+  const fourthTitle = lang === "ro"
+    ? "Cum sa automatizezi mesajele pentru oaspeti la cazarile pe termen scurt"
+    : "How to automate guest messaging for short-term rentals";
+
   return (
     <footer className={styles.footer} aria-label="Footer">
       <div className={`${styles.footerGrid} p4h-seo-footer-grid`}>
@@ -169,6 +176,11 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
         ·{" "}
         <Link className={styles.footerLink} href={thirdHref}>
           {thirdTitle}
+        </Link>
+        {" "}
+        ·{" "}
+        <Link className={styles.footerLink} href={fourthHref}>
+          {fourthTitle}
         </Link>
       </div>
 

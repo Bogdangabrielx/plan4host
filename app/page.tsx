@@ -2001,6 +2001,10 @@ export default function HomePage() {
 	            Automatic guest messages for accommodation
 	          </Link>{" "}
 	          ·{" "}
+	          <Link className={styles.footerLink} href="/how-to-automate-guest-messaging-for-short-term-rentals">
+	            How to automate guest messaging for short-term rentals
+	          </Link>{" "}
+	          ·{" "}
 	          <Link className={styles.footerLink} href="/unified-booking-calendar">
 	            Unified booking calendar
 	          </Link>

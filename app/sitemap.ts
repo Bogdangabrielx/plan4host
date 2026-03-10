@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/unified-booking-calendar",
     "/ro/check-in-online-cazare",
     "/ro/mesaje-automate-pentru-oaspeti",
+    "/ro/cum-sa-automatizezi-mesajele-pentru-oaspeti-la-cazarile-pe-termen-scurt",
     "/ro/calendar-rezervari-unificat",
     
     "/checkin-forms-gdpr",
