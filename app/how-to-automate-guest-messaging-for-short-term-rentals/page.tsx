@@ -52,10 +52,6 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <div className={seo.heroEyebrow}>
-            <span className={seo.heroEyebrowDot} aria-hidden="true" />
-            Short-term rental communication
-          </div>
           <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
             How to automate guest messaging for short-term rentals
           </h1>
