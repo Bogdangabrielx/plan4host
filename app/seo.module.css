@@ -28,6 +28,80 @@
   margin: 0 auto;
 }
 
+.article{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  gap: 22px;
+}
+
+.articleSection{
+  display: grid;
+  gap: 18px;
+}
+
+.articleSectionTight{
+  display: grid;
+  gap: 14px;
+}
+
+.articleSplit{
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.articleRule{
+  height: 1px;
+  background: color-mix(in srgb, var(--text) 10%, var(--border));
+  opacity: .85;
+}
+
+.imageFrame{
+  border-radius: 24px;
+  border: 1px solid transparent;
+  overflow: hidden;
+  background: transparent;
+}
+
+.imageFrame :global(img){
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 24px;
+}
+
+.plainColumns{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px 32px;
+  align-items: start;
+}
+
+.miniSection{
+  display: grid;
+  gap: 8px;
+}
+
+.featureRow{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.featureItem{
+  display: grid;
+  gap: 12px;
+}
+
+.featureCaption{
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .heroEyebrow{
   display: inline-flex;
   align-items: center;
@@ -542,13 +616,17 @@
   .content{ gap: 48px; padding-bottom: 64px; }
   .h2{ font-size: 20px; }
   .card{ padding: 20px; }
+  .article{ gap: 18px; }
   .seoFooterGrid{ grid-template-columns: 1fr; }
   .showcaseCard{ padding: 20px; border-radius: 24px; }
   .visualStage{ min-height: 360px; border-radius: 24px; }
   .benefitGrid{ grid-template-columns: 1fr; }
   .messageColumns{ grid-template-columns: 1fr; }
+  .plainColumns{ grid-template-columns: 1fr; gap: 20px; }
+  .featureRow{ grid-template-columns: 1fr; }
 }
 
 @media (max-width: 900px){
   .splitShowcase{ grid-template-columns: 1fr; }
+  .articleSplit{ grid-template-columns: 1fr; }
 }
