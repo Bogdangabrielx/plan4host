@@ -98,23 +98,17 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                   Why Guest Messaging Becomes a Problem for Hosts
                 </h2>
                 <p className={seo.p}>
-                  Guest communication seems simple when you manage only a few bookings. In practice, it becomes one of
-                  the most repetitive parts of hosting. Airbnb hosts and short-term rental managers quickly notice that
-                  many guests ask the same things, even when the information was already sent once.
-                </p>
-                <p className={seo.p}>
-                  The problem is not just message volume. It is timing, channel fragmentation, and the fact that long
-                  messages are often ignored until the guest urgently needs one detail.
+                  Guest messaging becomes repetitive very quickly. Hosts keep answering the same operational questions,
+                  often across multiple platforms, while long messages are ignored until the guest needs one specific detail.
                 </p>
                 <ul
                   className={styles.includedList}
                   style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
                 >
-                  <li>Hosts answer the same questions repeatedly for every reservation.</li>
-                  <li>Guests do not read long messages sent too early.</li>
-                  <li>Important information is sent at the wrong time and gets buried.</li>
-                  <li>Communication is split across Airbnb, Booking.com, email, and chat apps.</li>
-                  <li>Too much time is lost replying manually to repetitive questions.</li>
+                  <li>the same questions come back with every reservation</li>
+                  <li>important details arrive too early or get buried</li>
+                  <li>communication is split across Airbnb, Booking.com, email, and chat apps</li>
+                  <li>too much time is lost on repetitive replies</li>
                 </ul>
                 <p className={seo.pStrong}>
                   Typical examples: Wi-Fi password, parking, check-in details, early access, and checkout instructions.
