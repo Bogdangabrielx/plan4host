@@ -1806,7 +1806,7 @@ export default function HomePageRO() {
 	          </Link>{" "}
 	          ·{" "}
 	          <Link className={styles.footerLink} href="/ro/cum-sa-automatizezi-mesajele-pentru-oaspeti-la-cazarile-pe-termen-scurt">
-	            Cum sa automatizezi mesajele pentru oaspeti la cazarile pe termen scurt
+	            Cum să automatizezi mesajele către oaspeți pentru închirieri pe termen scurt
 	          </Link>{" "}
 	          ·{" "}
 	          <Link className={styles.footerLink} href="/ro/calendar-rezervari-unificat">

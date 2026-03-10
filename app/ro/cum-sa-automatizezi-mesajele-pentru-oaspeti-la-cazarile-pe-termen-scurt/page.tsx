@@ -7,9 +7,9 @@ import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
 
 export const metadata: Metadata = {
-  title: "Cum sa automatizezi mesajele pentru oaspeti la cazarile pe termen scurt | Plan4Host",
+  title: "Cum să automatizezi mesajele către oaspeți pentru închirieri pe termen scurt | Plan4Host",
   description:
-    "Un ghid practic despre cum sa automatizezi mesajele pentru oaspeti la cazarile pe termen scurt, cu mai putine intrebari repetitive si o comunicare mai clara.",
+    "Un ghid practic despre cum să automatizezi mesajele către oaspeți pentru închirieri pe termen scurt, cu mai putine intrebari repetitive si o comunicare mai clara.",
   alternates: {
     canonical: "/ro/cum-sa-automatizezi-mesajele-pentru-oaspeti-la-cazarile-pe-termen-scurt",
     languages: {
@@ -18,9 +18,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Cum sa automatizezi mesajele pentru oaspeti la cazarile pe termen scurt | Plan4Host",
+    title: "Cum să automatizezi mesajele către oaspeți pentru închirieri pe termen scurt | Plan4Host",
     description:
-      "Afla cum sa automatizezi mesajele pentru oaspeti la cazarile pe termen scurt si cum sa reduci comunicarea repetitiva din Airbnb, Booking.com si Vrbo.",
+      "Afla cum să automatizezi mesajele către oaspeți pentru închirieri pe termen scurt si cum sa reduci comunicarea repetitiva din Airbnb, Booking.com si Vrbo.",
     url: "/ro/cum-sa-automatizezi-mesajele-pentru-oaspeti-la-cazarile-pe-termen-scurt",
     locale: "ro_RO",
     type: "article",
@@ -51,7 +51,7 @@ export default function CumAutomatizeziMesajeleSeoPage() {
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText}>
           <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
-            Cum sa automatizezi mesajele pentru oaspeti la cazarile pe termen scurt
+            Cum să automatizezi mesajele către oaspeți pentru închirieri pe termen scurt
           </h1>
           <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
             Gazdele raspund zilnic la aceleasi intrebari: check-in, parcare, Wi-Fi, directii si check-out.

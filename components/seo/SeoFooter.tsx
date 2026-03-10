@@ -22,7 +22,7 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
     ? "/ro/cum-sa-automatizezi-mesajele-pentru-oaspeti-la-cazarile-pe-termen-scurt"
     : "/how-to-automate-guest-messaging-for-short-term-rentals";
   const fourthTitle = lang === "ro"
-    ? "Cum sa automatizezi mesajele pentru oaspeti la cazarile pe termen scurt"
+    ? "Cum să automatizezi mesajele către oaspeți pentru închirieri pe termen scurt"
     : "How to automate guest messaging for short-term rentals";
 
   return (
