@@ -164,16 +164,13 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
                 Guests are more likely to act on a short message shown shortly before arrival than on a long message sent days in advance.
               </p>
               <div className={seo.benefitMiniUi} aria-hidden="true">
-                <div className={seo.benefitMiniRow}>
-                  <span className={seo.benefitMiniDot} />
-                  <span className={seo.benefitMiniLine} />
-                  <span className={seo.benefitMiniTag} />
-                </div>
-                <div className={seo.benefitMiniRow}>
-                  <span className={seo.benefitMiniDot} />
-                  <span className={seo.benefitMiniLine} />
-                  <span className={seo.benefitMiniTag} />
-                </div>
+                <Image
+                  src="/right_moment_en.png"
+                  alt=""
+                  width={800}
+                  height={520}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
               </div>
             </div>
 
