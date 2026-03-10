@@ -186,25 +186,18 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
             </div>
 
             <div className={`sb-cardglow ${seo.benefitCard}`}>
-              <div className={seo.benefitHead}>
-                <div className={seo.benefitIcon} aria-hidden="true">3</div>
-                <h3 className={seo.benefitTitle}>Centralized communication</h3>
+              <div className={seo.benefitMiniUi} aria-hidden="true">
+                <Image
+                  src="/centralized_en.png"
+                  alt=""
+                  width={800}
+                  height={520}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
               </div>
               <p className={seo.benefitText}>
                 One guest portal keeps booking details, stay instructions, and reminders in the same calm interface.
               </p>
-              <div className={seo.benefitMiniUi} aria-hidden="true">
-                <div className={seo.benefitMiniRow}>
-                  <span className={seo.benefitMiniDot} />
-                  <span className={seo.benefitMiniLine} />
-                  <span className={seo.benefitMiniTag} />
-                </div>
-                <div className={seo.benefitMiniRow}>
-                  <span className={seo.benefitMiniDot} />
-                  <span className={seo.benefitMiniLine} />
-                  <span className={seo.benefitMiniTag} />
-                </div>
-              </div>
             </div>
           </div>
         </section>
