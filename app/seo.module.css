@@ -183,6 +183,13 @@
   overflow: hidden;
 }
 
+.statPanel :global(img){
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 24px;
+}
+
 .sectionIntro{
   max-width: 760px;
   margin: 0 auto;
