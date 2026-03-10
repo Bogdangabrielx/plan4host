@@ -174,19 +174,22 @@
   max-width: 560px;
 }
 
-.messageGrid{
+.messageColumns{
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+  gap: 32px;
+  align-items: start;
+  padding-top: 4px;
 }
 
-.messageItem{
+.messageColumn{
+  display: grid;
+  gap: 18px;
+}
+
+.messageBlock{
   display: grid;
   gap: 8px;
-  padding: 14px;
-  border-radius: 18px;
-  border: 1px solid color-mix(in srgb, var(--text) 8%, var(--border));
-  background: color-mix(in srgb, var(--card) 94%, white);
 }
 
 .messageItemTitle{
@@ -543,7 +546,7 @@
   .showcaseCard{ padding: 20px; border-radius: 24px; }
   .visualStage{ min-height: 360px; border-radius: 24px; }
   .benefitGrid{ grid-template-columns: 1fr; }
-  .messageGrid{ grid-template-columns: 1fr; }
+  .messageColumns{ grid-template-columns: 1fr; }
 }
 
 @media (max-width: 900px){
