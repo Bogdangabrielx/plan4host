@@ -192,78 +192,6 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
 
         <div className={seo.articleRule} />
 
-        <section className={seo.articleSection} aria-labelledby="key-messages">
-          <div className={seo.articleSectionTight}>
-            <div className={seo.articleSplit}>
-              <div className={seo.articleSectionTight}>
-                <h2 id="key-messages" className={seo.h2}>
-                  Key Messages Every Short-Term Rental Should Automate
-                </h2>
-              </div>
-
-              <div className={seo.imageFrame}>
-                <Image
-                  src="/Key_msg_en.png"
-                  alt="Key automated guest messages preview"
-                  width={900}
-                  height={900}
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
-              </div>
-            </div>
-
-            <div className={seo.plainColumns}>
-              <div className={seo.messageColumn}>
-                <div className={seo.miniSection}>
-                  <h3 className={seo.messageItemTitle}>Booking confirmation</h3>
-                  <p className={seo.messageItemText}>Confirm the stay and show the next step.</p>
-                  <ul className={seo.messageItemList}>
-                    <li>reservation confirmed</li>
-                    <li>next step</li>
-                    <li>where future details will appear</li>
-                  </ul>
-                </div>
-
-                <div className={seo.miniSection}>
-                  <h3 className={seo.messageItemTitle}>During the stay</h3>
-                  <p className={seo.messageItemText}>Keep practical stay details easy to find.</p>
-                  <ul className={seo.messageItemList}>
-                    <li>Wi-Fi</li>
-                    <li>house instructions</li>
-                    <li>local tips</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className={seo.messageColumn}>
-                <div className={seo.miniSection}>
-                  <h3 className={seo.messageItemTitle}>Before check-in</h3>
-                  <p className={seo.messageItemText}>Send arrival essentials close to check-in.</p>
-                  <ul className={seo.messageItemList}>
-                    <li>access instructions</li>
-                    <li>directions</li>
-                    <li>parking</li>
-                  </ul>
-                </div>
-
-                <div className={seo.miniSection}>
-                  <h3 className={seo.messageItemTitle}>Before checkout</h3>
-                  <p className={seo.messageItemText}>Keep the final reminder short and useful.</p>
-                  <ul className={seo.messageItemList}>
-                    <li>checkout time</li>
-                    <li>keys</li>
-                    <li>simple departure steps</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <p className={seo.p}>Timing matters more than message length.</p>
-          </div>
-        </section>
-
-        <div className={seo.articleRule} />
-
         <section className={seo.articleSection} aria-labelledby="timing">
           <div className={seo.articleSectionTight}>
               <h2 id="timing" className={seo.h2}>
@@ -296,23 +224,22 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
 
         <section className={seo.articleSection} aria-labelledby="benefits">
           <div className={seo.articleSectionTight}>
-              <h2 id="benefits" className={seo.h2}>
-                Benefits of Automating Guest Messaging Across Platforms
-              </h2>
-              <p className={seo.p}>
-                The goal is simple: less repetition, less manual work, and clearer communication across Airbnb,
-                Booking.com, and Vrbo.
-              </p>
+            <h2 id="benefits" className={seo.h2}>
+              Benefits of Automating Guest Messaging Across Platforms
+            </h2>
+            <p className={seo.p}>
+              The goal is simple: less repetition, less manual work, and clearer communication, no matter where the reservation comes from.
+            </p>
             <ul className={styles.includedList}>
               <li>reduce repetitive questions from guests</li>
               <li>save time answering operational messages</li>
-              <li>keep communication consistent across platforms</li>
+              <li>keep communication consistent for every booking source</li>
               <li>deliver information at the right moment</li>
               <li>keep communication organized in one place</li>
-              </ul>
-              <p className={seo.p}>
-                One central system keeps the process consistent, no matter where the booking started.
-              </p>
+            </ul>
+            <p className={seo.p}>
+              If reservations come from Airbnb, Booking.com, or Vrbo, the safest approach is to manage guest messaging from one central platform that gathers all bookings in the same place.
+            </p>
             <div className={seo.imageFrame}>
               <Image
                 src="/benefits_en.png"
