@@ -36,6 +36,17 @@
   gap: 22px;
 }
 
+.seoHeroTitle{
+  margin: 0 0 24px !important;
+  line-height: 1.14;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+}
+
+.seoHeroIntro{
+  margin-top: 0 !important;
+}
+
 .articleSection{
   display: grid;
   gap: 18px;

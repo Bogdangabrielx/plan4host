@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
+import { Montserrat } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import SeoFooter from "@/components/seo/SeoFooter";
 import styles from "../home.module.css";
 import seo from "../seo.module.css";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
   title: "How to automate guest messaging for short-term rentals | Plan4Host",
@@ -30,7 +36,7 @@ export const metadata: Metadata = {
 export default function ShortTermRentalGuestMessagingSeoPage() {
   return (
     <main
-      className={styles.landing}
+      className={`${styles.landing} ${montserrat.className}`}
       style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: "100dvh", overflowX: "hidden" }}
     >
       <LandingSafeArea />
@@ -50,10 +56,10 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText}>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             How to automate guest messaging for short-term rentals
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             <strong>Airbnb</strong>, <strong>Booking.com</strong>, and <strong>Vrbo</strong> hosts answer the same questions every day about{" "}
             <strong>check-in</strong>, <strong>parking</strong>, <strong>Wi-Fi</strong>, <strong>directions</strong>, and{" "}
             <strong>checkout</strong>. <strong>Automated guest messaging</strong> helps short-term rental hosts{" "}
