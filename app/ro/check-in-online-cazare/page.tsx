@@ -161,6 +161,15 @@ export default function CheckInOnlineCazarePage() {
               <Image className={seo.logoImg} src="/trivago.png" alt="Trivago" width={52} height={52} />
               <Image className={seo.logoImg} src="/expedia.png" alt="Expedia" width={52} height={52} />
             </div>
+            <div className={seo.imageFrame}>
+              <Image
+                src="/Checkin_mok2.png"
+                alt="Preview check-in online pentru rezervari din Airbnb si Booking"
+                width={1200}
+                height={900}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
           </div>
         </section>
 
