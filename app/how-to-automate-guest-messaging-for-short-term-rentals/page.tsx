@@ -130,7 +130,7 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
         <section className={seo.articleSection} aria-labelledby="automated">
           <div className={seo.articleSectionTight}>
             <h2 id="automated" className={seo.h2}>
-              How Plan4Host Solves It
+              How <span className={seo.titleAccent}>Plan4Host</span> Solves It
             </h2>
             <p className={seo.p}>
               Good automation is simple: send the right message at the right time and keep guest details in one place.

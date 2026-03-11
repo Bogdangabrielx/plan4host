@@ -128,7 +128,7 @@ export default function CumAutomatizeziMesajeleSeoPage() {
         <section className={seo.articleSection} aria-labelledby="automated">
           <div className={seo.articleSectionTight}>
             <h2 id="automated" className={seo.h2}>
-              Cum rezolva Plan4Host problema
+              Cum rezolvă <span className={seo.titleAccent}>Plan4Host</span> problema
             </h2>
             <p className={seo.p}>
               Automatizarea buna este simpla: mesajul potrivit pleaca la momentul potrivit, iar toate detaliile
