@@ -54,8 +54,11 @@ export default function CumAutomatizeziMesajeleSeoPage() {
             Cum să automatizezi mesajele către oaspeți pentru închirieri pe termen scurt
           </h1>
           <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
-            Gazdele raspund zilnic la aceleasi intrebari: check-in, parcare, Wi-Fi, directii si check-out.
-            Automatizarea reduce raspunsurile repetitive si livreaza informatia exact cand oaspetele are nevoie de ea.
+            Gazdele care folosesc <strong>Airbnb</strong>, <strong>Booking.com</strong> și <strong>Vrbo</strong> răspund zilnic la aceleași întrebări despre{" "}
+            <strong>check-in</strong>, <strong>parcare</strong>, <strong>Wi-Fi</strong>, <strong>direcții</strong> și{" "}
+            <strong>check-out</strong>. <strong>Automatizarea mesajelor către oaspeți</strong> ajută gazdele din închirierile pe termen scurt să{" "}
+            <strong>reducă întrebările repetitive</strong>, să <strong>economisească timp</strong> și să{" "}
+            <strong>trimită informația potrivită</strong> exact atunci când oaspetele are nevoie de ea.
           </p>
           <div className={styles.heroCta}>
             <Link className={`${styles.btn} ${styles.btnSolid}`} href="/guest-ai-assistant/demo">

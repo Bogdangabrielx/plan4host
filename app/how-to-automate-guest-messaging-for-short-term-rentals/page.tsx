@@ -54,8 +54,10 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
             How to automate guest messaging for short-term rentals
           </h1>
           <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
-            Hosts answer the same questions every day: check-in, parking, Wi-Fi, directions, and checkout.
-            Automation cuts repetitive replies and gives guests the right message at the right moment.
+            <strong>Airbnb</strong>, <strong>Booking.com</strong>, and <strong>Vrbo</strong> hosts answer the same questions every day about{" "}
+            <strong>check-in</strong>, <strong>parking</strong>, <strong>Wi-Fi</strong>, <strong>directions</strong>, and{" "}
+            <strong>checkout</strong>. <strong>Automated guest messaging</strong> helps short-term rental hosts{" "}
+            <strong>reduce repetitive questions</strong>, <strong>save time</strong>, and <strong>send the right information</strong> to guests exactly when they need it.
           </p>
           <div className={styles.heroCta}>
             <Link className={`${styles.btn} ${styles.btnSolid}`} href="/guest-ai-assistant/demo">
