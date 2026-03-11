@@ -206,26 +206,40 @@ export default function CheckInOnlineCazarePage() {
 
         <section className={seo.section} aria-labelledby="workflow">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="workflow" className={seo.h2}>
-              Cum functioneaza check-in-ul online cu Plan4Host
-            </h2>
-            <p className={seo.p}>
-              Cu Plan4Host, check-in-ul online functioneaza intr-un mod simplu:
-            </p>
-            <div className={seo.flowRow} aria-label="Workflow">
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>invitat</span>
-              <span className={seo.flowArrow}>→</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>formular online</span>
-              <span className={seo.flowArrow}>→</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>confirmare</span>
-              <span className={seo.flowArrow}>→</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>sosire</span>
+            <div className={seo.splitShowcase}>
+              <div className={seo.copyStack}>
+                <h2 id="workflow" className={seo.h2}>
+                  Când sunt livrate mesajele
+                </h2>
+                <p className={seo.p}>
+                  Cu Plan4Host, check-in-ul online functioneaza intr-un mod simplu:
+                </p>
+                <div className={seo.flowRow} aria-label="Workflow">
+                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>invitat</span>
+                  <span className={seo.flowArrow}>→</span>
+                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>formular online</span>
+                  <span className={seo.flowArrow}>→</span>
+                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>confirmare</span>
+                  <span className={seo.flowArrow}>→</span>
+                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>sosire</span>
+                </div>
+                <p className={seo.p}>
+                  Gazda trimite <strong>un link de check-in</strong>. Oaspetele completeaza formularul <strong>inainte de sosire</strong>. Gazda primeste o
+                  <strong> notificare</strong> si confirma rezervarea.
+                </p>
+                <p className={seo.p}><strong>Totul este clar</strong> inainte ca oaspetele sa ajunga la cazare.</p>
+              </div>
+
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/right_moment_en.png"
+                  alt="Mesaje livrate la momentul potrivit"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
             </div>
-            <p className={seo.p}>
-              Gazda trimite <strong>un link de check-in</strong>. Oaspetele completeaza formularul <strong>inainte de sosire</strong>. Gazda primeste o
-              <strong>notificare</strong> si confirma rezervarea.
-            </p>
-            <p className={seo.p}><strong>Totul este clar</strong> inainte ca oaspetele sa ajunga la cazare.</p>
           </div>
         </section>
 

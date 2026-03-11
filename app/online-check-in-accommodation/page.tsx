@@ -205,24 +205,38 @@ export default function OnlineCheckInAccommodationPage() {
 
         <section className={seo.section} aria-labelledby="workflow">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="workflow" className={seo.h2}>
-              How online check-in works with Plan4Host
-            </h2>
-            <p className={seo.p}>With Plan4Host, online check-in follows a simple flow:</p>
-            <div className={seo.flowRow} aria-label="Workflow">
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>invited</span>
-              <span className={seo.flowArrow}>→</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>online form</span>
-              <span className={seo.flowArrow}>→</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>confirmation</span>
-              <span className={seo.flowArrow}>→</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>arrival</span>
+            <div className={seo.splitShowcase}>
+              <div className={seo.copyStack}>
+                <h2 id="workflow" className={seo.h2}>
+                  When messages are delivered
+                </h2>
+                <p className={seo.p}>With Plan4Host, online check-in follows a simple flow:</p>
+                <div className={seo.flowRow} aria-label="Workflow">
+                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>invited</span>
+                  <span className={seo.flowArrow}>→</span>
+                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>online form</span>
+                  <span className={seo.flowArrow}>→</span>
+                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>confirmation</span>
+                  <span className={seo.flowArrow}>→</span>
+                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>arrival</span>
+                </div>
+                <p className={seo.p}>
+                  The host shares <strong>one check-in link</strong>. The guest completes the form <strong>before arrival</strong>. The host receives a
+                  <strong> notification</strong> and confirms the reservation.
+                </p>
+                <p className={seo.p}><strong>Everything is clear</strong> before the guest reaches the property.</p>
+              </div>
+
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/right_moment_en.png"
+                  alt="Messages delivered at the right time"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
             </div>
-            <p className={seo.p}>
-              The host shares <strong>one check-in link</strong>. The guest completes the form <strong>before arrival</strong>. The host receives a
-              <strong>notification</strong> and confirms the reservation.
-            </p>
-            <p className={seo.p}><strong>Everything is clear</strong> before the guest reaches the property.</p>
           </div>
         </section>
 
