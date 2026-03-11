@@ -93,9 +93,9 @@ export default function CheckInOnlineCazarePage() {
             Check-in online pentru cazari
           </h1>
           <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
-            Check-in-ul online este una dintre cele mai simple metode prin care o gazda poate reduce mesajele, stresul si
-            timpul pierdut inainte de sosirea oaspetilor. In loc de discutii repetitive, oaspetii completeaza datele
-            necesare online, inainte de a ajunge la cazare.
+            <strong>Check-in-ul online</strong> este una dintre cele mai simple metode prin care o gazda poate reduce <strong>mesajele</strong>, <strong>stresul</strong> si
+            <strong> timpul pierdut</strong> inainte de sosirea oaspetilor. In loc de discutii repetitive, oaspetii completeaza <strong>datele necesare online</strong>,
+            inainte de a ajunge la cazare.
           </p>
           <div className={styles.heroCta}>
             <Link
@@ -129,7 +129,7 @@ export default function CheckInOnlineCazarePage() {
               Ce inseamna check-in online pentru oaspeti
             </h2>
             <p className={seo.p}>
-              Check-in-ul online inseamna ca oaspetele primeste un link unde completeaza toate informatiile necesare
+              <strong>Check-in-ul online</strong> inseamna ca oaspetele primeste un <strong>link</strong> unde completeaza toate informatiile necesare
               inainte de sosire. Nu mai este nevoie de mesaje separate, poze trimise pe WhatsApp sau discutii in ultimul
               moment.
             </p>
@@ -137,7 +137,7 @@ export default function CheckInOnlineCazarePage() {
               Practic, este un <strong>formular check-in digital</strong> pentru <strong>colectare date oaspeti online</strong>.
             </p>
             <p className={seo.p}>
-              Pentru oaspete, procesul este simplu si clar. Pentru gazda, totul este organizat intr-un singur loc.
+              Pentru oaspete, procesul este <strong>simplu</strong> si <strong>clar</strong>. Pentru gazda, totul este <strong>organizat intr-un singur loc</strong>.
             </p>
           </div>
         </section>
@@ -149,10 +149,10 @@ export default function CheckInOnlineCazarePage() {
             </h2>
             <p className={seo.p}>
               Multi hosti cauta exact asta: <strong>check-in online Airbnb</strong> si <strong>check-in online Booking</strong>, fara mesaje repetitive.
-              In practica, inseamna un singur link pe care il trimiti in conversatia de rezervare, pe WhatsApp sau pe email.
+              In practica, inseamna <strong>un singur link</strong> pe care il trimiti in conversatia de rezervare, pe WhatsApp sau pe email.
             </p>
             <p className={seo.p}>
-              Oaspetele completeaza formularul inainte de sosire, iar tu ai datele intr-un singur loc. Mai putin haos, mai putine intrebari, mai multa claritate.
+              Oaspetele completeaza formularul <strong>inainte de sosire</strong>, iar tu ai datele <strong>intr-un singur loc</strong>. <strong>Mai putin haos, mai putine intrebari, mai multa claritate.</strong>
             </p>
             <div className={seo.imageFrame}>
               <Image
@@ -213,10 +213,10 @@ export default function CheckInOnlineCazarePage() {
               <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>sosire</span>
             </div>
             <p className={seo.p}>
-              Gazda trimite un link de check-in. Oaspetele completeaza formularul inainte de sosire. Gazda primeste o
-              notificare si confirma rezervarea.
+              Gazda trimite <strong>un link de check-in</strong>. Oaspetele completeaza formularul <strong>inainte de sosire</strong>. Gazda primeste o
+              <strong>notificare</strong> si confirma rezervarea.
             </p>
-            <p className={seo.p}>Totul este clar inainte ca oaspetele sa ajunga la cazare.</p>
+            <p className={seo.p}><strong>Totul este clar</strong> inainte ca oaspetele sa ajunga la cazare.</p>
           </div>
         </section>
 
@@ -233,7 +233,7 @@ export default function CheckInOnlineCazarePage() {
               <li>alte detalii cerute de gazda</li>
             </ul>
             <p className={seo.p}>
-              Oaspetele vede exact ce are de facut, fara explicatii suplimentare. Gazda primeste datele organizate, fara
+              Oaspetele vede <strong>exact ce are de facut</strong>, fara explicatii suplimentare. Gazda primeste <strong>datele organizate</strong>, fara
               mesaje separate.
             </p>
           </div>
@@ -250,7 +250,7 @@ export default function CheckInOnlineCazarePage() {
               <li>stie ca rezervarea este inregistrata</li>
               <li>are acces la informatiile importante despre cazare</li>
             </ul>
-            <p className={seo.p}>Nu mai este nevoie de mesaje de confirmare trimise manual.</p>
+            <p className={seo.p}><strong>Nu mai este nevoie de mesaje de confirmare trimise manual.</strong></p>
 
             <div style={{ marginTop: 10 }}>
               <Image

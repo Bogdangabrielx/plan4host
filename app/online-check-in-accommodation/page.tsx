@@ -93,8 +93,8 @@ export default function OnlineCheckInAccommodationPage() {
             Online check-in for accommodation
           </h1>
           <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
-            Online check-in is one of the simplest ways for hosts to reduce guest messages, stress, and time wasted
-            before arrival. Instead of repeated conversations, guests submit the required details online, before they
+            <strong>Online check-in</strong> is one of the simplest ways for hosts to reduce <strong>guest messages</strong>, <strong>stress</strong>, and <strong>time wasted</strong>
+            before arrival. Instead of repeated conversations, guests submit the <strong>required details online</strong>, before they
             reach the property.
           </p>
           <div className={styles.heroCta}>
@@ -129,14 +129,14 @@ export default function OnlineCheckInAccommodationPage() {
               What online check-in means for guests
             </h2>
             <p className={seo.p}>
-              Online check-in means the guest receives a link where they complete the needed information before
+              <strong>Online check-in</strong> means the guest receives a <strong>link</strong> where they complete the needed information before
               arrival. No separate messages, no last-minute WhatsApp photos, and no stressful back-and-forth.
             </p>
             <p className={seo.p}>
               In simple terms, it’s a <strong>digital check-in form</strong> to <strong>collect guest details online</strong>.
             </p>
             <p className={seo.p}>
-              For the guest, the process is simple and clear. For the host, everything stays organized in one place.
+              For the guest, the process is <strong>simple</strong> and <strong>clear</strong>. For the host, everything stays <strong>organized in one place</strong>.
             </p>
           </div>
         </section>
@@ -148,10 +148,10 @@ export default function OnlineCheckInAccommodationPage() {
             </h2>
             <p className={seo.p}>
               Many hosts search for this exact thing: <strong>Airbnb online check-in</strong> and <strong>Booking online check-in</strong> without repetitive messages.
-              In practice, it’s one check-in link you can share from the booking platform, WhatsApp, or email.
+              In practice, it’s <strong>one check-in link</strong> you can share from the booking platform, WhatsApp, or email.
             </p>
             <p className={seo.p}>
-              Guests complete the form before arrival, and you keep everything in one calm place. Less chasing. More clarity.
+              Guests complete the form <strong>before arrival</strong>, and you keep everything in <strong>one calm place</strong>. <strong>Less chasing. More clarity.</strong>
             </p>
             <div className={seo.imageFrame}>
               <Image
@@ -210,10 +210,10 @@ export default function OnlineCheckInAccommodationPage() {
               <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>arrival</span>
             </div>
             <p className={seo.p}>
-              The host shares one check-in link. The guest completes the form before arrival. The host receives a
-              notification and confirms the reservation.
+              The host shares <strong>one check-in link</strong>. The guest completes the form <strong>before arrival</strong>. The host receives a
+              <strong>notification</strong> and confirms the reservation.
             </p>
-            <p className={seo.p}>Everything is clear before the guest reaches the property.</p>
+            <p className={seo.p}><strong>Everything is clear</strong> before the guest reaches the property.</p>
           </div>
         </section>
 
@@ -230,7 +230,7 @@ export default function OnlineCheckInAccommodationPage() {
               <li>other details requested by the host</li>
             </ul>
             <p className={seo.p}>
-              Guests see exactly what to do, without extra explanations. Hosts receive structured data, without separate
+              Guests see <strong>exactly what to do</strong>, without extra explanations. Hosts receive <strong>structured data</strong>, without separate
               messages.
             </p>
           </div>
@@ -248,7 +248,7 @@ export default function OnlineCheckInAccommodationPage() {
               <li>has access to the key information about the stay</li>
             </ul>
             <p className={seo.p}>No need for manual confirmation messages.</p>
-
+            <p className={seo.p}><strong>No need for manual confirmation messages.</strong></p>
             <div style={{ marginTop: 10 }}>
               <Image
                 src="/Confirmare%20primire%20formular.png"
