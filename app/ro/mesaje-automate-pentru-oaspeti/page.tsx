@@ -183,24 +183,38 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
 
         <section className={seo.section} aria-labelledby="how">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="how" className={seo.h2}>
-              Cum functioneaza mesajele automate cu Plan4Host
-            </h2>
-            <p className={seo.p}>Cu Plan4Host, mesajele urmeaza un flow simplu:</p>
-            <div className={seo.flowRow} aria-label="Workflow">
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>check-in completat</span>
-              <span className={seo.flowArrow}>→</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>rezervare confirmata</span>
-              <span className={seo.flowArrow}>→</span>
-              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>mesaje afisate</span>
+            <div className={seo.splitShowcase}>
+              <div className={seo.copyStack}>
+                <h2 id="how" className={seo.h2}>
+                  Cum functioneaza mesajele automate cu Plan4Host
+                </h2>
+                <p className={seo.p}>Cu Plan4Host, mesajele urmeaza un flow simplu:</p>
+                <div className={seo.flowRow} aria-label="Workflow">
+                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>check-in completat</span>
+                  <span className={seo.flowArrow}>→</span>
+                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>rezervare confirmata</span>
+                  <span className={seo.flowArrow}>→</span>
+                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>mesaje afisate</span>
+                </div>
+                <p className={seo.p}>Dupa ce oaspetele completeaza check-in-ul online si gazda confirma rezervarea:</p>
+                <ul className={styles.includedList}>
+                  <li>oaspetii au acces la un portal privat de mesaje</li>
+                  <li>mesajele programate apar automat la momentul potrivit</li>
+                  <li>toate informatiile raman organizate intr-un singur loc</li>
+                </ul>
+                <p className={seo.pStrong}>Gazdele nu trebuie sa trimita mesaje manual.</p>
+              </div>
+
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/ch-rv-ms.png"
+                  alt="Preview workflow pentru mesaje automate"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
             </div>
-            <p className={seo.p}>Dupa ce oaspetele completeaza check-in-ul online si gazda confirma rezervarea:</p>
-            <ul className={styles.includedList}>
-              <li>oaspetii au acces la un portal privat de mesaje</li>
-              <li>mesajele programate apar automat la momentul potrivit</li>
-              <li>toate informatiile raman organizate intr-un singur loc</li>
-            </ul>
-            <p className={seo.pStrong}>Gazdele nu trebuie sa trimita mesaje manual.</p>
           </div>
         </section>
 
