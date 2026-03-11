@@ -432,7 +432,7 @@
 
 .h2{
   margin: 0;
-  font-size: clamp(18px, 1.45vw, 23px);
+  font-size: clamp(16px, 1.45vw, 20px);
   line-height: 1.24;
   letter-spacing: -0.01em;
   font-weight: 560;

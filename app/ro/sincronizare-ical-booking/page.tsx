@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
 
@@ -41,7 +42,7 @@ export default function SincronizareIcalBookingRO() {
   };
 
   return (
-    <main className={styles.landing} style={{ minHeight: "100dvh", overflowX: "hidden" }}>
+    <main className={`${styles.landing} ${seoMontserrat.className}`} style={{ minHeight: "100dvh", overflowX: "hidden" }}>
       <MobileScrollReveal />
 
       <nav className={styles.nav} aria-label="Navigatie">
@@ -150,4 +151,3 @@ export default function SincronizareIcalBookingRO() {
     </main>
   );
 }
-
