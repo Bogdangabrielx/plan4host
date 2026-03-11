@@ -192,6 +192,15 @@ export default function CheckInOnlineCazarePage() {
               <li>care sunt regulile cazarii</li>
             </ul>
             <p className={seo.p}>Toate acestea se repeta de la o rezervare la alta.</p>
+            <div className={seo.imageFrame}>
+              <Image
+                src="/checkin_problems.png"
+                alt="Problemele check-in-ului clasic"
+                width={1200}
+                height={900}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
           </div>
         </section>
 

@@ -191,6 +191,15 @@ export default function OnlineCheckInAccommodationPage() {
               <li>what the property rules are</li>
             </ul>
             <p className={seo.p}>It repeats from one reservation to the next.</p>
+            <div className={seo.imageFrame}>
+              <Image
+                src="/checkin_problems.png"
+                alt="Problems with classic check-in"
+                width={1200}
+                height={900}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
           </div>
         </section>
 
