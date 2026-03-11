@@ -4,6 +4,7 @@ import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
+import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
 
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
 export default function RoGuestAiAssistantPage() {
   return (
     <main
-      className={styles.landing}
+      className={`${styles.landing} ${seoMontserrat.className}`}
       style={{
         paddingBottom: "var(--safe-bottom, 0px)",
         minHeight: "100dvh",

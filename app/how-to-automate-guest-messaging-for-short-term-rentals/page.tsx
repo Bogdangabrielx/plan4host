@@ -1,16 +1,11 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import SeoFooter from "@/components/seo/SeoFooter";
+import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../home.module.css";
 import seo from "../seo.module.css";
-
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
 
 export const metadata: Metadata = {
   title: "How to automate guest messaging for short-term rentals | Plan4Host",
@@ -36,7 +31,7 @@ export const metadata: Metadata = {
 export default function ShortTermRentalGuestMessagingSeoPage() {
   return (
     <main
-      className={`${styles.landing} ${montserrat.className}`}
+      className={`${styles.landing} ${seoMontserrat.className}`}
       style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: "100dvh", overflowX: "hidden" }}
     >
       <LandingSafeArea />
