@@ -154,13 +154,6 @@ export default function CheckInOnlineCazarePage() {
             <p className={seo.p}>
               Oaspetele completeaza formularul inainte de sosire, iar tu ai datele intr-un singur loc. Mai putin haos, mai putine intrebari, mai multa claritate.
             </p>
-            <div className={seo.logosRow} aria-label="Platforme">
-              <span className={seo.logosLabel}>Platforme</span>
-              <Image className={seo.logoImg} src="/airbnb.png" alt="Airbnb" width={52} height={52} />
-              <Image className={seo.logoImg} src="/booking.png" alt="Booking.com" width={52} height={52} />
-              <Image className={seo.logoImg} src="/trivago.png" alt="Trivago" width={52} height={52} />
-              <Image className={seo.logoImg} src="/expedia.png" alt="Expedia" width={52} height={52} />
-            </div>
             <div className={seo.imageFrame}>
               <Image
                 src="/Checkin_mok2.png"
