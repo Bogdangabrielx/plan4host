@@ -432,10 +432,10 @@
 
 .h2{
   margin: 0;
-  font-size: clamp(15px, 1.05vw, 18px);
+  font-size: clamp(13px, 0.95vw, 14px);
   line-height: 1.3;
   letter-spacing: -0.01em;
-  font-weight: 560;
+  font-weight: 540;
 }
 
 .titleAccent{
