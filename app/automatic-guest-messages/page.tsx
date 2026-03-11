@@ -185,39 +185,34 @@ export default function AutomaticGuestMessagesSeoPage() {
 
         <section className={seo.section} aria-labelledby="how">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <div className={seo.splitShowcase}>
-              <div className={seo.copyStack}>
-                <h2 id="how" className={seo.h2}>
-                  How automatic guest messages work with Plan4Host
-                </h2>
-                <p className={seo.p}>With Plan4Host, guest messages follow a simple flow:</p>
-                <div className={seo.flowRow} aria-label="Workflow">
-                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>check-in completed</span>
-                  <span className={seo.flowArrow}>→</span>
-                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>reservation confirmed</span>
-                  <span className={seo.flowArrow}>→</span>
-                  <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>messages delivered</span>
-                </div>
-                <p className={seo.p}>
-                  After the guest completes online check-in and the host confirms the reservation:
-                </p>
-                <ul className={styles.includedList}>
-                  <li>guests gain access to a private message portal</li>
-                  <li>scheduled messages appear automatically at the right moment</li>
-                  <li>all information stays organized in one place</li>
-                </ul>
-                <p className={seo.pStrong}>Hosts do not need to send messages manually.</p>
-              </div>
-
-              <div className={seo.imageFrame}>
-                <Image
-                  src="/ch-rv-ms.png"
-                  alt="Automatic guest message workflow preview"
-                  width={1200}
-                  height={900}
-                  style={{ width: "100%", height: "auto", display: "block" }}
-                />
-              </div>
+            <h2 id="how" className={seo.h2}>
+              How automatic guest messages work with Plan4Host
+            </h2>
+            <p className={seo.p}>With Plan4Host, guest messages follow a simple flow:</p>
+            <div className={seo.flowRow} aria-label="Workflow">
+              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>check-in completed</span>
+              <span className={seo.flowArrow}>→</span>
+              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>reservation confirmed</span>
+              <span className={seo.flowArrow}>→</span>
+              <span className={`${seo.flowPill} ${seo.flowPillStrong}`}>messages delivered</span>
+            </div>
+            <p className={seo.p}>
+              After the guest completes online check-in and the host confirms the reservation:
+            </p>
+            <ul className={styles.includedList}>
+              <li>guests gain access to a private message portal</li>
+              <li>scheduled messages appear automatically at the right moment</li>
+              <li>all information stays organized in one place</li>
+            </ul>
+            <p className={seo.pStrong}>Hosts do not need to send messages manually.</p>
+            <div className={seo.imageFrame}>
+              <Image
+                src="/ch-rv-ms.png"
+                alt="Automatic guest message workflow preview"
+                width={1200}
+                height={900}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
             </div>
           </div>
         </section>
