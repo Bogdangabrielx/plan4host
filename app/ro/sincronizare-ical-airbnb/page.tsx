@@ -63,10 +63,10 @@ export default function SincronizareIcalAirbnbRO() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Sincronizare iCal Airbnb
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             Acest ghid arata cum faci <strong>sincronizare calendar Airbnb</strong> cu <strong>iCal (.ics)</strong>, ca
             rezervarile si disponibilitatea sa ramana aliniate intre Airbnb si Plan4Host.
           </p>

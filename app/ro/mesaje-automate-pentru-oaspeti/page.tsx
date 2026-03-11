@@ -79,10 +79,10 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Mesaje automate pentru oaspeti
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             Mesajele automate pentru oaspeti ajuta gazdele sa reduca discutiile repetitive si sa livreze informatiile
             potrivite, la momentul potrivit. In loc sa raspunzi la aceleasi intrebari de fiecare data, pregatesti mesajele
             o singura data, iar sistemul se ocupa de restul.

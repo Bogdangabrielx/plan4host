@@ -70,10 +70,10 @@ export default function CalendarRezervariUnificatSeoPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Calendar rezervari unificat pentru Airbnb si Booking
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             Cand ai rezervari din mai multe platforme, lucrurile devin rapid confuze. Un calendar rezervari unificat aduce totul intr-un singur
             loc, ca sa stii mereu ce este ocupat, cand, si unde.
           </p>

@@ -79,10 +79,10 @@ export default function AutomaticGuestMessagesSeoPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Automatic guest messages for accommodation
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             Automatic guest messages help hosts reduce repetitive conversations and deliver the right information to
             guests at the right time. Instead of answering the same questions again and again, hosts prepare messages
             once and let the system handle the rest.

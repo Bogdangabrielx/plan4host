@@ -70,10 +70,10 @@ export default function UnifiedBookingCalendarSeoPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Unified booking calendar for Airbnb and Booking
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             Managing reservations across multiple booking platforms quickly becomes confusing. A unified booking calendar brings all your
             reservations into one place, so you always know what is booked, when, and where.
           </p>

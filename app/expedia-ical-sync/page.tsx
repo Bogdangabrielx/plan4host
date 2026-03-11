@@ -63,10 +63,10 @@ export default function ExpediaIcalSyncPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Expedia iCal sync
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             Connect your <strong>Expedia calendar</strong> using <strong>iCal (.ics)</strong>, so reservations and
             availability stay aligned between Expedia and Plan4Host.
           </p>

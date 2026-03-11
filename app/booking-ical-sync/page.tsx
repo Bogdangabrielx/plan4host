@@ -63,10 +63,10 @@ export default function BookingIcalSyncPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Booking.com iCal sync
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             A practical way to keep your <strong>Booking.com calendar</strong> in sync using <strong>iCal (.ics)</strong>
             — so availability and reservations stay aligned across platforms.
           </p>

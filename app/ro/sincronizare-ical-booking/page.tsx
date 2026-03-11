@@ -63,10 +63,10 @@ export default function SincronizareIcalBookingRO() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Sincronizare iCal Booking.com
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             Un mod simplu de a tine <strong>calendarul Booking.com</strong> sincronizat prin <strong>iCal (.ics)</strong>
             — ca rezervarile si disponibilitatea sa ramana aliniate intre Booking.com si Plan4Host.
           </p>

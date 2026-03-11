@@ -89,10 +89,10 @@ export default function CheckInOnlineCazarePage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Check-in online pentru cazari
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             <strong>Check-in-ul online</strong> este una dintre cele mai simple metode prin care o gazda poate reduce <strong>mesajele</strong>, <strong>stresul</strong> si
             <strong> timpul pierdut</strong> inainte de sosirea oaspetilor. In loc de discutii repetitive, oaspetii completeaza <strong>datele necesare online</strong>,
             inainte de a ajunge la cazare.

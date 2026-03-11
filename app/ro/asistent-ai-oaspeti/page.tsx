@@ -57,10 +57,10 @@ export default function RoGuestAiAssistantPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Asistent AI pentru oaspeti
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             Ofera raspunsuri rapide despre sosire, facilitati si plecare, direct in limba oaspetelui — fara mesaje
             repetitive.
           </p>

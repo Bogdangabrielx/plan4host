@@ -63,10 +63,10 @@ export default function AirbnbIcalSyncPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Airbnb iCal sync
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             This guide shows how to set up <strong>Airbnb calendar sync</strong> using <strong>iCal (.ics)</strong>, so
             reservations and availability stay aligned across platforms.
           </p>

@@ -89,10 +89,10 @@ export default function OnlineCheckInAccommodationPage() {
 
       <section className={styles.hero} aria-labelledby="title">
         <div className={styles.heroText} data-p4h-reveal>
-          <h1 id="title" className={styles.heroHeadline} style={{ margin: 0 }}>
+          <h1 id="title" className={`${styles.heroHeadline} ${seo.seoHeroTitle}`}>
             Online check-in for accommodation
           </h1>
-          <p className={styles.heroKicker} style={{ maxWidth: 72 * 10 }}>
+          <p className={`${styles.heroKicker} ${seo.seoHeroIntro}`} style={{ maxWidth: 72 * 10 }}>
             <strong>Online check-in</strong> is one of the simplest ways for hosts to reduce <strong>guest messages</strong>, <strong>stress</strong>, and <strong>time wasted</strong>
             before arrival. Instead of repeated conversations, guests submit the <strong>required details online</strong>, before they
             reach the property.
