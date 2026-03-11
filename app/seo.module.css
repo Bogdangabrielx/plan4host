@@ -637,7 +637,7 @@
 
 @media (max-width: 640px){
   .content{ gap: 48px; padding-bottom: 64px; }
-  .h2{ font-size: 20px; }
+  .h2{ font-size: 15px; }
   .card{ padding: 20px; }
   .article{ gap: 18px; }
   .seoFooterGrid{ grid-template-columns: 1fr; }
