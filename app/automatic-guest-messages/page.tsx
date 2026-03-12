@@ -240,26 +240,31 @@ export default function AutomaticGuestMessagesSeoPage() {
 
         <section className={seo.section} aria-labelledby="when">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="when" className={seo.h2}>
-              When messages are delivered
-            </h2>
-            <p className={seo.p}>Messages are scheduled relative to the reservation:</p>
-            <ul className={styles.includedList}>
-              <li>before arrival (for example, one hour before)</li>
-              <li>at arrival</li>
-              <li>before check-out (for example, twelve hours before)</li>
-            </ul>
-            <p className={seo.pStrong}>
-              Guests see each message exactly when it is relevant, without searching through conversations.
-            </p>
-            <div className={seo.imageFrame}>
-              <Image
-                src="/right_moment_en.png"
-                alt="Guest messages delivered at the right time"
-                width={1200}
-                height={900}
-                style={{ width: "100%", height: "auto", display: "block" }}
-              />
+            <div className={seo.splitShowcase}>
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/right_moment_en.png"
+                  alt="Guest messages delivered at the right time"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+
+              <div className={seo.copyStack}>
+                <h2 id="when" className={seo.h2}>
+                  When messages are delivered
+                </h2>
+                <p className={seo.p}>Messages are scheduled relative to the reservation:</p>
+                <ul className={styles.includedList}>
+                  <li>before arrival (for example, one hour before)</li>
+                  <li>at arrival</li>
+                  <li>before check-out (for example, twelve hours before)</li>
+                </ul>
+                <p className={seo.pStrong}>
+                  Guests see each message exactly when it is relevant, without searching through conversations.
+                </p>
+              </div>
             </div>
           </div>
         </section>

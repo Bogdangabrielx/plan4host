@@ -236,26 +236,31 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
 
         <section className={seo.section} aria-labelledby="when">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="when" className={seo.h2}>
-              Cand sunt livrate mesajele
-            </h2>
-            <p className={seo.p}>Mesajele sunt programate relativ la rezervare:</p>
-            <ul className={styles.includedList}>
-              <li>inainte de sosire (de exemplu, cu o ora inainte)</li>
-              <li>la sosire</li>
-              <li>inainte de check-out (de exemplu, cu douasprezece ore inainte)</li>
-            </ul>
-            <p className={seo.pStrong}>
-              Oaspetele vede fiecare mesaj exact cand este relevant, fara sa caute prin conversatii.
-            </p>
-            <div className={seo.imageFrame}>
-              <Image
-                src="/right_moment_en.png"
-                alt="Mesaje livrate la momentul potrivit"
-                width={1200}
-                height={900}
-                style={{ width: "100%", height: "auto", display: "block" }}
-              />
+            <div className={seo.splitShowcase}>
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/right_moment_en.png"
+                  alt="Mesaje livrate la momentul potrivit"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+
+              <div className={seo.copyStack}>
+                <h2 id="when" className={seo.h2}>
+                  Cand sunt livrate mesajele
+                </h2>
+                <p className={seo.p}>Mesajele sunt programate relativ la rezervare:</p>
+                <ul className={styles.includedList}>
+                  <li>inainte de sosire (de exemplu, cu o ora inainte)</li>
+                  <li>la sosire</li>
+                  <li>inainte de check-out (de exemplu, cu douasprezece ore inainte)</li>
+                </ul>
+                <p className={seo.pStrong}>
+                  Oaspetele vede fiecare mesaj exact cand este relevant, fara sa caute prin conversatii.
+                </p>
+              </div>
             </div>
           </div>
         </section>
