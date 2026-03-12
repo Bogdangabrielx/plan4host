@@ -290,7 +290,6 @@ export default function OnlineCheckInAccommodationPage() {
               <li>has access to the key information about the stay</li>
             </ul>
             <p className={seo.p}>No need for manual confirmation messages.</p>
-            <p className={seo.p}><strong>No need for manual confirmation messages.</strong></p>
             <div style={{ marginTop: 10, maxWidth: 640, marginInline: "auto" }}>
               <Image
                 src="/Confirmare%20primire%20formular.png"

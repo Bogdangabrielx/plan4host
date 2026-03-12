@@ -292,7 +292,7 @@ export default function CheckInOnlineCazarePage() {
               <li>stie ca rezervarea este inregistrata</li>
               <li>are acces la informatiile importante despre cazare</li>
             </ul>
-            <p className={seo.p}><strong>Nu mai este nevoie de mesaje de confirmare trimise manual.</strong></p>
+            <p className={seo.p}>Nu mai este nevoie de mesaje de confirmare trimise manual.</p>
 
             <div style={{ marginTop: 10, maxWidth: 640, marginInline: "auto" }}>
               <Image
