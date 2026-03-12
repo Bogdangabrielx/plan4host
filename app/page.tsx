@@ -1360,7 +1360,7 @@ export default function HomePage() {
 	        <h2 id="about-title" data-p4h-reveal>Does this sound familiar?</h2>
 	        <div className={styles.aboutGrid}>
 	          <div className={styles.aboutVisual} aria-label="Calendar sync preview" data-p4h-reveal>
-	            <img src="/Calendar_Sync.png" alt="Calendar sync preview" />
+	            <img src="/Calendar_Sync2.png" alt="Calendar sync preview" />
 	          </div>
 	          <div className={styles.aboutCard} data-p4h-reveal>
               <ul className={styles.problemList}>

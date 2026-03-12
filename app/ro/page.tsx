@@ -1189,7 +1189,7 @@ export default function HomePageRO() {
 	        <h2 id="about-title" data-p4h-reveal>Îți sună familiar?</h2>
 	        <div className={styles.aboutGrid}>
 	          <div className={styles.aboutVisual} aria-label="Previzualizare sincronizare calendare" data-p4h-reveal>
-	            <img src="/Calendar_Sync.png" alt="Previzualizare sincronizare calendare" />
+	            <img src="/Calendar_Sync2.png" alt="Previzualizare sincronizare calendare" />
 	          </div>
 	          <div className={styles.aboutCard} data-p4h-reveal>
               <ul className={styles.problemList}>
