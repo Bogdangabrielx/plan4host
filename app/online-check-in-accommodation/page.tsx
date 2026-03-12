@@ -125,19 +125,33 @@ export default function OnlineCheckInAccommodationPage() {
       <div className={seo.content}>
         <section className={seo.section} aria-labelledby="meaning">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="meaning" className={seo.h2}>
-              What online check-in means for guests
-            </h2>
-            <p className={seo.p}>
-              <strong>Online check-in</strong> means the guest receives a <strong>link</strong> where they complete the needed information before
-              arrival. No separate messages, no last-minute WhatsApp photos, and no stressful back-and-forth.
-            </p>
-            <p className={seo.p}>
-              In simple terms, it’s a <strong>digital check-in form</strong> to <strong>collect guest details online</strong>.
-            </p>
-            <p className={seo.p}>
-              For the guest, the process is <strong>simple</strong> and <strong>clear</strong>. For the host, everything stays <strong>organized in one place</strong>.
-            </p>
+            <div className={seo.splitShowcase}>
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/what_ci_means.png"
+                  alt="What online check-in means for guests"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+
+              <div className={seo.copyStack}>
+                <h2 id="meaning" className={seo.h2}>
+                  What online check-in means for guests
+                </h2>
+                <p className={seo.p}>
+                  <strong>Online check-in</strong> means the guest receives a <strong>link</strong> where they complete the needed information before
+                  arrival. No separate messages, no last-minute WhatsApp photos, and no stressful back-and-forth.
+                </p>
+                <p className={seo.p}>
+                  In simple terms, it’s a <strong>digital check-in form</strong> to <strong>collect guest details online</strong>.
+                </p>
+                <p className={seo.p}>
+                  For the guest, the process is <strong>simple</strong> and <strong>clear</strong>. For the host, everything stays <strong>organized in one place</strong>.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 

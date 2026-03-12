@@ -125,20 +125,34 @@ export default function CheckInOnlineCazarePage() {
       <div className={seo.content}>
         <section className={seo.section} aria-labelledby="meaning">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="meaning" className={seo.h2}>
-              Ce inseamna check-in online pentru oaspeti
-            </h2>
-            <p className={seo.p}>
-              <strong>Check-in-ul online</strong> inseamna ca oaspetele primeste un <strong>link</strong> unde completeaza toate informatiile necesare
-              inainte de sosire. Nu mai este nevoie de mesaje separate, poze trimise pe WhatsApp sau discutii in ultimul
-              moment.
-            </p>
-            <p className={seo.p}>
-              Practic, este un <strong>formular check-in digital</strong> pentru <strong>colectare date oaspeti online</strong>.
-            </p>
-            <p className={seo.p}>
-              Pentru oaspete, procesul este <strong>simplu</strong> si <strong>clar</strong>. Pentru gazda, totul este <strong>organizat intr-un singur loc</strong>.
-            </p>
+            <div className={seo.splitShowcase}>
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/what_ci_means.png"
+                  alt="Ce inseamna check-in online pentru oaspeti"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+
+              <div className={seo.copyStack}>
+                <h2 id="meaning" className={seo.h2}>
+                  Ce inseamna check-in online pentru oaspeti
+                </h2>
+                <p className={seo.p}>
+                  <strong>Check-in-ul online</strong> inseamna ca oaspetele primeste un <strong>link</strong> unde completeaza toate informatiile necesare
+                  inainte de sosire. Nu mai este nevoie de mesaje separate, poze trimise pe WhatsApp sau discutii in ultimul
+                  moment.
+                </p>
+                <p className={seo.p}>
+                  Practic, este un <strong>formular check-in digital</strong> pentru <strong>colectare date oaspeti online</strong>.
+                </p>
+                <p className={seo.p}>
+                  Pentru oaspete, procesul este <strong>simplu</strong> si <strong>clar</strong>. Pentru gazda, totul este <strong>organizat intr-un singur loc</strong>.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
