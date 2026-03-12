@@ -250,20 +250,34 @@ export default function CheckInOnlineCazarePage() {
 
         <section className={seo.section} aria-labelledby="form">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="form" className={seo.h2}>
-              Ce completeaza oaspetele in formular
-            </h2>
-            <p className={seo.p}>Formularul de check-in poate include:</p>
-            <ul className={styles.includedList}>
-              <li>datele de identificare</li>
-              <li>informatii de contact</li>
-              <li>acceptarea regulilor interne</li>
-              <li>alte detalii cerute de gazda</li>
-            </ul>
-            <p className={seo.p}>
-              Oaspetele vede <strong>exact ce are de facut</strong>, fara explicatii suplimentare. Gazda primeste <strong>datele organizate</strong>, fara
-              mesaje separate.
-            </p>
+            <div className={seo.splitShowcase}>
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/ceckin_info_en.png"
+                  alt="Informatiile completate de oaspete la check-in online"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+
+              <div className={seo.copyStack}>
+                <h2 id="form" className={seo.h2}>
+                  Ce completeaza oaspetele in formular
+                </h2>
+                <p className={seo.p}>Formularul de check-in poate include:</p>
+                <ul className={styles.includedList}>
+                  <li>datele de identificare</li>
+                  <li>informatii de contact</li>
+                  <li>acceptarea regulilor interne</li>
+                  <li>alte detalii cerute de gazda</li>
+                </ul>
+                <p className={seo.p}>
+                  Oaspetele vede <strong>exact ce are de facut</strong>, fara explicatii suplimentare. Gazda primeste <strong>datele organizate</strong>, fara
+                  mesaje separate.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -280,7 +294,7 @@ export default function CheckInOnlineCazarePage() {
             </ul>
             <p className={seo.p}><strong>Nu mai este nevoie de mesaje de confirmare trimise manual.</strong></p>
 
-            <div style={{ marginTop: 10 }}>
+            <div style={{ marginTop: 10, maxWidth: 920, marginInline: "auto" }}>
               <Image
                 src="/Confirmare%20primire%20formular.png"
                 alt="Exemplu de confirmare dupa trimiterea formularului de check-in"

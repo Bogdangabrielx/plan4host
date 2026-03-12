@@ -247,20 +247,34 @@ export default function OnlineCheckInAccommodationPage() {
 
         <section className={seo.section} aria-labelledby="form">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="form" className={seo.h2}>
-              What the guest fills in
-            </h2>
-            <p className={seo.p}>The online check-in form can include:</p>
-            <ul className={styles.includedList}>
-              <li>identification details</li>
-              <li>contact information</li>
-              <li>accepting house rules</li>
-              <li>other details requested by the host</li>
-            </ul>
-            <p className={seo.p}>
-              Guests see <strong>exactly what to do</strong>, without extra explanations. Hosts receive <strong>structured data</strong>, without separate
-              messages.
-            </p>
+            <div className={seo.splitShowcase}>
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/ceckin_info_en.png"
+                  alt="Information guests fill in during online check-in"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+
+              <div className={seo.copyStack}>
+                <h2 id="form" className={seo.h2}>
+                  What the guest fills in
+                </h2>
+                <p className={seo.p}>The online check-in form can include:</p>
+                <ul className={styles.includedList}>
+                  <li>identification details</li>
+                  <li>contact information</li>
+                  <li>accepting house rules</li>
+                  <li>other details requested by the host</li>
+                </ul>
+                <p className={seo.p}>
+                  Guests see <strong>exactly what to do</strong>, without extra explanations. Hosts receive <strong>structured data</strong>, without separate
+                  messages.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -277,7 +291,7 @@ export default function OnlineCheckInAccommodationPage() {
             </ul>
             <p className={seo.p}>No need for manual confirmation messages.</p>
             <p className={seo.p}><strong>No need for manual confirmation messages.</strong></p>
-            <div style={{ marginTop: 10 }}>
+            <div style={{ marginTop: 10, maxWidth: 920, marginInline: "auto" }}>
               <Image
                 src="/Confirmare%20primire%20formular.png"
                 alt="Example confirmation after submitting the check-in form"
