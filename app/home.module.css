@@ -735,8 +735,8 @@ will-change: transform;
   gap: 10px;
 }
 .calmEmoji{
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   padding: 2px;
   overflow: hidden;
   border-radius: 999px;
@@ -780,10 +780,18 @@ will-change: transform;
 }
 .calmList li::before{
   content: "✓";
+  width: 18px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--success) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 78%, transparent);
   color: var(--success);
   font-weight: 800;
   line-height: 1.1;
   margin-top: 1px;
+  font-size: 11px;
 }
 
 .proofList{
