@@ -133,17 +133,31 @@ export default function CalendarRezervariUnificatSeoPage() {
 
         <section className={seo.section} aria-labelledby="problem">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="problem" className={seo.h2}>
-              Problema mai multor calendare
-            </h2>
-            <p className={seo.p}>Cand rezervarile sunt impartite pe platforme diferite:</p>
-            <ul className={styles.includedList} style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}>
-              <li>disponibilitatea devine greu de urmarit</li>
-              <li>overbooking-ul este un risc real</li>
-              <li>schimbarile se pot pierde usor</li>
-              <li>planificarea zilnica ia mai mult timp decat este necesar</li>
-            </ul>
-            <p className={seo.p}>Chiar si pentru cazari mici, mai multe calendare inseamna stres inutil.</p>
+            <div className={seo.splitShowcase}>
+              <div className={seo.copyStack}>
+                <h2 id="problem" className={seo.h2}>
+                  Problema mai multor calendare
+                </h2>
+                <p className={seo.p}>Cand rezervarile sunt impartite pe platforme diferite:</p>
+                <ul className={styles.includedList} style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}>
+                  <li>disponibilitatea devine greu de urmarit</li>
+                  <li>overbooking-ul este un risc real</li>
+                  <li>schimbarile se pot pierde usor</li>
+                  <li>planificarea zilnica ia mai mult timp decat este necesar</li>
+                </ul>
+                <p className={seo.p}>Chiar si pentru cazari mici, mai multe calendare inseamna stres inutil.</p>
+              </div>
+
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/problem_multiple_booking.png"
+                  alt="Problema mai multor calendare de rezervari"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+            </div>
           </div>
         </section>
 

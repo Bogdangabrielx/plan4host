@@ -135,17 +135,31 @@ export default function UnifiedBookingCalendarSeoPage() {
 
         <section className={seo.section} aria-labelledby="problem">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="problem" className={seo.h2}>
-              The problem with multiple booking calendars
-            </h2>
-            <p className={seo.p}>When reservations are spread across different platforms:</p>
-            <ul className={styles.includedList} style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}>
-              <li>availability becomes hard to track</li>
-              <li>overbooking is a real risk</li>
-              <li>changes are easy to miss</li>
-              <li>daily planning takes more time than necessary</li>
-            </ul>
-            <p className={seo.p}>Even for small accommodations, multiple calendars create unnecessary stress.</p>
+            <div className={seo.splitShowcase}>
+              <div className={seo.copyStack}>
+                <h2 id="problem" className={seo.h2}>
+                  The problem with multiple booking calendars
+                </h2>
+                <p className={seo.p}>When reservations are spread across different platforms:</p>
+                <ul className={styles.includedList} style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}>
+                  <li>availability becomes hard to track</li>
+                  <li>overbooking is a real risk</li>
+                  <li>changes are easy to miss</li>
+                  <li>daily planning takes more time than necessary</li>
+                </ul>
+                <p className={seo.p}>Even for small accommodations, multiple calendars create unnecessary stress.</p>
+              </div>
+
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/problem_multiple_booking.png"
+                  alt="The problem with multiple booking calendars"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+            </div>
           </div>
         </section>
 
