@@ -309,17 +309,31 @@ export default function OnlineCheckInAccommodationPage() {
 
         <section className={seo.section} aria-labelledby="who">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="who" className={seo.h2}>
-              Who benefits the most
-            </h2>
-            <p className={seo.p}>Online check-in is a good fit for:</p>
-            <ul className={styles.includedList}>
-              <li>hosts with one or multiple properties</li>
-              <li>people managing the property alone</li>
-              <li>hosts who want fewer daily interruptions</li>
-              <li>properties without a permanent reception</li>
-            </ul>
-            <p className={seo.p}>It is not designed for large hotels with complex processes.</p>
+            <div className={seo.splitShowcase}>
+              <div className={seo.copyStack}>
+                <h2 id="who" className={seo.h2}>
+                  Who benefits the most
+                </h2>
+                <p className={seo.p}>Online check-in is a good fit for:</p>
+                <ul className={styles.includedList}>
+                  <li>hosts with one or multiple properties</li>
+                  <li>people managing the property alone</li>
+                  <li>hosts who want fewer daily interruptions</li>
+                  <li>properties without a permanent reception</li>
+                </ul>
+                <p className={seo.p}>It is not designed for large hotels with complex processes.</p>
+              </div>
+
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/who_benefit.png"
+                  alt="Who benefits the most from online check-in"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+            </div>
           </div>
         </section>
 

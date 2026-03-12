@@ -313,17 +313,31 @@ export default function CheckInOnlineCazarePage() {
 
         <section className={seo.section} aria-labelledby="who">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="who" className={seo.h2}>
-              Pentru cine este potrivit check-in-ul online
-            </h2>
-            <p className={seo.p}>Check-in-ul online este potrivit pentru:</p>
-            <ul className={styles.includedList}>
-              <li>gazde cu una sau mai multe cazari</li>
-              <li>persoane care gestioneaza singure proprietatea</li>
-              <li>gazde care vor mai putine intreruperi zilnice</li>
-              <li>cazari fara receptie permanenta</li>
-            </ul>
-            <p className={seo.p}>Nu este destinat hotelurilor mari cu procese complexe.</p>
+            <div className={seo.splitShowcase}>
+              <div className={seo.copyStack}>
+                <h2 id="who" className={seo.h2}>
+                  Pentru cine este potrivit check-in-ul online
+                </h2>
+                <p className={seo.p}>Check-in-ul online este potrivit pentru:</p>
+                <ul className={styles.includedList}>
+                  <li>gazde cu una sau mai multe cazari</li>
+                  <li>persoane care gestioneaza singure proprietatea</li>
+                  <li>gazde care vor mai putine intreruperi zilnice</li>
+                  <li>cazari fara receptie permanenta</li>
+                </ul>
+                <p className={seo.p}>Nu este destinat hotelurilor mari cu procese complexe.</p>
+              </div>
+
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/who_benefit.png"
+                  alt="Pentru cine este potrivit check-in-ul online"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+            </div>
           </div>
         </section>
 
