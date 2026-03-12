@@ -291,7 +291,7 @@ export default function OnlineCheckInAccommodationPage() {
             </ul>
             <p className={seo.p}>No need for manual confirmation messages.</p>
             <p className={seo.p}><strong>No need for manual confirmation messages.</strong></p>
-            <div style={{ marginTop: 10, maxWidth: 920, marginInline: "auto" }}>
+            <div style={{ marginTop: 10, maxWidth: 640, marginInline: "auto" }}>
               <Image
                 src="/Confirmare%20primire%20formular.png"
                 alt="Example confirmation after submitting the check-in form"

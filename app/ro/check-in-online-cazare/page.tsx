@@ -294,7 +294,7 @@ export default function CheckInOnlineCazarePage() {
             </ul>
             <p className={seo.p}><strong>Nu mai este nevoie de mesaje de confirmare trimise manual.</strong></p>
 
-            <div style={{ marginTop: 10, maxWidth: 920, marginInline: "auto" }}>
+            <div style={{ marginTop: 10, maxWidth: 640, marginInline: "auto" }}>
               <Image
                 src="/Confirmare%20primire%20formular.png"
                 alt="Exemplu de confirmare dupa trimiterea formularului de check-in"
