@@ -106,14 +106,28 @@ export default function CalendarRezervariUnificatSeoPage() {
       <div className={seo.content}>
         <section className={seo.section} aria-labelledby="meaning">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="meaning" className={seo.h2}>
-              Ce inseamna un calendar rezervari unificat
-            </h2>
-            <p className={seo.p}>Un calendar rezervari unificat este un singur calendar care afiseaza toate rezervarile din platforme diferite.</p>
-            <p className={seo.p}>
-              In loc sa verifici separat Airbnb, Booking si alte canale, totul apare intr-o vedere organizata. Fiecare rezervare se sincronizeaza
-              automat si se actualizeaza cand apar schimbari.
-            </p>
+            <div className={seo.splitShowcase}>
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/what_unified_booking.png"
+                  alt="Ce inseamna un calendar de rezervari unificat"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+
+              <div className={seo.copyStack}>
+                <h2 id="meaning" className={seo.h2}>
+                  Ce inseamna un calendar rezervari unificat
+                </h2>
+                <p className={seo.p}>Un calendar rezervari unificat este un singur calendar care afiseaza toate rezervarile din platforme diferite.</p>
+                <p className={seo.p}>
+                  In loc sa verifici separat Airbnb, Booking si alte canale, totul apare intr-o vedere organizata. Fiecare rezervare se
+                  sincronizeaza automat si se actualizeaza cand apar schimbari.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -277,4 +291,3 @@ export default function CalendarRezervariUnificatSeoPage() {
     </main>
   );
 }
-
