@@ -248,6 +248,15 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
             <p className={seo.pStrong}>
               Oaspetele vede fiecare mesaj exact cand este relevant, fara sa caute prin conversatii.
             </p>
+            <div className={seo.imageFrame}>
+              <Image
+                src="/right_moment_en.png"
+                alt="Mesaje livrate la momentul potrivit"
+                width={1200}
+                height={900}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
           </div>
         </section>
 

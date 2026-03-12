@@ -168,38 +168,43 @@ export default function CheckInOnlineCazarePage() {
 
         <section className={seo.section} aria-labelledby="classic">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="classic" className={seo.h2}>
-              Problemele check-in-ului clasic
-            </h2>
-            <p className={seo.p}>Check-in-ul clasic inseamna, de obicei:</p>
-            <ul
-              className={styles.includedList}
-              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
-            >
-              <li>mesaje trimise in graba</li>
-              <li>informatii incomplete</li>
-              <li>intrebari repetitive</li>
-              <li>timp pierdut exact cand ai alte lucruri de facut</li>
-            </ul>
-            <p className={seo.p}>Multi oaspeti intreaba aceleasi lucruri:</p>
-            <ul
-              className={styles.includedList}
-              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
-            >
-              <li>la ce ora pot ajunge</li>
-              <li>unde se parcheaza</li>
-              <li>ce documente sunt necesare</li>
-              <li>care sunt regulile cazarii</li>
-            </ul>
-            <p className={seo.p}>Toate acestea se repeta de la o rezervare la alta.</p>
-            <div className={seo.imageFrame}>
-              <Image
-                src="/checkin_problems.png"
-                alt="Problemele check-in-ului clasic"
-                width={1200}
-                height={900}
-                style={{ width: "100%", height: "auto", display: "block" }}
-              />
+            <div className={seo.splitShowcase}>
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/checkin_problems.png"
+                  alt="Problemele check-in-ului clasic"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+
+              <div className={seo.copyStack}>
+                <h2 id="classic" className={seo.h2}>
+                  Problemele check-in-ului clasic
+                </h2>
+                <p className={seo.p}>Check-in-ul clasic inseamna, de obicei:</p>
+                <ul
+                  className={styles.includedList}
+                  style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+                >
+                  <li>mesaje trimise in graba</li>
+                  <li>informatii incomplete</li>
+                  <li>intrebari repetitive</li>
+                  <li>timp pierdut exact cand ai alte lucruri de facut</li>
+                </ul>
+                <p className={seo.p}>Multi oaspeti intreaba aceleasi lucruri:</p>
+                <ul
+                  className={styles.includedList}
+                  style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+                >
+                  <li>la ce ora pot ajunge</li>
+                  <li>unde se parcheaza</li>
+                  <li>ce documente sunt necesare</li>
+                  <li>care sunt regulile cazarii</li>
+                </ul>
+                <p className={seo.p}>Toate acestea se repeta de la o rezervare la alta.</p>
+              </div>
             </div>
           </div>
         </section>

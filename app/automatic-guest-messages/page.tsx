@@ -252,6 +252,15 @@ export default function AutomaticGuestMessagesSeoPage() {
             <p className={seo.pStrong}>
               Guests see each message exactly when it is relevant, without searching through conversations.
             </p>
+            <div className={seo.imageFrame}>
+              <Image
+                src="/right_moment_en.png"
+                alt="Guest messages delivered at the right time"
+                width={1200}
+                height={900}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </div>
           </div>
         </section>
 

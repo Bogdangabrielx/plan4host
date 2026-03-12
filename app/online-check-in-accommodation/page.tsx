@@ -167,38 +167,43 @@ export default function OnlineCheckInAccommodationPage() {
 
         <section className={seo.section} aria-labelledby="classic">
           <div className={`sb-cardglow ${seo.card}`} data-p4h-reveal>
-            <h2 id="classic" className={seo.h2}>
-              Problems with classic check-in
-            </h2>
-            <p className={seo.p}>Classic check-in often means:</p>
-            <ul
-              className={styles.includedList}
-              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
-            >
-              <li>last-minute messages</li>
-              <li>incomplete information</li>
-              <li>repeated questions</li>
-              <li>time wasted exactly when you are already busy</li>
-            </ul>
-            <p className={seo.p}>Many guests ask the same things:</p>
-            <ul
-              className={styles.includedList}
-              style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
-            >
-              <li>what time they can arrive</li>
-              <li>where to park</li>
-              <li>what documents are needed</li>
-              <li>what the property rules are</li>
-            </ul>
-            <p className={seo.p}>It repeats from one reservation to the next.</p>
-            <div className={seo.imageFrame}>
-              <Image
-                src="/checkin_problems.png"
-                alt="Problems with classic check-in"
-                width={1200}
-                height={900}
-                style={{ width: "100%", height: "auto", display: "block" }}
-              />
+            <div className={seo.splitShowcase}>
+              <div className={seo.imageFrame}>
+                <Image
+                  src="/checkin_problems.png"
+                  alt="Problems with classic check-in"
+                  width={1200}
+                  height={900}
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+
+              <div className={seo.copyStack}>
+                <h2 id="classic" className={seo.h2}>
+                  Problems with classic check-in
+                </h2>
+                <p className={seo.p}>Classic check-in often means:</p>
+                <ul
+                  className={styles.includedList}
+                  style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+                >
+                  <li>last-minute messages</li>
+                  <li>incomplete information</li>
+                  <li>repeated questions</li>
+                  <li>time wasted exactly when you are already busy</li>
+                </ul>
+                <p className={seo.p}>Many guests ask the same things:</p>
+                <ul
+                  className={styles.includedList}
+                  style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}
+                >
+                  <li>what time they can arrive</li>
+                  <li>where to park</li>
+                  <li>what documents are needed</li>
+                  <li>what the property rules are</li>
+                </ul>
+                <p className={seo.p}>It repeats from one reservation to the next.</p>
+              </div>
             </div>
           </div>
         </section>
