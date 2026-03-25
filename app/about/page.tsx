@@ -30,15 +30,15 @@ export default function AboutPage() {
   const faq = [
     {
       q: "Who built Plan4Host?",
-      a: "Plan4Host was built by Bogdan Enică, a developer since 2020 with a strong focus on automation since 2019, after conversations with hosts about how fragmented and expensive daily operations can become.",
+      a: "I built Plan4Host. I have worked as a developer since 2020, and my interest in automation started in 2019. The idea came after a conversation with a host who explained how fragmented, expensive, and stressful daily operations can become.",
     },
     {
       q: "What is Plan4Host meant to do?",
-      a: "Plan4Host is meant to make short-term rental operations calmer and clearer through a unified calendar, online check-in, guest messaging, and practical daily coordination.",
+      a: "I built Plan4Host to make short-term rental operations calmer and clearer through a unified calendar, online check-in, guest messaging, and practical daily coordination.",
     },
     {
       q: "What is the product not trying to be?",
-      a: "It is not trying to be a heavy enterprise channel manager. The product is positioned as a practical operating system for smaller and mid-size short-term rental teams.",
+      a: "I am not trying to build a heavy enterprise channel manager. I want Plan4Host to be a practical operating system for smaller and mid-size short-term rental teams.",
     },
   ];
 
@@ -91,10 +91,10 @@ export default function AboutPage() {
                 Why the product was built
               </h2>
               <p className={seo.p}>
-                The product started from a simple observation: hosts spend too much time answering the same questions, checking too many places, and improvising too much around reservations.
+                I built Plan4Host after a conversation with a host who explained how complex guest operations really are in daily work. He described repeated questions, too many moving parts, and the feeling that existing tools were often expensive without being simple.
               </p>
               <p className={seo.p}>
-                The more those small interruptions accumulate, the harder it becomes to actually focus on hospitality. Plan4Host was built to reduce that friction, not to create another heavy tool.
+                That conversation stayed with me. I realized the real problem was not only operations, but the lack of clarity around them. So I decided to build something that reduces friction instead of adding another heavy layer on top.
               </p>
             </div>
             <div className={seo.imageFrame}>
@@ -116,10 +116,10 @@ export default function AboutPage() {
             What Plan4Host is
           </h2>
           <p className={seo.p}>
-            Plan4Host is a <strong>short-term rental operations platform</strong>. It combines a unified booking calendar, online check-in, guest messaging, and guest-facing support into one practical system.
+            I built Plan4Host as a <strong>short-term rental operations platform</strong>. It brings together a unified booking calendar, online check-in, guest messaging, and guest-facing support into one practical system.
           </p>
           <p className={seo.p}>
-            Where iCal is the practical choice, Plan4Host uses it on purpose: <strong>it is efficient, affordable, and good for hosts who want to save money</strong> without giving up the automation that matters in daily operations.
+            Where iCal is the practical choice, I use it on purpose: <strong>it is efficient, affordable, and it helps hosts save money</strong> without giving up the automation that matters in daily operations.
           </p>
           <ul className={styles.includedList} style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}>
             <li>one calendar for reservations</li>
@@ -147,10 +147,10 @@ export default function AboutPage() {
                 What Plan4Host is not
               </h2>
               <p className={seo.p}>
-                Plan4Host is <strong>not positioned as a heavy enterprise channel manager</strong>. It does not pretend to replace every API-driven distribution system on the market.
+                I am <strong>not trying to position Plan4Host as a heavy enterprise channel manager</strong>. I do not want to pretend it replaces every API-driven distribution system on the market.
               </p>
               <p className={seo.p}>
-                The product is strongest when it helps small and mid-size short-term rental operations work more clearly, with less interruption, less manual chaos, and a more cost-efficient setup.
+                I want the product to be strongest where it matters most for smaller and mid-size operations: less interruption, less manual chaos, more clarity, and a more cost-efficient setup.
               </p>
             </div>
           </div>
@@ -165,10 +165,10 @@ export default function AboutPage() {
                 Who is behind Plan4Host
               </h2>
               <p className={seo.p}>
-                Plan4Host was founded by <strong>Bogdan Enică</strong>. He is not a property manager himself, but the product was shaped through direct conversations with hosts who described how complex guest operations become in real life: repetitive questions, fragmented reservation handling, too much manual follow-up, and expensive tools that still feel heavy.
+                My name is <strong>Bogdan Enică</strong>. I am not a property manager, but I listened closely to a host who described what daily guest operations actually feel like: too many repeated questions, too much manual follow-up, too many places to check, and tools that are often expensive without feeling simple.
               </p>
               <p className={seo.p}>
-                Bogdan has worked as a developer since <strong>2020</strong>, with a personal focus on <strong>automation since 2019</strong>. The direction has stayed the same: simplify how things work, remove friction, and bring more clarity to daily operations.
+                I have worked as a developer since <strong>2020</strong>, and my interest in automation started in <strong>2019</strong>. Everything I try to do in my work follows the same direction: simplify how things function and bring clarity to processes that usually feel more complicated than they should.
               </p>
             </div>
             <div className={seo.imageFrame} style={{ maxWidth: 320, marginInline: "auto" }}>
