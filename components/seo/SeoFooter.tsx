@@ -25,6 +25,20 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
     ? "Cum să automatizezi mesajele către oaspeți pentru închirieri pe termen scurt"
     : "How to automate guest messaging for short-term rentals";
 
+  const fifthHref = lang === "ro"
+    ? "/ro/cum-functioneaza-plan4host-cu-airbnb-si-booking"
+    : "/how-plan4host-works-with-airbnb-and-booking";
+  const fifthTitle = lang === "ro"
+    ? "Cum funcționează Plan4Host cu Airbnb și Booking"
+    : "How Plan4Host works with Airbnb and Booking";
+
+  const sixthHref = lang === "ro"
+    ? "/ro/pentru-cine-este-plan4host"
+    : "/who-plan4host-is-for";
+  const sixthTitle = lang === "ro"
+    ? "Pentru cine este Plan4Host"
+    : "Who Plan4Host is for";
+
   return (
     <footer className={styles.footer} aria-label="Footer">
       <div className={`${styles.footerGrid} p4h-seo-footer-grid`}>
@@ -181,6 +195,16 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
         ·{" "}
         <Link className={styles.footerLink} href={fourthHref}>
           {fourthTitle}
+        </Link>
+        {" "}
+        ·{" "}
+        <Link className={styles.footerLink} href={fifthHref}>
+          {fifthTitle}
+        </Link>
+        {" "}
+        ·{" "}
+        <Link className={styles.footerLink} href={sixthHref}>
+          {sixthTitle}
         </Link>
       </div>
 
