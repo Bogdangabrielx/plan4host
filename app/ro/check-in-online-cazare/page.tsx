@@ -4,6 +4,7 @@ import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
@@ -48,19 +49,6 @@ export default function CheckInOnlineCazarePage() {
       a: "Gazda este notificata si poate confirma rezervarea.",
     },
   ];
-
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map((item) => ({
-      "@type": "Question",
-      name: item.q,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.a,
-      },
-    })),
-  };
 
   return (
     <main
@@ -393,11 +381,13 @@ export default function CheckInOnlineCazarePage() {
       </div>
 
       <SeoFooter lang="ro" />
-
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      <SeoStructuredData
+        lang="ro"
+        path="/ro/check-in-online-cazare"
+        title="Check-in online cazare - formular digital pentru oaspeti | Plan4Host"
+        description="Colecteaza datele oaspetilor online, fara mesaje repetitive. Check-in digital pentru Airbnb si Booking, simplu si organizat."
+        image="/Checkin_mok2.png"
+        faq={faq}
       />
     </main>
   );

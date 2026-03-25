@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import SeoFooter from "@/components/seo/SeoFooter";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../home.module.css";
 import seo from "../seo.module.css";
@@ -285,6 +286,13 @@ export default function ShortTermRentalGuestMessagingSeoPage() {
       </article>
 
       <SeoFooter lang="en" />
+      <SeoStructuredData
+        lang="en"
+        path="/how-to-automate-guest-messaging-for-short-term-rentals"
+        title="How to automate guest messaging for short-term rentals | Plan4Host"
+        description="A practical guide to automate guest messaging for short-term rentals with better timing, fewer repetitive questions, and a clearer guest experience."
+        image="/HeroMSG_en.png"
+      />
     </main>
   );
 }

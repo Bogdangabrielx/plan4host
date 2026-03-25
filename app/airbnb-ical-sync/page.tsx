@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../home.module.css";
 import seo from "../seo.module.css";
@@ -147,7 +148,14 @@ export default function AirbnbIcalSyncPage() {
         </section>
       </div>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
+      <SeoStructuredData
+        lang="en"
+        path="/airbnb-ical-sync"
+        title="Airbnb iCal sync - connect your calendar | Plan4Host"
+        description="A short guide for Airbnb iCal sync: import the Airbnb calendar into Plan4Host and export availability back to avoid double bookings."
+        image="/airbnb.png"
+        customSchemas={[howToJsonLd]}
+      />
     </main>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
@@ -293,6 +294,13 @@ export default function RoGuestAiAssistantPage() {
       </div>
 
       <SeoFooter lang="ro" />
+      <SeoStructuredData
+        lang="ro"
+        path="/ro/asistent-ai-oaspeti"
+        title="Asistent AI pentru oaspeti | Plan4Host"
+        description="Un asistent care ajuta oaspetii sa gaseasca rapid detalii despre sosire, facilitati si check-out, direct in portalul lor."
+        image="/Hero Guest AI.png"
+      />
     </main>
   );
 }

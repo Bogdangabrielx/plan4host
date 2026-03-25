@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
@@ -147,7 +148,14 @@ export default function SincronizareIcalExpediaRO() {
         </section>
       </div>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
+      <SeoStructuredData
+        lang="ro"
+        path="/ro/sincronizare-ical-expedia"
+        title="Sincronizare iCal Expedia - conecteaza calendarul | Plan4Host"
+        description="Ghid scurt pentru sincronizare iCal Expedia: importi rezervarile in Plan4Host si exporti disponibilitatea inapoi ca sa eviti suprapunerile."
+        image="/expedia.png"
+        customSchemas={[howToJsonLd]}
+      />
     </main>
   );
 }

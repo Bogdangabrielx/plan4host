@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
 
@@ -153,8 +154,14 @@ export default function SincronizareIcalTravelminitRO() {
         </section>
       </div>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
+      <SeoStructuredData
+        lang="ro"
+        path="/ro/sincronizare-ical-travelminit"
+        title="Sincronizare iCal Travelminit - conecteaza calendarul | Plan4Host"
+        description="Ghid scurt pentru sincronizare iCal Travelminit: importi rezervarile in Plan4Host si exporti disponibilitatea inapoi ca sa eviti suprapunerile."
+        image="/travelminit.png"
+        customSchemas={[howToJsonLd]}
+      />
     </main>
   );
 }
-

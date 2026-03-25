@@ -4,6 +4,7 @@ import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../home.module.css";
 import seo from "../seo.module.css";
@@ -292,6 +293,13 @@ export default function GuestAiAssistantPage() {
       </div>
 
       <SeoFooter lang="en" />
+      <SeoStructuredData
+        lang="en"
+        path="/guest-ai-assistant"
+        title="Guest AI assistant for rentals | Plan4Host"
+        description="A language-aware assistant that helps guests find arrival, amenities, and check-out details instantly in a calm guest portal."
+        image="/Hero Guest AI.png"
+      />
     </main>
   );
 }

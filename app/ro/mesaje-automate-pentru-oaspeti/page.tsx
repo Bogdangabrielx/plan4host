@@ -4,6 +4,7 @@ import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
@@ -48,16 +49,6 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
       a: "Mesajele sunt informative si gandite sa reduca conversatiile inutile.",
     },
   ];
-
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map((item) => ({
-      "@type": "Question",
-      name: item.q,
-      acceptedAnswer: { "@type": "Answer", text: item.a },
-    })),
-  };
 
   return (
     <main className={`${styles.landing} ${seoMontserrat.className}`} style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: "100dvh", overflowX: "hidden" }}>
@@ -337,8 +328,14 @@ export default function MesajeAutomatePentruOaspetiSeoPage() {
       </div>
 
       <SeoFooter lang="ro" />
-
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <SeoStructuredData
+        lang="ro"
+        path="/ro/mesaje-automate-pentru-oaspeti"
+        title="Mesaje automate pentru oaspeti Airbnb si Booking | Plan4Host"
+        description="Trimite mesaje automate catre oaspeti dupa check-in. Informatiile de sosire, Wi-Fi, reguli si check-out sunt livrate la momentul potrivit, fara raspunsuri manuale."
+        image="/Hero_device2.png"
+        faq={faq}
+      />
     </main>
   );
 }

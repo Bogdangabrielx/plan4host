@@ -4,6 +4,7 @@ import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../home.module.css";
 import seo from "../seo.module.css";
@@ -48,16 +49,6 @@ export default function AutomaticGuestMessagesSeoPage() {
       a: "Messages are designed to provide information and reduce unnecessary conversations.",
     },
   ];
-
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map((item) => ({
-      "@type": "Question",
-      name: item.q,
-      acceptedAnswer: { "@type": "Answer", text: item.a },
-    })),
-  };
 
   return (
     <main className={`${styles.landing} ${seoMontserrat.className}`} style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: "100dvh", overflowX: "hidden" }}>
@@ -343,8 +334,14 @@ export default function AutomaticGuestMessagesSeoPage() {
       </div>
 
       <SeoFooter lang="en" />
-
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <SeoStructuredData
+        lang="en"
+        path="/automatic-guest-messages"
+        title="Automatic guest messages for Airbnb & Booking | Plan4Host"
+        description="Send automatic guest messages after check-in. Arrival info, Wi-Fi, rules and check-out instructions delivered at the right time, without manual replies."
+        image="/Hero_device2.png"
+        faq={faq}
+      />
     </main>
   );
 }

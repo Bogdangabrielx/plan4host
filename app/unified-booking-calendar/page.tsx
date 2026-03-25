@@ -4,6 +4,7 @@ import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../home.module.css";
 import seo from "../seo.module.css";
@@ -39,16 +40,6 @@ export default function UnifiedBookingCalendarSeoPage() {
       a: "The unified calendar becomes the base for online check-in and structured guest communication.",
     },
   ];
-
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map((item) => ({
-      "@type": "Question",
-      name: item.q,
-      acceptedAnswer: { "@type": "Answer", text: item.a },
-    })),
-  };
 
   return (
     <main className={`${styles.landing} ${seoMontserrat.className}`} style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: "100dvh", overflowX: "hidden" }}>
@@ -308,8 +299,14 @@ export default function UnifiedBookingCalendarSeoPage() {
       </div>
 
       <SeoFooter lang="en" />
-
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <SeoStructuredData
+        lang="en"
+        path="/unified-booking-calendar"
+        title="Unified booking calendar for Airbnb & Booking | Plan4Host"
+        description="View all Airbnb and Booking reservations in one unified calendar. Avoid overbooking and manage availability as the foundation for online check-in and guest messages."
+        image="/Hero_device2.png"
+        faq={faq}
+      />
     </main>
   );
 }

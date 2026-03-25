@@ -4,6 +4,7 @@ import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../home.module.css";
 import seo from "../seo.module.css";
@@ -48,19 +49,6 @@ export default function OnlineCheckInAccommodationPage() {
       a: "You receive a notification and can confirm the reservation inside Plan4Host.",
     },
   ];
-
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map((item) => ({
-      "@type": "Question",
-      name: item.q,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.a,
-      },
-    })),
-  };
 
   return (
     <main
@@ -388,11 +376,13 @@ export default function OnlineCheckInAccommodationPage() {
       </div>
 
       <SeoFooter lang="en" />
-
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      <SeoStructuredData
+        lang="en"
+        path="/online-check-in-accommodation"
+        title="Online check-in for rentals - digital guest form | Plan4Host"
+        description="Collect guest details online without repetitive messages. Airbnb and Booking online check-in with a simple digital form."
+        image="/Checkin_mok2.png"
+        faq={faq}
       />
     </main>
   );

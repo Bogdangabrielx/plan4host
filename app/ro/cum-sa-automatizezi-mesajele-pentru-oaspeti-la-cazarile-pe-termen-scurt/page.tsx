@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import SeoFooter from "@/components/seo/SeoFooter";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
@@ -285,6 +286,13 @@ export default function CumAutomatizeziMesajeleSeoPage() {
       </article>
 
       <SeoFooter lang="ro" />
+      <SeoStructuredData
+        lang="ro"
+        path="/ro/cum-sa-automatizezi-mesajele-pentru-oaspeti-la-cazarile-pe-termen-scurt"
+        title="Cum sa automatizezi mesajele catre oaspeti pentru inchirieri pe termen scurt | Plan4Host"
+        description="Un ghid practic despre cum sa automatizezi mesajele catre oaspeti pentru inchirieri pe termen scurt, cu mai putine intrebari repetitive si o comunicare mai clara."
+        image="/HeroMSG_en.png"
+      />
     </main>
   );
 }

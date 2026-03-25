@@ -4,6 +4,7 @@ import Link from "next/link";
 import LandingSafeArea from "@/components/landing/LandingSafeArea";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
 import SeoFooter from "@/components/seo/SeoFooter";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import { seoMontserrat } from "@/components/seo/seoFont";
 import styles from "../../home.module.css";
 import seo from "../../seo.module.css";
@@ -39,16 +40,6 @@ export default function CalendarRezervariUnificatSeoPage() {
       a: "Calendarul unificat devine baza pentru check-in online si comunicare structurata cu oaspetii.",
     },
   ];
-
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map((item) => ({
-      "@type": "Question",
-      name: item.q,
-      acceptedAnswer: { "@type": "Answer", text: item.a },
-    })),
-  };
 
   return (
     <main className={`${styles.landing} ${seoMontserrat.className}`} style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: "100dvh", overflowX: "hidden" }}>
@@ -300,8 +291,14 @@ export default function CalendarRezervariUnificatSeoPage() {
       </div>
 
       <SeoFooter lang="ro" />
-
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <SeoStructuredData
+        lang="ro"
+        path="/ro/calendar-rezervari-unificat"
+        title="Calendar rezervari unificat pentru Airbnb si Booking | Plan4Host"
+        description="Vezi toate rezervarile din Airbnb si Booking intr-un calendar unificat. Evita overbooking si gestioneaza disponibilitatea ca baza pentru check-in online si mesaje automate."
+        image="/Hero_device2.png"
+        faq={faq}
+      />
     </main>
   );
 }

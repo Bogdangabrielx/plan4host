@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import MobileScrollReveal from "@/components/landing/MobileScrollReveal";
+import SeoStructuredData from "@/components/seo/SeoStructuredData";
 import styles from "../home.module.css";
 import seo from "../seo.module.css";
 
@@ -146,8 +147,14 @@ export default function TravelminitIcalSyncPage() {
         </section>
       </div>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
+      <SeoStructuredData
+        lang="en"
+        path="/travelminit-ical-sync"
+        title="Travelminit iCal sync - connect your calendar | Plan4Host"
+        description="A short guide for Travelminit iCal sync: import reservations into Plan4Host and export availability back to keep calendars aligned."
+        image="/travelminit.png"
+        customSchemas={[howToJsonLd]}
+      />
     </main>
   );
 }
-
