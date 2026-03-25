@@ -30,7 +30,7 @@ export default function AboutPage() {
   const faq = [
     {
       q: "Who built Plan4Host?",
-      a: "Plan4Host was built by Bogdan E., based on direct exposure to the daily friction hosts face around reservations, guest communication, and operations.",
+      a: "Plan4Host was built by Bogdan Enică, a developer since 2020 with a strong focus on automation since 2019, after conversations with hosts about how fragmented and expensive daily operations can become.",
     },
     {
       q: "What is Plan4Host meant to do?",
@@ -79,41 +79,7 @@ export default function AboutPage() {
         </div>
 
         <div className={styles.heroVisual} aria-label="Founder of Plan4Host" data-p4h-reveal>
-          <div
-            style={{
-              display: "grid",
-              placeItems: "center",
-              alignContent: "center",
-              gap: 14,
-              padding: 24,
-              height: "100%",
-              textAlign: "center",
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                maxWidth: 280,
-                borderRadius: 36,
-                overflow: "hidden",
-                boxShadow: "0 28px 70px rgba(0,0,0,0.18)",
-                background: "transparent",
-              }}
-            >
-              <Image
-                src="/founder_02.jpg"
-                alt="Bogdan E., founder of Plan4Host"
-                width={640}
-                height={760}
-                style={{ width: "100%", height: "auto", display: "block" }}
-                priority
-              />
-            </div>
-            <div style={{ display: "grid", gap: 4 }}>
-              <p className={seo.faqQ} style={{ margin: 0 }}>Bogdan E.</p>
-              <p className={seo.faqA} style={{ margin: 0 }}>Founder of Plan4Host</p>
-            </div>
-          </div>
+          <img src="/Hero_device2.png" alt="Plan4Host app preview" className={styles.focusable} />
         </div>
       </section>
 
@@ -199,16 +165,16 @@ export default function AboutPage() {
                 Who is behind Plan4Host
               </h2>
               <p className={seo.p}>
-                Plan4Host was founded by <strong>Bogdan E.</strong>, with the product shaped around real hosting friction: repetitive guest questions, fragmented reservation handling, and too much manual follow-up.
+                Plan4Host was founded by <strong>Bogdan Enică</strong>. He is not a property manager himself, but the product was shaped through direct conversations with hosts who described how complex guest operations become in real life: repetitive questions, fragmented reservation handling, too much manual follow-up, and expensive tools that still feel heavy.
               </p>
               <p className={seo.p}>
-                The direction has stayed the same: build a product that feels calm, understandable, and genuinely useful in daily work.
+                Bogdan has worked as a developer since <strong>2020</strong>, with a personal focus on <strong>automation since 2019</strong>. The direction has stayed the same: simplify how things work, remove friction, and bring more clarity to daily operations.
               </p>
             </div>
             <div className={seo.imageFrame} style={{ maxWidth: 320, marginInline: "auto" }}>
               <Image
                 src="/founder_02.jpg"
-                alt="Bogdan E., founder of Plan4Host"
+                alt="Bogdan Enică, founder of Plan4Host"
                 width={480}
                 height={480}
                 style={{ width: "100%", height: "auto", display: "block", borderRadius: 24 }}

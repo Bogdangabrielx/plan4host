@@ -457,7 +457,7 @@ export default function LoginClient({
           <div style={quoteAuthorWrap} className="p4h-quoteAuthorWrap">
             <img src="/founder_02.jpg" alt="" width={34} height={34} style={quoteAuthorAvatar} />
             <div style={quoteAuthorText}>
-              <span style={{ display: "block" }}>Bogdan E.</span>
+              <span style={{ display: "block" }}>Bogdan Enică</span>
               <span style={{ display: "block" }}>{lang === "ro" ? "Fondator Plan4Host" : "Founder of Plan4Host"}</span>
             </div>
           </div>
