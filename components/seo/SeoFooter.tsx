@@ -46,6 +46,13 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
     ? "Plan4Host vs channel manager"
     : "Plan4Host vs channel manager";
 
+  const eighthHref = lang === "ro"
+    ? "/ro/intrebari-frecvente-plan4host"
+    : "/plan4host-faq";
+  const eighthTitle = lang === "ro"
+    ? "Întrebări frecvente Plan4Host"
+    : "Plan4Host FAQ";
+
   return (
     <footer className={styles.footer} aria-label="Footer">
       <div className={`${styles.footerGrid} p4h-seo-footer-grid`}>
@@ -217,6 +224,11 @@ export default function SeoFooter({ lang }: { lang: Lang }) {
         ·{" "}
         <Link className={styles.footerLink} href={seventhHref}>
           {seventhTitle}
+        </Link>
+        {" "}
+        ·{" "}
+        <Link className={styles.footerLink} href={eighthHref}>
+          {eighthTitle}
         </Link>
       </div>
 

@@ -2025,6 +2025,10 @@ export default function HomePage() {
 	            Plan4Host vs channel manager
 	          </Link>{" "}
 	          ·{" "}
+	          <Link className={styles.footerLink} href="/plan4host-faq">
+	            Plan4Host FAQ
+	          </Link>{" "}
+	          ·{" "}
 	          <Link className={styles.footerLink} href="/airbnb-ical-sync">
 	            Airbnb iCal sync
 	          </Link>{" "}

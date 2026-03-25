@@ -1829,6 +1829,10 @@ export default function HomePageRO() {
 	            Plan4Host vs channel manager
 	          </Link>{" "}
 	          ·{" "}
+	          <Link className={styles.footerLink} href="/ro/intrebari-frecvente-plan4host">
+	            Întrebări frecvente Plan4Host
+	          </Link>{" "}
+	          ·{" "}
 	          <Link className={styles.footerLink} href="/ro/sincronizare-ical-airbnb">
 	            Sincronizare iCal Airbnb
 	          </Link>{" "}
