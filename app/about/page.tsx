@@ -79,22 +79,39 @@ export default function AboutPage() {
         </div>
 
         <div className={styles.heroVisual} aria-label="Founder of Plan4Host" data-p4h-reveal>
-          <div style={{ display: "grid", placeItems: "center", padding: 24, height: "100%" }}>
-            <div className={`sb-cardglow ${seo.card}`} style={{ width: "100%", maxWidth: 360, textAlign: "center", alignContent: "start" }}>
-              <div className={seo.imageFrame} style={{ maxWidth: 180, margin: "0 auto" }}>
-                <Image
-                  src="/founder_02.jpg"
-                  alt="Bogdan E., founder of Plan4Host"
-                  width={480}
-                  height={480}
-                  style={{ width: "100%", height: "auto", display: "block", borderRadius: "999px" }}
-                  priority
-                />
-              </div>
-              <div style={{ display: "grid", gap: 6 }}>
-                <p className={seo.faqQ} style={{ margin: 0 }}>Bogdan E.</p>
-                <p className={seo.faqA} style={{ margin: 0 }}>Founder of Plan4Host</p>
-              </div>
+          <div
+            style={{
+              display: "grid",
+              placeItems: "center",
+              alignContent: "center",
+              gap: 14,
+              padding: 24,
+              height: "100%",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 280,
+                borderRadius: 36,
+                overflow: "hidden",
+                boxShadow: "0 28px 70px rgba(0,0,0,0.18)",
+                background: "transparent",
+              }}
+            >
+              <Image
+                src="/founder_02.jpg"
+                alt="Bogdan E., founder of Plan4Host"
+                width={640}
+                height={760}
+                style={{ width: "100%", height: "auto", display: "block" }}
+                priority
+              />
+            </div>
+            <div style={{ display: "grid", gap: 4 }}>
+              <p className={seo.faqQ} style={{ margin: 0 }}>Bogdan E.</p>
+              <p className={seo.faqA} style={{ margin: 0 }}>Founder of Plan4Host</p>
             </div>
           </div>
         </div>
@@ -135,6 +152,9 @@ export default function AboutPage() {
           <p className={seo.p}>
             Plan4Host is a <strong>short-term rental operations platform</strong>. It combines a unified booking calendar, online check-in, guest messaging, and guest-facing support into one practical system.
           </p>
+          <p className={seo.p}>
+            Where iCal is the practical choice, Plan4Host uses it on purpose: <strong>it is efficient, affordable, and good for hosts who want to save money</strong> without giving up the automation that matters in daily operations.
+          </p>
           <ul className={styles.includedList} style={{ ["--success" as never]: "color-mix(in srgb, var(--text) 46%, white)" }}>
             <li>one calendar for reservations</li>
             <li>one check-in flow for guests</li>
@@ -164,7 +184,7 @@ export default function AboutPage() {
                 Plan4Host is <strong>not positioned as a heavy enterprise channel manager</strong>. It does not pretend to replace every API-driven distribution system on the market.
               </p>
               <p className={seo.p}>
-                The product is strongest when it helps small and mid-size short-term rental operations work more clearly, with less interruption and less manual chaos.
+                The product is strongest when it helps small and mid-size short-term rental operations work more clearly, with less interruption, less manual chaos, and a more cost-efficient setup.
               </p>
             </div>
           </div>
