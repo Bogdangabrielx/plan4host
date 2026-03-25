@@ -83,7 +83,7 @@ export default function AboutPage() {
             <div className={`sb-cardglow ${seo.card}`} style={{ width: "100%", maxWidth: 360, textAlign: "center", alignContent: "start" }}>
               <div className={seo.imageFrame} style={{ maxWidth: 180, margin: "0 auto" }}>
                 <Image
-                  src="/founder.jpg"
+                  src="/founder_02.jpg"
                   alt="Bogdan E., founder of Plan4Host"
                   width={480}
                   height={480}
@@ -187,7 +187,7 @@ export default function AboutPage() {
             </div>
             <div className={seo.imageFrame} style={{ maxWidth: 320, marginInline: "auto" }}>
               <Image
-                src="/founder.jpg"
+                src="/founder_02.jpg"
                 alt="Bogdan E., founder of Plan4Host"
                 width={480}
                 height={480}
@@ -218,7 +218,7 @@ export default function AboutPage() {
         path="/about"
         title="About Plan4Host"
         description="Why Plan4Host exists, who built it, and how the product is positioned for short-term rental hosts and property managers."
-        image="/founder.jpg"
+        image="/founder_02.jpg"
         faq={faq}
       />
     </main>
