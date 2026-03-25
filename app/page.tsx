@@ -1401,7 +1401,7 @@ export default function HomePage() {
 	            </div>
 	            <ul className={styles.calmList}>
 	              <li>All reservations in one calendar</li>
-	              <li>Real-time iCal sync across platforms</li>
+	              <li>Import reservations and export availability via iCal</li>
               <li>No guessing, no overlaps</li>
             </ul>
           </div>
@@ -1553,7 +1553,7 @@ export default function HomePage() {
 	      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
 	        <h2 id="pricing-title" data-p4h-reveal>Simple pricing. Everything connected.</h2>
 	          <p className={styles.pricingLead} data-p4h-reveal>
-	            All plans include guest communication and booking sync. Standard and above add cleaning workflows.
+	            All plans include guest communication and booking sync. Standard and above add cleaning workflows. Premium also includes the Guest AI assistant.
 	          </p>
 	          <div className={styles.includedBox} data-p4h-reveal>
 	            <div className={styles.includedTitle}>Included in every plan</div>
@@ -1609,7 +1609,7 @@ export default function HomePage() {
 	              <ul className={styles.includedList}>
 	                <li>Calendar sync every 10 minutes</li>
 	                <li>Real-time cleaning status updates</li>
-	                <li>Smart Guest Guide</li>
+	                <li>Guest AI assistant with arrival, amenities, extras, and check-out answers</li>
 	              </ul>
 	            <img className={styles.priceImg} src="/premium_forlight.png" alt="" aria-hidden="true" />
 	            <Link
@@ -2001,12 +2001,44 @@ export default function HomePage() {
 	            Automatic guest messages for accommodation
 	          </Link>{" "}
 	          ·{" "}
+	          <Link className={styles.footerLink} href="/guest-ai-assistant">
+	            Guest AI assistant
+	          </Link>{" "}
+	          ·{" "}
 	          <Link className={styles.footerLink} href="/how-to-automate-guest-messaging-for-short-term-rentals">
 	            How to automate guest messaging for short-term rentals
 	          </Link>{" "}
 	          ·{" "}
 	          <Link className={styles.footerLink} href="/unified-booking-calendar">
 	            Unified booking calendar
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/how-plan4host-works-with-airbnb-and-booking">
+	            How Plan4Host works with Airbnb and Booking
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/who-plan4host-is-for">
+	            Who Plan4Host is for
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/plan4host-vs-channel-manager">
+	            Plan4Host vs channel manager
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/airbnb-ical-sync">
+	            Airbnb iCal sync
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/booking-ical-sync">
+	            Booking.com iCal sync
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/expedia-ical-sync">
+	            Expedia iCal sync
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/travelminit-ical-sync">
+	            Travelminit iCal sync
 	          </Link>
 	        </div>
 

@@ -1230,7 +1230,7 @@ export default function HomePageRO() {
 	            </div>
 	            <ul className={styles.calmList}>
 	              <li>Toate rezervările într‑un singur calendar</li>
-	              <li>iCal sync în timp real între platforme</li>
+	              <li>Import rezervari si export disponibilitate prin iCal</li>
               <li>Fără ghicit, fără suprapuneri</li>
             </ul>
           </div>
@@ -1380,7 +1380,7 @@ export default function HomePageRO() {
 		      <section id="pricing" className={styles.pricing} aria-labelledby="pricing-title">
 		        <h2 id="pricing-title" data-p4h-reveal>Prețuri simple. Totul conectat.</h2>
 	          <p className={styles.pricingLead} data-p4h-reveal>
-	            Toate planurile includ comunicare cu oaspeții și sincronizare rezervări. Curățenia este inclusă din Standard în sus.
+	            Toate planurile includ comunicare cu oaspeții și sincronizare rezervări. Curățenia este inclusă din Standard în sus. Premium include și asistentul AI pentru oaspeți.
 	          </p>
 	          <div className={styles.includedBox} data-p4h-reveal>
 	            <div className={styles.includedTitle}>Inclus în orice plan</div>
@@ -1426,7 +1426,7 @@ export default function HomePageRO() {
 	              <ul className={styles.includedList}>
 	                <li>Sync calendar la 10 minute</li>
 	                <li>Status curățenie în timp real</li>
-	                <li>Smart Guest Guide</li>
+	                <li>Asistent AI pentru oaspeți: sosire, facilități, extra și check-out</li>
 	              </ul>
 	            <img className={styles.priceImg} src="/premium_ron_forlight.png" alt="" aria-hidden="true" />
 	            <Link href="/auth/login?mode=signup&plan=premium&next=%2Fapp%2Fsubscription%3Fplan%3Dpremium%26hl%3D1" className={`sb-cardglow ${styles.btn} ${styles.btnSolid} ${styles.focusable}`}>Alege Premium</Link>
@@ -1805,12 +1805,44 @@ export default function HomePageRO() {
 	            Mesaje automate pentru oaspeti
 	          </Link>{" "}
 	          ·{" "}
+	          <Link className={styles.footerLink} href="/ro/asistent-ai-oaspeti">
+	            Asistent AI pentru oaspeti
+	          </Link>{" "}
+	          ·{" "}
 	          <Link className={styles.footerLink} href="/ro/cum-sa-automatizezi-mesajele-pentru-oaspeti-la-cazarile-pe-termen-scurt">
 	            Cum să automatizezi mesajele către oaspeți pentru închirieri pe termen scurt
 	          </Link>{" "}
 	          ·{" "}
 	          <Link className={styles.footerLink} href="/ro/calendar-rezervari-unificat">
 	            Calendar rezervari unificat
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/ro/cum-functioneaza-plan4host-cu-airbnb-si-booking">
+	            Cum functioneaza Plan4Host cu Airbnb si Booking
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/ro/pentru-cine-este-plan4host">
+	            Pentru cine este Plan4Host
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/ro/plan4host-vs-channel-manager">
+	            Plan4Host vs channel manager
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/ro/sincronizare-ical-airbnb">
+	            Sincronizare iCal Airbnb
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/ro/sincronizare-ical-booking">
+	            Sincronizare iCal Booking
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/ro/sincronizare-ical-expedia">
+	            Sincronizare iCal Expedia
+	          </Link>{" "}
+	          ·{" "}
+	          <Link className={styles.footerLink} href="/ro/sincronizare-ical-travelminit">
+	            Sincronizare iCal Travelminit
 	          </Link>
 	        </div>
 
