@@ -75,6 +75,16 @@ export default function AboutPage() {
               Plan4Host blends refined technology with a deep understanding of real hospitality. Our mission is to empower hosts to operate with confidence, deliver exceptional service, and create the kind of stays guests love to remember — and love to share.
             </p>
           </div>
+
+          <div className={s.card} style={{ display: 'grid', gap: 10 }}>
+            <div style={{ fontWeight: 900, fontSize: 16 }}>What Plan4Host is — and what it is not</div>
+            <p className={s.p}>
+              Plan4Host is a practical operations platform for short-term rentals. It brings together a unified booking calendar, online check-in, guest messaging, and day-to-day coordination in one place.
+            </p>
+            <p className={s.p}>
+              It is not positioned as a heavy enterprise channel manager. We prefer to be explicit about that, because the product is strongest when it helps smaller and mid-size operations work more clearly and with less interruption.
+            </p>
+          </div>
         </section>
       </div>
     </main>
