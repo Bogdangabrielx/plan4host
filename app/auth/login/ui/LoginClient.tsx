@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "@/app/app/ui/ThemeToggle";
+import LoadingPill from "@/app/app/_components/LoadingPill";
+import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
 
 type Theme = "light" | "dark";
 type Mode = "login" | "signup";
@@ -36,6 +38,8 @@ export default function LoginClient({
   const resetTimerRef = useRef<number | null>(null);
   const resetEndAtRef = useRef<number | null>(null);
   const [animateTheme, setAnimateTheme] = useState<boolean>(true);
+  const [overlayMessage, setOverlayMessage] = useState("");
+  const overlayMessageTimerRef = useRef<number | null>(null);
 
   // ————— helpers null-safe —————
   const asStr = (v: unknown) => (typeof v === "string" ? v : v == null ? "" : String(v));
@@ -246,6 +250,26 @@ export default function LoginClient({
     return () => clearResetTimer();
   }, []);
 
+  function clearOverlayMessageTimer() {
+    if (overlayMessageTimerRef.current) {
+      window.clearTimeout(overlayMessageTimerRef.current);
+      overlayMessageTimerRef.current = null;
+    }
+  }
+
+  function showOverlayMessage(message: string, duration = 2600) {
+    clearOverlayMessageTimer();
+    setOverlayMessage(message);
+    overlayMessageTimerRef.current = window.setTimeout(() => {
+      setOverlayMessage("");
+      overlayMessageTimerRef.current = null;
+    }, duration);
+  }
+
+  useEffect(() => {
+    return () => clearOverlayMessageTimer();
+  }, []);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (status === "Loading") return; // anti dublu-submit
@@ -257,16 +281,19 @@ export default function LoginClient({
     if (!emailTrim) {
       setErr(t.enterEmail);
       setStatus("Error");
+      showOverlayMessage(t.enterEmail);
       return;
     }
     if (!isEmail(emailTrim)) {
       setErr(t.enterValidEmail);
       setStatus("Error");
+      showOverlayMessage(t.enterValidEmail);
       return;
     }
     if (!passTrim) {
       setErr(t.enterPassword);
       setStatus("Error");
+      showOverlayMessage(t.enterPassword);
       return;
     }
 
@@ -289,7 +316,7 @@ export default function LoginClient({
         if (mode === "signup" && (j as any)?.requiresConfirmation) {
           setStatus("Idle");
           setErr("");
-          alert(t.confirmationSent);
+          showOverlayMessage(t.confirmationSent, 3200);
           // After confirming sign-up email notice, switch back to Sign in tab
           try {
             const u = new URL(window.location.href);
@@ -324,11 +351,14 @@ export default function LoginClient({
         (mode === "login" ? t.invalidCredentials : t.accountCreateFailed);
       setErr(message);
       setStatus("Error");
+      showOverlayMessage(message);
       if (mode === "login") setFailCount((c) => Math.min(99, c + 1));
     } catch (ex: any) {
       // Eroare de rețea / CORS / timeouts
-      setErr(asStr(ex?.message) || t.networkError);
+      const message = asStr(ex?.message) || t.networkError;
+      setErr(message);
       setStatus("Error");
+      showOverlayMessage(message);
       if (mode === "login") setFailCount((c) => Math.min(99, c + 1));
     }
   }
@@ -336,8 +366,8 @@ export default function LoginClient({
   async function requestReset() {
     setResetMsg("");
     const emailTrim = asStr(resetEmail || email).trim();
-    if (!emailTrim) { setResetMsg(t.enterEmail); return; }
-    if (!isEmail(emailTrim)) { setResetMsg(t.enterValidEmail); return; }
+    if (!emailTrim) { setResetMsg(t.enterEmail); showOverlayMessage(t.enterEmail); return; }
+    if (!isEmail(emailTrim)) { setResetMsg(t.enterValidEmail); showOverlayMessage(t.enterValidEmail); return; }
     setResetBusy(true);
     try {
       const res = await fetch('/api/auth/reset/request', {
@@ -348,14 +378,19 @@ export default function LoginClient({
         const j = await safeJson(res);
         const retry = (j?.retry_after ?? j?.retryAfter ?? j?.cooldown ?? 0) as number;
         if (retry && retry > 0) startResetCountdown(retry);
-        setResetMsg(j?.error || t.resetSendFailed);
+        const message = j?.error || t.resetSendFailed;
+        setResetMsg(message);
+        showOverlayMessage(message);
         return;
       }
       setResetMsg(t.resetSent);
+      showOverlayMessage(t.resetSent, 3200);
       // 30s cooldown
       startResetCountdown(30);
     } catch (e:any) {
-      setResetMsg(e?.message || t.unexpectedError);
+      const message = e?.message || t.unexpectedError;
+      setResetMsg(message);
+      showOverlayMessage(message);
     } finally { setResetBusy(false); }
   }
 
@@ -376,11 +411,6 @@ export default function LoginClient({
     }
   }
 
-  const pill =
-    status === "Loading" ? (mode === "login" ? t.signingIn : t.creating)
-    : status === "Error" ? t.error
-    : t.idle;
-
   const quoteEmphasisSearch = lang === "ro" ? "timpul tău." : "your time.";
   const quoteEmphasisDisplay = lang === "ro" ? "Timpul tău." : "Your time.";
   const quoteLine2 = t.quoteLine2 || "";
@@ -391,6 +421,27 @@ export default function LoginClient({
 
   return (
     <>
+      {status === "Loading" ? (
+        <div
+          className={overlayStyles.overlay}
+          role="status"
+          aria-live="polite"
+          aria-label={mode === "login" ? t.signingIn : t.creating}
+        >
+          <LoadingPill title={mode === "login" ? t.signingIn : t.creating} />
+        </div>
+      ) : overlayMessage ? (
+        <div
+          className={overlayStyles.overlay}
+          role="status"
+          aria-live="polite"
+          aria-label={overlayMessage}
+        >
+          <div className={overlayStyles.pillMessage} title={overlayMessage}>
+            <span className={overlayStyles.messageText}>{overlayMessage}</span>
+          </div>
+        </div>
+      ) : null}
       <div style={outerWrap} className="p4h-outerWrap">
         <div style={quoteWrap} className="p4h-quoteWrap">
           <div style={quoteText} className="p4h-quoteText">
@@ -438,7 +489,6 @@ export default function LoginClient({
             </div>
             <h1 style={headTitle}>{mode === "login" ? t.signIn : t.createAccount}</h1>
             <div style={headRight}>
-              <span style={pillStyle(pill)}>{pill}</span>
               <div style={animateTheme ? { animation: "themeFloat 2.2s ease-in-out 1" } : undefined}>
                 <ThemeToggle size="md" />
               </div>
@@ -763,21 +813,5 @@ function langBtn(active: boolean): React.CSSProperties {
     placeItems: "center",
     cursor: "pointer",
     padding: 0,
-  };
-}
-function pillStyle(pill: string): React.CSSProperties {
-  const isError = /error/i.test(pill);
-  const isBusy = /(sign|load|creat)/i.test(pill);
-  const isIdle = /^idle$/i.test(pill);
-  const bg = isError ? "#d4d7ddff" : isBusy ? "var(--primary)" : (isIdle ? "transparent" : "var(--card)");
-  const col = isIdle ? "transparent" : (isError || isBusy ? "#0c111b" : "var(--muted)");
-  return {
-    padding: "4px 10px",
-    borderRadius: 999,
-    background: bg,
-    color: col,
-    border: isIdle ? undefined : "1px solid var(--border)",
-    fontWeight: 800,
-    fontSize: 12,
   };
 }
