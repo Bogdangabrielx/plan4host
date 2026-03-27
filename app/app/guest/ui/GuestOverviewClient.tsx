@@ -59,6 +59,24 @@ function fmtDate(ymd: string): string {
 function formatRange(a: string, b: string) {
   return `${fmtDate(a)} → ${fmtDate(b)}`;
 }
+function fieldIcon(src: string, size = 15): React.CSSProperties {
+  return {
+    width: size,
+    height: size,
+    display: "inline-block",
+    flex: `0 0 ${size}px`,
+    backgroundColor: "currentColor",
+    WebkitMaskImage: `url(${src})`,
+    maskImage: `url(${src})`,
+    WebkitMaskRepeat: "no-repeat",
+    maskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    maskPosition: "center",
+    WebkitMaskSize: "contain",
+    maskSize: "contain",
+    opacity: 0.92,
+  };
+}
 function fullName(item: OverviewRow): string {
   const f = (item._guest_first_name ?? "").trim();
   const l = (item._guest_last_name ?? "").trim();
@@ -2119,35 +2137,48 @@ function EditFormBookingModal({
             <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)" }}>
               <div style={{ fontSize:12, color:"var(--muted)", fontWeight:800, marginBottom:6 }}>{lang === "ro" ? "Oaspete" : "Guest"}</div>
               <div style={{ display:"grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap:8 }}>
-                <div><strong>{lang === "ro" ? "Nume:" : "Name:"}</strong> {(guestFirst + " " + guestLast).trim() || "—"}</div>
-                <div>
-                  <strong>Email:</strong> {guestEmail ? (
-                    <a href={`mailto:${guestEmail}`} style={{ color: 'var(--primary)', textDecoration: 'none', marginLeft: 6 }}>{guestEmail}</a>
-                  ) : '—'}
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span aria-hidden style={fieldIcon("/svg_guests.svg")} />
+                  <span><strong>{lang === "ro" ? "Nume:" : "Name:"}</strong> {(guestFirst + " " + guestLast).trim() || "—"}</span>
                 </div>
                 <div>
-                  <strong>{lang === "ro" ? "Telefon:" : "Phone:"}</strong> {guestPhone ? (()=>{
-                    const digits = String(guestPhone).replace(/\D/g,'');
-                    const waApp = digits ? `whatsapp://send?phone=${digits}` : '';
-                    const waWeb = digits ? `https://wa.me/${digits}` : '';
-                    const onTap = (e: React.MouseEvent<HTMLAnchorElement>) => {
-                      try {
-                        if (!digits) return;
-                        e.preventDefault();
-                        // Try to open the native app first
-                        (window as any).location.href = waApp;
-                        // Fallback to web after a tiny delay
-                        setTimeout(() => {
-                          try { window.open(waWeb, '_blank'); } catch {}
-                        }, 150);
-                      } catch {}
-                    };
-                    return (
-                      <a href={waWeb} onClick={onTap} style={{ color: 'var(--primary)', textDecoration: 'none', marginLeft: 6 }}>
-                        {guestPhone}
-                      </a>
-                    );
-                  })() : '—'}
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <span aria-hidden style={fieldIcon("/svg_email_demo.svg")} />
+                    <span>
+                      <strong>Email:</strong> {guestEmail ? (
+                        <a href={`mailto:${guestEmail}`} style={{ color: 'var(--primary)', textDecoration: 'none', marginLeft: 6 }}>{guestEmail}</a>
+                      ) : '—'}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <span aria-hidden style={fieldIcon("/svg_phone_demo.svg")} />
+                    <span>
+                      <strong>{lang === "ro" ? "Telefon:" : "Phone:"}</strong> {guestPhone ? (()=>{
+                        const digits = String(guestPhone).replace(/\D/g,'');
+                        const waApp = digits ? `whatsapp://send?phone=${digits}` : '';
+                        const waWeb = digits ? `https://wa.me/${digits}` : '';
+                        const onTap = (e: React.MouseEvent<HTMLAnchorElement>) => {
+                          try {
+                            if (!digits) return;
+                            e.preventDefault();
+                            // Try to open the native app first
+                            (window as any).location.href = waApp;
+                            // Fallback to web after a tiny delay
+                            setTimeout(() => {
+                              try { window.open(waWeb, '_blank'); } catch {}
+                            }, 150);
+                          } catch {}
+                        };
+                        return (
+                          <a href={waWeb} onClick={onTap} style={{ color: 'var(--primary)', textDecoration: 'none', marginLeft: 6 }}>
+                            {guestPhone}
+                          </a>
+                        );
+                      })() : '—'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
