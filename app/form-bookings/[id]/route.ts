@@ -92,6 +92,7 @@ export async function PATCH(
     const end_date = String(body?.end_date || "").trim();
     const room_id = body?.room_id ? String(body.room_id).trim() : null;
     const room_type_id = body?.room_type_id ? String(body.room_type_id).trim() : null;
+    const require_calendar_match = body?.require_calendar_match === true;
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(start_date) || !/^\d{4}-\d{2}-\d{2}$/.test(end_date)) {
       return bad(400, { error: "Invalid dates (expect YYYY-MM-DD)" });
@@ -208,6 +209,13 @@ export async function PATCH(
           if (!rEv.error && rEv.data) targetBooking = rEv.data;
         } catch {}
       }
+    }
+
+    if (require_calendar_match && room_id && !targetBooking && !linkedBooking) {
+      return bad(409, {
+        error: "No calendar event found for selected room and dates.",
+        code: "calendar_event_not_found",
+      });
     }
 
     // a) Update form

@@ -1754,10 +1754,21 @@ function EditFormBookingModal({
       // Send to server API to enforce anti-overlap and include conflict source in 409
       const res = await fetch(`/form-bookings/${encodeURIComponent(bookingId)}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ start_date: startDate, end_date: endDate, room_id: roomId || null, room_type_id: roomTypeId || null })
+        body: JSON.stringify({
+          start_date: startDate,
+          end_date: endDate,
+          room_id: roomId || null,
+          room_type_id: roomTypeId || null,
+          require_calendar_match: !confirmOnSave,
+        })
       });
       const jj = await res.json().catch(()=>({}));
       if (!res.ok) {
+        if (jj?.code === "calendar_event_not_found") {
+          showMissingCalendarEventPopup(startDate, endDate);
+          setSaving(false);
+          return;
+        }
         const roomName = rooms.find(rm => String(rm.id) === String(roomId || ''))?.name || '#Room';
         let msg = jj?.error || (lang === "ro" ? 'Nu am putut salva.' : 'Failed to save.');
         if (res.status === 409) {
@@ -2151,18 +2162,8 @@ function EditFormBookingModal({
               <div style={{ fontSize:12, color:"var(--muted)", fontWeight:800, marginBottom:6 }}>{lang === "ro" ? "Oaspete" : "Guest"}</div>
               <div style={{ display:"grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap:8 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <span aria-hidden style={fieldIcon("/svg_guests.svg")} />
+                  <span aria-hidden style={fieldIcon("/svg_team.svg")} />
                   <span><strong>{lang === "ro" ? "Nume:" : "Name:"}</strong> {(guestFirst + " " + guestLast).trim() || "—"}</span>
-                </div>
-                <div>
-                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                    <span aria-hidden style={fieldIcon("/svg_email_demo.svg")} />
-                    <span>
-                      <strong>Email:</strong> {guestEmail ? (
-                        <a href={`mailto:${guestEmail}`} style={{ color: 'var(--primary)', textDecoration: 'none', marginLeft: 6 }}>{guestEmail}</a>
-                      ) : '—'}
-                    </span>
-                  </div>
                 </div>
                 <div>
                   <div style={{ display:"flex", alignItems:"center", gap:8 }}>
@@ -2190,6 +2191,32 @@ function EditFormBookingModal({
                           </a>
                         );
                       })() : '—'}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ gridColumn: isSmall ? "auto" : "1 / -1" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <span aria-hidden style={fieldIcon("/svg_email_demo.svg")} />
+                    <span style={{ display:"flex", alignItems:"center", gap:6, minWidth:0, flex:1 }}>
+                      <strong style={{ flex:"0 0 auto" }}>Email:</strong>
+                      {guestEmail ? (
+                        <a
+                          href={`mailto:${guestEmail}`}
+                          title={guestEmail}
+                          style={{
+                            color: 'var(--primary)',
+                            textDecoration: 'none',
+                            minWidth: 0,
+                            flex: 1,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            display: "block",
+                          }}
+                        >
+                          {guestEmail}
+                        </a>
+                      ) : '—'}
                     </span>
                   </div>
                 </div>
