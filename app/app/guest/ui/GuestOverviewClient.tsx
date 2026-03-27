@@ -1918,12 +1918,6 @@ function EditFormBookingModal({
           <div onClick={(e)=>e.stopPropagation()} className="sb-card" style={{ width: 'min(460px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 8 }}>
               <strong>{lang === "ro" ? "Anulezi rezervarea?" : "Cancel booking?"}</strong>
-            </div>
-            <div style={{ color:'var(--text)', marginBottom: 12 }}>
-              {lang === "ro" ? "Actiunea este ireversibila. Rezervarea si toate datele din formularul de check-in vor fi sterse." : "This action is irreversible. The reservation and all associated check-in form data will be deleted."}<br/>
-              {lang === "ro" ? "Vrei sa continui?" : "Do you want to continue?"}
-            </div>
-            <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
               <button
                 className="sb-btn sb-cardglow sb-btn--icon"
                 type="button"
@@ -1935,6 +1929,12 @@ function EditFormBookingModal({
               >
                 ✕
               </button>
+            </div>
+            <div style={{ color:'var(--text)', marginBottom: 12 }}>
+              {lang === "ro" ? "Actiunea este ireversibila. Rezervarea si toate datele din formularul de check-in vor fi sterse." : "This action is irreversible. The reservation and all associated check-in form data will be deleted."}<br/>
+              {lang === "ro" ? "Vrei sa continui?" : "Do you want to continue?"}
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
               <button
                 className="sb-btn"
                 onClick={performCancelBooking}
