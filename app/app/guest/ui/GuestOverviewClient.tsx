@@ -1379,8 +1379,8 @@ function EditFormBookingModal({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [popupMsg, setPopupMsg] = useState<string | null>(null);
-  const [popupTitle, setPopupTitle] = useState<string | null>(null);
+  const [popupMsg, setPopupMsg] = useState<React.ReactNode | null>(null);
+  const [popupTitle, setPopupTitle] = useState<React.ReactNode | null>(null);
   const [justSaved, setJustSaved] = useState<boolean>(false);
   const [docs, setDocs] = useState<Array<{ id:string; doc_type:string|null; mime_type:string|null; url:string|null }>>([]);
   // On mobile, collapse Documents by default to reduce modal height
@@ -1723,12 +1723,35 @@ function EditFormBookingModal({
       try { linkedId = jj?.booking_id ? String(jj.booking_id) : null; } catch { linkedId = null; }
       setEmailBookingId(linkedId);
       if (!linkedId) {
-        const msg =
-          lang === "ro"
-            ? `Momentan nu exista un eveniment in calendar pentru intervalul ${startDate} - ${endDate}. Verifica daca ai sincronizat calendarele si daca datele din formular au fost completate corect. Daca este nevoie, poti ajusta direct aici datele de inceput si sfarsit.`
-            : `There is currently no calendar event for ${startDate} - ${endDate}. Please make sure your calendars have been synced and that the form dates were filled in correctly. If needed, you can adjust the start and end dates directly here.`;
-        setPopupTitle(lang === "ro" ? "Eveniment negasit in calendar" : "Calendar event not found");
-        setPopupMsg(msg);
+        const dateLabel = `${fmtDate(startDate)} - ${fmtDate(endDate)}`;
+        setPopupTitle(
+          <div style={{ width: "100%", textAlign: "center", letterSpacing: "0.16em", textTransform: "uppercase", fontSize: 12, fontWeight: 800 }}>
+            {lang === "ro" ? "Eveniment negasit in calendar" : "Calendar event not found"}
+          </div>
+        );
+        setPopupMsg(
+          <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 10, color: "var(--muted)", lineHeight: 1.6 }}>
+            <li>
+              {lang === "ro" ? "Momentan nu exista un eveniment in calendar pentru intervalul " : "There is currently no calendar event for "}
+              <strong style={{ color: "var(--text)", textDecoration: "underline" }}>{dateLabel}</strong>.
+            </li>
+            <li>
+              {lang === "ro"
+                ? "Verifica daca ai sincronizat calendarele."
+                : "Please make sure your calendars have been synced."}
+            </li>
+            <li>
+              {lang === "ro"
+                ? "Verifica daca datele din formular au fost completate corect."
+                : "Please check that the form dates were filled in correctly."}
+            </li>
+            <li>
+              {lang === "ro"
+                ? "Daca este nevoie, poti ajusta direct aici datele de inceput si sfarsit."
+                : "If needed, you can adjust the start and end dates directly here."}
+            </li>
+          </ul>
+        );
         setSaving(false);
         return;
       }
@@ -1870,7 +1893,9 @@ function EditFormBookingModal({
             style={{ width: 'min(480px, 100%)', padding: 16, border:'1px solid var(--border)', background:'var(--panel)', borderRadius:12 }}
           >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: 8 }}>
-              <strong>{popupTitle || (lang === "ro" ? "Notificare" : "Notice")}</strong>
+              {typeof popupTitle === "string"
+                ? <strong>{popupTitle}</strong>
+                : (popupTitle || <strong>{lang === "ro" ? "Notificare" : "Notice"}</strong>)}
             </div>
             <div style={{ color:'var(--text)', marginBottom: 12 }}>
               {popupMsg}
