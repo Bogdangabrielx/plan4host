@@ -1427,17 +1427,29 @@ function EditFormBookingModal({
       <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-  const showMissingCalendarEventPopup = useCallback((sd: string, ed: string) => {
+  const showCalendarGuidancePopup = useCallback((sd: string, ed: string, kind: "event_not_found" | "room_not_available") => {
     const dateLabel = `${fmtDate(sd)} - ${fmtDate(ed)}`;
+    const title =
+      kind === "room_not_available"
+        ? (lang === "ro" ? "Camera indisponibila" : "Room not available")
+        : (lang === "ro" ? "Eveniment negasit in calendar" : "Calendar event not found");
+    const lead =
+      kind === "room_not_available"
+        ? (lang === "ro"
+            ? "Momentan nu exista un eveniment in calendar pentru camera selectata si intervalul "
+            : "There is currently no calendar event for the selected room and interval ")
+        : (lang === "ro"
+            ? "Momentan nu exista un eveniment in calendar pentru intervalul "
+            : "There is currently no calendar event for ");
     setPopupTitle(
       <div style={{ width: "100%", textAlign: "center", letterSpacing: "0.16em", textTransform: "uppercase", fontSize: 12, fontWeight: 800 }}>
-        {lang === "ro" ? "Eveniment negasit in calendar" : "Calendar event not found"}
+        {title}
       </div>
     );
     setPopupMsg(
       <div style={{ display: "grid", gap: 12, color: "var(--muted)", lineHeight: 1.6 }}>
         <div>
-          {lang === "ro" ? "Momentan nu exista un eveniment in calendar pentru intervalul " : "There is currently no calendar event for "}
+          {lead}
           <strong style={{ color: "var(--text)", textDecoration: "underline" }}>{dateLabel}</strong>.
         </div>
         <div style={{ display: "grid", gap: 10 }}>
@@ -1711,7 +1723,7 @@ function EditFormBookingModal({
       // If no event exists for the selected room + exact dates, stop here.
       if (!confirmOnSave) {
         if (!roomId || !eligibleRooms.has(String(roomId))) {
-          showMissingCalendarEventPopup(startDate, endDate);
+          showCalendarGuidancePopup(startDate, endDate, "event_not_found");
           setSaving(false);
           return;
         }
@@ -1772,7 +1784,7 @@ function EditFormBookingModal({
       const jj = await res.json().catch(()=>({}));
       if (!res.ok) {
         if (jj?.code === "calendar_event_not_found") {
-          showMissingCalendarEventPopup(startDate, endDate);
+          showCalendarGuidancePopup(startDate, endDate, "event_not_found");
           setSaving(false);
           return;
         }
@@ -1800,7 +1812,7 @@ function EditFormBookingModal({
       try { linkedId = jj?.booking_id ? String(jj.booking_id) : null; } catch { linkedId = null; }
       setEmailBookingId(linkedId);
       if (!linkedId) {
-        showMissingCalendarEventPopup(startDate, endDate);
+        showCalendarGuidancePopup(startDate, endDate, "event_not_found");
         setSaving(false);
         return;
       }
@@ -2399,8 +2411,7 @@ function EditFormBookingModal({
                     const next = String((e.target as HTMLSelectElement).value || '');
                     // Gating doar pentru "Confirm booking" (nu și pentru "Modify booking")
                     if (!confirmOnSave && next && !eligibleRooms.has(next)) {
-                      setPopupTitle(lang === "ro" ? 'Camera indisponibila' : 'Room not available');
-                      setPopupMsg(lang === "ro" ? 'Nu exista inca un eveniment pentru camera si intervalul selectate.' : 'No event exists yet for the selected room and dates.');
+                      showCalendarGuidancePopup(startDate, endDate, "room_not_available");
                       return;
                     }
                     setRoomId(next);
