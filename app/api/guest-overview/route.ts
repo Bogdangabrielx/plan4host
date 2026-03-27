@@ -115,6 +115,7 @@ export async function GET(req: Request) {
     // Determine which bookings have already started (start_date/start_time in the past,
     // based on the property's timezone) so the "Allow access" button can be disabled.
     const startedFormIds = new Set<string>();
+    const linkedFormIds = new Set<string>();
     if (forms.length > 0) {
       const formIds = forms.map((f) => f.id);
       const rBookings = await admin
@@ -128,6 +129,7 @@ export async function GET(req: Request) {
         for (const b of rBookings.data as any[]) {
           const fid = b.form_id ? String(b.form_id) : "";
           if (!fid) continue;
+          linkedFormIds.add(fid);
           if (hasStartedLocal(b.start_date as string | null | undefined, b.start_time as string | null | undefined, nowLocal)) {
             startedFormIds.add(fid);
           }
@@ -160,11 +162,13 @@ export async function GET(req: Request) {
       }
     }
 
-    // Build rows: yellow if no room selected; green once a room_id is set
+    // Build rows: green only when the form is truly linked to a booking,
+    // not merely because a room_id was selected in the form.
     const rows = forms.map((f) => {
       const rid = f.room_id ? String(f.room_id) : null;
       const roomLabel = rid ? (roomNameById.get(rid) ?? `#${rid.slice(0,4)}`) : null;
-      const status = (rid || (f.state || '').toLowerCase() === 'linked') ? 'green' : 'yellow';
+      const isLinked = linkedFormIds.has(String(f.id)) || (f.state || '').toLowerCase() === 'linked';
+      const status = isLinked ? 'green' : 'yellow';
       const hint = ((f as any).ota_provider_hint || "").toString();
       const norm = hint ? normalize(hint) : "";
       let meta: { color: string | null; logo_url: string | null } | null = null;

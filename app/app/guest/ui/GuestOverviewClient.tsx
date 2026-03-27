@@ -1419,6 +1419,37 @@ function EditFormBookingModal({
   const prevPillRef = useRef<React.ReactNode>(pill);
   const overlayMessageNode = (text: string) => <span data-p4h-overlay="message">{text}</span>;
   const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+  const showMissingCalendarEventPopup = useCallback((sd: string, ed: string) => {
+    const dateLabel = `${fmtDate(sd)} - ${fmtDate(ed)}`;
+    setPopupTitle(
+      <div style={{ width: "100%", textAlign: "center", letterSpacing: "0.16em", textTransform: "uppercase", fontSize: 12, fontWeight: 800 }}>
+        {lang === "ro" ? "Eveniment negasit in calendar" : "Calendar event not found"}
+      </div>
+    );
+    setPopupMsg(
+      <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 10, color: "var(--muted)", lineHeight: 1.6 }}>
+        <li>
+          {lang === "ro" ? "Momentan nu exista un eveniment in calendar pentru intervalul " : "There is currently no calendar event for "}
+          <strong style={{ color: "var(--text)", textDecoration: "underline" }}>{dateLabel}</strong>.
+        </li>
+        <li>
+          {lang === "ro"
+            ? "Verifica daca ai sincronizat calendarele."
+            : "Please make sure your calendars have been synced."}
+        </li>
+        <li>
+          {lang === "ro"
+            ? "Verifica daca datele din formular au fost completate corect."
+            : "Please check that the form dates were filled in correctly."}
+        </li>
+        <li>
+          {lang === "ro"
+            ? "Daca este nevoie, poti ajusta direct aici datele de inceput si sfarsit."
+            : "If needed, you can adjust the start and end dates directly here."}
+        </li>
+      </ul>
+    );
+  }, [lang]);
   // Baseline valori pentru detectarea modificărilor
   const baselineSetRef = useRef(false);
   const baselineRef = useRef<{ sd: string; ed: string; roomId: string; roomTypeId: string }>({ sd: '', ed: '', roomId: '', roomTypeId: '' });
@@ -1669,6 +1700,16 @@ function EditFormBookingModal({
     setSaving(true);
     setError(null);
     try {
+      // Confirm booking must link to a real calendar event.
+      // If no event exists for the selected room + exact dates, stop here.
+      if (!confirmOnSave) {
+        if (!roomId || !eligibleRooms.has(String(roomId))) {
+          showMissingCalendarEventPopup(startDate, endDate);
+          setSaving(false);
+          return;
+        }
+      }
+
       // Prevent overlap with another active form on the same room (partial or full)
       if (roomId) {
         const r = await supabase
@@ -1741,35 +1782,7 @@ function EditFormBookingModal({
       try { linkedId = jj?.booking_id ? String(jj.booking_id) : null; } catch { linkedId = null; }
       setEmailBookingId(linkedId);
       if (!linkedId) {
-        const dateLabel = `${fmtDate(startDate)} - ${fmtDate(endDate)}`;
-        setPopupTitle(
-          <div style={{ width: "100%", textAlign: "center", letterSpacing: "0.16em", textTransform: "uppercase", fontSize: 12, fontWeight: 800 }}>
-            {lang === "ro" ? "Eveniment negasit in calendar" : "Calendar event not found"}
-          </div>
-        );
-        setPopupMsg(
-          <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 10, color: "var(--muted)", lineHeight: 1.6 }}>
-            <li>
-              {lang === "ro" ? "Momentan nu exista un eveniment in calendar pentru intervalul " : "There is currently no calendar event for "}
-              <strong style={{ color: "var(--text)", textDecoration: "underline" }}>{dateLabel}</strong>.
-            </li>
-            <li>
-              {lang === "ro"
-                ? "Verifica daca ai sincronizat calendarele."
-                : "Please make sure your calendars have been synced."}
-            </li>
-            <li>
-              {lang === "ro"
-                ? "Verifica daca datele din formular au fost completate corect."
-                : "Please check that the form dates were filled in correctly."}
-            </li>
-            <li>
-              {lang === "ro"
-                ? "Daca este nevoie, poti ajusta direct aici datele de inceput si sfarsit."
-                : "If needed, you can adjust the start and end dates directly here."}
-            </li>
-          </ul>
-        );
+        showMissingCalendarEventPopup(startDate, endDate);
         setSaving(false);
         return;
       }
