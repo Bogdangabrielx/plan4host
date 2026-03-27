@@ -2364,23 +2364,25 @@ function EditFormBookingModal({
 
             {/* Editable fields */}
             <div className="sb-card" style={{ padding:12, border:"1px solid var(--border)", borderRadius:10, background:"var(--panel)", display:"grid", gap:10 }}>
-              <div style={{ display:"grid", gap:6 }}>
-                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Data inceput" : "Start date"}</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e)=>setStartDate((e.target as HTMLInputElement).value)}
-                  style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
-                />
-              </div>
-              <div style={{ display:"grid", gap:6 }}>
-                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Data sfarsit" : "End date"}</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e)=>setEndDate((e.target as HTMLInputElement).value)}
-                  style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44 }}
-                />
+              <div style={{ display:"grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap:10 }}>
+                <div style={{ display:"grid", gap:6 }}>
+                  <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Data inceput" : "Start date"}</label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e)=>setStartDate((e.target as HTMLInputElement).value)}
+                    style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44, width:"100%", fontFamily:"inherit" }}
+                  />
+                </div>
+                <div style={{ display:"grid", gap:6 }}>
+                  <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Data sfarsit" : "End date"}</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e)=>setEndDate((e.target as HTMLInputElement).value)}
+                    style={{ padding:10, border:"1px solid var(--border)", borderRadius:8, background:"var(--card)", color:"var(--text)", minHeight:44, width:"100%", fontFamily:"inherit" }}
+                  />
+                </div>
               </div>
 
               <div style={{ display:"grid", gap:6 }}>
