@@ -1419,6 +1419,12 @@ function EditFormBookingModal({
   const prevPillRef = useRef<React.ReactNode>(pill);
   const overlayMessageNode = (text: string) => <span data-p4h-overlay="message">{text}</span>;
   const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+  const greenCheckIcon = (
+    <svg aria-hidden width="18" height="18" viewBox="0 0 24 24" style={{ display: "block", flex: "0 0 18px" }}>
+      <circle cx="12" cy="12" r="10" fill="color-mix(in srgb, var(--primary) 14%, white)" stroke="var(--success)" strokeWidth="1.8" />
+      <path d="M7 12.5l3.1 3.1L17.2 8.5" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
   const showMissingCalendarEventPopup = useCallback((sd: string, ed: string) => {
     const dateLabel = `${fmtDate(sd)} - ${fmtDate(ed)}`;
     setPopupTitle(
@@ -1427,29 +1433,28 @@ function EditFormBookingModal({
       </div>
     );
     setPopupMsg(
-      <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 10, color: "var(--muted)", lineHeight: 1.6 }}>
-        <li>
+      <div style={{ display: "grid", gap: 12, color: "var(--muted)", lineHeight: 1.6 }}>
+        <div>
           {lang === "ro" ? "Momentan nu exista un eveniment in calendar pentru intervalul " : "There is currently no calendar event for "}
           <strong style={{ color: "var(--text)", textDecoration: "underline" }}>{dateLabel}</strong>.
-        </li>
-        <li>
-          {lang === "ro"
-            ? "Verifica daca ai sincronizat calendarele."
-            : "Please make sure your calendars have been synced."}
-        </li>
-        <li>
-          {lang === "ro"
-            ? "Verifica daca datele din formular au fost completate corect."
-            : "Please check that the form dates were filled in correctly."}
-        </li>
-        <li>
-          {lang === "ro"
-            ? "Daca este nevoie, poti ajusta direct aici datele de inceput si sfarsit."
-            : "If needed, you can adjust the start and end dates directly here."}
-        </li>
-      </ul>
+        </div>
+        <div style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+            {greenCheckIcon}
+            <span>{lang === "ro" ? "Verifica daca ai sincronizat calendarele." : "Please make sure your calendars have been synced."}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+            {greenCheckIcon}
+            <span>{lang === "ro" ? "Verifica daca datele din formular au fost completate corect." : "Please check that the form dates were filled in correctly."}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+            {greenCheckIcon}
+            <span>{lang === "ro" ? "Daca este nevoie, poti ajusta direct aici datele de inceput si sfarsit." : "If needed, you can adjust the start and end dates directly here."}</span>
+          </div>
+        </div>
+      </div>
     );
-  }, [lang]);
+  }, [greenCheckIcon, lang]);
   // Baseline valori pentru detectarea modificărilor
   const baselineSetRef = useRef(false);
   const baselineRef = useRef<{ sd: string; ed: string; roomId: string; roomTypeId: string }>({ sd: '', ed: '', roomId: '', roomTypeId: '' });
