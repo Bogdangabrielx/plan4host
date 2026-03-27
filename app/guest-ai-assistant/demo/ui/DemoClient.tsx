@@ -1136,7 +1136,7 @@ export default function DemoClient() {
             __html: `
               .rm-page{ --rm-font-h:16px; --rm-font-b:14px; --rm-font-s:12px; --rm-weight-m:600; --rm-weight-b:800; font-size: var(--rm-font-b); font-weight: var(--rm-weight-m); }
               .rm-card{ background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow: 0 10px 24px rgba(0,0,0,.12); }
-              .rm-content{ color: var(--text); font-family: Switzer, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; white-space: pre-wrap; font-size: var(--rm-font-b); font-weight: var(--rm-weight-m); }
+              .rm-content{ color: var(--text); font-family: Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; white-space: pre-wrap; font-size: var(--rm-font-b); font-weight: var(--rm-weight-m); }
               .rm-content h1,.rm-content h2,.rm-content h3{ margin: 0 0 10px; line-height: 1.25; font-weight: var(--rm-weight-b); }
               .rm-content h3:first-of-type{ font-size: var(--rm-font-s); font-weight: var(--rm-weight-b); letter-spacing: .12em; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
               .rm-content p{ margin: 10px 0; line-height: 1.6; font-size: var(--rm-font-b); font-weight: var(--rm-weight-m); }

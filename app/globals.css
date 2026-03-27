@@ -25,7 +25,7 @@
 html, body { margin: 0; }
 
 body {
-  font-family: 'Switzer', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, sans-serif;
+  font-family: 'Montserrat', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, sans-serif;
   background: var(--bground);
   color: var(--text);
   font-size: var(--fs-b, 16px);

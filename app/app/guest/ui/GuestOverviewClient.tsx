@@ -2273,7 +2273,11 @@ function EditFormBookingModal({
               </div>
 
               <div style={{ display:"grid", gap:6 }}>
-                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>{lang === "ro" ? "Nume camera" : "Room name"}</label>
+                <label style={{ fontSize:12, color:"var(--muted)", fontWeight:800 }}>
+                  {rooms.length === 1
+                    ? (lang === "ro" ? "Nume unitate" : "Unit name")
+                    : (lang === "ro" ? "Nume camera" : "Room name")}
+                </label>
                 <select
                   value={roomId || ""}
                   onChange={(e)=>{

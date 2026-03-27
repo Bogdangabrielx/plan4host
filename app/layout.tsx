@@ -1,5 +1,6 @@
 // /app/layout.tsx
 import type { Metadata, Viewport } from "next";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { cookies } from "next/headers";
 import Script from "next/script";
@@ -8,6 +9,10 @@ import VisibilityManager from "@/components/system/VisibilityManager";
 import { Analytics } from "@vercel/analytics/react";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.plan4host.com";
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
   title: "Plan4Host – unified calendar, online check‑in, automated messages",
@@ -78,7 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang={lang} data-theme={theme} data-accent={accent}>
-      <body style={{ margin: 0 }}>
+      <body className={montserrat.className} style={{ margin: 0 }}>
         {/* Global page visibility manager (safe, no visual side effects) */}
         <VisibilityManager />
         {/* UA flags -> <html data-browser|data-os|data-standalone> */}

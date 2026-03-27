@@ -51,7 +51,15 @@ export default function HowPlan4HostWorksPage() {
   ];
 
   return (
-    <main className={`${styles.landing} ${seoMontserrat.className}`} style={{ paddingBottom: "var(--safe-bottom, 0px)", minHeight: "100dvh", overflowX: "hidden" }}>
+    <main
+      className={`${styles.landing} ${seoMontserrat.className}`}
+      style={{
+        paddingBottom: "var(--safe-bottom, 0px)",
+        minHeight: "100dvh",
+        overflowX: "hidden",
+        fontFamily: seoMontserrat.style.fontFamily,
+      }}
+    >
       <LandingSafeArea />
       <MobileScrollReveal />
 
