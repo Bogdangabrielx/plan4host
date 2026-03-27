@@ -1634,6 +1634,18 @@ function EditFormBookingModal({
     return () => { cancelled = true; };
   }, [supabase, propertyId, startDate, endDate]);
 
+  useEffect(() => {
+    // For single-unit properties, preselect the only room to avoid
+    // making the user "assign" something that is already obvious.
+    if (loading) return;
+    if (roomId) return;
+    if (rooms.length !== 1) return;
+    const onlyRoom = rooms[0];
+    if (!onlyRoom?.id) return;
+    setRoomId(String(onlyRoom.id));
+    setRoomTypeId(String(onlyRoom.room_type_id || ""));
+  }, [loading, roomId, rooms]);
+
   async function performSave() {
     if (!valid() || saving) return;
     setSaving(true);
