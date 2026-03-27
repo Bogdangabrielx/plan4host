@@ -148,8 +148,8 @@ export async function POST(req: Request) {
         </div>
       </div>
       <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap;">
-        <a href="${link}" target="_blank" rel="noopener" style="display:inline-block; padding:12px 18px; background:#E9FBF3; border:1px solid #3ECF8E; color:#1f7a52; text-decoration:none; border-radius:999px; font-weight:800;">Reservation messages</a>
-        ${gcal ? `<a href=\"${gcal}\" target=\"_blank\" rel=\"noopener\" style=\"display:inline-block; padding:12px 18px; background:#E9FBF3; border:1px solid #3ECF8E; color:#1f7a52; text-decoration:none; border-radius:999px; font-weight:800;\">Add to calendar</a>` : ''}
+        <a href="${link}" target="_blank" rel="noopener" style="display:inline-block; background:#66ac69; color:#ffffff; padding:14px 26px; border-radius:999px; font-weight:800; font-size:14px; text-decoration:none;">Reservation messages</a>
+        ${gcal ? `<a href=\"${gcal}\" target=\"_blank\" rel=\"noopener\" style=\"display:inline-block; background:#66ac69; color:#ffffff; padding:14px 26px; border-radius:999px; font-weight:800; font-size:14px; text-decoration:none;\">Add to calendar</a>` : ''}
       </div>
       <p class="muted" style="margin:10px 0 0; color:#475569; font-size:12px;">An .ics file is attached for your calendar.</p>
     `;
@@ -217,17 +217,14 @@ function wrapEmailHtml(subjectPlain: string, innerHtml: string): string {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <title>${escapeHtml(subjectPlain || 'Reservation confirmation')}</title>
     <style>
       body{margin:0;padding:0;background:#f8fafc;}
       img{border:0;outline:none;text-decoration:none;max-width:100%;height:auto;display:block;}
       a{color:${success};text-decoration:none;}
       .muted{color:${muted};}
-      @media (prefers-color-scheme: dark){
-        body{background:#0c111b !important;color:#f8fafc !important;}
-        .card{background:#111827 !important;border-color:#22304a !important;}
-        .muted{color:#9aa4af !important;}
-      }
     </style>
   </head>
   <body>

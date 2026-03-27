@@ -90,17 +90,14 @@ function wrapEmailHtml(subjectPlain: string, innerHtml: string): string {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <title>${subjectPlain || "Notification"}</title>
     <style>
       body { margin:0; padding:0; background:#f8fafc; }
       img { border:0; outline:none; text-decoration:none; max-width:100%; height:auto; display:block; }
       a { color:${success}; text-decoration:none; }
       .muted { color:${muted}; }
-      @media (prefers-color-scheme: dark) {
-        body { background:#0c111b !important; color:#f8fafc !important; }
-        .card { background:#111827 !important; border-color:#22304a !important; }
-        .muted { color:#9aa4af !important; }
-      }
     </style>
   </head>
   <body>
@@ -555,7 +552,7 @@ export async function POST(req: NextRequest) {
             const subject = `New check-in submitted ${propName ? ` — ${propName}` : ''}`;
             const safeProp = propName.replace(/[&<>\"]/g,'');
             const html = wrapEmailHtml(subject, `
-              <h2 style="margin:0 0 8px; font-size:22px; line-height:1.2;">
+              <h2 style="margin:0 0 8px; font-size:22px; line-height:1.2; color:#0f172a;">
                 New check-in submitted${propName ? ` for <span style="color:#3ECF8E;">${safeProp}</span>` : ''}
               </h2>
               <p class="muted" style="margin:0 0 16px; color:#475569;">
@@ -568,12 +565,12 @@ export async function POST(req: NextRequest) {
                 </div>
               </div>
               <p class="muted" style="margin:0 0 14px; color:#475569;">
-                Open Guest Overview to assign a room and confirm the reservation.
+                Open Guest Overview to confirm the reservation.
               </p>
               <p style="margin:0; text-align:center;">
                 <a href="${link}" target="_blank" rel="noopener"
-                  style="display:inline-block; padding:12px 18px; background:#E9FBF3; border:1px solid #3ECF8E; color:#1f7a52; text-decoration:none; border-radius:999px; font-weight:800;">
-                  Guest overview
+                  style="display:inline-block; background:#66ac69; color:#ffffff; padding:14px 26px; border-radius:999px; font-weight:800; font-size:14px; text-decoration:none;">
+                  Confirm reservation
                 </a>
               </p>
             `);

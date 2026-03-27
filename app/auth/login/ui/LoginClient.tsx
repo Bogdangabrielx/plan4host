@@ -445,10 +445,10 @@ export default function LoginClient({
       <div style={outerWrap} className="p4h-outerWrap">
         <div style={quoteWrap} className="p4h-quoteWrap">
           <div style={quoteText} className="p4h-quoteText">
-            <span style={{ display: "block", whiteSpace: "nowrap" }}>
+            <span className="p4h-quoteLine" style={{ display: "block", whiteSpace: "nowrap" }}>
               “{t.quoteLine1}
             </span>
-            <span style={{ display: "block", whiteSpace: "nowrap" }}>
+            <span className="p4h-quoteLine" style={{ display: "block", whiteSpace: "nowrap" }}>
               {quote2Pre}
               {quote2Em ? <span style={{ fontWeight: 850 }}>{quote2Em}</span> : null}
               {quote2Post}”
@@ -678,6 +678,12 @@ export default function LoginClient({
           .p4h-authCard { padding: 14px !important; }
           .p4h-outerWrap { gap: 10px !important; }
         }
+
+        @media (max-width: 560px) {
+          .p4h-quoteLine {
+            white-space: normal !important;
+          }
+        }
       `}</style>
     </>
   );
@@ -690,6 +696,7 @@ const outerWrap: React.CSSProperties = {
   margin: "0 auto",
   display: "grid",
   gap: 12,
+  overflowX: "clip",
 };
 const quoteWrap: React.CSSProperties = {
   margin: 0,
