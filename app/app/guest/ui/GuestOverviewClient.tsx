@@ -1722,7 +1722,17 @@ function EditFormBookingModal({
       let linkedId: string | null = null;
       try { linkedId = jj?.booking_id ? String(jj.booking_id) : null; } catch { linkedId = null; }
       setEmailBookingId(linkedId);
-      // Actualizează baseline (noua stare salvată) și marchează Saved până la închiderea modalului
+      if (!linkedId) {
+        const msg =
+          lang === "ro"
+            ? `Momentan nu exista un eveniment in calendar pentru intervalul ${startDate} - ${endDate}. Verifica daca ai sincronizat calendarele si daca datele din formular au fost completate corect. Daca este nevoie, poti ajusta direct aici datele de inceput si sfarsit.`
+            : `There is currently no calendar event for ${startDate} - ${endDate}. Please make sure your calendars have been synced and that the form dates were filled in correctly. If needed, you can adjust the start and end dates directly here.`;
+        setPopupTitle(lang === "ro" ? "Eveniment negasit in calendar" : "Calendar event not found");
+        setPopupMsg(msg);
+        setSaving(false);
+        return;
+      }
+      // Actualizeaza baseline (noua stare salvata) si marcheaza Saved pana la inchiderea modalului
       baselineRef.current = { sd: startDate, ed: endDate, roomId: String(roomId || ''), roomTypeId: String(roomTypeId || '') };
       setJustSaved(true);
       if (linkedId) {
