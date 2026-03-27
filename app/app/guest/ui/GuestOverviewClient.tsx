@@ -925,6 +925,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
             const showCopy = false;
             // Row-level actions allowed only for admin/editor (viewers are read-only)
             const canEditFormBooking = canEditGuest && !!it.id;
+            const showActions = canEditGuest && (kind !== "green" || openActions.has(key));
 
   return (
               <section
@@ -1029,8 +1030,9 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                     justifyContent: isSmall ? "stretch" : "flex-end",
                     gap: 8,
                     flexWrap: isSmall ? undefined : "wrap",
-                    // hide by default; show when toggled (mobile + desktop)
-                    display: (canEditGuest && openActions.has(key)) ? (isSmall ? 'grid' : 'flex') : 'none',
+                    // Unconfirmed forms expose the confirm action directly.
+                    // Confirmed rows keep the current tap-to-expand behavior.
+                    display: showActions ? (isSmall ? 'grid' : 'flex') : 'none',
                   }}
                 >
                   {/* Desktop: badge shown above (under status) */}
