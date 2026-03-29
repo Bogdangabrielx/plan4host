@@ -3220,7 +3220,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     borderRadius:14,
                     overflow:'hidden',
                     background:'transparent',
-                    maxWidth: 420,
+                    maxWidth: 360,
                     marginInline: 'auto',
                     opacity: 0.72,
                   }}
@@ -3233,6 +3233,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     style={{ width:'100%', height:'auto', display:'block' }}
                   />
                 </div>
+                <div style={{ height:1, background:'color-mix(in srgb, var(--border) 60%, transparent)', maxWidth: 360, width:'100%', marginInline:'auto' }} />
                 <div style={{ fontSize:10, color:'var(--muted)', textAlign:'center', marginTop:-2 }}>
                   {uiLang === "ro" ? "Exemplu: asa apare sursa in meniul Guests." : "Example: this is how the source appears in the Guests menu."}
                 </div>
