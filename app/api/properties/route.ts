@@ -18,8 +18,12 @@ export async function POST(req: Request) {
 
   const country_code = (body?.country_code ?? "").toString().trim() || null;
   const allowedGuestLanguages = new Set(["ro", "el", "fr", "de", "it", "pt", "es"]);
-  const rawSecondaryLanguage = (body?.guest_secondary_language ?? "ro").toString().trim().toLowerCase();
-  const guest_secondary_language = allowedGuestLanguages.has(rawSecondaryLanguage) ? rawSecondaryLanguage : "ro";
+  const rawSecondaryLanguage = body?.guest_secondary_language == null
+    ? null
+    : (body?.guest_secondary_language ?? "").toString().trim().toLowerCase();
+  const guest_secondary_language = rawSecondaryLanguage && allowedGuestLanguages.has(rawSecondaryLanguage)
+    ? rawSecondaryLanguage
+    : null;
   const timezone = (body?.timezone ?? "").toString().trim() || null;
   const check_in_time = (body?.check_in_time ?? "").toString().trim() || null;
   const check_out_time = (body?.check_out_time ?? "").toString().trim() || null;

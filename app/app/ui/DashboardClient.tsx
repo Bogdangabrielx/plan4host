@@ -66,6 +66,16 @@ const SECOND_LANGUAGE_OPTIONS = [
   { code: "es", flag: "ES", en: "Spanish", ro: "Spaniola" },
 ] as const;
 
+const COUNTRY_TO_SECOND_LANGUAGE: Record<string, (typeof SECOND_LANGUAGE_OPTIONS)[number]["code"]> = {
+  RO: "ro",
+  ES: "es",
+  FR: "fr",
+  IT: "it",
+  PT: "pt",
+  GR: "el",
+  DE: "de",
+};
+
 const card: React.CSSProperties = {
   background: "var(--panel)",
   border: "1px solid var(--border)",
@@ -91,6 +101,10 @@ function countryLabel(cc: string): string {
   return `${flagEmoji(cc)} ${name} (${cc})`;
 }
 
+function secondLanguageForCountry(countryCode: string): string {
+  return COUNTRY_TO_SECOND_LANGUAGE[String(countryCode || "").toUpperCase()] || "";
+}
+
 export default function DashboardClient({
   initialProperties = [],
 }: {
@@ -103,7 +117,7 @@ export default function DashboardClient({
   const [lang, setLang] = useState<Lang>("en");
   const [name, setName] = useState("");
   const [country, setCountry] = useState<string>("");
-  const [secondLanguage, setSecondLanguage] = useState<string>("ro");
+  const [secondLanguage, setSecondLanguage] = useState<string>("");
   const [propertyType, setPropertyType] = useState<string>("");
   // Don't preselect a unit mode in onboarding; require explicit user choice.
   const [unitMode, setUnitMode] = useState<"single" | "multi" | null>(null);
@@ -409,6 +423,11 @@ export default function DashboardClient({
     return c?.tz || "Europe/Bucharest";
   }
 
+  function handleCountryChange(nextCountry: string) {
+    setCountry(nextCountry);
+    setSecondLanguage(secondLanguageForCountry(nextCountry));
+  }
+
   const FIRST_PROPERTY_LOADING_TITLE = t.preparingGuestExperience;
   const FIRST_PROPERTY_LOADING_DETAILS = [
     t.loadingLine1,
@@ -441,7 +460,7 @@ export default function DashboardClient({
         body: JSON.stringify({
           name,
           country_code: country,
-          guest_secondary_language: secondLanguage,
+          guest_secondary_language: secondLanguage || null,
           timezone: guessTZ(country),
           check_in_time: "14:00",
           check_out_time: "11:00",
@@ -520,7 +539,7 @@ export default function DashboardClient({
       setFirstPropertyUnitsEditing(false);
       setName("");
       setCountry("");
-      setSecondLanguage("ro");
+      setSecondLanguage("");
       setPropertyType("");
       setUnitMode(null);
       setUnitCount("2");
@@ -552,7 +571,7 @@ export default function DashboardClient({
         body: JSON.stringify({
           name,
           country_code: country,
-          guest_secondary_language: secondLanguage,
+          guest_secondary_language: secondLanguage || null,
           timezone: guessTZ(country),
           check_in_time: '14:00',
           check_out_time: '11:00',
@@ -578,7 +597,7 @@ export default function DashboardClient({
       setList((refreshed ?? []) as Property[]);
       setName("");
       setCountry("");
-      setSecondLanguage("ro");
+      setSecondLanguage("");
       // Use the same overlay UX as the rest of the app: dots while saving, then "Saved" briefly.
       pillLockRef.current = true;
       setPill(overlayMessageNode(t.synced));
@@ -871,7 +890,7 @@ export default function DashboardClient({
 
           <div style={FIELD_WRAPPER}>
             <label style={{ display: "block", marginBottom: 6 }}>{t.countryLocationRequired}</label>
-            <select value={country} onChange={(e) => setCountry(e.currentTarget.value)} style={FIELD_STYLE}>
+            <select value={country} onChange={(e) => handleCountryChange(e.currentTarget.value)} style={FIELD_STYLE}>
               <option value="">{t.selectOption}</option>
               {TZ_COUNTRIES.slice()
                 .sort((a, b) => {
@@ -890,6 +909,7 @@ export default function DashboardClient({
           <div style={FIELD_WRAPPER}>
             <label style={{ display: "block", marginBottom: 6 }}>{t.secondLanguage}</label>
             <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
+              <option value="">{t.selectOption}</option>
               {SECOND_LANGUAGE_OPTIONS.map((opt) => (
                 <option key={opt.code} value={opt.code}>
                   {`${flagEmoji(opt.flag)} ${lang === "ro" ? opt.ro : opt.en}`}
@@ -1163,7 +1183,7 @@ export default function DashboardClient({
 
                 <div style={{ display: "grid", gap: 6 }}>
                   <label style={{ display: "block" }}>{t.country}</label>
-                  <select value={country} onChange={(e) => setCountry(e.currentTarget.value)} style={FIELD_STYLE}>
+                  <select value={country} onChange={(e) => handleCountryChange(e.currentTarget.value)} style={FIELD_STYLE}>
                     <option value="">{t.selectOption}</option>
                     {TZ_COUNTRIES.slice()
                       .sort((a, b) => {
@@ -1185,6 +1205,7 @@ export default function DashboardClient({
                 <div style={{ display: "grid", gap: 6 }}>
                   <label style={{ display: "block" }}>{t.secondLanguage}</label>
                   <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
+                    <option value="">{t.selectOption}</option>
                     {SECOND_LANGUAGE_OPTIONS.map((opt) => (
                       <option key={opt.code} value={opt.code}>
                         {`${flagEmoji(opt.flag)} ${lang === "ro" ? opt.ro : opt.en}`}

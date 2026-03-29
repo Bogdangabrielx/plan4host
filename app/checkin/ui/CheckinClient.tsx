@@ -1456,7 +1456,7 @@ export default function CheckinClient() {
           const r = await fetch('/api/checkin/confirm', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ booking_id: booking, property_id: propertyId, email })
+            body: JSON.stringify({ booking_id: booking, property_id: propertyId, email, lang })
           });
           const jj = await r.json().catch(()=>({}));
           if (r.ok && jj?.sent) setConfirmStatus("sent");
