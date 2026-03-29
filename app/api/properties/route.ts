@@ -17,6 +17,9 @@ export async function POST(req: Request) {
   if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
   const country_code = (body?.country_code ?? "").toString().trim() || null;
+  const allowedGuestLanguages = new Set(["ro", "el", "fr", "de", "pt", "es"]);
+  const rawSecondaryLanguage = (body?.guest_secondary_language ?? "ro").toString().trim().toLowerCase();
+  const guest_secondary_language = allowedGuestLanguages.has(rawSecondaryLanguage) ? rawSecondaryLanguage : "ro";
   const timezone = (body?.timezone ?? "").toString().trim() || null;
   const check_in_time = (body?.check_in_time ?? "").toString().trim() || null;
   const check_out_time = (body?.check_out_time ?? "").toString().trim() || null;
@@ -26,6 +29,7 @@ export async function POST(req: Request) {
     account_id: user.id,
     admin_id: user.id,
     country_code,
+    guest_secondary_language,
     timezone,
     check_in_time,
     check_out_time,

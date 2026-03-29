@@ -56,6 +56,15 @@ type Property = {
   regulation_pdf_uploaded_at?: string | null;
 };
 
+const SECOND_LANGUAGE_OPTIONS = [
+  { code: "ro", en: "Romanian", ro: "Romana" },
+  { code: "el", en: "Greek", ro: "Greaca" },
+  { code: "fr", en: "French", ro: "Franceza" },
+  { code: "de", en: "German", ro: "Germana" },
+  { code: "pt", en: "Portuguese", ro: "Portugheza" },
+  { code: "es", en: "Spanish", ro: "Spaniola" },
+] as const;
+
 const card: React.CSSProperties = {
   background: "var(--panel)",
   border: "1px solid var(--border)",
@@ -93,6 +102,7 @@ export default function DashboardClient({
   const [lang, setLang] = useState<Lang>("en");
   const [name, setName] = useState("");
   const [country, setCountry] = useState<string>("");
+  const [secondLanguage, setSecondLanguage] = useState<string>("ro");
   const [propertyType, setPropertyType] = useState<string>("");
   // Don't preselect a unit mode in onboarding; require explicit user choice.
   const [unitMode, setUnitMode] = useState<"single" | "multi" | null>(null);
@@ -170,6 +180,8 @@ export default function DashboardClient({
       propertyName: "Property name",
       guestsWillSee: "All your bookings and guests will appear under this name.",
       country: "Country",
+      secondLanguage: "Second language",
+      secondLanguageHelp: "Guests will see English plus this language in guest-facing flows.",
       personalizeGuestInfo: "Allows automatically sending the correct information to guests.",
       propertyType: "Type",
       propertyTypePlaceholder: "Select type",
@@ -238,6 +250,8 @@ export default function DashboardClient({
       propertyName: "Nume proprietate",
       guestsWillSee: "Sub acest nume vor apărea toate rezervările și oaspeții tăi.",
       country: "Tara",
+      secondLanguage: "A doua limba",
+      secondLanguageHelp: "Oaspetii vor vedea engleza plus aceasta limba in experienta dedicata lor.",
       personalizeGuestInfo: "Permite trimiterea automată a informațiilor corecte către oaspeți.",
       propertyType: "Tip",
       propertyTypePlaceholder: "Selectează tipul",
@@ -426,6 +440,7 @@ export default function DashboardClient({
         body: JSON.stringify({
           name,
           country_code: country,
+          guest_secondary_language: secondLanguage,
           timezone: guessTZ(country),
           check_in_time: "14:00",
           check_out_time: "11:00",
@@ -504,6 +519,7 @@ export default function DashboardClient({
       setFirstPropertyUnitsEditing(false);
       setName("");
       setCountry("");
+      setSecondLanguage("ro");
       setPropertyType("");
       setUnitMode(null);
       setUnitCount("2");
@@ -535,6 +551,7 @@ export default function DashboardClient({
         body: JSON.stringify({
           name,
           country_code: country,
+          guest_secondary_language: secondLanguage,
           timezone: guessTZ(country),
           check_in_time: '14:00',
           check_out_time: '11:00',
@@ -560,6 +577,7 @@ export default function DashboardClient({
       setList((refreshed ?? []) as Property[]);
       setName("");
       setCountry("");
+      setSecondLanguage("ro");
       // Use the same overlay UX as the rest of the app: dots while saving, then "Saved" briefly.
       pillLockRef.current = true;
       setPill(overlayMessageNode(t.synced));
@@ -868,6 +886,20 @@ export default function DashboardClient({
             </select>
           </div>
 
+          <div style={FIELD_WRAPPER}>
+            <label style={{ display: "block", marginBottom: 6 }}>{t.secondLanguage}</label>
+            <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
+              {SECOND_LANGUAGE_OPTIONS.map((opt) => (
+                <option key={opt.code} value={opt.code}>
+                  {lang === "ro" ? opt.ro : opt.en}
+                </option>
+              ))}
+            </select>
+            <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginTop: 6 }}>
+              {t.secondLanguageHelp}
+            </div>
+          </div>
+
 	          <div style={{ ...FIELD_WRAPPER, marginTop: 6 }}>
 	            <button
               onClick={() => {
@@ -1146,6 +1178,20 @@ export default function DashboardClient({
                   </select>
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
                     {t.personalizeGuestInfo}
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gap: 6 }}>
+                  <label style={{ display: "block" }}>{t.secondLanguage}</label>
+                  <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
+                    {SECOND_LANGUAGE_OPTIONS.map((opt) => (
+                      <option key={opt.code} value={opt.code}>
+                        {lang === "ro" ? opt.ro : opt.en}
+                      </option>
+                    ))}
+                  </select>
+                  <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
+                    {t.secondLanguageHelp}
                   </div>
                 </div>
 
