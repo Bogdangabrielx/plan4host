@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react";
 
-export default function LanguageViewer({ htmlRo, htmlEn, lang: langOverride, showToggle = true }: { htmlRo: string; htmlEn: string; lang?: 'ro'|'en'; showToggle?: boolean }) {
+export default function LanguageViewer({ htmlRo, htmlEn, lang: langOverride, showToggle = true }: { htmlRo: string; htmlEn: string; lang?: string; showToggle?: boolean }) {
   const ro = (htmlRo || '').trim();
   const en = (htmlEn || '').trim();
   const [langState, setLangState] = useState<'ro'|'en'>(() => (ro ? 'ro' : 'en'));
   const lang = langOverride || langState;
-  const content = useMemo(() => (lang==='ro' ? (ro || en) : (en || ro)), [lang, ro, en]);
+  const content = useMemo(() => (lang==='en' ? (en || ro) : (ro || en)), [lang, ro, en]);
   return (
     <article className="rm-card">
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>

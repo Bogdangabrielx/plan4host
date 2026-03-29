@@ -9,6 +9,7 @@ export const runtime = "nodejs";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const admin = createClient(url, service, { auth: { persistSession: false } });
+type GuestPortalLang = "ro" | "el" | "fr" | "de" | "it" | "pt" | "es";
 
 function bad(status: number, body: any) { return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store, max-age=0" } }); }
 
@@ -63,13 +64,17 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
     // booking + property
     const [rBk, rProp] = await Promise.all([
       admin.from('bookings').select('id, property_id, start_date, end_date, start_time, end_time, room_id, status, source, guest_first_name, guest_last_name').eq('id', msg.booking_id).maybeSingle(),
-      admin.from('properties').select('id, account_id, name, timezone, check_in_time, check_out_time, contact_email, contact_phone, contact_address, presentation_image_url, regulation_pdf_url, ai_house_rules_text, contact_overlay_position, social_facebook, social_instagram, social_tiktok, social_website, social_location').eq('id', msg.property_id).maybeSingle(),
+      admin.from('properties').select('id, account_id, name, timezone, check_in_time, check_out_time, contact_email, contact_phone, contact_address, presentation_image_url, regulation_pdf_url, ai_house_rules_text, contact_overlay_position, social_facebook, social_instagram, social_tiktok, social_website, social_location, guest_secondary_language').eq('id', msg.property_id).maybeSingle(),
     ]);
     if (rBk.error || !rBk.data) return bad(404, { error: 'Booking not found' });
     if (rProp.error || !rProp.data) return bad(404, { error: 'Property not found' });
 
     const booking = rBk.data as any;
     const prop = rProp.data as any;
+    const guestSecondaryLanguage: GuestPortalLang =
+      (["ro", "el", "fr", "de", "it", "pt", "es"] as GuestPortalLang[]).includes(String(prop.guest_secondary_language || "") as GuestPortalLang)
+        ? (String(prop.guest_secondary_language) as GuestPortalLang)
+        : "ro";
 
     let guestAiEnabled = false;
     try {
@@ -134,7 +139,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
     for (const b of (rBlocks.data || []) as any[]) {
       const arr = byTpl.get(b.template_id) || []; arr.push(b); byTpl.set(b.template_id, arr);
     }
-    function renderBlocks(arr:any[], lang:'ro'|'en'){
+    function renderBlocks(arr:any[], lang: GuestPortalLang | 'en'){
       const filtered = (arr||[]).filter(x => (x.lang || 'ro').toLowerCase() === lang).sort((a:any,b:any)=>(a.sort_index||0)-(b.sort_index||0));
       const parts:string[] = [];
       for (const b of filtered) {
@@ -143,6 +148,11 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
         else if (b.type === 'paragraph') parts.push(`<div style=\"margin:6px 0; line-height:1.5;\">${replaceVarsInHtml(b.text || '', vars)}</div>`);
       }
       return parts.join('\n');
+    }
+    function renderSecondaryBlocks(arr: any[]) {
+      const direct = renderBlocks(arr, guestSecondaryLanguage);
+      if (direct || guestSecondaryLanguage === "ro") return direct;
+      return renderBlocks(arr, "ro");
     }
 
     // Visibility calculations (timezone-aware)
@@ -209,7 +219,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
           return (snapshotItems as Array<{ id:string; title?:string; schedule_kind?:string|null; schedule_offset_hours?:number|null; blocks?:any[] }>)
             .map((snap) => {
               const arr = Array.isArray(snap.blocks) ? snap.blocks : [];
-              const html_ro = renderBlocks(arr, 'ro');
+              const html_secondary = renderSecondaryBlocks(arr);
               const html_en = renderBlocks(arr, 'en');
               const kind = String(snap.schedule_kind || 'none').toLowerCase();
               const offRaw: any = snap.schedule_offset_hours;
@@ -222,7 +232,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
               else if (kind === 'on_arrival') { dueLocal = ciLocal; }
               else if (kind === 'none') { visible = false; }
               if (dueLocal) { dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); visible = nowKey >= dueKey; }
-              const base = { id: String(snap.id), title: (snap.title || 'Message'), schedule_kind: (snap.schedule_kind || 'none'), html_ro, html_en, visible } as any;
+              const base = { id: String(snap.id), title: (snap.title || 'Message'), schedule_kind: (snap.schedule_kind || 'none'), html_ro: html_secondary, html_secondary, html_en, visible } as any;
               if (wantDebug) base.debug = { tz: propTz, now_key: nowKey, ci_key: ciKey, co_key: coKey, due_key: dueKey || null, offset_hours: off ?? null, check_in_time: ciTimeRaw, check_out_time: coTimeRaw };
               return base;
             });
@@ -231,7 +241,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
           // No snapshot: use LIVE templates (backward compatibility)
           templates.map(t => {
             const arr = byTpl.get(t.id) || [];
-            const html_ro = renderBlocks(arr, 'ro');
+            const html_secondary = renderSecondaryBlocks(arr);
             const html_en = renderBlocks(arr, 'en');
             const kind = (t.schedule_kind || 'none').toLowerCase();
             let visible = false;
@@ -243,7 +253,7 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
             else if (kind === 'on_arrival') { dueLocal = ciLocal; }
             else if (kind === 'none') { visible = false; }
             if (dueLocal) { dueKey = toKey(dueLocal.y, dueLocal.m, dueLocal.d, dueLocal.h, dueLocal.mi, dueLocal.s); visible = nowKey >= dueKey; }
-            const base = { id: t.id, title: t.title || 'Message', schedule_kind: t.schedule_kind || 'none', html_ro, html_en, visible } as any;
+            const base = { id: t.id, title: t.title || 'Message', schedule_kind: t.schedule_kind || 'none', html_ro: html_secondary, html_secondary, html_en, visible } as any;
             if (wantDebug) base.debug = { tz: propTz, now_key: nowKey, ci_key: ciKey, co_key: coKey, due_key: dueKey || null, offset_hours: off ?? null, check_in_time: ciTimeRaw, check_out_time: coTimeRaw };
             return base;
           })
@@ -282,8 +292,9 @@ export async function GET(req: NextRequest, ctx: { params: { token: string } }) 
           social_instagram: (prop as any)?.social_instagram || null,
           social_tiktok: (prop as any)?.social_tiktok || null,
         social_website: (prop as any)?.social_website || null,
-        social_location: (prop as any)?.social_location || null,
+          social_location: (prop as any)?.social_location || null,
           guest_ai_enabled: guestAiEnabled,
+          guest_secondary_language: guestSecondaryLanguage,
         },
         ...(wantDebug ? { debug: { tz: propTz, now_key: nowKey, check_in_time: ciTimeRaw, check_out_time: coTimeRaw } } : {})
       },

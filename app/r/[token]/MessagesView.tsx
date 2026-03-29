@@ -3,6 +3,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import LanguageViewer from "./LanguageViewer";
 
+type GuestPortalLang = "ro" | "el" | "fr" | "de" | "it" | "pt" | "es";
+type PortalLang = GuestPortalLang | "en";
+
 type Details = {
   property_name?: string;
   guest_first_name?: string;
@@ -15,7 +18,7 @@ type Details = {
   guest_companions_count?: number;
 };
 
-type Item = { id: string; title: string; html_ro: string; html_en: string; visible: boolean };
+type Item = { id: string; title: string; html_ro: string; html_secondary?: string; html_en: string; visible: boolean };
 
 type PropInfo = {
   name?: string | null;
@@ -32,6 +35,118 @@ type PropInfo = {
   social_website?: string | null;
   social_location?: string | null;
   guest_ai_enabled?: boolean | null;
+  guest_secondary_language?: GuestPortalLang | null;
+};
+
+const PORTAL_LANG_META: Record<GuestPortalLang, { label: string; flagSrc: string }> = {
+  ro: { label: "Română", flagSrc: "/ro.png" },
+  el: { label: "Ελληνικά", flagSrc: "/el.png" },
+  fr: { label: "Français", flagSrc: "/fr.png" },
+  de: { label: "Deutsch", flagSrc: "/de.png" },
+  it: { label: "Italiano", flagSrc: "/it.png" },
+  pt: { label: "Português", flagSrc: "/pt.png" },
+  es: { label: "Español", flagSrc: "/es.png" },
+};
+
+const PORTAL_COPY: Record<PortalLang, {
+  details: string;
+  property: string;
+  guest: string;
+  guestWithCompanions: string;
+  stay: string;
+  room: string;
+  houseRules: string;
+  noMessagesTitle: string;
+  noMessagesLine1: string;
+  noMessagesLine2: string;
+  noMessagesLine3: string;
+  messageFallback: string;
+  open: string;
+  hide: string;
+  guestAssistantHint: string;
+  companionsSingle: string;
+  companionsPlural: string;
+}> = {
+  en: {
+    details: "Reservation details", property: "Property", guest: "Guest", guestWithCompanions: "Guest & companions", stay: "Stay", room: "Room", houseRules: "House Rules",
+    noMessagesTitle: "No messages available yet.",
+    noMessagesLine1: "Through this page, you will be able to view any messages we publish related to your reservation.",
+    noMessagesLine2: "When a message is posted, you will receive an email notification with a secure link to return to this page.",
+    noMessagesLine3: "Thank you for your understanding.",
+    messageFallback: "Message", open: "Open", hide: "Hide",
+    guestAssistantHint: "Have a question? Guest AI assistant can help.",
+    companionsSingle: "companion", companionsPlural: "companions",
+  },
+  ro: {
+    details: "Detalii rezervare", property: "Locație", guest: "Oaspete", guestWithCompanions: "Oaspete & însoțitori", stay: "Perioada", room: "Unitate", houseRules: "Regulament",
+    noMessagesTitle: "Momentan nu există mesaje.",
+    noMessagesLine1: "Prin această pagină vei putea vedea toate mesajele publicate în legătură cu rezervarea ta.",
+    noMessagesLine2: "Când se postează un mesaj, vei primi un email de notificare cu un link securizat pentru a reveni aici.",
+    noMessagesLine3: "Îți mulțumim pentru înțelegere.",
+    messageFallback: "Mesaj", open: "Deschide", hide: "Ascunde",
+    guestAssistantHint: "Ai o întrebare? Guest AI assistant te poate ajuta.",
+    companionsSingle: "însoțitor", companionsPlural: "însoțitori",
+  },
+  el: {
+    details: "Στοιχεία κράτησης", property: "Κατάλυμα", guest: "Επισκέπτης", guestWithCompanions: "Επισκέπτης & συνοδοί", stay: "Διαμονή", room: "Μονάδα", houseRules: "Κανόνες καταλύματος",
+    noMessagesTitle: "Δεν υπάρχουν ακόμη διαθέσιμα μηνύματα.",
+    noMessagesLine1: "Σε αυτή τη σελίδα θα βλέπεις όλα τα μηνύματα που δημοσιεύουμε σχετικά με την κράτησή σου.",
+    noMessagesLine2: "Όταν δημοσιευτεί ένα μήνυμα, θα λάβεις email ειδοποίησης με ασφαλή σύνδεσμο για να επιστρέψεις εδώ.",
+    noMessagesLine3: "Ευχαριστούμε για την κατανόηση.",
+    messageFallback: "Μήνυμα", open: "Άνοιγμα", hide: "Απόκρυψη",
+    guestAssistantHint: "Έχεις ερώτηση; Ο Guest AI assistant μπορεί να βοηθήσει.",
+    companionsSingle: "συνοδός", companionsPlural: "συνοδοί",
+  },
+  fr: {
+    details: "Détails de la réservation", property: "Hébergement", guest: "Voyageur", guestWithCompanions: "Voyageur & accompagnants", stay: "Séjour", room: "Unité", houseRules: "Règlement intérieur",
+    noMessagesTitle: "Aucun message n’est disponible pour le moment.",
+    noMessagesLine1: "Depuis cette page, vous pourrez voir tous les messages publiés concernant votre réservation.",
+    noMessagesLine2: "Lorsqu’un message sera publié, vous recevrez un email avec un lien sécurisé pour revenir ici.",
+    noMessagesLine3: "Merci pour votre compréhension.",
+    messageFallback: "Message", open: "Ouvrir", hide: "Masquer",
+    guestAssistantHint: "Une question ? Guest AI assistant peut vous aider.",
+    companionsSingle: "accompagnant", companionsPlural: "accompagnants",
+  },
+  de: {
+    details: "Reservierungsdetails", property: "Unterkunft", guest: "Gast", guestWithCompanions: "Gast & Begleiter", stay: "Aufenthalt", room: "Einheit", houseRules: "Hausregeln",
+    noMessagesTitle: "Derzeit sind noch keine Nachrichten verfügbar.",
+    noMessagesLine1: "Auf dieser Seite kannst du alle veröffentlichten Nachrichten zu deiner Reservierung sehen.",
+    noMessagesLine2: "Sobald eine Nachricht veröffentlicht wird, erhältst du eine E-Mail mit einem sicheren Link zurück zu dieser Seite.",
+    noMessagesLine3: "Vielen Dank für dein Verständnis.",
+    messageFallback: "Nachricht", open: "Öffnen", hide: "Ausblenden",
+    guestAssistantHint: "Hast du eine Frage? Guest AI assistant kann helfen.",
+    companionsSingle: "Begleiter", companionsPlural: "Begleiter",
+  },
+  it: {
+    details: "Dettagli della prenotazione", property: "Struttura", guest: "Ospite", guestWithCompanions: "Ospite & accompagnatori", stay: "Soggiorno", room: "Unità", houseRules: "Regole della struttura",
+    noMessagesTitle: "Al momento non ci sono messaggi disponibili.",
+    noMessagesLine1: "Da questa pagina potrai vedere tutti i messaggi pubblicati relativi alla tua prenotazione.",
+    noMessagesLine2: "Quando verrà pubblicato un messaggio, riceverai un’email con un link sicuro per tornare qui.",
+    noMessagesLine3: "Grazie per la comprensione.",
+    messageFallback: "Messaggio", open: "Apri", hide: "Nascondi",
+    guestAssistantHint: "Hai una domanda? Guest AI assistant può aiutarti.",
+    companionsSingle: "accompagnatore", companionsPlural: "accompagnatori",
+  },
+  pt: {
+    details: "Detalhes da reserva", property: "Alojamento", guest: "Hóspede", guestWithCompanions: "Hóspede & acompanhantes", stay: "Estadia", room: "Unidade", houseRules: "Regras da propriedade",
+    noMessagesTitle: "Ainda não existem mensagens disponíveis.",
+    noMessagesLine1: "Nesta página poderás ver todas as mensagens publicadas relacionadas com a tua reserva.",
+    noMessagesLine2: "Quando uma mensagem for publicada, receberás um email com um link seguro para regressar aqui.",
+    noMessagesLine3: "Obrigado pela compreensão.",
+    messageFallback: "Mensagem", open: "Abrir", hide: "Ocultar",
+    guestAssistantHint: "Tens uma pergunta? Guest AI assistant pode ajudar.",
+    companionsSingle: "acompanhante", companionsPlural: "acompanhantes",
+  },
+  es: {
+    details: "Detalles de la reserva", property: "Alojamiento", guest: "Huésped", guestWithCompanions: "Huésped & acompañantes", stay: "Estancia", room: "Unidad", houseRules: "Normas de la propiedad",
+    noMessagesTitle: "Todavía no hay mensajes disponibles.",
+    noMessagesLine1: "En esta página podrás ver todos los mensajes publicados relacionados con tu reserva.",
+    noMessagesLine2: "Cuando se publique un mensaje, recibirás un correo con un enlace seguro para volver aquí.",
+    noMessagesLine3: "Gracias por tu comprensión.",
+    messageFallback: "Mensaje", open: "Abrir", hide: "Ocultar",
+    guestAssistantHint: "¿Tienes una pregunta? Guest AI assistant puede ayudarte.",
+    companionsSingle: "acompañante", companionsPlural: "acompañantes",
+  },
 };
 
 export default function MessagesView({ token, data }: { token: string; data: any }) {
@@ -39,24 +154,25 @@ export default function MessagesView({ token, data }: { token: string; data: any
   const items: Item[] = itemsAll.filter(it => !!it.visible);
   const details: Details = (data?.details || {}) as Details;
   const prop: PropInfo = (data?.property || {}) as PropInfo;
+  const secondaryLang: GuestPortalLang = (["ro", "el", "fr", "de", "it", "pt", "es"] as GuestPortalLang[]).includes(
+    String(prop?.guest_secondary_language || "") as GuestPortalLang
+  )
+    ? (String(prop.guest_secondary_language) as GuestPortalLang)
+    : "ro";
+  const secondaryMeta = PORTAL_LANG_META[secondaryLang];
 
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [read, setRead] = useState<Record<string, boolean>>({});
-  const [lang, setLang] = useState<'ro'|'en'>(() => {
-    const prefer = (typeof localStorage !== 'undefined' ? localStorage.getItem('p4h:rm:lang') : null) as 'ro'|'en'|null;
-    if (prefer === 'ro' || prefer === 'en') return prefer;
-    return (itemsAll.find(i=>i.html_ro?.trim()) ? 'ro' : 'en');
+  const [lang, setLang] = useState<PortalLang>(() => {
+    const prefer = (typeof localStorage !== "undefined" ? localStorage.getItem("p4h:rm:lang") : null) as PortalLang | null;
+    if (prefer === "en" || prefer === secondaryLang) return prefer;
+    return (itemsAll.find((i) => (i.html_secondary || i.html_ro)?.trim()) ? secondaryLang : "en");
   });
-  useEffect(() => { try { localStorage.setItem('p4h:rm:lang', lang); } catch {} }, [lang]);
-  const labels = useMemo(() => ({
-    details: lang === 'ro' ? 'Detalii rezervare' : 'Reservation details',
-    property: lang === 'ro' ? 'Locatie' : 'Property',
-    guest: lang === 'ro' ? 'Oaspete' : 'Guest',
-    guestWithCompanions: lang === 'ro' ? 'Oaspete & însoțitori' : 'Guest & companions',
-    stay: lang === 'ro' ? 'Perioada' : 'Stay',
-    room: lang === 'ro' ? 'Unitate' : 'Room',
-    houseRules: lang === 'ro' ? 'Regulament' : 'House Rules',
-  }), [lang]);
+  useEffect(() => { try { localStorage.setItem("p4h:rm:lang", lang); } catch {} }, [lang]);
+  useEffect(() => {
+    setLang((prev) => (prev === "en" ? "en" : secondaryLang));
+  }, [secondaryLang]);
+  const labels = useMemo(() => PORTAL_COPY[lang], [lang]);
   const [showAssistantHint, setShowAssistantHint] = useState(
     () => !!prop?.guest_ai_enabled,
   );
@@ -209,14 +325,14 @@ export default function MessagesView({ token, data }: { token: string; data: any
 
           <div style={{ display: "inline-flex", gap: 8, flex: "0 0 auto" }}>
           <button
-            onClick={() => setLang('ro')}
+            onClick={() => setLang(secondaryLang)}
             className="sb-btn"
             style={{
               width: 30,
               height: 30,
               padding: 0,
               borderRadius: 999,
-              border: lang === "ro" ? "1px solid rgba(59,130,246,0.45)" : "1px solid var(--border)",
+              border: lang === secondaryLang ? "1px solid rgba(59,130,246,0.45)" : "1px solid var(--border)",
               background: "rgba(255,255,255,0.65)",
               color: "var(--text)",
               display: "grid",
@@ -224,12 +340,12 @@ export default function MessagesView({ token, data }: { token: string; data: any
               cursor: "pointer",
               WebkitBackdropFilter: "blur(10px)",
               backdropFilter: "blur(10px)",
-              boxShadow: lang === "ro" ? "0 0 0 2px rgba(59,130,246,0.12)" : "none",
+              boxShadow: lang === secondaryLang ? "0 0 0 2px rgba(59,130,246,0.12)" : "none",
             }}
-            aria-label="Română"
+            aria-label={secondaryMeta.label}
           >
             <img
-              src="/ro.png"
+              src={secondaryMeta.flagSrc}
               alt=""
               width={28}
               height={28}
@@ -382,9 +498,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
                     const fullName = [details.guest_first_name || '', details.guest_last_name || ''].filter(Boolean).join(' ') || '—';
                     const count = details.guest_companions_count || 0;
                     if (!count) return fullName;
-                    return lang === 'ro'
-                      ? `${fullName} + ${count} însoțitor${count > 1 ? 'i' : ''}`
-                      : `${fullName} + ${count} companion${count > 1 ? 's' : ''}`;
+                    return `${fullName} + ${count} ${count > 1 ? labels.companionsPlural : labels.companionsSingle}`;
                   })()}
                 </span>
               </div>
@@ -423,20 +537,16 @@ export default function MessagesView({ token, data }: { token: string; data: any
         <article className="rm-card">
           <div className="rm-content">
             <p style={{ margin: 0, fontWeight: 700 }}>
-              {lang === 'ro' ? 'Momentan nu există mesaje.' : 'No messages available yet.'}
+              {labels.noMessagesTitle}
             </p>
             <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>
-              {lang === 'ro'
-                ? 'Prin această pagină vei putea vedea toate mesajele publicate în legătură cu rezervarea ta.'
-                : 'Through this page, you will be able to view any messages we publish related to your reservation.'}
+              {labels.noMessagesLine1}
             </p>
             <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>
-              {lang === 'ro'
-                ? 'Când se postează un mesaj, vei primi un email de notificare cu un link securizat pentru a reveni aici.'
-                : 'When a message is posted, you will receive an email notification with a secure link to return to this page.'}
+              {labels.noMessagesLine2}
             </p>
             <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>
-              {lang === 'ro' ? 'Îți mulțumim pentru înțelegere.' : 'Thank you for your understanding.'}
+              {labels.noMessagesLine3}
             </p>
           </div>
         </article>
@@ -444,14 +554,15 @@ export default function MessagesView({ token, data }: { token: string; data: any
         <div style={{ display:'grid', gap:12 }}>
           {items.map(it => {
             const titleFromHtml = (() => {
-              const src = (lang==='ro' ? (it.html_ro || it.html_en) : (it.html_en || it.html_ro)) || '';
+              const secondaryHtml = it.html_secondary || it.html_ro;
+              const src = (lang==='en' ? (it.html_en || secondaryHtml) : (secondaryHtml || it.html_en)) || '';
               const m = src.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i);
-              if (!m) return it.title || (lang==='ro' ? 'Mesaj' : 'Message');
+              if (!m) return it.title || labels.messageFallback;
               const tmp = m[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g,' ').trim();
-              return tmp || it.title || (lang==='ro' ? 'Mesaj' : 'Message');
+              return tmp || it.title || labels.messageFallback;
             })();
-            const btnOpen = lang === 'ro' ? 'Deschide' : 'Open';
-            const btnHide = lang === 'ro' ? 'Ascunde' : 'Hide';
+            const btnOpen = labels.open;
+            const btnHide = labels.hide;
             return (
             <article key={it.id} className="rm-card" style={{ padding:0 }}>
               <header
@@ -473,7 +584,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
               </header>
               {open[it.id] && (
                 <div style={{ padding:12 }}>
-                  <LanguageViewer htmlRo={it.html_ro} htmlEn={it.html_en} lang={lang} showToggle={false} />
+                  <LanguageViewer htmlRo={it.html_secondary || it.html_ro} htmlEn={it.html_en} lang={lang} showToggle={false} />
                 </div>
               )}
             </article>
@@ -521,9 +632,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
             ?
           </span>
           <span style={{ fontSize: 13, textAlign: "left" }}>
-            {lang === "ro"
-              ? "Ai o întrebare? Guest AI assistant te poate ajuta."
-              : "Have a question? Guest AI assistant can help."}
+            {labels.guestAssistantHint}
           </span>
         </button>
       )}
@@ -542,7 +651,7 @@ export default function MessagesView({ token, data }: { token: string; data: any
 }
 
 type ChatFabProps = {
-  lang: "ro" | "en";
+  lang: PortalLang;
   prop: PropInfo;
   details: Details;
   items: Item[];
