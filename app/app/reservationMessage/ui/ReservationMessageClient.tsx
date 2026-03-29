@@ -9,7 +9,8 @@ import LoadingPill from "@/app/app/_components/LoadingPill";
 import overlayStyles from "@/app/app/_components/AppLoadingOverlay.module.css";
 
 /** ---------------- Types ---------------- */
-type Property = { id: string; name: string };
+type GuestContentLang = "ro" | "el" | "fr" | "de" | "it" | "pt" | "es";
+type Property = { id: string; name: string; guest_secondary_language?: GuestContentLang | null };
 
 type Block =
   | { id: string; type: "heading"; text: string }
@@ -23,8 +24,10 @@ type ManualField = {
   defaultValue?: string | null;
 };
 
+type ComposerLang = GuestContentLang | "en";
+
 type TemplateState = {
-  blocks: Block[];          // Romanian variant (legacy default)
+  blocks: Block[];          // Secondary guest language variant (legacy storage slot)
   blocks_en?: Block[];      // English variant
   fields: ManualField[];
   status: "draft" | "published";
@@ -54,8 +57,18 @@ type OnboardingStep = "intro" | "pick" | "loading" | "reward" | "recap" | "final
 type OnboardingTemplate = {
   key: string;
   title: string;
-  blocks_ro: Block[];
   blocks_en: Block[];
+  blocks_by_lang: Record<GuestContentLang, Block[]>;
+};
+
+const GUEST_LANG_META: Record<GuestContentLang, { label: string; flagSrc: string }> = {
+  ro: { label: "Romana", flagSrc: "/ro.png" },
+  el: { label: "Ελληνικά", flagSrc: "/el.png" },
+  fr: { label: "Français", flagSrc: "/fr.png" },
+  de: { label: "Deutsch", flagSrc: "/de.png" },
+  it: { label: "Italiano", flagSrc: "/it.png" },
+  pt: { label: "Português", flagSrc: "/pt.png" },
+  es: { label: "Español", flagSrc: "/es.png" },
 };
 
 const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
@@ -77,21 +90,43 @@ const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
           "Everything you need is in the guest portal:\n📍 Location\n📄 House rules\n🍽️ Recommendations\n\nIf you have any questions, use “Contact the host” in the portal.",
       },
     ],
-    blocks_ro: [
-      { id: "h", type: "heading", text: "BUN VENIT LA {{property_name}} 👋" },
-      {
-        id: "p1",
-        type: "paragraph",
-        text:
-          "Salut {{guest_first_name}} — ne bucurăm să te avem!\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitatea ta: {{room_name}}",
-      },
-      {
-        id: "p2",
-        type: "paragraph",
-        text:
-          "În portal găsești tot ce ai nevoie:\n📍 Locație\n📄 Regulament\n🍽️ Recomandări\n\nDacă ai întrebări, folosește „Contactează gazda” din portal.",
-      },
-    ],
+    blocks_by_lang: {
+      ro: [
+        { id: "h", type: "heading", text: "BUN VENIT LA {{property_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Salut {{guest_first_name}} — ne bucurăm să te avem!\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitatea ta: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "În portal găsești tot ce ai nevoie:\n📍 Locație\n📄 Regulament\n🍽️ Recomandări\n\nDacă ai întrebări, folosește „Contactează gazda” din portal." },
+      ],
+      el: [
+        { id: "h", type: "heading", text: "ΚΑΛΩΣ ΗΡΘΑΤΕ ΣΤΟ {{property_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Γεια σου {{guest_first_name}} — χαιρόμαστε που σε έχουμε μαζί μας!\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Η μονάδα σου: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "Στην πύλη επισκέπτη θα βρεις όλα όσα χρειάζεσαι:\n📍 Τοποθεσία\n📄 Κανόνες καταλύματος\n🍽️ Προτάσεις\n\nΑν έχεις ερωτήσεις, χρησιμοποίησε το «Επικοινωνία με τον οικοδεσπότη» στο portal." },
+      ],
+      fr: [
+        { id: "h", type: "heading", text: "BIENVENUE À {{property_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Bonjour {{guest_first_name}} — nous sommes ravis de vous accueillir !\n\n✅ Check‑in : {{check_in_time}}\n🕚 Check‑out : {{check_out_time}}\n🏠 Votre unité : {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "Dans le portail invité, vous trouverez tout ce dont vous avez besoin :\n📍 Emplacement\n📄 Règlement intérieur\n🍽️ Recommandations\n\nSi vous avez des questions, utilisez « Contacter l’hôte » dans le portail." },
+      ],
+      de: [
+        { id: "h", type: "heading", text: "WILLKOMMEN BEI {{property_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Hallo {{guest_first_name}} — schön, dass du da bist!\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Deine Einheit: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "Im Gästeportal findest du alles, was du brauchst:\n📍 Standort\n📄 Hausregeln\n🍽️ Empfehlungen\n\nWenn du Fragen hast, nutze im Portal „Gastgeber kontaktieren“." },
+      ],
+      it: [
+        { id: "h", type: "heading", text: "BENVENUTO A {{property_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Ciao {{guest_first_name}} — siamo felici di averti con noi!\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 La tua unità: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "Nel portale ospite trovi tutto ciò che ti serve:\n📍 Posizione\n📄 Regole della struttura\n🍽️ Consigli\n\nSe hai domande, usa “Contatta l’host” nel portale." },
+      ],
+      pt: [
+        { id: "h", type: "heading", text: "BEM-VINDO AO {{property_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Olá {{guest_first_name}} — é um prazer receber-te!\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 A tua unidade: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "No portal do hóspede vais encontrar tudo o que precisas:\n📍 Localização\n📄 Regras da propriedade\n🍽️ Recomendações\n\nSe tiveres dúvidas, usa “Contactar o anfitrião” no portal." },
+      ],
+      es: [
+        { id: "h", type: "heading", text: "BIENVENIDO A {{property_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Hola {{guest_first_name}} — encantados de recibirte.\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Tu unidad: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "En el portal del huésped encontrarás todo lo que necesitas:\n📍 Ubicación\n📄 Normas de la propiedad\n🍽️ Recomendaciones\n\nSi tienes preguntas, usa «Contactar al anfitrión» desde el portal." },
+      ],
+    },
   },
   {
     key: "arrival_quick",
@@ -115,25 +150,50 @@ const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
           "Need help finding the place or accessing the unit?\nUse “Contact the host” from the portal.",
       },
     ],
-    blocks_ro: [
-      { id: "h", type: "heading", text: "DETALII DE SOSIRE 🚪" },
-      {
-        id: "p1",
-        type: "paragraph",
-        text: "Bun venit {{guest_first_name}}!\nIată info rapid pentru {{property_name}}:",
-      },
-      {
-        id: "p2",
-        type: "paragraph",
-        text: "✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitate: {{room_name}}",
-      },
-      {
-        id: "p3",
-        type: "paragraph",
-        text:
-          "Ai nevoie de ajutor cu locația sau accesul?\nFolosește „Contactează gazda” din portal.",
-      },
-    ],
+    blocks_by_lang: {
+      ro: [
+        { id: "h", type: "heading", text: "DETALII DE SOSIRE 🚪" },
+        { id: "p1", type: "paragraph", text: "Bun venit {{guest_first_name}}!\nIată info rapid pentru {{property_name}}:" },
+        { id: "p2", type: "paragraph", text: "✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitate: {{room_name}}" },
+        { id: "p3", type: "paragraph", text: "Ai nevoie de ajutor cu locația sau accesul?\nFolosește „Contactează gazda” din portal." },
+      ],
+      el: [
+        { id: "h", type: "heading", text: "ΛΕΠΤΟΜΕΡΕΙΕΣ ΑΦΙΞΗΣ 🚪" },
+        { id: "p1", type: "paragraph", text: "Καλώς ήρθες {{guest_first_name}}!\nΟρίστε οι βασικές πληροφορίες για το {{property_name}}:" },
+        { id: "p2", type: "paragraph", text: "✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Μονάδα: {{room_name}}" },
+        { id: "p3", type: "paragraph", text: "Χρειάζεσαι βοήθεια με την τοποθεσία ή την πρόσβαση;\nΧρησιμοποίησε το «Επικοινωνία με τον οικοδεσπότη» από το portal." },
+      ],
+      fr: [
+        { id: "h", type: "heading", text: "INFOS D’ARRIVÉE 🚪" },
+        { id: "p1", type: "paragraph", text: "Bienvenue {{guest_first_name}} !\nVoici les infos rapides pour {{property_name}} :" },
+        { id: "p2", type: "paragraph", text: "✅ Check‑in : {{check_in_time}}\n🕚 Check‑out : {{check_out_time}}\n🏠 Unité : {{room_name}}" },
+        { id: "p3", type: "paragraph", text: "Besoin d’aide pour trouver l’adresse ou accéder à l’unité ?\nUtilisez « Contacter l’hôte » depuis le portail." },
+      ],
+      de: [
+        { id: "h", type: "heading", text: "ANREISE-INFOS 🚪" },
+        { id: "p1", type: "paragraph", text: "Willkommen {{guest_first_name}}!\nHier sind die wichtigsten Infos für {{property_name}}:" },
+        { id: "p2", type: "paragraph", text: "✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Einheit: {{room_name}}" },
+        { id: "p3", type: "paragraph", text: "Brauchst du Hilfe mit dem Standort oder dem Zugang?\nNutze im Portal „Gastgeber kontaktieren“." },
+      ],
+      it: [
+        { id: "h", type: "heading", text: "INFO ARRIVO 🚪" },
+        { id: "p1", type: "paragraph", text: "Benvenuto {{guest_first_name}}!\nEcco le info rapide per {{property_name}}:" },
+        { id: "p2", type: "paragraph", text: "✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unità: {{room_name}}" },
+        { id: "p3", type: "paragraph", text: "Hai bisogno di aiuto per trovare la struttura o accedere all’unità?\nUsa “Contatta l’host” dal portale." },
+      ],
+      pt: [
+        { id: "h", type: "heading", text: "DETALHES DE CHEGADA 🚪" },
+        { id: "p1", type: "paragraph", text: "Bem-vindo {{guest_first_name}}!\nAqui tens a informação rápida para {{property_name}}:" },
+        { id: "p2", type: "paragraph", text: "✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unidade: {{room_name}}" },
+        { id: "p3", type: "paragraph", text: "Precisas de ajuda com a localização ou com o acesso?\nUsa “Contactar o anfitrião” no portal." },
+      ],
+      es: [
+        { id: "h", type: "heading", text: "DETALLES DE LLEGADA 🚪" },
+        { id: "p1", type: "paragraph", text: "Bienvenido {{guest_first_name}}!\nAquí tienes la información rápida para {{property_name}}:" },
+        { id: "p2", type: "paragraph", text: "✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unidad: {{room_name}}" },
+        { id: "p3", type: "paragraph", text: "¿Necesitas ayuda con la ubicación o el acceso?\nUsa «Contactar al anfitrión» desde el portal." },
+      ],
+    },
   },
   {
     key: "friendly_short",
@@ -153,21 +213,43 @@ const ONBOARDING_TEMPLATES: OnboardingTemplate[] = [
           "📌 House rules, location and useful info are in the portal.\nEnjoy your stay!",
       },
     ],
-    blocks_ro: [
-      { id: "h", type: "heading", text: "SALUT {{guest_first_name}} 👋" },
-      {
-        id: "p1",
-        type: "paragraph",
-        text:
-          "Bun venit la {{property_name}}.\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitate: {{room_name}}",
-      },
-      {
-        id: "p2",
-        type: "paragraph",
-        text:
-          "📌 Regulament, locație și info utile sunt în portal.\nSejur plăcut!",
-      },
-    ],
+    blocks_by_lang: {
+      ro: [
+        { id: "h", type: "heading", text: "SALUT {{guest_first_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Bun venit la {{property_name}}.\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unitate: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "📌 Regulament, locație și info utile sunt în portal.\nSejur plăcut!" },
+      ],
+      el: [
+        { id: "h", type: "heading", text: "ΓΕΙΑ ΣΟΥ {{guest_first_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Καλώς ήρθες στο {{property_name}}.\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Μονάδα: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "📌 Οι κανόνες, η τοποθεσία και χρήσιμες πληροφορίες βρίσκονται στο portal.\nΚαλή διαμονή!" },
+      ],
+      fr: [
+        { id: "h", type: "heading", text: "BONJOUR {{guest_first_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Bienvenue à {{property_name}}.\n\n✅ Check‑in : {{check_in_time}}\n🕚 Check‑out : {{check_out_time}}\n🏠 Unité : {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "📌 Le règlement, l’emplacement et les infos utiles sont dans le portail.\nBon séjour !" },
+      ],
+      de: [
+        { id: "h", type: "heading", text: "HALLO {{guest_first_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Willkommen bei {{property_name}}.\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Einheit: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "📌 Hausregeln, Standort und nützliche Infos findest du im Portal.\nSchönen Aufenthalt!" },
+      ],
+      it: [
+        { id: "h", type: "heading", text: "CIAO {{guest_first_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Benvenuto a {{property_name}}.\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unità: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "📌 Regole, posizione e info utili sono nel portale.\nBuon soggiorno!" },
+      ],
+      pt: [
+        { id: "h", type: "heading", text: "OLÁ {{guest_first_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Bem-vindo a {{property_name}}.\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unidade: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "📌 Regras, localização e informações úteis estão no portal.\nBoa estadia!" },
+      ],
+      es: [
+        { id: "h", type: "heading", text: "HOLA {{guest_first_name}} 👋" },
+        { id: "p1", type: "paragraph", text: "Bienvenido a {{property_name}}.\n\n✅ Check‑in: {{check_in_time}}\n🕚 Check‑out: {{check_out_time}}\n🏠 Unidad: {{room_name}}" },
+        { id: "p2", type: "paragraph", text: "📌 Las normas, la ubicación y la info útil están en el portal.\n¡Que disfrutes tu estancia!" },
+      ],
+    },
   },
 ];
 
@@ -200,6 +282,18 @@ function renderTemplateToHtml(t: TemplateState, vars: Record<string, string>) {
 function replaceVars(s: string, vars: Record<string, string>) {
   if (!s) return "";
   return s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => (vars?.[k] ?? `{{${k}}}`));
+}
+
+function mapServerBlocks(arr: any[], lang: string): Block[] {
+  return arr
+    .filter((b: any) => String((b.lang || "ro")).toLowerCase() === String(lang || "").toLowerCase())
+    .map((b: any) => ({ id: uid(), type: b.type, text: b.text ?? "" }));
+}
+
+function pickSecondaryBlocks(arr: any[], secondaryLang: GuestContentLang): Block[] {
+  const direct = mapServerBlocks(arr, secondaryLang);
+  if (direct.length > 0 || secondaryLang === "ro") return direct;
+  return mapServerBlocks(arr, "ro");
 }
 
 /** ---------------- Small-screen helper (for mobile tap toggle) ---------------- */
@@ -242,7 +336,10 @@ export default function ReservationMessageClient({
   });
   const [tpl, setTpl] = useState<TemplateState>(EMPTY);
   const [uiLang, setUiLang] = useState<"ro" | "en">(initialLang);
-  const [lang, setLang] = useState<"ro" | "en">(initialLang);
+  const [lang, setLang] = useState<ComposerLang>(() => {
+    const initialSecondary = initialProperties[0]?.guest_secondary_language ?? "ro";
+    return initialLang === "en" ? "en" : initialSecondary;
+  });
   const langPinnedRef = useRef<boolean>(false);
   // Scheduler UI stores a value that may include an offset: e.g. "hour_before_checkin:5".
   const [scheduler, setScheduler] = useState<string>("");
@@ -310,6 +407,15 @@ export default function ReservationMessageClient({
   const [onbCompletingAll, setOnbCompletingAll] = useState<boolean>(false);
   const [recapCopied, setRecapCopied] = useState<boolean>(false);
   const onbOpenRef = useRef<boolean>(false);
+  const previousPropertyIdRef = useRef<string | null>(null);
+
+  const selectedProperty = useMemo(
+    () => properties.find((p) => p.id === propertyId) ?? (isSinglePropertyAccount ? properties[0] ?? null : null),
+    [isSinglePropertyAccount, properties, propertyId]
+  );
+  const secondaryLang: GuestContentLang = selectedProperty?.guest_secondary_language ?? "ro";
+  const composerDefaultLang: ComposerLang = uiLang === "en" ? "en" : secondaryLang;
+  const secondaryLangMeta = GUEST_LANG_META[secondaryLang];
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -333,10 +439,20 @@ export default function ReservationMessageClient({
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  // Keep template language default in sync with app language unless user explicitly picked RO/EN in composer.
+  // Keep template language default in sync with app language unless user explicitly picked a tab.
   useEffect(() => {
-    if (!langPinnedRef.current) setLang(uiLang);
-  }, [uiLang]);
+    if (!langPinnedRef.current) setLang(composerDefaultLang);
+  }, [composerDefaultLang]);
+
+  useEffect(() => {
+    if (!propertyReady) return;
+    const prev = previousPropertyIdRef.current;
+    if (prev !== propertyId) {
+      previousPropertyIdRef.current = propertyId;
+      langPinnedRef.current = false;
+      setLang(composerDefaultLang);
+    }
+  }, [composerDefaultLang, propertyId, propertyReady]);
 
   useEffect(() => {
     onbOpenRef.current = onbOpen;
@@ -430,6 +546,14 @@ export default function ReservationMessageClient({
     close: uiLang === "ro" ? "Inchide" : "Close",
   } as const;
 
+  function getBlocksForComposerLang(state: TemplateState, langVal: ComposerLang): Block[] {
+    return langVal === "en" ? (state.blocks_en || state.blocks || []) : (state.blocks || []);
+  }
+
+  function withBlocksForComposerLang(state: TemplateState, langVal: ComposerLang, blocks: Block[]): TemplateState {
+    return langVal === "en" ? { ...state, blocks_en: blocks } : { ...state, blocks };
+  }
+
   const storageKey = propertyId ? (activeId ? `p4h:rm:template:${activeId}` : lsKey(propertyId)) : "";
 
   // Prefer showing template titles in the chosen app language (fallback to server title until cached).
@@ -438,10 +562,10 @@ export default function ReservationMessageClient({
     if (templates.length === 0) { setListTitleById({}); return; }
 
     let alive = true;
-    const preferred: "ro" | "en" = uiLang;
+    const preferred: ComposerLang = composerDefaultLang;
 
-    const deriveTitleFromState = (state: TemplateState, langVal: "ro" | "en") => {
-      const blocks = langVal === "ro" ? (state.blocks || []) : (state.blocks_en || state.blocks || []);
+    const deriveTitleFromState = (state: TemplateState, langVal: ComposerLang) => {
+      const blocks = getBlocksForComposerLang(state, langVal);
       const d = deriveFromBlocks(blocks);
       return (d.title || "").trim();
     };
@@ -474,19 +598,15 @@ export default function ReservationMessageClient({
           if (!r.ok || !tpls) continue;
 
           const fromServer: any[] = Array.isArray(tpls.blocks) ? tpls.blocks : [];
-          const roBlocks: Block[] = fromServer
-            .filter((b: any) => String((b.lang || "ro")).toLowerCase() === "ro")
-            .map((b: any) => ({ id: uid(), type: b.type, text: b.text ?? "" }));
-          const enBlocks: Block[] = fromServer
-            .filter((b: any) => String((b.lang || "ro")).toLowerCase() === "en")
-            .map((b: any) => ({ id: uid(), type: b.type, text: b.text ?? "" }));
+          const secondaryBlocks = pickSecondaryBlocks(fromServer, secondaryLang);
+          const enBlocks = mapServerBlocks(fromServer, "en");
           const fields: ManualField[] = Array.isArray(tpls.fields)
             ? (tpls.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label, defaultValue: (f as any).default_value ?? null }))
             : [];
 
           const next: TemplateState = {
             status: (tpls.status || "draft") as any,
-            blocks: roBlocks,
+            blocks: secondaryBlocks,
             blocks_en: enBlocks,
             fields,
             schedule_kind: (tpls.schedule_kind || "") as any,
@@ -505,7 +625,7 @@ export default function ReservationMessageClient({
     })();
 
     return () => { alive = false; };
-  }, [templates, uiLang, propertyId, propertyReady]);
+  }, [composerDefaultLang, propertyId, propertyReady, secondaryLang, templates, uiLang]);
 
   /** --------- Load template list --------- */
   useEffect(() => {
@@ -568,6 +688,7 @@ export default function ReservationMessageClient({
 
   async function createTemplateFromOnboarding(picked: OnboardingTemplate): Promise<string> {
     if (!propertyId) throw new Error("No property selected.");
+    const secondaryBlocks = picked.blocks_by_lang[secondaryLang] || picked.blocks_by_lang.ro;
     const payload = {
       property_id: propertyId,
       title: picked.title,
@@ -575,7 +696,7 @@ export default function ReservationMessageClient({
       schedule_kind: "hour_before_checkin",
       schedule_offset_hours: 5,
       blocks: [
-        ...picked.blocks_ro.map((b) => ({ type: b.type, text: (b as any).text ?? null, lang: "ro" })),
+        ...secondaryBlocks.map((b) => ({ type: b.type, text: (b as any).text ?? null, lang: secondaryLang })),
         ...picked.blocks_en.map((b) => ({ type: b.type, text: (b as any).text ?? null, lang: "en" })),
       ],
       fields: [],
@@ -646,7 +767,7 @@ export default function ReservationMessageClient({
       if (!cancelled && keySnapshot === storageKey) {
         setTpl(base);
         setScheduler(encodeSchedulerValue(base.schedule_kind, base.schedule_offset_hours));
-        const blocksForLang = (lang === 'ro' ? (base.blocks || []) : (base.blocks_en || base.blocks || []));
+        const blocksForLang = getBlocksForComposerLang(base, lang);
         const { title, body } = deriveFromBlocks(blocksForLang);
         if (titleRef.current) tokensTextToChips(titleRef.current, title);
         if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
@@ -667,15 +788,15 @@ export default function ReservationMessageClient({
         const j = await res.json();
         const t = j?.template; if (!t) return;
         const fromServer: any[] = Array.isArray(t.blocks) ? t.blocks : [];
-        const roBlocks: Block[] = fromServer.filter((b:any)=>String((b.lang||'ro')).toLowerCase()==='ro').map((b:any)=>({ id: uid(), type: b.type, text: b.text ?? '' }));
-        const enBlocks: Block[] = fromServer.filter((b:any)=>String((b.lang||'ro')).toLowerCase()==='en').map((b:any)=>({ id: uid(), type: b.type, text: b.text ?? '' }));
+        const secondaryBlocks = pickSecondaryBlocks(fromServer, secondaryLang);
+        const enBlocks = mapServerBlocks(fromServer, "en");
         const fields: ManualField[] = (t.fields as any[]).map((f) => ({ uid: uid(), key: f.key, label: f.label, defaultValue: (f as any).default_value ?? null }));
-        const next: TemplateState = { status: (t.status || 'draft') as any, blocks: roBlocks, blocks_en: enBlocks, fields, schedule_kind: (t.schedule_kind || '') as any, schedule_offset_hours: (t.schedule_offset_hours ?? null) };
+        const next: TemplateState = { status: (t.status || 'draft') as any, blocks: secondaryBlocks, blocks_en: enBlocks, fields, schedule_kind: (t.schedule_kind || '') as any, schedule_offset_hours: (t.schedule_offset_hours ?? null) };
         if (!cancelled && keySnapshot === storageKey) {
           setTpl(next);
           setScheduler(encodeSchedulerValue(next.schedule_kind, next.schedule_offset_hours));
           try { localStorage.setItem(keySnapshot, JSON.stringify(next)); } catch {}
-          const { title, body } = deriveFromBlocks(lang==='ro' ? roBlocks : enBlocks);
+          const { title, body } = deriveFromBlocks(getBlocksForComposerLang(next, lang));
           if (titleRef.current) tokensTextToChips(titleRef.current, title);
           if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
         }
@@ -683,7 +804,7 @@ export default function ReservationMessageClient({
     })();
 
     return () => { cancelled = true; };
-  }, [storageKey, propertyId, activeId, lang, propertyReady]);
+  }, [activeId, lang, propertyId, propertyReady, secondaryLang, storageKey]);
 
   /** --------- Detect if property has room types (for room_type chip) --------- */
   useEffect(() => {
@@ -761,14 +882,14 @@ export default function ReservationMessageClient({
   function saveDraft() {
     if (!propertyId) return;
     const current = composeBlocks();
-    const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
-    const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
+    const secondaryBlocks = lang === "en" ? (tpl.blocks || []) : current;
+    const enBlocks = lang === "en" ? current : (tpl.blocks_en || []);
     const fromUi = scheduler ? decodeSchedulerValue(scheduler) : { kind: null, offset: null };
     const sched = fromUi.kind ? normalizeSchedule(fromUi.kind, fromUi.offset) : normalizeSchedule(tpl.schedule_kind, tpl.schedule_offset_hours);
     const next = {
       ...tpl,
       status: "draft" as const,
-      blocks: roBlocks,
+      blocks: secondaryBlocks,
       blocks_en: enBlocks,
       schedule_kind: (sched.kind || undefined) as any,
       schedule_offset_hours: sched.offset,
@@ -776,7 +897,7 @@ export default function ReservationMessageClient({
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     setTpl(next);
     const combined = [
-      ...roBlocks.map(b => ({ ...b, lang: 'ro' as const })),
+      ...secondaryBlocks.map(b => ({ ...b, lang: secondaryLang })),
       ...enBlocks.map(b => ({ ...b, lang: 'en' as const })),
     ];
     syncToServer('draft', combined);
@@ -788,12 +909,12 @@ export default function ReservationMessageClient({
     const sched = normalizeSchedule(fromUi.kind, fromUi.offset);
     if (!sched.kind) { alert(uiLang === "ro" ? "Selecteaza Programarea inainte de publicare." : "Select a Scheduler before publishing."); return; }
     const current = composeBlocks();
-    const roBlocks = (lang === 'ro') ? current : (tpl.blocks || []);
-    const enBlocks = (lang === 'en') ? current : (tpl.blocks_en || []);
+    const secondaryBlocks = lang === "en" ? (tpl.blocks || []) : current;
+    const enBlocks = lang === "en" ? current : (tpl.blocks_en || []);
     const next = {
       ...tpl,
       status: "published" as const,
-      blocks: roBlocks,
+      blocks: secondaryBlocks,
       blocks_en: enBlocks,
       schedule_kind: (sched.kind || "none") as any,
       schedule_offset_hours: sched.offset,
@@ -801,22 +922,22 @@ export default function ReservationMessageClient({
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     setTpl(next);
     const combined = [
-      ...roBlocks.map(b => ({ ...b, lang: 'ro' as const })),
+      ...secondaryBlocks.map(b => ({ ...b, lang: secondaryLang })),
       ...enBlocks.map(b => ({ ...b, lang: 'en' as const })),
     ];
     syncToServer('published', combined);
   }
-  async function syncToServer(status: "draft" | "published", combined?: Array<{ type: string; text?: string|null; lang: 'ro'|'en' }>) {
+  async function syncToServer(status: "draft" | "published", combined?: Array<{ type: string; text?: string|null; lang: GuestContentLang | 'en' }>) {
     try {
       setSaving("Saving…");
-      const roOnly = (combined ? combined.filter(b => b.lang === 'ro') : (tpl.blocks || [])).map(({ lang, ...rest }: any) => rest);
+      const secondaryOnly = (combined ? combined.filter((b) => b.lang === secondaryLang) : (tpl.blocks || [])).map(({ lang, ...rest }: any) => rest);
       const payloadBlocks = combined ?? [
-        ...(tpl.blocks || []).map(b => ({ ...b, lang: 'ro' } as any)),
+        ...(tpl.blocks || []).map(b => ({ ...b, lang: secondaryLang } as any)),
         ...(tpl.blocks_en || []).map(b => ({ ...b, lang: 'en' } as any)),
       ];
       const fromUi = scheduler ? decodeSchedulerValue(scheduler) : { kind: null, offset: null };
       const sched = fromUi.kind ? normalizeSchedule(fromUi.kind, fromUi.offset) : normalizeSchedule(tpl.schedule_kind, tpl.schedule_offset_hours);
-      const { title } = deriveFromBlocks(roOnly as any);
+      const { title } = deriveFromBlocks(secondaryOnly as any);
       const payload: any = {
         id: activeId || undefined,
         property_id: propertyId,
@@ -1653,22 +1774,22 @@ export default function ReservationMessageClient({
 	            <div style={{ display:'inline-flex', gap:8 }}>
               <button onClick={() => {
                 const cur = composeBlocks();
-                const next = { ...tpl, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) } as TemplateState;
+                const next = withBlocksForComposerLang(tpl, lang, cur);
                 setTpl(next);
                 langPinnedRef.current = true;
-                setLang('ro');
+                setLang(secondaryLang);
                 const { title, body } = deriveFromBlocks(next.blocks || []);
                 if (titleRef.current) tokensTextToChips(titleRef.current, title);
                 if (bodyRef.current) bodyRef.current.innerHTML = tokensToChipsHTML(body);
               }}
                 className="sb-btn"
-                style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--border)', background: lang==='ro' ? 'var(--primary)' : 'var(--card)', color: lang==='ro' ? '#0c111b' : 'var(--text)', display:'inline-flex', alignItems:'center', gap:6 }}>
-                <img src="/ro.png" alt="RO" width={16} height={16} />
-                <span>Română</span>
+                style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--border)', background: lang===secondaryLang ? 'var(--primary)' : 'var(--card)', color: lang===secondaryLang ? '#0c111b' : 'var(--text)', display:'inline-flex', alignItems:'center', gap:6 }}>
+                <img src={secondaryLangMeta.flagSrc} alt={secondaryLang.toUpperCase()} width={16} height={16} />
+                <span>{secondaryLangMeta.label}</span>
               </button>
               <button onClick={() => {
                 const cur = composeBlocks();
-                const next = { ...tpl, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) } as TemplateState;
+                const next = withBlocksForComposerLang(tpl, lang, cur);
                 setTpl(next);
                 langPinnedRef.current = true;
                 setLang('en');
@@ -1771,7 +1892,7 @@ export default function ReservationMessageClient({
             <button
               className="sb-cardglow"
               style={{ ...btn, borderRadius: 16, padding: '8px 12px', width: 160, whiteSpace: 'nowrap', justifyContent: 'center' }}
-              onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); saveDraft(); }}
+              onClick={() => { const cur = composeBlocks(); setTpl(prev => withBlocksForComposerLang(prev, lang, cur)); saveDraft(); }}
               disabled={!isAdmin}
             >
               {t.save}
@@ -1779,7 +1900,7 @@ export default function ReservationMessageClient({
             <button
               className="sb-cardglow"
               style={{ ...btn, borderRadius: 16, padding: '8px 12px', borderColor: 'var(--primary)', width: 160, whiteSpace: 'nowrap', justifyContent: 'center' }}
-              onClick={() => { const cur = composeBlocks(); setTpl(prev => ({ ...prev, ...(lang==='ro' ? { blocks: cur } : { blocks_en: cur }) })); publish(); }}
+              onClick={() => { const cur = composeBlocks(); setTpl(prev => withBlocksForComposerLang(prev, lang, cur)); publish(); }}
               disabled={!isAdmin}
             >
               {t.makeActive}
@@ -1891,7 +2012,7 @@ export default function ReservationMessageClient({
 		                      {uiLang === "ro" ? "Alege template de mesaj" : "Choose message template"}
 		                    </button>
 		                    <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 12, lineHeight: 1.5 }}>
-		                      {uiLang === "ro" ? "Create de noi, in romana si engleza." : "Created by us, in Romanian and English."}
+		                      {uiLang === "ro" ? "Create de noi, in engleza si limba a doua selectata." : "Created by us, in English and your selected second language."}
 		                    </div>
 		                  </div>
 		                </div>

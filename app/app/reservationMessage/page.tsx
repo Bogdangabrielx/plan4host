@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function ReservationMessagePage() {
+  type GuestContentLang = "ro" | "el" | "fr" | "de" | "it" | "pt" | "es";
   const cookieStore = cookies();
   const uiLang = cookieStore.get("app_lang")?.value === "ro" ? "ro" : "en";
   const supabase = createClient();
@@ -41,13 +42,24 @@ export default async function ReservationMessagePage() {
   } catch {}
 
   // Load properties list for selector
-  let properties: Array<{ id: string; name: string }> = [];
+  let properties: Array<{
+    id: string;
+    name: string;
+    guest_secondary_language?: "ro" | "el" | "fr" | "de" | "it" | "pt" | "es" | null;
+  }> = [];
+  const allowedGuestLangs = new Set<GuestContentLang>(["ro", "el", "fr", "de", "it", "pt", "es"]);
   try {
     const { data } = await supabase
       .from("properties")
-      .select("id,name")
+      .select("id,name,guest_secondary_language")
       .order("created_at", { ascending: true });
-    properties = (data ?? []) as any[];
+    properties = (data ?? []).map((row: any) => ({
+      id: String(row.id),
+      name: String(row.name || ""),
+      guest_secondary_language: allowedGuestLangs.has(String(row.guest_secondary_language || "") as GuestContentLang)
+        ? (String(row.guest_secondary_language) as GuestContentLang)
+        : "ro",
+    }));
   } catch {}
 
   return (
