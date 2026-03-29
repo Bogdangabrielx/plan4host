@@ -1657,6 +1657,8 @@ export default function HomePage() {
                 <ul className={styles.faqList}>
                   <li>Drop the links into auto-replies on each platform where you list the property.</li>
                   <li>Guests are guided through all steps so their stay starts smoothly.</li>
+                  <li>The guest-facing check-in form can open in multiple languages, not just English.</li>
+                  <li>The confirmation email sent after form submission can follow the language selected in the form.</li>
                   <li><strong>Need better tracking?</strong> Generate platform-specific links to see which channel each form came from.</li>
                 </ul>
               </>

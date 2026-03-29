@@ -45,6 +45,10 @@ export default function CheckInOnlineCazarePage() {
       a: "Da. Formularul se adapteaza nevoilor fiecarei cazari.",
     },
     {
+      q: "Pot oaspetii sa completeze formularul de check-in in mai multe limbi?",
+      a: "Da. Formularul dedicat oaspetilor suporta mai multe limbi, iar emailul de confirmare poate urma limba selectata in formular.",
+    },
+    {
       q: "Ce se intampla dupa ce oaspetele completeaza formularul?",
       a: "Gazda este notificata si poate confirma rezervarea.",
     },

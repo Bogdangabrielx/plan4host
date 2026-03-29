@@ -45,6 +45,10 @@ export default function OnlineCheckInAccommodationPage() {
       a: "Yes. The form can be adapted to what your property needs.",
     },
     {
+      q: "Can guests complete the check-in form in multiple languages?",
+      a: "Yes. The guest-facing form supports multiple languages, and the confirmation email can follow the language selected in the form.",
+    },
+    {
       q: "What happens after a guest submits the form?",
       a: "You receive a notification and can confirm the reservation inside Plan4Host.",
     },

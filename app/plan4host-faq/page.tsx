@@ -57,6 +57,10 @@ export default function Plan4HostFaqPage() {
       a: "Reservations appear in one calendar and can then support online check-in, guest messages, cleaning flow, and a clearer daily operating process.",
     },
     {
+      q: "Is the online check-in form available in multiple languages?",
+      a: "Yes. The guest-facing check-in form supports multiple languages, and the confirmation email can follow the language selected in the form.",
+    },
+    {
       q: "Who is Plan4Host best for?",
       a: "Plan4Host is best for small and mid-size short-term rental operations that want one calm place for reservations, guest communication, and operational flow.",
     },

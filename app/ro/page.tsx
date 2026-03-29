@@ -1468,6 +1468,8 @@ export default function HomePageRO() {
                 <ul className={styles.faqList}>
                   <li>Pui linkurile ca răspuns automat pe platformele unde ai listată proprietatea.</li>
                   <li>Oaspeții sunt ghidați să parcurgă toți pașii, ca sosirea să fie simplă.</li>
+                  <li>Formularul de check-in dedicat oaspetilor poate fi deschis in mai multe limbi, nu doar in engleza.</li>
+                  <li>Emailul de confirmare trimis dupa completare poate urma limba selectata in formular.</li>
                   <li><strong>Vrei o evidență mai bună?</strong> Generează linkuri specifice pentru fiecare platformă și vezi sursa fiecărui formular completat.</li>
                 </ul>
               </>

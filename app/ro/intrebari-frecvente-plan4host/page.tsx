@@ -57,6 +57,10 @@ export default function Plan4HostFaqRoPage() {
       a: "Rezervarile apar intr-un singur calendar si pot sustine apoi check-in online, mesaje pentru oaspeti, flux de curatenie si un proces operational zilnic mai clar.",
     },
     {
+      q: "Formularul de check-in online este disponibil in mai multe limbi?",
+      a: "Da. Formularul dedicat oaspetilor suporta mai multe limbi, iar emailul de confirmare poate urma limba selectata in formular.",
+    },
+    {
       q: "Pentru cine este Plan4Host cel mai potrivit?",
       a: "Plan4Host este cel mai potrivit pentru operatiuni mici si medii de inchiriere pe termen scurt care vor un singur loc calm pentru rezervari, comunicare cu oaspetii si flux operational.",
     },
