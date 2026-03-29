@@ -66,6 +66,12 @@ const SECOND_LANGUAGE_OPTIONS = [
   { code: "es", flag: "ES", en: "Spanish", ro: "Spaniola" },
 ] as const;
 
+const LANGUAGE_FIELD_LABEL_STYLE: React.CSSProperties = {
+  display: "block",
+  fontSize: "clamp(10px, 2.7vw, 13px)",
+  lineHeight: 1.2,
+};
+
 const COUNTRY_TO_SECOND_LANGUAGE: Record<string, (typeof SECOND_LANGUAGE_OPTIONS)[number]["code"]> = {
   RO: "ro",
   ES: "es",
@@ -909,9 +915,9 @@ export default function DashboardClient({
           </div>
 
           <div style={{ ...FIELD_WRAPPER, display: "grid", gap: 10 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 10 }}>
               <div style={{ display: "grid", gap: 6 }}>
-                <label style={{ display: "block" }}>{t.firstLanguage}</label>
+                <label style={LANGUAGE_FIELD_LABEL_STYLE}>{t.firstLanguage}</label>
                 <select
                   value="en"
                   disabled
@@ -924,17 +930,17 @@ export default function DashboardClient({
                     opacity: 0.82,
                   }}
                 >
-                  <option value="en">🇬🇧 English</option>
+                  <option value="en">🇬🇧 EN</option>
                 </select>
               </div>
 
               <div style={{ display: "grid", gap: 6 }}>
-                <label style={{ display: "block" }}>{t.secondLanguage}</label>
+                <label style={LANGUAGE_FIELD_LABEL_STYLE}>{t.secondLanguage}</label>
                 <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
                   <option value="">{t.selectOption}</option>
                   {SECOND_LANGUAGE_OPTIONS.map((opt) => (
                     <option key={opt.code} value={opt.code}>
-                      {`${flagEmoji(opt.flag)} ${lang === "ro" ? opt.ro : opt.en}`}
+                      {`${flagEmoji(opt.flag)} ${opt.code.toUpperCase()}`}
                     </option>
                   ))}
                 </select>
@@ -1227,9 +1233,9 @@ export default function DashboardClient({
                 </div>
 
                 <div style={{ display: "grid", gap: 10 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 10 }}>
                     <div style={{ display: "grid", gap: 6 }}>
-                      <label style={{ display: "block" }}>{t.firstLanguage}</label>
+                      <label style={LANGUAGE_FIELD_LABEL_STYLE}>{t.firstLanguage}</label>
                       <select
                         value="en"
                         disabled
@@ -1242,17 +1248,17 @@ export default function DashboardClient({
                           opacity: 0.82,
                         }}
                       >
-                        <option value="en">🇬🇧 English</option>
+                        <option value="en">🇬🇧 EN</option>
                       </select>
                     </div>
 
                     <div style={{ display: "grid", gap: 6 }}>
-                      <label style={{ display: "block" }}>{t.secondLanguage}</label>
+                      <label style={LANGUAGE_FIELD_LABEL_STYLE}>{t.secondLanguage}</label>
                       <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
                         <option value="">{t.selectOption}</option>
                         {SECOND_LANGUAGE_OPTIONS.map((opt) => (
                           <option key={opt.code} value={opt.code}>
-                            {`${flagEmoji(opt.flag)} ${lang === "ro" ? opt.ro : opt.en}`}
+                            {`${flagEmoji(opt.flag)} ${opt.code.toUpperCase()}`}
                           </option>
                         ))}
                       </select>
