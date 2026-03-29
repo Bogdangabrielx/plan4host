@@ -3189,7 +3189,29 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 ✕
               </button>
             </div>
-            <div style={{ display:'grid', gap:8 }}>
+            <div style={{ display:'grid', gap:12 }}>
+              <div style={{ display:'grid', gap:10 }}>
+                <div style={{ color:'var(--muted)', lineHeight:1.55 }}>
+                  {uiLang === "ro"
+                    ? "Recomandam ca sursa selectata sa se potriveasca cu platforma unde vei trimite acest link ca mesaj automat."
+                    : "We recommend choosing a source that matches the platform where you will send this link as an automated message."}
+                </div>
+                <div style={{ color:'var(--muted)', lineHeight:1.55 }}>
+                  {uiLang === "ro"
+                    ? "Dupa ce oaspetele completeaza formularul, aceasta selectie va aparea direct in meniul Guests si va fi mai usor sa urmaresti rezervarile."
+                    : "After the guest completes the form, this selection will appear directly in the Guests menu and it will be easier to track reservations."}
+                </div>
+                <div className="sb-card" style={{ border:'1px solid color-mix(in srgb, var(--border) 45%, transparent)', borderRadius:14, overflow:'hidden', background:'transparent' }}>
+                  <img
+                    src="/Guest_source.png"
+                    alt={uiLang === "ro" ? "Exemplu selectie sursa in Guests" : "Guest source example in Guests"}
+                    width={1200}
+                    height={720}
+                    style={{ width:'100%', height:'auto', display:'block' }}
+                  />
+                </div>
+              </div>
+              <div style={{ display:'grid', gap:8 }}>
               {providers.map(p => (
                 <button key={p.slug} className="sb-btn" onClick={()=>pickProvider(p.slug)} style={{ display:'flex', alignItems:'center', gap:10, justifyContent:'flex-start' }}>
                   {p.logo ? (
@@ -3200,6 +3222,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   <span>{p.label}</span>
                 </button>
               ))}
+              </div>
             </div>
           </div>
         </div>
