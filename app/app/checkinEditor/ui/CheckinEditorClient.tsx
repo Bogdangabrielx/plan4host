@@ -3201,7 +3201,18 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     ? "Dupa ce oaspetele completeaza formularul, aceasta selectie va aparea direct in meniul Guests si va fi mai usor sa urmaresti rezervarile."
                     : "After the guest completes the form, this selection will appear directly in the Guests menu and it will be easier to track reservations."}
                 </div>
-                <div className="sb-card" style={{ border:'1px solid color-mix(in srgb, var(--border) 45%, transparent)', borderRadius:14, overflow:'hidden', background:'transparent' }}>
+                <div
+                  className="sb-card"
+                  style={{
+                    border:'1px solid color-mix(in srgb, var(--border) 45%, transparent)',
+                    borderRadius:14,
+                    overflow:'hidden',
+                    background:'transparent',
+                    maxWidth: 420,
+                    marginInline: 'auto',
+                    opacity: 0.82,
+                  }}
+                >
                   <img
                     src="/Guest_source.png"
                     alt={uiLang === "ro" ? "Exemplu selectie sursa in Guests" : "Guest source example in Guests"}
