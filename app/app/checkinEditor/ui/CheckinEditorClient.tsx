@@ -3213,6 +3213,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     </>
                   )}
                 </div>
+                <div style={{ height:1, background:'color-mix(in srgb, var(--border) 60%, transparent)', maxWidth: 360, width:'100%', marginInline:'auto' }} />
                 <div
                   className="sb-card"
                   style={{
@@ -3233,7 +3234,6 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     style={{ width:'100%', height:'auto', display:'block' }}
                   />
                 </div>
-                <div style={{ height:1, background:'color-mix(in srgb, var(--border) 60%, transparent)', maxWidth: 360, width:'100%', marginInline:'auto' }} />
                 <div style={{ fontSize:10, color:'var(--muted)', textAlign:'center', marginTop:-2 }}>
                   {uiLang === "ro" ? "Exemplu: asa apare sursa in meniul Guests." : "Example: this is how the source appears in the Guests menu."}
                 </div>
