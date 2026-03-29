@@ -3240,7 +3240,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
               </div>
               <div style={{ height:1, background:'color-mix(in srgb, var(--border) 70%, transparent)' }} />
               <div style={{ display:'grid', gap:8 }}>
-                <div style={{ fontSize:12, fontWeight:800, letterSpacing:'.12em', textTransform:'uppercase', color:'var(--muted)' }}>
+                <div style={{ fontSize:12, fontWeight:800, letterSpacing:'.12em', textTransform:'uppercase', color:'var(--text)' }}>
                   {uiLang === "ro" ? "Alege sursa" : "Choose source"}
                 </div>
               {providers.map(p => (

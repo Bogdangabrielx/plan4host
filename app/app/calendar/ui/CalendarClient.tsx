@@ -885,7 +885,7 @@ export default function CalendarClient({
                   className="sb-btn sb-cardglow sb-btn--icon"
                   aria-label={lang === "ro" ? "Inchide anul" : "Close year overview"}
                   onClick={() => setShowYear(false)}
-                  style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+                  style={{ width: 34, height: 34, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
                 >
                   ✕
                 </button>

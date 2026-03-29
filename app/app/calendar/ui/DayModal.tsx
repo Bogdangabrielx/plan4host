@@ -344,7 +344,7 @@ export default function DayModal({
               aria-label={lang === "ro" ? "Inchide" : "Close"}
               title={lang === "ro" ? "Inchide" : "Close"}
               onClick={onClose}
-              style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+              style={{ width: 34, height: 34, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
             >
               ✕
             </button>

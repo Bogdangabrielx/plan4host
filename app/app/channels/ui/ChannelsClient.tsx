@@ -836,7 +836,7 @@ export default function ChannelsClient({ initialProperties }: { initialPropertie
               <button
                 aria-label={lang === "ro" ? "Inchide" : "Close"}
                 className="sb-btn sb-cardglow sb-btn--icon"
-                style={{ width: 40, height: 40, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 900 }}
+                style={{ width: 34, height: 34, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 800, fontSize: 15, lineHeight: 1 }}
                 onClick={() => setCalendarOnboardingOpen(false)}
               >
                 ×
@@ -2162,7 +2162,7 @@ function Modal({ title, children, onClose, closeLabel = "Close" }:{
             aria-label={closeLabel}
             title={closeLabel}
             onClick={onClose}
-            style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+            style={{ width: 34, height: 34, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
           >
             ✕
           </button>
@@ -2193,7 +2193,7 @@ function InnerModal({ title, children, onClose, closeLabel = "Close" }:{
             aria-label={closeLabel}
             title={closeLabel}
             onClick={onClose}
-            style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+            style={{ width: 34, height: 34, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
           >
             ✕
           </button>

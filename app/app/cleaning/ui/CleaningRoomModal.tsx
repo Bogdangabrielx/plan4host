@@ -121,7 +121,7 @@ export default function CleaningRoomModal({
             <StatusPill />
             {hint && <small style={{ color: "var(--muted)" }}>{hint}</small>}
             <button onClick={onClose}
-              style={{ padding: "6px 10px", background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, cursor: "pointer" }}>
+              style={{ width: 34, height: 34, padding: 0, background: "var(--card)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 999, cursor: "pointer", display: "grid", placeItems: "center", fontSize: 15, fontWeight: 800, lineHeight: 1 }}>
               ✕
             </button>
           </div>

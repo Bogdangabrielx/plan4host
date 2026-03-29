@@ -651,7 +651,7 @@ export default function PropertySetupClient({ initialProperties }: { initialProp
                 <button
                   aria-label="Close"
                   className="sb-btn sb-cardglow sb-btn--icon"
-                  style={{ width: 40, height: 40, borderRadius: 999, display: 'grid', placeItems: 'center', fontWeight: 900 }}
+                  style={{ width: 34, height: 34, borderRadius: 999, display: 'grid', placeItems: 'center', fontWeight: 800, fontSize: 15, lineHeight: 1 }}
                   onClick={() => setShowRoomsGuide(false)}
                 >
                   ×

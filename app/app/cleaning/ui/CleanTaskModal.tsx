@@ -224,7 +224,7 @@ export default function CleanTaskModal({
 	      aria-label={i18n.close}
 	      title={i18n.close}
 	      className="sb-btn sb-cardglow sb-btn--icon"
-	      style={{ justifySelf: "end", fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+	      style={{ justifySelf: "end", width: 34, height: 34, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
 	    >
 	      ✕
 	    </button>

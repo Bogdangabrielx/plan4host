@@ -1016,7 +1016,7 @@ export default function SubscriptionClient({
               <button
                 className={styles.btn}
                 onClick={() => setPendingSelect(null)}
-                style={{ padding: '6px 10px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)' }}
+                style={{ width: 34, height: 34, padding: 0, borderRadius: 999, background: 'transparent', border: '1px solid var(--border)', display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 800, lineHeight: 1 }}
               >
                 ✕
               </button>

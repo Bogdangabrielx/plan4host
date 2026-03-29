@@ -352,8 +352,8 @@ function OnboardingChecklistFab() {
               onClick={() => setOpen(false)}
               style={{
                 borderRadius: "999px",
-                width: 26,
-                height: 26,
+                width: 22,
+                height: 22,
                 border: "1px solid rgba(255,255,255,0.35)",
                 background: "rgba(255,255,255,0.16)",
                 color: "#ffffff",
@@ -361,6 +361,9 @@ function OnboardingChecklistFab() {
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
+                fontSize: 13,
+                fontWeight: 800,
+                lineHeight: 1,
               }}
               aria-label={uiLang === "ro" ? "Inchide checklist-ul" : "Close checklist"}
             >

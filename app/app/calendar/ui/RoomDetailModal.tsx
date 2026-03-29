@@ -957,12 +957,14 @@ export default function RoomDetailModal({
                 aria-label={t.close}
                 className="sb-btn sb-btn--icon sb-btn--ghost"
                 style={{
-                  width: 40,
-                  height: 40,
+                  width: 34,
+                  height: 34,
                   borderRadius: 999,
                   border: "1px solid color-mix(in srgb, var(--border) 70%, transparent)",
                   background: "transparent",
-                  fontWeight: 950,
+                  fontWeight: 800,
+                  fontSize: 15,
+                  lineHeight: 1,
                 }}
               >
                 ×
@@ -1653,7 +1655,13 @@ export default function RoomDetailModal({
           >
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <strong>{t.cancelReservation}</strong>
-              <button className="sb-btn" onClick={()=>setReleaseConfirmOpen(false)}>✕</button>
+              <button
+                className="sb-btn"
+                onClick={()=>setReleaseConfirmOpen(false)}
+                style={{ width: 34, height: 34, padding: 0, borderRadius: 999, display: "grid", placeItems: "center", fontSize: 15, fontWeight: 800, lineHeight: 1 }}
+              >
+                ✕
+              </button>
             </div>
             <div style={{ color:'var(--muted)' }}>
               {lang === "ro"

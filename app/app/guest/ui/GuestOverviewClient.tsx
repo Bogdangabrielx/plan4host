@@ -1203,7 +1203,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 aria-label={t.close}
                 title={t.close}
                 onClick={()=>setQrModal(null)}
-                style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+                style={{ width: 34, height: 34, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
               >
                 ✕
               </button>
@@ -1264,7 +1264,7 @@ export default function GuestOverviewClient({ initialProperties }: { initialProp
                 title={t.close}
                 onClick={() => setAccessPopup(null)}
                 disabled={accessBusy}
-                style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+                style={{ width: 34, height: 34, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
               >
                 ✕
               </button>
@@ -2011,7 +2011,7 @@ function EditFormBookingModal({
                 title={lang === "ro" ? "Inchide" : "Close"}
                 onClick={()=>setCancelOpen(false)}
                 disabled={cancelBusy}
-                style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+                style={{ width: 34, height: 34, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
               >
                 ✕
               </button>
@@ -2161,7 +2161,7 @@ function EditFormBookingModal({
               title={lang === "ro" ? "Inchide" : "Close"}
               onClick={onClose}
               disabled={saving || deleting}
-              style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+              style={{ width: 34, height: 34, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
             >
               ✕
             </button>

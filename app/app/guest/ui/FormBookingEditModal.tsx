@@ -402,7 +402,7 @@ export default function EditFormBookingModal({
               aria-label="Close"
               title="Close"
               onClick={onClose}
-              style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}
+              style={{ width: 34, height: 34, fontSize: 15, fontWeight: 800, lineHeight: 1 }}
             >
               ✕
             </button>
