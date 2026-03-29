@@ -3194,22 +3194,22 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 <div style={{ color:'var(--muted)', lineHeight:1.5, fontSize:13 }}>
                   {uiLang === "ro" ? (
                     <>
-                      Recomandam ca <strong style={{ color:'var(--text)' }}>sursa selectata</strong> sa se potriveasca cu platforma unde vei trimite acest link ca <strong style={{ color:'var(--text)' }}>mesaj automat</strong>.
+                      Recomandam ca <strong>sursa selectata</strong> sa se potriveasca cu platforma unde vei trimite acest link ca <strong>mesaj automat</strong>.
                     </>
                   ) : (
                     <>
-                      We recommend choosing a <strong style={{ color:'var(--text)' }}>selected source</strong> that matches the platform where you will send this link as an <strong style={{ color:'var(--text)' }}>automated message</strong>.
+                      We recommend choosing a <strong>selected source</strong> that matches the platform where you will send this link as an <strong>automated message</strong>.
                     </>
                   )}
                 </div>
                 <div style={{ color:'var(--muted)', lineHeight:1.5, fontSize:13 }}>
                   {uiLang === "ro" ? (
                     <>
-                      Dupa ce oaspetele completeaza formularul, aceasta selectie va aparea direct in meniul <strong style={{ color:'var(--text)' }}>Guests</strong> si va fi mai usor sa urmaresti rezervarile.
+                      Dupa ce oaspetele completeaza formularul, aceasta selectie va aparea direct in meniul <strong>Guests</strong> si va fi mai usor sa urmaresti rezervarile.
                     </>
                   ) : (
                     <>
-                      After the guest completes the form, this selection will appear directly in the <strong style={{ color:'var(--text)' }}>Guests</strong> menu and it will be easier to track reservations.
+                      After the guest completes the form, this selection will appear directly in the <strong>Guests</strong> menu and it will be easier to track reservations.
                     </>
                   )}
                 </div>
