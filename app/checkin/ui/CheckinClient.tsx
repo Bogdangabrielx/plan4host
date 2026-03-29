@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useRef, useState, useImperativeHandle } from
 import Image from "next/image";
 import QrWithLogo from "@/components/QrWithLogo";
 import { DIAL_OPTIONS } from "@/lib/phone/dialOptions";
+import { CHECKIN_I18N, GUEST_CHECKIN_LANG_OPTIONS, normalizeGuestCheckinLang, type CheckinTextSet, type GuestCheckinLang } from "./checkinI18n";
 
 type PropertyInfo = {
   id: string;
@@ -43,6 +44,10 @@ type Companion = {
   docNationality: string;
 };
 
+type StringCheckinKey = {
+  [K in keyof CheckinTextSet]: CheckinTextSet[K] extends string ? K : never
+}[keyof CheckinTextSet];
+
 // Small helper to render emoji flags from ISO country code
 function flagEmoji(cc: string | null | undefined): string {
   if (!cc) return "";
@@ -75,6 +80,162 @@ function addDaysYMD(ymd: string, days: number): string {
   const mm = String(dt.getMonth() + 1).padStart(2, "0");
   const dd = String(dt.getDate() + 0).padStart(2, "0");
   return `${yy}-${mm}-${dd}`;
+}
+
+function GuestLanguageDropdown({
+  lang,
+  onChange,
+  ariaLabel,
+}: {
+  lang: GuestCheckinLang;
+  onChange: (lang: GuestCheckinLang) => void;
+  ariaLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  const current = GUEST_CHECKIN_LANG_OPTIONS.find((item) => item.code === lang) ?? GUEST_CHECKIN_LANG_OPTIONS[0];
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={ariaLabel}
+        title={current.label}
+        style={{
+          minWidth: 56,
+          height: 36,
+          padding: "0 10px 0 6px",
+          borderRadius: 999,
+          border: "1px solid color-mix(in srgb, var(--border) 88%, transparent)",
+          background: "color-mix(in srgb, var(--card) 92%, transparent)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+          cursor: "pointer",
+          boxShadow: open ? "0 0 0 2px color-mix(in srgb, var(--primary) 24%, transparent)" : "none",
+        }}
+      >
+        {current.flagSrc ? (
+          <img
+            src={current.flagSrc}
+            alt=""
+            width={22}
+            height={22}
+            style={{ width: 22, height: 22, borderRadius: 999, display: "block", flex: "0 0 auto" }}
+          />
+        ) : (
+          <span
+            aria-hidden
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: 999,
+              display: "grid",
+              placeItems: "center",
+              background: "color-mix(in srgb, var(--primary) 16%, transparent)",
+              color: "var(--text)",
+              fontSize: 10,
+              fontWeight: 800,
+              flex: "0 0 auto",
+            }}
+          >
+            {current.shortLabel}
+          </span>
+        )}
+        <svg aria-hidden viewBox="0 0 20 20" width="12" height="12" style={{ display: "block", color: "var(--muted)" }}>
+          <path d="M5 7l5 6 5-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {open && (
+        <div
+          className="sb-card"
+          style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            right: 0,
+            zIndex: 25,
+            minWidth: 190,
+            padding: 8,
+            display: "grid",
+            gap: 6,
+            border: "1px solid var(--border)",
+            background: "var(--card)",
+          }}
+        >
+          {GUEST_CHECKIN_LANG_OPTIONS.map((option) => {
+            const active = option.code === lang;
+            return (
+              <button
+                key={option.code}
+                type="button"
+                onClick={() => {
+                  onChange(option.code);
+                  setOpen(false);
+                }}
+                style={{
+                  width: "100%",
+                  border: "1px solid color-mix(in srgb, var(--border) 88%, transparent)",
+                  borderRadius: 12,
+                  background: active ? "color-mix(in srgb, var(--primary) 12%, transparent)" : "transparent",
+                  padding: "8px 10px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  cursor: "pointer",
+                  color: "var(--text)",
+                }}
+              >
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                  {option.flagSrc ? (
+                    <img
+                      src={option.flagSrc}
+                      alt=""
+                      width={20}
+                      height={20}
+                      style={{ width: 20, height: 20, borderRadius: 999, display: "block", flex: "0 0 auto" }}
+                    />
+                  ) : (
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: 999,
+                        display: "grid",
+                        placeItems: "center",
+                        background: "color-mix(in srgb, var(--primary) 16%, transparent)",
+                        fontSize: 10,
+                        fontWeight: 800,
+                        flex: "0 0 auto",
+                      }}
+                    >
+                      {option.shortLabel}
+                    </span>
+                  )}
+                  <span style={{ fontSize: 13, fontWeight: active ? 700 : 600, whiteSpace: "nowrap" }}>{option.label}</span>
+                </span>
+                <span style={{ color: active ? "var(--success)" : "transparent", fontSize: 14, fontWeight: 900 }}>✓</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
 /** ---------- Reusable Combobox (decoupled from parent) ---------- */
@@ -267,8 +428,8 @@ export default function CheckinClient() {
   const [waText, setWaText] = useState("");
   const waInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // Language toggle (EN/RO)
-  type Lang = 'en' | 'ro';
+  // Guest-facing language picker (kept separate from app UI language)
+  type Lang = GuestCheckinLang;
   function readCookie(name: string): string | null {
     if (typeof document === 'undefined') return null;
     const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\/+^])/g, '\\$1') + '=([^;]*)'));
@@ -276,15 +437,16 @@ export default function CheckinClient() {
   }
   const [lang, setLang] = useState<Lang>(() => {
     const qp = (typeof window !== 'undefined') ? new URL(window.location.href).searchParams.get('lang') : null;
-    const fromQ = qp && /^(ro|en)$/i.test(qp) ? (qp.toLowerCase() as Lang) : null;
+    const fromQ = normalizeGuestCheckinLang(qp);
     if (fromQ) return fromQ;
-    const ck = readCookie('site_lang');
-    if (ck && /^(ro|en)$/i.test(ck)) return ck.toLowerCase() as Lang;
-    if (typeof navigator !== 'undefined' && /^ro\b/i.test(navigator.language || '')) return 'ro';
+    const ck = normalizeGuestCheckinLang(readCookie('p4h_guest_lang'));
+    if (ck) return ck;
+    const browserLang = normalizeGuestCheckinLang(typeof navigator !== 'undefined' ? navigator.language : null);
+    if (browserLang) return browserLang;
     return 'en';
   });
   useEffect(() => {
-    try { document.cookie = `site_lang=${lang}; path=/; max-age=${60*60*24*365}`; } catch {}
+    try { document.cookie = `p4h_guest_lang=${lang}; path=/; max-age=${60*60*24*365}`; } catch {}
     try { document.documentElement.setAttribute('lang', lang); } catch {}
   }, [lang]);
 
@@ -326,162 +488,9 @@ export default function CheckinClient() {
     };
   }, [highlightHouseRules, stage, pdfUrl]);
 
-  const TXT = useMemo(() => ({
-    en: {
-      checkinTitle: 'Check-in',
-      intro1: 'Thank you for choosing us!',
-      intro2: 'Please fill in the fields below with the requested information.',
-      intro3: (propName: string) => `Once you complete the online check-in, you will automatically receive an email confirming your check-in for ${propName}.`,
-      intro4: 'The email will also include a QR code you can present at reception, or use as proof that you have completed this form.',
-      intro5: 'Please note that all information you provide is strictly confidential.',
-      intro6: 'Thank you for your patience!',
-      preBody: '',
-      preCta: 'Complete the form',
-      preMapTitle: 'Location',
-      preContactTitle: 'Contact',
-      loading: 'Loading…',
-      thanksTitle: 'Thank you! ✅',
-      thanksMsg: 'Your check-in details were submitted successfully.',
-      checkinDate: 'Check-in date*',
-      checkoutDate: 'Check-out date*',
-      firstName: 'First name*',
-      lastName: 'Last name*',
-      email: 'Email*',
-      phone: 'Phone*',
-      address: 'Address',
-      city: 'City',
-      country: 'Country*',
-      ariaCountry: 'Country',
-      selectDocType: 'Select document type…',
-      nationality: 'Nationality (citizenship)*',
-      ariaNationality: 'Nationality',
-      uploadId: 'Upload ID document (photo/PDF)*',
-      waPill: 'Message us on WhatsApp',
-      waHello: 'Hi! How can we help you?',
-      waPlaceholder: 'Type a message…',
-      waSend: 'Send',
-      docTypeLabel: 'Document type*',
-      docOptionId: 'Identity card',
-      docOptionPassport: 'Passport',
-      docSeriesLabel: 'Series*',
-      docNumberLabel: 'Number*',
-      selected: 'Selected:',
-      consentPrefix: 'I have read and agree to the ',
-      houseRules: 'House Rules',
-      openPdfHint: '(Tap to view the House Rules in-app)',
-      signaturePrompt: 'Please draw your signature below (mouse or touch). By signing, you confirm that the information provided is accurate and that you have read the Privacy Policy / GDPR information and the property\'s House Rules.',
-      signatureHere: 'Sign here',
-      submitSubmitting: 'Submitting…',
-      submit: 'Submit check-in',
-      confirmEmailTitle: 'Confirmation Email',
-      confirmEmailWait: 'Please wait while we send your confirmation email.',
-      privacyTitle: 'Privacy & GDPR information',
-      privacyPrompt: 'Please review our Privacy Policy and GDPR information. After reading it, confirm below to continue.',
-      privacyAcknowledge: 'I have read and understood the Privacy Policy / GDPR information.',
-      privacyConfirm: 'Confirm & Continue',
-      missingIdError: 'Please upload your ID document.',
-      submitFailed: 'Submission failed. Please try again.',
-      unexpectedError: 'Unexpected error. Please try again.',
-      langEN: 'EN',
-      langRO: 'RO',
-      totalGuestsLabel: 'Total guests',
-      totalGuestsHint: (first: string, last: string) => `Please select the total number of guests, including ${first} ${last}.`,
-      editCompanions: 'Edit companions',
-      companionTitle: (current: number, total: number) => `Guest ${current} of ${total}`,
-      birthDate: 'Birth date',
-      residenceCountry: 'Country of residence',
-      isMinor: 'Guest is a minor',
-      guardianLabel: 'Parent/guardian name',
-      next: 'Next',
-      back: 'Back',
-      saveAndClose: 'Save & close',
-      companionMissing: 'Please fill in all required fields for this guest.',
-    },
-    ro: {
-      checkinTitle: 'Check‑in',
-      intro1: 'Îți mulțumim că ne-ai ales!',
-      intro2: 'Te rugăm să completezi câmpurile de mai jos cu informațiile solicitate.',
-      intro3: (propName: string) => `După ce finalizezi check‑in‑ul online, vei primi automat un email de confirmare pentru ${propName}.`,
-      intro4: 'Emailul va include și un cod QR pe care îl poți prezenta la recepție sau îl poți folosi drept dovadă că ai completat acest formular.',
-      intro5: 'Toate informațiile furnizate sunt strict confidențiale.',
-      intro6: 'Îți mulțumim pentru răbdare!',
-      preBody: '',
-      preCta: 'Completează formularul',
-      preMapTitle: 'Locație',
-      preContactTitle: 'Contact',
-      loading: 'Se încarcă…',
-      thanksTitle: 'Mulțumim! ✅',
-      thanksMsg: 'Detaliile tale de check‑in au fost trimise cu succes.',
-      checkinDate: 'Data check‑in*',
-      checkoutDate: 'Data check‑out*',
-      firstName: 'Prenume*',
-      lastName: 'Nume*',
-      email: 'Email*',
-      phone: 'Telefon*',
-      address: 'Adresă',
-      city: 'Oraș',
-      country: 'Țară*',
-      ariaCountry: 'Țară',
-      selectDocType: 'Selectează tipul documentului…',
-      nationality: 'Naționalitate (cetățenie)*',
-      ariaNationality: 'Naționalitate',
-      uploadId: 'Încarcă actul de identitate (poză/PDF)*',
-      waPill: 'Scrie-ne pe WhatsApp',
-      waHello: 'Bună! Cu ce te putem ajuta?',
-      waPlaceholder: 'Scrie un mesaj…',
-      waSend: 'Trimite',
-      docTypeLabel: 'Tip document*',
-      docOptionId: 'Buletin',
-      docOptionPassport: 'Pașaport',
-      docSeriesLabel: 'Serie*',
-      docNumberLabel: 'Număr*',
-      selected: 'Selectat:',
-      consentPrefix: 'Am citit și sunt de acord cu ',
-      houseRules: 'Regulamentul de ordine interioară',
-      openPdfHint: '(Apasă pentru a vedea regulamentul în aplicație)',
-      signaturePrompt: 'Te rugăm să desenezi semnătura mai jos (mouse sau touch). Prin semnătură confirmi că datele completate sunt corecte și că ai luat la cunoștință Politica de confidențialitate / GDPR și regulile proprietății (House Rules).',
-      signatureHere: 'Semnează aici',
-      submitSubmitting: 'Se trimite…',
-      submit: 'Trimite check‑in',
-      confirmEmailTitle: 'Email de confirmare',
-      confirmEmailWait: 'Te rugăm să aștepți cât timp trimitem emailul de confirmare.',
-      privacyTitle: 'Politica de confidențialitate & GDPR',
-      privacyPrompt: 'Te rugăm să consulți Politica de confidențialitate și informațiile GDPR. După ce le-ai citit, confirmă mai jos pentru a continua.',
-      privacyAcknowledge: 'Am citit și am înțeles Politica de confidențialitate / informațiile GDPR.',
-      privacyConfirm: 'Confirmă și continuă',
-      missingIdError: 'Te rugăm să încarci actul de identitate.',
-      submitFailed: 'Trimiterea a eșuat. Încearcă din nou.',
-      unexpectedError: 'Eroare neașteptată. Încearcă din nou.',
-      langEN: 'EN',
-      langRO: 'RO',
-      totalGuestsLabel: 'Număr total de oaspeți',
-      totalGuestsHint: (first: string, last: string) => `Te rugăm să selectezi numărul total de oaspeți, incluzând ${first} ${last}.`,
-      editCompanions: 'Editează însoțitorii',
-      companionTitle: (current: number, total: number) => `Oaspete ${current} din ${total}`,
-      birthDate: 'Data nașterii',
-      residenceCountry: 'Țara de rezidență',
-      isMinor: 'Oaspetele este minor',
-      guardianLabel: 'Nume părinte/tutore',
-      next: 'Următorul',
-      back: 'Înapoi',
-      saveAndClose: 'Salvează și închide',
-      companionMissing: 'Te rugăm să completezi toate câmpurile obligatorii pentru acest oaspete.',
-    }
-  }), []);
-  const T = (key: keyof typeof TXT['en']) => (TXT as any)[lang][key];
-  const Intro3 = ({ name }: { name: string }) => (
-    lang === 'en' ? (
-      <>
-        Once you complete the online check-in, you will automatically receive an email confirming your check-in for{' '}
-        <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{name}</span>.
-      </>
-    ) : (
-      <>
-        După ce finalizezi check‑in‑ul online, vei primi automat un email de confirmare pentru{' '}
-        <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{name}</span>.
-      </>
-    )
-  );
+  const TXT = CHECKIN_I18N;
+  const currentText = TXT[lang] ?? TXT.en;
+  const T = <K extends StringCheckinKey>(key: K): CheckinTextSet[K] => currentText[key];
   const [phoneDial, setPhoneDial] = useState<string>("+40");
   const [dialOpen,  setDialOpen]  = useState<boolean>(false);
   const dialWrapRef = useRef<HTMLDivElement | null>(null);
@@ -961,7 +970,7 @@ export default function CheckinClient() {
         setTypes(t.map(x => ({ id: String(x.id), name: String(x.name ?? "Type") })));
         setRooms(r.map(x => ({ id: String(x.id), name: String(x.name ?? "Room"), room_type_id: x.room_type_id ?? null })));
       } catch (e: any) {
-        setErrorMsg(e?.message || "Failed to load property data.");
+        setErrorMsg(e?.message || T("loadPropertyFailed"));
         setSubmitState("error");
       } finally { if (alive) setLoading(false); }
     })();
@@ -988,7 +997,7 @@ export default function CheckinClient() {
   // 3) validare date
   useEffect(() => {
     if (!startDate || !endDate) { setDateError(""); return; }
-    setDateError(endDate <= startDate ? "Check-out must be after check-in." : "");
+    setDateError(endDate <= startDate ? T("checkoutAfterCheckinError") : "");
   }, [startDate, endDate]);
 
   // Intercept first interaction to show Privacy Policy modal
@@ -1285,7 +1294,7 @@ export default function CheckinClient() {
     const res = await fetch("/api/checkin/upload", { method: "POST", body: fd });
     if (!res.ok) {
       const txt = await res.text().catch(() => "");
-      throw new Error(txt || "Upload failed");
+      throw new Error(txt || T("uploadFailed"));
     }
     const j = await res.json();
     return { path: j?.path as string, mime: docFile.type || "application/octet-stream" };
@@ -1352,7 +1361,7 @@ export default function CheckinClient() {
     try {
       // 4.1 upload fișier (obligatoriu) + semnătură (opțional)
       const uploaded = await uploadDocFile();
-      if (!uploaded) throw new Error((TXT as any)[lang].missingIdError);
+      if (!uploaded) throw new Error(T("missingIdError"));
       const uploadedSig = await uploadSignature();
 
       // 4.2 payload
@@ -1418,7 +1427,7 @@ export default function CheckinClient() {
 
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        const msg = j?.error || j?.message || (TXT as any)[lang].submitFailed;
+        const msg = j?.error || j?.message || T("submitFailed");
         setErrorMsg(msg);
         setSubmitState("error");
         setConfirmOpen(false);
@@ -1442,15 +1451,15 @@ export default function CheckinClient() {
           });
           const jj = await r.json().catch(()=>({}));
           if (r.ok && jj?.sent) setConfirmStatus("sent");
-          else { setConfirmStatus("error"); setConfirmError(jj?.error || jj?.message || 'Failed to send'); }
+          else { setConfirmStatus("error"); setConfirmError(jj?.error || jj?.message || T("confirmEmailErrorTitle")); }
         } catch (er:any) {
-          setConfirmStatus("error"); setConfirmError(er?.message || 'Failed to send');
+          setConfirmStatus("error"); setConfirmError(er?.message || T("confirmEmailErrorTitle"));
         }
       }
       // Mark submit success, but show final Thank you only after email is sent
       setSubmitState("success");
     } catch (err: any) {
-      setErrorMsg(err?.message || (TXT as any)[lang].unexpectedError);
+      setErrorMsg(err?.message || T("unexpectedError"));
       setSubmitState("error");
       setConfirmOpen(false);
     }
@@ -1478,71 +1487,12 @@ export default function CheckinClient() {
         <div style={CARD}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10 }}>
             <h1 style={{ marginTop: 0, marginBottom: 8 }}>{T('checkinTitle')}</h1>
-            <div style={{ display: "inline-flex", gap: 8, alignSelf: "flex-start" }}>
-              <button
-                type="button"
-                onClick={() => setLang("ro")}
-                aria-label="Română"
-                title="Română"
-                style={{
-                  width: 32,
-                  height: 32,
-                  padding: 0,
-                  borderRadius: 999,
-                  border: "none",
-                  background: "transparent",
-                  display: "grid",
-                  placeItems: "center",
-                  cursor: "pointer",
-                  boxShadow: "none",
-                }}
-              >
-                <img
-                  src="/ro.png"
-                  alt=""
-                  width={26}
-                  height={26}
-                  style={{
-                    borderRadius: 999,
-                    display: "block",
-                    boxShadow: lang === "ro" ? "0 0 0 2px color-mix(in srgb, var(--primary) 26%, transparent)" : "none",
-                  }}
-                />
-              </button>
-              <button
-                type="button"
-                onClick={() => setLang("en")}
-                aria-label="English"
-                title="English"
-                style={{
-                  width: 32,
-                  height: 32,
-                  padding: 0,
-                  borderRadius: 999,
-                  border: "none",
-                  background: "transparent",
-                  display: "grid",
-                  placeItems: "center",
-                  cursor: "pointer",
-                  boxShadow: "none",
-                }}
-              >
-                <img
-                  src="/eng.png"
-                  alt=""
-                  width={26}
-                  height={26}
-                  style={{
-                    borderRadius: 999,
-                    display: "block",
-                    boxShadow: lang === "en" ? "0 0 0 2px color-mix(in srgb, var(--primary) 26%, transparent)" : "none",
-                  }}
-                />
-              </button>
-            </div>
+            <GuestLanguageDropdown lang={lang} onChange={setLang} ariaLabel={T("selectLanguage")} />
           </div>
           <p style={{ color: "var(--muted)" }}>
-            Missing property. This link must include <code>?property=&lt;PROPERTY_ID&gt;</code>.
+            {T("missingPropertyMessage").split("?property=<PROPERTY_ID>")[0]}
+            <code>?property=&lt;PROPERTY_ID&gt;</code>
+            {T("missingPropertyMessage").split("?property=<PROPERTY_ID>")[1] ?? ""}
           </p>
         </div>
       </div>
@@ -2103,7 +2053,7 @@ export default function CheckinClient() {
       {loading && (
         <div
           aria-live="polite"
-          aria-label={lang === "ro" ? "Se încarcă" : "Loading"}
+          aria-label={T("loadingAria")}
           style={{
             position: "fixed",
             inset: 0,
@@ -2145,156 +2095,42 @@ export default function CheckinClient() {
         <div className="ci-heroInner">
           <div className="ci-heroText">
             <h1 className="ci-heroTitle">
-              {lang === "ro" ? (
-                <span className="ci-hTitle">
-                  Completează<span className="ci-titleBreak">check‑in‑ul</span>
-                </span>
-              ) : (
-                <span className="ci-hTitle">
-                  Complete your<span className="ci-titleBreak">check-in</span>
-                </span>
-              )}
+              <span className="ci-hTitle">
+                {T("heroTitleLine1")}
+                <span className="ci-titleBreak">{T("heroTitleLine2")}</span>
+              </span>
             </h1>
             <p className="ci-hSubtitle">
-              {lang === "ro" ? (
-                <>
-                  <span>În doar</span>
-                  <span className="ci-pillInline">câteva minute</span>
-                  <span>și primești confirmarea QR.</span>
-                </>
-              ) : (
-                <>
-                  <span>In just</span>
-                  <span className="ci-pillInline">a few minutes</span>
-                  <span>and receive your QR confirmation.</span>
-                </>
-              )}
+              <>
+                <span>{T("heroSubtitlePrefix")}</span>
+                <span className="ci-pillInline">{T("heroSubtitleHighlight")}</span>
+                <span>{T("heroSubtitleSuffix")}</span>
+              </>
             </p>
             <div className="ci-heroStack">
               <div className="ci-heroNote">
-                <div className="ci-heroNoteTitle">{lang === "ro" ? "Informații" : "Info"}</div>
-                {lang === "ro" ? (
-                  <>
-                    <p className="ci-infoIntro">Îți mulțumim că ai ales să stai la noi.</p>
-                    <p className="ci-infoMain">
-                      Pentru o ședere cât mai plăcută, te rugăm să completezi formularul de check-in online de mai jos.
-                      <br />
-                      După trimitere, vei primi automat un email de confirmare
-                      <br />
-                      pentru sejurul tău la{" "}
-                      <span className="ci-pillProp">{prop?.name ?? "proprietate"}</span>.
-                    </p>
-                    <hr className="ci-infoSep" />
-                    <p className="ci-infoLabel">Emailul tău de confirmare va include:</p>
-                    <ul className="ci-infoList">
-                      <li>
-                        un <strong style={{ fontWeight: 700, color: "var(--text)" }}>cod{"\u00A0"}QR</strong> ce poate fi
-                        prezentat la recepție (dacă este cazul), sau
-                      </li>
-                      <li>folosit ca dovadă că check-in-ul a fost completat.</li>
-                    </ul>
-                    <p className="ci-infoMeta">
-                      Toate informațiile sunt gestionate în siguranță și folosite doar pentru check-in și cerințe legale.
-                    </p>
-                    <p className="ci-infoClose">Îți mulțumim pentru cooperare — abia așteptăm să te primim.</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="ci-infoIntro">
-                      Thank you for choosing
-                      <span className="ci-breakSm">to stay with us.</span>
-                    </p>
-                    <p className="ci-infoMain">
-                      To ensure a smooth arrival, please complete the online check-in form below.
-                      <br />
-                      Once submitted, you will automatically receive a confirmation email
-                      <br />
-                      for your stay at{" "}
-                      <span className="ci-pillProp">{prop?.name ?? "the property"}</span>.
-                    </p>
-                    <hr className="ci-infoSep" />
-                    <p className="ci-infoLabel">Your confirmation email will include:</p>
-                    <ul className="ci-infoList">
-                      <li>
-                        a <strong style={{ fontWeight: 700, color: "var(--text)" }}>QR{"\u00A0"}code</strong> that can be
-                        presented at reception (if applicable), or
-                      </li>
-                      <li>used as proof that your check-in has been completed.</li>
-                    </ul>
-                    <p className="ci-infoMeta">
-                      All information you provide is handled securely and used only for check-in and legal requirements.
-                    </p>
-                    <p className="ci-infoClose">Thank you for your cooperation — we look forward to welcoming you.</p>
-                  </>
-                )}
+                <div className="ci-heroNoteTitle">{T("infoTitle")}</div>
+                <>
+                  <p className="ci-infoIntro">{T("infoIntro")}</p>
+                  <p className="ci-infoMain">
+                    {T("infoMainBeforeProperty")}{" "}
+                    <span className="ci-pillProp">{prop?.name ?? T("propertyFallback")}</span>
+                    {T("infoMainAfterProperty")}
+                  </p>
+                  <hr className="ci-infoSep" />
+                  <p className="ci-infoLabel">{T("infoEmailIncludesTitle")}</p>
+                  <ul className="ci-infoList">
+                    <li>{T("infoQrLine1")}</li>
+                    <li>{T("infoQrLine2")}</li>
+                  </ul>
+                  <p className="ci-infoMeta">{T("infoSecurityNote")}</p>
+                  <p className="ci-infoClose">{T("infoClosingNote")}</p>
+                </>
               </div>
             </div>
           </div>
           <div className="ci-langSwitch">
-            <button
-              type="button"
-              onClick={() => setLang("ro")}
-              aria-label="Română"
-              title="Română"
-              className="ci-flagBtn"
-              data-active={lang === "ro" ? "1" : "0"}
-              style={{
-                width: 32,
-                height: 32,
-                padding: 0,
-                borderRadius: 999,
-                border: "none",
-                background: "transparent",
-                display: "grid",
-                placeItems: "center",
-                cursor: "pointer",
-                boxShadow: "none",
-              }}
-            >
-              <img
-                src="/ro.png"
-                alt=""
-                width={26}
-                height={26}
-                style={{
-                  borderRadius: 999,
-                  display: "block",
-                  boxShadow: lang === "ro" ? "0 0 0 2px color-mix(in srgb, var(--primary) 26%, transparent)" : "none",
-                }}
-              />
-            </button>
-            <button
-              type="button"
-              onClick={() => setLang("en")}
-              aria-label="English"
-              title="English"
-              className="ci-flagBtn"
-              data-active={lang === "en" ? "1" : "0"}
-              style={{
-                width: 32,
-                height: 32,
-                padding: 0,
-                borderRadius: 999,
-                border: "none",
-                background: "transparent",
-                display: "grid",
-                placeItems: "center",
-                cursor: "pointer",
-                boxShadow: "none",
-              }}
-            >
-              <img
-                src="/eng.png"
-                alt=""
-                width={26}
-                height={26}
-                style={{
-                  borderRadius: 999,
-                  display: "block",
-                  boxShadow: lang === "en" ? "0 0 0 2px color-mix(in srgb, var(--primary) 26%, transparent)" : "none",
-                }}
-              />
-            </button>
+            <GuestLanguageDropdown lang={lang} onChange={setLang} ariaLabel={T("selectLanguage")} />
           </div>
         </div>
       </section>
@@ -2475,11 +2311,7 @@ export default function CheckinClient() {
               />
             ) : (
               <div style={{ padding: 12, color: "var(--muted)" }}>
-                {mapBusy
-                  ? (lang === "ro" ? "Se încarcă harta…" : "Loading map…")
-                  : (lang === "ro"
-                      ? "Previzualizarea hărții nu este disponibilă. Deschide locația în Google Maps."
-                      : "Map preview is not available. Open the location in Google Maps.")}
+                {mapBusy ? T("loadingMap") : T("mapUnavailable")}
               </div>
             )}
             {mapOpenUrl ? (
@@ -2490,7 +2322,7 @@ export default function CheckinClient() {
                   rel="noreferrer"
                   style={{ color: "var(--primary)", textDecoration: "none", fontWeight: 800, fontSize: 12 }}
                 >
-                  {lang === "ro" ? "Deschide în Google Maps" : "Open in Google Maps"}
+                  {T("openInGoogleMaps")}
                 </a>
                 {!prop.social_location && prop.contact_address ? (
                   <div style={{ color: "var(--muted)", fontSize: 12 }}>
@@ -2571,14 +2403,14 @@ export default function CheckinClient() {
                   <Image src={formIcon("firstname")} alt="" width={16} height={16} />
                   <span>{T('firstName')}</span>
                 </label>
-                <input id="checkin-first-name" style={INPUT} value={firstName} onChange={e => setFirstName(e.currentTarget.value)} placeholder="First Name" />
+                <input id="checkin-first-name" style={INPUT} value={firstName} onChange={e => setFirstName(e.currentTarget.value)} placeholder={T("placeholderFirstName")} />
               </div>
               <div>
                 <label htmlFor="checkin-last-name" style={LABEL_ROW}>
                   <Image src={formIcon("lastname")} alt="" width={16} height={16} />
                   <span>{T('lastName')}</span>
                 </label>
-                <input id="checkin-last-name" style={INPUT} value={lastName} onChange={e => setLastName(e.currentTarget.value)} placeholder="Last Name" />
+                <input id="checkin-last-name" style={INPUT} value={lastName} onChange={e => setLastName(e.currentTarget.value)} placeholder={T("placeholderLastName")} />
               </div>
             </div>
 
@@ -2587,7 +2419,7 @@ export default function CheckinClient() {
               <div style={ROW_1}>
                 <div>
                   <label htmlFor="checkin-total-guests" style={LABEL_ROW}>
-                    <span>{(TXT as any)[lang].totalGuestsLabel}</span>
+                    <span>{T("totalGuestsLabel")}</span>
                   </label>
                   <select
                     id="checkin-total-guests"
@@ -2635,7 +2467,7 @@ export default function CheckinClient() {
                     ))}
                   </select>
                   <p style={{ marginTop: 6, fontSize: 12, color: "var(--muted)" }}>
-                    {(TXT as any)[lang].totalGuestsHint(firstName.trim(), lastName.trim())}
+                    {currentText.totalGuestsHint(firstName.trim(), lastName.trim())}
                   </p>
                   {guestCount > 1 && expectedCompanions > 0 && companions.length === expectedCompanions && (
                     <button
@@ -2643,7 +2475,7 @@ export default function CheckinClient() {
                       onClick={() => { setCompanionsIndex(0); setCompanionsError(""); setCompanionsOpen(true); }}
                       style={{ marginTop: 6, ...BTN_GHOST }}
                     >
-                      {(TXT as any)[lang].editCompanions}
+                      {T("editCompanions")}
                     </button>
                   )}
                 </div>
@@ -2657,7 +2489,7 @@ export default function CheckinClient() {
                   <Image src={formIcon("email")} alt="" width={16} height={16} />
                   <span>{T('email')}</span>
                 </label>
-                <input id="checkin-email" style={INPUT} type="email" value={email} onChange={e => setEmail(e.currentTarget.value)} placeholder="***@example.com" />
+                <input id="checkin-email" style={INPUT} type="email" value={email} onChange={e => setEmail(e.currentTarget.value)} placeholder={T("placeholderEmail")} />
               </div>
               <div>
                 <label htmlFor="checkin-phone" style={LABEL_ROW}>
@@ -2665,13 +2497,13 @@ export default function CheckinClient() {
                   <span>{T('phone')}</span>
                 </label>
                 <div ref={dialWrapRef} style={{ position:'relative' }}>
-                  <button type="button" onClick={()=>setDialOpen(v=>!v)} aria-label="Dial code"
+                  <button type="button" onClick={()=>setDialOpen(v=>!v)} aria-label={T("dialCodeAria")}
                     style={{ position:'absolute', left:8, top:'50%', transform:'translateY(-50%)', zIndex:2,
                              border:'1px solid var(--border)', background:'var(--card)', color:'var(--text)', borderRadius:8, padding:'6px 8px', fontWeight:800, cursor:'pointer' }}>
                     <span style={{ marginRight:6 }}>{flagEmoji((DIAL_OPTIONS.find(d=>d.code===phoneDial)?.cc) || 'RO')}</span>
                     {phoneDial}
                   </button>
-                  <input id="checkin-phone" style={{ ...INPUT, paddingLeft: 90 }} value={phone} onChange={e => setPhone(e.currentTarget.value)} placeholder="700 000 000" type="tel" inputMode="numeric" pattern="[0-9]*" />
+                  <input id="checkin-phone" style={{ ...INPUT, paddingLeft: 90 }} value={phone} onChange={e => setPhone(e.currentTarget.value)} placeholder={T("placeholderPhone")} type="tel" inputMode="numeric" pattern="[0-9]*" />
                   {dialOpen && (
                     <div role="listbox" style={{ position:'absolute', left:8, top:'calc(100% + 6px)', zIndex:3, background:'var(--panel)', border:'1px solid var(--border)', borderRadius:10, padding:6, display:'grid', gap:4, maxHeight:220, overflow:'auto' }}>
                       {DIAL_OPTIONS.map(opt => (
@@ -2695,7 +2527,7 @@ export default function CheckinClient() {
                   <Image src={formIcon("address")} alt="" width={16} height={16} />
                   <span>{T('address')}</span>
                 </label>
-                <input id="checkin-address" style={INPUT} value={address} onChange={e => setAddress(e.currentTarget.value)} placeholder="Street, number, apt." />
+                <input id="checkin-address" style={INPUT} value={address} onChange={e => setAddress(e.currentTarget.value)} placeholder={T("placeholderAddress")} />
               </div>
 
               <div style={ROW_2}>
@@ -2704,7 +2536,7 @@ export default function CheckinClient() {
                     <Image src={formIcon("city")} alt="" width={16} height={16} />
                     <span>{T('city')}</span>
                   </label>
-                  <input id="checkin-city" style={INPUT} value={city} onChange={e => setCity(e.currentTarget.value)} placeholder="Bucharest" />
+                  <input id="checkin-city" style={INPUT} value={city} onChange={e => setCity(e.currentTarget.value)} placeholder={T("placeholderCity")} />
                 </div>
 
                 <div>
@@ -2719,7 +2551,7 @@ export default function CheckinClient() {
                     value={countryText}
                     onCommit={setCountryText}
                     options={countries.map(c => c.name)}
-                    placeholder="Start typing… e.g. Romania"
+                    placeholder={T("placeholderCountry")}
                     minChars={0}
                     inputStyle={INPUT}
                   />
@@ -2759,22 +2591,22 @@ export default function CheckinClient() {
               {docType === "id_card" && (
                 <div style={ROW_2}>
                   <div>
-                    <label style={LABEL}>{(TXT as any)[lang].docSeriesLabel}</label>
+                    <label style={LABEL}>{T("docSeriesLabel")}</label>
                     <input
                       style={{ ...INPUT, textTransform: "uppercase" }}
                       value={docSeries}
                       onChange={(e) => setDocSeries(e.currentTarget.value.toUpperCase())}
-                      placeholder="e.g. AB"
+                      placeholder={T("placeholderDocumentSeries")}
                       inputMode="text"
                     />
                   </div>
                   <div>
-                    <label style={LABEL}>{(TXT as any)[lang].docNumberLabel}</label>
+                    <label style={LABEL}>{T("docNumberLabel")}</label>
                     <input
                       style={INPUT}
                       value={docNumber}
                       onChange={(e) => setDocNumber(e.currentTarget.value)}
-                      placeholder="e.g. 123456"
+                      placeholder={T("placeholderDocumentNumberId")}
                       inputMode="numeric"
                     />
                   </div>
@@ -2792,18 +2624,18 @@ export default function CheckinClient() {
                       value={docNationality}
                       onCommit={setDocNationality}
                       options={nationalityOptions}
-                      placeholder="Start typing… e.g. Romanian"
+                      placeholder={T("placeholderNationality")}
                       minChars={0}
                       inputStyle={INPUT}
                     />
                   </div>
                   <div>
-                    <label style={LABEL}>{(TXT as any)[lang].docNumberLabel}</label>
+                    <label style={LABEL}>{T("docNumberLabel")}</label>
                     <input
                       style={INPUT}
                       value={docNumber}
                       onChange={(e) => setDocNumber(e.currentTarget.value)}
-                      placeholder="e.g. X1234567"
+                      placeholder={T("placeholderDocumentNumberPassport")}
                     />
                   </div>
                 </div>
@@ -2832,7 +2664,7 @@ export default function CheckinClient() {
                 htmlFor="p4h-id-upload"
                 onClick={(e) => { if (maybeShowIdUploadInfo(e)) return; }}
               >
-                {lang === "ro" ? "Alege fișier…" : "Choose file…"}
+                {T("chooseFile")}
                 <input
                   type="file"
                   accept="image/*,application/pdf"
@@ -2863,7 +2695,7 @@ export default function CheckinClient() {
                       onClick={() => { setDocFile(null); setDocFilePreview(null); }}
                       style={BTN_GHOST}
                     >
-                      {lang === "ro" ? "Șterge" : "Remove"}
+                      {T("remove")}
                     </button>
                   </div>
                   {docFilePreview ? (
@@ -2894,30 +2726,11 @@ export default function CheckinClient() {
             {showIdUploadInfo && (
               <div role="dialog" aria-modal="true" className="ci-modalOverlay" onClick={onConfirmIdUploadInfo}>
                 <div onClick={(e)=>e.stopPropagation()} className="sb-card ci-modalCard ci-modalCard--wide" style={{ position:'relative' }}>
-                  <button aria-label="Close" onClick={onConfirmIdUploadInfo} className="ci-modalIconBtn" style={{ position:'absolute', top:10, right:10 }}>×</button>
+                  <button aria-label={T("close")} onClick={onConfirmIdUploadInfo} className="ci-modalIconBtn" style={{ position:'absolute', top:10, right:10 }}>×</button>
                   <div className="ci-modalBody">
-                    <div className="ci-modalTitle">Info</div>
-                    {lang === 'ro' ? (
-                      <>
-                        <p>
-                          Încarcă o fotografie a actului de identitate pentru a verifica datele de self check‑in (GDPR art. 6(1)(f));
-                          este folosită doar pentru această verificare și se șterge automat la alocarea camerei (art. 5(1)(e)).
-                        </p>
-                        <p>
-                          Poți ascunde câmpurile sensibile — păstrează fața și câmpurile completate; maschează CNP/număr personal,
-                          seria/numărul documentului, adresa și zona MRZ a pașaportului.
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <p>
-                          Upload an ID photo to verify your self check-in details (GDPR Art. 6(1)(f)); it’s used only for this check and auto-deleted at room assignment (Art. 5(1)(e)).
-                        </p>
-                        <p>
-                          You may redact sensitive fields—keep your face and the fields you typed; mask CNP/personal number, document series/number, address, and passport MRZ.
-                        </p>
-                      </>
-                    )}
+                    <div className="ci-modalTitle">{T("idUploadInfoTitle")}</div>
+                    <p>{T("idUploadInfoP1")}</p>
+                    <p>{T("idUploadInfoP2")}</p>
                   </div>
                 </div>
               </div>
@@ -2939,7 +2752,7 @@ export default function CheckinClient() {
                     setAgree(e.currentTarget.checked);
                   }}
                   style={{ marginTop: 2, cursor: "pointer" }}
-                  title={!!pdfUrl && !pdfViewed ? (lang === "ro" ? "Apasă pentru a vedea regulamentul." : "Tap to view the House Rules.") : undefined}
+                  title={!!pdfUrl && !pdfViewed ? T("tapToViewHouseRules") : undefined}
                 />
                 <div style={{ minWidth: 0 }}>
                   <label htmlFor="agree" className="ci-consentText">
@@ -2962,7 +2775,7 @@ export default function CheckinClient() {
                           textUnderlineOffset: 3,
                         }}
                       >
-                        {lang === "ro" ? "Regulament (pdf)" : "Property Rules (pdf)"}
+                        {T("propertyRulesPdf")}
                       </button>
                     ) : (
                       <span style={{ fontStyle: "italic" }}>{T('houseRules')}</span>
@@ -2970,7 +2783,7 @@ export default function CheckinClient() {
                     .
                     {!!pdfUrl && pdfViewed && (
                       <span style={{ marginLeft: 8, color: "var(--text)", fontWeight: 700, fontSize: 11 }}>
-                        {lang === "ro" ? "Deschis" : "Opened"}
+                        {T("opened")}
                       </span>
                     )}
                   </label>
@@ -2984,7 +2797,7 @@ export default function CheckinClient() {
             {/* Signature — show only after guest agrees to House Rules */}
             {agree && (
               <div style={{ marginTop: 6 }}>
-                <label style={LABEL}>Signature*</label>
+                <label style={LABEL}>{T("signatureLabel")}</label>
                 <div
                   style={{
                     border: '1px dashed var(--border)',
@@ -2996,7 +2809,7 @@ export default function CheckinClient() {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                     <small style={{ color: 'var(--muted)' }}>{T('signaturePrompt')}</small>
                     <button type="button" onClick={clearSignature} style={BTN_GHOST}>
-                      Clear
+                      {T("clearSignature")}
                     </button>
                   </div>
                   <div className="ci-sigWrap">
@@ -3090,7 +2903,7 @@ export default function CheckinClient() {
               <button
                 type="button"
                 className="ci-waClose"
-                aria-label={lang === "ro" ? "Închide" : "Close"}
+                aria-label={T("close")}
                 onClick={() => setWaOpen(false)}
               >
                 ×
@@ -3194,7 +3007,7 @@ export default function CheckinClient() {
               function onNext() {
                 const c = companions[index] || existing;
                 if (!validateCompanion(c)) {
-                  setCompanionsError((TXT as any)[lang].companionMissing);
+                  setCompanionsError(T("companionMissing"));
                   return;
                 }
                 setCompanionsError("");
@@ -3216,12 +3029,12 @@ export default function CheckinClient() {
                 <>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                     <strong>
-                      {(TXT as any)[lang].companionTitle(currentNumber, total)}
+                      {currentText.companionTitle(currentNumber, total)}
                     </strong>
                     <button
                       type="button"
                       onClick={() => setCompanionsOpen(false)}
-                      aria-label="Close"
+                      aria-label={T("close")}
                       style={{
                         width: 26,
                         height: 26,
@@ -3277,7 +3090,7 @@ export default function CheckinClient() {
                     >
                       <div>
                         <label style={{ ...LABEL, display: "flex", alignItems: "center", gap: 6 }}>
-                          <span>{(TXT as any)[lang].birthDate}</span>
+                          <span>{T("birthDate")}</span>
                           <svg
                             width={16}
                             height={16}
@@ -3387,7 +3200,7 @@ export default function CheckinClient() {
                           value={existing.citizenship}
                           onCommit={(v) => update("citizenship", v)}
                           options={countries.map(c => c.name)}
-                          placeholder="Start typing… e.g. Romania"
+                          placeholder={T("placeholderCountry")}
                           minChars={0}
                           inputStyle={INPUT}
                         />
@@ -3396,13 +3209,13 @@ export default function CheckinClient() {
                     <div>
                       <label style={LABEL_ROW}>
                         <Image src={formIcon("country")} alt="" width={16} height={16} />
-                        <span>{(TXT as any)[lang].residenceCountry}</span>
+                        <span>{T("residenceCountry")}</span>
                       </label>
                       <Combobox
                         value={existing.residenceCountry}
                         onCommit={(v) => update("residenceCountry", v)}
                         options={countries.map(c => c.name)}
-                        placeholder="Start typing… e.g. Romania"
+                        placeholder={T("placeholderCountry")}
                         minChars={0}
                         inputStyle={INPUT}
                       />
@@ -3432,12 +3245,12 @@ export default function CheckinClient() {
 	                        }}
 	                      />
 	                      <span style={{ display: "inline-flex", alignItems: "center", lineHeight: "20px" }}>
-	                        {(TXT as any)[lang].isMinor}
+	                        {T("isMinor")}
 	                      </span>
 	                    </label>
                     {existing.isMinor ? (
                       <div>
-                        <label style={LABEL}>{(TXT as any)[lang].guardianLabel}</label>
+                        <label style={LABEL}>{T("guardianLabel")}</label>
                         <input
                           style={INPUT}
                           value={existing.guardianName}
@@ -3464,7 +3277,7 @@ export default function CheckinClient() {
                         {!existing.isMinor && existing.docType === "id_card" && (
                           <div style={ROW_2}>
                             <div>
-                              <label style={LABEL}>Series*</label>
+                              <label style={LABEL}>{T("docSeriesLabel")}</label>
                               <input
                                 style={INPUT}
                                 value={existing.docSeries}
@@ -3472,7 +3285,7 @@ export default function CheckinClient() {
                               />
                             </div>
                             <div>
-                              <label style={LABEL}>Number*</label>
+                              <label style={LABEL}>{T("docNumberLabel")}</label>
                               <input
                                 style={INPUT}
                                 value={existing.docNumber}
@@ -3483,7 +3296,7 @@ export default function CheckinClient() {
                         )}
                         {!existing.isMinor && existing.docType === "passport" && (
                           <div>
-                            <label style={LABEL}>Number*</label>
+                            <label style={LABEL}>{T("docNumberLabel")}</label>
                             <input
                               style={INPUT}
                               value={existing.docNumber}
@@ -3505,14 +3318,14 @@ export default function CheckinClient() {
                         onClick={onBack}
                         disabled={index === 0}
                       >
-                        {(TXT as any)[lang].back}
+                        {T("back")}
                       </button>
                       <button
                         type="button"
                         className="sb-btn sb-btn--primary"
                         onClick={onNext}
                       >
-                        {index < expectedCompanions - 1 ? (TXT as any)[lang].next : (TXT as any)[lang].saveAndClose}
+                        {index < expectedCompanions - 1 ? T("next") : T("saveAndClose")}
                       </button>
                     </div>
                   </div>
@@ -3551,12 +3364,12 @@ export default function CheckinClient() {
               }}
             >
               <div className="ci-modalTitle">
-                {lang === "ro" ? "Regulament" : "House Rules"}
+                {T("houseRulesModalTitle")}
               </div>
               <button
                 className="ci-modalIconBtn"
                 onClick={() => setHouseRulesOpen(false)}
-                aria-label={lang === "ro" ? "Inchide" : "Close"}
+                aria-label={T("close")}
               >
                 ×
               </button>
@@ -3581,16 +3394,14 @@ export default function CheckinClient() {
                 }}
               >
                 <iframe
-                  title={lang === "ro" ? "Regulament" : "House Rules"}
+                  title={T("houseRulesModalTitle")}
                   src={pdfUrl}
                   style={{ width: "100%", height: "100%", border: 0, display: "block" }}
                 />
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                 <small style={{ color: "var(--muted)" }}>
-                  {lang === "ro"
-                    ? "Daca nu se incarca in modal, deschide PDF-ul intr-un tab nou."
-                    : "If it doesn't load in the modal, open the PDF in a new tab."}
+                  {T("tapToViewHouseRules")}
                 </small>
                 <a
                   href={pdfUrl}
@@ -3599,7 +3410,7 @@ export default function CheckinClient() {
                   className="ci-modalLink"
                   style={{ fontSize: 12 }}
                 >
-                  {lang === "ro" ? "Deschide in tab nou" : "Open in new tab"}
+                  {T("openInNewTab")}
                 </a>
               </div>
             </div>
@@ -3614,7 +3425,7 @@ export default function CheckinClient() {
               }}
             >
               <button className="sb-btn" onClick={() => setHouseRulesOpen(false)}>
-                {lang === "ro" ? "Inchide" : "Close"}
+                {T("close")}
               </button>
               <button
                 className="sb-btn sb-btn--primary"
@@ -3623,7 +3434,7 @@ export default function CheckinClient() {
                   setHouseRulesOpen(false);
                 }}
               >
-                {lang === "ro" ? "Am citit" : "I read"}
+                {T("iRead")}
               </button>
             </div>
           </div>
@@ -3661,12 +3472,10 @@ export default function CheckinClient() {
           >
             <div style={{ display: "grid", gap: 4, marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: "-0.1px", color: "color-mix(in srgb, var(--text) 92%, transparent)" }}>
-                {lang === "ro" ? "Confirmă datele" : "Confirm details"}
+                {T("confirmDetailsTitle")}
               </div>
               <div style={{ fontSize: 12, lineHeight: "18px", color: "color-mix(in srgb, var(--muted) 92%, transparent)" }}>
-                {lang === "ro"
-                  ? "Verifică numele și perioada sejurului înainte să trimitem emailul."
-                  : "Double-check the guest name and stay dates before we send the email."}
+                {T("confirmDetailsSubtitle")}
               </div>
             </div>
 
@@ -3684,7 +3493,7 @@ export default function CheckinClient() {
                 <img src="/logoguest_forlight.png" alt="" width={18} height={18} style={{ display: "block", opacity: 0.9, flex: "0 0 auto" }} />
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8, minWidth: 0, flex: 1 }}>
                   <span style={{ color: "var(--text)", fontWeight: 800, whiteSpace: "nowrap" }}>
-                    {lang === "ro" ? "Oaspete:" : "Guest:"}
+                    {T("guestLabel")}
                   </span>
                   <span
                     style={{
@@ -3696,7 +3505,7 @@ export default function CheckinClient() {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {`${firstName.trim()} ${lastName.trim()}`.trim() || (lang === "ro" ? "—" : "—")}
+                    {`${firstName.trim()} ${lastName.trim()}`.trim() || "—"}
                     {expectedCompanions > 0 ? ` + ${expectedCompanions}` : ""}
                   </span>
                 </div>
@@ -3706,7 +3515,7 @@ export default function CheckinClient() {
                 <img src="/night_forlight.png" alt="" width={18} height={18} style={{ display: "block", opacity: 0.9, flex: "0 0 auto" }} />
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8, minWidth: 0, flex: 1 }}>
                   <span style={{ color: "var(--text)", fontWeight: 800, whiteSpace: "nowrap" }}>
-                    {lang === "ro" ? "Sejur:" : "Stay:"}
+                    {T("stayLabel")}
                   </span>
                   <span style={{ color: "var(--muted)", fontWeight: 500, whiteSpace: "nowrap" }}>
                     {fmtDMY(startDate)} {"\u2192"} {fmtDMY(endDate)}
@@ -3722,7 +3531,7 @@ export default function CheckinClient() {
                 onClick={() => setReviewOpen(false)}
                 style={{ borderRadius: 999 }}
               >
-                {lang === "ro" ? "Nu, editează" : "No, edit"}
+                {T("noEdit")}
               </button>
               <button
                 type="button"
@@ -3730,7 +3539,7 @@ export default function CheckinClient() {
                 onClick={() => { setReviewOpen(false); void actuallySubmit(); }}
                 style={{ borderRadius: 999 }}
               >
-                {lang === "ro" ? "Da, trimite" : "Yes, send"}
+                {T("yesSend")}
               </button>
             </div>
           </div>
@@ -3762,7 +3571,7 @@ export default function CheckinClient() {
             <div style={{ display:'flex', alignItems:'center',color:"var(--text)", justifyContent:'space-between', marginBottom:8 }}>
               <strong>{T('confirmEmailTitle')}</strong>
               {confirmStatus !== 'sending' && (
-                <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>Close</button>
+                <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>{T("close")}</button>
               )}
             </div>
             {confirmStatus === 'sending' && (
@@ -3789,7 +3598,7 @@ export default function CheckinClient() {
                     <span className="p4h-dot" />
                   </span>
                   <span style={{ fontWeight: 800 }}>
-                    {lang === 'ro' ? 'Se trimite…' : 'Sending…'}
+                    {T("sending")}
                   </span>
                 </div>
                 <small style={{ color:'var(--muted)' }}>{T('confirmEmailWait')}</small>
@@ -3798,16 +3607,14 @@ export default function CheckinClient() {
             {confirmStatus === 'sent' && (
               <div style={{ display:'grid', gap:10 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                  <span className="sb-badge" style={{ background:'var(--primary)', color:'#0c111b', borderColor:'var(--primary)' }}>Sent</span>
+                  <span className="sb-badge" style={{ background:'var(--primary)', color:'#0c111b', borderColor:'var(--primary)' }}>{T("sent")}</span>
                   <span>
-                    {lang === 'ro'
-                      ? 'Am trimis un email de confirmare la adresa ta.'
-                      : 'We sent a confirmation email to your address.'}
+                    {T("confirmationSent")}
                   </span>
                 </div>
                 {qrUrl && (
                   <div style={{ display:'grid', gap:6, justifyItems:'center', border:'1px solid var(--border)', borderRadius:12, padding:12 }}>
-                    <div style={{ fontWeight:800 }}>{lang === 'ro' ? 'Codul tău QR' : 'Your QR code'}</div>
+                    <div style={{ fontWeight:800 }}>{T("yourQrCode")}</div>
                     <QrWithLogo data={qrUrl} size={240} radius={16} logoSrc="/p4h_logo_round_QR.png" logoAlt="Plan4Host" />
                     <small style={{ color:'var(--muted)', wordBreak:'break-all' }}>{qrUrl}</small>
                   </div>
@@ -3817,18 +3624,16 @@ export default function CheckinClient() {
             {confirmStatus === 'error' && (
               <div style={{ display:'grid', gap:8 }}>
                 <div style={{ padding: 10, borderRadius: 10, background:'var(--danger)', color:'#0c111b', fontWeight:800 }}>
-                  {lang === 'ro' ? 'Eroare la trimiterea emailului de confirmare.' : 'Error sending confirmation email.'}
+                  {T("confirmEmailErrorTitle")}
                 </div>
                 <small style={{ color:'var(--muted)' }}>
-                  {lang === 'ro'
-                    ? 'Poți încerca din nou mai târziu sau poți contacta proprietatea direct.'
-                    : 'You can try again later or contact the property directly.'}
+                  {T("confirmEmailErrorHint")}
                 </small>
               </div>
             )}
             {confirmStatus !== 'sending' && (
               <div style={{ marginTop:12, display:'flex', justifyContent:'flex-end' }}>
-                <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>OK</button>
+                <button className="sb-btn" onClick={()=>setConfirmOpen(false)}>{T("ok")}</button>
               </div>
             )}
           </div>
@@ -3841,38 +3646,26 @@ export default function CheckinClient() {
           <div onClick={(e)=>e.stopPropagation()} className="sb-card ci-modalCard">
             <div className="ci-modalHead">
               <div className="ci-modalTitle">{T('privacyTitle')}</div>
-              <button className="ci-modalIconBtn" onClick={()=>setPrivacyOpen(false)} aria-label="Close">×</button>
+              <button className="ci-modalIconBtn" onClick={()=>setPrivacyOpen(false)} aria-label={T("close")}>×</button>
             </div>
             <div className="ci-modalBody">
-              <p>
-                {(() => {
-                  const prompt = T('privacyPrompt');
-                  const parts = prompt.split('Privacy Policy');
-                  if (parts.length < 2) return prompt;
-                  return (
-                    <>
-                      {parts[0]}
-                      <a
-                        href="/legal/privacy"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={()=>setPrivacyVisited(true)}
-                        className="ci-modalLink"
-                      >
-                        Privacy Policy
-                      </a>
-                      {parts.slice(1).join('Privacy Policy')}
-                    </>
-                  );
-                })()}
-              </p>
+              <p>{T("privacyPrompt")}</p>
+              <a
+                href="/legal/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={()=>setPrivacyVisited(true)}
+                className="ci-modalLink"
+              >
+                {T("privacyPolicyLink")}
+              </a>
               <label className="ci-modalCheckboxRow">
                 <input type="checkbox" checked={privacyConfirm} onChange={(e)=>setPrivacyConfirm(e.currentTarget.checked)} />
                 <span>{T('privacyAcknowledge')}</span>
               </label>
               <div className="ci-modalActions">
                 <button className="ci-actionBtn ci-actionBtn--success" disabled={!privacyConfirm || privacySaving} onClick={acceptPrivacyAck}>
-                  {privacySaving ? 'Saving…' : T('privacyConfirm')}
+                  {privacySaving ? T("privacySaving") : T('privacyConfirm')}
                 </button>
               </div>
             </div>
@@ -3881,7 +3674,7 @@ export default function CheckinClient() {
       )}
 
       <p style={{ color: "var(--muted)", textAlign: "center", fontSize: 12 }}>
-        Powered by Plan4Host — secure check-in.
+        {T("poweredBy")}
       </p>
     </div>
   );

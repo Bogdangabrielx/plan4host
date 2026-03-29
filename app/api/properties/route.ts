@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
   const country_code = (body?.country_code ?? "").toString().trim() || null;
-  const allowedGuestLanguages = new Set(["ro", "el", "fr", "de", "pt", "es"]);
+  const allowedGuestLanguages = new Set(["ro", "el", "fr", "de", "it", "pt", "es"]);
   const rawSecondaryLanguage = (body?.guest_secondary_language ?? "ro").toString().trim().toLowerCase();
   const guest_secondary_language = allowedGuestLanguages.has(rawSecondaryLanguage) ? rawSecondaryLanguage : "ro";
   const timezone = (body?.timezone ?? "").toString().trim() || null;

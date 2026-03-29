@@ -57,12 +57,13 @@ type Property = {
 };
 
 const SECOND_LANGUAGE_OPTIONS = [
-  { code: "ro", en: "Romanian", ro: "Romana" },
-  { code: "el", en: "Greek", ro: "Greaca" },
-  { code: "fr", en: "French", ro: "Franceza" },
-  { code: "de", en: "German", ro: "Germana" },
-  { code: "pt", en: "Portuguese", ro: "Portugheza" },
-  { code: "es", en: "Spanish", ro: "Spaniola" },
+  { code: "ro", flag: "RO", en: "Romanian", ro: "Romana" },
+  { code: "el", flag: "GR", en: "Greek", ro: "Greaca" },
+  { code: "fr", flag: "FR", en: "French", ro: "Franceza" },
+  { code: "de", flag: "DE", en: "German", ro: "Germana" },
+  { code: "it", flag: "IT", en: "Italian", ro: "Italiana" },
+  { code: "pt", flag: "PT", en: "Portuguese", ro: "Portugheza" },
+  { code: "es", flag: "ES", en: "Spanish", ro: "Spaniola" },
 ] as const;
 
 const card: React.CSSProperties = {
@@ -891,7 +892,7 @@ export default function DashboardClient({
             <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
               {SECOND_LANGUAGE_OPTIONS.map((opt) => (
                 <option key={opt.code} value={opt.code}>
-                  {lang === "ro" ? opt.ro : opt.en}
+                  {`${flagEmoji(opt.flag)} ${lang === "ro" ? opt.ro : opt.en}`}
                 </option>
               ))}
             </select>
@@ -1186,7 +1187,7 @@ export default function DashboardClient({
                   <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
                     {SECOND_LANGUAGE_OPTIONS.map((opt) => (
                       <option key={opt.code} value={opt.code}>
-                        {lang === "ro" ? opt.ro : opt.en}
+                        {`${flagEmoji(opt.flag)} ${lang === "ro" ? opt.ro : opt.en}`}
                       </option>
                     ))}
                   </select>
