@@ -195,6 +195,7 @@ export default function DashboardClient({
       propertyName: "Property name",
       guestsWillSee: "All your bookings and guests will appear under this name.",
       country: "Country",
+      firstLanguage: "First language",
       secondLanguage: "Second language",
       secondLanguageHelp: "Guests will see English plus this language in guest-facing flows.",
       personalizeGuestInfo: "Allows automatically sending the correct information to guests.",
@@ -265,6 +266,7 @@ export default function DashboardClient({
       propertyName: "Nume proprietate",
       guestsWillSee: "Sub acest nume vor apărea toate rezervările și oaspeții tăi.",
       country: "Tara",
+      firstLanguage: "Prima limba",
       secondLanguage: "A doua limba",
       secondLanguageHelp: "Oaspetii vor vedea engleza plus aceasta limba in experienta dedicata lor.",
       personalizeGuestInfo: "Permite trimiterea automată a informațiilor corecte către oaspeți.",
@@ -906,17 +908,39 @@ export default function DashboardClient({
             </select>
           </div>
 
-          <div style={FIELD_WRAPPER}>
-            <label style={{ display: "block", marginBottom: 6 }}>{t.secondLanguage}</label>
-            <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
-              <option value="">{t.selectOption}</option>
-              {SECOND_LANGUAGE_OPTIONS.map((opt) => (
-                <option key={opt.code} value={opt.code}>
-                  {`${flagEmoji(opt.flag)} ${lang === "ro" ? opt.ro : opt.en}`}
-                </option>
-              ))}
-            </select>
-            <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)", marginTop: 6 }}>
+          <div style={{ ...FIELD_WRAPPER, display: "grid", gap: 10 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+              <div style={{ display: "grid", gap: 6 }}>
+                <label style={{ display: "block" }}>{t.firstLanguage}</label>
+                <select
+                  value="en"
+                  disabled
+                  aria-disabled="true"
+                  style={{
+                    ...FIELD_STYLE,
+                    color: "var(--muted)",
+                    background: "color-mix(in srgb, var(--card) 80%, var(--border))",
+                    cursor: "not-allowed",
+                    opacity: 0.82,
+                  }}
+                >
+                  <option value="en">🇬🇧 English</option>
+                </select>
+              </div>
+
+              <div style={{ display: "grid", gap: 6 }}>
+                <label style={{ display: "block" }}>{t.secondLanguage}</label>
+                <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
+                  <option value="">{t.selectOption}</option>
+                  {SECOND_LANGUAGE_OPTIONS.map((opt) => (
+                    <option key={opt.code} value={opt.code}>
+                      {`${flagEmoji(opt.flag)} ${lang === "ro" ? opt.ro : opt.en}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
               {t.secondLanguageHelp}
             </div>
           </div>
@@ -1202,16 +1226,38 @@ export default function DashboardClient({
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gap: 6 }}>
-                  <label style={{ display: "block" }}>{t.secondLanguage}</label>
-                  <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
-                    <option value="">{t.selectOption}</option>
-                    {SECOND_LANGUAGE_OPTIONS.map((opt) => (
-                      <option key={opt.code} value={opt.code}>
-                        {`${flagEmoji(opt.flag)} ${lang === "ro" ? opt.ro : opt.en}`}
-                      </option>
-                    ))}
-                  </select>
+                <div style={{ display: "grid", gap: 10 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <label style={{ display: "block" }}>{t.firstLanguage}</label>
+                      <select
+                        value="en"
+                        disabled
+                        aria-disabled="true"
+                        style={{
+                          ...FIELD_STYLE,
+                          color: "var(--muted)",
+                          background: "color-mix(in srgb, var(--card) 80%, var(--border))",
+                          cursor: "not-allowed",
+                          opacity: 0.82,
+                        }}
+                      >
+                        <option value="en">🇬🇧 English</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <label style={{ display: "block" }}>{t.secondLanguage}</label>
+                      <select value={secondLanguage} onChange={(e) => setSecondLanguage(e.currentTarget.value)} style={FIELD_STYLE}>
+                        <option value="">{t.selectOption}</option>
+                        {SECOND_LANGUAGE_OPTIONS.map((opt) => (
+                          <option key={opt.code} value={opt.code}>
+                            {`${flagEmoji(opt.flag)} ${lang === "ro" ? opt.ro : opt.en}`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                   <div style={{ color: "var(--muted)", fontSize: "var(--fs-s)", lineHeight: "var(--lh-s)" }}>
                     {t.secondLanguageHelp}
                   </div>
