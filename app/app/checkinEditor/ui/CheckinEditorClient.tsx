@@ -1406,7 +1406,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                <button
 	                  aria-label={t.close}
 	                  className="sb-btn sb-cardglow sb-btn--icon"
-	                  style={{ width: 34, height: 34, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 800, fontSize: 15, lineHeight: 1 }}
+	                  style={{ width: 30, height: 30, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 800, fontSize: 14, lineHeight: 1 }}
 	                  onClick={() => {
 	                    setContactsWizardOpen(false);
 	                    try {
@@ -1868,7 +1868,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
 	                <button
 	                  aria-label={t.close}
 	                  className="sb-btn sb-cardglow sb-btn--icon"
-	                  style={{ width: 34, height: 34, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 800, fontSize: 15, lineHeight: 1 }}
+	                  style={{ width: 30, height: 30, borderRadius: 999, display: "grid", placeItems: "center", fontWeight: 800, fontSize: 14, lineHeight: 1 }}
 	                  onClick={() => {
 	                    setHouseRulesWizardOpen(false);
 	                    try {
@@ -2476,7 +2476,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     onClick={() => setAiModalOpen(false)}
                     aria-label={t.close}
                     title={t.close}
-                    style={{ fontSize: 15, fontWeight: 800, lineHeight: 1 }}
+                    style={{ width: 30, height: 30, fontSize: 14, fontWeight: 800, lineHeight: 1 }}
                   >
                     ✕
                   </button>
@@ -3184,7 +3184,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 aria-label={t.close}
                 title={t.close}
                 onClick={()=>setShowSrc(false)}
-                style={{ fontSize: 15, fontWeight: 800, lineHeight: 1 }}
+                style={{ width: 30, height: 30, fontSize: 14, fontWeight: 800, lineHeight: 1 }}
               >
                 ✕
               </button>

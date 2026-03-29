@@ -887,7 +887,7 @@ export default function SubscriptionClient({
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(680px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="manage-title" style={{ margin:0 }}>{lang === "ro" ? "Plan activ" : "Active plan"}</h3>
-              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setManageOpen(false)}>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setManageOpen(false)} style={{ width: 30, height: 30 }}>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -1067,7 +1067,7 @@ export default function SubscriptionClient({
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="pm-title" style={{ margin:0 }}>{lang === "ro" ? "Metoda de plata" : "Payment method"}</h3>
-              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPmOpen(false)}>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPmOpen(false)} style={{ width: 30, height: 30 }}>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -1166,7 +1166,7 @@ export default function SubscriptionClient({
 	            {/* Fixed header */}
 	            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', borderBottom:'1px solid color-mix(in srgb, var(--border) 70%, transparent)', background:'var(--panel)' }}>
 	              <h3 id="buyer-type-title" style={{ margin:0 }}>{lang === "ro" ? "Tip facturare" : "Billing Type"}</h3>
-	              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setBuyerTypeOpen(false)}>
+	              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setBuyerTypeOpen(false)} style={{ width: 30, height: 30 }}>
 	                <svg viewBox="0 0 24 24" aria-hidden="true">
 	                  <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 	                </svg>
@@ -1249,7 +1249,7 @@ export default function SubscriptionClient({
 	                  ? (lang === "ro" ? 'Detalii facturare (Companie)' : 'Billing Details (Business)')
 	                  : (lang === "ro" ? 'Detalii facturare (Persoana fizica)' : 'Billing Details (Individual)')}
 	              </h3>
-	              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>{ setBillingFormOpen(false); setBillingEditMode(false); }}>
+	              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>{ setBillingFormOpen(false); setBillingEditMode(false); }} style={{ width: 30, height: 30 }}>
 	                <svg viewBox="0 0 24 24" aria-hidden="true">
 	                  <path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 	                </svg>
@@ -1489,7 +1489,7 @@ export default function SubscriptionClient({
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="plan-change-title" style={{ margin:0 }}>{lang === "ro" ? "Schimbare plan" : "Plan change"}</h3>
-              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPlanConfirmOpen(false)}>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPlanConfirmOpen(false)} style={{ width: 30, height: 30 }}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
@@ -1601,7 +1601,7 @@ export default function SubscriptionClient({
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(520px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="paynow-title" style={{ margin:0 }}>{lang === "ro" ? "Confirma upgrade-ul" : "Confirm upgrade"}</h3>
-              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPayNowConfirmOpen(false)}>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setPayNowConfirmOpen(false)} style={{ width: 30, height: 30 }}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
@@ -1659,7 +1659,7 @@ export default function SubscriptionClient({
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(560px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="downgrade-title" style={{ margin:0 }}>{lang === "ro" ? "Schimbare plan" : "Plan change"}</h3>
-              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setDowngradeConfirmOpen(false)}>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>setDowngradeConfirmOpen(false)} style={{ width: 30, height: 30 }}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
@@ -1686,7 +1686,7 @@ export default function SubscriptionClient({
           <div className="modalCard" onClick={(e)=>e.stopPropagation()} style={{ width:'min(520px, 100%)', border:'1px solid var(--border)', borderRadius:16, padding:16, display:'grid', gap:12, background:'var(--panel)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <h3 id="payresult-title" style={{ margin:0 }}>{payResultSuccess ? (lang === "ro" ? 'Upgrade reusit' : 'Upgrade successful') : (lang === "ro" ? 'Plata a esuat' : 'Payment failed')}</h3>
-              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>{ setPayResultOpen(false); window.location.reload(); }}>
+              <button aria-label="Close" className={`${styles.iconBtn} ${styles.focusable}`} onClick={()=>{ setPayResultOpen(false); window.location.reload(); }} style={{ width: 30, height: 30 }}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M6 18L18 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
