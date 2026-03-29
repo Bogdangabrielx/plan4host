@@ -3189,14 +3189,14 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                 ✕
               </button>
             </div>
-            <div style={{ display:'grid', gap:12 }}>
+            <div style={{ display:'grid', gap:14 }}>
               <div style={{ display:'grid', gap:10 }}>
-                <div style={{ color:'var(--muted)', lineHeight:1.55 }}>
+                <div style={{ color:'var(--muted)', lineHeight:1.5, fontSize:13 }}>
                   {uiLang === "ro"
                     ? "Recomandam ca sursa selectata sa se potriveasca cu platforma unde vei trimite acest link ca mesaj automat."
                     : "We recommend choosing a source that matches the platform where you will send this link as an automated message."}
                 </div>
-                <div style={{ color:'var(--muted)', lineHeight:1.55 }}>
+                <div style={{ color:'var(--muted)', lineHeight:1.5, fontSize:13 }}>
                   {uiLang === "ro"
                     ? "Dupa ce oaspetele completeaza formularul, aceasta selectie va aparea direct in meniul Guests si va fi mai usor sa urmaresti rezervarile."
                     : "After the guest completes the form, this selection will appear directly in the Guests menu and it will be easier to track reservations."}
@@ -3211,7 +3211,11 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                   />
                 </div>
               </div>
+              <div style={{ height:1, background:'color-mix(in srgb, var(--border) 70%, transparent)' }} />
               <div style={{ display:'grid', gap:8 }}>
+                <div style={{ fontSize:12, fontWeight:800, letterSpacing:'.12em', textTransform:'uppercase', color:'var(--muted)' }}>
+                  {uiLang === "ro" ? "Alege sursa" : "Choose source"}
+                </div>
               {providers.map(p => (
                 <button key={p.slug} className="sb-btn" onClick={()=>pickProvider(p.slug)} style={{ display:'flex', alignItems:'center', gap:10, justifyContent:'flex-start' }}>
                   {p.logo ? (
