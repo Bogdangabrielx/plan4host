@@ -1,6 +1,7 @@
 // app/api/public/property-catalog/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getCheckinTokenFromRequest, verifyCheckinPublicToken } from "@/lib/checkin/public-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,11 +12,19 @@ const admin = createClient(url, service, { auth: { persistSession: false } });
 
 export async function GET(req: NextRequest) {
   try {
+    const tokenRes = verifyCheckinPublicToken(getCheckinTokenFromRequest(req));
+    if (!tokenRes.ok) {
+      return NextResponse.json({ error: tokenRes.error }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const propertyId = searchParams.get("property");
 
     if (!propertyId) {
       return NextResponse.json({ error: "Missing ?property" }, { status: 400 });
+    }
+    if (String(tokenRes.payload.property_id) !== String(propertyId)) {
+      return NextResponse.json({ error: "Invalid property access" }, { status: 403 });
     }
 
     // 1) Property — acum includem și check_in_time / check_out_time (și păstrăm câmpurile vechi)

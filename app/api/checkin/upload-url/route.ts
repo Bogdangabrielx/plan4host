@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getCheckinTokenFromRequest, verifyCheckinPublicToken } from "@/lib/checkin/public-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -10,8 +11,14 @@ const admin = createClient(url, service, { auth: { persistSession: false } });
 
 export async function POST(req: Request) {
   try {
+    const tokenRes = verifyCheckinPublicToken(getCheckinTokenFromRequest(req));
+    if (!tokenRes.ok) return NextResponse.json({ error: tokenRes.error }, { status: 401 });
+
     const { property_id, file_ext, mime_type } = await req.json().catch(() => ({}));
     if (!property_id) return NextResponse.json({ error: "property_id required" }, { status: 400 });
+    if (String(tokenRes.payload.property_id) !== String(property_id)) {
+      return NextResponse.json({ error: "Invalid property access" }, { status: 403 });
+    }
 
     const ext = (String(file_ext || "").replace(/[^a-z0-9.]/gi, "").toLowerCase()) || "bin";
     const safeExt = ext.startsWith(".") ? ext.slice(1) : ext;

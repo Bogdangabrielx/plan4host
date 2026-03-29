@@ -1,6 +1,7 @@
 // app/api/bookings/[id]/documents/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { actorCanRead, getApiActor, getBookingForActor } from "@/lib/auth/api-access";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,6 +24,12 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     if (!booking_id) {
       return NextResponse.json({ error: "Missing booking id" }, { status: 400 });
     }
+
+    const actorRes = await getApiActor();
+    if (!actorRes.ok) return NextResponse.json({ error: actorRes.error }, { status: actorRes.status });
+    if (!actorCanRead(actorRes.actor)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const bookingRes = await getBookingForActor(actorRes.actor, booking_id);
+    if (!bookingRes.ok) return NextResponse.json({ error: bookingRes.error }, { status: bookingRes.status });
 
     // Doar coloanele prezente în schema actuală
     const sel = `

@@ -1,6 +1,7 @@
 // app/api/bookings/route.ts
 import { NextResponse } from "next/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { actorCanWrite, getApiActor, getPropertyForActor } from "@/lib/auth/api-access";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -20,6 +21,11 @@ function overlapsHalfOpen(aS: Date, aE: Date, bS: Date, bE: Date) {
 }
 
 export async function POST(req: Request) {
+  const actorRes = await getApiActor();
+  if (!actorRes.ok) {
+    return NextResponse.json({ error: actorRes.error }, { status: actorRes.status });
+  }
+
   const body = await req.json().catch(() => ({} as any));
 
   const property_id = String(body.property_id || "");
@@ -38,6 +44,15 @@ export async function POST(req: Request) {
     !/^\d\d:\d\d$/.test(end_time)
   ) {
     return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
+  }
+
+  if (!actorCanWrite(actorRes.actor, ["calendar"])) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const propertyRes = await getPropertyForActor(actorRes.actor, property_id);
+  if (!propertyRes.ok) {
+    return NextResponse.json({ error: propertyRes.error }, { status: propertyRes.status });
   }
 
   // Citește orele implicite din proprietate (fallback pentru rezervări vechi)

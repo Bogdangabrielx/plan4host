@@ -1,6 +1,7 @@
 // app/api/checkin/upload/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getCheckinTokenFromRequest, verifyCheckinPublicToken } from "@/lib/checkin/public-token";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,9 @@ function safeExt(name: string, mime: string) {
 
 export async function POST(req: Request) {
   try {
+    const tokenRes = verifyCheckinPublicToken(getCheckinTokenFromRequest(req));
+    if (!tokenRes.ok) return NextResponse.json({ error: tokenRes.error }, { status: 401 });
+
     const form = await req.formData();
     const f = form.get("file") as File | null;
     const property = String(form.get("property") || "");
@@ -28,6 +32,9 @@ export async function POST(req: Request) {
 
     if (!f) return NextResponse.json({ error: "Missing file" }, { status: 400 });
     if (!property) return NextResponse.json({ error: "Missing property" }, { status: 400 });
+    if (String(tokenRes.payload.property_id) !== String(property)) {
+      return NextResponse.json({ error: "Invalid property access" }, { status: 403 });
+    }
 
     const ab = await f.arrayBuffer();
     const buf = Buffer.from(ab);

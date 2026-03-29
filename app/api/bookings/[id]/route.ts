@@ -1,6 +1,7 @@
 // app/api/bookings/[id]/route.ts
 import { NextResponse } from "next/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { actorCanWrite, getApiActor, getBookingForActor } from "@/lib/auth/api-access";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -33,6 +34,14 @@ function overlaps(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id;
+    const actorRes = await getApiActor();
+    if (!actorRes.ok) return NextResponse.json({ error: actorRes.error }, { status: actorRes.status });
+    if (!actorCanWrite(actorRes.actor, ["calendar", "guest_overview"])) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const bookingRes = await getBookingForActor(actorRes.actor, id);
+    if (!bookingRes.ok) return NextResponse.json({ error: bookingRes.error }, { status: bookingRes.status });
+
     const body = await req.json().catch(() => ({}));
     const wantEndDate: string | undefined = body?.end_date;
     const wantEndTime: string | undefined = body?.end_time;
@@ -167,6 +176,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 // DELETE /api/bookings/:id  (folosit pentru „Confirm release”)
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
   const id = params.id;
+  const actorRes = await getApiActor();
+  if (!actorRes.ok) return NextResponse.json({ error: actorRes.error }, { status: actorRes.status });
+  if (!actorCanWrite(actorRes.actor, ["calendar", "guest_overview"])) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  const bookingRes = await getBookingForActor(actorRes.actor, id);
+  if (!bookingRes.ok) return NextResponse.json({ error: bookingRes.error }, { status: bookingRes.status });
 
   // 0) Citește booking-ul (ca să vedem dacă e iCal)
   const rGet = await admin

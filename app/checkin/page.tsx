@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CheckinClient from "./ui/CheckinClient";
 import styles from "./checkin.module.css";
+import { createCheckinPublicToken } from "@/lib/checkin/public-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -32,6 +33,10 @@ export default async function CheckinPage({ searchParams }: { searchParams: Sear
   }
 
   // UI public, simplu
+  const publicAccessToken = property
+    ? createCheckinPublicToken({ property_id: property, booking_id: booking || null })
+    : null;
+
   return (
     <div
       className={styles.shell}
@@ -39,7 +44,7 @@ export default async function CheckinPage({ searchParams }: { searchParams: Sear
       <main
         className={`${styles.main} notranslate`}
       >
-        <CheckinClient />
+        <CheckinClient publicAccessToken={publicAccessToken} />
       </main>
     </div>
   );

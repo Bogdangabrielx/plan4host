@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createTransport } from "nodemailer";
 import webpush from "web-push";
+import { getCheckinTokenFromRequest, verifyCheckinPublicToken } from "@/lib/checkin/public-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -196,6 +197,11 @@ async function matchesFormCriteria(form: { room_id: string | null; room_type_id:
 /* ---------------- handler ---------------- */
 export async function POST(req: NextRequest) {
   try {
+    const tokenRes = verifyCheckinPublicToken(getCheckinTokenFromRequest(req));
+    if (!tokenRes.ok) {
+      return NextResponse.json({ error: tokenRes.error }, { status: 401 });
+    }
+
     const body = await req.json().catch(() => ({}));
 
     const {
@@ -238,6 +244,9 @@ export async function POST(req: NextRequest) {
 
     if (!property_id) {
       return NextResponse.json({ error: "Missing property_id" }, { status: 400 });
+    }
+    if (String(tokenRes.payload.property_id) !== String(property_id)) {
+      return NextResponse.json({ error: "Invalid property access" }, { status: 403 });
     }
 
     // property defaults & suspended account check

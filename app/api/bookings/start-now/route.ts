@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { actorCanWrite, getApiActor, getBookingForActor } from "@/lib/auth/api-access";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -49,6 +50,12 @@ function getLocalHHMM(tz: string | null | undefined): string {
  */
 export async function POST(req: Request) {
   try {
+    const actorRes = await getApiActor();
+    if (!actorRes.ok) return bad(actorRes.status, { error: actorRes.error });
+    if (!actorCanWrite(actorRes.actor, ["guest_overview", "calendar"])) {
+      return bad(403, { error: "Forbidden" });
+    }
+
     const body = await req.json().catch(() => ({}));
     const bookingIdRaw: string = String(body?.booking_id || "").trim();
     const formIdRaw: string = String(body?.form_id || "").trim();
@@ -67,7 +74,11 @@ export async function POST(req: Request) {
       return bad(404, { error: "Booking not found" });
     }
 
-    const booking_id = (rBooking.data as any).id as string;
+    const bookingId = String((rBooking.data as any).id || "");
+    const bookingRes = await getBookingForActor(actorRes.actor, bookingId);
+    if (!bookingRes.ok) return bad(bookingRes.status, { error: bookingRes.error });
+
+    const booking_id = bookingId;
     const property_id = (rBooking.data as any).property_id as string;
     const rProp = await admin
       .from("properties")

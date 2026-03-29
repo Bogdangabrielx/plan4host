@@ -1,6 +1,7 @@
 // app/api/checkin/consent/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getCheckinTokenFromRequest, verifyCheckinPublicToken } from "@/lib/checkin/public-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -10,6 +11,9 @@ function bad(status: number, body: any) { return NextResponse.json(body, { statu
 
 export async function POST(req: Request) {
   try {
+    const tokenRes = verifyCheckinPublicToken(getCheckinTokenFromRequest(req));
+    if (!tokenRes.ok) return bad(401, { error: tokenRes.error });
+
     const body = await req.json().catch(() => ({}));
     const property_id: string | undefined = body?.property_id;
     const booking_id: string | undefined = body?.booking_id;
@@ -18,6 +22,9 @@ export async function POST(req: Request) {
     const text_version: string | undefined = body?.text_version;
     const text_hash: string | undefined = body?.text_hash;
     if (!property_id) return bad(400, { error: 'property_id required' });
+    if (String(tokenRes.payload.property_id) !== String(property_id)) {
+      return bad(403, { error: "Invalid property access" });
+    }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -37,4 +44,3 @@ export async function POST(req: Request) {
     return bad(500, { error: String(e?.message ?? e) });
   }
 }
-

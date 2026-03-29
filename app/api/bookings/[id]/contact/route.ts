@@ -1,6 +1,7 @@
 // app/api/bookings/[id]/contact/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { actorCanRead, actorCanWrite, getApiActor, getBookingForActor } from "@/lib/auth/api-access";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -24,6 +25,11 @@ export async function GET(
 ) {
   try {
     const { id } = params;
+    const actorRes = await getApiActor();
+    if (!actorRes.ok) return NextResponse.json({ error: actorRes.error }, { status: actorRes.status });
+    if (!actorCanRead(actorRes.actor)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const bookingRes = await getBookingForActor(actorRes.actor, id);
+    if (!bookingRes.ok) return NextResponse.json({ error: bookingRes.error }, { status: bookingRes.status });
 
     const r = await admin
       .from("booking_contacts")
@@ -50,6 +56,14 @@ export async function POST(
 ) {
   try {
     const { id } = params;
+    const actorRes = await getApiActor();
+    if (!actorRes.ok) return NextResponse.json({ error: actorRes.error }, { status: actorRes.status });
+    if (!actorCanWrite(actorRes.actor, ["calendar"])) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const bookingRes = await getBookingForActor(actorRes.actor, id);
+    if (!bookingRes.ok) return NextResponse.json({ error: bookingRes.error }, { status: bookingRes.status });
+
     const body = (await req.json().catch(() => ({}))) as Contact;
 
     // sanitize & trim

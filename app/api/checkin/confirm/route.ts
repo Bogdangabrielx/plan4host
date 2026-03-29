@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createTransport } from "nodemailer";
+import { getCheckinTokenFromRequest, verifyCheckinPublicToken } from "@/lib/checkin/public-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -130,6 +131,9 @@ const GUEST_CONFIRM_EMAIL_COPY: Record<GuestEmailLang, {
 
 export async function POST(req: Request) {
   try {
+    const tokenRes = verifyCheckinPublicToken(getCheckinTokenFromRequest(req));
+    if (!tokenRes.ok) return bad(401, { error: tokenRes.error });
+
     const body = await req.json().catch(() => ({}));
     const booking_id: string | undefined = body?.booking_id;
     const property_id: string | undefined = body?.property_id;
@@ -137,6 +141,9 @@ export async function POST(req: Request) {
     const guestLang = normalizeGuestEmailLang(body?.lang);
 
     if (!booking_id || !property_id) return bad(400, { error: "booking_id and property_id required" });
+    if (String(tokenRes.payload.property_id) !== String(property_id)) {
+      return bad(403, { error: "Invalid property access" });
+    }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;

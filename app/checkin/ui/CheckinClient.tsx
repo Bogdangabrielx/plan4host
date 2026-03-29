@@ -386,7 +386,7 @@ const Combobox = React.forwardRef<ComboboxHandle, ComboboxProps>(function Combob
   );
 });
 
-export default function CheckinClient() {
+export default function CheckinClient({ publicAccessToken }: { publicAccessToken: string | null }) {
   // strict pe ?property=<id>
   const [propertyId, setPropertyId] = useState<string | null>(null);
   const [bookingId, setBookingId]   = useState<string | null>(null); // opțional
@@ -962,7 +962,10 @@ export default function CheckinClient() {
       if (!propertyId) { setLoading(false); return; }
 
       try {
-        const res = await fetch(`/api/public/property-catalog?property=${encodeURIComponent(propertyId)}`, { cache: "no-store" });
+        const res = await fetch(`/api/public/property-catalog?property=${encodeURIComponent(propertyId)}`, {
+          cache: "no-store",
+          headers: publicAccessToken ? { "x-checkin-token": publicAccessToken } : undefined,
+        });
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
           throw new Error(j?.error || `Failed to load property catalog (${res.status})`);
@@ -1025,7 +1028,8 @@ export default function CheckinClient() {
       // Version label can be the visible last updated date or a semantic version
       const text_version = 'PrivacyPolicy-ack';
       await fetch('/api/checkin/consent', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: publicAccessToken ? { "Content-Type": "application/json", "x-checkin-token": publicAccessToken } : { "Content-Type": "application/json" },
         body: JSON.stringify({ property_id: propertyId, purpose: 'privacy_ack', text_version })
       });
       try { localStorage.setItem(`p4h:checkin:privacyAck:${propertyId}`, '1'); } catch {}
@@ -1300,7 +1304,11 @@ export default function CheckinClient() {
     fd.append("file", docFile);
     fd.append("property", propertyId);
     if (bookingId) fd.append("booking", bookingId);
-    const res = await fetch("/api/checkin/upload", { method: "POST", body: fd });
+    const res = await fetch("/api/checkin/upload", {
+      method: "POST",
+      body: fd,
+      headers: publicAccessToken ? { "x-checkin-token": publicAccessToken } : undefined,
+    });
     if (!res.ok) {
       const txt = await res.text().catch(() => "");
       throw new Error(txt || T("uploadFailed"));
@@ -1334,7 +1342,11 @@ export default function CheckinClient() {
     fd.append('file', file);
     fd.append('property', propertyId);
     if (bookingId) fd.append('booking', bookingId);
-    const res = await fetch('/api/checkin/upload', { method: 'POST', body: fd });
+    const res = await fetch('/api/checkin/upload', {
+      method: 'POST',
+      body: fd,
+      headers: publicAccessToken ? { "x-checkin-token": publicAccessToken } : undefined,
+    });
     if (!res.ok) {
       const txt = await res.text().catch(() => '');
       throw new Error(txt || 'Signature upload failed');
@@ -1430,7 +1442,9 @@ export default function CheckinClient() {
 
       const res = await fetch("/api/checkin/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: publicAccessToken
+          ? { "Content-Type": "application/json", "x-checkin-token": publicAccessToken }
+          : { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -1455,7 +1469,9 @@ export default function CheckinClient() {
         try {
           const r = await fetch('/api/checkin/confirm', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: publicAccessToken
+              ? { 'Content-Type': 'application/json', 'x-checkin-token': publicAccessToken }
+              : { 'Content-Type': 'application/json' },
             body: JSON.stringify({ booking_id: booking, property_id: propertyId, email, lang })
           });
           const jj = await r.json().catch(()=>({}));
