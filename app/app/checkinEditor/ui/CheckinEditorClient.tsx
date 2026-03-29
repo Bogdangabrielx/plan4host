@@ -3192,14 +3192,26 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
             <div style={{ display:'grid', gap:14 }}>
               <div style={{ display:'grid', gap:10 }}>
                 <div style={{ color:'var(--muted)', lineHeight:1.5, fontSize:13 }}>
-                  {uiLang === "ro"
-                    ? "Recomandam ca sursa selectata sa se potriveasca cu platforma unde vei trimite acest link ca mesaj automat."
-                    : "We recommend choosing a source that matches the platform where you will send this link as an automated message."}
+                  {uiLang === "ro" ? (
+                    <>
+                      Recomandam ca <strong style={{ color:'var(--text)' }}>sursa selectata</strong> sa se potriveasca cu platforma unde vei trimite acest link ca <strong style={{ color:'var(--text)' }}>mesaj automat</strong>.
+                    </>
+                  ) : (
+                    <>
+                      We recommend choosing a <strong style={{ color:'var(--text)' }}>selected source</strong> that matches the platform where you will send this link as an <strong style={{ color:'var(--text)' }}>automated message</strong>.
+                    </>
+                  )}
                 </div>
                 <div style={{ color:'var(--muted)', lineHeight:1.5, fontSize:13 }}>
-                  {uiLang === "ro"
-                    ? "Dupa ce oaspetele completeaza formularul, aceasta selectie va aparea direct in meniul Guests si va fi mai usor sa urmaresti rezervarile."
-                    : "After the guest completes the form, this selection will appear directly in the Guests menu and it will be easier to track reservations."}
+                  {uiLang === "ro" ? (
+                    <>
+                      Dupa ce oaspetele completeaza formularul, aceasta selectie va aparea direct in meniul <strong style={{ color:'var(--text)' }}>Guests</strong> si va fi mai usor sa urmaresti rezervarile.
+                    </>
+                  ) : (
+                    <>
+                      After the guest completes the form, this selection will appear directly in the <strong style={{ color:'var(--text)' }}>Guests</strong> menu and it will be easier to track reservations.
+                    </>
+                  )}
                 </div>
                 <div
                   className="sb-card"
@@ -3221,7 +3233,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     style={{ width:'100%', height:'auto', display:'block' }}
                   />
                 </div>
-                <div style={{ fontSize:11, color:'var(--muted)', textAlign:'center', marginTop:-2 }}>
+                <div style={{ fontSize:10, color:'var(--muted)', textAlign:'center', marginTop:-2 }}>
                   {uiLang === "ro" ? "Exemplu: asa apare sursa in meniul Guests." : "Example: this is how the source appears in the Guests menu."}
                 </div>
               </div>
