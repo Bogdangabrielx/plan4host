@@ -419,6 +419,7 @@ const ro: CheckinTextSet = {
 
 const es: CheckinTextSet = {
   ...en,
+  preCta: 'Completar formulario',
   loading: 'Cargando…',
   loadingAria: 'Cargando',
   thanksTitle: 'Gracias! ✅',
@@ -536,6 +537,7 @@ const es: CheckinTextSet = {
 
 const de: CheckinTextSet = {
   ...en,
+  preCta: 'Formular ausfüllen',
   loading: 'Wird geladen…',
   loadingAria: 'Wird geladen',
   thanksTitle: 'Danke! ✅',
@@ -653,6 +655,7 @@ const de: CheckinTextSet = {
 
 const el: CheckinTextSet = {
   ...en,
+  preCta: 'Συμπλήρωση φόρμας',
   loading: 'Φόρτωση…',
   loadingAria: 'Φόρτωση',
   thanksTitle: 'Ευχαριστούμε! ✅',
@@ -770,6 +773,7 @@ const el: CheckinTextSet = {
 
 const fr: CheckinTextSet = {
   ...en,
+  preCta: 'Remplir le formulaire',
   loading: 'Chargement…',
   loadingAria: 'Chargement',
   thanksTitle: 'Merci ! ✅',
@@ -887,6 +891,7 @@ const fr: CheckinTextSet = {
 
 const it: CheckinTextSet = {
   ...en,
+  preCta: 'Compila il modulo',
   loading: 'Caricamento…',
   loadingAria: 'Caricamento',
   thanksTitle: 'Grazie! ✅',
@@ -1004,6 +1009,7 @@ const it: CheckinTextSet = {
 
 const pt: CheckinTextSet = {
   ...en,
+  preCta: 'Preencher formulário',
   loading: 'Carregando…',
   loadingAria: 'Carregando',
   thanksTitle: 'Obrigado! ✅',
@@ -1137,4 +1143,40 @@ export function normalizeGuestCheckinLang(input: string | null | undefined): Gue
   const base = String(input).trim().toLowerCase().split(/[-_]/)[0] as GuestCheckinLang | 'gr';
   const mapped = base === 'gr' ? 'el' : base;
   return SUPPORTED_GUEST_CHECKIN_LANGS.has(mapped as GuestCheckinLang) ? (mapped as GuestCheckinLang) : null;
+}
+
+const TIMEZONE_TO_GUEST_LANG: Array<{ match: RegExp; lang: GuestCheckinLang }> = [
+  { match: /athens/i, lang: "el" },
+  { match: /bucharest/i, lang: "ro" },
+  { match: /madrid|barcelona|canary/i, lang: "es" },
+  { match: /berlin/i, lang: "de" },
+  { match: /paris/i, lang: "fr" },
+  { match: /rome/i, lang: "it" },
+  { match: /lisbon/i, lang: "pt" },
+];
+
+export function resolveGuestCheckinLang(input: {
+  queryLang?: string | null;
+  cookieLang?: string | null;
+  browserLanguages?: Array<string | null | undefined> | null;
+  timeZone?: string | null;
+}): GuestCheckinLang {
+  const fromQuery = normalizeGuestCheckinLang(input.queryLang);
+  if (fromQuery) return fromQuery;
+
+  const fromCookie = normalizeGuestCheckinLang(input.cookieLang);
+  if (fromCookie) return fromCookie;
+
+  for (const candidate of input.browserLanguages ?? []) {
+    const fromBrowser = normalizeGuestCheckinLang(candidate);
+    if (fromBrowser) return fromBrowser;
+  }
+
+  const tz = String(input.timeZone || "").trim();
+  if (tz) {
+    const match = TIMEZONE_TO_GUEST_LANG.find((item) => item.match.test(tz));
+    if (match) return match.lang;
+  }
+
+  return "en";
 }

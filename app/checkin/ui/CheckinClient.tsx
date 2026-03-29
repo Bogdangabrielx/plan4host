@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useRef, useState, useImperativeHandle } from
 import Image from "next/image";
 import QrWithLogo from "@/components/QrWithLogo";
 import { DIAL_OPTIONS } from "@/lib/phone/dialOptions";
-import { CHECKIN_I18N, GUEST_CHECKIN_LANG_OPTIONS, normalizeGuestCheckinLang, type CheckinTextSet, type GuestCheckinLang } from "./checkinI18n";
+import { CHECKIN_I18N, GUEST_CHECKIN_LANG_OPTIONS, resolveGuestCheckinLang, type CheckinTextSet, type GuestCheckinLang } from "./checkinI18n";
 
 type PropertyInfo = {
   id: string;
@@ -437,13 +437,22 @@ export default function CheckinClient() {
   }
   const [lang, setLang] = useState<Lang>(() => {
     const qp = (typeof window !== 'undefined') ? new URL(window.location.href).searchParams.get('lang') : null;
-    const fromQ = normalizeGuestCheckinLang(qp);
-    if (fromQ) return fromQ;
-    const ck = normalizeGuestCheckinLang(readCookie('p4h_guest_lang'));
-    if (ck) return ck;
-    const browserLang = normalizeGuestCheckinLang(typeof navigator !== 'undefined' ? navigator.language : null);
-    if (browserLang) return browserLang;
-    return 'en';
+    const ck = readCookie('p4h_guest_lang');
+    const browserLanguages =
+      typeof navigator !== "undefined"
+        ? [navigator.language, ...(Array.isArray(navigator.languages) ? navigator.languages : [])]
+        : [];
+    const timeZone =
+      typeof Intl !== "undefined"
+        ? Intl.DateTimeFormat().resolvedOptions().timeZone
+        : null;
+
+    return resolveGuestCheckinLang({
+      queryLang: qp,
+      cookieLang: ck,
+      browserLanguages,
+      timeZone,
+    });
   });
   useEffect(() => {
     try { document.cookie = `p4h_guest_lang=${lang}; path=/; max-age=${60*60*24*365}`; } catch {}
