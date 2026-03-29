@@ -3210,7 +3210,7 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     background:'transparent',
                     maxWidth: 420,
                     marginInline: 'auto',
-                    opacity: 0.82,
+                    opacity: 0.72,
                   }}
                 >
                   <img
@@ -3220,6 +3220,9 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                     height={720}
                     style={{ width:'100%', height:'auto', display:'block' }}
                   />
+                </div>
+                <div style={{ fontSize:11, color:'var(--muted)', textAlign:'center', marginTop:-2 }}>
+                  {uiLang === "ro" ? "Exemplu: asa apare sursa in meniul Guests." : "Example: this is how the source appears in the Guests menu."}
                 </div>
               </div>
               <div style={{ height:1, background:'color-mix(in srgb, var(--border) 70%, transparent)' }} />
