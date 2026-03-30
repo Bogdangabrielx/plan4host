@@ -168,6 +168,18 @@ export async function GET(req: NextRequest) {
       const ciLocal = { y: ciD.y, m: ciD.m, d: ciD.d, h: ciT.h, mi: ciT.m, s: ciT.s };
       const coLocal = { y: coD.y, m: coD.m, d: coD.d, h: coT.h, mi: coT.m, s: coT.s };
 
+      // Safety guard: do not send reservation-message emails long after the stay ended.
+      const checkoutGraceLocal = addHoursLocal(coLocal, 24);
+      const checkoutGraceKey = toKey(
+        checkoutGraceLocal.y,
+        checkoutGraceLocal.m,
+        checkoutGraceLocal.d,
+        checkoutGraceLocal.h,
+        checkoutGraceLocal.mi,
+        checkoutGraceLocal.s,
+      );
+      if (nowKey > checkoutGraceKey) continue;
+
       for (const t of tpls) {
         const kind = (String((t as any).schedule_kind || 'none')).toLowerCase();
         const offRaw: any = (t as any).schedule_offset_hours;
