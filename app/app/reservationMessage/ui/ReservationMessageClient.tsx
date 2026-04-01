@@ -314,11 +314,11 @@ function useIsSmall() {
 /** ---------------- Component ---------------- */
 export default function ReservationMessageClient({
   initialProperties,
-  isAdmin,
+  canEdit,
   initialLang,
 }: {
   initialProperties: Property[];
-  isAdmin: boolean;
+  canEdit: boolean;
   initialLang: "ro" | "en";
 }) {
   const [properties, setProperties] = useState<Property[]>(initialProperties);
@@ -423,7 +423,7 @@ export default function ReservationMessageClient({
   const secondaryLangMeta = GUEST_LANG_META[secondaryLang];
 
   async function saveSecondaryLanguage(nextLang: GuestContentLang) {
-    if (!selectedProperty || !isAdmin) return;
+    if (!selectedProperty || !canEdit) return;
     const prevLang = (selectedProperty.guest_secondary_language || "ro") as GuestContentLang;
     if (nextLang === prevLang) return;
 
@@ -1511,7 +1511,7 @@ export default function ReservationMessageClient({
           </span>
           <button
             type="button"
-            disabled={!isAdmin || !!secondaryLangSaving}
+            disabled={!canEdit || !!secondaryLangSaving}
             onClick={() => setSecondaryLangMenuOpen((prev) => !prev)}
             style={{
               padding: 0,
@@ -1523,7 +1523,7 @@ export default function ReservationMessageClient({
               width: "auto",
               minWidth: 0,
               height: "auto",
-              cursor: !isAdmin || !!secondaryLangSaving ? "default" : "pointer",
+              cursor: !canEdit || !!secondaryLangSaving ? "default" : "pointer",
               lineHeight: 1,
             }}
           >
@@ -1695,7 +1695,7 @@ export default function ReservationMessageClient({
                       <button
                         className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                         onClick={saveValuesForRoom}
-                        disabled={!isAdmin || !propertyId || !selectedRoomId || varDefs.length === 0}
+                        disabled={!canEdit || !propertyId || !selectedRoomId || varDefs.length === 0}
                       >
                         {t.saveValues}
                       </button>
@@ -1719,13 +1719,13 @@ export default function ReservationMessageClient({
                       onChange={(e) => { setNewVarName(e.currentTarget.value); setRvError(null); }}
                       placeholder='e.g. "Room Key", "Wifi Password"'
                       style={input}
-                      disabled={!isAdmin}
+                      disabled={!canEdit}
                       onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createDefinition(); } }}
                     />
                     <button
                       className="sb-btn sb-btn--primary sb-cardglow sb-btn--p4h-copylink"
                       onClick={createDefinition}
-                      disabled={!isAdmin || creatingVar || !newVarName.trim()}
+                      disabled={!canEdit || creatingVar || !newVarName.trim()}
                     >
                       {creatingVar ? t.adding : t.add}
                     </button>
@@ -1761,7 +1761,7 @@ export default function ReservationMessageClient({
                             <button
                               style={{ ...btn, borderColor: "var(--danger)" }}
                               onClick={() => deleteDefinition(d.id)}
-                              disabled={!isAdmin}
+                              disabled={!canEdit}
                               title={t.deleteVariable}
                             >
                               {t.delete}
@@ -2019,10 +2019,10 @@ export default function ReservationMessageClient({
               <label style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800 }}>Message ({lang.toUpperCase()})</label>
               <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
                 <small style={{ color: "var(--muted)" }}>{t.formatting}</small>
-                <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyBold(); }} disabled={!isAdmin}><strong>B</strong></button>
-                <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyItalic(); }} disabled={!isAdmin}><span style={{ fontStyle: "italic" }}>I</span></button>
-                <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyUnderline(); }} disabled={!isAdmin}><span style={{ textDecoration: "underline" }}>U</span></button>
-                <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyLink(); }} disabled={!isAdmin}>{t.link}</button>
+                <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyBold(); }} disabled={!canEdit}><strong>B</strong></button>
+                <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyItalic(); }} disabled={!canEdit}><span style={{ fontStyle: "italic" }}>I</span></button>
+                <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyUnderline(); }} disabled={!canEdit}><span style={{ textDecoration: "underline" }}>U</span></button>
+                <button style={btn} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.preventDefault(); applyLink(); }} disabled={!canEdit}>{t.link}</button>
               </div>
               <ContentEditableStable
                 ref={bodyRef}
@@ -2081,7 +2081,7 @@ export default function ReservationMessageClient({
               className="sb-cardglow"
               style={{ ...btn, borderRadius: 16, padding: '8px 12px', width: 160, whiteSpace: 'nowrap', justifyContent: 'center' }}
               onClick={() => { const cur = composeBlocks(); setTpl(prev => withBlocksForComposerLang(prev, lang, cur)); saveDraft(); }}
-              disabled={!isAdmin}
+              disabled={!canEdit}
             >
               {t.save}
             </button>
@@ -2089,7 +2089,7 @@ export default function ReservationMessageClient({
               className="sb-cardglow"
               style={{ ...btn, borderRadius: 16, padding: '8px 12px', borderColor: 'var(--primary)', width: 160, whiteSpace: 'nowrap', justifyContent: 'center' }}
               onClick={() => { const cur = composeBlocks(); setTpl(prev => withBlocksForComposerLang(prev, lang, cur)); publish(); }}
-              disabled={!isAdmin}
+              disabled={!canEdit}
             >
               {t.makeActive}
             </button>

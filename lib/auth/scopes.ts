@@ -10,6 +10,8 @@ const SCOPE_ALIAS: Record<string, string> = {
   inbox: "guest_overview",
   reservations: "calendar",
   propertySetup: "property_setup",
+  checkinEditor: "checkin_editor",
+  reservationMessage: "reservation_message",
 };
 
 function normalizeToken(token: string): string {
@@ -47,6 +49,8 @@ export async function ensureScope(scope: string, supa?: any, actorId?: string) {
     "calendar",
     "channels",
     "property_setup",
+    "checkin_editor",
+    "reservation_message",
   ];
   const first = order.find((s) => scopes.has(s));
   if (first) {
@@ -54,6 +58,8 @@ export async function ensureScope(scope: string, supa?: any, actorId?: string) {
       : first === 'guest_overview' ? '/app/guest'
       : first === 'calendar' ? '/app/calendar'
       : first === 'channels' ? '/app/channels'
+      : first === 'checkin_editor' ? '/app/checkinEditor'
+      : first === 'reservation_message' ? '/app/reservationMessage'
       : '/app/propertySetup';
     redirect(path);
   }

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import ReservationMessageClient from "./ui/ReservationMessageClient";
 import { cookies } from "next/headers";
 import { resolveTeamAccountContext } from "@/lib/auth/team-account";
+import { ensureScope } from "@/lib/auth/scopes";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -22,9 +23,10 @@ export default async function ReservationMessagePage() {
   const mode = await supabase.rpc("account_access_mode");
   if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
 
+  await ensureScope("reservation_message", supabase, user.id);
+
   const ctx = await resolveTeamAccountContext(supabase as any, String(user.id));
-  const isAdmin = !ctx.membership || ctx.membership.role === "admin";
-  if (!isAdmin) redirect("/app");
+  const canEdit = !ctx.membership || ctx.membership.role !== "viewer";
 
   // Load properties list for selector
   let properties: Array<{
@@ -49,7 +51,7 @@ export default async function ReservationMessagePage() {
 
   return (
     <AppShell currentPath="/app/reservationMessage" title={uiLang === "ro" ? "Mesaje automate" : "Automatic Messages"}>
-      <ReservationMessageClient initialProperties={properties} isAdmin={isAdmin} initialLang={uiLang} />
+      <ReservationMessageClient initialProperties={properties} canEdit={canEdit} initialLang={uiLang} />
     </AppShell>
   );
 }
