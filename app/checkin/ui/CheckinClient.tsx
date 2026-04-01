@@ -1061,10 +1061,6 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
 
   useEffect(() => {
     if (checkinDocumentUploadMode !== "disabled") return;
-    setDocType("");
-    setDocSeries("");
-    setDocNumber("");
-    setDocNationality("");
     setDocFile(null);
     setDocFilePreview(null);
   }, [checkinDocumentUploadMode]);
@@ -1237,16 +1233,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
   const currentNationality = (nationalityRef.current?.getText() ?? docNationality).trim();
 
   const countryValid = currentCountry.length > 0;
-  const docAttempted =
-    docType !== "" ||
-    docSeries.trim().length > 0 ||
-    docNumber.trim().length > 0 ||
-    currentNationality.length > 0 ||
-    !!docFile;
-
   const docValid = (() => {
-    if (!docSectionVisible) return true;
-    if (!docUploadRequired && !docAttempted) return true;
     if (docType === "") return false;
     if (docNumber.trim().length < 1) return false;
     if (docType === "id_card") return docSeries.trim().length > 0;
@@ -1478,7 +1465,7 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
       const uploaded = await uploadDocFile();
       if (docUploadRequired && !uploaded) throw new Error(T("missingIdError"));
       const uploadedSig = await uploadSignature();
-      const includeDocMeta = docSectionVisible && (docType !== "" || !!uploaded);
+      const includeDocMeta = docType !== "";
 
       // 4.2 payload
       const payload: any = {
@@ -2680,12 +2667,11 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
             </div>
 
             {/* Identity document */}
-            {docSectionVisible && (
             <div  style={{ ...ROW_1, marginTop: 6 }}>
               <div>
                 <label htmlFor="checkin-doc-type" style={LABEL_ROW}>
                   <Image src={formIcon("id")} alt="" width={16} height={16} />
-                  <span>{docUploadRequired ? T('docTypeLabel') : T('docTypeLabel').replace('*', '')}</span>
+                  <span>{T('docTypeLabel')}</span>
                 </label>
                 <select 
                   id="checkin-doc-type"
@@ -2763,7 +2749,6 @@ export default function CheckinClient({ publicAccessToken }: { publicAccessToken
               )}
 
             </div>
-            )}
 
             {/* Upload ID document (photo/PDF) */}
             {docSectionVisible && (
