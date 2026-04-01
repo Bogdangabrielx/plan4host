@@ -2500,6 +2500,39 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
           </div>
         )}
 
+        {(docModeSaving || docModeFeedback === "saved") && (
+          <div
+            className={overlayStyles.overlay}
+            role="status"
+            aria-live="polite"
+            aria-label={docModeSaving ? t.saving : t.saved}
+            style={{ zIndex: 244 }}
+          >
+            <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 12 }}>
+              {docModeSaving ? (
+                <LoadingPill title={t.saving} />
+              ) : (
+                <div
+                  className="sb-card"
+                  style={{
+                    padding: "10px 16px",
+                    borderRadius: 999,
+                    border: "1px solid var(--border)",
+                    background: "var(--panel)",
+                    color: "var(--text)",
+                    fontWeight: 700,
+                  }}
+                >
+                  {t.saved}
+                </div>
+              )}
+              <div style={{ color: "var(--text)", fontSize: "var(--fs-b)", lineHeight: "var(--lh-b)", fontWeight: 700 }}>
+                {docModeSaving ? t.saving : t.saved}
+              </div>
+            </div>
+          </div>
+        )}
+
       {prop && (
         <>
           {/* Check-in Link */}
@@ -2558,25 +2591,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        {docModeSaving ? (
-                          <>
-                            <LoadingPill variant="compact" title={t.saving} />
-                            <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {t.saving}
-                            </span>
-                          </>
-                        ) : docModeFeedback === "saved" ? (
-                          <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {t.saved}
-                          </span>
-                        ) : (
-                          <>
-                            <MaskIcon src={currentDocModeOption.icon} size={18} color="var(--text)" />
-                            <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {currentDocModeOption.label}
-                            </span>
-                          </>
-                        )}
+                        <MaskIcon src={currentDocModeOption.icon} size={18} color="var(--text)" />
+                        <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {currentDocModeOption.label}
+                        </span>
                       </span>
                       <span aria-hidden style={{ color: "var(--muted)", flex: "0 0 auto" }}>▾</span>
                     </button>
@@ -2681,25 +2699,10 @@ export default function CheckinEditorClient({ initialProperties }: { initialProp
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        {docModeSaving ? (
-                          <>
-                            <LoadingPill variant="compact" title={t.saving} />
-                            <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {t.saving}
-                            </span>
-                          </>
-                        ) : docModeFeedback === "saved" ? (
-                          <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {t.saved}
-                          </span>
-                        ) : (
-                          <>
-                            <MaskIcon src={currentDocModeOption.icon} size={18} color="var(--text)" />
-                            <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {currentDocModeOption.label}
-                            </span>
-                          </>
-                        )}
+                        <MaskIcon src={currentDocModeOption.icon} size={18} color="var(--text)" />
+                        <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {currentDocModeOption.label}
+                        </span>
                       </span>
                       <span aria-hidden style={{ color: "var(--muted)", flex: "0 0 auto" }}>▾</span>
                     </button>
