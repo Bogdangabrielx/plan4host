@@ -15,7 +15,7 @@ export async function GET() {
     if (!actor) return bad(401, { error: "Not authenticated" });
 
     const ctx = await resolveTeamAccountContext(supa as any, String(actor.id));
-    if (!ctx.membership || ctx.membership.role !== "admin" || !ctx.accountId) {
+    if (!ctx.membership || ctx.membership.disabled || !ctx.accountId) {
       return bad(403, { error: "Forbidden" });
     }
     const accountId = ctx.accountId;
@@ -35,7 +35,7 @@ export async function GET() {
     if (error) return bad(400, { error: error.message });
 
     // atașează email
-    const members = await Promise.all((data ?? []).map(async (m: any) => {
+    let members = await Promise.all((data ?? []).map(async (m: any) => {
       try {
         const u = await admin.auth.admin.getUserById(m.user_id);
         return { ...m, email: u.data.user?.email ?? null };
@@ -44,7 +44,11 @@ export async function GET() {
       }
     }));
 
-    return NextResponse.json({ ok: true, members });
+    if (ctx.membership.role !== "admin") {
+      members = members.filter((m: any) => m.role === "admin" || String(m.user_id) === String(actor.id));
+    }
+
+    return NextResponse.json({ ok: true, members, actorRole: ctx.membership.role, actorUserId: actor.id });
   } catch (e: any) {
     return bad(500, { error: String(e?.message ?? e) });
   }

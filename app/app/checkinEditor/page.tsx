@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import CheckinEditorClient from "./ui/CheckinEditorClient";
+import { ensureScope } from "@/lib/auth/scopes";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -19,6 +20,7 @@ export default async function CheckinEditorPage() {
   // Block app access when billing is required; allow only Subscription page
   const mode = await supabase.rpc("account_access_mode");
   if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
+  await ensureScope("property_setup", supabase, user.id);
 
   // Load properties for selector
   let properties: Array<{ id: string; name: string }> = [];

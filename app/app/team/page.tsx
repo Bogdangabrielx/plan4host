@@ -21,10 +21,10 @@ export default async function TeamPage() {
   if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
 
   const ctx = await resolveTeamAccountContext(supa as any, String(user.id));
-  if (!ctx.membership || ctx.membership.role !== "admin") redirect("/app");
+  if (!ctx.membership || ctx.membership.disabled) redirect("/app");
 
   // Team e disponibil doar pe plan Premium (citit direct din accounts.plan)
-  const accountId = ctx.membership.account_id;
+  const accountId = ctx.accountId;
   const { data: acc } = await supa
     .from("accounts")
     .select("plan")

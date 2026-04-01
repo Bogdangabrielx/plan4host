@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 type Me = { role: "admin" | "editor" | "viewer"; scopes: string[]; disabled?: boolean };
 
@@ -26,13 +27,8 @@ export async function ensureScope(scope: string, supa?: any, actorId?: string) {
     uid = user!.id as string;
   }
 
-  // resolve membership first for this user id
-  const { data: au } = await client
-    .from("account_users")
-    .select("account_id, role, scopes, disabled")
-    .eq("user_id", uid)
-    .order("created_at", { ascending: true });
-  const m = (au ?? [])[0] as Me | undefined;
+  const ctx = await resolveTeamAccountContext(client, uid);
+  const m = ctx.membership as Me | null;
 
   // Admin of own account: full access
   if (!m) return; // admin (base account user)

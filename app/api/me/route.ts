@@ -1,6 +1,7 @@
 // app/api/me/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,9 +19,12 @@ const DEFAULT_SCOPES: Record<"admin" | "editor" | "viewer", string[]> = {
     "dashboard",
     "calendar",
     "property_setup",
+    "checkin_editor",
     "cleaning",
     "channels",
+    "reservation_message",
     "guest_overview",
+    "notifications",
     "team",
     "subscription",
   ],
@@ -31,7 +35,8 @@ const DEFAULT_SCOPES: Record<"admin" | "editor" | "viewer", string[]> = {
     "cleaning",
     "channels",
     "guest_overview",
-    // fără "team" și "subscription"
+    "notifications",
+    "team",
   ],
   viewer: [
     "dashboard",
@@ -39,7 +44,8 @@ const DEFAULT_SCOPES: Record<"admin" | "editor" | "viewer", string[]> = {
     "cleaning",
     "channels",
     "guest_overview",
-    // poate vezi și propertySetup în read-only; îl poți adăuga dacă vrei în UI
+    "notifications",
+    "team",
   ],
 };
 
@@ -50,23 +56,15 @@ export async function GET() {
     const user = auth.user;
     if (!user) return bad(401, { error: "Not authenticated" });
 
-    // 1) Încearcă să găsești user-ul ca membru într-un cont (sub-user)
-    const { data: au, error: eAu } = await supa
-      .from("account_users")
-      .select("account_id, role, scopes, disabled")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: true });
-
-    if (eAu) return bad(500, { error: eAu.message });
-
-    const member = (au ?? [])[0] as
+    const ctx = await resolveTeamAccountContext(supa as any, String(user.id));
+    const member = ctx.membership as
       | {
           account_id: string;
           role: "admin" | "editor" | "viewer";
           scopes: string[] | null;
           disabled: boolean | null;
         }
-      | undefined;
+      | null;
 
     if (member) {
       // Plan direct din accounts.plan

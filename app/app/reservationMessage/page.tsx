@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ReservationMessageClient from "./ui/ReservationMessageClient";
 import { cookies } from "next/headers";
+import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -21,25 +22,9 @@ export default async function ReservationMessagePage() {
   const mode = await supabase.rpc("account_access_mode");
   if ((mode.data as string | null) === "billing_only") redirect("/app/subscription");
 
-  // Determine role: admin if user owns an account (id == user.id) or has admin role in membership
-  let isAdmin = false;
-  try {
-    const { data: acc } = await supabase
-      .from("accounts")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (acc?.id) isAdmin = true;
-    if (!isAdmin) {
-      const { data: au } = await supabase
-        .from("account_users")
-        .select("role,disabled")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: true });
-      const row = (au ?? [])[0] as any;
-      if (row && !row.disabled && row.role === "admin") isAdmin = true;
-    }
-  } catch {}
+  const ctx = await resolveTeamAccountContext(supabase as any, String(user.id));
+  const isAdmin = !ctx.membership || ctx.membership.role === "admin";
+  if (!isAdmin) redirect("/app");
 
   // Load properties list for selector
   let properties: Array<{

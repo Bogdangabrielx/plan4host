@@ -3,6 +3,7 @@ import AppShell from "../_components/AppShell";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SubscriptionClient from "./ui/SubscriptionClient";
+import { resolveTeamAccountContext } from "@/lib/auth/team-account";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -12,22 +13,16 @@ export default async function SubscriptionPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Admin-only access: if user is member of another account (not their own), redirect back
-  const { data: au } = await supabase
-    .from("account_users")
-    .select("account_id, role, disabled")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: true });
-  const m = (au ?? [])[0] as any;
-  if (m && m.account_id !== user.id) {
-    redirect('/app');
+  const ctx = await resolveTeamAccountContext(supabase as any, String(user.id));
+  if (!ctx.ownAccountId || ctx.accountId !== ctx.ownAccountId || (ctx.membership && ctx.membership.role !== "admin")) {
+    redirect("/app");
   }
 
   // Load current plan details and available billing plans
   const { data: acc } = await supabase
     .from("accounts")
     .select("id, plan, valid_until, trial_used")
-    .eq("id", user.id)
+    .eq("id", ctx.ownAccountId)
     .maybeSingle();
 
   const { data: plans } = await supabase

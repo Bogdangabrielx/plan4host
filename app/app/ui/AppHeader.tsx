@@ -565,7 +565,7 @@ export default function AppHeader({ currentPath }: { currentPath?: string }) {
         let filtered = NAV_BASE.filter((it) => {
           if (it.scope === "logout") return true;
           if (it.href === "/app/notifications") return true; // always allow per-device notifications
-          if (it.href === "/app/team") return info.role === "admin" && plan === "premium";
+          if (it.href === "/app/team") return plan === "premium";
           if (allowAll) return true;
           return sc.has(it.scope);
         });

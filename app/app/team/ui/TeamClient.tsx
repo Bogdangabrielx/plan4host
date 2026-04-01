@@ -68,6 +68,8 @@ export default function TeamClient() {
   const [lang, setLang] = useState<Lang>("en");
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
+  const [actorRole, setActorRole] = useState<Role>("viewer");
+  const [actorUserId, setActorUserId] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -209,6 +211,8 @@ export default function TeamClient() {
     const res = await fetch("/api/team/user/list");
     const j = await res.json().catch(() => ({}));
     if (j?.ok && Array.isArray(j.members)) setMembers(j.members as Member[]);
+    if (j?.actorRole === "admin" || j?.actorRole === "editor" || j?.actorRole === "viewer") setActorRole(j.actorRole);
+    if (j?.actorUserId) setActorUserId(String(j.actorUserId));
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
@@ -405,6 +409,7 @@ export default function TeamClient() {
 
   // UI rule: "Members" count excludes the base admin account.
   const membersCount = Math.max(0, members.length - 1);
+  const canManage = actorRole === "admin";
 
   return (
     <div style={{ fontFamily: "inherit", color: "var(--text)" }}>
@@ -420,6 +425,7 @@ export default function TeamClient() {
         }}
       >
         <div className="teamGrid">
+          {canManage ? (
           <section className="sb-cardglow" style={card}>
             <SectionHeader
               icon="/svg_team.svg"
@@ -578,6 +584,16 @@ export default function TeamClient() {
               </div>
             </div>
           </section>
+          ) : (
+          <section className="sb-cardglow" style={card}>
+            <SectionHeader icon="/svg_team.svg" title={i18n.team} />
+            <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5 }}>
+              {lang === "ro"
+                ? "Aici il vezi pe managerul proprietatii si propriul tau utilizator. Doar managerul poate adauga sau modifica membri."
+                : "Here you can see the property manager and your own user. Only the property manager can add or edit team members."}
+            </div>
+          </section>
+          )}
 
           <section className="sb-cardglow" style={card}>
             <SectionHeader
@@ -660,6 +676,7 @@ export default function TeamClient() {
             <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 10, margin: 0 }}>
               {filteredMembers.map((u) => {
                 const isAdmin = u.role === "admin";
+                const isSelf = actorUserId ? String(actorUserId) === String(u.user_id) : false;
                 const active = !u.disabled;
                 const initials = initialsFromEmail(u.email || u.user_id);
                 const avatarUrl = isAdmin ? myAvatarUrl : null;
@@ -777,6 +794,11 @@ export default function TeamClient() {
                         >
                           {isAdmin ? i18n.propertyManager : u.role}
                         </span>
+                        {isSelf && !isAdmin ? (
+                          <span style={{ color: "var(--muted)", fontSize: 12, fontWeight: 800 }}>
+                            {lang === "ro" ? "(tu)" : "(you)"}
+                          </span>
+                        ) : null}
 
                         <span
                           className="memberStatusInline"
