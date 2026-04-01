@@ -1483,9 +1483,11 @@ export default function ReservationMessageClient({
           className="modalCard Sb-cardglow"
           style={{
             position: "relative",
-            display: "grid",
-            gap: 8,
-            padding: "12px 14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            padding: "10px 12px",
             borderRadius: 16,
             background: "var(--panel)",
             border: "1px solid var(--border)",
@@ -1495,49 +1497,45 @@ export default function ReservationMessageClient({
             zIndex: secondaryLangMenuOpen ? 40 : "auto",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-            <span style={{ fontSize: 12, fontWeight: 800, color: "var(--muted)" }}>
-              {uiLang === "ro" ? "Limba a doua actuala" : "Current second language"}
-            </span>
-            <span style={{ fontSize: 11, color: secondaryLangStatus === "error" ? "var(--danger)" : "var(--muted)" }}>
-              {secondaryLangSaving
-                ? (uiLang === "ro" ? "Se salveaza…" : "Saving…")
-                : secondaryLangStatus === "saved"
-                  ? (uiLang === "ro" ? "Salvat" : "Saved")
-                  : secondaryLangStatus === "error"
-                    ? (uiLang === "ro" ? "Eroare" : "Error")
-                    : ""}
-            </span>
-          </div>
+          <span style={{ fontSize: 12, fontWeight: 800, color: secondaryLangStatus === "error" ? "var(--danger)" : "var(--muted)" }}>
+            {secondaryLangSaving
+              ? (uiLang === "ro" ? "Se salveaza limba a doua…" : "Saving second language…")
+              : secondaryLangStatus === "saved"
+                ? (uiLang === "ro" ? "Limba a doua salvata" : "Second language saved")
+                : secondaryLangStatus === "error"
+                  ? (uiLang === "ro" ? "Eroare la salvare" : "Save error")
+                  : (uiLang === "ro" ? "Limba a doua actuala" : "Current second language")}
+          </span>
           <button
             type="button"
             className="sb-btn"
             disabled={!isAdmin || !!secondaryLangSaving}
             onClick={() => setSecondaryLangMenuOpen((prev) => !prev)}
             style={{
-              minHeight: 48,
-              padding: "10px 12px",
-              borderRadius: 12,
+              width: 54,
+              minWidth: 54,
+              height: 38,
+              padding: "0 8px",
+              borderRadius: 999,
               border: "1px solid var(--border)",
               background: "var(--card)",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              gap: 10,
-              width: "100%",
+              gap: 6,
               cursor: !isAdmin || !!secondaryLangSaving ? "default" : "pointer",
             }}
           >
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
               <img
                 src={secondaryLangMeta.flagSrc}
                 alt=""
-                width={22}
-                height={22}
-                style={{ display: "block", width: 22, height: 22, borderRadius: 999, objectFit: "cover" }}
+                width={20}
+                height={20}
+                style={{ display: "block", width: 20, height: 20, borderRadius: 999, objectFit: "cover" }}
               />
             </span>
-            <span style={{ color: "var(--muted)", fontSize: 14, transform: secondaryLangMenuOpen ? "rotate(180deg)" : "none", transition: "transform .18s ease" }}>
+            <span style={{ color: "var(--muted)", fontSize: 11, transform: secondaryLangMenuOpen ? "rotate(180deg)" : "none", transition: "transform .18s ease" }}>
               ▼
             </span>
           </button>
@@ -1546,17 +1544,18 @@ export default function ReservationMessageClient({
               className="Sb-cardglow"
               style={{
                 position: "absolute",
-                top: "calc(100% - 8px)",
-                left: 0,
+                top: "calc(100% - 2px)",
+                right: 12,
                 display: "grid",
                 gap: 6,
-                padding: 8,
-                borderRadius: 14,
+                padding: 6,
+                borderRadius: 999,
                 background: "var(--panel)",
                 border: "1px solid var(--border)",
                 boxShadow: "0 24px 50px rgba(0,0,0,.28)",
                 zIndex: 50,
-                width: "fit-content",
+                width: 54,
+                justifyItems: "center",
               }}
             >
               {(Object.entries(GUEST_LANG_META) as Array<[GuestContentLang, { label: string; flagSrc: string }]>)
@@ -1572,8 +1571,8 @@ export default function ReservationMessageClient({
                         await saveSecondaryLanguage(code);
                       }}
                       style={{
-                        width: 44,
-                        height: 44,
+                        width: 40,
+                        height: 40,
                         padding: 0,
                         borderRadius: 999,
                         border: active ? "1px solid var(--primary)" : "1px solid transparent",
